@@ -15,7 +15,7 @@ class Husky extends React.Component {
         return (
             <div>
                 <div>Husky 继承自 Dog，Dog 继承自 Animal</div>
-                <Dog />
+               
             </div>
         );
     }
@@ -23,3 +23,4 @@ class Husky extends React.Component {
 
 Page(React.createPage(Husky, '/pages/demo/extend/Husky'));
 export default Husky;
+// <Dog />
