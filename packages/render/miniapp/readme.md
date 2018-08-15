@@ -2,8 +2,8 @@
 
 ## 使用
 命令行定义到cli目录下，执行npm link
-使用mpreact <project-name> 创建工程
-定位到  <project-name> 目录下 mpreact start 开始监听文件变化，
+使用mpreact `<project-name>` 创建工程
+定位到  `<project-name>` 目录下 `mpreact start` 开始监听文件变化，
 用微信开发工具打开当中的dist目录，自己收在src目录中进行开发
 
 ## 与原生小程序的优势
