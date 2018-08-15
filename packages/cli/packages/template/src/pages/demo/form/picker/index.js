@@ -82,7 +82,7 @@ class P extends React.Component {
         "backgroundColor": "#eeeeee",
         "backgroundTextStyle": "light"
     }
-    bindPickerChange(){
+    bindPickerChange(e){
         console.log('picker发送选择改变，携带值为', e.value)
         this.setState({
           index: e.value

@@ -1,4 +1,5 @@
 import React from "../../../../ReactWX";
+import './index.less';
 class P extends React.Component {
     constructor(props) {
         this.state = {
@@ -34,13 +35,13 @@ class P extends React.Component {
         })
     }
     onGotUserInfo(e){
-        console.log(e.detail.errMsg)
-        console.log(e.detail.userInfo)
-        console.log(e.detail.rawData)
+        console.log(e.errMsg)
+        console.log(e.userInfo)
+        console.log(e.rawData)
     }
     render() {
         return (
-            <div class='container'>
+            <div class='container button-wrapper'>
                 <button type="default" 
                         size={this.state.defaultSize} 
                         loading={this.state.loading} 
@@ -65,11 +66,11 @@ class P extends React.Component {
                     disabled={this.state.disabled} 
                     bindtap="warn"
                 > warn </button>
-                <button bindtap="setDisabled">点击设置以上按钮disabled属性</button>
-                <button bindtap="setPlain">点击设置以上按钮plain属性</button>
-                <button bindtap="setLoading">点击设置以上按钮loading属性</button>
+                <button onTap={this.setDisabled}>点击设置以上按钮disabled属性</button>
+                <button onTap={this.setPlain}>点击设置以上按钮plain属性</button>
+                <button onTap={this.setLoading}>点击设置以上按钮loading属性</button>
                 <button open-type="contact">进入客服会话</button>
-                <button open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="onGotUserInfo">获取用户信息</button>
+                <button open-type="getUserInfo" lang="zh_CN" onGetuserinfo={this.onGotUserInfo}>获取用户信息</button>
                 <button open-type="openSetting">打开授权设置页</button>
             </div>
         );

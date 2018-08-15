@@ -36,31 +36,7 @@ class P extends React.Component {
                 url: `${ROOT_PATH}/label/index`,
                 name: 'label'
             }
-            // {
-            //     url: '',
-            //     name: 'label'
-            // },
-            // {
-            //     url: '',
-            //     name: 'picker'
-            // },
-            // {
-            //     url: '',
-            //     name: 'picker-view'
-            // },
-            // {
-            //     url: '',
-            //     name: 'radio'
-            // },
             
-            // {
-            //     url: '',
-            //     name: 'switch'
-            // },
-            // {
-            //     url: '',
-            //     name: 'textarea'
-            // }
            ]
         }
     }

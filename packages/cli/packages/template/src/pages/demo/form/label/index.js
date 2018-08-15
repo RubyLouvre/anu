@@ -31,8 +31,8 @@ class P extends React.Component {
         "backgroundTextStyle": "light"
     }
     checkboxChange(e){
+        //待调试
         var checked = e.value
-        console.log(e.value, 'e.value');
         var changed = {}
         for (var i = 0; i < this.state.checkboxItems.length; i++) {
           if (checked.indexOf(this.state.checkboxItems[i].name) !== -1) {
@@ -41,11 +41,11 @@ class P extends React.Component {
             changed['checkboxItems[' + i + '].checked'] = false
           }
         }
+        console.log(changed);
         this.setState(changed)
     }
     radioChange(e){
         var checked = e.value
-        console.log(e.value, 'e.value');
         var changed = {}
         for (var i = 0; i < this.state.radioItems.length; i++) {
           if (checked.indexOf(this.state.radioItems[i].name) !== -1) {
@@ -54,11 +54,13 @@ class P extends React.Component {
             changed['radioItems[' + i + '].checked'] = false
           }
         }
+        console.log(changed);
         this.setState(changed)
     }
     render() {
         return (
             <div class='container'>
+                {this.a}
                <view class="section section_gap">
                     <view class="section__title">表单组件在label内</view>
                     <checkbox-group class="group" onChange={this.checkboxChange}>
