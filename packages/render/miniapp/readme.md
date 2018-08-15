@@ -24,6 +24,7 @@
 7. 不支持render props
 8. 不支持dangerouslySetInnerHTML属性
 9. jsx中的`{}`的值应该this.props或this.state，事件回调应该来自this
+10. src目录下面有components与pages目录，components是集中定义组件，可以用继承，pages里面是页面，只能继承React.Component
 
 ## 内部运行机制
 
