@@ -1,25 +1,17 @@
 const fs = require('fs-extra');
 const path = require('path');
-const modules = require("../modules");
-
-const log = console.log;
+const modules = require('../modules');
+const cwd = process.cwd();
 module.exports = (nPath, usingComponents)=>{
     Object.keys(usingComponents).forEach((componentName)=>{
-
         //对usingComponents直接copy目录
-        let componentDir = path.dirname(usingComponents[componentName] );
-        let src = path.join(process.cwd(),'src', componentDir );
-        let dest = path.join(process.cwd(),'dist', componentDir );
+        let componentDir = path.dirname(usingComponents[componentName]);
+        let src = path.join(cwd,'src', componentDir );
+        let dest = path.join(cwd,'dist', componentDir );
+        let list = modules.useNativeComponentsList;
         fs.ensureDirSync(dest);
         fs.copySync(src, dest);
-        
-            
-        modules.useNativeComponentsList = modules.useNativeComponentsList || [];
-        if(!modules.useNativeComponentsList.includes(componentName) ){
-            modules.useNativeComponentsList.push(componentName)
-        }
+        if(!list.includes(componentName)) list.push(componentName);
 
     })
-
-
 }
