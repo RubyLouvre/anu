@@ -15,6 +15,9 @@
 `<React.template>` (即支持已经开发了一半的项目使用anu小程序)
 10. 在配置文件，指定对特定目录与文件忽略编译
 11. 自定义eslint规则
+12. 对JSX编译优化，ReactWX.default.createElement改成h,需要对上下文的变量进行保存，
+确切知道React当前的名字及用户在render有没有定义了h变量（防止命名冲突，冲突改其他单字符）
+13. 支持公司内部的ABTest与日志收集
 
 ## 中期目标
 
