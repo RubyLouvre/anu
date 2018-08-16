@@ -17,7 +17,9 @@
 11. 自定义eslint规则
 12. 对JSX编译优化，ReactWX.default.createElement改成h,需要对上下文的变量进行保存，
 确切知道React当前的名字及用户在render有没有定义了h变量（防止命名冲突，冲突改其他单字符）
-13. 支持公司内部的ABTest与日志收集
+13. 支持分包加载， 我们将app.js中的pages抽取出来，做成主包的加载JS，放到app.json中，用户自己写分包内容
+14. 支持公司内部的ABTest与日志收集
+
 
 ## 中期目标
 
