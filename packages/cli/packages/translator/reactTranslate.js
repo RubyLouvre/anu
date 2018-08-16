@@ -62,9 +62,12 @@ module.exports = {
         let specifiers = node.specifiers;
         if (modules.componentType === "App") {
             if (/\/pages\//.test(source)) {
+                modules['appRoute'] =  modules['appRoute'] || [];
+                modules['appRoute'].push(nPath.join(source))
                 path.remove(); //移除分析依赖用的引用
             }
         }
+         
         if (/\.(less|scss)$/.test(nPath.extname(source))) {
             path.remove();
         }
@@ -126,17 +129,28 @@ module.exports = {
             let baseName = nPath.basename(curPath).replace(/\.(js)$/, "");
             let destJSON = nPath.join(process.cwd(), dest, `${baseName}.json`);
             const code = generate(path.node.value).code;
+            let config = null;
             let jsonStr = "";
-
-            try {
-                jsonStr = JSON.stringify(JSON.parse(code), null, 4);
-            } catch (err) {
-                jsonStr = JSON.stringify(eval("(" + code + ")"), null, 4);
+            
+            try{
+                config = JSON.parse(code);
+            }catch(err){
+                config = eval("(" + code + ")")
+            }
+            
+            if(modules.componentType === 'App'){
+                config = Object.assign(config, {pages: modules['appRoute']})
             }
 
+            jsonStr = JSON.stringify(config, null, 4);
+           
             fsExtra.ensureFileSync(destJSON);
             fs.writeFileSync(destJSON, jsonStr, err => {
-                if (err) throw `生成${baseName}.json配置文件出错`;
+                if (err){
+                    throw `生成${baseName}.json配置文件出错`;
+                }else{
+                    delete modules.appRoute
+                }
             });
         }
         if (path.node.static) {
