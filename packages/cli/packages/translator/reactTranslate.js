@@ -1,15 +1,12 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
 const nPath = require("path");
-
 const helpers = require("./helpers");
 const modules = require("./modules");
 const jsx = require("./jsx/jsx");
-
 const fs = require("fs");
 const fsExtra = require("fs-extra");
 
-const copyNpmModules = require("./helpers/copyModules");
 
 //const Pages = [];
 //  miniCreateClass(ctor, superClass, methods, statics)
@@ -92,7 +89,7 @@ module.exports = {
             }
         });
 
-        copyNpmModules(modules.current, source, node);
+        helpers.copyNpmModules(modules.current, source, node);
     },
 
     ExportNamedDeclaration: {
@@ -140,18 +137,17 @@ module.exports = {
             
             if(modules.componentType === 'App'){
                 config = Object.assign(config, {pages: modules['appRoute']})
+                delete modules['appRoute'];
+            }
+
+            if(config.usingComponents){
+                helpers.supportNativeComponent(path, config.usingComponents);
             }
 
             jsonStr = JSON.stringify(config, null, 4);
            
             fsExtra.ensureFileSync(destJSON);
-            fs.writeFileSync(destJSON, jsonStr, err => {
-                if (err){
-                    throw `生成${baseName}.json配置文件出错`;
-                }else{
-                    delete modules.appRoute
-                }
-            });
+            fs.writeFileSync(destJSON, jsonStr);
         }
         if (path.node.static) {
             var keyValue = t.ObjectProperty(t.identifier(key), path.node.value);
@@ -200,12 +196,6 @@ module.exports = {
             }
         }
 
-        //to do: 解析 require(mode_modules)
-        // if(callee.name === 'require') {
-        //     if(isAbsolute(source) || isBuildInLibs(source) || !isNpm(source)) return;
-        //     copyNodeModuleToBuildNpm(source);
-        //     node.arguments[0].value = nPath.join(getNodeModulePath(modules.current), source);
-        // }
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
@@ -279,6 +269,7 @@ module.exports = {
             !modules.importComponents[nodeName] &&
             nodeName !== "React.template"
         ) {
+           
             helpers.nodeName(path);
         } else {
             path.node.name.name = "React.template";

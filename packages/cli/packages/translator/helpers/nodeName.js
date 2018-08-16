@@ -1,4 +1,5 @@
 let rword = /[^, ]+/g;
+let modules = require('../modules');
 
 var builtInStr =
     "view,text,button,block,scroll-view,swiper,swiper-item,scroll-div,movable-area,movable-view,cover-view,icon,rich-text," +
@@ -9,6 +10,15 @@ var builtIn = {};
 builtInStr.replace(rword, function(el) {
     builtIn[el] = el;
 });
+
+//兼容小程序自定义组件
+const supportNativeComponent = function(useNativeComponentsList){
+    useNativeComponentsList.forEach(function(el){
+        builtIn[el] = el;
+    });
+    map = Object.assign({}, builtIn);
+}
+
 var map = Object.assign({}, builtIn);
 "p,div,h1,h2,h3,h4,h5,h6,quoteblock".replace(rword, function(el) {
     map[el] = "view";
@@ -19,5 +29,6 @@ var map = Object.assign({}, builtIn);
 
 module.exports = function mapTagName(path) {
     var orig = path.node.name.name;
+    supportNativeComponent(modules.useNativeComponentsList);
     path.node.name.name = map[orig] || "view";
 };

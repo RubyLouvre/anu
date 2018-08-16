@@ -9,5 +9,7 @@ module.exports = {
     classDeclaration: require("./classDeclaration"),
     exportExpr: require("./exportExpr"),
     method: require("./method"),
+    copyNpmModules: require("./copyModules"),
+    supportNativeComponent: require("./supportNativeComponent"),
     //styles: require('./styles')
 }
