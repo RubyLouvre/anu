@@ -8,7 +8,6 @@ const commonjs = require('rollup-plugin-commonjs');
 
 const chalk = require("chalk");
 const path = require("path");
-const wt = require("wt");
 const fs = require("fs-extra");
 const transform = require("./transform");
 const modules = require("./modules");

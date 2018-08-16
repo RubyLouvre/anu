@@ -226,43 +226,54 @@
                 if (root.right) { printRow(root.right, indent, true, out, printNode); }
             }
         }
-
-
-
-        var tree = new AVL() //一会儿改成AVL
-
-
-        /*  var id = setInterval(function () {
-              var el = ~~(Math.random() + "").slice(-3)
-  
-              if (tree._size > 35) {
-                  clearInterval(id)
-                  tree.show()
-                  return
-              }
-              // tree.clearNode()
-              tree.insert(el)
-  
-          }, 30)
-          */
-        var arr = [12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17]
-        arr.forEach(function (el) {
-            tree.insert(el)
-        })
-
-        var arr = [12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17]
-        var step = 9;
-        try {
-            arr.forEach(function (el, i) {
-                tree.remove(el)
-                if (i == step) {
-                    throw step
+        //
+        class BitMap {
+            constructor(array) {//传入一个非负整数数组
+                this.banariy = 0
+                for (var i = 0; i < array.length; i++) {
+                    this.change1(array[i])
                 }
-            })
-        } catch (e) {
-            console.log(e)
+            }
+            change0(digit) {//将某一位变成0
+                var num = this.banariy
+                var mask = 1 << digit;
+                num = num & (~mask);
+                return (this.banariy = num)
+            }
+            change1(digit) {//将某一位变成1
+                var num = this.banariy
+                var mask = 1 << digit;
+                num = num | mask;
+                return (this.banariy = num)
+            }
+            toArray() {//返回一个排序后的整数数组
+                var num = this.banariy
+                var n = num.toString(2).length;
+                var ret = []
+                for (var i = 0; i < n; i++) {
+                    if ((num >> digit) & 1) {
+                        ret.push(num)
+                    }
+                }
+                return ret;
+            }
+            get(index) {//得到某一位的值
+                return (this.banariy >> index) & 1;
+            }
         }
-        tree.show()
+        function missingNumber1(nums) {
+            var bitmap = new BitMap(nums);
+            console.log(bitmap.banariy.toString(2))
+            var lost = []
+            for (var i = 0; i < 11; i++) {//总共10个
+                console.log(bitmap.get(i))
+                if (bitmap.get(i) == 0) {
+                    lost.push(i)
+                }
+            }
+            return lost
+        }
+        console.log(missingNumber1([5, 1, 6, 3, 7, 8, 10]))
         /*
         https://github.com/JWLee89/The-Coding-Delight/blob/master/Java/data-structures/AVL-tree/AvlTree.java
         https://github.com/GodTamIt/java-iterative-avl-tree/blob/master/src/AVL.java
