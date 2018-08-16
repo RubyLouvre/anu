@@ -140,18 +140,15 @@ module.exports = {
             
             if(modules.componentType === 'App'){
                 config = Object.assign(config, {pages: modules['appRoute']})
+                delete modules['appRoute'];
             }
+
+           
 
             jsonStr = JSON.stringify(config, null, 4);
            
             fsExtra.ensureFileSync(destJSON);
-            fs.writeFileSync(destJSON, jsonStr, err => {
-                if (err){
-                    throw `生成${baseName}.json配置文件出错`;
-                }else{
-                    delete modules.appRoute
-                }
-            });
+            fs.writeFileSync(destJSON, jsonStr);
         }
         if (path.node.static) {
             var keyValue = t.ObjectProperty(t.identifier(key), path.node.value);
