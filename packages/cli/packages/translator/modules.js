@@ -8,6 +8,7 @@ var modules = {
     thisProperties: [],
     importComponents: {},
     usedComponents: {},
+    useNativeComponentsList: [],
     uuid: 1,
     reset() {
         modules.componentName = "";
