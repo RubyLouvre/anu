@@ -67,12 +67,10 @@ const checkNameIsOk = (appName)=>{
         
         let absoluteAppNamePath = path.resolve(appName);
         let baseName = path.basename(absoluteAppNamePath);
-
         const checkNameResult = validateProjectName(baseName);
-
         if(!checkNameResult.validForNewPackages){
             console.log();
-            chalk.bold.red(`创建${absoluteAppNamePath}失败，请检查命名规范!`)
+            console.log(chalk.bold.red(`命名规范遵循npm package命名规范\nERR_MSG : ${checkNameResult.warnings[0]}`));
             console.log();
             process.exit(1);
         }else{
@@ -175,7 +173,7 @@ const writeDir = (appName)=>{
     install(appName);
 }
 
-const install = (projectRoot, useYarn)=>{
+const install = (projectRoot)=>{
    
    let bin = '';
    let option = ['install'];
@@ -188,13 +186,24 @@ const install = (projectRoot, useYarn)=>{
        bin = 'npm'
    }
 
-   var result =  spawn.sync(
+   var result = spawn.sync(
         bin,
         option,
         { stdio: 'inherit' }
     )
     if(!result.error){
         console.log(chalk.green('依赖安装完毕!🍺'));
+        console.log();
+        console.log(chalk.green('mpreact start'));
+        console.log('  启动服务');
+        console.log();
+        console.log(chalk.green('mpreact build'));
+        console.log('  构建服务');
+        console.log();
+        console.log(chalk.green('享受您的开发之旅吧!'));
+        console.log();
+        console.log(`  cd ${projectRoot}`);
+        console.log('  mpreact start');
         console.log();
     }else{
         console.log(chalk.red('依赖安装出错，请自行安装!'));
