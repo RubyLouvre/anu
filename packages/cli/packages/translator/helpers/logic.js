@@ -33,6 +33,8 @@ function logic(expr) {
             expr.arguments[0].type === "FunctionExpression"
         ) {
             return loop(expr.callee, expr.arguments[0]);
+        } else if (expr.arguments[0] && expr.arguments[0].type === "IfStatement") {
+
         } else {
             throw generate(expr.callee.object).code +
                 ".map 后面的必须跟匿名函数或一个函数调用";
