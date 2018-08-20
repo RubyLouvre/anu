@@ -47,12 +47,12 @@ class P extends React.Component {
             <div class='container'>
                 <div class="section">
                     <div class="section__title">vertical scroll</div>
-                    <scroll-div scroll-y style="height: 200px; overflow: hidden;" onScrolltoupper={this.upper} onScrolltolower={this.lower} onScroll={this.scroll} scroll-into-div={this.state.todiv} scroll-top={this.state.scrollTop}>
-                        <div id="green" class="scroll-div-item bc_green"></div>
-                        <div id="red"  class="scroll-div-item bc_red"></div>
-                        <div id="yellow" class="scroll-div-item bc_yellow"></div>
-                        <div id="blue" class="scroll-div-item bc_blue"></div>
-                    </scroll-div>
+                    <scroll-view scroll-y style="height: 200px; overflow: hidden;" onScrolltoupper={this.upper} onScrolltolower={this.lower} onScroll={this.scroll} scroll-into-div={this.state.todiv} scroll-top={this.state.scrollTop}>
+                        <div id="green" class="scroll-view-item bc_green"></div>
+                        <div id="red"  class="scroll-view-item bc_red"></div>
+                        <div id="yellow" class="scroll-view-item bc_yellow"></div>
+                        <div id="blue" class="scroll-view-item bc_blue"></div>
+                    </scroll-view>
 
                     <div class="btn-area">
                         <button size="mini" onTap={this.tap}>click me to scroll into div </button>
@@ -61,12 +61,12 @@ class P extends React.Component {
                 </div>
                 <div class="section section_gap">
                     <div class="section__title">horizontal scroll</div>
-                    <scroll-div class="scroll-div_H" scroll-x style="width: 100%">
-                        <div id="green" class="scroll-div-item_H bc_green"></div>
-                        <div id="red"  class="scroll-div-item_H bc_red"></div>
-                        <div id="yellow" class="scroll-div-item_H bc_yellow"></div>
-                        <div id="blue" class="scroll-div-item_H bc_blue"></div>
-                    </scroll-div>
+                    <scroll-view class="scroll-view_H" scroll-x style="width: 100%">
+                        <div id="green" class="scroll-view-item_H bc_green"></div>
+                        <div id="red"  class="scroll-view-item_H bc_red"></div>
+                        <div id="yellow" class="scroll-view-item_H bc_yellow"></div>
+                        <div id="blue" class="scroll-view-item_H bc_blue"></div>
+                    </scroll-view>
                 </div>
             </div>
         );
