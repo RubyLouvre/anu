@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-15
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-20
  * IE9+
  */
 
@@ -1985,26 +1985,19 @@ function onComponentUpdate(fiber) {
         var p = fiber.return;
         while (p) {
             var inst = p._owner;
-            if (inst && inst.props && inst.props.isPageComponent) {
-                instance.$pageInst = inst;
-                break;
+            if (inst) {
+                if (inst.$pageInst) {
+                    instance.$pageInst = inst.$pageInst;
+                    break;
+                } else if (inst.props && inst.props.isPageComponent) {
+                    instance.$pageInst = inst;
+                    break;
+                }
             }
         }
     }
     var inputProps = fiber._owner.props;
-    var f = fiber.return;
-    var pageInst = null;
-    while (f) {
-        var exited = f._owner && f._owner.$pageInst;
-        if (exited) {
-            pageInst = exited;
-            break;
-        } else if (f.props && f.props.isPageComponent) {
-            pageInst = f.stateNode;
-            break;
-        }
-        f = f.return;
-    }
+    var pageInst = instance.$pageInst;
     if (pageInst) {
         var arr = getData(pageInst);
         var newData = {
@@ -2060,22 +2053,25 @@ function template(props) {
         clazz.instances = clazz.instances || {};
         var setState = clazz.prototype.setState;
         var forceUpdate = clazz.prototype.forceUpdate;
-        clazz.prototype.setState = function () {
-            var pageInst = this.$pageInst;
-            if (pageInst) {
-                pageInst.setState.apply(this, arguments);
-            } else {
-                setState.apply(this, arguments);
-            }
-        };
-        clazz.prototype.forceUpdate = function () {
-            var pageInst = this.$pageInst;
-            if (pageInst) {
-                pageInst.forceUpdate.apply(this, arguments);
-            } else {
-                forceUpdate.apply(this, arguments);
-            }
-        };
+        if (!setState.fix) {
+            var fn = clazz.prototype.setState = function () {
+                var pageInst = this.$pageInst;
+                if (pageInst) {
+                    pageInst.setState.apply(this, arguments);
+                } else {
+                    setState.apply(this, arguments);
+                }
+            };
+            fn.fix = true;
+            clazz.prototype.forceUpdate = function () {
+                var pageInst = this.$pageInst;
+                if (pageInst) {
+                    pageInst.forceUpdate.apply(this, arguments);
+                } else {
+                    forceUpdate.apply(this, arguments);
+                }
+            };
+        }
     }
     return createElement(clazz, componentProps);
 }

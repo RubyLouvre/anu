@@ -1,5 +1,6 @@
 import React from './ReactWX';
 import './pages/index/index';
+import './pages/demo/stateless/index';
 import './pages/demo/form/index/index';
 import './pages/demo/form/button/index';
 import './pages/demo/form/checkbox/index';

@@ -28,6 +28,10 @@ class Index extends React.Component {
                 {
                     title: '继承',
                     url: '/pages/demo/extend/index'
+                },
+                {
+                    title: "无状态组件",
+                    url: "/pages/demo/stateless/index"
                 }
             ]
         };
