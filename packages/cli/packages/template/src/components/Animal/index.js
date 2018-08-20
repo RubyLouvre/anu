@@ -4,7 +4,7 @@ class Animal extends React.Component {
     constructor(props) {
         this.state = {
             name: props.name,
-            age: props.age
+            age: props.age || 1
         };
     }
 
@@ -22,7 +22,11 @@ class Animal extends React.Component {
     componentDidMount() {
         console.log('componentDidMount')
     }
-
+    componentWillReceiveProps(props){
+        this.setState({
+            name: props.name
+        })
+    }
     render() {
         return (
             <div style={{border: '1px solid #333'}}>
