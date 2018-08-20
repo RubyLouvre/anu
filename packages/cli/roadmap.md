@@ -9,7 +9,7 @@
 3. 对map循环中的if分支进行优化，既然已经在JSX进行了过滤，我们只生成`<block wx:for>`
 不再生成`<block wx:if>`
 4. 将循环元素的key抽取出来，放到`<block wx:for>`中
-5. 对无状态组件的支持
+5. 对无状态组件的支持 (完成)
 6. 将render props函数进行抽取，改成一个独立的template
 7. 添加一个redux的例子
 8. 添加复杂的react例子
