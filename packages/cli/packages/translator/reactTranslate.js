@@ -37,7 +37,6 @@ module.exports = {
         exit(path) {
             const methodName = path.node.key.name;
             if (methodName === "render") {
-                // console.log("生成组件", modules.className, !! modules.className)
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
                 helpers.render(path, "有状态组件", modules.className, modules);
             }
@@ -48,8 +47,12 @@ module.exports = {
         exit(path) {
             //函数声明转换为无状态组件
             var name = path.node.id.name;
-            if (modules.componentType === "Component") {
+            if (/^[A-Z]/.test(name) && 
+                modules.componentType === "Component" &&
+               ! modules.parentName
+            ) {
                 //需要想办法处理无状态组件
+                helpers.render(path, "无状态组件", name, modules);
             }
         }
     },
