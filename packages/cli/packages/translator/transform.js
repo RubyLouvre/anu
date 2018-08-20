@@ -17,9 +17,6 @@ function miniappPlugin(api) {
 
 function transform(code, sourcePath) {
     modules.current = sourcePath.replace(process.cwd(), "");
-
-    //console.log(sourcePath, '===sourcePath');
-
     if (/\/components\//.test(sourcePath)) {
         modules.componentType = "Component";
     } else if (/\/pages\//.test(sourcePath)) {
@@ -47,9 +44,8 @@ function transform(code, sourcePath) {
     })
 
     var ret = Object.assign({}, modules);
-   
+  
     modules.reset();
-
     ret.js = result.code
     return ret;
 }
