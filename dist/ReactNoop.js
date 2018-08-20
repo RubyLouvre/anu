@@ -23,7 +23,7 @@ var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
 var effects = [];
 function resetStack(info) {
     keepLast(info.containerStack);
-    keepLast(info.containerStack);
+    keepLast(info.contextStack);
 }
 function keepLast(list) {
     var n = list.length;
