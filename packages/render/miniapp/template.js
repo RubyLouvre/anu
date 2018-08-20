@@ -87,10 +87,10 @@ export function template(props) {
     if (!clazz.hackByMiniApp) {
         clazz.hackByMiniApp = true;
         clazz.instances = clazz.instances || {};
-        //如果是有狀态组件
         var setState = clazz.prototype.setState;
         var forceUpdate = clazz.prototype.forceUpdate;
-        if(!setState.fix){
+        //只对有状态组件的setState/forceUpate进行处理
+        if(setState && !setState.fromPage){
            var fn = clazz.prototype.setState = function() {
                 var pageInst = this.$pageInst;
                 if (pageInst) {
@@ -99,7 +99,7 @@ export function template(props) {
                     setState.apply(this, arguments);
                 }
             };
-            fn.fix = true;
+            fn.fromPage = true;
             clazz.prototype.forceUpdate = function() {
                 var pageInst = this.$pageInst;
                 if (pageInst) {
