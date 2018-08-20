@@ -1,6 +1,8 @@
 var runicode = /\\u[a-f\d]{4}/i,
     runifirst = /\\/g
-
+/**
+ * 处理wxml中属性值中的中文被转义 的问题
+ */
 module.exports = function createChineseHack() {
     return {
         collect(path) {

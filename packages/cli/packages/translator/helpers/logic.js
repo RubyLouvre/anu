@@ -1,9 +1,14 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
 const modules = require("../modules");
-const jsx = require("../jsx/jsx");
+const jsx = require("../utils");
 const { createElement, createAttribute } = jsx;
-
+/**
+ * 本模板将array.map(fn)变成<block wx:for="{{}}"></block>
+ * 将if(xxx){}变成<block wx:if="{{xxx}}"></block>
+ * 将xxx? aaa: bbb变成<block wx:if="aaa">aaa</block>
+ * <block wx:if="!xxx">bbb</block>
+ */
 var rexpr = /(^|[^\w\.])this\./g;
 function parseExpr(node) {
     return `{{${generate(node).code.replace(rexpr, "$1")}}}`;
@@ -91,9 +96,10 @@ function loop(callee, fn) {
         }
         var blockElement = createElement("block", attrs, [child]);
         return blockElement;
-    }
+    }else{
+        //这里可能有if分支，需要优化
 
-    // return loopNode;
+    }
 }
 
 module.exports = logic;
