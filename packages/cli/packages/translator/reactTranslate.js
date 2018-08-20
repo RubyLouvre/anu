@@ -183,22 +183,12 @@ module.exports = {
     },
     CallExpression(path) {
         var callee = path.node.callee || Object;
+          //移除super()语句
         if (modules.walkingMethod == "constructor") {
-            //构造器里面不能执行setState，因此无需转换setData
             if (callee.type === "Super") {
-                //移除super()语句
                 path.remove();
             }
-        } else if (
-            modules.componentType === "Page" ||
-            modules.componentType === "Component"
-        ) {
-            var property = callee.property;
-            if (property && property.name === "setState") {
-                // property.name = "setData";
-            }
         }
-
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
@@ -220,6 +210,8 @@ module.exports = {
                         t.jSXExpressionContainer(t.identifier(nodeName))
                     )
                 );
+               
+
             } else {
                 if (nodeName != "React.template") {
                     helpers.nodeName(path);
@@ -242,10 +234,8 @@ module.exports = {
                     if (el.name.name == "key") {
                         if (t.isLiteral(el.value)) {
                             keyValue = el.value;
-                            // console.log(key);
                         } else if (t.isJSXExpressionContainer(el.value)) {
                             keyValue = el.value;
-                            // console.log(key);
                         }
                     }
                 }
