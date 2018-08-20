@@ -32,6 +32,10 @@ class Index extends React.Component {
                 {
                     title: "无状态组件",
                     url: "/pages/demo/stateless/index"
+                },
+                {
+                    title: "循环",
+                    url: "/pages/demo/loop/index"
                 }
             ]
         };
