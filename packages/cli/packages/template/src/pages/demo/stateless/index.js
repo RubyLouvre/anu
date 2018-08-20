@@ -7,9 +7,8 @@ class PPP extends React.Component {
         };
     }
     changeAaa(){
-        console.log("change")
         this.setState({
-            a: ~~ Math.random() * 100
+            a: ~~ (Math.random() * 100)
         })
     }
     render() {

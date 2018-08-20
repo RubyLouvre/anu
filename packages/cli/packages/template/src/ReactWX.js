@@ -2006,6 +2006,21 @@ function onComponentUpdate(fiber) {
             templatedata: inputProps.templatedata
         };
         newData.props.instanceCode = instanceCode;
+        if (instance.__isStateless) {
+            var checkProps = fiber.memoizedProps;
+            var usePush = true;
+            for (var i = 0, el; el = arr[i++];) {
+                if (el.props === checkProps) {
+                    extend(el, newData);
+                    usePush = false;
+                    break;
+                }
+            }
+            if (usePush) {
+                arr.push(newData);
+            }
+            return;
+        }
         if (instance.updateWXData) {
             var checkProps = fiber.memoizedProps;
             for (var i = 0, el; el = arr[i++];) {
@@ -2053,7 +2068,7 @@ function template(props) {
         clazz.instances = clazz.instances || {};
         var setState = clazz.prototype.setState;
         var forceUpdate = clazz.prototype.forceUpdate;
-        if (!setState.fix) {
+        if (setState && !setState.fromPage) {
             var fn = clazz.prototype.setState = function () {
                 var pageInst = this.$pageInst;
                 if (pageInst) {
@@ -2062,7 +2077,7 @@ function template(props) {
                     setState.apply(this, arguments);
                 }
             };
-            fn.fix = true;
+            fn.fromPage = true;
             clazz.prototype.forceUpdate = function () {
                 var pageInst = this.$pageInst;
                 if (pageInst) {

@@ -5,7 +5,7 @@ export function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
     var instances = type.instances;
-     //不是使用miniCreateClass创建的组件直接返回
+    //不是使用miniCreateClass创建的组件直接返回
     if (!instances) {
         return;
     }
@@ -29,7 +29,7 @@ export function onComponentUpdate(fiber) {
         }
     }
     var inputProps = fiber._owner.props;
-    var pageInst = instance.$pageInst
+    var pageInst = instance.$pageInst;
     if (pageInst) {
         var arr = getData(pageInst);
         var newData = {
@@ -39,6 +39,23 @@ export function onComponentUpdate(fiber) {
         };
         //注入
         newData.props.instanceCode = instanceCode;
+        //无状态组件的更新
+        if (instance.__isStateless) {
+            var checkProps = fiber.memoizedProps;
+            var usePush = true;
+            for (var i = 0, el; (el = arr[i++]); ) {
+                if (el.props === checkProps) {
+                    extend(el, newData);
+                    usePush = false;
+                    break;
+                }
+            }
+            if (usePush) {
+                arr.push(newData);
+            }
+            return;
+        }
+
         if (instance.updateWXData) {
             var checkProps = fiber.memoizedProps;
             for (var i = 0, el; (el = arr[i++]); ) {
@@ -90,15 +107,15 @@ export function template(props) {
         var setState = clazz.prototype.setState;
         var forceUpdate = clazz.prototype.forceUpdate;
         //只对有状态组件的setState/forceUpate进行处理
-        if(setState && !setState.fromPage){
-           var fn = clazz.prototype.setState = function() {
+        if (setState && !setState.fromPage) {
+            var fn = (clazz.prototype.setState = function() {
                 var pageInst = this.$pageInst;
                 if (pageInst) {
                     pageInst.setState.apply(this, arguments);
                 } else {
                     setState.apply(this, arguments);
                 }
-            };
+            });
             fn.fromPage = true;
             clazz.prototype.forceUpdate = function() {
                 var pageInst = this.$pageInst;
@@ -109,7 +126,6 @@ export function template(props) {
                 }
             };
         }
-        
     }
     return createElement(clazz, componentProps);
 }
