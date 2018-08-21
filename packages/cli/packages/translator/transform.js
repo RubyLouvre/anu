@@ -2,6 +2,7 @@ const syntaxClassProperties = require("babel-plugin-syntax-class-properties");
 const babel = require("babel-core");
 const visitor = require("./reactTranslate");
 let modules = require("./modules");
+let helpers = require('./helpers');
 
 
 /**
@@ -15,7 +16,7 @@ function miniappPlugin(api) {
 }
 
 
-function transform(code, sourcePath) {
+function transform(sourcePath) {
     modules.current = sourcePath.replace(process.cwd(), "");
     if (/\/components\//.test(sourcePath)) {
         modules.componentType = "Component";
@@ -24,29 +25,21 @@ function transform(code, sourcePath) {
     } else if (/app\.js/.test(sourcePath)) {
         modules.componentType = "App";
     }
-
-    var result = babel.transform(code, {
+    
+    var result = babel.transformFileSync(sourcePath, {
         babelrc: false,
         plugins: [
             "syntax-jsx",
-            //  "transform-react-jsx",
             "transform-decorators-legacy",
             "transform-object-rest-spread",
             miniappPlugin
         ]
     });
 
-    result = babel.transform(result.code, {
-        babelrc: false,
-        plugins: [
-            "transform-es2015-modules-commonjs"
-        ]
-    })
-
+    result = helpers.moduleToCjs.byCode(result.code)
     var ret = Object.assign({}, modules);
-  
     modules.reset();
-    ret.js = result.code
+    ret.js = result.code;
     return ret;
 }
 

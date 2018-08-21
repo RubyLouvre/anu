@@ -11,5 +11,5 @@ module.exports = {
     method: require("./method"),
     copyNpmModules: require("./copyModules"),
     supportNativeComponent: require("./supportNativeComponent"),
-    //styles: require('./styles')
+    moduleToCjs: require("./moduleToCjs")
 }
