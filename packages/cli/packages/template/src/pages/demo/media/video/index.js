@@ -45,6 +45,5 @@ class Video extends React.Component {
     }
 }
 
-Page(React.createPage(Video, 'pages/demo/media/video/index'));
 
 export default Video;

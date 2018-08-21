@@ -123,6 +123,5 @@ class Image extends React.Component {
     }
 }
 
-Page(React.createPage(Image, 'pages/demo/media/image/index'));
 
 export default Image;

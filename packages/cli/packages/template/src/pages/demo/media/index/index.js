@@ -51,6 +51,5 @@ class Audio extends React.Component {
     }
 }
 
-Page(React.createPage(Audio, 'pages/demo/form/button/index'));
 
 export default Audio;
