@@ -56,7 +56,7 @@ module.exports = {
                     className: t.identifier(modules.className),
                     path: t.stringLiteral(
                         modules.current
-                            .replace(/.+pages/, "")
+                            .replace(/.+pages/, "pages")
                             .replace(/\.js$/, "")
                     )
                 }
