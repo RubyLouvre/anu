@@ -17,18 +17,26 @@
     <script>
         class Node {
             constructor(data) {
-                this.left = null;
-                this.parent = null;
-                this.right = null;
-                this.height = 0;
+                this.size = 1
                 this.data = data;
+                this.left = null;
+                this.right = null;
+                this.parent = null;
+            }
+            update() {
+                var leftSize = this.left ? this.left.size : 0
+                var rightSize = this.right ? this.right.size : 0
+
+                this.size = leftSize + rightSize + 1;
+                console.log(this.data, this.size, "====")
             }
 
         };
+
         function getData(node) {
             return node ? node.data : 0
         }
-        class SplayTree {
+        class SBT {
             constructor() {
                 this.root = null;
                 this._size = 0;
@@ -54,6 +62,12 @@
                 }
                 node.parent = child; //父属性修正3
                 child.left = node; //旋转
+              
+                child.update();
+                node.update();
+            }
+            getSize(node) {
+                return node ? node.size : 0
             }
             rightRotate(node) {
                 if (!node.left) {
@@ -61,12 +75,12 @@
                 }
                 var child = node.left;
                 node.left = child.right;
+                //  console.log("rightRotate 1")
                 if (child.right) {
                     //过继孩子
                     child.right.parent = node; //父属性修正1
                 }
                 child.parent = node.parent; //父属性修正2
-
                 //下面都一样
                 if (!node.parent) {
                     this.root = child;
@@ -77,42 +91,55 @@
                 }
                 node.parent = child; //父属性修正3
                 child.right = node; //旋转
+               
+                child.update();
+                node.update();
             }
-            splayNode(node) {
-                while (node !== this.root) {
-                    var parent = parent;
-                    if (parent == this.root) {
-                        if (parent.left == node) {
-                            this.rightRotate(parent)
-                        } else {
-                            this.leftRotate(parent)
-                        }
-                        break
+            maintain(node, rightDeeper) {
+                var left = node.left,
+                    right = node.right;
+
+                // if (left && right) {
+                if (!rightDeeper) {
+                  
+                    var rightSize = right && right.size || 0
+                    console.log("===",left, rightSize)
+                    if (left && left.left && left.left.size > rightSize) {
+                        //左边高
+                        this.rightRotate(node);
+                    } else if (left && left.right && left.right.size > rightSize) {
+                        //左边高
+                        this.rightRotate(node);
+                        this.leftRotate(left);
+
                     } else {
-                        var grandpa = parent.parent;
-                        var case1 = grandpa.left === parent ? "zig-" : "zag-";
-                        var case2 = parent.left === node ? "zig" : "zag";
-                        switch (case1 + case2) {
-                            case "zig-zig":  // 一字型，先父后子，由于我们的旋转操作都是针对于根，
-                                // 那么操作node，即操作parent
-                                this.rightRotate(grandpa);
-                                this.rightRotate(parent);
-                                continue;
-                            case "zag-zag": // 一字型，先父后子
-                                this.leftRotate(parent);
-                                this.leftRotate(grandpa);
-                                continue;
-                            case "zig-zag": // 之字型
-                                this.rightRotate(parent);
-                                this.leftRotate(grandpa);
-                                continue;
-                            case "zag-zig": // 之字型
-                                this.rightRotate(parent);
-                                this.leftRotate(grandpa);
-                                continue;
-                        }
+                        return;
+                    }
+
+                } else {
+
+                    var leftSize = left && left.size || 0
+                    if (right && right.right && right.right.size > leftSize) {
+                        this.leftRotate(node);
+                    } else if (right && right.left && right.left.size > leftSize) {
+                        this.leftRotate(node);
+                        this.rightRotate(right);
+
+                    } else {
+                        return;
                     }
                 }
+                //为什么Maintain(left,true)和Maintain(right,false)被省略了呢？
+                //您可以在陈启峰论文第六部分的分析中找到答案。
+                left && this.maintain(left, false);
+                right && this.maintain(right, true);
+                this.maintain(node, false);
+                this.maintain(node, true);
+                //  }
+            }
+
+            size() {
+                return this.root ? this.root.size : 0
             }
             find(data) {
                 var node = this.root;
@@ -127,7 +154,6 @@
                     }
                 }
                 if (node) {
-                    this.splayNode(node)
                     return node
                 }
                 return null
@@ -135,12 +161,15 @@
             insert(data) {
                 if (!this.root) {
                     this.root = new Node(data);
-                    this._size++
+                    this._size++;
                     return true
                 }
-                var node = this.root, parent = null
+
+                var node = this.root,
+                    parent = null
                 while (node) {
                     parent = node; //保存要插入的父节点
+                    parent.size++
                     var diff = data - node.data
                     if (diff == 0) {
                         return false
@@ -152,13 +181,15 @@
                 }
                 var node = new Node(data);
                 node.parent = parent;
+
                 this._size++;
                 if (diff < 0) {
                     parent.left = node
                 } else {
                     parent.right = node
                 }
-                this.splayNode(node)
+                console.log("diff", diff > 0)
+                this.maintain(this.root, diff > 0);
                 return true;
             }
             remove(data) {
@@ -168,115 +199,82 @@
                 var node = this.find(data); //如果找到，内部会进行伸展
                 if (node) {
                     if (data == this.root.data) {
-                        if (!node.left) {
-                            this.root = node.right;
+                        if (node.left && node.right) {
+                            var succ = this.maxNode(node.left); //求后继
+                            node.data = succ.data;
+                            this.remove(succ)
                         } else {
-                            var succ = this.maxNode(node.left);
-                            this.splayNode(suss);
-                            suss.right = node.right;
+                            this._size--;
+                            var child = node.left || node.right || null;
+                            var parent = node.parent;
+                            if (parent.left == node) {
+                                node.left = child
+                            } else {
+                                node.right = child
+                            }
+                            if (child) {
+                                child.parent = parent; //parent的size发生变化
+                                this.maintain(parent, false);
+                                this.maintain(parent, true);
+                            }
                         }
                     }
                 }
             }
 
-
-            show(node, parentNode) {
-                node = node || this.root
-                if (!parentNode) {
-                    parentNode = document.createElement("div");
-                    document.body.appendChild(parentNode);
-                    this.uuid = this.uuid || "uuid" + (new Date - 0)
-                    parentNode.id = this.uuid;
-                    var top = parentNode.appendChild(document.createElement("center"));
-                    top.style.cssText = "background:" + bg();
-                    top.innerHTML = node.data;
+            maxNode(node) {
+                var current = node || this.root;
+                while (current.right) {
+                    current = node.right
                 }
-                var a = parentNode.appendChild(document.createElement("div"))
-                a.style.cssText = "overflow:hidden";
-                if (node.left) {
-                    var b = a.appendChild(document.createElement("div"))
-                    b.style.cssText = "float:left; width:49%;text-align:center;background:" + bg();
-                    b.innerHTML = node.left.data;
-                    this.show(node.left, b);
-                }
-                if (node.right) {
-                    var c = a.appendChild(document.createElement("div"))
-                    c.style.cssText = "float:right; width:49%;text-align:center;background:" + bg();
-                    c.innerHTML = node.right.data;
-                    this.show(node.right, c);
-                }
+                return current;
             }
             toString(printNode) {
-                if (printNode === void 0) printNode = function (n) { return n.data; };
+                if (printNode === void 0) printNode = function (n) {
+                    return n.data;
+                };
 
                 var out = [];
-                printRow(this.root, '', true, function (v) { return out.push(v); }, printNode);
+                printRow(this.root, '', true, function (v) {
+                    return out.push(v);
+                }, printNode);
                 return out.join('');
             };
         }
-        function bg() {
-            return '#' + (Math.random() * 0xffffff << 0).toString(16);
-        }
+
         // https://github.com/w8r/splay-tree/blob/master/dist/splay.js
         function printRow(root, prefix, isTail, out, printNode) {
             if (root) {
                 out(("" + prefix + (isTail ? '└── ' : '├── ') + (printNode(root)) + "\n"));
                 var indent = prefix + (isTail ? '    ' : '│   ');
-                if (root.left) { printRow(root.left, indent, false, out, printNode); }
-                if (root.right) { printRow(root.right, indent, true, out, printNode); }
-            }
-        }
-        //
-        class BitMap {
-            constructor(array) {//传入一个非负整数数组
-                this.banariy = 0
-                for (var i = 0; i < array.length; i++) {
-                    this.change1(array[i])
+                if (root.left) {
+                    printRow(root.left, indent, false, out, printNode);
+                }
+                if (root.right) {
+                    printRow(root.right, indent, true, out, printNode);
                 }
             }
-            change0(digit) {//将某一位变成0
-                var num = this.banariy
-                var mask = 1 << digit;
-                num = num & (~mask);
-                return (this.banariy = num)
-            }
-            change1(digit) {//将某一位变成1
-                var num = this.banariy
-                var mask = 1 << digit;
-                num = num | mask;
-                return (this.banariy = num)
-            }
-            toArray() {//返回一个排序后的整数数组
-                var num = this.banariy
-                var n = num.toString(2).length;
-                var ret = []
-                for (var i = 0; i < n; i++) {
-                    if ((num >> digit) & 1) {
-                        ret.push(num)
-                    }
-                }
-                return ret;
-            }
-            get(index) {//得到某一位的值
-                return (this.banariy >> index) & 1;
-            }
         }
-        function missingNumber1(nums) {
-            var bitmap = new BitMap(nums);
-            console.log(bitmap.banariy.toString(2))
-            var lost = []
-            for (var i = 0; i < 11; i++) {//总共10个
-                console.log(bitmap.get(i))
-                if (bitmap.get(i) == 0) {
-                    lost.push(i)
-                }
-            }
-            return lost
-        }
-        console.log(missingNumber1([5, 1, 6, 3, 7, 8, 10]))
+        var tree = new SBT(); //40, 30, 20, 60
+        [10, 50, 40, 30,20,60].forEach(function (el, i) {
+            tree.insert(el)
+        })
+        //   tree.remove(60)
+        //  console.log(tree.root, "开始删30")
+        //  tree.remove(30)
+        console.log(tree + "")
+        console.log(tree)
+
         /*
+        https://blog.csdn.net/BerryKanry/article/details/75448176
         https://github.com/JWLee89/The-Coding-Delight/blob/master/Java/data-structures/AVL-tree/AvlTree.java
         https://github.com/GodTamIt/java-iterative-avl-tree/blob/master/src/AVL.java
+
+        区间树能够对保存的数据进行适当的预处理，以快速回复查询。
+
+区间树常用于在一维数组的特定区间对查询进行快速回复。区间树的最典型也是最简单的应用就是求区间最小值的问题。
+
+区间树的基本思路是，生成表示给定数组各区间的二叉树。
         */
     </script>
 
