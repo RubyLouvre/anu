@@ -1,5 +1,5 @@
 import React from "../../ReactWX";
-class Index extends React.Component {
+class P extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -28,6 +28,14 @@ class Index extends React.Component {
                 {
                     title: '继承',
                     url: '/pages/demo/extend/index'
+                },
+                {
+                    title: "无状态组件",
+                    url: "/pages/demo/stateless/index"
+                },
+                {
+                    title: "循环",
+                    url: "/pages/demo/loop/index"
                 }
             ]
         };
@@ -56,5 +64,4 @@ class Index extends React.Component {
         );
     }
 }
-Page(React.createPage(Index, "pages/index/index"));
-export default Index;
+export default P;

@@ -92,11 +92,10 @@ class Parser {
             collect, {
                 id,
                 dependencies,
-                originalCode,
-                code
+                originalCode
             }
         ) {
-            if(/\.(scss)$/.test(id)){
+            if(/\.(?:scss)$/.test(id)){
                 sass.render({
                     file: id
                 }, (err, result)=>{
@@ -114,13 +113,11 @@ class Parser {
                     );
                 });
             }
-
             //忽略 rollupPluginBabelHelpers
-            if (!/rollup|less|scss/.test(id)) {
+            if (!/\.(?:less|scss)$/.test(id)) {
                 collect.push({
                     id: id,
                     code: originalCode,
-                    babeled: code,
                     dependencies: dependencies.filter(d => {
                         if (!/rollup/.test(d)) return d;
                     })
@@ -135,7 +132,7 @@ class Parser {
              */
 
             if(!/commonjsHelpers/g.test(m.id)){
-                return this.codegen.call(this, m.id, m.dependencies, m.code, m.babeled);
+                return this.codegen.call(this, m.id, m.code, m.dependencies);
             }
             
         });
@@ -148,7 +145,7 @@ class Parser {
         }
     }
 
-    async codegen(id, dependencies, code, babeled) {
+    async codegen(id, code, dependencies) {
 
         if(/node_modules/g.test(id)) return; //不写入npm资源。
 
@@ -163,11 +160,13 @@ class Parser {
             destPath = path.join(path.dirname(destPath), '..',  filename)
         }
 
-        await fs.ensureFile(path.resolve(destPath));
+        await fs.ensureFile(path.resolve(destPath)).then(function(a){
+            console.log(destPath,"创建成功")
+        }).catch(err => {
+            console.error(err)
+        })
         const output = transform(code, sourcePath);
         const basePath = destPath.replace(".js", "");
-
-    
         
         //生成ReactWX
         if(/reactWX/i.test(destPath)){
@@ -175,13 +174,13 @@ class Parser {
             delete output.js
             this.outputs.push(output)
         }
-
-        
-
-
         //生成JS与JSON
         if (/Page|App|Component/.test(output.componentType)) {
-            fs.writeFile(destPath, output.js , () => {});
+            fs.writeFile(destPath, output.js , (e) => {
+                if(e){
+                    console.log(e)
+                }
+            });
             delete output.js
             output.jsonPath = basePath + ".json"
             this.outputs.push(output)

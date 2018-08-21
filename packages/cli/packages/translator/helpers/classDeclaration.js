@@ -48,5 +48,25 @@ module.exports = {
                 }
             }
         }
+        if (modules.componentType === "Page") {
+            // 动态生成Page组件的Page(React.createPage(className,path))调用
+            // Page(React.createPage(PPP, "pages/demo/stateless/aaa"));
+            var createPage = template("Page(React.createPage(className,path))")(
+                {
+                    className: t.identifier(modules.className),
+                    path: t.stringLiteral(
+                        modules.current
+                            .replace(/.+pages/, "")
+                            .replace(/\.js$/, "")
+                    )
+                }
+            );
+            var p = path;
+            //好像不能上升到根节点Program，只能上升到VariableDeclaration
+            while (p.type != "VariableDeclaration") {
+                p = p.parentPath;
+            }
+            p.insertAfter(createPage);
+        }
     }
 };

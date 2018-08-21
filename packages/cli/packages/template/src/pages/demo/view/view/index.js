@@ -36,5 +36,5 @@ class P extends React.Component {
         );
     }
 }
-Page(React.createPage(P, "pages/demo/view/view/index"));
+
 export default P;

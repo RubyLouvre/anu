@@ -136,5 +136,4 @@ P.defaultProps = {
     name: 'zhangsan'
 }
 
-Page(React.createPage(P, "pages/demo/form/input/index"));
 export default P;

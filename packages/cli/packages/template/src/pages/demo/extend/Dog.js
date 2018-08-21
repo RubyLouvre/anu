@@ -1,7 +1,7 @@
 import React from '../../../ReactWX';
 import Dog from '../../../components/Dog/index';
 
-class DogPage extends React.Component{
+class P  extends React.Component{
    
     render() {
         return (
@@ -13,5 +13,4 @@ class DogPage extends React.Component{
     }
 }
 
-Page(React.createPage(DogPage, '/pages/demo/extend/Dog'));
-export default Dog;
+export default P;

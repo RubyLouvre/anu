@@ -1,7 +1,6 @@
 import React from '../../../ReactWX';
-import Dog from '../../../components/Dog/index';
 
-class Husky extends React.Component {
+class  P extends React.Component {
     constructor(props) {
         super(props);
 
@@ -15,10 +14,11 @@ class Husky extends React.Component {
         return (
             <div>
                 <div>Husky 继承自 Dog，Dog 继承自 Animal</div>
+                <div>该页面待重写</div>
             </div>
         );
     }
 }
 
-Page(React.createPage(Husky, '/pages/demo/extend/Husky'));
 export default Husky;
+// <Dog />

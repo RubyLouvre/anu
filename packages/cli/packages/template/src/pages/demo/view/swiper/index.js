@@ -171,5 +171,5 @@ class P extends React.Component {
         );
     }
 }
-Page(React.createPage(P, 'pages/demo/view/swiper/index'));
+
 export default P;

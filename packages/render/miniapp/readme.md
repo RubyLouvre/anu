@@ -19,12 +19,11 @@
 2. 事件的绑定，不要使用this.props.fn或this.state.fn，要用this.fn这种形式，微信在给模板填数据时，会对数据进行JSON.stringify，清掉所有事件。
 3. 组件系统是基于小程序的template元素，由于不支持slot，因此无法使用`{this.props.children}`实现显式的组件套嵌
 4. 不完整支持ref机制（refs可以放入组件实例，但不能放DOM，因为没有DOM）
-5. 无状态组件还没有实现
-6. 还没有支持findDOMNode
-7. 不支持render props
-8. 不支持dangerouslySetInnerHTML属性
-9. jsx中的`{}`的值应该this.props或this.state，事件回调应该来自this
-10. src目录下面有components与pages目录，components是集中定义组件，可以用继承，pages里面是页面，只能继承React.Component
+5. 还没有支持findDOMNode
+6. 不支持render props
+7. 不支持dangerouslySetInnerHTML属性
+8. jsx中的`{}`的值应该this.props或this.state，事件回调应该来自this
+9. src目录下面有components与pages目录，components是集中定义组件，可以用继承，pages里面是页面，只能继承React.Component
 
 ## 内部运行机制
 

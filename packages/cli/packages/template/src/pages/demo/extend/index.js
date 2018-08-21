@@ -40,6 +40,4 @@ class Index extends React.Component {
     }
 }
 
-Page(React.createPage(Index, 'pages/demo/extend/index'));
-
 export default Index;

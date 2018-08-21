@@ -37,5 +37,5 @@ class P extends React.Component {
         );
     }
 }
-Page(React.createPage(P, "pages/demo/form/textarea/index"));
+
 export default P;

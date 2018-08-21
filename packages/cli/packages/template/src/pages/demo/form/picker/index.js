@@ -223,5 +223,5 @@ class P extends React.Component {
         );
     }
 }
-Page(React.createPage(P, "pages/demo/form/picker/index"));
+
 export default P;

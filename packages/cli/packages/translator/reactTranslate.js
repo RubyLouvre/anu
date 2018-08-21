@@ -37,7 +37,6 @@ module.exports = {
         exit(path) {
             const methodName = path.node.key.name;
             if (methodName === "render") {
-                // console.log("生成组件", modules.className, !! modules.className)
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
                 helpers.render(path, "有状态组件", modules.className, modules);
             }
@@ -48,8 +47,12 @@ module.exports = {
         exit(path) {
             //函数声明转换为无状态组件
             var name = path.node.id.name;
-            if (modules.componentType === "Component") {
+            if (/^[A-Z]/.test(name) && 
+                modules.componentType === "Component" &&
+               ! modules.parentName
+            ) {
                 //需要想办法处理无状态组件
+                helpers.render(path, "无状态组件", name, modules);
             }
         }
     },
@@ -180,22 +183,12 @@ module.exports = {
     },
     CallExpression(path) {
         var callee = path.node.callee || Object;
+          //移除super()语句
         if (modules.walkingMethod == "constructor") {
-            //构造器里面不能执行setState，因此无需转换setData
             if (callee.type === "Super") {
-                //移除super()语句
                 path.remove();
             }
-        } else if (
-            modules.componentType === "Page" ||
-            modules.componentType === "Component"
-        ) {
-            var property = callee.property;
-            if (property && property.name === "setState") {
-                // property.name = "setData";
-            }
         }
-
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
@@ -217,6 +210,8 @@ module.exports = {
                         t.jSXExpressionContainer(t.identifier(nodeName))
                     )
                 );
+               
+
             } else {
                 if (nodeName != "React.template") {
                     helpers.nodeName(path);
@@ -239,10 +234,8 @@ module.exports = {
                     if (el.name.name == "key") {
                         if (t.isLiteral(el.value)) {
                             keyValue = el.value;
-                            // console.log(key);
                         } else if (t.isJSXExpressionContainer(el.value)) {
                             keyValue = el.value;
-                            // console.log(key);
                         }
                     }
                 }

@@ -1,9 +1,14 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
 const modules = require("../modules");
-const jsx = require("../jsx/jsx");
+const jsx = require("../utils");
 const { createElement, createAttribute } = jsx;
-
+/**
+ * 本模板将array.map(fn)变成<block wx:for="{{}}"></block>
+ * 将if(xxx){}变成<block wx:if="{{xxx}}"></block>
+ * 将xxx? aaa: bbb变成<block wx:if="aaa">aaa</block>
+ * <block wx:if="!xxx">bbb</block>
+ */
 var rexpr = /(^|[^\w\.])this\./g;
 function parseExpr(node) {
     return `{{${generate(node).code.replace(rexpr, "$1")}}}`;
@@ -71,36 +76,30 @@ function loop(callee, fn) {
     attrs.push(createAttribute("wx:for", parseExpr(callee.object)));
     attrs.push(createAttribute("wx:for-item", fn.params[0].name));
     if (fn.params[1]) {
-        // 用于将key={index}改成wx:key="*this"
         modules.indexName = fn.params[1].name;
         attrs.push(createAttribute("wx:for-index", fn.params[1].name));
     }
-
     var body = fn.body.body.find(i => i.type === "ReturnStatement");
     if (body) {
         //循环内部存在循环或条件
         var child = logic(body.argument);
-        //  var childNodeName = child.openingElement.name.name;
-        // if (child.type == "JSXElement" && modules.importComponents[childNodeName]) {
-
-        //   attrs.unshift(createAttribute("is", childNodeName));
-        //   attrs.push(createAttribute("data", `{{...${fn.params[0].name}}}`));
-
-        //   var origAttrs = child.openingElement.attributes.map(function(el){
-        //     if(el.name.name === "key"){
-        //       el.name.name = "wx:key"
-        //     }
-        //     return el
-        //   })
-        //   var templateElement = createElement("template", attrs.concat(origAttrs), child.children);
-        //   return templateElement;
-        // } else {
+        //如果数组的map迭代器的returnt第一个标签是组件，并且组件有key
+        if (child.key) { 
+            attrs.push(
+                createAttribute(
+                    "wx:key",
+                    child.key.indexOf(".") > 0
+                        ? child.key.split(".").pop()
+                        : "*this"
+                )
+            );
+        }
         var blockElement = createElement("block", attrs, [child]);
         return blockElement;
-        // }
-    }
+    }else{
+        //这里可能有if分支，需要优化
 
-    // return loopNode;
+    }
 }
 
 module.exports = logic;

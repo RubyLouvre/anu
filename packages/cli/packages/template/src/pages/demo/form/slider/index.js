@@ -59,5 +59,5 @@ class P extends React.Component {
         );
     }
 }
-Page(React.createPage(P, "pages/demo/form/slider/index"));
+
 export default P;
