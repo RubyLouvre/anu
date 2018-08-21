@@ -1,5 +1,5 @@
 import React from "../../ReactWX";
-class Index extends React.Component {
+class P extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -64,5 +64,4 @@ class Index extends React.Component {
         );
     }
 }
-Page(React.createPage(Index, "pages/index/index"));
-export default Index;
+export default P;

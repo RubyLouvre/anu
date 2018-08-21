@@ -46,5 +46,4 @@ class P extends React.Component {
     }
 }
 
-Page(React.createPage(P, "pages/demo/loop/index"));
 export default P;

@@ -1,5 +1,8 @@
 # roadmap
 
+> 以React方式开发小程序
+
+
 使用： https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
 
 ## 近期目标

@@ -104,5 +104,5 @@ class P extends React.Component {
         );
     }
 }
-Page(React.createPage(P, "pages/demo/form/label/index"));
+
 export default P;

@@ -92,6 +92,6 @@ class P extends React.Component {
         );
     }
 }
-Page(React.createPage(P, "pages/demo/baseContent/base/index"));
+
 export default P;
 

@@ -49,7 +49,7 @@ module.exports = {
             }
         }
         if (modules.componentType === "Page") {
-            //动态生成Page组件的Page(React.createPage(className,path))调用
+            // 动态生成Page组件的Page(React.createPage(className,path))调用
             // Page(React.createPage(PPP, "pages/demo/stateless/aaa"));
             var createPage = template("Page(React.createPage(className,path))")(
                 {

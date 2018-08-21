@@ -1,6 +1,6 @@
 import React from '../../../ReactWX';
 
-class Audio extends React.Component {
+class P extends React.Component {
     config = {
         title: 'media'
     };
@@ -40,6 +40,5 @@ class Audio extends React.Component {
     }
 }
 
-Page(React.createPage(Audio, 'pages/demo/extend/index'));
 
-export default Audio;
+export default P;

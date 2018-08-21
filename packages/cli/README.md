@@ -1,5 +1,7 @@
 # mpreact小程序脚手架
 
+> 以React方式开发小程序
+
 ## 使用
 
 命令行定义到`packages/cli`目录下，执行`npm link` <br />

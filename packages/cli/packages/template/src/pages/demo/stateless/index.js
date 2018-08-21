@@ -1,6 +1,6 @@
-import React from "../../../ReactWX"
+import React from "../../ReactWX"
 import Aaa from "../../../components/Aaa/index"
-class PPP extends React.Component {
+class P extends React.Component {
     constructor(props) {
         this.state = {
             a: 111
@@ -20,5 +20,4 @@ class PPP extends React.Component {
     }
 }
 
-Page(React.createPage(PPP, "pages/demo/stateless/aaa"));
-export default PPP;
+export default P;

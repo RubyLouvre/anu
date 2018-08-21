@@ -106,6 +106,6 @@ class P extends React.Component {
         );
     }
 }
-Page(React.createPage(P, "pages/demo/api/index"));
+
 export default P;
 
