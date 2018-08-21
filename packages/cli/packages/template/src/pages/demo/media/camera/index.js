@@ -43,6 +43,5 @@ class Camera extends React.Component {
     }
 }
 
-Page(React.createPage(Camera, 'pages/demo/form/button/index'));
 
 export default Camera;
