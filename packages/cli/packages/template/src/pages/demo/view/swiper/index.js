@@ -1,7 +1,8 @@
 import React from '../../../../ReactWX';
 import './index.less';
 class P extends React.Component {
-    constructor(props) {
+    constructor() {
+        super();
         this.state = {
             background: ['demo-text-1', 'demo-text-2', 'demo-text-3'],
             indicatorDots: true,
