@@ -1,7 +1,8 @@
 import React from "../../../../ReactWX";
 import "./index.less";
 class P extends React.Component {
-    constructor(props) {
+    constructor() {
+        super();
         this.state = {
              checkboxItems: [
                 { name: 'USA', value: '美国' },

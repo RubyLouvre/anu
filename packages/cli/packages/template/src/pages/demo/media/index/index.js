@@ -7,6 +7,7 @@ class Audio extends React.Component {
     };
     
     constructor() {
+        super();
         this.state = {
             state: '未开始',
             components: [

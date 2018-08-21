@@ -2,6 +2,7 @@ import React from '../../../../ReactWX';
 
 class Camera extends React.Component {
     constructor() {
+        super();
         this.state = {
             mode: 'normal',
             devicePosition: 'back',

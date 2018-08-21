@@ -2,6 +2,7 @@ import React from '../../../../ReactWX';
 
 class Audio extends React.Component {
     constructor() {
+        super();
         this.state = {
             state: '未开始',
             title: 'audio',

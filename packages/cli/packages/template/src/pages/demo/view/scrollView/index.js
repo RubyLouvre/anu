@@ -1,7 +1,8 @@
 import React from "../../../../ReactWX";
 import './index.less';
 class P extends React.Component {
-    constructor(props) {
+    constructor() {
+        super();
         this.order = ['red', 'yellow', 'blue', 'green', 'red'];
         this.state = {
             toView: 'red',

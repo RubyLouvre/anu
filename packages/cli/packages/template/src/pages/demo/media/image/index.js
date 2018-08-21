@@ -2,6 +2,7 @@ import React from '../../../../ReactWX';
 
 class Image extends React.Component {
     constructor() {
+        super();
         this.state = {
             state: '正在加载',
             src:

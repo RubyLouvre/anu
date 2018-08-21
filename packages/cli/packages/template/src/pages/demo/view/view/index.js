@@ -1,7 +1,7 @@
 import React from "../../../../ReactWX";
 import './index.less';
 class P extends React.Component {
-    constructor(props) {
+    constructor() {
         
        
     }

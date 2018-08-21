@@ -1,6 +1,7 @@
 import React from "../../../../ReactWX";
 class P extends React.Component {
-    constructor(props) {
+    constructor() {
+        super();
         const ROOT_PATH = '/pages/demo/view';
         this.state = {
            nv: [
