@@ -35,12 +35,6 @@ function wxml(code) {
     var html = result.code;
     if (chineseHack.unicodeNumber) {
        return chineseHack.recovery(html)
-      /*  console.log("恢复中文", unicodeArray.concat(), unicodeMather)
-        html = html.replace(unicodeMather, function (a) {
-            return unicodeArray.shift()
-        })
-        unicodeNumber = 0
-        */
     }
     return html;
 }
