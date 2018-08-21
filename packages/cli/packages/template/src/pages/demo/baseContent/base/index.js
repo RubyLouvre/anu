@@ -1,7 +1,6 @@
 import React from "../../../../ReactWX";
 class P extends React.Component {
     constructor(props) {
-        
         this.state = {
             iconSize: [20, 30, 40, 50, 60, 70],
             iconColor: [

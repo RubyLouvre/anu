@@ -1,6 +1,6 @@
 import React from '../../../ReactWX';
 
-class Index extends React.Component {
+class P extends React.Component {
     config = {
         title: 'media'
     };
@@ -40,4 +40,4 @@ class Index extends React.Component {
     }
 }
 
-export default Index;
+export default P;

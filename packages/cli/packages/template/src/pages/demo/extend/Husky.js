@@ -1,6 +1,6 @@
 import React from '../../../ReactWX';
 
-class  P extends React.Component {
+class P extends React.Component {
     constructor(props) {
         super(props);
 
@@ -20,5 +20,5 @@ class  P extends React.Component {
     }
 }
 
-export default Husky;
+export default P;
 // <Dog />
