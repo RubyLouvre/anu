@@ -2,7 +2,6 @@ const babel = require("babel-core");
 
 
 let transform = {};
-
 transform.byCode = (code)=>{
     result = babel.transform(code, {
         babelrc: false,

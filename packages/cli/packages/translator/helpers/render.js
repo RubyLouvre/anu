@@ -37,7 +37,7 @@ exports.exit = function(path, type, componentName, modules) {
             expr.argument = jsxAst.ast.program.body[0];
 
             jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
-            var wxml = wxmlHelper(jsx);
+            var wxml = wxmlHelper(jsx, modules);
             if (needWrap) {
                 wxml = wxml.slice(7, -9); //去掉<block> </block>;
             } else {

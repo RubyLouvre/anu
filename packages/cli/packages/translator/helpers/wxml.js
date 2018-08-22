@@ -2,30 +2,27 @@ const syntaxJSX = require("babel-plugin-syntax-jsx");
 const babel = require("babel-core");
 const t = require("babel-types");
 const generate = require("babel-generator").default;
-const modules = require("../modules");
 const attrValueHelper = require("./attrValue");
 const attrNameHelper = require("./attrName");
 const logicHelper = require("./logic");
 const jsx = require("../utils");
 const chineseHelper = require("./chinese");
-/*
-var runicode = /\\u[a-f\d]{4}/,
-    unicodeArray = [],
-    unicodeNumber = 0,
-    unicodeMather;
-*/
+
 var chineseHack = chineseHelper();
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */
-function wxml(code) {
+function wxml(code, modules) {
     var result = babel.transform(code, {
         babelrc: false,
         plugins: [
             function wxmlPlugin(api) {
                 return {
                     inherits: syntaxJSX,
-                    visitor: visitor
+                    visitor: visitor,
+                    manipulateOptions(opts){//解析每个文件前执行一次
+                       opts.anu = modules
+                    }
                 };
             }
         ]
@@ -107,7 +104,7 @@ var visitor = {
             if (t.isStringLiteral(node)) {
                 value = node.value;
             } else {
-                if (node.expression.value === modules.indexName) {
+                if (/\./.test(node.expression.value)) {
                     value = "*this";
                 } else {
                     value = `{{${generate(node.expression).code}}}`;
@@ -124,10 +121,11 @@ var visitor = {
 
     JSXExpressionContainer: {
         enter() {},
-        exit(path) {
+        exit(path, state) {
+            var modules = state.file.opts.anu;
             var expr = path.node.expression;
             if (t.isJSXAttribute(path.parent)) {
-                attrValueHelper(path, modules);
+                attrValueHelper(path);
             } else if (
                 expr.type === "MemberExpression" &&
                 generate(expr).code === "this.props.children"
@@ -136,7 +134,7 @@ var visitor = {
                 console.warn("小程序暂时不支持{this.props.children}");
             } else {
                 //返回block元素或template元素
-                var block = logicHelper(expr);
+                var block = logicHelper(expr, modules);
                 path.replaceWith(block);
             }
         }
