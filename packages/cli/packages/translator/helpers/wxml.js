@@ -6,7 +6,7 @@ const modules = require("../modules");
 const attrValueHelper = require("./attrValue");
 const attrNameHelper = require("./attrName");
 const logicHelper = require("./logic");
-const jsx = require("../jsx/jsx");
+const jsx = require("../utils");
 const chineseHelper = require("./chinese");
 /*
 var runicode = /\\u[a-f\d]{4}/,
