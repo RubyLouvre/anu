@@ -7,6 +7,7 @@ const MemoryFS = require("memory-fs");
 const less = require('less');
 const transform = require("./transform");
 const helpers = require('./helpers');
+const queue = require('./queue');
 let cwd = process.cwd();
 let inputPath = path.join(cwd, 'src');
 let outputPath = path.join(cwd, 'dist');
@@ -23,6 +24,7 @@ const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
  }
 
 
+ const log = console.log;
 
 const isLib = (name)=>{
     return name.toUpperCase() === 'REACTWX';
@@ -79,7 +81,7 @@ class Parser {
       })
 
     }
-    startCodeGen(stats){
+    async startCodeGen(stats){
         //webpack watch 可能触发多次 build https://webpack.js.org/api/node/#watching
         if(this.statsHash === stats.hash) return;
         this.statsHash = stats.hash;
@@ -89,6 +91,11 @@ class Parser {
                 this.codegen(file);
             }
         })
+       
+        
+      
+        
+        this.generateProjectConfig();
     }
     async generateLib(file){
         let {name, ext} = path.parse(file);
@@ -105,43 +112,36 @@ class Parser {
         let {name, ext} = path.parse(file);
         let dist = file.replace('src', 'dist');
         if( isLib(name) || !isJs(ext) ) return;
-        const output = await transform(file);
-        if (/Page|App|Component/.test(output.componentType) && /\.js$/.test(file) ){
+        const code = await transform(file);
+            
+        if (/\/(?:pages|app|components)/.test(file)){
             fs.ensureFileSync(dist);
-            fs.writeFile(dist, output.js, (err)=>{
+            fs.writeFile(dist, code, (err)=>{
                 if(err) throw err;
             });
         }
-
-        //generate wxml
-        if(/Page|Component/.test(output.componentType)){
-            let wxmlDist = path.join(path.dirname(dist), `${name}.wxml`);
-            fs.ensureFileSync(wxmlDist);
-            fs.writeFile(wxmlDist, output.wxml || '', (err)=>{
-                if(err) throw err;
-            })       
-        }
-
-        //generate page config json
-        if (/Page|App|Component/.test(output.componentType) ){
-            let jsonDist = path.join(path.dirname(dist), `${name}.json`);
-            fs.ensureFileSync(jsonDist);
-            fs.writeFile(jsonDist, output.pageJsonConfig, (err)=>{
-                if(err) throw err;
-            });
-        }
+       
 
     }
 
+    async generateWxml(){
+        var data = queue.wxml.shift();
+        if(data && /pages|components/.test(data.path)){
+            let wxmlDist =  data.path
+            fs.ensureFileSync(wxmlDist);
+            fs.writeFile(wxmlDist, data.code || '', (err)=>{
+                if(err) throw err;
+            })    
+        }
+       
+    }
+
     async generateCss(file){
-        
         let { name , ext}= path.parse(file);
         let dist = file.replace('src', 'dist');
         if(!isCss(ext)) return;
-
         let wxssDist = path.join(path.dirname(dist), `${name}.wxss`);
         let lessContent = fs.readFileSync(file).toString();
-
         if(ext === '.less'){
             less.render(lessContent, {})
             .then((res)=>{
@@ -168,6 +168,17 @@ class Parser {
         }
         
     }
+    async generatePageJson(){
+        var data = queue.pageConfig.shift();
+        if(data && /pages|app|components/.test(data.path)){
+            let jsonDist = data.path;
+            fs.ensureFileSync(jsonDist);
+            fs.writeFile(jsonDist, data.code || '', (err)=>{
+                if(err) throw err;
+            })  
+        }
+
+    }
     generateProjectConfig(){
         fs.copyFile(
             path.join(inputPath, 'project.config.json'),
@@ -177,8 +188,10 @@ class Parser {
     async codegen(file){
         await this.generateLib(file);
         await this.generateBusinessJs(file);
-        await this.generateCss(file)
-        await this.generateProjectConfig()
+        await this.generateCss(file);
+        await this.generatePageJson()
+        await this.generateWxml();
+       
     }
     watching(){
         //to do 优化

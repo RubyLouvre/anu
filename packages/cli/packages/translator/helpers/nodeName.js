@@ -1,5 +1,5 @@
 let rword = /[^, ]+/g;
-let modules = require('../modules');
+//let modules = require('../modules');
 
 var builtInStr =
     "view,text,button,block,scroll-view,swiper,swiper-item,movable-area,movable-view,cover-view,icon,rich-text," +

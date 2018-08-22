@@ -19,6 +19,7 @@ function miniappPlugin(api) {
                 usedComponents: {},
                 useNativeComponentsList: []
             }
+            modules.sourcePath = opts.filename;
             modules.current = opts.filename.replace(process.cwd(), "");
             if (/\/components\//.test(opts.filename)) {
                 modules.componentType = "Component";
