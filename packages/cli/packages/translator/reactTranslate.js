@@ -33,12 +33,13 @@ module.exports = {
                     false
                 );
             }
+            helpers.render.enter(path, "有状态组件", modules.className, modules);
         },
         exit(path) {
             const methodName = path.node.key.name;
             if (methodName === "render") {
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
-                helpers.render(path, "有状态组件", modules.className, modules);
+                helpers.render.exit(path, "有状态组件", modules.className, modules);
             }
         }
     },

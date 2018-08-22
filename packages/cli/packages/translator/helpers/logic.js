@@ -22,7 +22,7 @@ function wrapText(node) {
 
 function logic(expr) {
     //处理条件指令
-    if (expr.type === "ConditionalExpression") {
+    if (t.isConditionalExpression(expr) || t.isIfStatement(expr)) {
         return condition(expr.test, expr.consequent, expr.alternate);
     } else if (expr.type === "LogicalExpression" && expr.operator === "&&") {
         return condition(expr.left, expr.right);

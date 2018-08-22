@@ -34,10 +34,8 @@ module.exports = function createChineseHack() {
         recovery(html) {
             var unicodeArray = this.unicodeArray
             if (this.unicodeNumber) {
-                console.log("恢复中文", unicodeArray.concat(), this.unicodeNumber)
                 html = html.replace(this.unicodeMather, function (a) {
                     var el =  unicodeArray.shift()
-                    console.log(el)
                     return el;
                 })
                 this.unicodeNumber = 0

@@ -32,7 +32,7 @@ function wxml(code) {
     });
     var html = result.code;
     if (chineseHack.unicodeNumber) {
-        return chineseHack.recovery(html);
+       return chineseHack.recovery(html)
     }
     return html;
 }

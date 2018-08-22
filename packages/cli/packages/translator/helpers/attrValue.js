@@ -4,7 +4,7 @@
 
 
 const t = require("babel-types");
-const CSSProperty = require('../shared/CSSProperty');
+const CSSProperty = require('./shared/CSSProperty');
 const generate = require("babel-generator").default;
 
 function bindEvent(path) {
