@@ -1,13 +1,12 @@
 import React from '../../../../ReactWX';
 import './index.less';
 
-class Audio extends React.Component {
+class P extends React.Component {
     config = {
         title: 'media'
     };
-    
+
     constructor() {
-        super();
         this.state = {
             state: '未开始',
             components: [
@@ -51,5 +50,4 @@ class Audio extends React.Component {
     }
 }
 
-
-export default Audio;
+export default P;

@@ -1,8 +1,7 @@
 import React from '../../../../ReactWX';
 
-class Camera extends React.Component {
+class P extends React.Component {
     constructor() {
-        super();
         this.state = {
             mode: 'normal',
             devicePosition: 'back',
@@ -43,5 +42,4 @@ class Camera extends React.Component {
     }
 }
 
-
-export default Camera;
+export default P;

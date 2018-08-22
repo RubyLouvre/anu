@@ -21,4 +21,3 @@ class P extends React.Component {
 }
 
 export default P;
-// <Dog />

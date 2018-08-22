@@ -1,8 +1,8 @@
 import React from '../../../../ReactWX';
 import './index.less';
+
 class P extends React.Component {
     constructor() {
-        super();
         this.state = {
             background: ['demo-text-1', 'demo-text-2', 'demo-text-3'],
             indicatorDots: true,
@@ -15,14 +15,7 @@ class P extends React.Component {
             nextMargin: 0
         };
     }
-    config = {
-        navigationBarBackgroundColor: '#ffffff',
-        navigationBarTextStyle: '#fff',
-        navigationBarBackgroundColor: '#0088a4',
-        navigationBarTitleText: 'swiper demo',
-        backgroundColor: '#eeeeee',
-        backgroundTextStyle: 'light'
-    };
+
     changeProperty(e) {
         var propertyName = e.currentTarget.dataset.propertyName;
 
@@ -30,26 +23,31 @@ class P extends React.Component {
         newData[propertyName] = e.value;
         this.setState(newData);
     }
+
     changeIndicatorDots(e) {
         this.setState({
             indicatorDots: !this.state.indicatorDots
         });
     }
-    changeAutoplay(e) {
+
+    changeAutoplay() {
         this.setState({
             autoplay: !this.state.autoplay
         });
     }
+
     intervalChange(e) {
         this.setState({
             interval: e.value
         });
     }
+
     durationChange(e) {
         this.setState({
             duration: e.value
         });
     }
+
     render() {
         return (
             <view class="container">

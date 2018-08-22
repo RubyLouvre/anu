@@ -4,7 +4,7 @@ class P extends React.Component {
     config = {
         title: 'media'
     };
-    
+
     constructor() {
         super();
         this.state = {
