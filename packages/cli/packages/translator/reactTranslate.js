@@ -2,7 +2,7 @@ const t = require("babel-types");
 const generate = require("babel-generator").default;
 const nPath = require("path");
 const helpers = require("./helpers");
-//const modules = require("./modules");
+const queue = require("./queue");
 const jsx = require("./utils");
 
 //const Pages = [];
@@ -150,7 +150,16 @@ module.exports = {
             }
             jsonStr = JSON.stringify(config, null, 4);
             
-            modules.pageJsonConfig = jsonStr;
+            
+
+            queue.pageConfig.push({
+                type: 'json',
+                path: modules.sourcePath.replace(/\/src\//, '\/dist\/')
+                                     .replace(/\.js$/, '.json'),
+                code: jsonStr
+            });
+
+           
             
         }
         if (path.node.static) {
@@ -218,7 +227,7 @@ module.exports = {
 
             } else {
                 if (nodeName != "React.template") {
-                    helpers.nodeName(path);
+                    helpers.nodeName(path, modules);
                 }
             }
         }
@@ -269,7 +278,7 @@ module.exports = {
             nodeName !== "React.template"
         ) {
            
-            helpers.nodeName(path);
+            helpers.nodeName(path, modules);
         } else {
             path.node.name.name = "React.template";
         }

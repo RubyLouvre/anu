@@ -3,6 +3,7 @@ const prettifyXml = require('prettify-xml');
 const t = require('babel-types');
 const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
+const queue = require('../queue');
 
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -57,7 +58,16 @@ exports.exit = function(path, type, componentName, modules) {
                         }.wxml" />\n` + wxml;
                 }
             }
-            modules.wxml = wxml; //path.node.params
+
+
+            queue.wxml.push({
+                type: 'wxml',
+                path: modules.sourcePath.replace(/\/src\//, '\/dist\/')
+                                     .replace(/\.js$/, '.wxml'),
+                code: wxml
+            })
+            
+            
         }
 
         default:
