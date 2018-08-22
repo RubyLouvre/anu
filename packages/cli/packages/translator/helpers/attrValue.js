@@ -1,8 +1,5 @@
 //将<view aaa={this.state.xxx}> 转换成 <view aaa="{{xxx}}">
 
-
-
-
 const t = require("babel-types");
 const CSSProperty = require('./shared/CSSProperty');
 const generate = require("babel-generator").default;
@@ -10,7 +7,7 @@ const generate = require("babel-generator").default;
 function bindEvent(path) {
     replaceWithExpr(path, "dispatchEvent", true);
 }
-module.exports = function(path, modules) {
+module.exports = function(path) {
     var expr = path.node.expression;
     var attrName = path.parent.name.name;
     var isEvent = /^(bind|catch)/.test(attrName);
@@ -29,12 +26,10 @@ module.exports = function(path, modules) {
             break;
         case "MemberExpression":
             if (isEvent) {
-                // replaceWithExpr(path, "dispatchEvent", isEvent);
                 bindEvent(
                     path,
                     attrName,
-                    attrValue.replace(/^\s*this\./, ""),
-                    modules
+                    attrValue.replace(/^\s*this\./, "")
                 );
             } else {
                 replaceWithExpr(path, attrValue.replace(/^\s*this\./, ""));
@@ -44,7 +39,7 @@ module.exports = function(path, modules) {
             if (isEvent) {
                 var match = attrValue.match(/this\.(\w+)\.bind/);
                 if (match && match[1]) {
-                    bindEvent(path, attrName, match[1], modules);
+                    bindEvent(path, attrName, match[1]);
                 } else {
                     throwEventValue(attrName, attrValue);
                 }
