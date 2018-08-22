@@ -23,7 +23,7 @@ const typeMap = {
  * @param {Array} properties AssignmentExpression right properties || ClassProperty's property (Array of objectProperty)
  */
 module.exports = function(properties, modules) {
-    var astList = [];
+    let astList = [];
     properties.forEach(function(el) {
         const propertyAst = t.objectProperty(
             t.identifier(el.key.name),

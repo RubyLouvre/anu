@@ -23,9 +23,6 @@ const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
      );
  }
 
-
- const log = console.log;
-
 const isLib = (name)=>{
     return name.toUpperCase() === 'REACTWX';
 }
@@ -40,7 +37,6 @@ const isCss = (ext)=>{
     return defileStyle.includes(ext)
 }
 
-//const scriptRunRootPath = path.resolve(__dirname, '..', '..');
 
 class Parser {
     constructor(entry){

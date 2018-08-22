@@ -6,8 +6,8 @@ var runicode = /\\u[a-f\d]{4}/i,
 module.exports = function createChineseHack() {
     return {
         collect(path) {
-            var valueNode = path.node.value;
-            var target;
+            let valueNode = path.node.value;
+            let target;
             if (valueNode) {
                 if (valueNode.type === "StringLiteral") {
                     // placeholder="中文"
@@ -32,7 +32,7 @@ module.exports = function createChineseHack() {
         unicodeNumber: 0,
         unicodeArray: [],
         recovery(html) {
-            var unicodeArray = this.unicodeArray
+            let unicodeArray = this.unicodeArray
             if (this.unicodeNumber) {
                 html = html.replace(this.unicodeMather, function (a) {
                     var el =  unicodeArray.shift()
