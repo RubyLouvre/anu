@@ -53,7 +53,7 @@ module.exports = {
                ! modules.parentName
             ) {
                 //需要想办法处理无状态组件
-                helpers.render(path, "无状态组件", name, modules);
+                helpers.render.exit(path, "无状态组件", name, modules);
             }
         }
     },
