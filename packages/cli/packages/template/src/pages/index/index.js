@@ -1,7 +1,7 @@
 import React from "../../ReactWX";
 class P extends React.Component {
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         this.state = {
             title: "使用 React 编写小程序",
             pages: [

@@ -39,9 +39,6 @@ const copyNodeModuleToBuildNpm = function(source){
         {
             overwrite: true,
             errorOnExist:true,
-        },
-        function(err){
-            if(err) console.log(err);
         }
     );
 }

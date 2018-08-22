@@ -1,7 +1,8 @@
 import React from "../../../ReactWX";
 import Dog from "../../../components/Dog/index";
 class P extends React.Component {
-    constructor(props) {
+    constructor() {
+        super();
         this.state = {
             array: [
                 {

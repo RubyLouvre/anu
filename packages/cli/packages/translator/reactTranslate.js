@@ -124,34 +124,29 @@ module.exports = {
     ClassProperty(path) {
         var key = path.node.key.name;
         if (key === "config") {
-            //写入page config json
-            let curPath = modules.current;
-            let dest = nPath.dirname(curPath).replace("src", "dist");
-            let baseName = nPath.basename(curPath).replace(/\.(js)$/, "");
-            let destJSON = nPath.join(process.cwd(), dest, `${baseName}.json`);
+            
+            //format json
             const code = generate(path.node.value).code;
             let config = null;
             let jsonStr = "";
-            
             try{
                 config = JSON.parse(code);
             }catch(err){
                 config = eval("(" + code + ")")
             }
             
+            //assign the page routes in app.js
             if(modules.componentType === 'App'){
                 config = Object.assign(config, {pages: modules['appRoute']})
                 delete modules['appRoute'];
             }
-
             if(config.usingComponents){
                 helpers.supportNativeComponent(path, config.usingComponents);
             }
-
             jsonStr = JSON.stringify(config, null, 4);
-           
-            fsExtra.ensureFileSync(destJSON);
-            fs.writeFileSync(destJSON, jsonStr);
+            
+            modules.pageJsonConfig = jsonStr;
+            
         }
         if (path.node.static) {
             var keyValue = t.ObjectProperty(t.identifier(key), path.node.value);

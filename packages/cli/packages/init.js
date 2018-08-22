@@ -52,12 +52,17 @@ const pkgJsonTemplate = {
 const init = (appName)=>{
     checkNameIsOk(appName)
     .then((res)=>{
-        if(res.ok){
-            writeDir(res.appName);
+        return ask()
+    })
+    .then((res)=>{
+        if(res.css === 'scss'){
+            pkgJsonTemplate['devDependencies']['node-sass'] = '^4.9.3';
         }
-        // if(ok){
-        //     return handleUserSelectedParams();
-        // }
+
+       writeDir(appName);
+    })
+    .catch((err)=>{
+        console.log(err);
     })
 }
 

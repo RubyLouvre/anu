@@ -2,6 +2,7 @@ import React from '../../../../ReactWX';
 
 class Image extends React.Component {
     constructor() {
+        super();
         this.state = {
             state: '正在加载',
             src:
@@ -122,6 +123,5 @@ class Image extends React.Component {
     }
 }
 
-Page(React.createPage(Image, 'pages/demo/media/image/index'));
 
 export default Image;

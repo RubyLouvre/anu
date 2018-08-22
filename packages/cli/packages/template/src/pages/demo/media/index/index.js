@@ -7,6 +7,7 @@ class Audio extends React.Component {
     };
     
     constructor() {
+        super();
         this.state = {
             state: '未开始',
             components: [
@@ -50,6 +51,5 @@ class Audio extends React.Component {
     }
 }
 
-Page(React.createPage(Audio, 'pages/demo/form/button/index'));
 
 export default Audio;

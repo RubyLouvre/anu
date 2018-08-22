@@ -2,6 +2,7 @@ import React from '../../../../ReactWX';
 
 class Camera extends React.Component {
     constructor() {
+        super();
         this.state = {
             mode: 'normal',
             devicePosition: 'back',
@@ -42,6 +43,5 @@ class Camera extends React.Component {
     }
 }
 
-Page(React.createPage(Camera, 'pages/demo/form/button/index'));
 
 export default Camera;

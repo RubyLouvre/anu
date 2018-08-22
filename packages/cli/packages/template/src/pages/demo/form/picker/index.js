@@ -1,6 +1,7 @@
 import React from "../../../../ReactWX";
 class P extends React.Component {
-    constructor(props) {
+    constructor() {
+        super();
         this.state = {
             array: ['美国', '中国', '巴西', '日本'],
             objectArray: [
