@@ -44,6 +44,7 @@ class Parser {
     constructor(entry){
         this.entry = entry;
         this.compiler = null;
+        this.statsHash = '';
         this.config = {
             entry: path.resolve(this.entry),
             module: {
@@ -79,6 +80,9 @@ class Parser {
 
     }
     startCodeGen(stats){
+        //webpack watch 可能触发多次 build https://webpack.js.org/api/node/#watching
+        if(this.statsHash === stats.hash) return;
+        this.statsHash = stats.hash;
         let dependencies = stats.compilation.fileDependencies;
         dependencies.forEach((file)=>{
             if(!/node_modules/g.test(file)){
