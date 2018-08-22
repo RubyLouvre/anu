@@ -23,6 +23,7 @@
 确切知道React当前的名字及用户在render有没有定义了h变量（防止命名冲突，冲突改其他单字符）
 13. 支持分包加载， 我们将app.js中的pages抽取出来，做成主包的加载JS，放到app.json中，用户自己写分包内容
 14. 支持公司内部的ABTest与日志收集
+15. 支持ReactWX/miniComponents别名
 
 
 ## 中期目标
