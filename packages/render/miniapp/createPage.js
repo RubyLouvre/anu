@@ -78,7 +78,8 @@ export function createPage(PageClass, path) {
                 updating = false;
                 var data = {
                     state: pageInst.state,
-                    props: pageInst.props
+                    props: pageInst.props,
+                    context: pageInst.context
                 };
                 applyChildComponentData(data, pageInst.allTemplateData || []);
                 $wxPage.setData(data);
@@ -92,7 +93,8 @@ export function createPage(PageClass, path) {
     var config = {
         data: {
             state: instance.state,
-            props: instance.props
+            props: instance.props,
+            context: instance.context
         },
         dispatchEvent: eventSystem.dispatchEvent,
         onLoad: function () {

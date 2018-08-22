@@ -27,7 +27,7 @@ var map = Object.assign({}, builtIn);
     map[el] = "text";
 });
 
-module.exports = function mapTagName(path) {
+module.exports = function mapTagName(path, modules) {
     var orig = path.node.name.name;
     supportNativeComponent(modules.useNativeComponentsList);
     path.node.name.name = map[orig] || "view";

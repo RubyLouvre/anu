@@ -1,6 +1,6 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
-const modules = require("../modules");
+//const modules = require("../modules");
 const jsx = require("../utils");
 const { createElement, createAttribute } = jsx;
 /**
@@ -20,24 +20,24 @@ function wrapText(node) {
     return node;
 }
 
-function logic(expr) {
+function logic(expr, modules) {
     //处理条件指令
     if (t.isConditionalExpression(expr) || t.isIfStatement(expr)) {
-        return condition(expr.test, expr.consequent, expr.alternate);
+        return condition(expr.test, expr.consequent, expr.alternate, modules);
     } else if (expr.type === "LogicalExpression" && expr.operator === "&&") {
-        return condition(expr.left, expr.right);
+        return condition(expr.left, expr.right, null, modules);
     } else if (
         expr.type === "CallExpression" &&
         expr.callee.property.name === "map"
     ) {
         //处理列表指令
         if (expr.arguments.type === "ArrowFunctionExpression") {
-            return loop(expr.callee, expr.arguments);
+            return loop(expr.callee, expr.arguments, modules);
         } else if (
             expr.arguments[0] &&
             expr.arguments[0].type === "FunctionExpression"
         ) {
-            return loop(expr.callee, expr.arguments[0]);
+            return loop(expr.callee, expr.arguments[0], modules);
         } else {
             throw generate(expr.callee.object).code +
                 ".map 后面的必须跟匿名函数或一个函数调用";
@@ -47,11 +47,11 @@ function logic(expr) {
     }
 }
 //处理test ? consequent: alternate 或 test && consequent
-function condition(test, consequent, alternate) {
+function condition(test, consequent, alternate, modules) {
     var ifNode = createElement(
         "block",
         [createAttribute("wx:if", parseExpr(test))],
-        [logic(consequent) || wrapText(consequent)]
+        [logic(consequent, modules) || wrapText(consequent)]
     );
     var ret = ifNode;
     // null就不用创建一个<block>元素了，&&表达式也不需要创建<block>元素
@@ -63,7 +63,7 @@ function condition(test, consequent, alternate) {
         var elseNode = createElement(
             "block",
             [createAttribute("wx:else", "true")],
-            [logic(alternate) || wrapText(alternate)]
+            [logic(alternate, modules) || wrapText(alternate)]
         );
         ret.children.push(elseNode);
     }
@@ -71,7 +71,7 @@ function condition(test, consequent, alternate) {
 }
 
 //处理 callee.map(fn)
-function loop(callee, fn) {
+function loop(callee, fn, modules) {
     var attrs = [];
     attrs.push(createAttribute("wx:for", parseExpr(callee.object)));
     attrs.push(createAttribute("wx:for-item", fn.params[0].name));
@@ -82,7 +82,7 @@ function loop(callee, fn) {
     var body = fn.body.body.find(i => i.type === "ReturnStatement");
     if (body) {
         //循环内部存在循环或条件
-        var child = logic(body.argument);
+        var child = logic(body.argument, modules);
         //如果数组的map迭代器的returnt第一个标签是组件，并且组件有key
         if (child.key) { 
             attrs.push(

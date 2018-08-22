@@ -2,22 +2,23 @@ const t = require("babel-types");
 const generate = require("babel-generator").default;
 const nPath = require("path");
 const helpers = require("./helpers");
-const modules = require("./modules");
-const jsx = require("./jsx/jsx");
-const fs = require("fs");
-const fsExtra = require("fs-extra");
-
+//const modules = require("./modules");
+const jsx = require("./utils");
 
 //const Pages = [];
 //  miniCreateClass(ctor, superClass, methods, statics)
 //参考这里，真想砍人 https://developers.weixin.qq.com/miniprogram/dev/framework/config.html
-
+function getAnu(state){
+    return state.file.opts.anu
+}
 module.exports = {
+    
     ClassDeclaration: helpers.classDeclaration,
     //babel 6 没有ClassDeclaration，只有ClassExpression
     ClassExpression: helpers.classDeclaration,
     ClassMethod: {
-        enter(path) {
+        enter(path, state) {
+            var modules = getAnu(state)
             var methodName = path.node.key.name;
             modules.walkingMethod = methodName;
             if (methodName !== "constructor") {
@@ -35,7 +36,8 @@ module.exports = {
             }
             helpers.render.enter(path, "有状态组件", modules.className, modules);
         },
-        exit(path) {
+        exit(path, state) {
+            var modules = getAnu(state)
             const methodName = path.node.key.name;
             if (methodName === "render") {
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,而是VariableDeclaration
@@ -45,9 +47,10 @@ module.exports = {
     },
     FunctionDeclaration: {
         //enter里面会转换jsx中的JSXExpressionContainer
-        exit(path) {
+        exit(path, state) {
             //函数声明转换为无状态组件
-            var name = path.node.id.name;
+            let modules = getAnu(state)
+            let name = path.node.id.name;
             if (/^[A-Z]/.test(name) && 
                 modules.componentType === "Component" &&
                ! modules.parentName
@@ -57,8 +60,9 @@ module.exports = {
             }
         }
     },
-    ImportDeclaration(path) {
+    ImportDeclaration(path, state) {
         let node = path.node;
+        let modules = getAnu(state)
         let source = node.source.value;
         let specifiers = node.specifiers;
         if (modules.componentType === "App") {
@@ -100,7 +104,7 @@ module.exports = {
         //小程序在定义
         enter() {},
         exit(path) {
-            var declaration = path.node.declaration;
+            let declaration = path.node.declaration;
             if (!declaration) {
                 var map = path.node.specifiers.map(function(el) {
                     return helpers.exportExpr(el.local.name);
@@ -121,12 +125,13 @@ module.exports = {
         }
     },
 
-    ClassProperty(path) {
-        var key = path.node.key.name;
+    ClassProperty(path, state) {
+        let key = path.node.key.name;
+        let modules = getAnu(state)
         if (key === "config") {
             
             //format json
-            const code = generate(path.node.value).code;
+            let code = generate(path.node.value).code;
             let config = null;
             let jsonStr = "";
             try{
@@ -141,7 +146,7 @@ module.exports = {
                 delete modules['appRoute'];
             }
             if(config.usingComponents){
-                helpers.supportNativeComponent(path, config.usingComponents);
+                helpers.supportNativeComponent(config.usingComponents, modules);
             }
             jsonStr = JSON.stringify(config, null, 4);
             
@@ -164,7 +169,8 @@ module.exports = {
         path.remove();
     },
     MemberExpression(path) {},
-    AssignmentExpression(path) {
+    AssignmentExpression(path,state) {
+        let modules = getAnu(state)
         // 转换微信小程序component的properties对象为defaultProps
         let left = path.node.left;
         if (
@@ -177,8 +183,9 @@ module.exports = {
             path.remove();
         }
     },
-    CallExpression(path) {
-        var callee = path.node.callee || Object;
+    CallExpression(path, state) {
+        let callee = path.node.callee || Object;
+        let modules = getAnu(state)
           //移除super()语句
         if (modules.walkingMethod == "constructor") {
             if (callee.type === "Super") {
@@ -190,8 +197,9 @@ module.exports = {
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     JSXOpeningElement: {
         //  enter: function(path) {},
-        enter: function(path) {
-            var nodeName = path.node.name.name;
+        enter: function(path, state) {
+            let modules = getAnu(state)
+            let nodeName = path.node.name.name;
             if (modules.importComponents[nodeName]) {
                 modules.usedComponents[nodeName] = true;
                 path.node.name.name = "React.template";
@@ -215,8 +223,9 @@ module.exports = {
             }
         }
     },
-    JSXAttribute: function(path) {
-        var attrName = path.node.name.name;
+    JSXAttribute: function(path, state) {
+        let modules = getAnu(state)
+        let attrName = path.node.name.name;
         if (/^(?:on|catch)[A-Z]/.test(attrName)) {
             var n = attrName.charAt(0) == "o" ? 2 : 5;
             var value = jsx.createUUID();
@@ -252,8 +261,9 @@ module.exports = {
             }
         }
     },
-    JSXClosingElement: function(path) {
-        var nodeName = path.node.name.name;
+    JSXClosingElement: function(path, state) {
+        let modules = getAnu(state)
+        let nodeName = path.node.name.name;
         if (
             !modules.importComponents[nodeName] &&
             nodeName !== "React.template"

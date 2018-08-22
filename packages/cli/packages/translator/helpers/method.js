@@ -1,5 +1,4 @@
 const t = require("babel-types");
-const template = require("babel-template");
 
 module.exports = function(path, methodName) {
     //将类方法变成对象属性

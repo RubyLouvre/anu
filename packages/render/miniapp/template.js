@@ -35,6 +35,7 @@ export function onComponentUpdate(fiber) {
         var newData = {
             props: instance.props,
             state: instance.state,
+            context: instance.context,
             templatedata: inputProps.templatedata //template元素的
         };
         //注入

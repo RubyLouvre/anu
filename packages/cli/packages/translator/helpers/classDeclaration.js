@@ -2,18 +2,20 @@ const t = require("babel-types");
 const template = require("babel-template");
 const modules = require("../modules");
 const generate = require("babel-generator").default;
-
+function getAnu(state){
+    return state.file.opts.anu
+}
 module.exports = {
-    enter(path) {
+    enter(path, state) {
         //重置数据
-
+       var modules = getAnu(state)
         modules.className = path.node.id.name;
         modules.parentName = generate(path.node.superClass).code || "Object";
         modules.classCode = ("c" + Math.random()).replace(/0\./, "");
     },
-    exit(path) {
+    exit(path, state) {
         // 将类表式变成函数调用
-
+        var modules = getAnu(state)
         if (!modules.ctorFn) {
             modules.ctorFn = template("function x(){b}")({
                 x: t.identifier(modules.className),

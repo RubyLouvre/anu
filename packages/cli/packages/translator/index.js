@@ -3,51 +3,24 @@ const chalk = require("chalk");
 const path = require("path");
 const fs = require("fs-extra");
 const webpack = require('webpack');
-//const sass = require('node-sass');
-//const chokidar = require('chokidar');
 const MemoryFS = require("memory-fs");
 const less = require('less');
 const transform = require("./transform");
 const helpers = require('./helpers');
-const modules = require("./modules");
 let cwd = process.cwd();
 let inputPath = path.join(cwd, 'src');
 let outputPath = path.join(cwd, 'dist');
 let entry = path.join(inputPath, "app.js");
 const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
 
-
-const log = console.log;
-
-// if (nodejsVersion < 7) {
-//     console.log(
-//         "当前nodejs版本为 " +
-//         chalk.red(process.version) +
-//         ", 请保证 >= " +
-//         chalk.bold("7")
-//     );
-// }
-
-const ignoreStyles = function() {
-    return {
-        visitor: {
-            ImportDeclaration: {
-                enter(path, {
-                    opts
-                }) {
-                    const source = path.node.source.value;
-                    if (/\.(less|scss)/.test(source)) {
-                        path.remove();
-                    }
-                }
-            }
-        }
-    };
-};
-
-const ignore = [
-    'node_modules'
-]
+ if (nodejsVersion < 7) {
+     console.log(
+        "当前nodejs版本为 " +
+       chalk.red(process.version) +
+        ", 请保证 >= " +
+         chalk.bold("7")
+     );
+ }
 
 
 
@@ -71,6 +44,7 @@ class Parser {
     constructor(entry){
         this.entry = entry;
         this.compiler = null;
+        this.statsHash = '';
         this.config = {
             entry: path.resolve(this.entry),
             module: {
@@ -106,6 +80,9 @@ class Parser {
 
     }
     startCodeGen(stats){
+        //webpack watch 可能触发多次 build https://webpack.js.org/api/node/#watching
+        if(this.statsHash === stats.hash) return;
+        this.statsHash = stats.hash;
         let dependencies = stats.compilation.fileDependencies;
         dependencies.forEach((file)=>{
             if(!/node_modules/g.test(file)){
