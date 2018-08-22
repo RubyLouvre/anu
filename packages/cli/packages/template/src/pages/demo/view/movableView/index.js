@@ -100,5 +100,4 @@ class P extends React.Component {
         );
     }
 }
-Page(React.createPage(P, "pages/demo/view/movableView/index"));
 export default P;
