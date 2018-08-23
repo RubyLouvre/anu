@@ -1,10 +1,6 @@
 import React from "../../../../ReactWX";
 import './index.less';
 class P extends React.Component {
-    constructor() {
-        
-       
-    }
     config = {
         "navigationBarBackgroundColor": "#ffffff",
         "navigationBarTextStyle": "#fff",
