@@ -1,6 +1,5 @@
 const t = require("babel-types");
 const generate = require("babel-generator").default;
-//const modules = require("../modules");
 const jsx = require("../utils");
 const { createElement, createAttribute } = jsx;
 /**
