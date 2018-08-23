@@ -3,7 +3,7 @@ const generate = require("babel-generator").default;
 const nPath = require("path");
 const helpers = require("./helpers");
 const queue = require("./queue");
-const jsx = require("./utils");
+const utils = require("./utils");
 
 function getAnu(state) {
     return state.file.opts.anu;
@@ -152,7 +152,9 @@ module.exports = {
                 delete modules["appRoute"];
             }
             if (config.usingComponents) {
-                helpers.supportNativeComponent(config.usingComponents, modules);
+                //将页面配置对象中的usingComponents对象中的组件名放进modules.customComponents
+                //数组中，并将对应的文件复制到dist目录中
+                utils.copyCustomComponents(config.usingComponents, modules);
             }
             jsonStr = JSON.stringify(config, null, 4);
 
@@ -216,9 +218,9 @@ module.exports = {
                 path.node.name.name = "React.template";
                 var attributes = path.node.attributes;
                 attributes.push(
-                    jsx.createAttribute(
+                    utils.createAttribute(
                         "templatedata",
-                        "data" + jsx.createUUID()
+                        "data" + utils.createUUID()
                     ),
                     t.JSXAttribute(
                         t.JSXIdentifier("is"),
@@ -235,13 +237,14 @@ module.exports = {
     JSXAttribute: function(path, state) {
         let modules = getAnu(state);
         let attrName = path.node.name.name;
+        let attrValue = path.node.value;
         var attrs = path.parentPath.node.attributes;
         if (/^(?:on|catch)[A-Z]/.test(attrName)) {
             var n = attrName.charAt(0) == "o" ? 2 : 5;
-            var value = jsx.createUUID();
+            var value = utils.createUUID();
             var name = `data-${attrName.slice(n).toLowerCase()}-fn`;
 
-            attrs.push(jsx.createAttribute(name, value));
+            attrs.push(utils.createAttribute(name, value));
             if (!attrs.setClassCode) {
                 attrs.setClassCode = true;
                 var keyValue;
@@ -255,7 +258,7 @@ module.exports = {
                     }
                 }
                 attrs.push(
-                    jsx.createAttribute("data-class-code", modules.classCode),
+                    utils.createAttribute("data-class-code", modules.classCode),
                     t.JSXAttribute(
                         t.JSXIdentifier("data-instance-code"),
                         t.jSXExpressionContainer(
@@ -269,10 +272,10 @@ module.exports = {
                     );
                 }
             }
-        }else if (attrName === "style") {
-            var expr = path.node.value.expression
-            var styleType = expr && expr.type;
-            var styleRandName = "style" + jsx.createUUID();
+        }else if (attrName === "style" && t.isJSXExpressionContainer(attrValue)) {
+            var expr = attrValue.expression
+            var styleType = expr.type;
+            var styleRandName = "style" + utils.createUUID();
             if (styleType === "Identifier") {
                 // 处理形如 <div style={formItemStyle}></div> 的style结构
                 var styleName = expr.name;
@@ -289,7 +292,7 @@ module.exports = {
                 path.remove();
             }else if (styleType === "ObjectExpression") {
                 // 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
-                var styleValue = generate(path.node.value.expression).code;
+                var styleValue = generate(expr).code;
                 attrs.push(
                     t.JSXAttribute(
                         t.JSXIdentifier("style"),

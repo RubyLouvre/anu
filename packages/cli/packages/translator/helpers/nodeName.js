@@ -11,11 +11,10 @@ builtInStr.replace(rword, function(el) {
 });
 
 //兼容小程序自定义组件
-const supportNativeComponent = function(useNativeComponentsList){
-    useNativeComponentsList.forEach(function(el){
-        builtIn[el] = el;
+function addCustomComponents(customComponents){
+    customComponents.forEach(function(el){
+        map[el] = el;
     });
-    map = Object.assign({}, builtIn);
 }
 
 let map = Object.assign({}, builtIn);
@@ -28,6 +27,6 @@ let map = Object.assign({}, builtIn);
 
 module.exports = function mapTagName(path, modules) {
     var orig = path.node.name.name;
-    supportNativeComponent(modules.useNativeComponentsList);
+    addCustomComponents(modules.customComponents);
     path.node.name.name = map[orig] || "view";
 };
