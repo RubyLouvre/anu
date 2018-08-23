@@ -38,6 +38,17 @@ const isCss = (ext)=>{
     return defileStyle.includes(ext)
 }
 
+const getAlias = ()=>{
+    //webpack分析入口依赖时，若npm无路径，会被当成npm模块
+    let aliasField = require( path.join(cwd, 'package.json') ).mpreact.alias;
+    let aliasConfig = {};
+    for(let key in aliasField){
+        aliasConfig[key] = path.resolve(cwd, aliasField[key])
+    }
+    return aliasConfig || {};
+}
+
+
 class Parser {
     constructor(entry){
         this.entry = entry;
@@ -63,9 +74,9 @@ class Parser {
                 ]
 
             },
-            plugins: [
-               // new webpack.IgnorePlugin()
-            ]
+            resolve: {
+               alias: getAlias()
+            }
         }
     }
     async parse(){
@@ -82,6 +93,14 @@ class Parser {
         if(this.statsHash === stats.hash) return;
         this.statsHash = stats.hash;
         let dependencies = stats.compilation.fileDependencies;
+
+        // let errors = stats.toJson().errors;
+        // for(let i = 0; i <  errors.length; i++){
+        //     if(/SyntaxError\:/.test(errors[i])){
+        //         throw errors[i];
+        //     }
+        // }
+       
         dependencies.forEach((file)=>{
             if(!/node_modules/g.test(file)){
                 this.codegen(file);

@@ -1,4 +1,4 @@
-import React from '../../../../ReactWX';
+import React from 'ReactWX';
 
 class Image extends React.Component {
     constructor() {

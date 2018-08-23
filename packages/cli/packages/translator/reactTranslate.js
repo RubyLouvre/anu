@@ -87,23 +87,11 @@ module.exports = {
         specifiers.forEach(item => {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
             modules.importComponents[item.local.name] = source;
-            if (item.local.name === "React") {
-                let from = nPath.dirname(
-                    modules.current.replace("src", "dist")
-                );
-                let to = "/dist/";
-                let relativePath = nPath.relative(from, to);
-                let pathStart = "";
-                if (relativePath === "") {
-                    pathStart = "./";
-                }
-                node.source.value = `${pathStart}${nPath.join(
-                    relativePath,
-                    nPath.basename(node.source.value)
-                )}`;
-            }
+            
+            //process alias for package.json alias field;
+            helpers.resolveAlias(path, modules);
+           
         });
-
         helpers.copyNpmModules(modules.current, source, node);
     },
 
