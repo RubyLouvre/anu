@@ -1,4 +1,4 @@
-import React from 'ReactWX';
+import React from '@react';
 
 class Image extends React.Component {
     constructor() {
