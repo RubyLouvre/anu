@@ -1,4 +1,5 @@
 module.exports = {
     wxml: [],
-    pageConfig: []
+    pageConfig: [],
+    wxmlData: {}
 }
