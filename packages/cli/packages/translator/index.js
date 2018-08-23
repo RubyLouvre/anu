@@ -23,7 +23,6 @@ const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
      );
  }
 
-const log = console.log;
 
 const isLib = (name)=>{
     return name.toUpperCase() === 'REACTWX';
@@ -83,7 +82,6 @@ class Parser {
         if(this.statsHash === stats.hash) return;
         this.statsHash = stats.hash;
         let dependencies = stats.compilation.fileDependencies;
-        
         dependencies.forEach((file)=>{
             if(!/node_modules/g.test(file)){
                 this.codegen(file);
@@ -107,7 +105,6 @@ class Parser {
     }
 
     async generateBusinessJs(file){
-        
         let {name, ext} = path.parse(file);
         let dist = file.replace('src', 'dist');
         if( isLib(name) || !isJs(ext) ) return;
@@ -119,18 +116,16 @@ class Parser {
             });
         }
     }
-
     generateWxml(file){
         return new Promise((resolve, reject)=>{
             let {name, ext} = path.parse(file);
-            
             if( isLib(name) || !isJs(ext) ) return;
-            let dist = file.replace('src', 'dist')
-                           .replace(/\.js$/, '.wxml');
-            let data = queue.wxmlData[file];
-            if(data && /pages|components/.test(file)){
+            let data = queue.wxml.shift();
+            if(!data) return;
+            let dist = data.path;
+            if(/pages|components/.test(dist)){
                 fs.ensureFileSync(dist);
-                fs.writeFile(dist, data || '', (err)=>{
+                fs.writeFile(dist, data.code || '', (err)=>{
                     err ? reject(err) : resolve();
                 })  
             }
@@ -141,20 +136,18 @@ class Parser {
         return new Promise((resolve, reject)=>{
             let {name, ext} = path.parse(file);
             if( isLib(name) || !isJs(ext) ) return;
-            let dist = file.replace('src', 'dist')
-                           .replace(/\.js$/, '.json');
             let data = queue.pageConfig.shift();
-            if(data && /pages|app|components/.test(file)){
+            if(!data) return;
+            let dist = data.path;
+            if(/pages|app|components/.test(dist)){
                 fs.ensureFileSync(dist);
                 fs.writeFile(dist, data.code || '', (err)=>{
                     err ? reject(err) : resolve();
                 })  
             }
-            
         });
 
     }
-
     generateCss(file){
         return new Promise((resolve, reject)=>{
             let { name , ext} = path.parse(file);
@@ -197,21 +190,18 @@ class Parser {
         )
     }
     async codegen(file){
-        
-        await this.generateBusinessJs(file)
+        await this.generateBusinessJs(file);
         Promise.all([
             this.generateWxml(file),
             this.generateLib(file),
             this.generatePageJson(file),
-            
-            this.generateCss(file)
+            this.generateCss(file),
         ])
         .catch((err)=>{
             if(err){
                 console.log(chalk.red('ERR_MSG: '+ err));
             }
         })
-        
        
     }
     watching(){
