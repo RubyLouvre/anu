@@ -2430,8 +2430,12 @@ function transform(obj) {
   }).join(';');
 }
 function collectStyle(obj, props, key) {
-  var str = transform.call(this, obj);
-  props[key] = str;
+  if (props) {
+    var str = transform.call(this, obj);
+    props[key] = str;
+  } else {
+    console.warn('props 为空');
+  }
   return obj;
 }
 

@@ -10,17 +10,21 @@ function transform(obj) {
   return Object.keys(obj)
     .map(item => {
       let value = obj[item].toString();
-      value= value.replace(/(\d+)px/gi, (str, match) => {
+      value = value.replace(/(\d+)px/gi, (str, match) => {
         return this.pxTransform(match);
-      })
+      });
       return hyphen(item) + ': ' + value;
     })
     .join(';');
 }
 
 export function collectStyle(obj, props, key) {
-  
-  var str = transform.call(this, obj);
-  props[key] = str;
+  if (props) {
+    var str = transform.call(this, obj);
+    props[key] = str;
+  } else {
+    console.warn('props 为空');
+  }
+
   return obj;
 }

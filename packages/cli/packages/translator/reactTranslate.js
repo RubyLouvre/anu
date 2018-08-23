@@ -269,9 +269,9 @@ module.exports = {
                     );
                 }
             }
-        }else if (attrName === "style") {
+        }else if (attrName === "style" && t.isJSXExpressionContainer(path.node.value)) {
             var expr = path.node.value.expression
-            var styleType = expr && expr.type;
+            var styleType = expr.type;
             var styleRandName = "style" + jsx.createUUID();
             if (styleType === "Identifier") {
                 // 处理形如 <div style={formItemStyle}></div> 的style结构
