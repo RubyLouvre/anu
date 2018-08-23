@@ -1,4 +1,4 @@
-import React from "../../ReactWX";
+import React from "ReactWX";
 import Animal from '../Animal/index';
 
 class Dog extends Animal {

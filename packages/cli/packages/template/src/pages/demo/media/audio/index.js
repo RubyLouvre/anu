@@ -1,4 +1,4 @@
-import React from '../../../../ReactWX';
+import React from 'ReactWX';
 
 class Audio extends React.Component {
     constructor() {

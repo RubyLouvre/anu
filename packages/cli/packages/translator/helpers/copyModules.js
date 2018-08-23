@@ -1,6 +1,7 @@
 const nPath = require('path');
 const fsExtra = require('fs-extra');
 
+
 const isNpm = function(path){
     const toString = Object.prototype.toString;
     if(toString.call(path) !== '[object String]' || !path) return false;
@@ -14,6 +15,13 @@ const isAbsolute = function(path){
 const isBuildInLibs = function(name){
     let libs = new Set(require('repl')._builtinLibs);
     return libs.has(name);
+}
+
+const isAlias = (name)=>{
+    const cwd = process.cwd();
+    let aliasField = require( nPath.join(cwd, 'package.json') ).mpreact.alias;
+    let aliasAray = Object.keys(aliasField);
+    return aliasAray.includes(name);
 }
 
 const copyNodeModuleToBuildNpm = function(source){
@@ -64,7 +72,7 @@ const getNodeModulePath = function(moduleCurrent, source){
 
 
 module.exports = function(moduleCurrent, source, node){
-    if(isAbsolute(source) || isBuildInLibs(source) || !isNpm(source)) return;
+    if(isBuildInLibs(source) || isAlias(source) || !isNpm(source)) return;
     copyNodeModuleToBuildNpm(source); 
     node.source.value = getNodeModulePath(moduleCurrent, source);
 }
