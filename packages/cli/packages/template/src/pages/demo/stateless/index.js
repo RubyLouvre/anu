@@ -1,4 +1,4 @@
-import React from "../../ReactWX"
+import React from "@react"
 import Aaa from "../../../components/Aaa/index"
 class P extends React.Component {
     constructor() {

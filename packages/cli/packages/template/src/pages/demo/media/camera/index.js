@@ -1,4 +1,4 @@
-import React from '../../../../ReactWX';
+import React from '@react';
 
 class Camera extends React.Component {
     constructor() {
