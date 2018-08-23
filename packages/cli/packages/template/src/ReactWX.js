@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-22
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-23
  * IE9+
  */
 
@@ -1917,7 +1917,8 @@ function createPage(PageClass, path) {
                 updating = false;
                 var data = {
                     state: pageInst.state,
-                    props: pageInst.props
+                    props: pageInst.props,
+                    context: pageInst.context
                 };
                 applyChildComponentData(data, pageInst.allTemplateData || []);
                 $wxPage.setData(data);
@@ -1931,7 +1932,8 @@ function createPage(PageClass, path) {
     var config = {
         data: {
             state: instance.state,
-            props: instance.props
+            props: instance.props,
+            context: instance.context
         },
         dispatchEvent: eventSystem.dispatchEvent,
         onLoad: function onLoad() {
@@ -2003,6 +2005,7 @@ function onComponentUpdate(fiber) {
         var newData = {
             props: instance.props,
             state: instance.state,
+            context: instance.context,
             templatedata: inputProps.templatedata
         };
         newData.props.instanceCode = instanceCode;
@@ -2408,8 +2411,28 @@ function initNativeApi(ReactWX) {
     if (typeof getApp == "function") {
         ReactWX.getApp = getApp;
     }
-    ReactWX.initPxTransform = initPxTransform.bind(ReactWX);
+    ReactWX.initPxTransform = initPxTransform.bind(ReactWX)({ designWidth: 750, deviceRatio: defaultDeviceRatio });
     ReactWX.pxTransform = pxTransform.bind(ReactWX);
+}
+
+var rhyphen = /([a-z\d])([A-Z]+)/g;
+function hyphen(target) {
+  return target.replace(rhyphen, '$1-$2').toLowerCase();
+}
+function transform(obj) {
+  var _this = this;
+  return Object.keys(obj).map(function (item) {
+    var value = obj[item].toString();
+    value = value.replace(/(\d+)px/gi, function (str, match) {
+      return _this.pxTransform(match);
+    });
+    return hyphen(item) + ': ' + value;
+  }).join(';');
+}
+function collectStyle(obj, props, key) {
+  var str = transform.call(this, obj);
+  props[key] = str;
+  return obj;
 }
 
 function cleanChildren(array) {
@@ -2557,34 +2580,35 @@ var React = void 0;
 var classCache = eventSystem.classCache;
 var render$1 = Renderer$1.render;
 React = win.React = win.ReactDOM = {
-    eventSystem: eventSystem,
-    miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
-        var clazz = miniCreateClass.apply(null, arguments);
-        var uuid = clazz.prototype.classCode;
-        classCache[uuid] = clazz;
-        return clazz;
-    },
-    findDOMNode: function findDOMNode(fiber) {
-        console.log("小程序不支持findDOMNode");
-    },
-    version: "1.4.6",
-    render: render$1,
-    hydrate: render$1,
-    template: template,
-    createPage: createPage,
-    Fragment: Fragment,
-    PropTypes: PropTypes,
-    Children: Children,
-    createPortal: createPortal,
-    createContext: createContext,
-    Component: Component,
-    createRef: createRef,
-    forwardRef: forwardRef,
-    createElement: createElement,
-    cloneElement: cloneElement,
-    PureComponent: PureComponent,
-    isValidElement: isValidElement,
-    createFactory: createFactory
+  eventSystem: eventSystem,
+  miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
+    var clazz = miniCreateClass.apply(null, arguments);
+    var uuid = clazz.prototype.classCode;
+    classCache[uuid] = clazz;
+    return clazz;
+  },
+  findDOMNode: function findDOMNode(fiber) {
+    console.log('小程序不支持findDOMNode');
+  },
+  version: '1.4.6',
+  render: render$1,
+  hydrate: render$1,
+  template: template,
+  createPage: createPage,
+  Fragment: Fragment,
+  PropTypes: PropTypes,
+  Children: Children,
+  createPortal: createPortal,
+  createContext: createContext,
+  Component: Component,
+  createRef: createRef,
+  forwardRef: forwardRef,
+  createElement: createElement,
+  cloneElement: cloneElement,
+  PureComponent: PureComponent,
+  isValidElement: isValidElement,
+  createFactory: createFactory,
+  collectStyle: collectStyle
 };
 initNativeApi(React);
 var React$1 = React;

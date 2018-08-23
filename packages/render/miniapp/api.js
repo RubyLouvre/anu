@@ -134,6 +134,6 @@ export function initNativeApi(ReactWX) {
     if (typeof getApp == "function") {
         ReactWX.getApp = getApp;
     }
-    ReactWX.initPxTransform = initPxTransform.bind(ReactWX);
+    ReactWX.initPxTransform = initPxTransform.bind(ReactWX)({designWidth: 750, deviceRatio: defaultDeviceRatio});
     ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
