@@ -23,7 +23,7 @@ const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
      );
  }
 
-
+const log = console.log;
 
 const isLib = (name)=>{
     return name.toUpperCase() === 'REACTWX';
@@ -83,6 +83,7 @@ class Parser {
         if(this.statsHash === stats.hash) return;
         this.statsHash = stats.hash;
         let dependencies = stats.compilation.fileDependencies;
+        
         dependencies.forEach((file)=>{
             if(!/node_modules/g.test(file)){
                 this.codegen(file);
@@ -122,13 +123,14 @@ class Parser {
     generateWxml(file){
         return new Promise((resolve, reject)=>{
             let {name, ext} = path.parse(file);
+            
             if( isLib(name) || !isJs(ext) ) return;
             let dist = file.replace('src', 'dist')
                            .replace(/\.js$/, '.wxml');
-            let data = queue.wxml.shift();
+            let data = queue.wxmlData[file];
             if(data && /pages|components/.test(file)){
                 fs.ensureFileSync(dist);
-                fs.writeFile(dist, data.code || '', (err)=>{
+                fs.writeFile(dist, data || '', (err)=>{
                     err ? reject(err) : resolve();
                 })  
             }
@@ -198,9 +200,10 @@ class Parser {
         
         await this.generateBusinessJs(file)
         Promise.all([
+            this.generateWxml(file),
             this.generateLib(file),
             this.generatePageJson(file),
-            this.generateWxml(file),
+            
             this.generateCss(file)
         ])
         .catch((err)=>{

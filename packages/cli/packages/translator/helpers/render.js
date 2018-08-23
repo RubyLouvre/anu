@@ -60,6 +60,9 @@ exports.exit = function(path, type, componentName, modules) {
             }
 
 
+           
+            queue.wxmlData[modules.sourcePath] = wxml;
+
             queue.wxml.push({
                 type: 'wxml',
                 path: modules.sourcePath.replace(/\/src\//, '\/dist\/')
