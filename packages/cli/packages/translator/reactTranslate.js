@@ -197,13 +197,25 @@ module.exports = {
         }
     },
     CallExpression(path, state) {
-        let callee = path.node.callee || Object;
+        let node = path.node;
+        let args = node.arguments;
+        let callee = node.callee;
         let modules = getAnu(state);
         //移除super()语句
         if (modules.walkingMethod == "constructor") {
             if (callee.type === "Super") {
                 path.remove();
+                return;
             }
+        }
+        if (
+            path.parentPath.type === "JSXExpressionContainer" &&
+            callee.type == "MemberExpression" &&
+            callee.property.name === "map" &&
+            !args[1] &&
+            args[0].type === "FunctionExpression"
+        ) {
+            args[1] = t.identifier("this");
         }
     },
 
@@ -272,8 +284,11 @@ module.exports = {
                     );
                 }
             }
-        }else if (attrName === "style" && t.isJSXExpressionContainer(attrValue)) {
-            var expr = attrValue.expression
+        } else if (
+            attrName === "style" &&
+            t.isJSXExpressionContainer(attrValue)
+        ) {
+            var expr = attrValue.expression;
             var styleType = expr.type;
             var styleRandName = "style" + utils.createUUID();
             if (styleType === "Identifier") {
@@ -290,7 +305,7 @@ module.exports = {
                     )
                 );
                 path.remove();
-            }else if (styleType === "ObjectExpression") {
+            } else if (styleType === "ObjectExpression") {
                 // 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
                 var styleValue = generate(expr).code;
                 attrs.push(
