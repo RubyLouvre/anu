@@ -23,6 +23,8 @@ const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
      );
  }
 
+
+
 const isLib = (name)=>{
     return name.toUpperCase() === 'REACTWX';
 }
@@ -36,7 +38,6 @@ const isCss = (ext)=>{
     ];
     return defileStyle.includes(ext)
 }
-
 
 class Parser {
     constructor(entry){
@@ -77,7 +78,7 @@ class Parser {
       })
 
     }
-    async startCodeGen(stats){
+    startCodeGen(stats){
         //webpack watch 可能触发多次 build https://webpack.js.org/api/node/#watching
         if(this.statsHash === stats.hash) return;
         this.statsHash = stats.hash;
@@ -87,94 +88,106 @@ class Parser {
                 this.codegen(file);
             }
         })
-       
-        
-      
         
         this.generateProjectConfig();
     }
-    async generateLib(file){
-        let {name, ext} = path.parse(file);
-        let dist = file.replace('src', 'dist');
-        if(isLib(name) && isJs(ext)){
-            let result = helpers.moduleToCjs.byPath(file);
-            fs.ensureFileSync(dist);
-            fs.writeFile(dist, result.code, (err)=>{
-                 if(err) throw err;
-            })
-        }
+    generateLib(file){
+        return new Promise((resolve, reject)=>{
+            let {name, ext} = path.parse(file);
+            let dist = file.replace('src', 'dist');
+            if(isLib(name) && isJs(ext)){
+                let result = helpers.moduleToCjs.byPath(file);
+                fs.ensureFileSync(dist);
+                fs.writeFile(dist, result.code, (err)=>{
+                    err ? reject(err) : resolve();
+                })
+            }
+        })
     }
+
     async generateBusinessJs(file){
+        
         let {name, ext} = path.parse(file);
         let dist = file.replace('src', 'dist');
         if( isLib(name) || !isJs(ext) ) return;
-        const code = await transform(file);
-            
+        const code = transform(file);
         if (/\/(?:pages|app|components)/.test(file)){
             fs.ensureFileSync(dist);
             fs.writeFile(dist, code, (err)=>{
-                if(err) throw err;
+                if(err) console.log(err);
             });
         }
-       
+    }
+
+    generateWxml(file){
+        return new Promise((resolve, reject)=>{
+            let {name, ext} = path.parse(file);
+            if( isLib(name) || !isJs(ext) ) return;
+            let dist = file.replace('src', 'dist')
+                           .replace(/\.js$/, '.wxml');
+            let data = queue.wxml.shift();
+            if(data && /pages|components/.test(file)){
+                fs.ensureFileSync(dist);
+                fs.writeFile(dist, data.code || '', (err)=>{
+                    err ? reject(err) : resolve();
+                })  
+            }
+        })
+    }
+
+    generatePageJson(file){
+        return new Promise((resolve, reject)=>{
+            let {name, ext} = path.parse(file);
+            if( isLib(name) || !isJs(ext) ) return;
+            let dist = file.replace('src', 'dist')
+                           .replace(/\.js$/, '.json');
+            let data = queue.pageConfig.shift();
+            if(data && /pages|app|components/.test(file)){
+                fs.ensureFileSync(dist);
+                fs.writeFile(dist, data.code || '', (err)=>{
+                    err ? reject(err) : resolve();
+                })  
+            }
+            
+        });
 
     }
 
-    async generateWxml(){
-        var data = queue.wxml.shift();
-        if(data && /pages|components/.test(data.path)){
-            let wxmlDist =  data.path
-            fs.ensureFileSync(wxmlDist);
-            fs.writeFile(wxmlDist, data.code || '', (err)=>{
-                if(err) throw err;
-            })    
-        }
-       
-    }
+    generateCss(file){
+        return new Promise((resolve, reject)=>{
+            let { name , ext} = path.parse(file);
+            let dist = file.replace('src', 'dist');
+            if(!isCss(ext)) return;
+            let wxssDist = path.join(path.dirname(dist), `${name}.wxss`);
+            let lessContent = fs.readFileSync(file).toString();
+            if(ext === '.less'){
+                less.render(lessContent, {})
+                .then((res)=>{
+                    fs.writeFile(wxssDist, res.css, (err)=>{
+                        err ? reject(err) : resolve();
+                    });
+                })
+                .catch((err)=>{
+                    throw err;
+                })
+            }
 
-    async generateCss(file){
-        let { name , ext}= path.parse(file);
-        let dist = file.replace('src', 'dist');
-        if(!isCss(ext)) return;
-        let wxssDist = path.join(path.dirname(dist), `${name}.wxss`);
-        let lessContent = fs.readFileSync(file).toString();
-        if(ext === '.less'){
-            less.render(lessContent, {})
-            .then((res)=>{
-                fs.writeFile(wxssDist, res.css, (err)=>{
+            
+            if(ext === '.scss'){
+                const sass = require(path.join(cwd, 'node_modules', 'node-sass'));
+                sass.render({
+                    file: file
+                }, (err, result)=>{
                     if(err) throw err;
-                });
-            })
-            .catch((err)=>{
-                console.log(err)
-            })
-        }
-
-        
-        if(ext === '.scss'){
-            const sass = require(path.join(cwd, 'node_modules', 'node-sass'));
-            sass.render({
-                file: file
-            }, (err, result)=>{
-                if(err) throw err;
-                fs.writeFile(wxssDist, result.css.toString(), (err)=>{
-                    if(err) throw err;
-                });
-            })
-        }
+                    fs.writeFile(wxssDist, result.css.toString(), (err)=>{
+                        err ? reject(err) : resolve();
+                    });
+                })
+            }
+        })
         
     }
-    async generatePageJson(){
-        var data = queue.pageConfig.shift();
-        if(data && /pages|app|components/.test(data.path)){
-            let jsonDist = data.path;
-            fs.ensureFileSync(jsonDist);
-            fs.writeFile(jsonDist, data.code || '', (err)=>{
-                if(err) throw err;
-            })  
-        }
-
-    }
+    
     generateProjectConfig(){
         fs.copyFile(
             path.join(inputPath, 'project.config.json'),
@@ -182,15 +195,23 @@ class Parser {
         )
     }
     async codegen(file){
-        await this.generateLib(file);
-        await this.generateBusinessJs(file);
-        await this.generateCss(file);
-        await this.generatePageJson()
-        await this.generateWxml();
+        
+        await this.generateBusinessJs(file)
+        Promise.all([
+            this.generateLib(file),
+            this.generatePageJson(file),
+            this.generateWxml(file),
+            this.generateCss(file)
+        ])
+        .catch((err)=>{
+            if(err){
+                console.log(chalk.red('ERR_MSG: '+ err));
+            }
+        })
+        
        
     }
     watching(){
-        //to do 优化
         const watching = this.compiler.watch({
             aggregateTimeout: 300,
             poll: undefined
