@@ -1,4 +1,4 @@
-import React from './ReactWX';
+import React from '@react';
 import './pages/index/index';
 import './pages/demo/stateless/index';
 import './pages/demo/loop/index';

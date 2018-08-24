@@ -1,6 +1,5 @@
-import React from '../../../../ReactWX';
-import './index.less';
-
+import React from "@react";
+import "./index.less";
 class P extends React.Component {
     constructor() {
         this.state = {

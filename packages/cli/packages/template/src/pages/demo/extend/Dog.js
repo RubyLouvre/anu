@@ -1,4 +1,4 @@
-import React from '../../../ReactWX';
+import React from '@react';
 import Dog from '../../../components/Dog/index';
 
 class P extends React.Component {

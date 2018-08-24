@@ -1,6 +1,5 @@
-import React from '../../../ReactWX';
-import Dog from '../../../components/Dog/index';
-
+import React from "@react";
+import Dog from "../../../components/Dog/index";
 class P extends React.Component {
     constructor() {
         this.state = {

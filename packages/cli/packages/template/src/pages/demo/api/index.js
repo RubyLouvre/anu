@@ -1,4 +1,4 @@
-import React from '../../../ReactWX';
+import React from "@react";
 import './index.less';
 
 class P extends React.Component {

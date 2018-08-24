@@ -10,6 +10,6 @@ module.exports = {
     exportExpr: require("./exportExpr"),
     method: require("./method"),
     copyNpmModules: require("./copyModules"),
-    supportNativeComponent: require("./supportNativeComponent"),
-    moduleToCjs: require("./moduleToCjs")
+    moduleToCjs: require("./moduleToCjs"),
+    resolveAlias: require("./resolveAlias")
 }

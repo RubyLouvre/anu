@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-22
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-24
  * IE9+
  */
 
@@ -1917,7 +1917,8 @@ function createPage(PageClass, path) {
                 updating = false;
                 var data = {
                     state: pageInst.state,
-                    props: pageInst.props
+                    props: pageInst.props,
+                    context: pageInst.context
                 };
                 applyChildComponentData(data, pageInst.allTemplateData || []);
                 $wxPage.setData(data);
@@ -1931,7 +1932,8 @@ function createPage(PageClass, path) {
     var config = {
         data: {
             state: instance.state,
-            props: instance.props
+            props: instance.props,
+            context: instance.context
         },
         dispatchEvent: eventSystem.dispatchEvent,
         onLoad: function onLoad() {
@@ -2003,6 +2005,7 @@ function onComponentUpdate(fiber) {
         var newData = {
             props: instance.props,
             state: instance.state,
+            context: instance.context,
             templatedata: inputProps.templatedata
         };
         newData.props.instanceCode = instanceCode;
@@ -2278,15 +2281,21 @@ var otherApis = {
   checkIsSoterEnrolledInDevice: true
 };
 
-var defaultDeviceRatio = {
-    "640": 2.34 / 2,
-    "750": 1,
-    "828": 1.81 / 2
-};
-function initPxTransform(config) {
-    this.config = this.config || {};
-    this.config.designWidth = config.designWidth || 700;
-    this.config.deviceRatio = config.deviceRatio || defaultDeviceRatio;
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+function initPxTransform() {
+    var wxConfig = this.wxConfig = this.wxConfig || {};
+    var windowWidth = 375;
+    wxConfig.designWidth = windowWidth;
+    wxConfig.deviceRatio = 750 / windowWidth / 2;
+    if ((typeof wx === "undefined" ? "undefined" : _typeof$1(wx)) !== void 666) {
+        wx.getSystemInfo({
+            success: function success(res) {
+                windowWidth = res.windowWidth;
+                wxConfig.designWidth = windowWidth;
+                wxConfig.deviceRatio = 750 / windowWidth / 2;
+            }
+        });
+    }
 }
 var RequestQueue = {
     MAX_REQUEST: 5,
@@ -2390,13 +2399,8 @@ function processApis(ReactWX) {
     });
 }
 function pxTransform(size) {
-    var _config = this.config,
-        designWidth = _config.designWidth,
-        deviceRatio = _config.deviceRatio;
-    if (!(designWidth in deviceRatio)) {
-        throw new Error("deviceRatio \u914D\u7F6E\u4E2D\u4E0D\u5B58\u5728 " + designWidth + " \u7684\u8BBE\u7F6E\uFF01");
-    }
-    return parseInt(size, 10) / deviceRatio[designWidth] + "rpx";
+    var deviceRatio = this.wxConfig.deviceRatio;
+    return parseInt(size, 10) / deviceRatio + "rpx";
 }
 function initNativeApi(ReactWX) {
     ReactWX.wx = {};
@@ -2408,8 +2412,32 @@ function initNativeApi(ReactWX) {
     if (typeof getApp == "function") {
         ReactWX.getApp = getApp;
     }
-    ReactWX.initPxTransform = initPxTransform.bind(ReactWX);
+    ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
     ReactWX.pxTransform = pxTransform.bind(ReactWX);
+}
+
+var rhyphen = /([a-z\d])([A-Z]+)/g;
+function hyphen(target) {
+  return target.replace(rhyphen, "$1-$2").toLowerCase();
+}
+function transform(obj) {
+  var _this = this;
+  return Object.keys(obj).map(function (item) {
+    var value = obj[item].toString();
+    value = value.replace(/(\d+)px/gi, function (str, match) {
+      return _this.pxTransform(match);
+    });
+    return hyphen(item) + ": " + value;
+  }).join(";");
+}
+function collectStyle(obj, props, key) {
+  if (props) {
+    var str = transform.call(this, obj);
+    props[key] = str;
+  } else {
+    console.warn("props 为空");
+  }
+  return obj;
 }
 
 function cleanChildren(array) {
@@ -2557,34 +2585,35 @@ var React = void 0;
 var classCache = eventSystem.classCache;
 var render$1 = Renderer$1.render;
 React = win.React = win.ReactDOM = {
-    eventSystem: eventSystem,
-    miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
-        var clazz = miniCreateClass.apply(null, arguments);
-        var uuid = clazz.prototype.classCode;
-        classCache[uuid] = clazz;
-        return clazz;
-    },
-    findDOMNode: function findDOMNode(fiber) {
-        console.log("小程序不支持findDOMNode");
-    },
-    version: "1.4.6",
-    render: render$1,
-    hydrate: render$1,
-    template: template,
-    createPage: createPage,
-    Fragment: Fragment,
-    PropTypes: PropTypes,
-    Children: Children,
-    createPortal: createPortal,
-    createContext: createContext,
-    Component: Component,
-    createRef: createRef,
-    forwardRef: forwardRef,
-    createElement: createElement,
-    cloneElement: cloneElement,
-    PureComponent: PureComponent,
-    isValidElement: isValidElement,
-    createFactory: createFactory
+  eventSystem: eventSystem,
+  miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
+    var clazz = miniCreateClass.apply(null, arguments);
+    var uuid = clazz.prototype.classCode;
+    classCache[uuid] = clazz;
+    return clazz;
+  },
+  findDOMNode: function findDOMNode(fiber) {
+    console.log('小程序不支持findDOMNode');
+  },
+  version: '1.4.6',
+  render: render$1,
+  hydrate: render$1,
+  template: template,
+  createPage: createPage,
+  Fragment: Fragment,
+  PropTypes: PropTypes,
+  Children: Children,
+  createPortal: createPortal,
+  createContext: createContext,
+  Component: Component,
+  createRef: createRef,
+  forwardRef: forwardRef,
+  createElement: createElement,
+  cloneElement: cloneElement,
+  PureComponent: PureComponent,
+  isValidElement: isValidElement,
+  createFactory: createFactory,
+  collectStyle: collectStyle
 };
 initNativeApi(React);
 var React$1 = React;
