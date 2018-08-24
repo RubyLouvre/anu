@@ -1,5 +1,6 @@
 import React from "@react";
 import './index.less';
+import Mouse from '../../../components/Mouse/index';
 class P extends React.Component {
     constructor() {
         super();
@@ -103,6 +104,11 @@ class P extends React.Component {
                     <view>get location</view>
                     <button onTap={this.getLocation}>get location</button>
                 </view>
+                <div>
+                   <Mouse>{mouse => (
+                        <p>The mouse position is {mouse.x}, {mouse.y}</p>
+                    )}</Mouse>
+                </div>
             </div>
         );
     }

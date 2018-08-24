@@ -87,10 +87,9 @@ module.exports = {
         specifiers.forEach(item => {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
             modules.importComponents[item.local.name] = source;
-            
+
             //process alias for package.json alias field;
             helpers.resolveAlias(path, modules);
-           
         });
         helpers.copyNpmModules(modules.current, source, node);
     },
@@ -308,6 +307,28 @@ module.exports = {
                 );
                 path.remove();
             }
+        }
+    },
+    JSXExpressionContainer: function(path, state) {
+        var parentNode = path.parentPath.node;
+        if (
+            parentNode.type == "JSXElement" &&
+            parentNode.openingElement.name.name == "React.template"
+        ) {
+            //支持render props
+            let modules = getAnu(state);
+            var attributes = parentNode.openingElement.attributes;
+            var className = null;
+            attributes.find(el => {
+                if (el.name.name === "is") {
+                    className = el.value.expression.name;
+                }
+            });
+            //  console.log(modules.importComponents[className]);
+            //  console.log(path.parentPath.xxx)
+            attributes.push(
+                utils.createAttribute("childrenid", "c" + utils.createUUID())
+            );
         }
     },
     JSXClosingElement: function(path, state) {

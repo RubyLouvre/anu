@@ -130,8 +130,15 @@ var visitor = {
                 expr.type === "MemberExpression" &&
                 generate(expr).code === "this.props.children"
             ) {
+                var attributes = []
+                var template = jsx.createElement("template", attributes, []);
+                attributes.push(
+                    jsx.createAttribute("is", "{{props.childrenid}}"),
+                    jsx.createAttribute("data", "{{...props}}"),
+                )
+                path.replaceWith(template);
                 //将 {this.props.children} 转换成 <slot />
-                console.warn("小程序暂时不支持{this.props.children}");
+              //  console.warn("小程序暂时不支持{this.props.children}");
             } else {
                 //返回block元素或template元素
                 var block = logicHelper(expr, modules);
