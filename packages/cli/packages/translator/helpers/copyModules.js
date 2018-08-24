@@ -21,7 +21,14 @@ const isAlias = (name)=>{
     const cwd = process.cwd();
     let aliasField = require( nPath.join(cwd, 'package.json') ).mpreact.alias;
     let aliasAray = Object.keys(aliasField);
-    return aliasAray.includes(name);
+    let isAliasFlag = false;
+    for(let i = 0; i < aliasAray.length; i++){
+        if(new RegExp(`^${aliasAray[i]}`).test(name)){
+            isAliasFlag = true;
+            break;
+        }
+    }
+    return isAliasFlag;
 }
 
 const copyNodeModuleToBuildNpm = function(source){
