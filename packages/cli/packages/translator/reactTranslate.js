@@ -85,11 +85,10 @@ module.exports = {
         }
 
         specifiers.forEach(item => {
-            //重点，保持所有引入的组件名及它们的路径，用于<import />
-            modules.importComponents[item.local.name] = source;
+            
             
             //process alias for package.json alias field;
-            helpers.resolveAlias(path, modules);
+            helpers.resolveAlias(path, modules, item.local.name);
            
         });
         helpers.copyNpmModules(modules.current, source, node);
