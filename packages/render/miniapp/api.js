@@ -18,7 +18,7 @@ function initPxTransform() {
   this.config = this.config || {};
 
   this.config.designWidth = windowWidth;
-  this.config.deviceRatio = 750 / windowWidth;
+  this.config.deviceRatio = (750 / windowWidth)*2;
 }
 
 const RequestQueue = {
