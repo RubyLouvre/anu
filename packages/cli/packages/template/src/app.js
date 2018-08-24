@@ -28,6 +28,7 @@ import './pages/demo/extend/Dog';
 import './pages/demo/extend/Husky';
 import './pages/demo/express/index';
 import './pages/demo/inlineStyle/index';
+import './pages/demo/loop3/index';
 import './app.less';
 
 class Demo extends React.Component {

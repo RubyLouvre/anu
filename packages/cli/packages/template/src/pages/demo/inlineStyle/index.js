@@ -35,9 +35,9 @@ class Style extends React.Component {
   render() {
     return (
       <div class="inline-container">
-        <div class="item">class 样式</div>
+        <div class="item">1. class 样式</div>
         <div class="page_hd">{this.state.title}</div>
-        <div class="item">传统 inlineStyle 样式</div>
+        <div class="item">2. 传统 inlineStyle 样式</div>
         <div
           style={{
             textAlign: "center",
@@ -48,11 +48,11 @@ class Style extends React.Component {
         >
           {this.state.title}
         </div>
-        <div class="item">props 为参数 inlineStyle 样式</div>
+        <div class="item">3. props 为参数 inlineStyle 样式</div>
         <div style={{ zIndex: this.props.studyTip === 0 ? 3 : 1 }}>{this.state.title}</div>
-        <div class="item">直接是object 为参数 inlineStyle 样式</div>
+        <div class="item">4. 直接是object 为参数 inlineStyle 样式</div>
         <div style={formItemStyle}>{this.state.title}</div>
-        <div class="item">state 为参数 inlineStyle 样式</div>
+        <div class="item">5. state 为参数 inlineStyle 样式</div>
          <div
           style={{
             color: this.state.methodColor.color,
