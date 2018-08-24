@@ -20,6 +20,11 @@ const pkgJsonTemplate = {
     "license": "MIT",
     "version": "1.0.0",
     "name": "{{appName}}",
+    "mpreact": {
+        "alias": {
+            "@react" : "src/ReactWX.js"
+        }
+    },
     "devDependencies": {
         "babel-core": "^6.26.3",
         "babel-generator": "^6.26.1",
