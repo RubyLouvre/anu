@@ -20,7 +20,7 @@ class Animal extends React.Component {
     }
 
     componentDidMount() {
-        console.log('componentDidMount')
+        console.log('Animal componentDidMount')
     }
     componentWillReceiveProps(props){
         this.setState({
