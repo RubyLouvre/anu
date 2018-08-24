@@ -16,7 +16,10 @@ module.exports = (nPath, modules, name)=>{
     let relativePath = '';
     
     //如果是相对引用，保留
-    if(/^(\.|\/)/.test(dir)) return;
+    if(/^(\.|\/)/.test(dir)){
+        modules.importComponents[name] = importValue;
+        return;
+    }
 
     if(!dir){
         to = path.dirname( path.join(cwd, aliasField[base]) );
