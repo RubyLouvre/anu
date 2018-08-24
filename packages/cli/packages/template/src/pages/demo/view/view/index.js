@@ -2,6 +2,14 @@ import React from '../../../../ReactWX';
 import './index.less';
 
 class P extends React.Component {
+    config = {
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "#fff",
+        "navigationBarBackgroundColor": "#0088a4",
+        "navigationBarTitleText": "view demo",
+        "backgroundColor": "#eeeeee",
+        "backgroundTextStyle": "light"
+    }
     render() {
         return (
             <view class="container">
