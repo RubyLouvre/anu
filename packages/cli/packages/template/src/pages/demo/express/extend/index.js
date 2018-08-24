@@ -10,11 +10,11 @@ class P extends React.Component {
         this.state = {
             components: [
                 {
-                    url: '/pages/demo/extend/Dog',
+                    url: '/pages/demo/express/extend/Dog',
                     title: 'Dog'
                 },
                 {
-                    url: '/pages/demo/extend/Husky',
+                    url: '/pages/demo/express/extend/Husky',
                     title: 'Husky'
                 }
             ]
