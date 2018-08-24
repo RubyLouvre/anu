@@ -5,7 +5,7 @@ const fs = require("fs-extra");
 const webpack = require('webpack');
 const MemoryFS = require("memory-fs");
 const less = require('less');
-const transform = require("./transform");
+const jsTransform = require("./jsTransform");
 const helpers = require('./helpers');
 const queue = require('./queue');
 let cwd = process.cwd();
@@ -92,14 +92,13 @@ class Parser {
         //webpack watch 可能触发多次 build https://webpack.js.org/api/node/#watching
         if(this.statsHash === stats.hash) return;
         this.statsHash = stats.hash;
-        let dependencies = stats.compilation.fileDependencies;
-
-        // let errors = stats.toJson().errors;
-        // for(let i = 0; i <  errors.length; i++){
-        //     if(/SyntaxError\:/.test(errors[i])){
-        //         throw errors[i];
-        //     }
-        // }
+        let dependencies = stats.compilation.fileDependencies.sort(function(path){
+            if(path.indexOf("components") > 0){
+                return 1;//确保组件最后执行
+            }
+            return 0
+        })
+       // console.log(dependencies)
        
         dependencies.forEach((file)=>{
             if(!/node_modules/g.test(file)){
@@ -127,7 +126,7 @@ class Parser {
         let {name, ext} = path.parse(file);
         let dist = file.replace('src', 'dist');
         if( isLib(name) || !isJs(ext) ) return;
-        const code = transform(file);
+        const code = jsTransform(file);
         if (/\/(?:pages|app|components)/.test(file)){
             fs.ensureFileSync(dist);
             fs.writeFile(dist, code, (err)=>{

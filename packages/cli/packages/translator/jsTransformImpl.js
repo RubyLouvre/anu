@@ -4,10 +4,14 @@ const nPath = require("path");
 const helpers = require("./helpers");
 const queue = require("./queue");
 const utils = require("./utils");
+const deps = require("./deps");
 
 function getAnu(state) {
     return state.file.opts.anu;
 }
+/**
+ * JS文件转译器
+ */
 module.exports = {
     ClassDeclaration: helpers.classDeclaration,
     //babel 6 没有ClassDeclaration，只有ClassExpression
@@ -89,13 +93,8 @@ module.exports = {
             modules.importComponents[item.local.name] = source;
 
             //process alias for package.json alias field;
-           // helpers.resolveAlias(path, modules);
-
-            
-            
-            //process alias for package.json alias field;
             helpers.resolveAlias(path, modules, item.local.name);
-           
+
         });
         helpers.copyNpmModules(modules.current, source, node);
     },
@@ -106,7 +105,7 @@ module.exports = {
         exit(path) {
             let declaration = path.node.declaration;
             if (!declaration) {
-                var map = path.node.specifiers.map(function(el) {
+                var map = path.node.specifiers.map(function (el) {
                     return helpers.exportExpr(el.local.name);
                 });
                 path.replaceWithMultiple(map);
@@ -141,7 +140,9 @@ module.exports = {
 
             //assign the page routes in app.js
             if (modules.componentType === "App") {
-                config = Object.assign(config, { pages: modules["appRoute"] });
+                config = Object.assign(config, {
+                    pages: modules["appRoute"]
+                });
                 delete modules["appRoute"];
             }
             if (config.usingComponents) {
@@ -215,12 +216,25 @@ module.exports = {
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     JSXOpeningElement: {
         //  enter: function(path) {},
-        enter: function(path, state) {
+        enter: function (path, state) {
             let modules = getAnu(state);
             let nodeName = path.node.name.name;
             if (modules.importComponents[nodeName]) {
+                var set = deps[nodeName] = deps[nodeName] = new Set()
                 modules.usedComponents[nodeName] = true;
                 path.node.name.name = "React.template";
+                var children = path.parentPath.node.children;
+                var isEmpty = true
+                for (var i = 0, el; el = children[i++];) {
+                    if (el.type === "JSXText" && !el.value.trim().length) {
+                        isEmpty = false
+                        break
+                    } else {
+                        isEmpty = false
+                        break
+                    }
+                }
+
                 var attributes = path.node.attributes;
                 attributes.push(
                     utils.createAttribute(
@@ -232,14 +246,40 @@ module.exports = {
                         t.jSXExpressionContainer(t.identifier(nodeName))
                     )
                 );
+                if (!isEmpty) {
+                   
+                    path.fragmentID = "f" + path.node.start+path.node.end
+                    set.add(path.fragmentID)
+                    attributes.push(
+                        utils.createAttribute("fragmentID", path.fragmentID)
+                    )
+                }
             } else {
                 if (nodeName != "React.template") {
                     helpers.nodeName(path, modules);
                 }
             }
+        },
+        exit(path, state) {
+
+            if (path.fragmentID) {
+                let modules = getAnu(state);
+                var template = utils.createElement("template", [
+                    utils.createAttribute("name", path.fragmentID),
+                ], path.parentPath.node.children);
+                var wxml = helpers.wxml(generate(template).code, modules)
+                if (!modules.fragmentPath) {
+                    modules.fragmentPath = modules.sourcePath.split("src/pages")[0] + "dist/components/Fragments/"
+                }
+                queue.wxml.push({
+                    type: 'wxml',
+                    path: modules.fragmentPath + path.fragmentID + ".wxml",
+                    code: wxml
+                })
+            }
         }
     },
-    JSXAttribute: function(path, state) {
+    JSXAttribute: function (path, state) {
         let modules = getAnu(state);
         let attrName = path.node.name.name;
         let attrValue = path.node.value;
@@ -253,7 +293,8 @@ module.exports = {
             if (!attrs.setClassCode) {
                 attrs.setClassCode = true;
                 var keyValue;
-                for (var i = 0, el; (el = attrs[i++]); ) {
+                for (var i = 0, el;
+                    (el = attrs[i++]);) {
                     if (el.name.name == "key") {
                         if (t.isLiteral(el.value)) {
                             keyValue = el.value;
@@ -315,33 +356,11 @@ module.exports = {
             }
         }
     },
-    JSXExpressionContainer: function(path, state) {
-        var parentNode = path.parentPath.node;
-        if (
-            parentNode.type == "JSXElement" &&
-            parentNode.openingElement.name.name == "React.template"
-        ) {
-            //支持render props
-            let modules = getAnu(state);
-            var attributes = parentNode.openingElement.attributes;
-            var className = null;
-            attributes.find(el => {
-                if (el.name.name === "is") {
-                    className = el.value.expression.name;
-                }
-            });
-            //  console.log(modules.importComponents[className]);
-            //  console.log(path.parentPath.xxx)
-            attributes.push(
-                utils.createAttribute("childrenid", "c" + utils.createUUID())
-            );
-        }
-    },
-    JSXClosingElement: function(path, state) {
+   
+    JSXClosingElement: function (path, state) {
         let modules = getAnu(state);
         let nodeName = path.node.name.name;
-        if (
-            !modules.importComponents[nodeName] &&
+        if (!modules.importComponents[nodeName] &&
             nodeName !== "React.template"
         ) {
             helpers.nodeName(path, modules);
