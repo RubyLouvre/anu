@@ -26,7 +26,8 @@ import "./pages/demo/api/index";
 import './pages/demo/extend/index';
 import './pages/demo/extend/Dog';
 import './pages/demo/extend/Husky';
-
+import './pages/demo/express/index';
+import './pages/demo/inlineStyle/index';
 import './app.less';
 
 class Demo extends React.Component {

@@ -1,29 +1,29 @@
 import React from "@react";
-class P extends React.Component {
+class Express extends React.Component {
     constructor() {
         super();
         this.state = {
             title: "使用 React 编写小程序",
             pages: [
                 {
-                    title: '表单组件',
-                    url: '/pages/demo/form/index/index'
+                    title: 'API',
+                    url: '/pages/demo/api/index'
                 },
                 {
-                    title: '视图组件',
-                    url: '/pages/demo/view/index/index'
+                    title: '继承',
+                    url: '/pages/demo/extend/index'
                 },
                 {
-                    title: '媒体组件',
-                    url: '/pages/demo/media/index/index'
+                    title: "无状态组件",
+                    url: "/pages/demo/stateless/index"
                 },
                 {
-                    title: '基础内容',
-                    url: '/pages/demo/baseContent/base/index'
+                    title: "循环",
+                    url: "/pages/demo/loop/index"
                 },
                 {
-                  title: '语法',
-                  url: '/pages/demo/express/index'
+                    title: '行内样式',
+                    url: "/pages/demo/inlineStyle/index"
                 }
             ]
         };
@@ -52,4 +52,4 @@ class P extends React.Component {
         );
     }
 }
-export default P;
+export default Express;
