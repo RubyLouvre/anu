@@ -89,7 +89,13 @@ module.exports = {
             modules.importComponents[item.local.name] = source;
 
             //process alias for package.json alias field;
-            helpers.resolveAlias(path, modules);
+           // helpers.resolveAlias(path, modules);
+
+            
+            
+            //process alias for package.json alias field;
+            helpers.resolveAlias(path, modules, item.local.name);
+           
         });
         helpers.copyNpmModules(modules.current, source, node);
     },

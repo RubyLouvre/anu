@@ -7,28 +7,29 @@ class Express extends React.Component {
             pages: [
                 {
                     title: 'API',
-                    url: '/pages/demo/api/index'
+                    url: '/pages/demo/express/api/index'
                 },
                 {
                     title: '继承',
-                    url: '/pages/demo/extend/index'
+                    url: '/pages/demo/express/extend/index'
                 },
                 {
                     title: "无状态组件",
-                    url: "/pages/demo/stateless/index"
+                    url: "/pages/demo/express/stateless/index"
                 },
                 {
                     title: "循环",
-                    url: "/pages/demo/loop/index"
+                    url: "/pages/demo/express/loop/index"
                 },
                 {
-                    title: "三重循环",
-                    url: "/pages/demo/loop3/index"
+                    title: '三重循环',
+                    url: "/pages/demo/express/loop3/index"
                 },
                 {
                     title: '行内样式',
-                    url: "/pages/demo/inlineStyle/index"
+                    url: "/pages/demo/express/inlineStyle/index"
                 }
+                
             ]
         };
     }
