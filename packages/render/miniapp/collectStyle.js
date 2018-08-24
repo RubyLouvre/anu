@@ -3,7 +3,7 @@
 var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
   //转换为连字符风格
-  return target.replace(rhyphen, '$1-$2').toLowerCase();
+  return target.replace(rhyphen, "$1-$2").toLowerCase();
 }
 
 function transform(obj) {
@@ -13,9 +13,9 @@ function transform(obj) {
       value = value.replace(/(\d+)px/gi, (str, match) => {
         return this.pxTransform(match);
       });
-      return hyphen(item) + ': ' + value;
+      return hyphen(item) + ": " + value;
     })
-    .join(';');
+    .join(";");
 }
 
 export function collectStyle(obj, props, key) {
@@ -23,7 +23,7 @@ export function collectStyle(obj, props, key) {
     var str = transform.call(this, obj);
     props[key] = str;
   } else {
-    console.warn('props 为空');
+    console.warn("props 为空");
   }
 
   return obj;

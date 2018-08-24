@@ -1,8 +1,8 @@
-import { onAndSyncApis, noPromiseApis, otherApis } from './apiList';
+import { onAndSyncApis, noPromiseApis, otherApis } from "./apiList";
 var defaultDeviceRatio = {
-  '640': 2.34 / 2,
-  '750': 1,
-  '828': 1.81 / 2
+  "640": 2.34 / 2,
+  "750": 1,
+  "828": 1.81 / 2
 };
 function initPxTransform() {
   // console.log('wx', wx);
@@ -18,7 +18,7 @@ function initPxTransform() {
   this.config = this.config || {};
 
   this.config.designWidth = windowWidth;
-  this.config.deviceRatio = (750 / windowWidth)*2;
+  this.config.deviceRatio = (750 / windowWidth) * 2;
 }
 
 const RequestQueue = {
@@ -51,25 +51,25 @@ const RequestQueue = {
 
 function request(options) {
   options = options || {};
-  if (typeof options === 'string') {
+  if (typeof options === "string") {
     options = {
       url: options
     };
   }
-  const originSuccess = options['success'];
-  const originFail = options['fail'];
-  const originComplete = options['complete'];
+  const originSuccess = options["success"];
+  const originFail = options["fail"];
+  const originComplete = options["complete"];
   const p = new Promise((resolve, reject) => {
-    options['success'] = res => {
+    options["success"] = res => {
       originSuccess && originSuccess(res);
       resolve(res);
     };
-    options['fail'] = res => {
+    options["fail"] = res => {
       originFail && originFail(res);
       reject(res);
     };
 
-    options['complete'] = res => {
+    options["complete"] = res => {
       originComplete && originComplete(res);
     };
 
@@ -86,27 +86,27 @@ function processApis(ReactWX) {
         options = options || {};
         let task = null;
         let obj = Object.assign({}, options);
-        if (typeof options === 'string') {
+        if (typeof options === "string") {
           return wx[key](options);
         }
         const p = new Promise((resolve, reject) => {
-          ['fail', 'success', 'complete'].forEach(k => {
+          ["fail", "success", "complete"].forEach(k => {
             obj[k] = res => {
               options[k] && options[k](res);
-              if (k === 'success') {
-                if (key === 'connectSocket') {
+              if (k === "success") {
+                if (key === "connectSocket") {
                   resolve(task);
                 } else {
                   resolve(res);
                 }
-              } else if (k === 'fail') {
+              } else if (k === "fail") {
                 reject(res);
               }
             };
           });
           task = wx[key](obj);
         });
-        if (key === 'uploadFile' || key === 'downloadFile') {
+        if (key === "uploadFile" || key === "downloadFile") {
           p.progress = cb => {
             task.onProgressUpdate(cb);
             return p;
@@ -132,17 +132,17 @@ function pxTransform(size) {
   // if (!(designWidth in deviceRatio)) {
   //   throw new Error(`deviceRatio 配置中不存在 ${designWidth} 的设置！`);
   // }
-  return parseInt(size, 10) / deviceRatio + 'rpx';
+  return parseInt(size, 10) / deviceRatio + "rpx";
 }
 
 export function initNativeApi(ReactWX) {
   ReactWX.wx = {};
   processApis(ReactWX);
   ReactWX.request = request;
-  if (typeof getCurrentPages == 'function') {
+  if (typeof getCurrentPages == "function") {
     ReactWX.getCurrentPages = getCurrentPages;
   }
-  if (typeof getApp == 'function') {
+  if (typeof getApp == "function") {
     ReactWX.getApp = getApp;
   }
   ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
