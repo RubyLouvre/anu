@@ -1,7 +1,7 @@
 import React from '@react';
 import './pages/index/index';
-import './pages/demo/stateless/index';
-import './pages/demo/loop/index';
+import './pages/demo/express/stateless/index';
+import './pages/demo/express/loop/index';
 import './pages/demo/form/index/index';
 import './pages/demo/form/button/index';
 import './pages/demo/form/checkbox/index';
@@ -22,13 +22,13 @@ import './pages/demo/media/audio/index';
 import './pages/demo/media/image/index';
 import './pages/demo/media/video/index';
 import './pages/demo/media/camera/index';
-import "./pages/demo/api/index";
-import './pages/demo/extend/index';
-import './pages/demo/extend/Dog';
-import './pages/demo/extend/Husky';
+import "./pages/demo/express/api/index";
+import './pages/demo/express/extend/index';
+import './pages/demo/express/extend/Dog';
+import './pages/demo/express/extend/Husky';
 import './pages/demo/express/index';
-import './pages/demo/inlineStyle/index';
-import './pages/demo/loop3/index';
+import './pages/demo/express/inlineStyle/index';
+import './pages/demo/express/loop3/index';
 import './app.less';
 
 class Demo extends React.Component {

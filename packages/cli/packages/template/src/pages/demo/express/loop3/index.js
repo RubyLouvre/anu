@@ -1,13 +1,34 @@
 import React from "@react";
 import "./index.less";
 
-function randomHexColor() { //随机生成十六进制颜色
-  var hex = Math.floor(Math.random() * 16777216).toString(16); //生成ffffff以内16进制数
-  while (hex.length < 6) { //while循环判断hex位数，少于6位前面加0凑够6位
-   hex = '0' + hex;
-  }
-  return '#' + hex; //返回‘#'开头16进制颜色
- }
+
+function randomHexColor() {
+  let colorArray = [
+    "#FFF68F",
+    "#FFEFD5",
+    "#FFE4E1",
+    "#FFDEAD",
+    "#FFC1C1",
+    "#FFB90F",
+    "#FFA54F",
+    "#FF8C00",
+    "#FF7F50",
+    "#FF6EB4",
+    "#FAF0E6",
+    "#F7F7F7",
+    "#F0FFFF",
+    "#F08080",
+    "#FF6A6A",
+    "#FFFACD",
+    "#FFE1FF",
+    "#FFBBFF",
+    "#EED8AE",
+    "#EE9A00"
+
+  ];
+  let key = parseInt(Math.random() * 20, 10);
+  return colorArray[key];
+}
 
 class P extends React.Component {
   constructor() {
@@ -43,13 +64,12 @@ class P extends React.Component {
           name: "小狗2"
         },
         {
-          name: "小兔子3"  
+          name: "小兔子3"
         }
       ]
     };
   }
   changeNumbers() {
-    console.log("change");
     this.setState({
       array: [
         {
@@ -73,16 +93,26 @@ class P extends React.Component {
         {this.state.array1.map(function(el) {
           return (
             <div key={el.name}>
-              <div class="index-item-1" style={{'backgroundColor': randomHexColor()}}>{el.name}</div>
+              <div class="index-item-1" style={{ backgroundColor: randomHexColor() }}>
+                {el.name}
+              </div>
               {this.state.array2.map(function(item) {
                 return (
                   <div key={item.name}>
-                    <div class="index-item-2" style={{'backgroundColor': randomHexColor()}}>
+                    <div class="index-item-2" style={{ backgroundColor: randomHexColor() }}>
                       {item.name}
                       =======
                     </div>
                     {this.state.array3.map(function(key) {
-                      return <div key={key.name} class="index-item-3" style={{'backgroundColor': randomHexColor()}}>{key.name}</div>;
+                      return (
+                        <div
+                          key={key.name}
+                          class="index-item-3"
+                          style={{ backgroundColor: randomHexColor() }}
+                        >
+                          {key.name}
+                        </div>
+                      );
                     })}
                   </div>
                 );
