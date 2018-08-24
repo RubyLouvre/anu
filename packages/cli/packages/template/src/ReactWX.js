@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-23
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-24
  * IE9+
  */
 
@@ -2283,142 +2283,142 @@ var otherApis = {
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function initPxTransform() {
-  var windowWidth = 375;
-  if ((typeof wx === 'undefined' ? 'undefined' : _typeof$1(wx)) !== void 666) {
-    wx.getSystemInfo({
-      success: function success(res) {
-        windowWidth = res.windowWidth;
-      }
-    });
-  }
-  this.config = this.config || {};
-  this.config.designWidth = windowWidth;
-  this.config.deviceRatio = 750 / windowWidth;
+    var wxConfig = this.wxConfig = this.wxConfig || {};
+    var windowWidth = 375;
+    wxConfig.designWidth = windowWidth;
+    wxConfig.deviceRatio = 750 / windowWidth / 2;
+    if ((typeof wx === "undefined" ? "undefined" : _typeof$1(wx)) !== void 666) {
+        wx.getSystemInfo({
+            success: function success(res) {
+                windowWidth = res.windowWidth;
+                wxConfig.designWidth = windowWidth;
+                wxConfig.deviceRatio = 750 / windowWidth / 2;
+            }
+        });
+    }
 }
 var RequestQueue = {
-  MAX_REQUEST: 5,
-  queue: [],
-  request: function request(options) {
-    this.push(options);
-    this.run();
-  },
-  push: function push(options) {
-    this.queue.push(options);
-  },
-  run: function run() {
-    var _arguments = arguments,
-        _this = this;
-    if (!this.queue.length) {
-      return;
+    MAX_REQUEST: 5,
+    queue: [],
+    request: function request(options) {
+        this.push(options);
+        this.run();
+    },
+    push: function push(options) {
+        this.queue.push(options);
+    },
+    run: function run() {
+        var _arguments = arguments,
+            _this = this;
+        if (!this.queue.length) {
+            return;
+        }
+        if (this.queue.length <= this.MAX_REQUEST) {
+            var options = this.queue.shift();
+            var completeFn = options.complete;
+            options.complete = function () {
+                completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
+                _this.run();
+            };
+            wx.request(options);
+        }
     }
-    if (this.queue.length <= this.MAX_REQUEST) {
-      var options = this.queue.shift();
-      var completeFn = options.complete;
-      options.complete = function () {
-        completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
-        _this.run();
-      };
-      wx.request(options);
-    }
-  }
 };
 function request(options) {
-  options = options || {};
-  if (typeof options === 'string') {
-    options = {
-      url: options
-    };
-  }
-  var originSuccess = options['success'];
-  var originFail = options['fail'];
-  var originComplete = options['complete'];
-  var p = new Promise(function (resolve, reject) {
-    options['success'] = function (res) {
-      originSuccess && originSuccess(res);
-      resolve(res);
-    };
-    options['fail'] = function (res) {
-      originFail && originFail(res);
-      reject(res);
-    };
-    options['complete'] = function (res) {
-      originComplete && originComplete(res);
-    };
-    RequestQueue.request(options);
-  });
-  return p;
+    options = options || {};
+    if (typeof options === "string") {
+        options = {
+            url: options
+        };
+    }
+    var originSuccess = options["success"];
+    var originFail = options["fail"];
+    var originComplete = options["complete"];
+    var p = new Promise(function (resolve, reject) {
+        options["success"] = function (res) {
+            originSuccess && originSuccess(res);
+            resolve(res);
+        };
+        options["fail"] = function (res) {
+            originFail && originFail(res);
+            reject(res);
+        };
+        options["complete"] = function (res) {
+            originComplete && originComplete(res);
+        };
+        RequestQueue.request(options);
+    });
+    return p;
 }
 function processApis(ReactWX) {
-  var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
-  Object.keys(weApis).forEach(function (key) {
-    if (!onAndSyncApis[key] && !noPromiseApis[key]) {
-      ReactWX.wx[key] = function (options) {
-        options = options || {};
-        var task = null;
-        var obj = Object.assign({}, options);
-        if (typeof options === 'string') {
-          return wx[key](options);
-        }
-        var p = new Promise(function (resolve, reject) {
-          ['fail', 'success', 'complete'].forEach(function (k) {
-            obj[k] = function (res) {
-              options[k] && options[k](res);
-              if (k === 'success') {
-                if (key === 'connectSocket') {
-                  resolve(task);
-                } else {
-                  resolve(res);
+    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
+    Object.keys(weApis).forEach(function (key) {
+        if (!onAndSyncApis[key] && !noPromiseApis[key]) {
+            ReactWX.wx[key] = function (options) {
+                options = options || {};
+                var task = null;
+                var obj = Object.assign({}, options);
+                if (typeof options === "string") {
+                    return wx[key](options);
                 }
-              } else if (k === 'fail') {
-                reject(res);
-              }
+                var p = new Promise(function (resolve, reject) {
+                    ["fail", "success", "complete"].forEach(function (k) {
+                        obj[k] = function (res) {
+                            options[k] && options[k](res);
+                            if (k === "success") {
+                                if (key === "connectSocket") {
+                                    resolve(task);
+                                } else {
+                                    resolve(res);
+                                }
+                            } else if (k === "fail") {
+                                reject(res);
+                            }
+                        };
+                    });
+                    task = wx[key](obj);
+                });
+                if (key === "uploadFile" || key === "downloadFile") {
+                    p.progress = function (cb) {
+                        task.onProgressUpdate(cb);
+                        return p;
+                    };
+                    p.abort = function (cb) {
+                        cb && cb();
+                        task.abort();
+                        return p;
+                    };
+                }
+                return p;
             };
-          });
-          task = wx[key](obj);
-        });
-        if (key === 'uploadFile' || key === 'downloadFile') {
-          p.progress = function (cb) {
-            task.onProgressUpdate(cb);
-            return p;
-          };
-          p.abort = function (cb) {
-            cb && cb();
-            task.abort();
-            return p;
-          };
+        } else {
+            ReactWX.wx[key] = function () {
+                return wx[key].apply(wx, arguments);
+            };
         }
-        return p;
-      };
-    } else {
-      ReactWX.wx[key] = function () {
-        return wx[key].apply(wx, arguments);
-      };
-    }
-  });
+    });
 }
 function pxTransform(size) {
-  var _config = this.config,
-      designWidth = _config.designWidth,
-      deviceRatio = _config.deviceRatio;
-  return parseInt(size, 10) / deviceRatio + 'rpx';
+    var deviceRatio = this.wxConfig.deviceRatio;
+    return parseInt(size, 10) / deviceRatio + "rpx";
 }
 function initNativeApi(ReactWX) {
-  ReactWX.wx = {};
-  processApis(ReactWX);
-  ReactWX.request = request;
-  if (typeof getCurrentPages == 'function') {
-    ReactWX.getCurrentPages = getCurrentPages;
-  }
-  if (typeof getApp == 'function') {
-    ReactWX.getApp = getApp;
-  }
-  ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
-  ReactWX.pxTransform = pxTransform.bind(ReactWX);
+    ReactWX.wx = {};
+    processApis(ReactWX);
+    ReactWX.request = request;
+    if (typeof getCurrentPages == "function") {
+        ReactWX.getCurrentPages = getCurrentPages;
+    }
+    if (typeof getApp == "function") {
+        ReactWX.getApp = getApp;
+    }
+    ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
+    ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
 
 var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
-  return target.replace(rhyphen, '$1-$2').toLowerCase();
+  return target.replace(rhyphen, "$1-$2").toLowerCase();
 }
 function transform(obj) {
   var _this = this;
@@ -2427,15 +2427,15 @@ function transform(obj) {
     value = value.replace(/(\d+)px/gi, function (str, match) {
       return _this.pxTransform(match);
     });
-    return hyphen(item) + ': ' + value;
-  }).join(';');
+    return hyphen(item) + ": " + value;
+  }).join(";");
 }
 function collectStyle(obj, props, key) {
   if (props) {
     var str = transform.call(this, obj);
     props[key] = str;
   } else {
-    console.warn('props 为空');
+    console.warn("props 为空");
   }
   return obj;
 }
