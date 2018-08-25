@@ -267,7 +267,8 @@ module.exports = {
                 var template = utils.createElement("template", [
                     utils.createAttribute("name", path.fragmentID),
                 ], path.parentPath.node.children);
-                var wxml = helpers.wxml(generate(template).code, modules)
+                var wxml = helpers.wxml(generate(template).code, modules).replace(/;$/,"")
+                console.log(wxml)
                 if (!modules.fragmentPath) {
                     modules.fragmentPath = modules.sourcePath.split("src/pages")[0] + "dist/components/Fragments/"
                 }

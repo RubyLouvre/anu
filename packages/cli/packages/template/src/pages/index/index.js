@@ -6,20 +6,12 @@ class P extends React.Component {
             title: "使用 React 编写小程序",
             pages: [
                 {
-                    title: '表单组件',
-                    url: '/pages/demo/form/index/index'
-                },
-                {
-                    title: '视图组件',
-                    url: '/pages/demo/view/index/index'
-                },
-                {
-                    title: '媒体组件',
-                    url: '/pages/demo/media/index/index'
-                },
-                {
                     title: '基础内容',
                     url: '/pages/demo/baseContent/base/index'
+                },
+                {
+                    title: '内置组件',
+                    url: '/pages/demo/native/index/index'
                 },
                 {
                   title: '语法',

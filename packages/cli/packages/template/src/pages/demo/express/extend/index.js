@@ -1,41 +1,12 @@
 import React from '@react';
+import Dog from '@components/Dog/index';
 
-class P extends React.Component {
-    config = {
-        title: 'media'
-    };
-    
-    constructor() {
-        super();
-        this.state = {
-            components: [
-                {
-                    url: '/pages/demo/express/extend/Dog',
-                    title: 'Dog'
-                },
-                {
-                    url: '/pages/demo/express/extend/Husky',
-                    title: 'Husky'
-                }
-            ]
-        };
-    }
-
+class P extends React.Component{
     render() {
         return (
             <div>
-                {this.state.components.map(function(component) {
-                    return (
-                        <navigator
-                            open-type="navigate"
-                            class="item"
-                            hover-class="navigator-hover"
-                            url={component.url}
-                        >
-                            <div class="list-item">{component.title}</div>
-                        </navigator>
-                    );
-                })}
+                <div>类继承的演示</div>
+                <Dog age={12} />
             </div>
         );
     }

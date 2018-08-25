@@ -18,7 +18,7 @@ class Express extends React.Component {
                     url: "/pages/demo/express/stateless/index"
                 },
                 {
-                    title: "循环",
+                    title: "一重循环",
                     url: "/pages/demo/express/loop/index"
                 },
                 {
@@ -28,6 +28,10 @@ class Express extends React.Component {
                 {
                     title: '行内样式',
                     url: "/pages/demo/express/inlineStyle/index"
+                },
+                {
+                    title: '组件套嵌内容',
+                    url: "/pages/demo/express/children/index"
                 }
                 
             ]
