@@ -21,55 +21,58 @@ module.exports = function(path) {
     var isEvent = /^(bind|catch)/.test(attrName);
     var attrValue = generate(expr).code;
     switch (path.node.expression.type) {
-    case 'NumericLiteral': //11
-    case 'StringLiteral': // "string"
-    case 'BinaryExpression': // 1+ 2
-    case 'Identifier': // kkk undefined
-    case 'NullLiteral': // null
-    case 'BooleanLiteral':
-        if (isEvent) {
-            throwEventValue(attrName, attrValue);
-        }
-        replaceWithExpr(path, attrValue);
-        break;
-    case 'MemberExpression':
-        if (isEvent) {
-            bindEvent(path, attrName, attrValue.replace(/^\s*this\./, ''));
-        } else {
-            replaceWithExpr(path, attrValue.replace(/^\s*this\./, ''));
-        }
-        break;
-    case 'CallExpression':
-        if (isEvent) {
-            var match = attrValue.match(/this\.(\w+)\.bind/);
-            if (match && match[1]) {
-                bindEvent(path, attrName, match[1]);
-            } else {
+        case 'NumericLiteral': //11
+        case 'StringLiteral': // "string"
+        case 'BinaryExpression': // 1+ 2
+        case 'Identifier': // kkk undefined
+        case 'NullLiteral': // null
+        case 'BooleanLiteral':
+            if (isEvent) {
                 throwEventValue(attrName, attrValue);
             }
-        } else {
-            if (attrName === 'style' && attrValue.indexOf('React.collectStyle') === 0) {
-                // style={{}} 类型解析
-                // let name = attrValue.replace(regTpl, '$1').split(',')[2];
-                let name = stylePropsName(attrValue);
-                replaceWithExpr(path, `props.${name}`);
+            replaceWithExpr(path, attrValue);
+            break;
+        case 'MemberExpression':
+            if (isEvent) {
+                bindEvent(path, attrName, attrValue.replace(/^\s*this\./, ''));
             } else {
-                replaceWithExpr(path, attrValue);
+                replaceWithExpr(path, attrValue.replace(/^\s*this\./, ''));
             }
-        }
-        break;
-    case 'ObjectExpression':
-        if (attrName === 'style') {
-            var styleValue = styleHelper(expr);
+            break;
+        case 'CallExpression':
+            if (isEvent) {
+                var match = attrValue.match(/this\.(\w+)\.bind/);
+                if (match && match[1]) {
+                    bindEvent(path, attrName, match[1]);
+                } else {
+                    throwEventValue(attrName, attrValue);
+                }
+            } else {
+                if (
+                    attrName === 'style' &&
+                    attrValue.indexOf('React.collectStyle') === 0
+                ) {
+                    // style={{}} 类型解析
+                    // let name = attrValue.replace(regTpl, '$1').split(',')[2];
+                    let name = stylePropsName(attrValue);
+                    replaceWithExpr(path, `props.${name}`);
+                } else {
+                    replaceWithExpr(path, attrValue);
+                }
+            }
+            break;
+        case 'ObjectExpression':
+            if (attrName === 'style') {
+                var styleValue = styleHelper(expr);
 
-            replaceWithExpr(path, styleValue, true);
-        } else if (isEvent) {
-            throwEventValue(attrName, attrValue);
-        }
-        break;
-    default:
-        // console.log('===0000=', path.node.expression.type);
-        break;
+                replaceWithExpr(path, styleValue, true);
+            } else if (isEvent) {
+                throwEventValue(attrName, attrValue);
+            }
+            break;
+        default:
+            // console.log('===0000=', path.node.expression.type);
+            break;
     }
 };
 // var rhyphen = /([a-z\d])([A-Z]+)/g;

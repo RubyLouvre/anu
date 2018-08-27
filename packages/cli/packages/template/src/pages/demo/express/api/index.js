@@ -29,7 +29,7 @@ class P extends React.Component {
                     imgPath: res.tempFilePaths
                 });
             })
-            .fail((res) => {
+            .fail(res => {
                 this.setState({
                     imgPath: res.tempFilePaths.toString()
                 });

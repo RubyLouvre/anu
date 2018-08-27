@@ -41,7 +41,9 @@ class P extends React.Component {
     render() {
         return (
             <div>
-                <div onTap={this.changeNumbers.bind(this)}>演示单重循环，点这里改变数组的个数</div>
+                <div onTap={this.changeNumbers.bind(this)}>
+                    演示单重循环，点这里改变数组的个数
+                </div>
                 <div>
                     {this.state.array.map(function(el) {
                         return <Dog name={el.name} key={el.name} />;

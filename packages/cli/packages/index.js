@@ -6,14 +6,14 @@ const LetUsRoll = (args)=>{
 
 const route = (arg)=>{
     switch (arg){
-    case 'start':
-        build(arg);
-        break;
-    case 'build':
-        build(arg);
-        break;
-    default:
-        init(arg);
+        case 'start':
+            build(arg);
+            break;
+        case 'build':
+            build(arg);
+            break;
+        default:
+            init(arg);
     }
 };
 

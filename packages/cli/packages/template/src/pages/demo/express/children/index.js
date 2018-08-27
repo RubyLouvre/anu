@@ -1,14 +1,14 @@
 import React from '@react';
 
-class P extends React.Component{
-    constructor(){
+class P extends React.Component {
+    constructor() {
         super();
         this.state = {
             show: false
         };
     }
-   
-    toggleDialog(){
+
+    toggleDialog() {
         // eslint-disable-next-line
         console.log(this.state);
         this.setState({
@@ -19,12 +19,13 @@ class P extends React.Component{
         return (
             <div>
                 <div>类继承的演示</div>
-                {this.state.show ?  
-                    <Dialog>
-                   sdfdsfds
-                    </Dialog> : null}
-              
-                <p><button type="primary" onTap={this.toggleDialog.bind(this)}>点我</button></p>
+                {this.state.show ? <Dialog>sdfdsfds</Dialog> : null}
+
+                <p>
+                    <button type="primary" onTap={this.toggleDialog.bind(this)}>
+                        点我
+                    </button>
+                </p>
             </div>
         );
     }

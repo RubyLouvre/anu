@@ -21,26 +21,35 @@ class P extends React.Component {
         };
     }
     config = {
-        'navigationBarTextStyle': '#fff',
-        'navigationBarBackgroundColor': '#0088a4',
-        'navigationBarTitleText': 'Demo',
-        'backgroundColor': '#eeeeee',
-        'backgroundTextStyle': 'light'
-    }
+        navigationBarTextStyle: '#fff',
+        navigationBarBackgroundColor: '#0088a4',
+        navigationBarTitleText: 'Demo',
+        backgroundColor: '#eeeeee',
+        backgroundTextStyle: 'light'
+    };
     render() {
         return (
-            <div class='container'>
-                <div class='page_hd'>{this.state.title}</div>
-                <div class='page_bd'>
-                    <div class='navigation'>
-                        {
-                            this.state.pages.map(function(page) {
-                                return <navigator open-type="navigate" class='item' hover-class="navigator-hover" url={page.url}>{page.title}</navigator>;
-                            })
-                        }
+            <div class="container">
+                <div class="page_hd">{this.state.title}</div>
+                <div class="page_bd">
+                    <div class="navigation">
+                        {this.state.pages.map(function(page) {
+                            return (
+                                <navigator
+                                    open-type="navigate"
+                                    class="item"
+                                    hover-class="navigator-hover"
+                                    url={page.url}
+                                >
+                                    {page.title}
+                                </navigator>
+                            );
+                        })}
                     </div>
                 </div>
-                <Dialog><p>这是出现在弹窗组件的内部</p></Dialog>
+                <Dialog>
+                    <p>这是出现在弹窗组件的内部</p>
+                </Dialog>
             </div>
         );
     }

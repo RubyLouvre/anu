@@ -5,6 +5,7 @@ const helpers = require('./helpers');
 const queue = require('./queue');
 const utils = require('./utils');
 const deps = require('./deps');
+const prettifyXml = require('prettify-xml');
 
 function getAnu(state) {
     return state.file.opts.anu;
@@ -94,7 +95,6 @@ module.exports = {
 
             //process alias for package.json alias field;
             helpers.resolveAlias(path, modules, item.local.name);
-
         });
         helpers.copyNpmModules(modules.current, source, node);
     },
@@ -105,7 +105,7 @@ module.exports = {
         exit(path) {
             let declaration = path.node.declaration;
             if (!declaration) {
-                var map = path.node.specifiers.map(function (el) {
+                var map = path.node.specifiers.map(function(el) {
                     return helpers.exportExpr(el.local.name);
                 });
                 path.replaceWithMultiple(map);
@@ -215,17 +215,17 @@ module.exports = {
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     JSXOpeningElement: {
         //  enter: function(path) {},
-        enter: function (path, state) {
+        enter: function(path, state) {
             let modules = getAnu(state);
             let nodeName = path.node.name.name;
             if (modules.importComponents[nodeName]) {
-                var set = deps[nodeName] ||( deps[nodeName] = new Set());
+                var set = deps[nodeName] || (deps[nodeName] = new Set());
                 modules.usedComponents[nodeName] = true;
                 path.node.name.name = 'React.template';
                 var children = path.parentPath.node.children;
                 var isEmpty = true;
                 // eslint-disable-next-line
-                for (var i = 0, el; el = children[i++];) {
+                for (var i = 0, el; (el = children[i++]); ) {
                     if (el.type === 'JSXText' && !el.value.trim().length) {
                         isEmpty = false;
                         break;
@@ -247,8 +247,7 @@ module.exports = {
                     )
                 );
                 if (!isEmpty) {
-                   
-                    path.fragmentID = 'f' + path.node.start+path.node.end;
+                    path.fragmentID = 'f' + path.node.start + path.node.end;
                     set.add(path.fragmentID);
                     attributes.push(
                         utils.createAttribute('fragmentID', path.fragmentID)
@@ -261,25 +260,32 @@ module.exports = {
             }
         },
         exit(path, state) {
-
             if (path.fragmentID) {
                 let modules = getAnu(state);
-                var template = utils.createElement('template', [
-                    utils.createAttribute('name', path.fragmentID),
-                ], path.parentPath.node.children);
-                var wxml = helpers.wxml(generate(template).code, modules).replace(/;$/,'');
+                var template = utils.createElement(
+                    'template',
+                    [utils.createAttribute('name', path.fragmentID)],
+                    path.parentPath.node.children
+                );
+                var wxml = helpers
+                    .wxml(generate(template).code, modules)
+                    .replace(/;$/, '');
                 if (!modules.fragmentPath) {
-                    modules.fragmentPath = modules.sourcePath.split('src/pages')[0] + 'dist/components/Fragments/';
+                    modules.fragmentPath =
+                        modules.sourcePath.split('src/pages')[0] +
+                        'dist/components/Fragments/';
                 }
                 queue.wxml.push({
                     type: 'wxml',
                     path: modules.fragmentPath + path.fragmentID + '.wxml',
-                    code: wxml
+                    code: prettifyXml(wxml, {
+                        indent: 2
+                    })
                 });
             }
         }
     },
-    JSXAttribute: function (path, state) {
+    JSXAttribute: function(path, state) {
         let modules = getAnu(state);
         let attrName = path.node.name.name;
         let attrValue = path.node.value;
@@ -293,8 +299,7 @@ module.exports = {
             if (!attrs.setClassCode) {
                 attrs.setClassCode = true;
                 var keyValue;
-                for (var i = 0, el;
-                    (el = attrs[i++]);) {
+                for (var i = 0, el; (el = attrs[i++]); ) {
                     if (el.name.name == 'key') {
                         if (t.isLiteral(el.value)) {
                             keyValue = el.value;
@@ -356,11 +361,12 @@ module.exports = {
             }
         }
     },
-   
-    JSXClosingElement: function (path, state) {
+
+    JSXClosingElement: function(path, state) {
         let modules = getAnu(state);
         let nodeName = path.node.name.name;
-        if (!modules.importComponents[nodeName] &&
+        if (
+            !modules.importComponents[nodeName] &&
             nodeName !== 'React.template'
         ) {
             helpers.nodeName(path, modules);
