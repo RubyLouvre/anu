@@ -1,22 +1,39 @@
 import React from "@react";
-class P extends React.Component {
+class Express extends React.Component {
     constructor() {
         super();
         this.state = {
             title: "使用 React 编写小程序",
             pages: [
                 {
-                    title: '基础内容',
-                    url: '/pages/demo/baseContent/base/index'
+                    title: 'API',
+                    url: '/pages/demo/express/api/index'
                 },
                 {
-                    title: '内置组件',
-                    url: '/pages/demo/native/index/index'
+                    title: '继承',
+                    url: '/pages/demo/express/extend/index'
                 },
                 {
-                  title: '语法',
-                  url: '/pages/demo/express/index'
+                    title: "无状态组件",
+                    url: "/pages/demo/express/stateless/index"
+                },
+                {
+                    title: "一重循环",
+                    url: "/pages/demo/express/loop/index"
+                },
+                {
+                    title: '三重循环',
+                    url: "/pages/demo/express/loop3/index"
+                },
+                {
+                    title: '行内样式',
+                    url: "/pages/demo/express/inlineStyle/index"
+                },
+                {
+                    title: '组件套嵌内容',
+                    url: "/pages/demo/express/children/index"
                 }
+                
             ]
         };
     }
@@ -40,9 +57,8 @@ class P extends React.Component {
                         }
                     </div>
                 </div>
-                <Dialog><p>这是出现在弹窗组件的内部</p></Dialog>
             </div>
         );
     }
 }
-export default P;
+export default Express;

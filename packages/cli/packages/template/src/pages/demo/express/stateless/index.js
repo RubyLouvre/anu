@@ -1,5 +1,5 @@
 import React from "@react"
-import Aaa from "../../../components/Aaa/index"
+import Aaa from '@components/Aaa/index'
 class P extends React.Component {
     constructor() {
         this.state = {
@@ -14,7 +14,10 @@ class P extends React.Component {
     render() {
         return (
             <div onTap={this.changeAaa.bind(this)}>
-                <Aaa aaa={this.state.a} />
+                <div>无狀态组件(点这里改变)</div>
+                <div>
+                    <Aaa aaa={this.state.a} />
+                </div>
             </div>
         );
     }

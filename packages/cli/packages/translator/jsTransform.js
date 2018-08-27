@@ -1,6 +1,6 @@
-const syntaxClassProperties = require("babel-plugin-syntax-class-properties");
-const babel = require("babel-core");
-const visitor = require("./reactTranslate");
+let syntaxClassProperties = require("babel-plugin-syntax-class-properties");
+let babel = require("babel-core");
+let visitor = require("./jsTransformImpl");
 let helpers = require('./helpers');
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明

@@ -1,5 +1,5 @@
 import React from "@react";
-import Dog from "../../../components/Dog/index";
+import Dog from "@components/Dog/index";
 class P extends React.Component {
     constructor() {
         this.state = {
@@ -39,10 +39,13 @@ class P extends React.Component {
 
     render() {
         return (
-            <div onTap={this.changeNumbers.bind(this)}>
-                {this.state.array.map(function(el) {
-                    return <Dog name={el.name} key={el.name} />;
-                }, this)}
+            <div>
+                <div onTap={this.changeNumbers.bind(this)}>演示单重循环，点这里改变数组的个数</div>
+                <div>
+                    {this.state.array.map(function(el) {
+                        return <Dog name={el.name} key={el.name} />;
+                    })}
+                </div>
             </div>
         );
     }

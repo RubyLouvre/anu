@@ -22,7 +22,8 @@ const pkgJsonTemplate = {
     "name": "{{appName}}",
     "mpreact": {
         "alias": {
-            "@react" : "src/ReactWX.js"
+            "@react" : "src/ReactWX.js",
+            "@components": "src/components"
         }
     },
     "devDependencies": {

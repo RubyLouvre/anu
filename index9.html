@@ -15,311 +15,250 @@
 
     </div>
     <script>
-        class Node {
-            constructor(data) {
-                this.left = null;
-                this.parent = null;
-                this.right = null;
-                this.height = 0;
-                this.data = data;
+class Node {
+    constructor(data) {
+        this.data = data;
+        this.size = 1
+        this.left = null;
+        this.right = null;
+        this.parent = null;
+    }
+    update() {
+        var leftSize = this.left ? this.left.size : 0
+        var rightSize = this.right ? this.right.size : 0
+        this.size = leftSize + rightSize + 1;
+    }
+
+};
+
+class SBT {
+    constructor() {
+        this.root = null;
+        this._size = 0;
+    }
+    transplant(child, parent) {
+        if (!parent) {
+            this.root = child;
+        } else {
+            if (parent.data > child.data) {
+                parent.left = child
+            } else {
+                parent.right = child
             }
-            /**
-        * 右旋
-        *
-        *       b                           a
-        *      / \                         / \
-        *     a   e -> b.rotateRight() -> c   b
-        *    / \                             / \
-        *   c   d                           d   e
-        *
-        */
-            rotateRight() {
-                //让它的左孩子的右孩子，成为它的左孩子，
-                //它本身成为左孩子的右孩子。
-                //自己是往右下沉，叫右旋
-                var other = this.left;//a
-                this.left = other.right;//d
-                other.right = this;
-                this.height = Math.max(this.leftHeight(), this.rightHeight()) + 1;
-                other.height = Math.max(other.leftHeight(), this.height) + 1;
-                return other;
+        }
+        if (child) {
+            child.parent = parent;
+        }
+    }
+    leftRotate(node) {
+        if (!node.right) {
+            return;
+        }
+        var child = node.right;
+        node.right = child.left;
+        if (child.left) {
+            //过继孩子
+            child.left.parent = node; //父属性修正1
+        }
+        this.transplant(child, node.parent) //父属性修正2
+        node.parent = child; //父属性修正3
+        child.left = node; //旋转
+        //其他属性更新
+        child.size = node.size;//child.update(),但直接赋值更快
+        node.update();
+    }
+    rightRotate(node) {
+        if (!node.left) {
+            return;
+        }
+        var child = node.left;
+        node.left = child.right;
+        if (child.right) {
+            //过继孩子
+            child.right.parent = node; //父属性修正1
+        }
+        this.transplant(child, node.parent) //父属性修正2
+        node.parent = child; //父属性修正3
+        child.right = node; //旋转
+        //其他属性更新
+        child.size = node.size;//child.update(),但直接赋值更快
+        node.update();
+    }
+    maintain(node, rightDeeper) {
+        var left = node.left;
+        var right = node.right;
+        if (!rightDeeper) {
+            if (!left) {
+                return
             }
-            /**
-        * 左旋
-        *
-        *     a                              b
-        *    / \                            / \
-        *   c   b   -> a.rotateLeft() ->   a   e
-        *      / \                        / \
-        *     d   e                      c   d
-        *
-        */
-            rotateLeft() {
-                //让它的右孩子的左孩子，成为它的右孩子，
-                //它本身成为右孩子的左孩子。
-                //自己是往左下沉，叫左旋
-                var other = this.right;
-                this.right = other.left;
-                other.left = this;
-                this.height = Math.max(this.leftHeight(), this.rightHeight()) + 1;
-                other.height = Math.max(other.rightHeight(), this.height) + 1;
-                return other;
+            var rightSize = right && right.size || 0
+            var llSize = left.left && left.left.size || 0
+            var lrSize = left.right && left.right.size || 0
+            if (llSize > rightSize) {
+                this.rightRotate(node);
+            } else if (lrSize > rightSize) {
+                this.leftRotate(left);
+                this.rightRotate(node);
+            } else {
+                return;
             }
-            leftHeight() {
-                if (!this.left) {
-                    return -1;
-                }
-                return this.left.height;
+
+        } else {
+            if (!right) {
+                return
             }
-            rightHeight() {
-                if (!this.right) {
-                    return -1;
-                }
-                return this.right.height;
+            var leftSize = left && left.size || 0
+            var rrSize = right.right && right.right.size || 0
+            var rlSize = right.left && right.left.size || 0
+            if (rrSize > leftSize) {
+                this.leftRotate(node);
+            } else if (rlSize > leftSize) {
+                this.rightRotate(right);
+                this.leftRotate(node);
+            } else {
+                return;
             }
+        }
+    }
+
+    size() {
+        return this.root ? this.root.size : 0
+    }
+    find(data) {
+        var node = this.root;
+        while (node) {
+            var diff = data - node.data
+            if (diff == 0) {
+                break
+            } else if (diff < 0) {
+                node = node.left;
+            } else {
+                node = node.right;
+            }
+        }
+        if (node) {
+            return node
+        }
+        return null
+    }
+    insert(data) {
+        if (!this.root) {
+            this.root = new Node(data);
+            this._size++;
+            return true;
+        }
+        var node = this.root,
+            parent, paths = [];
+        while (node) {
+            paths.push(node);
+            var diff = data - node.data;
+            parent = node;
+            if (diff == 0) {
+                return false;
+            } else if (diff < 0) {
+                node = node.left;
+            } else {
+                node = node.right;
+            }
+        }
+        var node = new Node(data);
+        node.parent = parent
+        this._size++;
+        if (diff < 0) {
+            parent.left = node;
+        } else {
+            parent.right = node;
+        }
+        for (var i = paths.length - 1; i >= 0; i--) {
+            parent = paths[i];
+            parent.size++;
+            this.maintain(parent, data >= parent.data);
+        }
+        return true;
+    }
+    remove(data) {
+        if (!this.root) {
+            return false
+        }
+        var node = this.find(data);
+        if (node) {
+            //两个孩子的情况
+            if (node.left && node.right) {
+                var succ = this.maxNode(node.left); //求后继
+                node.data = succ.data;
+                node = succ; //转为一个孩子的情况
+            }
+            //一个或零个孩子的情况
+            this._size--;
+            var child = node.left || node.right || null;
+            var parent = node.parent,
+                p = parent,
+                paths = []
+            while (p) {
+                paths.push(p)
+                p = p.parent;
+            }
+            if (parent.left == node) {
+                parent.left = child
+            } else {
+                parent.right = child
+            }
+            if (child) {
+                child.parent = parent; //parent的size发生变化
+            }
+            while (p = paths.shift()) {
+                p.size--;
+                this.maintain(p, data >= p.data);
+            }
+        }
+    }
+    maxNode(node) {
+        var current = node || this.root;
+        while (current.right) {
+            current = node.right
+        }
+        return current;
+    }
+    toString(printNode) {
+        if (printNode === void 0) printNode = function (n) {
+            return n.data;
         };
 
-        class AVL {
-            constructor() {
-                this.root = null;
-                this._size = 0;
-            }
-            insert(data) {
-                var parent = this.root
-                this.root = this._insert(data, parent);
-                if (this.root) {//修正父节点
-                    this.root.parent = parent;
-                }
-                this._size++;
-            }
-            _insert(data, root) {
-                if (root === null) { //如果不存在根节点
-                    return new Node(data);
-                }
-                var diff = data - root.data;
-                if (diff < 0) {
-                    root.left = this._insert(data, root.left);
-                } else if (diff > 0) {
-                    root.right = this._insert(data, root.right);
-                } else {
-                    this._size--;//不能重复插入相同值，size减一（因为外面会加－）
-                    return root;
-                }
+        var out = [];
+        printRow(this.root, '', true, function (v) {
+            return out.push(v);
+        }, printNode);
+        return out.join('');
+    };
+}
 
-                //修正高度
-                root.height = Math.max(root.leftHeight(), root.rightHeight()) + 1;
-                var balanceState = getBalance(root);
-                //旋转
-                if (balanceState === BalanceState.UNBALANCED_LEFT) {
-
-                    if (data < root.left.data) {
-                        // LL
-                        root = root.rotateRight();
-                    } else {
-                        // LR
-                        root.left = root.left.rotateLeft();
-                        return root.rotateRight();
-                    }
-                }
-
-                if (balanceState === BalanceState.UNBALANCED_RIGHT) {
-                    if (data > root.right.data) {
-                        //RR
-                        root = root.rotateLeft();
-                    } else {
-                        // RL
-                        root.right = root.right.rotateRight();
-                        return root.rotateLeft();
-                    }
-                }
-
-                return root;
-            }
-            remove(data) {
-                var parent = this.root;
-                this.root = this._remove(data, parent);
-                if (this.root) {
-                    this.root = parent;
-                }
-                this._size--;
-            }
-            _remove(data, root) {
-                // 如果是空树
-                if (root === null) {
-                    this._size++;
-                    return root;
-                }
-                var diff = data - root.data
-
-                if (diff < 0) {
-                    // 被移除结点在左子树
-                    root.left = this._remove(data, root.left);
-                } else if (diff > 0) {
-                    // 被移除结点在右子树
-                    root.right = this._remove(data, root.right);
-                } else {
-                    if (!root.left && !root.right) {
-                        root = null;//如果是页子
-                    } else if (!root.left && root.right) {
-                        root = root.right;//如果只有右孩子
-                    } else if (root.left && !root.right) {
-                        root = root.left; //如果只有左孩子
-                    } else {
-                        // 有两个孩子，从右边取得最小那个放上来
-                        var inOrderSuccessor = this.minNode(root.right);
-                        root.data = inOrderSuccessor.data;
-                        root.right = this._remove(inOrderSuccessor.data, root.right);
-                    }
-                }
-
-                if (root === null) {
-                    return root;
-                }
-
-
-                root.height = Math.max(root.leftHeight(), root.rightHeight()) + 1;
-                var balanceState = getBalance(root);
-
-                if (balanceState === BalanceState.UNBALANCED_LEFT) {
-                    // LL
-                    if (getBalance(root.left) === BalanceState.BALANCED ||
-                        getBalance(root.left) === BalanceState.SLIGHTLY_UNBALANCED_LEFT) {
-                        return root.rotateRight();
-                    }
-                    // LR
-                    if (getBalance(root.left) === BalanceState.SLIGHTLY_UNBALANCED_RIGHT) {
-                        root.left = root.left.rotateLeft();
-                        return root.rotateRight();
-                    }
-                }
-
-                if (balanceState === BalanceState.UNBALANCED_RIGHT) {
-                    // RR
-                    if (getBalance(root.right) === BalanceState.BALANCED ||
-                        getBalance(root.right) === BalanceState.SLIGHTLY_UNBALANCED_RIGHT) {
-                        return root.rotateLeft();
-                    }
-                    // RL
-                    if (getBalance(root.right) === BalanceState.SLIGHTLY_UNBALANCED_LEFT) {
-                        root.right = root.right.rotateRight();
-                        return root.rotateLeft();
-                    }
-                }
-
-                return root;
-            }
-            minNode(node) {
-                var current = node || this.root;
-                while (current && current.left) {
-                    current = current.left;
-                }
-                return current;
-            }
-            find(data) {/**略**/ }
-            maxNode(node) {/**略**/ }
-            inOrder(cb) {/**略**/ }
-            preOrder(cb) {/**略**/ }
-            postOrder(cb) {/**略**/ }
-            size() {
-                return this._size;
-            }
-            show(node, parentNode) {
-                node = node || this.root
-                if (!parentNode) {
-                    parentNode = document.createElement("div");
-                    document.body.appendChild(parentNode);
-                    this.uuid = this.uuid || "uuid" + (new Date - 0)
-                    parentNode.id = this.uuid;
-                    var top = parentNode.appendChild(document.createElement("center"));
-                    top.style.cssText = "background:" + bg();
-                    top.innerHTML = node.data;
-                }
-                var a = parentNode.appendChild(document.createElement("div"))
-                a.style.cssText = "overflow:hidden";
-                if (node.left) {
-                    var b = a.appendChild(document.createElement("div"))
-                    b.style.cssText = "float:left; width:49%;text-align:center;background:" + bg();
-                    b.innerHTML = node.left.data;
-                    this.show(node.left, b);
-                }
-                if (node.right) {
-                    var c = a.appendChild(document.createElement("div"))
-                    c.style.cssText = "float:right; width:49%;text-align:center;background:" + bg();
-                    c.innerHTML = node.right.data;
-                    this.show(node.right, c);
-                }
-            }
+function printRow(root, prefix, isTail, out, printNode) {
+    if (root) {
+        out(("" + prefix + (isTail ? '└── ' : '├── ') + (printNode(root)) + "\n"));
+        var indent = prefix + (isTail ? '    ' : '│   ');
+        if (root.left) {
+            printRow(root.left, indent, false, out, printNode);
         }
-        function bg() {
-            return '#' + (Math.random() * 0xffffff << 0).toString(16);
+        if (root.right) {
+            printRow(root.right, indent, true, out, printNode);
         }
-       
-        var BalanceState = {
-            UNBALANCED_RIGHT: 1,
-            SLIGHTLY_UNBALANCED_RIGHT: 2,
-            BALANCED: 3,
-            SLIGHTLY_UNBALANCED_LEFT: 4,
-            UNBALANCED_LEFT: 5
-        };
+    }
+}
+var tree = new SBT(); //40, 30, 20, 60
+[10, 50, 40, 30, 20, 60, 55, 54, 53, 52, 51, 56].forEach(function (el, i) {
+    tree.insert(el)
+    console.log(tree + "")
+})
+console.log("delete...")
+tree.remove(60)
+console.log(tree + "")
 
-        function getBalance(node) {
-            var heightDifference = node.leftHeight() - node.rightHeight();
-            switch (heightDifference) {
-                case -2:
-                    return BalanceState.UNBALANCED_RIGHT;
-                case -1:
-                    return BalanceState.SLIGHTLY_UNBALANCED_RIGHT;
-                case 1:
-                    return BalanceState.SLIGHTLY_UNBALANCED_LEFT;
-                case 2:
-                    return BalanceState.UNBALANCED_LEFT;
-                default:
-                    return BalanceState.BALANCED;
-            }
-        }
-
-
-        var tree = new AVL() //一会儿改成AVL
-
-
-        /*  var id = setInterval(function () {
-              var el = ~~(Math.random() + "").slice(-3)
-
-              if (tree._size > 35) {
-                  clearInterval(id)
-                  tree.show()
-                  return
-              }
-              // tree.clearNode()
-              tree.insert(el)
-
-          }, 30)
-          */
-        var arr = [12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17]
-        arr.forEach(function (el) {
-            tree.insert(el)
-        })
-        tree.show()
-        var arr = [12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17]
-        var step = 0;
-        try {
-            arr.forEach(function (el, i) {
-                tree.remove(el)
-                if (i == step) {
-                    throw step
-                }
-            })
-        } catch (e) {
-            console.log(e)
-        }
-     //   tree.show()
-
+console.log(tree)
 
 
         // https://www.cnblogs.com/xrq730/p/6867924.html
         // https://blog.csdn.net/u011240877/article/details/53329023
         // https://www.cnblogs.com/skywang12345/p/3624343.html
     </script>
-
 
 </html>
