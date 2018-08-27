@@ -48,8 +48,7 @@ class P extends React.Component {
                         })}
                     </div>
                 </div>
-                <Dialog>
-                    <p>这是出现在弹窗组件的内部</p>
+                <Dialog><p class="dialog">这是出现在弹窗组件的内部</p>
                 </Dialog>
             </div>
         );

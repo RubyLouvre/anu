@@ -141,15 +141,18 @@ class Parser {
         return new Promise((resolve, reject) => {
             let { name, ext } = path.parse(file);
             if (isLib(name) || !isJs(ext)) return;
-            let data = queue.wxml.shift();
-            if (!data) return;
-            let dist = data.path;
-            if (/pages|components/.test(dist)) {
-                fs.ensureFileSync(dist);
-                fs.writeFile(dist, data.code || '', err => {
-                    err ? reject(err) : resolve();
-                });
+            while ( queue.wxml.length){
+                let data = queue.wxml.shift();
+                if (!data) return;
+                let dist = data.path;
+                if (/pages|components/.test(dist)) {
+                    fs.ensureFileSync(dist);
+                    fs.writeFile(dist, data.code || '', err => {
+                        err ? reject(err) : resolve();
+                    });
+                }
             }
+           
         });
     }
 

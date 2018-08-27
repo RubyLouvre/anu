@@ -11,7 +11,6 @@ class P extends React.Component {
 
     toggleDialog() {
         // eslint-disable-next-line
-        console.log(this.state);
         this.setState({
             show: !this.state.show
         });
@@ -20,7 +19,7 @@ class P extends React.Component {
         return (
             <div>
                 <div>类继承的演示</div>
-                {this.state.show ? <Dialog>sdfdsfds</Dialog> : null}
+                {this.state.show ? <Dialog><p>777</p></Dialog> : null}
 
                 <p>
                     <button type="primary" onTap={this.toggleDialog.bind(this)}>

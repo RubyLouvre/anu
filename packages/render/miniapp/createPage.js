@@ -1,31 +1,52 @@
 import {
     eventSystem
-} from "./eventSystem";
+} from './eventSystem';
 import {
     render
-} from "react-fiber/scheduleWork";
+} from 'react-fiber/scheduleWork';
 import {
     createElement
-} from "react-core/createElement";
+} from 'react-core/createElement';
 import {
     isFn, noop
-} from "react-core/util";
+} from 'react-core/util';
 import {
     getUUID
-} from "./getUUID";
+} from './getUUID';
 
 export function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
     if (!instance.instanceCode) {
-        var uuid = "i" + getUUID();
+        var uuid = 'i' + getUUID();
         instance.instanceCode = uuid;
         type.instances[uuid] = instance;
         //用于事件委托中
     }
     instance.props.instanceCode = instance.instanceCode;
 }
+function safeClone (originVal) {
+    let temp = originVal instanceof Array ? [] : {};
+    for (let item in originVal) {
+        if (originVal.hasOwnProperty(item)) {
+            let value = originVal[item];
+            if (isReferenceType(value)) {
+                if (value.$$typeof){
+                    continue;
+                }
+                temp[item] = safeClone(value);
+            } else {
+                temp[item] = value;
+            }
+        }
+    }
+    return temp;
+}
 
+function isReferenceType(val) {
+    return val && (typeof val === 'object' || 
+    Object.prototype.toString.call(val) === '[object Array]');
+}
 export function createPage(PageClass, path) {
     //添加一个全局代理的事件句柄
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
@@ -37,7 +58,7 @@ export function createPage(PageClass, path) {
             path: path,
             isPageComponent: true
         }), {
-            type: "page",
+            type: 'page',
             props: {},
             children: [],
             root: true,
@@ -82,14 +103,14 @@ export function createPage(PageClass, path) {
                     context: pageInst.context
                 };
                 applyChildComponentData(data, pageInst.allTemplateData || []);
-                $wxPage.setData(data);
+                $wxPage.setData(safeClone(data));
             }
         };
         updateMethod.apply(this, args);
     };
     var $wxPage = {
         setData: noop
-    }
+    };
     var config = {
         data: {
             state: instance.state,
@@ -110,7 +131,7 @@ export function createPage(PageClass, path) {
         },
         onHide: function onShow() {
             delete PageClass.instances[instance.instanceCode];
-            var fn = instance.componentDidHide;;
+            var fn = instance.componentDidHide;
             if (isFn(fn)) {
                 fn.call(instance);
             }
@@ -124,7 +145,7 @@ export function createPage(PageClass, path) {
     };
     //添加子组件的数据
     applyChildComponentData(config.data, instance.allTemplateData || []);
-    return config;
+    return safeClone(config);
 }
 
 function applyChildComponentData(data, list) {
