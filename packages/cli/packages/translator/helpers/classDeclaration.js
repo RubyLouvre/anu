@@ -10,7 +10,7 @@ module.exports = {
         var modules = getAnu(state);
         modules.className = path.node.id.name;
         modules.parentName = generate(path.node.superClass).code || 'Object';
-        modules.classCode = ('c' + Math.random()).replace(/0\./, '');
+        modules.classUid = 'c' + path.node.start + path.node.end;
     },
     exit(path, state) {
         // 将类表式变成函数调用
@@ -26,8 +26,8 @@ module.exports = {
         //用于绑定事件
         modules.thisMethods.push(
             t.objectProperty(
-                t.identifier('classCode'),
-                t.stringLiteral(modules.classCode)
+                t.identifier('classUid'),
+                t.stringLiteral(modules.classUid)
             )
         );
         const call = t.expressionStatement(

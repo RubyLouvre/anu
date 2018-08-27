@@ -133,7 +133,7 @@ var visitor = {
                 var attributes = [];
                 var template = jsx.createElement('template', attributes, []);
                 attributes.push(
-                    jsx.createAttribute('is', '{{props.fragmentID}}'),
+                    jsx.createAttribute('is', '{{props.fragmentUid}}'),
                 );
                 path.replaceWith(template);
                 //  console.warn("小程序暂时不支持{this.props.children}");

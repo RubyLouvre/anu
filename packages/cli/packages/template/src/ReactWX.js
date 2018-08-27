@@ -672,15 +672,15 @@ var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
         var target = e.currentTarget;
         var dataset = target.dataset || {};
-        var eventName = dataset[e.type + "Fn"];
-        var classCode = dataset.classCode;
-        var componentClass = eventSystem.classCache[classCode];
-        var instanceCode = dataset.instanceCode;
-        var instance = componentClass.instances[instanceCode];
-        var key = dataset["key"];
+        var eventUid = dataset[e.type + 'Uid'];
+        var classUid = dataset.classUid;
+        var componentClass = eventSystem.classCache[classUid];
+        var instanceUid = dataset.instanceUid;
+        var instance = componentClass.instances[instanceUid];
+        var key = dataset['key'];
         if (instance) {
             try {
-                var fn = instance.$$eventCached[eventName + (key != null ? "-" + key : "")];
+                var fn = instance.$$eventCached[eventUid + (key != null ? '-' + key : '')];
                 fn && fn.call(instance, createEvent(e, target));
             } catch (e) {
                 console.log(e.stack);
@@ -691,7 +691,7 @@ var eventSystem = {
 function createEvent(e, target) {
     var event = e.detail || {};
     event.stopPropagation = function () {
-        console.warn("小程序不支持这方法，请使用catchXXX");
+        console.warn('小程序不支持这方法，请使用catchXXX');
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
@@ -1867,12 +1867,12 @@ var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symb
 function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
-    if (!instance.instanceCode) {
+    if (!instance.instanceUid) {
         var uuid = 'i' + getUUID();
-        instance.instanceCode = uuid;
+        instance.instanceUid = uuid;
         type.instances[uuid] = instance;
     }
-    instance.props.instanceCode = instance.instanceCode;
+    instance.props.instanceUid = instance.instanceUid;
 }
 function safeClone(originVal) {
     var temp = originVal instanceof Array ? [] : {};
@@ -1962,14 +1962,14 @@ function createPage(PageClass, path) {
         },
         onShow: function onShow() {
             $wxPage = this;
-            PageClass.instances[instance.instanceCode] = instance;
+            PageClass.instances[instance.instanceUid] = instance;
             var fn = instance.componentDidShow;
             if (isFn(fn)) {
                 fn.call(instance);
             }
         },
         onHide: function onShow() {
-            delete PageClass.instances[instance.instanceCode];
+            delete PageClass.instances[instance.instanceUid];
             var fn = instance.componentDidHide;
             if (isFn(fn)) {
                 fn.call(instance);
@@ -2002,10 +2002,10 @@ function onComponentUpdate(fiber) {
     if (!instances) {
         return;
     }
-    var instanceCode = instance.instanceCode;
-    if (!instanceCode) {
-        instanceCode = instance.instanceCode = getUUID();
-        instances[instanceCode] = instance;
+    var instanceUid = instance.instanceUid;
+    if (!instanceUid) {
+        instanceUid = instance.instanceUid = getUUID();
+        instances[instanceUid] = instance;
         var p = fiber.return;
         while (p) {
             var inst = p._owner;
@@ -2030,7 +2030,7 @@ function onComponentUpdate(fiber) {
             context: instance.context,
             templatedata: inputProps.templatedata
         };
-        newData.props.instanceCode = instanceCode;
+        newData.props.instanceUid = instanceUid;
         if (instance.__isStateless) {
             var checkProps = fiber.memoizedProps;
             var usePush = true;
@@ -2069,7 +2069,7 @@ function onComponentDispose(fiber) {
     }
     var pageInst = instance.$pageInst;
     if (pageInst) {
-        delete instances[instance.instanceCode];
+        delete instances[instance.instanceUid];
         var props = fiber.props;
         var arr = getData(pageInst);
         for (var i = 0, el; el = arr[i++];) {
@@ -2084,7 +2084,7 @@ function template(props) {
     var clazz = props.is;
     var componentProps = {};
     for (var i in props) {
-        if (i !== "is" && i != "templatedata") {
+        if (i !== 'is' && i != 'templatedata') {
             componentProps[i] = props[i];
         }
     }
@@ -2440,26 +2440,26 @@ function initNativeApi(ReactWX) {
 
 var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
-  return target.replace(rhyphen, "$1-$2").toLowerCase();
+    return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
 function transform(obj) {
-  var _this = this;
-  return Object.keys(obj).map(function (item) {
-    var value = obj[item].toString();
-    value = value.replace(/(\d+)px/gi, function (str, match) {
-      return _this.pxTransform(match);
-    });
-    return hyphen(item) + ": " + value;
-  }).join(";");
+    var _this = this;
+    return Object.keys(obj).map(function (item) {
+        var value = obj[item].toString();
+        value = value.replace(/(\d+)px/gi, function (str, match) {
+            return _this.pxTransform(match);
+        });
+        return hyphen(item) + ': ' + value;
+    }).join(';');
 }
 function collectStyle(obj, props, key) {
-  if (props) {
-    var str = transform.call(this, obj);
-    props[key] = str;
-  } else {
-    console.warn("props 为空");
-  }
-  return obj;
+    if (props) {
+        var str = transform.call(this, obj);
+        props[key] = str;
+    } else {
+        console.warn('props 为空');
+    }
+    return obj;
 }
 
 function cleanChildren(array) {
@@ -2467,7 +2467,7 @@ function cleanChildren(array) {
         return array;
     }
     return array.map(function (el) {
-        if (el.type == "#text") {
+        if (el.type == '#text') {
             return el.props;
         } else {
             return {
@@ -2479,25 +2479,25 @@ function cleanChildren(array) {
     });
 }
 var autoContainer = {
-    type: "root",
+    type: 'root',
     appendChild: noop,
     props: null,
     children: []
 };
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
-    var n = name.charAt(0) == "o" ? 2 : 5;
+    var n = name.charAt(0) == 'o' ? 2 : 5;
     var type = name.slice(n).toLowerCase();
-    var eventCode = props["data-" + type + "-fn"];
-    return eventCode + (key != null ? "-" + key : "");
+    var eventCode = props['data-' + type + '-uid'];
+    return eventCode + (key != null ? '-' + key : '');
 }
 var Renderer$1 = createRenderer({
     render: render,
     updateAttribute: function updateAttribute(fiber) {
         var props = fiber.props,
             lastProps = fiber.lastProps;
-        var classId = props["data-class-code"];
-        var instanceId = props["data-instance-code"];
+        var classId = props['data-class-uid'];
+        var instanceId = props['data-instance-uid'];
         if (classId) {
             var clazz = eventSystem.classCache[classId];
             if (clazz && clazz.instances) {
@@ -2513,7 +2513,7 @@ var Renderer$1 = createRenderer({
                     if (lastProps) {
                         for (var _name in lastProps) {
                             if (onEvent.test(_name) && !props[_name]) {
-                                var code = getEventHashCode(_name, lastProps, fiber.key);
+                                code = getEventHashCode(_name, lastProps, fiber.key);
                                 delete cached[code];
                             }
                         }
@@ -2607,35 +2607,35 @@ var React = void 0;
 var classCache = eventSystem.classCache;
 var render$1 = Renderer$1.render;
 React = win.React = win.ReactDOM = {
-  eventSystem: eventSystem,
-  miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
-    var clazz = miniCreateClass.apply(null, arguments);
-    var uuid = clazz.prototype.classCode;
-    classCache[uuid] = clazz;
-    return clazz;
-  },
-  findDOMNode: function findDOMNode(fiber) {
-    console.log('小程序不支持findDOMNode');
-  },
-  version: '1.4.6',
-  render: render$1,
-  hydrate: render$1,
-  template: template,
-  createPage: createPage,
-  Fragment: Fragment,
-  PropTypes: PropTypes,
-  Children: Children,
-  createPortal: createPortal,
-  createContext: createContext,
-  Component: Component,
-  createRef: createRef,
-  forwardRef: forwardRef,
-  createElement: createElement,
-  cloneElement: cloneElement,
-  PureComponent: PureComponent,
-  isValidElement: isValidElement,
-  createFactory: createFactory,
-  collectStyle: collectStyle
+    eventSystem: eventSystem,
+    miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
+        var clazz = miniCreateClass.apply(null, arguments);
+        var uuid = clazz.prototype.classUid;
+        classCache[uuid] = clazz;
+        return clazz;
+    },
+    findDOMNode: function findDOMNode(fiber) {
+        console.log('小程序不支持findDOMNode');
+    },
+    version: '1.4.6',
+    render: render$1,
+    hydrate: render$1,
+    template: template,
+    createPage: createPage,
+    Fragment: Fragment,
+    PropTypes: PropTypes,
+    Children: Children,
+    createPortal: createPortal,
+    createContext: createContext,
+    Component: Component,
+    createRef: createRef,
+    forwardRef: forwardRef,
+    createElement: createElement,
+    cloneElement: cloneElement,
+    PureComponent: PureComponent,
+    isValidElement: isValidElement,
+    createFactory: createFactory,
+    collectStyle: collectStyle
 };
 initNativeApi(React);
 var React$1 = React;

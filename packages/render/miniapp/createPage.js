@@ -17,13 +17,13 @@ import {
 export function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
-    if (!instance.instanceCode) {
+    if (!instance.instanceUid) {
         var uuid = 'i' + getUUID();
-        instance.instanceCode = uuid;
+        instance.instanceUid = uuid;
         type.instances[uuid] = instance;
         //用于事件委托中
     }
-    instance.props.instanceCode = instance.instanceCode;
+    instance.props.instanceUid = instance.instanceUid;
 }
 function safeClone (originVal) {
     let temp = originVal instanceof Array ? [] : {};
@@ -123,14 +123,14 @@ export function createPage(PageClass, path) {
         },
         onShow: function onShow() {
             $wxPage = this;
-            PageClass.instances[instance.instanceCode] = instance;
+            PageClass.instances[instance.instanceUid] = instance;
             var fn = instance.componentDidShow;
             if (isFn(fn)) {
                 fn.call(instance);
             }
         },
         onHide: function onShow() {
-            delete PageClass.instances[instance.instanceCode];
+            delete PageClass.instances[instance.instanceUid];
             var fn = instance.componentDidHide;
             if (isFn(fn)) {
                 fn.call(instance);
