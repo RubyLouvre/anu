@@ -1,8 +1,7 @@
 import React from '@react';
 
-class Image extends React.Component {
+class P extends React.Component {
     constructor() {
-        super();
         this.state = {
             state: '正在加载',
             src:
@@ -124,4 +123,4 @@ class Image extends React.Component {
 }
 
 
-export default Image;
+export default P;

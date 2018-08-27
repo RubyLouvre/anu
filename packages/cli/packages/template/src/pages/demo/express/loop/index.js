@@ -2,40 +2,41 @@ import React from "@react";
 import Dog from "@components/Dog/index";
 class P extends React.Component {
     constructor() {
-        super();
         this.state = {
             array: [
                 {
-                    name: "狗1"
+                    name: '狗1'
                 },
                 {
-                    name: "狗2"
+                    name: '狗2'
                 },
                 {
-                    name: "狗3"
+                    name: '狗3'
                 }
             ]
         };
     }
+
     changeNumbers() {
-        console.log("change");
+        console.log('change');
         this.setState({
             array: [
                 {
-                    name: "狗1"
+                    name: '狗1'
                 },
                 {
-                    name: "狗3"
+                    name: '狗3'
                 },
                 {
-                    name: "狗4"
+                    name: '狗4'
                 },
                 {
-                    name: "狗5"
+                    name: '狗5'
                 }
             ]
         });
     }
+
     render() {
         return (
             <div>
