@@ -5,6 +5,7 @@ module.exports = {
         "es6": true,
         "node": true
     },
+    "plugins": ["react"],
     "parser": "babel-eslint",
     "extends": "eslint:recommended",
     "parserOptions": {
@@ -39,7 +40,8 @@ module.exports = {
                 "before": true,
                 "after": true
             }
-        ]
+        ],
+        "react/jsx-uses-vars": 2
     },
     "globals": {
         "wx": true
