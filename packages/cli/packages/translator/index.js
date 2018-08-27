@@ -83,7 +83,9 @@ class Parser {
        this.compiler = webpack(this.config);
        this.compiler.outputFileSystem = new MemoryFS();
        this.compiler.run((err, stats)=>{
-            if(err) throw err;
+            if(err) {
+                throw err;
+            }
             this.startCodeGen(stats)
       })
 
@@ -96,7 +98,7 @@ class Parser {
         let errors = stats.toJson().errors;
         for(let i = 0; i <  errors.length; i++){
             if(/SyntaxError\:/.test(errors[i])){
-                throw errors[i];
+               console.warn("[warning]" +errors[i] );
             }
         }
 
@@ -106,11 +108,9 @@ class Parser {
             }
             return 0
         })
-       // console.log(dependencies)
        
         dependencies.forEach((file)=>{
             if(!/node_modules/g.test(file)){
-                console.log(file, '------file-----');
                 this.codegen(file);
             }
         })
@@ -236,7 +236,9 @@ class Parser {
             aggregateTimeout: 300,
             poll: undefined
           }, (err, stats) => {
-            if(err) throw err;
+            if(err) {
+                throw err
+            }
             this.startCodeGen(stats);
         });
     }

@@ -1,4 +1,5 @@
 import React from "@react";
+import Dialog from "@components/Dialog/index"
 class P extends React.Component {
     constructor() {
         super();

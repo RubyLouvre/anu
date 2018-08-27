@@ -69,7 +69,6 @@ module.exports = function(path) {
       }
       break;
     default:
-      console.log('===0000=', path.node.expression.type);
       break;
   }
 };

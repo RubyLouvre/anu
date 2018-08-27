@@ -1,7 +1,6 @@
 import React from "@react";
 class P extends React.Component {
     constructor() {
-        super();
         this.bind();
     }
 

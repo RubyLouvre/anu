@@ -1,7 +1,6 @@
 import React from '@react';
 class P extends React.Component {
 	constructor() {
-		super();
 		const ROOT_PATH = '/pages/demo/native';
 		this.state = {
 			array: 'button,checkbox,input,slider,picker,radio,textarea,label,audio,camera,image,video'

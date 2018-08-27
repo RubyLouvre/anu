@@ -9,7 +9,6 @@ const formItemStyle = {
 
 class Style extends React.Component {
   constructor() {
-    super();
     this.state = {
       title: "使用 React 编写小程序",
       methodColor: {

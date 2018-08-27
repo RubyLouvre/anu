@@ -5,6 +5,7 @@ const helpers = require("./helpers");
 const queue = require("./queue");
 const utils = require("./utils");
 const deps = require("./deps");
+const prettifyXml = require("prettify-xml");
 
 function getAnu(state) {
     return state.file.opts.anu;
@@ -268,14 +269,15 @@ module.exports = {
                     utils.createAttribute("name", path.fragmentID),
                 ], path.parentPath.node.children);
                 var wxml = helpers.wxml(generate(template).code, modules).replace(/;$/,"")
-                console.log(wxml)
                 if (!modules.fragmentPath) {
                     modules.fragmentPath = modules.sourcePath.split("src/pages")[0] + "dist/components/Fragments/"
                 }
                 queue.wxml.push({
                     type: 'wxml',
                     path: modules.fragmentPath + path.fragmentID + ".wxml",
-                    code: wxml
+                    code: prettifyXml( wxml, {
+                        indent: 2 
+                    })
                 })
             }
         }
