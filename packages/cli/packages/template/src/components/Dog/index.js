@@ -1,9 +1,11 @@
-import React from "@react";
+// eslint-disable-next-line
+import React from '@react';
 import Animal from '../Animal/index';
 
 class Dog extends Animal {
     componentWillMount() {
-        console.log('Dog componentWillMount')
+        // eslint-disable-next-line
+        console.log('Dog componentWillMount');
     }
     render() {
         return (

@@ -1,6 +1,7 @@
-import React from "@react";
+import React from '@react';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             iconSize: [20, 30, 40, 50, 60, 70],
             iconColor: [
@@ -35,7 +36,7 @@ class P extends React.Component {
 
     remove() {
         var textAry = this.state.text.split('\n');
-        if (!textAry.length) return;
+        if (!textAry.length)return;
         textAry.pop();
 
         this.setState({

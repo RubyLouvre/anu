@@ -1,7 +1,7 @@
-import React from "@react";
-import Dog from "@components/Dog/index";
+import React from '@react';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             array: [
                 {
@@ -18,6 +18,7 @@ class P extends React.Component {
     }
 
     changeNumbers() {
+        // eslint-disable-next-line
         console.log('change');
         this.setState({
             array: [

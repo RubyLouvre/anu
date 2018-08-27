@@ -1,7 +1,8 @@
-import React from "@react";
-import "./index.less";
+import React from '@react';
+import './index.less';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             checkboxItems: [
                 { name: 'USA', value: '美国' },
@@ -30,10 +31,11 @@ class P extends React.Component {
         for (var i = 0; i < this.state.checkboxItems.length; i++) {
             if (checked.indexOf(this.state.checkboxItems[i].name) !== -1) {
                 changed['checkboxItems[' + i + '].checked'] = true;
-            } else {
+            }else {
                 changed['checkboxItems[' + i + '].checked'] = false;
             }
         }
+        // eslint-disable-next-line
         console.log(changed);
         this.setState(changed);
     }
@@ -44,10 +46,11 @@ class P extends React.Component {
         for (var i = 0; i < this.state.radioItems.length; i++) {
             if (checked.indexOf(this.state.radioItems[i].name) !== -1) {
                 changed['radioItems[' + i + '].checked'] = true;
-            } else {
+            }else {
                 changed['radioItems[' + i + '].checked'] = false;
             }
         }
+        // eslint-disable-next-line
         console.log(changed);
         this.setState(changed);
     }

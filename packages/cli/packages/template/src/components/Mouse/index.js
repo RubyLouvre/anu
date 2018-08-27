@@ -1,21 +1,16 @@
 import React from '@react';
 
 class Mouse extends React.Component {
-    constructor(props) {
+    constructor() {
+        super();
         this.state = {
-           x: 1,
-           y: 2
+            x: 1,
+            y: 2
         };
     }
 
-   
-  
     render() {
-        return (
-            <div class="mouse">
-                {this.props.children(this.state)}
-            </div>
-        );
+        return <div class="mouse">{this.props.children(this.state)}</div>;
     }
 }
 

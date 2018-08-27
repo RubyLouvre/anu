@@ -1,6 +1,7 @@
-import React from "@react";
+import React from '@react';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             items: [
                 { name: 'USA', value: '美国' },
@@ -14,7 +15,6 @@ class P extends React.Component {
     }
 
     config = {
-        navigationBarBackgroundColor: '#ffffff',
         navigationBarTextStyle: '#fff',
         navigationBarBackgroundColor: '#0088a4',
         navigationBarTitleText: 'checkbox demo',
@@ -23,6 +23,7 @@ class P extends React.Component {
     };
 
     checkboxChange(e) {
+        // eslint-disable-next-line
         console.log('checkbox发生change事件，携带value值为：', e.value);
         React.wx.showModal({
             title: '提示',

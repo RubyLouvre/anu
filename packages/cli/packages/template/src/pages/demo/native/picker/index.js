@@ -1,6 +1,7 @@
-import React from "@react";
+import React from '@react';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             array: ['美国', '中国', '巴西', '日本'],
             objectArray: [
@@ -80,6 +81,7 @@ class P extends React.Component {
     }
 
     bindPickerChange(e) {
+        // eslint-disable-next-line
         console.log('picker发送选择改变，携带值为', e.value);
         this.setState({
             index: e.value
@@ -87,6 +89,7 @@ class P extends React.Component {
     }
 
     bindMultiPickerChange(e) {
+        // eslint-disable-next-line
         console.log('picker发送选择改变，携带值为', e.value);
         this.setState({
             multiIndex: e.value
@@ -94,6 +97,7 @@ class P extends React.Component {
     }
 
     bindMultiPickerColumnChange(e) {
+        // eslint-disable-next-line
         console.log('修改的列为', e.column, '，值为', e.value);
         var data = {
             multiArray: this.state.multiArray,
@@ -101,74 +105,76 @@ class P extends React.Component {
         };
         this.state.multiIndex[e.column] = e.value;
         switch (e.column) {
+        case 0:
+            switch (data.multiIndex[0]) {
             case 0:
-                switch (data.multiIndex[0]) {
-                    case 0:
-                        data.multiArray[1] = [
-                            '扁性动物',
-                            '线形动物',
-                            '环节动物',
-                            '软体动物',
-                            '节肢动物'
-                        ];
-                        data.multiArray[2] = ['猪肉绦虫', '吸血虫'];
-                        break;
-                    case 1:
-                        data.multiArray[1] = ['鱼', '两栖动物', '爬行动物'];
-                        data.multiArray[2] = ['鲫鱼', '带鱼'];
-                        break;
-                }
-                data.multiIndex[1] = 0;
-                data.multiIndex[2] = 0;
+                data.multiArray[1] = [
+                    '扁性动物',
+                    '线形动物',
+                    '环节动物',
+                    '软体动物',
+                    '节肢动物'
+                ];
+                data.multiArray[2] = ['猪肉绦虫', '吸血虫'];
                 break;
             case 1:
-                switch (data.multiIndex[0]) {
-                    case 0:
-                        switch (data.multiIndex[1]) {
-                            case 0:
-                                data.multiArray[2] = ['猪肉绦虫', '吸血虫'];
-                                break;
-                            case 1:
-                                data.multiArray[2] = ['蛔虫'];
-                                break;
-                            case 2:
-                                data.multiArray[2] = ['蚂蚁', '蚂蟥'];
-                                break;
-                            case 3:
-                                data.multiArray[2] = ['河蚌', '蜗牛', '蛞蝓'];
-                                break;
-                            case 4:
-                                data.multiArray[2] = [
-                                    '昆虫',
-                                    '甲壳动物',
-                                    '蛛形动物',
-                                    '多足动物'
-                                ];
-                                break;
-                        }
-                        break;
-                    case 1:
-                        switch (data.multiIndex[1]) {
-                            case 0:
-                                data.multiArray[2] = ['鲫鱼', '带鱼'];
-                                break;
-                            case 1:
-                                data.multiArray[2] = ['青蛙', '娃娃鱼'];
-                                break;
-                            case 2:
-                                data.multiArray[2] = ['蜥蜴', '龟', '壁虎'];
-                                break;
-                        }
-                        break;
-                }
-                data.multiIndex[2] = 0;
-                console.log(data.multiIndex);
+                data.multiArray[1] = ['鱼', '两栖动物', '爬行动物'];
+                data.multiArray[2] = ['鲫鱼', '带鱼'];
                 break;
+            }
+            data.multiIndex[1] = 0;
+            data.multiIndex[2] = 0;
+            break;
+        case 1:
+            switch (data.multiIndex[0]) {
+            case 0:
+                switch (data.multiIndex[1]) {
+                case 0:
+                    data.multiArray[2] = ['猪肉绦虫', '吸血虫'];
+                    break;
+                case 1:
+                    data.multiArray[2] = ['蛔虫'];
+                    break;
+                case 2:
+                    data.multiArray[2] = ['蚂蚁', '蚂蟥'];
+                    break;
+                case 3:
+                    data.multiArray[2] = ['河蚌', '蜗牛', '蛞蝓'];
+                    break;
+                case 4:
+                    data.multiArray[2] = [
+                        '昆虫',
+                        '甲壳动物',
+                        '蛛形动物',
+                        '多足动物'
+                    ];
+                    break;
+                }
+                break;
+            case 1:
+                switch (data.multiIndex[1]) {
+                case 0:
+                    data.multiArray[2] = ['鲫鱼', '带鱼'];
+                    break;
+                case 1:
+                    data.multiArray[2] = ['青蛙', '娃娃鱼'];
+                    break;
+                case 2:
+                    data.multiArray[2] = ['蜥蜴', '龟', '壁虎'];
+                    break;
+                }
+                break;
+            }
+            data.multiIndex[2] = 0;
+            // eslint-disable-next-line
+            console.log(data.multiIndex);
+            break;
         }
         this.setState(data);
     }
 
     bindTimeChange(e) {
+        // eslint-disable-next-line
         console.log('picker发送选择改变，携带值为', e.value);
         this.setState({
             time: e.value
@@ -176,6 +182,7 @@ class P extends React.Component {
     }
 
     bindDateChange(e) {
+        // eslint-disable-next-line
         console.log('picker发送选择改变，携带值为', e.value);
         this.setState({
             date: e.value
@@ -183,6 +190,7 @@ class P extends React.Component {
     }
 
     bindRegionChange(e) {
+        // eslint-disable-next-line
         console.log('picker发送选择改变，携带值为', e.value);
         this.setState({
             region: e.value

@@ -1,9 +1,9 @@
-import React from "@react";
+import React from '@react';
 class P extends React.Component {
     constructor() {
         super();
         this.state = {
-            title: "使用 React 编写小程序",
+            title: '使用 React 编写小程序',
             pages: [
                 {
                     title: '基础内容',
@@ -14,18 +14,18 @@ class P extends React.Component {
                     url: '/pages/demo/native/index/index'
                 },
                 {
-                  title: '语法',
-                  url: '/pages/demo/express/index'
+                    title: '语法',
+                    url: '/pages/demo/express/index'
                 }
             ]
         };
     }
     config = {
-        "navigationBarTextStyle": "#fff",
-        "navigationBarBackgroundColor": "#0088a4",
-        "navigationBarTitleText": "Demo",
-        "backgroundColor": "#eeeeee",
-        "backgroundTextStyle": "light"
+        'navigationBarTextStyle': '#fff',
+        'navigationBarBackgroundColor': '#0088a4',
+        'navigationBarTitleText': 'Demo',
+        'backgroundColor': '#eeeeee',
+        'backgroundTextStyle': 'light'
     }
     render() {
         return (
@@ -35,7 +35,7 @@ class P extends React.Component {
                     <div class='navigation'>
                         {
                             this.state.pages.map(function(page) {
-                                return <navigator open-type="navigate" class='item' hover-class="navigator-hover" url={page.url}>{page.title}</navigator>
+                                return <navigator open-type="navigate" class='item' hover-class="navigator-hover" url={page.url}>{page.title}</navigator>;
                             })
                         }
                     </div>

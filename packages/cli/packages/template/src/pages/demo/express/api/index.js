@@ -1,4 +1,4 @@
-import React from "@react";
+import React from '@react';
 import './index.less';
 
 class P extends React.Component {
@@ -10,7 +10,6 @@ class P extends React.Component {
     }
 
     config = {
-        navigationBarBackgroundColor: '#ffffff',
         navigationBarTextStyle: '#fff',
         navigationBarBackgroundColor: '#0088a4',
         navigationBarTitleText: 'base demo',
@@ -30,7 +29,7 @@ class P extends React.Component {
                     imgPath: res.tempFilePaths
                 });
             })
-            .fail(() => {
+            .fail((res) => {
                 this.setState({
                     imgPath: res.tempFilePaths.toString()
                 });
@@ -47,16 +46,19 @@ class P extends React.Component {
                 }
             })
             .then(function(res) {
+                // eslint-disable-next-line
                 console.log(res);
             })
-            .catch(function(err) {
+            .catch(function() {
                 React.wx.showModal({
                     title: '提示',
                     content: '服务器出错了',
                     success: function(res) {
                         if (res.confirm) {
+                            // eslint-disable-next-line
                             console.log('用户点击确定');
-                        } else if (res.cancel) {
+                        }else if (res.cancel) {
+                            // eslint-disable-next-line
                             console.log('用户点击取消');
                         }
                     }
@@ -79,12 +81,14 @@ class P extends React.Component {
             })
             .then(function(res) {
                 if (res.confirm) {
+                    // eslint-disable-next-line
                     console.log('用户点击确定');
-                } else if (res.cancel) {
+                }else if (res.cancel) {
+                    // eslint-disable-next-line
                     console.log('用户点击取消');
                 }
             })
-            .catch(function(fail) {});
+            .catch(function() {});
     }
 
     render() {

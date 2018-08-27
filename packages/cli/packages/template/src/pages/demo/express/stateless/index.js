@@ -1,7 +1,7 @@
-import React from "@react"
-import Aaa from '@components/Aaa/index'
+import React from '@react';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             a: 111
         };

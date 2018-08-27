@@ -1,6 +1,7 @@
-import React from "@react";
+import React from '@react';
 class P extends React.Component {
     constructor() {
+        super();
         this.bind();
     }
 
@@ -8,6 +9,7 @@ class P extends React.Component {
         for (let i = 1; i < 5; i++) {
             let index = i + 1;
             this['slider' + index + 'change'] = function(e) {
+                // eslint-disable-next-line
                 console.log(
                     'slider' + 'index' + '发生 change 事件，携带值为',
                     e.value
@@ -17,10 +19,12 @@ class P extends React.Component {
     }
 
     switch1Change(e) {
+        // eslint-disable-next-line
         console.log('switch1 发生 change 事件，携带值为', e.value);
     }
 
     switch2Change(e) {
+        // eslint-disable-next-line
         console.log('switch2 发生 change 事件，携带值为', e.value);
     }
 

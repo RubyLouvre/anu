@@ -1,4 +1,4 @@
-const t = require("babel-types");
+const t = require('babel-types');
 
 /**
  * properties的type: ：String, Number, Boolean, Object, Array, null
@@ -10,12 +10,12 @@ const t = require("babel-types");
  * NullLiteral: null
  */
 const typeMap = {
-    NumericLiteral: "Number",
-    StringLiteral: "String",
-    BooleanLiteral: "Boolean",
-    ArrayExpression: "Array",
-    ObjectExpression: "Object",
-    NullLiteral: "null"
+    NumericLiteral: 'Number',
+    StringLiteral: 'String',
+    BooleanLiteral: 'Boolean',
+    ArrayExpression: 'Array',
+    ObjectExpression: 'Object',
+    NullLiteral: 'null'
 };
 
 /**
@@ -29,16 +29,16 @@ module.exports = function(properties, modules) {
             t.identifier(el.key.name),
             t.objectExpression([
                 t.objectProperty(
-                    t.identifier("type"),
+                    t.identifier('type'),
                     t.identifier(typeMap[el.value.type])
                 ),
-                t.objectProperty(t.identifier("value"), el.value)
+                t.objectProperty(t.identifier('value'), el.value)
             ])
         );
         astList.push(propertyAst);
     });
 
     modules.thisMethods.push(
-        t.objectProperty(t.identifier("properties"), t.objectPattern(astList))
+        t.objectProperty(t.identifier('properties'), t.objectPattern(astList))
     );
 };

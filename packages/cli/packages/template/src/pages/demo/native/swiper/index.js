@@ -3,6 +3,7 @@ import './index.less';
 
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             background: ['demo-text-1', 'demo-text-2', 'demo-text-3'],
             indicatorDots: true,
@@ -24,7 +25,7 @@ class P extends React.Component {
         this.setState(newData);
     }
 
-    changeIndicatorDots(e) {
+    changeIndicatorDots() {
         this.setState({
             indicatorDots: !this.state.indicatorDots
         });
