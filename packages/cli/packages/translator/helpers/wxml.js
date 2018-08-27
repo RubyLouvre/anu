@@ -51,11 +51,11 @@ var visitor = {
                     }
                     if (attrName === 'templatedata') {
                         array = attrValue;
-                    }else if (attrName === 'is') {
+                    } else if (attrName === 'is') {
                         is = attrValue;
-                    }else if (attrName === 'wx:key') {
+                    } else if (attrName === 'wx:key') {
                         key = attrValue;
-                    }else if (attrName === 'key') {
+                    } else if (attrName === 'key') {
                         key = attrValue;
                     }
                 });
@@ -83,7 +83,7 @@ var visitor = {
                         jsx.createAttribute('wx:for-index', 'index'),
                         jsx.createAttribute('wx:key', '*this')
                     );
-                }else {
+                } else {
                     attributes.push(
                         jsx.createAttribute('is', is),
                         jsx.createAttribute('wx:if', `{{${array}[index]}}`),
@@ -103,10 +103,10 @@ var visitor = {
 
             if (t.isStringLiteral(node)) {
                 value = node.value;
-            }else {
+            } else {
                 if (/\./.test(node.expression.value)) {
                     value = '*this';
-                }else {
+                } else {
                     value = `{{${generate(node.expression).code}}}`;
                 }
             }
@@ -126,7 +126,7 @@ var visitor = {
             var expr = path.node.expression;
             if (t.isJSXAttribute(path.parent)) {
                 attrValueHelper(path);
-            }else if (
+            } else if (
                 expr.type === 'MemberExpression' &&
                /props\.children/.test( generate(expr).code )
             ) {
@@ -137,7 +137,7 @@ var visitor = {
                 );
                 path.replaceWith(template);
                 //  console.warn("小程序暂时不支持{this.props.children}");
-            }else {
+            } else {
                 //返回block元素或template元素
                 var block = logicHelper(expr, modules);
                 path.replaceWith(block);

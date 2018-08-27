@@ -36,7 +36,7 @@ class P extends React.Component {
 
     remove() {
         var textAry = this.state.text.split('\n');
-        if (!textAry.length)return;
+        if (!textAry.length) return;
         textAry.pop();
 
         this.setState({

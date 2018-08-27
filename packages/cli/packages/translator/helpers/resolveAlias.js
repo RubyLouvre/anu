@@ -6,7 +6,7 @@ module.exports = (nPath, modules, name)=>{
 
 
     let aliasField = require( path.join(cwd, 'package.json') ).mpreact.alias;
-    if (!aliasField)return;
+    if (!aliasField) return;
 
     let importValue = nPath.node.source.value;
     let {dir, base} = path.parse(importValue);
@@ -25,7 +25,7 @@ module.exports = (nPath, modules, name)=>{
         to = path.dirname( path.join(cwd, aliasField[base]) );
         target = path.parse( aliasField[base] ).name;
       
-    }else {
+    } else {
         let aliasKeys = Object.keys(aliasField);
         //遍历查找是否匹配引用路径是否匹配，如 @components/A/B是否匹配@components
         for (let i = 0; i < aliasKeys.length; i++){

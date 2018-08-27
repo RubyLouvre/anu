@@ -24,7 +24,7 @@ exports.exit = function (path, type, componentName, modules) {
         );
     }
 
-    if (!body.length)return;
+    if (!body.length) return;
 
     const expr = body[0];
 
@@ -44,7 +44,7 @@ exports.exit = function (path, type, componentName, modules) {
         var wxml = wxmlHelper(jsx, modules);
         if (needWrap) {
             wxml = wxml.slice(7, -9); //去掉<block> </block>;
-        }else {
+        } else {
             wxml = wxml.slice(0, -1); //去掉最后的;
         }
         if (modules.componentType === 'Component') {
@@ -86,7 +86,7 @@ exports.exit = function (path, type, componentName, modules) {
 };
 
 exports.enter = function (path) {
-    if (path.node.key.name !== 'render')return;
+    if (path.node.key.name !== 'render') return;
 
     const body = path.node.body.body;
 
@@ -96,7 +96,7 @@ exports.enter = function (path) {
         );
     }
 
-    if (!body.length)return;
+    if (!body.length) return;
 
     const expr = body[0];
 

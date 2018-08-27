@@ -35,7 +35,7 @@ module.exports = function(path) {
     case 'MemberExpression':
         if (isEvent) {
             bindEvent(path, attrName, attrValue.replace(/^\s*this\./, ''));
-        }else {
+        } else {
             replaceWithExpr(path, attrValue.replace(/^\s*this\./, ''));
         }
         break;
@@ -44,16 +44,16 @@ module.exports = function(path) {
             var match = attrValue.match(/this\.(\w+)\.bind/);
             if (match && match[1]) {
                 bindEvent(path, attrName, match[1]);
-            }else {
+            } else {
                 throwEventValue(attrName, attrValue);
             }
-        }else {
+        } else {
             if (attrName === 'style' && attrValue.indexOf('React.collectStyle') === 0) {
                 // style={{}} 类型解析
                 // let name = attrValue.replace(regTpl, '$1').split(',')[2];
                 let name = stylePropsName(attrValue);
                 replaceWithExpr(path, `props.${name}`);
-            }else {
+            } else {
                 replaceWithExpr(path, attrValue);
             }
         }
@@ -63,7 +63,7 @@ module.exports = function(path) {
             var styleValue = styleHelper(expr);
 
             replaceWithExpr(path, styleValue, true);
-        }else if (isEvent) {
+        } else if (isEvent) {
             throwEventValue(attrName, attrValue);
         }
         break;

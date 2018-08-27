@@ -7,7 +7,7 @@ const useYarn = ()=>{
             { stdio: 'ignore' }
         );
         return true;
-    }catch (e) {
+    } catch (e) {
         return false;
     }
 };
@@ -19,7 +19,7 @@ const useCnpm = ()=>{
             { stdio: 'ignore' }
         );
         return true;
-    }catch (e) {
+    } catch (e) {
         return false;
     }
 };

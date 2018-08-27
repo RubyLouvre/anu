@@ -3,7 +3,7 @@ const fsExtra = require('fs-extra');
 
 const isNpm = function(path){
     const toString = Object.prototype.toString;
-    if (toString.call(path) !== '[object String]' || !path)return false;
+    if (toString.call(path) !== '[object String]' || !path) return false;
     return !/^\/|\./.test(path);
 };
 
@@ -75,7 +75,7 @@ const getNodeModulePath = function(moduleCurrent, source){
 
 
 module.exports = function(moduleCurrent, source, node){
-    if (isBuildInLibs(source) || isAlias(source) || !isNpm(source))return;
+    if (isBuildInLibs(source) || isAlias(source) || !isNpm(source)) return;
     copyNodeModuleToBuildNpm(source); 
     node.source.value = getNodeModulePath(moduleCurrent, source);
 };

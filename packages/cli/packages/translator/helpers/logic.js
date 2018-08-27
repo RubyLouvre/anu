@@ -23,25 +23,25 @@ function logic(expr, modules) {
     //处理条件指令
     if (t.isConditionalExpression(expr) || t.isIfStatement(expr)) {
         return condition(expr.test, expr.consequent, expr.alternate, modules);
-    }else if (expr.type === 'LogicalExpression' && expr.operator === '&&') {
+    } else if (expr.type === 'LogicalExpression' && expr.operator === '&&') {
         return condition(expr.left, expr.right, null, modules);
-    }else if (
+    } else if (
         expr.type === 'CallExpression' &&
     expr.callee.property.name === 'map'
     ) {
     //处理列表指令
         if (expr.arguments.type === 'ArrowFunctionExpression') {
             return loop(expr.callee, expr.arguments, modules);
-        }else if (
+        } else if (
             expr.arguments[0] &&
       expr.arguments[0].type === 'FunctionExpression'
         ) {
             return loop(expr.callee, expr.arguments[0], modules);
-        }else {
+        } else {
             throw generate(expr.callee.object).code +
         '.map 后面的必须跟匿名函数或一个函数调用';
         }
-    }else {
+    } else {
         return wrapText(expr);
     }
 }
@@ -93,7 +93,7 @@ function loop(callee, fn, modules) {
         }
         var blockElement = createElement('block', attrs, [child]);
         return blockElement;
-    }else {
+    } else {
     //这里可能有if分支，需要优化
     }
 }

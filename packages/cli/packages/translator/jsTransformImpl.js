@@ -24,7 +24,7 @@ module.exports = {
             if (methodName !== 'constructor') {
                 var fn = helpers.method(path, methodName);
                 modules.thisMethods.push(fn);
-            }else {
+            } else {
                 var node = path.node;
                 modules.ctorFn = t.functionDeclaration(
                     t.identifier(modules.className),
@@ -109,15 +109,15 @@ module.exports = {
                     return helpers.exportExpr(el.local.name);
                 });
                 path.replaceWithMultiple(map);
-            }else if (declaration.type === 'Identifier') {
+            } else if (declaration.type === 'Identifier') {
                 path.replaceWith(
                     helpers.exportExpr(declaration.name, declaration.name)
                 );
-            }else if (declaration.type === 'VariableDeclaration') {
+            } else if (declaration.type === 'VariableDeclaration') {
                 var id = declaration.declarations[0].id.name;
                 declaration.kind = 'var'; //转换const,let为var
                 path.replaceWithMultiple([declaration, helpers.exportExpr(id)]);
-            }else if (declaration.type === 'FunctionDeclaration') {
+            } else if (declaration.type === 'FunctionDeclaration') {
                 path.replaceWithMultiple([declaration, helpers.exportExpr(id)]);
             }
         }
@@ -133,7 +133,7 @@ module.exports = {
             let jsonStr = '';
             try {
                 config = JSON.parse(code);
-            }catch (err) {
+            } catch (err) {
                 config = eval('(' + code + ')');
             }
 
@@ -162,7 +162,7 @@ module.exports = {
         if (path.node.static) {
             var keyValue = t.ObjectProperty(t.identifier(key), path.node.value);
             modules.staticMethods.push(keyValue);
-        }else {
+        } else {
             if (key == 'globalData' && modules.componentType === 'App') {
                 var thisMember = t.assignmentExpression(
                     '=',
@@ -229,7 +229,7 @@ module.exports = {
                     if (el.type === 'JSXText' && !el.value.trim().length) {
                         isEmpty = false;
                         break;
-                    }else {
+                    } else {
                         isEmpty = false;
                         break;
                     }
@@ -254,7 +254,7 @@ module.exports = {
                         utils.createAttribute('fragmentID', path.fragmentID)
                     );
                 }
-            }else {
+            } else {
                 if (nodeName != 'React.template') {
                     helpers.nodeName(path, modules);
                 }
@@ -298,7 +298,7 @@ module.exports = {
                     if (el.name.name == 'key') {
                         if (t.isLiteral(el.value)) {
                             keyValue = el.value;
-                        }else if (t.isJSXExpressionContainer(el.value)) {
+                        } else if (t.isJSXExpressionContainer(el.value)) {
                             keyValue = el.value;
                         }
                     }
@@ -318,7 +318,7 @@ module.exports = {
                     );
                 }
             }
-        }else if (
+        } else if (
             attrName === 'style' &&
             t.isJSXExpressionContainer(attrValue)
         ) {
@@ -339,7 +339,7 @@ module.exports = {
                     )
                 );
                 path.remove();
-            }else if (styleType === 'ObjectExpression') {
+            } else if (styleType === 'ObjectExpression') {
                 // 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
                 var styleValue = generate(expr).code;
                 attrs.push(
@@ -364,7 +364,7 @@ module.exports = {
             nodeName !== 'React.template'
         ) {
             helpers.nodeName(path, modules);
-        }else {
+        } else {
             path.node.name.name = 'React.template';
         }
     }

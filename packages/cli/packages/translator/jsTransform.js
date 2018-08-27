@@ -22,9 +22,9 @@ function miniappPlugin() {
             modules.current = opts.filename.replace(process.cwd(), '');
             if (/\/components\//.test(opts.filename)) {
                 modules.componentType = 'Component';
-            }else if (/\/pages\//.test(opts.filename)) {
+            } else if (/\/pages\//.test(opts.filename)) {
                 modules.componentType = 'Page';
-            }else if (/app\.js/.test(opts.filename)) {
+            } else if (/app\.js/.test(opts.filename)) {
                 modules.componentType = 'App';
             }
         }

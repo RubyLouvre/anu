@@ -57,7 +57,7 @@ class P extends React.Component {
                         if (res.confirm) {
                             // eslint-disable-next-line
                             console.log('用户点击确定');
-                        }else if (res.cancel) {
+                        } else if (res.cancel) {
                             // eslint-disable-next-line
                             console.log('用户点击取消');
                         }
@@ -83,7 +83,7 @@ class P extends React.Component {
                 if (res.confirm) {
                     // eslint-disable-next-line
                     console.log('用户点击确定');
-                }else if (res.cancel) {
+                } else if (res.cancel) {
                     // eslint-disable-next-line
                     console.log('用户点击取消');
                 }

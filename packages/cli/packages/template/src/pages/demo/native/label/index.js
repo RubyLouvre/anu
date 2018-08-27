@@ -31,7 +31,7 @@ class P extends React.Component {
         for (var i = 0; i < this.state.checkboxItems.length; i++) {
             if (checked.indexOf(this.state.checkboxItems[i].name) !== -1) {
                 changed['checkboxItems[' + i + '].checked'] = true;
-            }else {
+            } else {
                 changed['checkboxItems[' + i + '].checked'] = false;
             }
         }
@@ -46,7 +46,7 @@ class P extends React.Component {
         for (var i = 0; i < this.state.radioItems.length; i++) {
             if (checked.indexOf(this.state.radioItems[i].name) !== -1) {
                 changed['radioItems[' + i + '].checked'] = true;
-            }else {
+            } else {
                 changed['radioItems[' + i + '].checked'] = false;
             }
         }

@@ -12,7 +12,7 @@ module.exports = function createChineseHack() {
                 if (valueNode.type === 'StringLiteral') {
                     // placeholder="中文"
                     target = valueNode;
-                }else if (valueNode.type === 'JSXExpressionContainer' &&
+                } else if (valueNode.type === 'JSXExpressionContainer' &&
                     valueNode.expression.type === 'StringLiteral'
                 ) {
                     // placeholder={"中文"}

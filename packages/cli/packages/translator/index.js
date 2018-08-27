@@ -84,14 +84,14 @@ class Parser {
         this.compiler = webpack(this.config);
         this.compiler.outputFileSystem = new MemoryFS();
         this.compiler.run((err, stats)=>{
-            if (err)throw err;
+            if (err) throw err;
             this.startCodeGen(stats);
         });
 
     }
     startCodeGen(stats){
         //webpack watch 可能触发多次 build https://webpack.js.org/api/node/#watching
-        if (this.statsHash === stats.hash)return;
+        if (this.statsHash === stats.hash) return;
         this.statsHash = stats.hash;
 
         let errors = stats.toJson().errors;
@@ -133,7 +133,7 @@ class Parser {
     async generateBusinessJs(file){
         let {name, ext} = path.parse(file);
         let dist = file.replace('src', 'dist');
-        if ( isLib(name) || !isJs(ext) )return;
+        if ( isLib(name) || !isJs(ext) ) return;
         const code = jsTransform(file);
         if (/\/(?:pages|app|components)/.test(file)){
             fs.ensureFileSync(dist);
@@ -146,9 +146,9 @@ class Parser {
     generateWxml(file){
         return new Promise((resolve, reject)=>{
             let {name, ext} = path.parse(file);
-            if ( isLib(name) || !isJs(ext) )return;
+            if ( isLib(name) || !isJs(ext) ) return;
             let data = queue.wxml.shift();
-            if (!data)return;
+            if (!data) return;
             let dist = data.path;
             if (/pages|components/.test(dist)){
                 fs.ensureFileSync(dist);
@@ -162,9 +162,9 @@ class Parser {
     generatePageJson(file){
         return new Promise((resolve, reject)=>{
             let {name, ext} = path.parse(file);
-            if ( isLib(name) || !isJs(ext) )return;
+            if ( isLib(name) || !isJs(ext) ) return;
             let data = queue.pageConfig.shift();
-            if (!data)return;
+            if (!data) return;
             let dist = data.path;
             if (/pages|app|components/.test(dist)){
                 fs.ensureFileSync(dist);
@@ -179,7 +179,7 @@ class Parser {
         return new Promise((resolve, reject)=>{
             let { name , ext} = path.parse(file);
             let dist = file.replace('src', 'dist');
-            if (!isCss(ext))return;
+            if (!isCss(ext)) return;
             let wxssDist = path.join(path.dirname(dist), `${name}.wxss`);
             let lessContent = fs.readFileSync(file).toString();
             if (ext === '.less'){
@@ -200,7 +200,7 @@ class Parser {
                 sass.render({
                     file: file
                 }, (err, result)=>{
-                    if (err)throw err;
+                    if (err) throw err;
                     fs.writeFile(wxssDist, result.css.toString(), (err)=>{
                         err ? reject(err) : resolve();
                     });
@@ -237,7 +237,7 @@ class Parser {
             aggregateTimeout: 300,
             poll: undefined
         }, (err, stats) => {
-            if (err)throw err;
+            if (err) throw err;
             this.startCodeGen(stats);
         });
     }

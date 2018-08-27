@@ -87,7 +87,7 @@ const checkNameIsOk = appName => {
             // eslint-disable-next-line
             console.log();
             process.exit(1);
-        }else {
+        } else {
             resolve({
                 ok: true,
                 appName: absoluteAppNamePath
@@ -148,7 +148,7 @@ const writeDir = appName => {
         path.join(ownRoot, 'packages', 'template')
     );
     templates.forEach(item => {
-        if (ignore.has(item))return;
+        if (ignore.has(item)) return;
         let src = path.join(ownRoot, 'packages', 'template', item);
         let dest = path.join(appName, item);
         fs.copySync(src, dest);
@@ -183,9 +183,9 @@ const install = projectRoot => {
     process.chdir(projectRoot);
     if (utils.useYarn()) {
         bin = 'yarn';
-    }else if (utils.useCnpm()) {
+    } else if (utils.useCnpm()) {
         bin = 'cnpm';
-    }else {
+    } else {
         bin = 'npm';
     }
 
