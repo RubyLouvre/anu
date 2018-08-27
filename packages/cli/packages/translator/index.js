@@ -92,6 +92,14 @@ class Parser {
         //webpack watch 可能触发多次 build https://webpack.js.org/api/node/#watching
         if(this.statsHash === stats.hash) return;
         this.statsHash = stats.hash;
+
+        let errors = stats.toJson().errors;
+        for(let i = 0; i <  errors.length; i++){
+            if(/SyntaxError\:/.test(errors[i])){
+                throw errors[i];
+            }
+        }
+
         let dependencies = stats.compilation.fileDependencies.sort(function(path){
             if(path.indexOf("components") > 0){
                 return 1;//确保组件最后执行
@@ -102,6 +110,7 @@ class Parser {
        
         dependencies.forEach((file)=>{
             if(!/node_modules/g.test(file)){
+                console.log(file, '------file-----');
                 this.codegen(file);
             }
         })
