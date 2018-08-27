@@ -220,7 +220,7 @@ module.exports = {
             let modules = getAnu(state);
             let nodeName = path.node.name.name;
             if (modules.importComponents[nodeName]) {
-                var set = deps[nodeName] = deps[nodeName] = new Set()
+                var set = deps[nodeName] ||( deps[nodeName] = new Set())
                 modules.usedComponents[nodeName] = true;
                 path.node.name.name = "React.template";
                 var children = path.parentPath.node.children;
