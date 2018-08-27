@@ -1,12 +1,12 @@
-const syntaxJSX = require("babel-plugin-syntax-jsx");
-const babel = require("babel-core");
-const t = require("babel-types");
-const generate = require("babel-generator").default;
-const attrValueHelper = require("./attrValue");
-const attrNameHelper = require("./attrName");
-const logicHelper = require("./logic");
-const jsx = require("../utils");
-const chineseHelper = require("./chinese");
+const syntaxJSX = require('babel-plugin-syntax-jsx');
+const babel = require('babel-core');
+const t = require('babel-types');
+const generate = require('babel-generator').default;
+const attrValueHelper = require('./attrValue');
+const attrNameHelper = require('./attrName');
+const logicHelper = require('./logic');
+const jsx = require('../utils');
+const chineseHelper = require('./chinese');
 
 var chineseHack = chineseHelper();
 /**
@@ -16,12 +16,12 @@ function wxml(code, modules) {
     var result = babel.transform(code, {
         babelrc: false,
         plugins: [
-            function wxmlPlugin(api) {
+            function wxmlPlugin() {
                 return {
                     inherits: syntaxJSX,
                     visitor: visitor,
                     manipulateOptions(opts){//解析每个文件前执行一次
-                       opts.anu = modules
+                        opts.anu = modules;
                     }
                 };
             }
@@ -29,7 +29,7 @@ function wxml(code, modules) {
     });
     var html = result.code;
     if (chineseHack.unicodeNumber) {
-       return chineseHack.recovery(html)
+        return chineseHack.recovery(html);
     }
     return html;
 }
@@ -38,9 +38,9 @@ var visitor = {
         exit: function(path) {
             var openTag = path.node.name;
             if (
-                openTag.type === "JSXMemberExpression" &&
-                openTag.object.name === "React" &&
-                openTag.property.name === "template"
+                openTag.type === 'JSXMemberExpression' &&
+                openTag.object.name === 'React' &&
+                openTag.property.name === 'template'
             ) {
                 var array, is, key;
                 path.node.attributes.forEach(function(el) {
@@ -49,26 +49,26 @@ var visitor = {
                     if (/^\{\{.+\}\}/.test(attrValue)) {
                         attrValue = attrValue.slice(2, -2);
                     }
-                    if (attrName === "templatedata") {
+                    if (attrName === 'templatedata') {
                         array = attrValue;
-                    } else if (attrName === "is") {
+                    } else if (attrName === 'is') {
                         is = attrValue;
-                    } else if (attrName === "wx:key") {
+                    } else if (attrName === 'wx:key') {
                         key = attrValue;
-                    } else if (attrName === "key") {
+                    } else if (attrName === 'key') {
                         key = attrValue;
                     }
                 });
                 var attributes = [];
-                var template = jsx.createElement("template", attributes, []);
+                var template = jsx.createElement('template', attributes, []);
                 template.key = key;
                 var p = path.parentPath.parentPath,
                     inLoop,
-                    dataName = "data";
+                    dataName = 'data';
                 while (p.parentPath) {
                     p = p.parentPath;
-                    if (p.type === "CallExpression") {
-                        inLoop = p.node.callee.property.name === "map";
+                    if (p.type === 'CallExpression') {
+                        inLoop = p.node.callee.property.name === 'map';
                         dataName = p.node.arguments[0].params[0].name;
                         break;
                     }
@@ -76,18 +76,18 @@ var visitor = {
                 //将组件变成template标签
                 if (!inLoop) {
                     attributes.push(
-                        jsx.createAttribute("is", is),
-                        jsx.createAttribute("data", `{{...${dataName}}}`),
-                        jsx.createAttribute("wx:for", `{{${array}}}`),
-                        jsx.createAttribute("wx:for-item", dataName),
-                        jsx.createAttribute("wx:for-index", "index"),
-                        jsx.createAttribute("wx:key", "*this")
+                        jsx.createAttribute('is', is),
+                        jsx.createAttribute('data', `{{...${dataName}}}`),
+                        jsx.createAttribute('wx:for', `{{${array}}}`),
+                        jsx.createAttribute('wx:for-item', dataName),
+                        jsx.createAttribute('wx:for-index', 'index'),
+                        jsx.createAttribute('wx:key', '*this')
                     );
                 } else {
                     attributes.push(
-                        jsx.createAttribute("is", is),
-                        jsx.createAttribute("wx:if", `{{${array}[index]}}`),
-                        jsx.createAttribute("data", `{{...${array}[index]}}`)
+                        jsx.createAttribute('is', is),
+                        jsx.createAttribute('wx:if', `{{${array}[index]}}`),
+                        jsx.createAttribute('data', `{{...${array}[index]}}`)
                     );
                 }
 
@@ -97,7 +97,7 @@ var visitor = {
     },
     JSXAttribute(path) {
         chineseHack.collect(path);
-        if (path.node.name.name === "key") {
+        if (path.node.name.name === 'key') {
             let node = path.node.value;
             let value;
 
@@ -105,13 +105,13 @@ var visitor = {
                 value = node.value;
             } else {
                 if (/\./.test(node.expression.value)) {
-                    value = "*this";
+                    value = '*this';
                 } else {
                     value = `{{${generate(node.expression).code}}}`;
                 }
             }
             path.parentPath.node.attributes.push(
-                jsx.createAttribute("wx:key", value)
+                jsx.createAttribute('wx:key', value)
             );
             path.remove();
             return;
@@ -127,16 +127,16 @@ var visitor = {
             if (t.isJSXAttribute(path.parent)) {
                 attrValueHelper(path);
             } else if (
-                expr.type === "MemberExpression" &&
+                expr.type === 'MemberExpression' &&
                /props\.children/.test( generate(expr).code )
             ) {
-                var attributes = []
-                var template = jsx.createElement("template", attributes, []);
+                var attributes = [];
+                var template = jsx.createElement('template', attributes, []);
                 attributes.push(
-                    jsx.createAttribute("is", "{{props.fragmentID}}"),
-                )
+                    jsx.createAttribute('is', '{{props.fragmentID}}'),
+                );
                 path.replaceWith(template);
-              //  console.warn("小程序暂时不支持{this.props.children}");
+                //  console.warn("小程序暂时不支持{this.props.children}");
             } else {
                 //返回block元素或template元素
                 var block = logicHelper(expr, modules);

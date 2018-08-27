@@ -1,6 +1,7 @@
-import React from "@react";
+import React from '@react';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             array: ['美国', '中国', '巴西', '日本'],
             objectArray: [
@@ -80,6 +81,7 @@ class P extends React.Component {
     }
 
     bindPickerChange(e) {
+        // eslint-disable-next-line
         console.log('picker发送选择改变，携带值为', e.value);
         this.setState({
             index: e.value
@@ -87,6 +89,7 @@ class P extends React.Component {
     }
 
     bindMultiPickerChange(e) {
+        // eslint-disable-next-line
         console.log('picker发送选择改变，携带值为', e.value);
         this.setState({
             multiIndex: e.value
@@ -94,6 +97,7 @@ class P extends React.Component {
     }
 
     bindMultiPickerColumnChange(e) {
+        // eslint-disable-next-line
         console.log('修改的列为', e.column, '，值为', e.value);
         var data = {
             multiArray: this.state.multiArray,
@@ -162,13 +166,15 @@ class P extends React.Component {
                         break;
                 }
                 data.multiIndex[2] = 0;
-                console.log(data.multiIndex);
+                // eslint-disable-next-line
+            console.log(data.multiIndex);
                 break;
         }
         this.setState(data);
     }
 
     bindTimeChange(e) {
+        // eslint-disable-next-line
         console.log('picker发送选择改变，携带值为', e.value);
         this.setState({
             time: e.value
@@ -176,6 +182,7 @@ class P extends React.Component {
     }
 
     bindDateChange(e) {
+        // eslint-disable-next-line
         console.log('picker发送选择改变，携带值为', e.value);
         this.setState({
             date: e.value
@@ -183,6 +190,7 @@ class P extends React.Component {
     }
 
     bindRegionChange(e) {
+        // eslint-disable-next-line
         console.log('picker发送选择改变，携带值为', e.value);
         this.setState({
             region: e.value

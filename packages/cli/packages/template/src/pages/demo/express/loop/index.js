@@ -1,7 +1,7 @@
-import React from "@react";
-import Dog from "@components/Dog/index";
+import React from '@react';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             array: [
                 {
@@ -18,6 +18,7 @@ class P extends React.Component {
     }
 
     changeNumbers() {
+        // eslint-disable-next-line
         console.log('change');
         this.setState({
             array: [
@@ -40,7 +41,9 @@ class P extends React.Component {
     render() {
         return (
             <div>
-                <div onTap={this.changeNumbers.bind(this)}>演示单重循环，点这里改变数组的个数</div>
+                <div onTap={this.changeNumbers.bind(this)}>
+                    演示单重循环，点这里改变数组的个数
+                </div>
                 <div>
                     {this.state.array.map(function(el) {
                         return <Dog name={el.name} key={el.name} />;

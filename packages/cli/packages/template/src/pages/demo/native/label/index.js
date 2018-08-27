@@ -1,7 +1,8 @@
-import React from "@react";
-import "./index.less";
+import React from '@react';
+import './index.less';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             checkboxItems: [
                 { name: 'USA', value: '美国' },
@@ -34,6 +35,7 @@ class P extends React.Component {
                 changed['checkboxItems[' + i + '].checked'] = false;
             }
         }
+        // eslint-disable-next-line
         console.log(changed);
         this.setState(changed);
     }
@@ -48,6 +50,7 @@ class P extends React.Component {
                 changed['radioItems[' + i + '].checked'] = false;
             }
         }
+        // eslint-disable-next-line
         console.log(changed);
         this.setState(changed);
     }

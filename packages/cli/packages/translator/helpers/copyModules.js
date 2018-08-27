@@ -1,35 +1,30 @@
 const nPath = require('path');
 const fsExtra = require('fs-extra');
 
-
 const isNpm = function(path){
     const toString = Object.prototype.toString;
-    if(toString.call(path) !== '[object String]' || !path) return false;
+    if (toString.call(path) !== '[object String]' || !path) return false;
     return !/^\/|\./.test(path);
-}
-
-const isAbsolute = function(path){
-    return nPath.isAbsolute(path);
-}
+};
 
 const isBuildInLibs = function(name){
     let libs = new Set(require('repl')._builtinLibs);
     return libs.has(name);
-}
+};
 
 const isAlias = (name)=>{
     const cwd = process.cwd();
     let aliasField = require( nPath.join(cwd, 'package.json') ).mpreact.alias;
     let aliasAray = Object.keys(aliasField);
     let isAliasFlag = false;
-    for(let i = 0; i < aliasAray.length; i++){
-        if(new RegExp(`^${aliasAray[i]}`).test(name)){
+    for (let i = 0; i < aliasAray.length; i++){
+        if (new RegExp(`^${aliasAray[i]}`).test(name)){
             isAliasFlag = true;
             break;
         }
     }
     return isAliasFlag;
-}
+};
 
 const copyNodeModuleToBuildNpm = function(source){
     let nodeModulesSourcesPath = nPath.join(process.cwd(), 'node_modules', source);
@@ -43,11 +38,11 @@ const copyNodeModuleToBuildNpm = function(source){
     fsExtra.copySync(
         pkg,
         packageDest
-    )
+    );
     //拷贝package.json中main字段指向的模块
     let libSrc = nPath.join( nodeModulesSourcesPath,  mainFild );
     let libDest = nPath.join(nodeModelesBuildSourcesPath, mainFild);
-    fsExtra.ensureFileSync(libDest)
+    fsExtra.ensureFileSync(libDest);
     fsExtra.copySync(
         libSrc,
         libDest,
@@ -56,30 +51,31 @@ const copyNodeModuleToBuildNpm = function(source){
             errorOnExist:true,
         }
     );
-}
+};
 
 const getNodeModulePath = function(moduleCurrent, source){
-   let from = nPath.dirname(moduleCurrent.replace('src', 'dist'));
-   let to = '/dist/npm/';
-   let relativePath = nPath.relative(from, to);
-   let nodeModelesBuildSourcesPath = nPath.join(process.cwd(), `/dist/npm/${source}`);
-   let pkg = nPath.join(nodeModelesBuildSourcesPath, 'package.json');
-   let mainFild = require(pkg).main;
-   if(!mainFild){
-       console.log(`无法读取${source} package, 请检查${source}目录下package.json中main字段是否正确`);
-       process.exit(1);
+    let from = nPath.dirname(moduleCurrent.replace('src', 'dist'));
+    let to = '/dist/npm/';
+    let relativePath = nPath.relative(from, to);
+    let nodeModelesBuildSourcesPath = nPath.join(process.cwd(), `/dist/npm/${source}`);
+    let pkg = nPath.join(nodeModelesBuildSourcesPath, 'package.json');
+    let mainFild = require(pkg).main;
+    if (!mainFild){
+        // eslint-disable-next-line
+        console.log(`无法读取${source} package, 请检查${source}目录下package.json中main字段是否正确`);
+        process.exit(1);
     }
-   let astValue = nPath.join(
+    let astValue = nPath.join(
         relativePath, 
         source, 
         mainFild.replace(/\.(js)/, '')
-    )
-   return astValue;
-}
+    );
+    return astValue;
+};
 
 
 module.exports = function(moduleCurrent, source, node){
-    if(isBuildInLibs(source) || isAlias(source) || !isNpm(source)) return;
+    if (isBuildInLibs(source) || isAlias(source) || !isNpm(source)) return;
     copyNodeModuleToBuildNpm(source); 
     node.source.value = getNodeModulePath(moduleCurrent, source);
-}
+};

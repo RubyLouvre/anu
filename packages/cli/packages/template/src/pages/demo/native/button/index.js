@@ -1,7 +1,8 @@
-import React from "@react";
+import React from '@react';
 import './index.less';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             defaultSize: 'default',
             primarySize: 'default',
@@ -31,9 +32,8 @@ class P extends React.Component {
     }
 
     onGotUserInfo(e) {
-        console.log(e.errMsg);
-        console.log(e.userInfo);
-        console.log(e.rawData);
+        // eslint-disable-next-line
+        console.log(e);
     }
 
     render() {

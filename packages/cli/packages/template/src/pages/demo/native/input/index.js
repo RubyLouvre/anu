@@ -1,4 +1,4 @@
-import React from "@react";
+import React from '@react';
 class P extends React.Component {
     constructor() {
         super();
@@ -21,7 +21,8 @@ class P extends React.Component {
     }
 
     bindReplaceInput(e) {
-        console.log(e, 'eeee');
+        // eslint-disable-next-line
+        console.log(e);
         var value = e.value;
         var pos = e.cursor;
         if (pos != -1) {

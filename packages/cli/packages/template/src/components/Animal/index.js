@@ -2,6 +2,7 @@ import React from '@react';
 
 class Animal extends React.Component {
     constructor(props) {
+        super();
         this.state = {
             name: props.name,
             age: props.age || 1
@@ -20,12 +21,13 @@ class Animal extends React.Component {
     }
 
     componentDidMount() {
-        console.log('Animal componentDidMount')
+        // eslint-disable-next-line
+        console.log('Animal componentDidMount');
     }
     componentWillReceiveProps(props){
         this.setState({
             name: props.name
-        })
+        });
     }
     render() {
         return (

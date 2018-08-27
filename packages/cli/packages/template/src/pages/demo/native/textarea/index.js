@@ -1,13 +1,15 @@
-import React from "@react";
-import "./index.less";
+import React from '@react';
+import './index.less';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             focus: false
         };
     }
 
     bindTextAreaBlur(e) {
+        // eslint-disable-next-line
         console.log(e.value);
     }
 

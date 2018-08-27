@@ -2,6 +2,7 @@ import React from '@react';
 
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             state: '正在加载',
             src:
@@ -77,6 +78,7 @@ class P extends React.Component {
     }
 
     changeType(mode) {
+        // eslint-disable-next-line
         console.log(mode);
         this.setState({
             mode
@@ -103,7 +105,7 @@ class P extends React.Component {
                         return (
                             <div style="font-size: 32rpx;" key={index}>
                                 <button
-                                key={index}
+                                    key={index}
                                     style="color: #999;"
                                     onTap={this.changeType.bind(
                                         this,
