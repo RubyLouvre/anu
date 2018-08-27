@@ -154,7 +154,7 @@ module.exports = {
             queue.pageConfig.push({
                 type: 'json',
                 path: modules.sourcePath
-                    .replace(/\/src\//, '/dist/')
+                    .replace(new RegExp(`${nPath.sep}src${nPath.sep}`), `${nPath.sep}dist${nPath.sep}`)
                     .replace(/\.js$/, '.json'),
                 code: jsonStr
             });
@@ -279,8 +279,8 @@ module.exports = {
                     .replace(/;$/, '');
                 if (!modules.fragmentPath) {
                     modules.fragmentPath =
-                        modules.sourcePath.split('src/pages')[0] +
-                        'dist/components/Fragments/';
+                        modules.sourcePath.split(`src${nPath.sep}pages`)[0] +
+                        `dist${nPath.sep}components${nPath.sep}Fragments${nPath.sep}`;
                 }
                 queue.wxml.push({
                     type: 'wxml',
