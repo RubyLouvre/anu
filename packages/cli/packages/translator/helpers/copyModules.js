@@ -28,7 +28,7 @@ const isAlias = (name)=>{
 
 const copyNodeModuleToBuildNpm = function(source){
     let nodeModulesSourcesPath = nPath.join(process.cwd(), 'node_modules', source);
-    let nodeModelesBuildSourcesPath = nPath.join(process.cwd(), `/dist/npm/${source}`);
+    let nodeModelesBuildSourcesPath = nPath.join(process.cwd(), `${nPath.sep}dist${nPath.sep}npm${nPath.sep}${source}`);
     let pkg = nPath.join(nodeModulesSourcesPath, 'package.json');
     let mainFild = require(pkg).main;
    
@@ -55,9 +55,9 @@ const copyNodeModuleToBuildNpm = function(source){
 
 const getNodeModulePath = function(moduleCurrent, source){
     let from = nPath.dirname(moduleCurrent.replace('src', 'dist'));
-    let to = '/dist/npm/';
+    let to = `${nPath.sep}dist${nPath.sep}npm${nPath.sep}`;
     let relativePath = nPath.relative(from, to);
-    let nodeModelesBuildSourcesPath = nPath.join(process.cwd(), `/dist/npm/${source}`);
+    let nodeModelesBuildSourcesPath = nPath.join(process.cwd(), `${nPath.sep}dist${nPath.sep}npm${nPath.sep}${source}`);
     let pkg = nPath.join(nodeModelesBuildSourcesPath, 'package.json');
     let mainFild = require(pkg).main;
     if (!mainFild){
