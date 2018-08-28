@@ -22,14 +22,9 @@ let outputPath = path.join(cwd, 'dist');
 let entry = path.join(inputPath, 'app.js');
 const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
 
-if (nodejsVersion < 7) {
+if (nodejsVersion < 8) {
     // eslint-disable-next-line
-    console.log(
-        '当前nodejs版本为 ' +
-            chalk.red(process.version) +
-            ', 请保证 >= ' +
-            chalk.bold('7')
-    );
+    console.log( `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold('7')}`);
 }
 
 const isLib = name => {
@@ -54,8 +49,9 @@ const getAlias = () => {
 
 
 const print = (prefix, msg)=>{
-    console.log(chalk.green(`${prefix} ${msg}`))
-}
+    // eslint-disable-next-line
+    console.log(chalk.green(`${prefix} ${msg}`));
+};
 
 class Parser {
     constructor(entry) {
@@ -74,12 +70,12 @@ class Parser {
                 }),
                 rollupLess({
                     output: function(code){
-                        return code
+                        return code;
                     }
                 }),
                 rollupSass({
                     output: function(code){
-                        return code
+                        return code;
                     }
                 }),
                 rbabel({
@@ -92,13 +88,13 @@ class Parser {
                 })
                 
             ]
-        }
+        };
 
     }
     async parse() {
         const bundle =  await rollup.rollup(this.inputConfig);
         const files  = bundle.modules.map(function(item){
-            if(/commonjsHelpers|node_modules/.test(item.id)) return;
+            if (/commonjsHelpers|node_modules/.test(item.id)) return;
             return item.id;
         });
         this.startCodeGen(files);
@@ -129,7 +125,7 @@ class Parser {
                 fs.ensureFileSync(dist);
                 fs.writeFile(dist, result.code, err => {
                     err ? reject(err) : resolve();
-                    print('build sucess:', path.relative(cwd, dist));
+                    print('build success:', path.relative(cwd, dist));
                 });
             }
         });
@@ -145,7 +141,7 @@ class Parser {
             fs.writeFile(dist, code, err => {
                 // eslint-disable-next-line
                 if (err) console.log(err);
-                print('build sucess:', path.relative(cwd, dist));
+                print('build success:', path.relative(cwd, dist));
             });
         }
     }
@@ -161,7 +157,7 @@ class Parser {
                     fs.ensureFileSync(dist);
                     fs.writeFile(dist, data.code || '', err => {
                         err ? reject(err) : resolve();
-                        print('build sucess:', path.relative(cwd, dist));
+                        print('build success:', path.relative(cwd, dist));
                     });
                 }
             }
@@ -180,7 +176,7 @@ class Parser {
                 fs.ensureFileSync(dist);
                 fs.writeFile(dist, data.code || '', err => {
                     err ? reject(err) : resolve();
-                    print('build sucess:', path.relative(cwd, dist));
+                    print('build success:', path.relative(cwd, dist));
                 });
             }
         });
@@ -197,7 +193,7 @@ class Parser {
                     .then(res => {
                         fs.writeFile(dist, res.css, err => {
                             err ? reject(err) : resolve();
-                            print('build sucess:', path.relative(cwd, dist));
+                            print('build success:', path.relative(cwd, dist));
                         });
                     })
                     .catch(err => {
@@ -219,7 +215,7 @@ class Parser {
                         if (err) throw err;
                         fs.writeFile(dist, result.css.toString(), err => {
                             err ? reject(err) : resolve();
-                            print('build sucess:', path.relative(cwd, dist));
+                            print('build success:', path.relative(cwd, dist));
                         });
                     }
                 );
@@ -249,22 +245,25 @@ class Parser {
         });
     }
     watching() {
-       let watchDir = path.dirname(this.entry);
-       let watchConfig = {
-           ignored: /\.DS_Store|\.gitignore|.git/
-       }
-       const watcher = chokidar
-                       .watch(watchDir, watchConfig)
-                       .on('all', (event, file)=>{
-                           if(event === 'change'){
-                              console.log();
-                              console.log(`updated: ${chalk.yellow(path.relative(cwd, file))}`);
-                              console.log();
-                              this.codegen(file);
-                           }
-                       });
+        let watchDir = path.dirname(this.entry);
+        let watchConfig = {
+            ignored: /\.DS_Store|\.gitignore|.git/
+        };
+        const watcher = chokidar
+            .watch(watchDir, watchConfig)
+            .on('all', (event, file)=>{
+                if (event === 'change'){
+                    /*eslint-disable */
+                    console.log();
+                    console.log(`updated: ${chalk.yellow(path.relative(cwd, file))}`);
+                    console.log();
+                    this.codegen(file);
+                    /*eslint-enable*/
+                }
+            });
 
         watcher.on('error', error => {
+            //eslint-disable-next-line
             console.error('Watcher failure', error);
             process.exit(1);
         });
