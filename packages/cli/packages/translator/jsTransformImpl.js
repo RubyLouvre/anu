@@ -161,7 +161,7 @@ module.exports = {
 
                 queue.pageConfig.push({
                     type: 'json',
-                    astPath: modules.sourcePath
+                    path: modules.sourcePath
                         .replace(
                             new RegExp(`${nPath.sep}src${nPath.sep}`),
                             `${nPath.sep}dist${nPath.sep}`
@@ -308,7 +308,7 @@ module.exports = {
                 }
                 queue.wxml.push({
                     type: 'wxml',
-                    astPath:
+                    path:
                         modules.fragmentPath + astPath.fragmentUid + '.wxml',
                     code: prettifyXml(wxml, {
                         indent: 2
