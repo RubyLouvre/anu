@@ -31,7 +31,6 @@ function miniappPlugin() {
     };
 }
 
-
 function transform(sourcePath) {
     var result = babel.transformFileSync(sourcePath, {
         babelrc: false,
@@ -46,7 +45,11 @@ function transform(sourcePath) {
     return helpers.moduleToCjs.byCode(result.code).code;
 }
 
-module.exports = transform;
+// module.exports = transform;
+module.exports = {
+  transform,
+  miniappPlugin
+};
 
 // https://github.com/NervJS/taro/tree/master/packages/taro-cli
 // https://blog.csdn.net/liangklfang/article/details/54879672
