@@ -5,6 +5,7 @@ const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const queue = require('../queue');
 const nPath = require('path');
+const { sepForRegex } = require('../utils');
 
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -60,12 +61,11 @@ exports.exit = function(path, type, componentName, modules) {
                 }
                 var set = deps[componentName];
                 if (set) {
-                    const sep = nPath.sep;
-                    var fragmentPath = `${sep}components${sep}Fragments${sep}`;
+                    var fragmentPath = '/components/Fragments/';
                     //注意，这里只要目录名
-                    var relativePath = modules.sourcePath
+                    var relativePath = nPath.normalize(modules.sourcePath)
                         .split('src')[1]
-                        .replace(new RegExp(`[^${nPath.sep}]+.js`), '');
+                        .replace(new RegExp(`[^${sepForRegex}]+.js`), '');
                     set.forEach(function(el) {
                         var src = nPath.relative(
                             relativePath,
@@ -77,12 +77,11 @@ exports.exit = function(path, type, componentName, modules) {
             }
             set = deps[componentName];
             if (set) {
-                const sep = nPath.sep;
-                fragmentPath = `${sep}components${sep}Fragments${sep}`;
+                fragmentPath = '/components/Fragments/';
                 //注意，这里只要目录名
-                relativePath = modules.sourcePath
+                relativePath = nPath.normalize(modules.sourcePath)
                     .split('src')[1]
-                    .replace(new RegExp(`[^${nPath.sep}]+.js`), '');
+                    .replace(new RegExp(`[^${sepForRegex}]+.js`), '');
                 set.forEach(function(el) {
                     var src = nPath.relative(
                         relativePath,
@@ -94,8 +93,8 @@ exports.exit = function(path, type, componentName, modules) {
 
             queue.wxml.push({
                 type: 'wxml',
-                path: modules.sourcePath
-                    .replace(new RegExp(`${nPath.sep}src${nPath.sep}`), `${nPath.sep}dist${nPath.sep}`)
+                path: nPath.normalize(modules.sourcePath)
+                    .replace(new RegExp(`${sepForRegex}src${sepForRegex}`), `${sepForRegex}dist${sepForRegex}`)
                     .replace(/\.js$/, '.wxml'),
                 code: prettifyXml(wxml, { indent: 2 })
             });
