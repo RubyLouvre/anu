@@ -163,8 +163,8 @@ module.exports = {
                     type: 'json',
                     astPath: modules.sourcePath
                         .replace(
-                            new RegExp(`${nPath.sep}src${nPath.sep}`),
-                            `${nPath.sep}dist${nPath.sep}`
+                            new RegExp(`${utils.sepForRegex}src${utils.sepForRegex}`),
+                            `${utils.sepForRegex}dist${utils.sepForRegex}`
                         )
                         .replace(/\.js$/, '.json'),
                     code: jsonStr
