@@ -8,6 +8,7 @@ const deps = require("./deps");
 const prettifyXml = require("prettify-xml");
 
 function getAnu(state) {
+    
     return state.file.opts.anu;
 }
 /**
@@ -267,7 +268,8 @@ module.exports = {
                 let modules = getAnu(state);
                 var template = utils.createElement("template", [
                     utils.createAttribute("name", path.fragmentID),
-                ], path.parentPath.node.children);
+                ], path.parentPath.node.children); 
+                
                 var wxml = helpers.wxml(generate(template).code, modules).replace(/;$/,"")
                 if (!modules.fragmentPath) {
                     modules.fragmentPath = modules.sourcePath.split("src/pages")[0] + "dist/components/Fragments/"

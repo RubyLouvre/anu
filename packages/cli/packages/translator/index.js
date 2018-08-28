@@ -135,7 +135,7 @@ class Parser {
         let {name, ext} = path.parse(file);
         let dist = file.replace('src', 'dist');
         if( isLib(name) || !isJs(ext) ) return;
-        const code = jsTransform(file);
+        const code = jsTransform.transform(file);
         if (/\/(?:pages|app|components)/.test(file)){
             fs.ensureFileSync(dist);
             fs.writeFile(dist, code, (err)=>{

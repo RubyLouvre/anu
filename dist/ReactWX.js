@@ -2284,13 +2284,14 @@ var otherApis = {
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function initPxTransform() {
   var windowWidth = 375;
-  if ((typeof wx === 'undefined' ? 'undefined' : _typeof$1(wx)) !== void 666) {
-    wx.getSystemInfo({
-      success: function success(res) {
-        windowWidth = res.windowWidth;
-      }
-    });
-  }
+//   console.log('wx',typeof wx !== void 666 )
+//   if ((typeof wx === 'undefined' ? 'undefined' : _typeof$1(wx)) !== void 666) {
+//     wx.getSystemInfo({
+//       success: function success(res) {
+//         windowWidth = res.windowWidth;
+//       }
+//     });
+//   }
   this.config = this.config || {};
   this.config.designWidth = windowWidth;
   this.config.deviceRatio = 750 / windowWidth;
@@ -2318,7 +2319,10 @@ var RequestQueue = {
         completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
         _this.run();
       };
-      wx.request(options);
+      if ((typeof wx === 'undefined' ? 'undefined' : _typeof$1(wx)) !== void 666) {
+        wx.request(options);
+      }
+      
     }
   }
 };
@@ -2618,4 +2622,5 @@ React = win.React = win.ReactDOM = {
 initNativeApi(React);
 var React$1 = React;
 
-export default React$1;
+// export default React$1;
+module.exports = React$1;
