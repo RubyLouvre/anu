@@ -3,7 +3,7 @@ import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
 import { onComponentDispose, onComponentUpdate } from './template';
 import { onPageUpdate } from './createPage';
-import { eventSystem } from './eventSystem';
+import { classCached } from './utils';
 
 //其他Renderer也要实现这些方法
 function cleanChildren(array) {
@@ -42,7 +42,7 @@ export let Renderer = createRenderer({
         let classId = props['data-class-uid'];
         var instanceId = props['data-instance-uid'];
         if (classId) {
-            var clazz = eventSystem.classCache[classId];
+            var clazz = classCached[classId];
             if (clazz && clazz.instances) {
                 var instance = clazz.instances[instanceId];
                 if (instance) {

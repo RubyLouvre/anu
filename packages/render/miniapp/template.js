@@ -96,7 +96,6 @@ export function onComponentDispose(fiber) {
 var ignoreObject = {
     is: 1,
     templatedata: 1,
-    fragmentUid: 1,
     classUid: 1,
     instanceUid: 1
 };
@@ -114,10 +113,10 @@ export function template(props) {
         var parentClass = classCached[props.classUid];
         if (parentClass && parentClass.instances){
             var parentInstance =  parentClass.instances[props.instanceUid];
-            props.fragmentData = {
+            componentProps.fragmentData = {
                 state: parentInstance.state,
                 props: parentInstance.props,
-                context:parentInstance.context
+                context: parentInstance.context
             };
         }
     }

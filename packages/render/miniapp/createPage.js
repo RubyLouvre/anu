@@ -40,7 +40,7 @@ function isReferenceType(val) {
             Object.prototype.toString.call(val) === '[object Array]')
     );
 }
-export function createPage(PageClass, path) {
+export function createPage(PageClass, path, testObject) {
     //添加一个全局代理的事件句柄
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     //劫持页面组件的生命周期，与setState进行联动
@@ -59,6 +59,9 @@ export function createPage(PageClass, path) {
             appendChild: function() {}
         }
     );
+    if (testObject){
+        testObject.instance = instance;
+    }
     //劫持setState
     var anuSetState = instance.setState;
     var anuForceUpdate = instance.forceUpdate;

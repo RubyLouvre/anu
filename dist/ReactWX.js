@@ -3,8 +3,6 @@
  * IE9+
  */
 
-import { classCached } from 'utils';
-
 var arrayPush = Array.prototype.push;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var gSBU = "getSnapshotBeforeUpdate";
@@ -1824,6 +1822,14 @@ function getContainer(p) {
     }
 }
 
+function _uuid() {
+    return (Math.random() + '').slice(-4);
+}
+function getUUID() {
+    return _uuid() + _uuid();
+}
+var classCached = {};
+
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
         var target = e.currentTarget;
@@ -1857,14 +1863,6 @@ function createEvent(e, target) {
     return event;
 }
 
-function _uuid() {
-    return (Math.random() + '').slice(-4);
-}
-function getUUID() {
-    return _uuid() + _uuid();
-}
-var classCached$1 = {};
-
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
@@ -1896,7 +1894,7 @@ function safeClone(originVal) {
 function isReferenceType(val) {
     return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
 }
-function createPage(PageClass, path) {
+function createPage(PageClass, path, testObject) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     PageClass.instances = PageClass.instances || {};
     var instance = render(createElement(PageClass, {
@@ -1909,6 +1907,9 @@ function createPage(PageClass, path) {
         root: true,
         appendChild: function appendChild() {}
     });
+    if (testObject) {
+        testObject.instance = instance;
+    }
     var anuSetState = instance.setState;
     var anuForceUpdate = instance.forceUpdate;
     var updating = false,
@@ -2085,7 +2086,6 @@ function onComponentDispose(fiber) {
 var ignoreObject = {
     is: 1,
     templatedata: 1,
-    fragmentUid: 1,
     classUid: 1,
     instanceUid: 1
 };
@@ -2098,10 +2098,10 @@ function template(props) {
         }
     }
     if (props.fragmentUid && props.classUid) {
-        var parentClass = classCached$1[props.classUid];
+        var parentClass = classCached[props.classUid];
         if (parentClass && parentClass.instances) {
             var parentInstance = parentClass.instances[props.instanceUid];
-            props.fragmentData = {
+            componentProps.fragmentData = {
                 state: parentInstance.state,
                 props: parentInstance.props,
                 context: parentInstance.context
@@ -2323,13 +2323,12 @@ var otherApis = {
   checkIsSoterEnrolledInDevice: true
 };
 
-var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function initPxTransform() {
     var wxConfig = this.wxConfig = this.wxConfig || {};
     var windowWidth = 375;
     wxConfig.designWidth = windowWidth;
     wxConfig.deviceRatio = 750 / windowWidth / 2;
-    if ((typeof wx === "undefined" ? "undefined" : _typeof$2(wx)) !== void 666) {
+    if (typeof wx !== 'undefined') {
         wx.getSystemInfo({
             success: function success(res) {
                 windowWidth = res.windowWidth;
@@ -2368,24 +2367,24 @@ var RequestQueue = {
 };
 function request(options) {
     options = options || {};
-    if (typeof options === "string") {
+    if (typeof options === 'string') {
         options = {
             url: options
         };
     }
-    var originSuccess = options["success"];
-    var originFail = options["fail"];
-    var originComplete = options["complete"];
+    var originSuccess = options['success'];
+    var originFail = options['fail'];
+    var originComplete = options['complete'];
     var p = new Promise(function (resolve, reject) {
-        options["success"] = function (res) {
+        options['success'] = function (res) {
             originSuccess && originSuccess(res);
             resolve(res);
         };
-        options["fail"] = function (res) {
+        options['fail'] = function (res) {
             originFail && originFail(res);
             reject(res);
         };
-        options["complete"] = function (res) {
+        options['complete'] = function (res) {
             originComplete && originComplete(res);
         };
         RequestQueue.request(options);
@@ -2400,27 +2399,27 @@ function processApis(ReactWX) {
                 options = options || {};
                 var task = null;
                 var obj = Object.assign({}, options);
-                if (typeof options === "string") {
+                if (typeof options === 'string') {
                     return wx[key](options);
                 }
                 var p = new Promise(function (resolve, reject) {
-                    ["fail", "success", "complete"].forEach(function (k) {
+                    ['fail', 'success', 'complete'].forEach(function (k) {
                         obj[k] = function (res) {
                             options[k] && options[k](res);
-                            if (k === "success") {
-                                if (key === "connectSocket") {
+                            if (k === 'success') {
+                                if (key === 'connectSocket') {
                                     resolve(task);
                                 } else {
                                     resolve(res);
                                 }
-                            } else if (k === "fail") {
+                            } else if (k === 'fail') {
                                 reject(res);
                             }
                         };
                     });
                     task = wx[key](obj);
                 });
-                if (key === "uploadFile" || key === "downloadFile") {
+                if (key === 'uploadFile' || key === 'downloadFile') {
                     p.progress = function (cb) {
                         task.onProgressUpdate(cb);
                         return p;
@@ -2442,16 +2441,16 @@ function processApis(ReactWX) {
 }
 function pxTransform(size) {
     var deviceRatio = this.wxConfig.deviceRatio;
-    return parseInt(size, 10) / deviceRatio + "rpx";
+    return parseInt(size, 10) / deviceRatio + 'rpx';
 }
 function initNativeApi(ReactWX) {
     ReactWX.wx = {};
     processApis(ReactWX);
     ReactWX.request = request;
-    if (typeof getCurrentPages == "function") {
+    if (typeof getCurrentPages == 'function') {
         ReactWX.getCurrentPages = getCurrentPages;
     }
-    if (typeof getApp == "function") {
+    if (typeof getApp == 'function') {
         ReactWX.getApp = getApp;
     }
     ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
@@ -2519,7 +2518,7 @@ var Renderer$1 = createRenderer({
         var classId = props['data-class-uid'];
         var instanceId = props['data-instance-uid'];
         if (classId) {
-            var clazz = eventSystem.classCache[classId];
+            var clazz = classCached[classId];
             if (clazz && clazz.instances) {
                 var instance = clazz.instances[instanceId];
                 if (instance) {
@@ -2630,7 +2629,7 @@ React = win.React = win.ReactDOM = {
     miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
         var clazz = miniCreateClass.apply(null, arguments);
         var uuid = clazz.prototype.classUid;
-        classCached$1[uuid] = clazz;
+        classCached[uuid] = clazz;
         return clazz;
     },
     findDOMNode: function findDOMNode() {

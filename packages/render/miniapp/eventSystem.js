@@ -1,5 +1,5 @@
 import { returnFalse } from 'react-core/util';
-import { classCached } from 'utils';
+import { classCached } from './utils';
 
 export var eventSystem = {
     dispatchEvent: function(e) {
