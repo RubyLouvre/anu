@@ -2,8 +2,16 @@
 const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs-extra');
-const webpack = require('webpack');
-const MemoryFS = require('memory-fs');
+
+const rollup = require('rollup');
+const rbabel = require('rollup-plugin-babel');
+//const resolve = require("rollup-plugin-node-resolve");
+const commonjs = require('rollup-plugin-commonjs');
+const rollupLess = require('rollup-plugin-less');
+const rollupSass = require('rollup-plugin-sass');
+const alias = require('rollup-plugin-alias');
+const chokidar = require('chokidar');
+
 const less = require('less');
 const jsTransform = require('./jsTransform');
 const helpers = require('./helpers');
@@ -36,7 +44,6 @@ const isCss = ext => {
 };
 
 const getAlias = () => {
-    //webpack分析入口依赖时，若npm无路径，会被当成npm模块
     let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
     let aliasConfig = {};
     for (let key in aliasField) {
@@ -45,57 +52,58 @@ const getAlias = () => {
     return aliasConfig || {};
 };
 
+const print = (prefix, msg) => {
+    // eslint-disable-next-line
+    console.log(chalk.green(`${prefix} ${msg}`));
+};
+
 class Parser {
     constructor(entry) {
         this.entry = entry;
-        this.compiler = null;
-        this.statsHash = '';
-        this.config = {
-            entry: path.resolve(this.entry),
-            module: {
-                loaders: [
-                    {
-                        test: /\.(js|jsx)$/,
-                        exclude: /node_modules/,
-                        loader: 'babel-loader',
-                        options: {
-                            presets: ['env', 'react'],
-                            plugins: [
-                                require('babel-plugin-transform-class-properties')
-                            ]
-                        }
+        this.inputConfig = {
+            input: this.entry,
+            plugins: [
+                // resolve({
+                //     extensions: ['.js', 'jsx']
+                // }),
+                alias(getAlias()),
+                commonjs({
+                    include: 'node_modules/**'
+                }),
+                rollupLess({
+                    output: function(code) {
+                        return code;
                     }
-                ]
-            },
-            resolve: {
-                alias: getAlias()
-            }
+                }),
+                rollupSass({
+                    output: function(code) {
+                        return code;
+                    }
+                }),
+                rbabel({
+                    babelrc: false,
+                    runtimeHelpers: true,
+                    exclude: ['node_modules/**'],
+                    presets: ['react'],
+                    externalHelpers: false,
+                    plugins: [
+                        'transform-class-properties',
+                        'transform-object-rest-spread'
+                    ]
+                })
+            ]
         };
     }
     async parse() {
-        this.compiler = webpack(this.config);
-        this.compiler.outputFileSystem = new MemoryFS();
-        this.compiler.run((err, stats) => {
-            if (err) throw err;
-            this.startCodeGen(stats);
+        const bundle = await rollup.rollup(this.inputConfig);
+        const files = bundle.modules.map(function(item) {
+            if (/commonjsHelpers|node_modules/.test(item.id)) return;
+            return item.id;
         });
+        this.startCodeGen(files);
     }
-    startCodeGen(stats) {
-        //webpack watch 可能触发多次 build https://webpack.js.org/api/node/#watching
-        if (this.statsHash === stats.hash) return;
-        this.statsHash = stats.hash;
-
-        let errors = stats.toJson().errors;
-        for (let i = 0; i < errors.length; i++) {
-            if (/SyntaxError:/.test(errors[i])) {
-                // eslint-disable-next-line
-                console.warn('[warning]' + errors[i]);
-            }
-        }
-
-        let dependencies = stats.compilation.fileDependencies.sort(function(
-            path
-        ) {
+    startCodeGen(files) {
+        let dependencies = files.sort(function(path) {
             if (path.indexOf('components') > 0) {
                 return 1; //确保组件最后执行
             }
@@ -103,9 +111,7 @@ class Parser {
         });
 
         dependencies.forEach(file => {
-            if (!/node_modules/g.test(file)) {
-                this.codegen(file);
-            }
+            this.codegen(file);
         });
 
         this.generateProjectConfig();
@@ -119,6 +125,7 @@ class Parser {
                 fs.ensureFileSync(dist);
                 fs.writeFile(dist, result.code, err => {
                     err ? reject(err) : resolve();
+                    print('build sucess:', path.relative(cwd, dist));
                 });
             }
         });
@@ -134,6 +141,7 @@ class Parser {
             fs.writeFile(dist, code, err => {
                 // eslint-disable-next-line
                 if (err) console.log(err);
+                print('build sucess:', path.relative(cwd, dist));
             });
         }
     }
@@ -141,7 +149,7 @@ class Parser {
         return new Promise((resolve, reject) => {
             let { name, ext } = path.parse(file);
             if (isLib(name) || !isJs(ext)) return;
-            while ( queue.wxml.length){
+            while (queue.wxml.length) {
                 let data = queue.wxml.shift();
                 if (!data) return;
                 let dist = data.path;
@@ -149,10 +157,10 @@ class Parser {
                     fs.ensureFileSync(dist);
                     fs.writeFile(dist, data.code || '', err => {
                         err ? reject(err) : resolve();
+                        print('build sucess:', path.relative(cwd, dist));
                     });
                 }
             }
-           
         });
     }
 
@@ -167,6 +175,7 @@ class Parser {
                 fs.ensureFileSync(dist);
                 fs.writeFile(dist, data.code || '', err => {
                     err ? reject(err) : resolve();
+                    print('build sucess:', path.relative(cwd, dist));
                 });
             }
         });
@@ -175,15 +184,16 @@ class Parser {
     generateCss(file) {
         return new Promise((resolve, reject) => {
             let { name, ext } = path.parse(file);
-            let dist = file.replace('src', 'dist');
+            let distDir = file.replace('src', 'dist');
             if (!isCss(ext)) return;
-            let wxssDist = path.join(path.dirname(dist), `${name}.wxss`);
+            let dist = path.join(path.dirname(distDir), `${name}.wxss`);
             let lessContent = fs.readFileSync(file).toString();
             if (ext === '.less') {
                 less.render(lessContent, {})
                     .then(res => {
-                        fs.writeFile(wxssDist, res.css, err => {
+                        fs.writeFile(dist, res.css, err => {
                             err ? reject(err) : resolve();
+                            print('build sucess:', path.relative(cwd, dist));
                         });
                     })
                     .catch(err => {
@@ -203,8 +213,9 @@ class Parser {
                     },
                     (err, result) => {
                         if (err) throw err;
-                        fs.writeFile(wxssDist, result.css.toString(), err => {
+                        fs.writeFile(dist, result.css.toString(), err => {
                             err ? reject(err) : resolve();
+                            print('build sucess:', path.relative(cwd, dist));
                         });
                     }
                 );
@@ -213,13 +224,12 @@ class Parser {
     }
 
     generateProjectConfig() {
-        const from = path.normalize(path.join(inputPath, 'project.config.json'));
+        const from = path.normalize(
+            path.join(inputPath, 'project.config.json')
+        );
         const to = path.normalize(path.join(outputPath, 'project.config.json'));
         fs.ensureFileSync(to);
-        fs.copyFile(
-            from,
-            to
-        );
+        fs.copyFile(from, to);
     }
 
     async codegen(file) {
@@ -238,16 +248,31 @@ class Parser {
     }
 
     watching() {
-        this.compiler.watch(
-            {
-                aggregateTimeout: 300,
-                poll: undefined
-            },
-            (err, stats) => {
-                if (err) throw err;
-                this.startCodeGen(stats);
-            }
-        );
+        let watchDir = path.dirname(this.entry);
+        let watchConfig = {
+            ignored: /\.DS_Store|\.gitignore|.git/
+        };
+        const watcher = chokidar
+            .watch(watchDir, watchConfig)
+            .on('all', (event, file) => {
+                if (event === 'change') {
+                    // eslint-disable-next-line
+                    console.log();
+                    // eslint-disable-next-line
+                    console.log(
+                        `updated: ${chalk.yellow(path.relative(cwd, file))}`
+                    );
+                    // eslint-disable-next-line
+                    console.log();
+                    this.codegen(file);
+                }
+            });
+
+        watcher.on('error', error => {
+            // eslint-disable-next-line
+            console.error('Watcher failure', error);
+            process.exit(1);
+        });
     }
 }
 
