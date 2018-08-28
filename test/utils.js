@@ -12,7 +12,18 @@ function baseCode(code) {
       constructor(props) {
         super(props);
         this.state={
-            flag: null
+            flag: null,
+            array1: [
+                {
+                  name: "动物1"
+                },
+                {
+                  name: "动物2"
+                },
+                {
+                  name: "动物3"
+                }
+              ]
         }
       }
      
@@ -59,7 +70,18 @@ function transform(code) {
 //   console.log(getPropsStyle(result.data.props))
 
 let template = transform(`return (
-    <div className={'row ' + (this.state.flag === clickValue ? 'checked' : '')}></div>
-  )`);
-
-  console.log(q.wxml);
+    <div class="loop3-container">
+    {this.state.array1.map(function(el) {
+      return (
+        <div key={el.name}>
+          <div class="index-item-1" style={{ backgroundColor: '#eee' }}>
+            {el.name}
+          </div>
+        </div>
+      );
+    })}
+    </div>
+)`);
+  console.log('template', template)
+  let result = evalClass(template);
+  console.log('result',result.data);

@@ -2,15 +2,18 @@ let babel = require('babel-core');
 let jsTransform = require('../../packages/translator/jsTransform');
 let helpers = require('../../packages/translator/helpers');
 // let React = require('../../../../dist')
-function baseCode(code, classMethod='', head='') {
+function baseCode(code, state='', head='') {
   return `
     ${head}
     import React from '@react'
     class Index extends React.Component {
       constructor(props) {
         super(props);
+        this.state = {
+            ${state}
+        }
       }
-      ${classMethod}
+      
       config = {
         navigationBarTextStyle: '#fff',
         navigationBarBackgroundColor: '#0088a4',
@@ -28,9 +31,9 @@ function baseCode(code, classMethod='', head='') {
 
 
 
-exports.transform = function(code, classMethod, head) {
+exports.transform = function(code, state, head) {
 
-  code = baseCode(code, classMethod, head);
+  code = baseCode(code, state, head);
   var result = babel.transform(code, {
     babelrc: false,
     plugins: [

@@ -2658,5 +2658,5 @@ React = win.React = win.ReactDOM = {
 initNativeApi(React);
 var React$1 = React;
 
-export default React$1;
-
+// export default React$1;
+module.exports = React$1

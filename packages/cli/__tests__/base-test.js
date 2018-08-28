@@ -14,10 +14,24 @@ describe('基本功能', () => {
 
       expect(template).toMatch(
         prettifyXml(
-          `<view class="{{state.flag === clickValue ? \'checked\' : \'\'}}">\n</view>`
+          `<view class="{{state.flag === clickValue ? 'checked' : ''}}">\n</view>`
         )
       );
     });
-
+    test('属性中存在三元表达式 2', () => {
+        transform(
+          `return (
+              <div className={'row ' + (this.state.flag === clickValue ? 'checked' : '')}></div>
+               )
+             `
+        );
+        let template = q.wxml[0].code;
+  
+        expect(template).toMatch(
+          prettifyXml(
+            `<view class="{{state.flag === clickValue ? 'checked' : ''}}">\n</view>`
+          )
+        );
+      });
   
 });
