@@ -7,6 +7,7 @@ const attrNameHelper = require('./attrName');
 const logicHelper = require('./logic');
 const jsx = require('../utils');
 const chineseHelper = require('./chinese');
+const slotHelper = require('./slot');
 
 var chineseHack = chineseHelper();
 /**
@@ -20,7 +21,8 @@ function wxml(code, modules) {
                 return {
                     inherits: syntaxJSX,
                     visitor: visitor,
-                    manipulateOptions(opts){//解析每个文件前执行一次
+                    manipulateOptions(opts) {
+                        //解析每个文件前执行一次
                         opts.anu = modules;
                     }
                 };
@@ -35,13 +37,14 @@ function wxml(code, modules) {
 }
 var visitor = {
     JSXOpeningElement: {
-        exit: function(astPath) {
+        exit: function(astPath, state) {
             var openTag = astPath.node.name;
             if (
                 openTag.type === 'JSXMemberExpression' &&
                 openTag.object.name === 'React' &&
                 openTag.property.name === 'template'
             ) {
+                var modules = jsx.getAnu(state);
                 var array, is, key;
                 astPath.node.attributes.forEach(function(el) {
                     var attrName = el.name.name;
@@ -49,7 +52,15 @@ var visitor = {
                     if (/^\{\{.+\}\}/.test(attrValue)) {
                         attrValue = attrValue.slice(2, -2);
                     }
-                    if (attrName === 'templatedata') {
+                    if (attrName === 'fragmentUid') {
+                        slotHelper(
+                            astPath.parentPath.node.children,
+                            el.value.value,
+                            modules,
+                            wxml
+                        );
+                        // console.log('fragmentUid');
+                    } else if (attrName === 'templatedata') {
                         array = attrValue;
                     } else if (attrName === 'is') {
                         is = attrValue;
@@ -128,7 +139,7 @@ var visitor = {
                 attrValueHelper(astPath);
             } else if (
                 expr.type === 'MemberExpression' &&
-               /props\.children/.test( generate(expr).code )
+                /props\.children/.test(generate(expr).code)
             ) {
                 var attributes = [];
                 var template = jsx.createElement('template', attributes, []);

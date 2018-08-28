@@ -5,11 +5,8 @@ const helpers = require('./helpers');
 const queue = require('./queue');
 const utils = require('./utils');
 const deps = require('./deps');
-const prettifyXml = require('prettify-xml');
+//const prettifyXml = require('prettify-xml');
 
-function getAnu(state) {
-    return state.file.opts.anu;
-}
 /**
  * JS文件转译器
  */
@@ -19,7 +16,7 @@ module.exports = {
     ClassExpression: helpers.classDeclaration,
     ClassMethod: {
         enter(astPath, state) {
-            var modules = getAnu(state);
+            var modules = utils.getAnu(state);
             var methodName = astPath.node.key.name;
             modules.walkingMethod = methodName;
             if (methodName !== 'constructor') {
@@ -43,7 +40,7 @@ module.exports = {
             );
         },
         exit(astPath, state) {
-            var modules = getAnu(state);
+            var modules = utils.getAnu(state);
             const methodName = astPath.node.key.name;
             if (methodName === 'render') {
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,
@@ -61,7 +58,7 @@ module.exports = {
         //enter里面会转换jsx中的JSXExpressionContainer
         exit(astPath, state) {
             //函数声明转换为无状态组件
-            let modules = getAnu(state);
+            let modules = utils.getAnu(state);
             let name = astPath.node.id.name;
             if (
                 /^[A-Z]/.test(name) &&
@@ -75,7 +72,7 @@ module.exports = {
     },
     ImportDeclaration(astPath, state) {
         let node = astPath.node;
-        let modules = getAnu(state);
+        let modules = utils.getAnu(state);
         let source = node.source.value;
         let specifiers = node.specifiers;
         if (modules.componentType === 'App') {
@@ -133,7 +130,7 @@ module.exports = {
     ClassProperty: {
         exit(astPath, state) {
             let key = astPath.node.key.name;
-            let modules = getAnu(state);
+            let modules = utils.getAnu(state);
             if (key === 'config') {
                 //format json
                 let code = generate(astPath.node.value).code;
@@ -163,7 +160,9 @@ module.exports = {
                     type: 'json',
                     path: modules.sourcePath
                         .replace(
-                            new RegExp(`${utils.sepForRegex}src${utils.sepForRegex}`),
+                            new RegExp(
+                                `${utils.sepForRegex}src${utils.sepForRegex}`
+                            ),
                             `${utils.sepForRegex}dist${utils.sepForRegex}`
                         )
                         .replace(/\.js$/, '.json'),
@@ -194,7 +193,7 @@ module.exports = {
     },
     MemberExpression() {},
     AssignmentExpression(astPath, state) {
-        let modules = getAnu(state);
+        let modules = utils.getAnu(state);
         // 转换微信小程序component的properties对象为defaultProps
         let left = astPath.node.left;
         if (
@@ -211,7 +210,7 @@ module.exports = {
         let node = astPath.node;
         let args = node.arguments;
         let callee = node.callee;
-        let modules = getAnu(state);
+        let modules = utils.getAnu(state);
         //移除super()语句
         if (modules.walkingMethod == 'constructor') {
             if (callee.type === 'Super') {
@@ -232,9 +231,8 @@ module.exports = {
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     JSXOpeningElement: {
-        //  enter: function(astPath) {},
         enter: function(astPath, state) {
-            let modules = getAnu(state);
+            let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
             if (modules.importComponents[nodeName]) {
                 var set = deps[nodeName] || (deps[nodeName] = new Set());
@@ -287,38 +285,10 @@ module.exports = {
                     helpers.nodeName(astPath, modules);
                 }
             }
-        },
-        exit(astPath, state) {
-            if (astPath.fragmentUid) {
-                let modules = getAnu(state);
-                var template = utils.createElement(
-                    'template',
-                    [utils.createAttribute('name', astPath.fragmentUid)],
-                    astPath.parentPath.node.children
-                );
-                var wxml = helpers
-                    .wxml(generate(template).code, modules)
-                    .replace(/;$/, '');
-                if (!modules.fragmentPath) {
-                    modules.fragmentPath =
-                        modules.sourcePath.split(`src${nPath.sep}pages`)[0] +
-                        `dist${nPath.sep}components${nPath.sep}Fragments${
-                            nPath.sep
-                        }`;
-                }
-                queue.wxml.push({
-                    type: 'wxml',
-                    path:
-                        modules.fragmentPath + astPath.fragmentUid + '.wxml',
-                    code: prettifyXml(wxml, {
-                        indent: 2
-                    })
-                });
-            }
         }
     },
     JSXAttribute: function(astPath, state) {
-        let modules = getAnu(state);
+        let modules = utils.getAnu(state);
         let attrName = astPath.node.name.name;
         let attrValue = astPath.node.value;
         var attrs = astPath.parentPath.node.attributes;
@@ -399,7 +369,7 @@ module.exports = {
     },
 
     JSXClosingElement: function(astPath, state) {
-        let modules = getAnu(state);
+        let modules = utils.getAnu(state);
         let nodeName = astPath.node.name.name;
         if (
             !modules.importComponents[nodeName] &&

@@ -1,20 +1,19 @@
 const t = require('babel-types');
 const template = require('babel-template');
 const generate = require('babel-generator').default;
-function getAnu(state){
-    return state.file.opts.anu;
-}
+const utils = require('../utils');
+
 module.exports = {
     enter(astPath, state) {
         //重置数据
-        var modules = getAnu(state);
+        var modules = utils.getAnu(state);
         modules.className = astPath.node.id.name;
         modules.parentName = generate(astPath.node.superClass).code || 'Object';
         modules.classUid = 'c' + astPath.node.start + astPath.node.end;
     },
     exit(astPath, state) {
         // 将类表式变成函数调用
-        var modules = getAnu(state);
+        var modules = utils.getAnu(state);
         if (!modules.ctorFn) {
             modules.ctorFn = template('function x(){b}')({
                 x: t.identifier(modules.className),
