@@ -1,10 +1,10 @@
-const nPath = require('path');
+const path = require('path');
 const fsExtra = require('fs-extra');
 
-const isNpm = function(path) {
+const isNpm = function(astPath){
     const toString = Object.prototype.toString;
-    if (toString.call(path) !== '[object String]' || !path) return false;
-    return !/^\/|\./.test(path);
+    if (toString.call(astPath) !== '[object String]' || !astPath) return false;
+    return !/^\/|\./.test(astPath);
 };
 
 const isBuildInLibs = function(name) {
@@ -14,7 +14,7 @@ const isBuildInLibs = function(name) {
 
 const isAlias = name => {
     const cwd = process.cwd();
-    let aliasField = require(nPath.join(cwd, 'package.json')).mpreact.alias;
+    let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
     let aliasAray = Object.keys(aliasField);
     let isAliasFlag = false;
     for (let i = 0; i < aliasAray.length; i++) {
@@ -27,26 +27,26 @@ const isAlias = name => {
 };
 
 const copyNodeModuleToBuildNpm = function(source) {
-    let nodeModulesSourcesPath = nPath.normalize(
-        nPath.join(process.cwd(), 'node_modules', source)
+    let nodeModulesSourcesPath = path.normalize(
+        path.join(process.cwd(), 'node_modules', source)
     );
-    let nodeModelesBuildSourcesPath = nPath.normalize(
-        nPath.join(process.cwd(), `/dist/npm/${source}`)
+    let nodeModelesBuildSourcesPath = path.normalize(
+        path.join(process.cwd(), `/dist/npm/${source}`)
     );
-    let pkg = nPath.normalize(
-        nPath.join(nodeModulesSourcesPath, 'package.json')
+    let pkg = path.normalize(
+        path.join(nodeModulesSourcesPath, 'package.json')
     );
     let mainFild = require(pkg).main;
 
     //拷贝package.json
-    let packageDest = nPath.normalize(
-        nPath.join(nodeModelesBuildSourcesPath, 'package.json')
+    let packageDest = path.normalize(
+        path.join(nodeModelesBuildSourcesPath, 'package.json')
     );
     fsExtra.ensureFileSync(packageDest);
     fsExtra.copySync(pkg, packageDest);
     //拷贝package.json中main字段指向的模块
-    let libSrc = nPath.join(nodeModulesSourcesPath, mainFild);
-    let libDest = nPath.join(nodeModelesBuildSourcesPath, mainFild);
+    let libSrc = path.join(nodeModulesSourcesPath, mainFild);
+    let libDest = path.join(nodeModelesBuildSourcesPath, mainFild);
     fsExtra.ensureFileSync(libDest);
     fsExtra.copySync(libSrc, libDest, {
         overwrite: true,
@@ -55,16 +55,16 @@ const copyNodeModuleToBuildNpm = function(source) {
 };
 
 const getNodeModulePath = function(moduleCurrent, source) {
-    let from = nPath.normalize(
-        nPath.dirname(moduleCurrent.replace('src', 'dist'))
+    let from = path.normalize(
+        path.dirname(moduleCurrent.replace('src', 'dist'))
     );
-    let to = nPath.normalize('/dist/npm/');
-    let relativePath = nPath.relative(from, to);
-    let nodeModelesBuildSourcesPath = nPath.join(
+    let to = path.normalize('/dist/npm/');
+    let relativePath = path.relative(from, to);
+    let nodeModelesBuildSourcesPath = path.join(
         process.cwd(),
-        nPath.normalize(`/dist/npm/${source}`)
+        path.normalize(`/dist/npm/${source}`)
     );
-    let pkg = nPath.join(nodeModelesBuildSourcesPath, 'package.json');
+    let pkg = path.join(nodeModelesBuildSourcesPath, 'package.json');
     let mainFild = require(pkg).main;
     if (!mainFild) {
         // eslint-disable-next-line
@@ -73,7 +73,7 @@ const getNodeModulePath = function(moduleCurrent, source) {
         );
         process.exit(1);
     }
-    let astValue = nPath.join(
+    let astValue = path.join(
         relativePath,
         source,
         mainFild.replace(/\.(js)/, '')

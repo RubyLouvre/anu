@@ -5,8 +5,8 @@ var runicode = /\\u[a-f\d]{4}/i,
  */
 module.exports = function createChineseHack() {
     return {
-        collect(path) {
-            let valueNode = path.node.value;
+        collect(astPath) {
+            let valueNode = astPath.node.value;
             let target;
             if (valueNode) {
                 if (valueNode.type === 'StringLiteral') {

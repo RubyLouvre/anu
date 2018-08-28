@@ -4,8 +4,8 @@ const t = require('babel-types');
 const generate = require('babel-generator').default;
 const styleHelper = require('./inlineStyle');
 
-function bindEvent(path) {
-    replaceWithExpr(path, 'dispatchEvent', true);
+function bindEvent(astPath) {
+    replaceWithExpr(astPath, 'dispatchEvent', true);
 }
 
 function stylePropsName(name) {
@@ -15,12 +15,12 @@ function stylePropsName(name) {
     return propsName.trim();
 }
 
-module.exports = function(path) {
-    var expr = path.node.expression;
-    var attrName = path.parent.name.name;
+module.exports = function(astPath) {
+    var expr = astPath.node.expression;
+    var attrName = astPath.parent.name.name;
     var isEvent = /^(bind|catch)/.test(attrName);
     var attrValue = generate(expr).code;
-    switch (path.node.expression.type) {
+    switch (astPath.node.expression.type) {
         case 'NumericLiteral': //11
         case 'StringLiteral': // "string"
         case 'BinaryExpression': // 1+ 2
@@ -30,20 +30,20 @@ module.exports = function(path) {
             if (isEvent) {
                 throwEventValue(attrName, attrValue);
             }
-            replaceWithExpr(path, attrValue);
+            replaceWithExpr(astPath, attrValue);
             break;
         case 'MemberExpression':
             if (isEvent) {
-                bindEvent(path, attrName, attrValue.replace(/^\s*this\./, ''));
+                bindEvent(astPath, attrName, attrValue.replace(/^\s*this\./, ''));
             } else {
-                replaceWithExpr(path, attrValue.replace(/^\s*this\./, ''));
+                replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
             }
             break;
         case 'CallExpression':
             if (isEvent) {
                 var match = attrValue.match(/this\.(\w+)\.bind/);
                 if (match && match[1]) {
-                    bindEvent(path, attrName, match[1]);
+                    bindEvent(astPath, attrName, match[1]);
                 } else {
                     throwEventValue(attrName, attrValue);
                 }
@@ -55,9 +55,9 @@ module.exports = function(path) {
                     // style={{}} 类型解析
                     // let name = attrValue.replace(regTpl, '$1').split(',')[2];
                     let name = stylePropsName(attrValue);
-                    replaceWithExpr(path, `props.${name}`);
+                    replaceWithExpr(astPath, `props.${name}`);
                 } else {
-                    replaceWithExpr(path, attrValue);
+                    replaceWithExpr(astPath, attrValue);
                 }
             }
             break;
@@ -65,13 +65,13 @@ module.exports = function(path) {
             if (attrName === 'style') {
                 var styleValue = styleHelper(expr);
 
-                replaceWithExpr(path, styleValue, true);
+                replaceWithExpr(astPath, styleValue, true);
             } else if (isEvent) {
                 throwEventValue(attrName, attrValue);
             }
             break;
         default:
-            // console.log('===0000=', path.node.expression.type);
+            // console.log('===0000=', astPath.node.expression.type);
             break;
     }
 };
@@ -86,7 +86,7 @@ function throwEventValue(attrName, attrValue) {
     但现在的值是${attrValue}`;
 }
 
-function replaceWithExpr(path, value, noBracket) {
+function replaceWithExpr(astPath, value, noBracket) {
     var v = noBracket ? value : '{{' + value + '}}';
-    path.replaceWith(t.stringLiteral(v));
+    astPath.replaceWith(t.stringLiteral(v));
 }

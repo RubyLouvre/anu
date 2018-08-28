@@ -5,14 +5,14 @@ function getAnu(state){
     return state.file.opts.anu;
 }
 module.exports = {
-    enter(path, state) {
+    enter(astPath, state) {
         //重置数据
         var modules = getAnu(state);
-        modules.className = path.node.id.name;
-        modules.parentName = generate(path.node.superClass).code || 'Object';
-        modules.classUid = 'c' + path.node.start + path.node.end;
+        modules.className = astPath.node.id.name;
+        modules.parentName = generate(astPath.node.superClass).code || 'Object';
+        modules.classUid = 'c' + astPath.node.start + astPath.node.end;
     },
-    exit(path, state) {
+    exit(astPath, state) {
         // 将类表式变成函数调用
         var modules = getAnu(state);
         if (!modules.ctorFn) {
@@ -21,7 +21,7 @@ module.exports = {
                 b: modules.thisProperties
             });
         }
-        var parent = path.parentPath.parentPath;
+        var parent = astPath.parentPath.parentPath;
         parent.insertBefore(modules.ctorFn);
         //用于绑定事件
         modules.thisMethods.push(
@@ -39,30 +39,30 @@ module.exports = {
             ])
         );
         //插入到最前面
-        //  path.parentPath.parentPath.insertBefore(onInit);
+        //  astPath.parentPath.parentPath.insertBefore(onInit);
         //  可以通过`console.log(generate(call).code)`验证
-        path.replaceWith(call);
-        if (path.type == 'CallExpression') {
-            if (path.parentPath.type === 'VariableDeclarator') {
+        astPath.replaceWith(call);
+        if (astPath.type == 'CallExpression') {
+            if (astPath.parentPath.type === 'VariableDeclarator') {
                 if (parent.type == 'VariableDeclaration') {
                     parent.node.kind = '';
                 }
             }
         }
         if (modules.componentType === 'Page') {
-            // 动态生成Page组件的Page(React.createPage(className,path))调用
+            // 动态生成Page组件的Page(React.createPage(className,astPath))调用
             // Page(React.createPage(PPP, "pages/demo/stateless/aaa"));
-            var createPage = template('Page(React.createPage(className,path))')(
+            var createPage = template('Page(React.createPage(className,astPath))')(
                 {
                     className: t.identifier(modules.className),
-                    path: t.stringLiteral(
+                    astPath: t.stringLiteral(
                         modules.current
                             .replace(/.+pages/, 'pages')
                             .replace(/\.js$/, '')
                     )
                 }
             );
-            var p = path;
+            var p = astPath;
             //好像不能上升到根节点Program，只能上升到VariableDeclaration
             while (p.type != 'VariableDeclaration') {
                 p = p.parentPath;
