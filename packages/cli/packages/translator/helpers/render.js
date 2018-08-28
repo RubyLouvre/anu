@@ -63,7 +63,8 @@ exports.exit = function(astPath, type, componentName, modules) {
                 if (set) {
                     var fragmentPath = '/components/Fragments/';
                     //注意，这里只要目录名
-                    var relativePath = path.normalize(modules.sourcePath)
+                    var relativePath = path
+                        .normalize(modules.sourcePath)
                         .split('src')[1]
                         .replace(new RegExp(`[^${sepForRegex}]+.js`), '');
                     set.forEach(function(el) {
@@ -79,7 +80,8 @@ exports.exit = function(astPath, type, componentName, modules) {
             if (set) {
                 fragmentPath = '/components/Fragments/';
                 //注意，这里只要目录名
-                relativePath = path.normalize(modules.sourcePath)
+                relativePath = path
+                    .normalize(modules.sourcePath)
                     .split('src')[1]
                     .replace(new RegExp(`[^${sepForRegex}]+.js`), '');
                 set.forEach(function(el) {
@@ -93,8 +95,12 @@ exports.exit = function(astPath, type, componentName, modules) {
 
             queue.wxml.push({
                 type: 'wxml',
-                path: path.normalize(modules.sourcePath)
-                    .replace(new RegExp(`${sepForRegex}src${sepForRegex}`), `${sepForRegex}dist${sepForRegex}`)
+                path: path
+                    .normalize(modules.sourcePath)
+                    .replace(
+                        new RegExp(`${sepForRegex}src${sepForRegex}`),
+                        `${sepForRegex}dist${sepForRegex}`
+                    )
                     .replace(/\.js$/, '.wxml'),
                 code: prettifyXml(wxml, { indent: 2 })
             });
@@ -106,69 +112,24 @@ exports.exit = function(astPath, type, componentName, modules) {
 };
 
 exports.enter = function(astPath) {
-    if (astPath.node.key.name !== 'render') return;
-
-    const body = astPath.node.body.body;
-
-    if (body.length > 1) {
-        throw new Error(
-            'render 函数中只能有一个 return 语句或者一个 if/else 分支'
-        );
-    }
-
-    if (!body.length) return;
-
-    const expr = body[0];
-
-    switch (true) {
-        case t.isIfStatement(expr):
-            {
-                astPath.traverse({
-                    IfStatement(astPath) {
-                        const { test, consequent, alternate } = astPath.node;
-
-                        if (consequent.body.length > 1) {
-                            throw new RangeError(
-                                'if 分支只能有一个 return 语句'
-                            );
-                        }
-
-                        if (alternate.body.length > 1) {
-                            throw new RangeError(
-                                'else 分支只能有一个 return 语句'
-                            );
-                        }
-
-                        if (
-                            consequent.body.length > 0 &&
-                            t.assertReturnStatement(consequent.body[0])
-                        ) {
-                            throw new TypeError(
-                                'if 分支只能有一个 return 语句'
-                            );
-                        }
-
-                        if (
-                            alternate.body.length > 0 &&
-                            t.assertReturnStatement(alternate.body[0])
-                        ) {
-                            throw new TypeError(
-                                'else 分支只能有一个 return 语句'
-                            );
-                        }
-
-                        astPath.replaceWith(
-                            t.returnStatement(
-                                t.conditionalExpression(
-                                    test,
-                                    consequent.body[0].argument,
-                                    alternate.body[0].argument
-                                )
+    if (astPath.node.key.name === 'render') {
+        astPath.traverse({
+            IfStatement: {
+                enter(path) {
+                    const { test, consequent, alternate } = path.node;
+                    path.replaceWith(
+                        t.returnStatement(
+                            t.conditionalExpression(
+                                test,
+                                consequent.body[0].argument ||
+                                    t.stringLiteral(''),
+                                alternate.body[0].argument ||
+                                    t.stringLiteral('')
                             )
-                        );
-                    }
-                });
+                        )
+                    );
+                }
             }
-            break;
+        });
     }
 };
