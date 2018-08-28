@@ -1,33 +1,30 @@
 let babel = require('babel-core');
 let jsTransform = require('../packages/cli/packages/translator/jsTransform');
 let helpers = require('../packages/cli/packages/translator/helpers');
-let q = require('../packages/cli/packages/translator/queue')
+let q = require('../packages/cli/packages/translator/queue');
+
 
 function baseCode(code) {
   return `
-    const array = [{ list: [] }]
+    import React from '@react'
+
     class Index extends React.Component {
       constructor(props) {
         super(props);
+        this.state={
+            flag: null
+        }
       }
-      config = {
-        navigationBarTextStyle: '#fff',
-        navigationBarBackgroundColor: '#0088a4',
-        navigationBarTitleText: 'Demo',
-        backgroundColor: '#eeeeee',
-        backgroundTextStyle: 'light'
-      };
+     
       render() {
        ${code}
       }
     }
+    React.createPage(Index, 'pages/index/index', {});
     `;
 }
 
-
-
-function transform (code) {
-
+function transform(code) {
   code = baseCode(code);
   var result = babel.transform(code, {
     babelrc: false,
@@ -43,18 +40,26 @@ function transform (code) {
 }
 
 
-transform(`return (
-    <div>{Array.from({length: 9}).map(function(e, i) {
-      return (
-        Array.from({length: 9}).length > 1 ? null :
-        <div
-          key={i}
-          className="ratio-16-9 image-company-album"
-        >
-          loop1: {i}
-        </div>
-      )
-    })}</div>
-  )`)
 
-  console.log(q.wxml[0].code)
+  function evalClass(template) {
+    return eval(template);
+  }
+
+//   let result = evalClass(template);
+//   console.log('result',result.data);
+
+  function getPropsStyle(props) {
+      for(let key in props) {
+          if(/^style\d{8}$/.test(key)) {
+              return key
+          }
+      }
+  }
+
+//   console.log(getPropsStyle(result.data.props))
+
+let template = transform(`return (
+    <div className={'row ' + (this.state.flag === clickValue ? 'checked' : '')}></div>
+  )`);
+
+  console.log(q.wxml);

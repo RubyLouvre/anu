@@ -5,7 +5,7 @@ function initPxTransform() {
     var windowWidth = 375;
     wxConfig.designWidth = windowWidth;
     wxConfig.deviceRatio = 750 / windowWidth / 2;
-    if (typeof wx !== void 666) {
+    if (typeof wx !== 'undefined') {
         wx.getSystemInfo({
             success: function(res) {
                 windowWidth = res.windowWidth;

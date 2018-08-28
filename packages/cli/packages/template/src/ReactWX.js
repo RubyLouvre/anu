@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-24
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-28
  * IE9+
  */
 
@@ -1873,7 +1873,7 @@ function onPageUpdate(fiber) {
     }
     instance.props.instanceCode = instance.instanceCode;
 }
-function createPage(PageClass, path) {
+function createPage(PageClass, path, testObject) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     PageClass.instances = PageClass.instances || {};
     var instance = render(createElement(PageClass, {
@@ -1886,6 +1886,9 @@ function createPage(PageClass, path) {
         root: true,
         appendChild: function appendChild() {}
     });
+    if (testObject) {
+        testObject.instance = instance;
+    }
     var anuSetState = instance.setState;
     var anuForceUpdate = instance.forceUpdate;
     var updating = false,
@@ -2281,13 +2284,12 @@ var otherApis = {
   checkIsSoterEnrolledInDevice: true
 };
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function initPxTransform() {
     var wxConfig = this.wxConfig = this.wxConfig || {};
     var windowWidth = 375;
     wxConfig.designWidth = windowWidth;
     wxConfig.deviceRatio = 750 / windowWidth / 2;
-    if ((typeof wx === "undefined" ? "undefined" : _typeof$1(wx)) !== void 666) {
+    if (typeof wx !== 'undefined') {
         wx.getSystemInfo({
             success: function success(res) {
                 windowWidth = res.windowWidth;
