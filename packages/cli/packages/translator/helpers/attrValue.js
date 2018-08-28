@@ -23,7 +23,6 @@ module.exports = function(astPath) {
     switch (astPath.node.expression.type) {
         case 'NumericLiteral': //11
         case 'StringLiteral': // "string"
-        case 'BinaryExpression': // 1+ 2
         case 'Identifier': // kkk undefined
         case 'NullLiteral': // null
         case 'BooleanLiteral':
@@ -32,9 +31,21 @@ module.exports = function(astPath) {
             }
             replaceWithExpr(astPath, attrValue);
             break;
+        case 'BinaryExpression': // 1+ 2
+            astPath.traverse({
+                ThisExpression(nodePath) {
+                    nodePath.replaceWith(t.identifier(nodePath.parent.property.name));
+                }
+            });
+            replaceWithExpr(astPath, generate(astPath.node.expression).code);
+            break;
         case 'MemberExpression':
             if (isEvent) {
-                bindEvent(astPath, attrName, attrValue.replace(/^\s*this\./, ''));
+                bindEvent(
+                    astPath,
+                    attrName,
+                    attrValue.replace(/^\s*this\./, '')
+                );
             } else {
                 replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
             }
