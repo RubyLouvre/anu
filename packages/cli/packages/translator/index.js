@@ -245,7 +245,7 @@ class Parser {
     watching() {
         let watchDir = path.dirname(this.entry);
         let watchConfig = {
-            ignored: /\.DS_Store|\.gitignore|.git/
+            ignored: /\.DS_Store|\.gitignore|\.git/
         };
         const watcher = chokidar
             .watch(watchDir, watchConfig)
