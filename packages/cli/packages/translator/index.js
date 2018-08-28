@@ -129,7 +129,7 @@ class Parser {
                 fs.ensureFileSync(dist);
                 fs.writeFile(dist, result.code, err => {
                     err ? reject(err) : resolve();
-                    print('build sucess:', path.relative(cwd, dist));
+                    print('build success:', path.relative(cwd, dist));
                 });
             }
         });
@@ -145,7 +145,7 @@ class Parser {
             fs.writeFile(dist, code, err => {
                 // eslint-disable-next-line
                 if (err) console.log(err);
-                print('build sucess:', path.relative(cwd, dist));
+                print('build success:', path.relative(cwd, dist));
             });
         }
     }
@@ -161,7 +161,7 @@ class Parser {
                     fs.ensureFileSync(dist);
                     fs.writeFile(dist, data.code || '', err => {
                         err ? reject(err) : resolve();
-                        print('build sucess:', path.relative(cwd, dist));
+                        print('build success:', path.relative(cwd, dist));
                     });
                 }
             }
@@ -180,7 +180,7 @@ class Parser {
                 fs.ensureFileSync(dist);
                 fs.writeFile(dist, data.code || '', err => {
                     err ? reject(err) : resolve();
-                    print('build sucess:', path.relative(cwd, dist));
+                    print('build success:', path.relative(cwd, dist));
                 });
             }
         });
@@ -197,7 +197,7 @@ class Parser {
                     .then(res => {
                         fs.writeFile(dist, res.css, err => {
                             err ? reject(err) : resolve();
-                            print('build sucess:', path.relative(cwd, dist));
+                            print('build success:', path.relative(cwd, dist));
                         });
                     })
                     .catch(err => {
@@ -219,7 +219,7 @@ class Parser {
                         if (err) throw err;
                         fs.writeFile(dist, result.css.toString(), err => {
                             err ? reject(err) : resolve();
-                            print('build sucess:', path.relative(cwd, dist));
+                            print('build success:', path.relative(cwd, dist));
                         });
                     }
                 );
@@ -251,7 +251,7 @@ class Parser {
     watching() {
        let watchDir = path.dirname(this.entry);
        let watchConfig = {
-           ignored: /\.DS_Store|\.gitignore|.git/
+           ignored: /\.DS_Store|\.gitignore|\.git/
        }
        const watcher = chokidar
                        .watch(watchDir, watchConfig)
