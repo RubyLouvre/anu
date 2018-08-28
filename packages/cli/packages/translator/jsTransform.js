@@ -47,8 +47,8 @@ function transform(sourcePath) {
 
 // module.exports = transform;
 module.exports = {
-  transform,
-  miniappPlugin
+    transform,
+    miniappPlugin
 };
 
 // https://github.com/NervJS/taro/tree/master/packages/taro-cli

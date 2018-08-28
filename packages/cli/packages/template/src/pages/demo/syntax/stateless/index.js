@@ -1,23 +1,45 @@
 import React from '@react';
-import Aaa from '@components/Aaa/index';
+import Count from '@components/Count/index';
 class P extends React.Component {
     constructor() {
         super();
         this.state = {
-            a: 111
+            a: 111,
+            b: 222
         };
     }
-    changeAaa() {
+    changeA(e) {
         this.setState({
-            a: ~~(Math.random() * 100)
+            a: ~~e.target.value
+        });
+    }
+    changeB(e) {
+        this.setState({
+            b: ~~e.target.value
         });
     }
     render() {
         return (
-            <div onTap={this.changeAaa.bind(this)}>
-                <div>无狀态组件(点这里改变)</div>
+            <div>
+                <div>无狀态组件</div>
+                <p>
+                    输入a
+                    <input
+                        type="number"
+                        value={this.state.a}
+                        onChange={this.changeA.bind(this)}
+                    />
+                </p>
+                <p>
+                    输入b
+                    <input
+                        type="number"
+                        value={this.state.b}
+                        onChange={this.changeB.bind(this)}
+                    />
+                </p>
                 <div>
-                    <Aaa aaa={this.state.a} />
+                    <Count a={this.state.a} b={this.state.b} />
                 </div>
             </div>
         );

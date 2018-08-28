@@ -1840,17 +1840,23 @@ var eventSystem = {
         var instanceUid = dataset.instanceUid;
         var instance = componentClass.instances[instanceUid];
         var key = dataset['key'];
+        eventUid += key != null ? '-' + key : '';
         if (instance) {
-            try {
-                var fn = instance.$$eventCached[eventUid + (key != null ? '-' + key : '')];
-                fn && fn.call(instance, createEvent(e, target));
-            } catch (e) {
-                console.log(e.stack);
-            }
+            Renderer.batchedUpdates(function () {
+                try {
+                    var fn = instance.$$eventCached[eventUid];
+                    fn && fn.call(instance, createEvent(e, target));
+                } catch (err) {
+                    console.log(err.stack);
+                }
+            }, e);
         }
     }
 };
 function createEvent(e, target) {
+    if (e.detail) {
+        Object.assign(target, e.detail);
+    }
     var event = e.detail || {};
     event.stopPropagation = function () {
         console.warn('小程序不支持这方法，请使用catchXXX');
