@@ -2,8 +2,16 @@
 const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs-extra');
-const webpack = require('webpack');
-const MemoryFS = require('memory-fs');
+
+const rollup = require('rollup');
+const rbabel =  require('rollup-plugin-babel');
+//const resolve = require("rollup-plugin-node-resolve");
+const commonjs = require('rollup-plugin-commonjs');
+const rollupLess = require('rollup-plugin-less');
+const rollupSass = require('rollup-plugin-sass');
+const alias = require('rollup-plugin-alias');
+const chokidar = require('chokidar');
+
 const less = require('less');
 const jsTransform = require('./jsTransform');
 const helpers = require('./helpers');
@@ -36,7 +44,6 @@ const isCss = ext => {
 };
 
 const getAlias = () => {
-    //webpack分析入口依赖时，若npm无路径，会被当成npm模块
     let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
     let aliasConfig = {};
     for (let key in aliasField) {
@@ -45,55 +52,60 @@ const getAlias = () => {
     return aliasConfig || {};
 };
 
+
+const print = (prefix, msg)=>{
+    console.log(chalk.green(`${prefix} ${msg}`))
+}
+
 class Parser {
     constructor(entry) {
         this.entry = entry;
-        this.compiler = null;
-        this.statsHash = '';
-        this.config = {
-            entry: path.resolve(this.entry),
-            module: {
-                loaders: [
-                    {
-                        test: /\.(js|jsx)$/,
-                        exclude: /node_modules/,
-                        loader: 'babel-loader',
-                        options: {
-                            presets: ['env', 'react'],
-                            plugins: [
-                                require('babel-plugin-transform-class-properties')
-                            ]
-                        }
+        this.inputConfig = {
+            input: this.entry,
+            plugins: [
+                // resolve({
+                //     extensions: ['.js', 'jsx']
+                // }),
+                alias(
+                    getAlias()
+                ),
+                commonjs({
+                    include: 'node_modules/**'
+                }),
+                rollupLess({
+                    output: function(code){
+                        return code
                     }
-                ]
-            },
-            resolve: {
-                alias: getAlias()
-            }
-        };
-    }
-    async parse() {
-        this.compiler = webpack(this.config);
-        this.compiler.outputFileSystem = new MemoryFS();
-        this.compiler.run((err, stats) => {
-            if (err) throw err;
-            this.startCodeGen(stats);
-        });
-    }
-    startCodeGen(stats) {
-        //webpack watch 可能触发多次 build https://webpack.js.org/api/node/#watching
-        if (this.statsHash === stats.hash) return;
-        this.statsHash = stats.hash;
-
-        let errors = stats.toJson().errors;
-        for (let i = 0; i < errors.length; i++) {
-            if (/SyntaxError:/.test(errors[i])) {
-                // eslint-disable-next-line
-                console.warn('[warning]' + errors[i]);
-            }
+                }),
+                rollupSass({
+                    output: function(code){
+                        return code
+                    }
+                }),
+                rbabel({
+                    babelrc: false,
+                    runtimeHelpers: true,
+                    exclude: ['node_modules/**'],
+                    presets: ['react'],
+                    externalHelpers: false,
+                    plugins: [ 'transform-class-properties', 'transform-object-rest-spread'],
+                })
+                
+            ]
         }
 
-        let dependencies = stats.compilation.fileDependencies.sort(function(
+    }
+    async parse() {
+        const bundle =  await rollup.rollup(this.inputConfig);
+        const files  = bundle.modules.map(function(item){
+            if(/commonjsHelpers|node_modules/.test(item.id)) return;
+            return item.id;
+        });
+        this.startCodeGen(files);
+    }
+    startCodeGen(files) {
+       
+        let dependencies = files.sort(function(
             path
         ) {
             if (path.indexOf('components') > 0) {
@@ -103,9 +115,7 @@ class Parser {
         });
 
         dependencies.forEach(file => {
-            if (!/node_modules/g.test(file)) {
-                this.codegen(file);
-            }
+            this.codegen(file);
         });
 
         this.generateProjectConfig();
@@ -119,6 +129,7 @@ class Parser {
                 fs.ensureFileSync(dist);
                 fs.writeFile(dist, result.code, err => {
                     err ? reject(err) : resolve();
+                    print('build sucess:', path.relative(cwd, dist));
                 });
             }
         });
@@ -134,6 +145,7 @@ class Parser {
             fs.writeFile(dist, code, err => {
                 // eslint-disable-next-line
                 if (err) console.log(err);
+                print('build sucess:', path.relative(cwd, dist));
             });
         }
     }
@@ -149,6 +161,7 @@ class Parser {
                     fs.ensureFileSync(dist);
                     fs.writeFile(dist, data.code || '', err => {
                         err ? reject(err) : resolve();
+                        print('build sucess:', path.relative(cwd, dist));
                     });
                 }
             }
@@ -167,6 +180,7 @@ class Parser {
                 fs.ensureFileSync(dist);
                 fs.writeFile(dist, data.code || '', err => {
                     err ? reject(err) : resolve();
+                    print('build sucess:', path.relative(cwd, dist));
                 });
             }
         });
@@ -174,15 +188,16 @@ class Parser {
     generateCss(file) {
         return new Promise((resolve, reject) => {
             let { name, ext } = path.parse(file);
-            let dist = file.replace('src', 'dist');
+            let distDir = file.replace('src', 'dist');
             if (!isCss(ext)) return;
-            let wxssDist = path.join(path.dirname(dist), `${name}.wxss`);
+            let dist = path.join(path.dirname(distDir), `${name}.wxss`);
             let lessContent = fs.readFileSync(file).toString();
             if (ext === '.less') {
                 less.render(lessContent, {})
                     .then(res => {
-                        fs.writeFile(wxssDist, res.css, err => {
+                        fs.writeFile(dist, res.css, err => {
                             err ? reject(err) : resolve();
+                            print('build sucess:', path.relative(cwd, dist));
                         });
                     })
                     .catch(err => {
@@ -202,8 +217,9 @@ class Parser {
                     },
                     (err, result) => {
                         if (err) throw err;
-                        fs.writeFile(wxssDist, result.css.toString(), err => {
+                        fs.writeFile(dist, result.css.toString(), err => {
                             err ? reject(err) : resolve();
+                            print('build sucess:', path.relative(cwd, dist));
                         });
                     }
                 );
@@ -212,6 +228,7 @@ class Parser {
     }
 
     generateProjectConfig() {
+        fs.ensureFileSync(path.join(outputPath, 'project.config.json'));
         fs.copyFile(
             path.join(inputPath, 'project.config.json'),
             path.join(outputPath, 'project.config.json')
@@ -232,16 +249,25 @@ class Parser {
         });
     }
     watching() {
-        this.compiler.watch(
-            {
-                aggregateTimeout: 300,
-                poll: undefined
-            },
-            (err, stats) => {
-                if (err) throw err;
-                this.startCodeGen(stats);
-            }
-        );
+       let watchDir = path.dirname(this.entry);
+       let watchConfig = {
+           ignored: /\.DS_Store|\.gitignore|.git/
+       }
+       const watcher = chokidar
+                       .watch(watchDir, watchConfig)
+                       .on('all', (event, file)=>{
+                           if(event === 'change'){
+                              console.log();
+                              console.log(`updated: ${chalk.yellow(path.relative(cwd, file))}`);
+                              console.log();
+                              this.codegen(file);
+                           }
+                       });
+
+        watcher.on('error', error => {
+            console.error('Watcher failure', error);
+            process.exit(1);
+        });
     }
 }
 
