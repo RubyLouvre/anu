@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-23
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-28
  * IE9+
  */
 
@@ -665,40 +665,6 @@ function createContext(defaultValue, calculateChangedBits) {
         Provider: Provider,
         Consumer: Consumer
     };
-}
-
-var eventSystem = {
-    classCache: {},
-    dispatchEvent: function dispatchEvent(e) {
-        var target = e.currentTarget;
-        var dataset = target.dataset || {};
-        var eventName = dataset[e.type + "Fn"];
-        var classCode = dataset.classCode;
-        var componentClass = eventSystem.classCache[classCode];
-        var instanceCode = dataset.instanceCode;
-        var instance = componentClass.instances[instanceCode];
-        var key = dataset["key"];
-        if (instance) {
-            try {
-                var fn = instance.$$eventCached[eventName + (key != null ? "-" + key : "")];
-                fn && fn.call(instance, createEvent(e, target));
-            } catch (e) {
-                console.log(e.stack);
-            }
-        }
-    }
-};
-function createEvent(e, target) {
-    var event = e.detail || {};
-    event.stopPropagation = function () {
-        console.warn("小程序不支持这方法，请使用catchXXX");
-    };
-    event.preventDefault = returnFalse;
-    event.type = e.type;
-    event.currentTarget = event.target = target;
-    event.touches = e.touches;
-    event.timeStamp = e.timeStamp;
-    return event;
 }
 
 function UpdateQueue() {
@@ -1857,35 +1823,93 @@ function getContainer(p) {
 }
 
 function _uuid() {
-   return (Math.random() + "").slice(-4);
+    return (Math.random() + '').slice(-4);
 }
 function getUUID() {
-   return _uuid() + _uuid();
+    return _uuid() + _uuid();
+}
+var classCached = {};
+
+var eventSystem = {
+    dispatchEvent: function dispatchEvent(e) {
+        var target = e.currentTarget;
+        var dataset = target.dataset || {};
+        var eventUid = dataset[e.type + 'Uid'];
+        var classUid = dataset.classUid;
+        var componentClass = classCached[classUid];
+        var instanceUid = dataset.instanceUid;
+        var instance = componentClass.instances[instanceUid];
+        var key = dataset['key'];
+        if (instance) {
+            try {
+                var fn = instance.$$eventCached[eventUid + (key != null ? '-' + key : '')];
+                fn && fn.call(instance, createEvent(e, target));
+            } catch (e) {
+                console.log(e.stack);
+            }
+        }
+    }
+};
+function createEvent(e, target) {
+    var event = e.detail || {};
+    event.stopPropagation = function () {
+        console.warn('小程序不支持这方法，请使用catchXXX');
+    };
+    event.preventDefault = returnFalse;
+    event.type = e.type;
+    event.currentTarget = event.target = target;
+    event.touches = e.touches;
+    event.timeStamp = e.timeStamp;
+    return event;
 }
 
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
-    if (!instance.instanceCode) {
-        var uuid = "i" + getUUID();
-        instance.instanceCode = uuid;
+    if (!instance.instanceUid) {
+        var uuid = 'i' + getUUID();
+        instance.instanceUid = uuid;
         type.instances[uuid] = instance;
     }
-    instance.props.instanceCode = instance.instanceCode;
+    instance.props.instanceUid = instance.instanceUid;
 }
-function createPage(PageClass, path) {
+function safeClone(originVal) {
+    var temp = originVal instanceof Array ? [] : {};
+    for (var item in originVal) {
+        if (originVal.hasOwnProperty(item)) {
+            var value = originVal[item];
+            if (isReferenceType(value)) {
+                if (value.$$typeof) {
+                    continue;
+                }
+                temp[item] = safeClone(value);
+            } else {
+                temp[item] = value;
+            }
+        }
+    }
+    return temp;
+}
+function isReferenceType(val) {
+    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+}
+function createPage(PageClass, path, testObject) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     PageClass.instances = PageClass.instances || {};
     var instance = render(createElement(PageClass, {
         path: path,
         isPageComponent: true
     }), {
-        type: "page",
+        type: 'page',
         props: {},
         children: [],
         root: true,
         appendChild: function appendChild() {}
     });
+    if (testObject) {
+        testObject.instance = instance;
+    }
     var anuSetState = instance.setState;
     var anuForceUpdate = instance.forceUpdate;
     var updating = false,
@@ -1921,7 +1945,7 @@ function createPage(PageClass, path) {
                     context: pageInst.context
                 };
                 applyChildComponentData(data, pageInst.allTemplateData || []);
-                $wxPage.setData(data);
+                $wxPage.setData(safeClone(data));
             }
         };
         updateMethod.apply(this, args);
@@ -1941,15 +1965,16 @@ function createPage(PageClass, path) {
         },
         onShow: function onShow() {
             $wxPage = this;
-            PageClass.instances[instance.instanceCode] = instance;
+            PageClass.instances[instance.instanceUid] = instance;
             var fn = instance.componentDidShow;
             if (isFn(fn)) {
                 fn.call(instance);
             }
         },
         onHide: function onShow() {
-            delete PageClass.instances[instance.instanceCode];
-            var fn = instance.componentDidHide;            if (isFn(fn)) {
+            delete PageClass.instances[instance.instanceUid];
+            var fn = instance.componentDidHide;
+            if (isFn(fn)) {
                 fn.call(instance);
             }
         },
@@ -1961,7 +1986,7 @@ function createPage(PageClass, path) {
         }
     };
     applyChildComponentData(config.data, instance.allTemplateData || []);
-    return config;
+    return safeClone(config);
 }
 function applyChildComponentData(data, list) {
     list.forEach(function (el) {
@@ -1980,10 +2005,10 @@ function onComponentUpdate(fiber) {
     if (!instances) {
         return;
     }
-    var instanceCode = instance.instanceCode;
-    if (!instanceCode) {
-        instanceCode = instance.instanceCode = getUUID();
-        instances[instanceCode] = instance;
+    var instanceUid = instance.instanceUid;
+    if (!instanceUid) {
+        instanceUid = instance.instanceUid = getUUID();
+        instances[instanceUid] = instance;
         var p = fiber.return;
         while (p) {
             var inst = p._owner;
@@ -2008,7 +2033,7 @@ function onComponentUpdate(fiber) {
             context: instance.context,
             templatedata: inputProps.templatedata
         };
-        newData.props.instanceCode = instanceCode;
+        newData.props.instanceUid = instanceUid;
         if (instance.__isStateless) {
             var checkProps = fiber.memoizedProps;
             var usePush = true;
@@ -2047,7 +2072,7 @@ function onComponentDispose(fiber) {
     }
     var pageInst = instance.$pageInst;
     if (pageInst) {
-        delete instances[instance.instanceCode];
+        delete instances[instance.instanceUid];
         var props = fiber.props;
         var arr = getData(pageInst);
         for (var i = 0, el; el = arr[i++];) {
@@ -2058,12 +2083,29 @@ function onComponentDispose(fiber) {
         }
     }
 }
+var ignoreObject = {
+    is: 1,
+    templatedata: 1,
+    classUid: 1,
+    instanceUid: 1
+};
 function template(props) {
     var clazz = props.is;
     var componentProps = {};
     for (var i in props) {
-        if (i !== "is" && i != "templatedata") {
+        if (ignoreObject[i] !== 1) {
             componentProps[i] = props[i];
+        }
+    }
+    if (props.fragmentUid && props.classUid) {
+        var parentClass = classCached[props.classUid];
+        if (parentClass && parentClass.instances) {
+            var parentInstance = parentClass.instances[props.instanceUid];
+            componentProps.fragmentData = {
+                state: parentInstance.state,
+                props: parentInstance.props,
+                context: parentInstance.context
+            };
         }
     }
     if (!clazz.hackByMiniApp) {
@@ -2281,163 +2323,162 @@ var otherApis = {
   checkIsSoterEnrolledInDevice: true
 };
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function initPxTransform() {
-  var windowWidth = 375;
-  if ((typeof wx === 'undefined' ? 'undefined' : _typeof$1(wx)) !== void 666) {
-    wx.getSystemInfo({
-      success: function success(res) {
-        windowWidth = res.windowWidth;
-      }
-    });
-  }
-  this.config = this.config || {};
-  this.config.designWidth = windowWidth;
-  this.config.deviceRatio = 750 / windowWidth;
+    var wxConfig = this.wxConfig = this.wxConfig || {};
+    var windowWidth = 375;
+    wxConfig.designWidth = windowWidth;
+    wxConfig.deviceRatio = 750 / windowWidth / 2;
+    if (typeof wx !== 'undefined') {
+        wx.getSystemInfo({
+            success: function success(res) {
+                windowWidth = res.windowWidth;
+                wxConfig.designWidth = windowWidth;
+                wxConfig.deviceRatio = 750 / windowWidth / 2;
+            }
+        });
+    }
 }
 var RequestQueue = {
-  MAX_REQUEST: 5,
-  queue: [],
-  request: function request(options) {
-    this.push(options);
-    this.run();
-  },
-  push: function push(options) {
-    this.queue.push(options);
-  },
-  run: function run() {
-    var _arguments = arguments,
-        _this = this;
-    if (!this.queue.length) {
-      return;
+    MAX_REQUEST: 5,
+    queue: [],
+    request: function request(options) {
+        this.push(options);
+        this.run();
+    },
+    push: function push(options) {
+        this.queue.push(options);
+    },
+    run: function run() {
+        var _arguments = arguments,
+            _this = this;
+        if (!this.queue.length) {
+            return;
+        }
+        if (this.queue.length <= this.MAX_REQUEST) {
+            var options = this.queue.shift();
+            var completeFn = options.complete;
+            options.complete = function () {
+                completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
+                _this.run();
+            };
+            wx.request(options);
+        }
     }
-    if (this.queue.length <= this.MAX_REQUEST) {
-      var options = this.queue.shift();
-      var completeFn = options.complete;
-      options.complete = function () {
-        completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
-        _this.run();
-      };
-      wx.request(options);
-    }
-  }
 };
 function request(options) {
-  options = options || {};
-  if (typeof options === 'string') {
-    options = {
-      url: options
-    };
-  }
-  var originSuccess = options['success'];
-  var originFail = options['fail'];
-  var originComplete = options['complete'];
-  var p = new Promise(function (resolve, reject) {
-    options['success'] = function (res) {
-      originSuccess && originSuccess(res);
-      resolve(res);
-    };
-    options['fail'] = function (res) {
-      originFail && originFail(res);
-      reject(res);
-    };
-    options['complete'] = function (res) {
-      originComplete && originComplete(res);
-    };
-    RequestQueue.request(options);
-  });
-  return p;
+    options = options || {};
+    if (typeof options === 'string') {
+        options = {
+            url: options
+        };
+    }
+    var originSuccess = options['success'];
+    var originFail = options['fail'];
+    var originComplete = options['complete'];
+    var p = new Promise(function (resolve, reject) {
+        options['success'] = function (res) {
+            originSuccess && originSuccess(res);
+            resolve(res);
+        };
+        options['fail'] = function (res) {
+            originFail && originFail(res);
+            reject(res);
+        };
+        options['complete'] = function (res) {
+            originComplete && originComplete(res);
+        };
+        RequestQueue.request(options);
+    });
+    return p;
 }
 function processApis(ReactWX) {
-  var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
-  Object.keys(weApis).forEach(function (key) {
-    if (!onAndSyncApis[key] && !noPromiseApis[key]) {
-      ReactWX.wx[key] = function (options) {
-        options = options || {};
-        var task = null;
-        var obj = Object.assign({}, options);
-        if (typeof options === 'string') {
-          return wx[key](options);
-        }
-        var p = new Promise(function (resolve, reject) {
-          ['fail', 'success', 'complete'].forEach(function (k) {
-            obj[k] = function (res) {
-              options[k] && options[k](res);
-              if (k === 'success') {
-                if (key === 'connectSocket') {
-                  resolve(task);
-                } else {
-                  resolve(res);
+    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
+    Object.keys(weApis).forEach(function (key) {
+        if (!onAndSyncApis[key] && !noPromiseApis[key]) {
+            ReactWX.wx[key] = function (options) {
+                options = options || {};
+                var task = null;
+                var obj = Object.assign({}, options);
+                if (typeof options === 'string') {
+                    return wx[key](options);
                 }
-              } else if (k === 'fail') {
-                reject(res);
-              }
+                var p = new Promise(function (resolve, reject) {
+                    ['fail', 'success', 'complete'].forEach(function (k) {
+                        obj[k] = function (res) {
+                            options[k] && options[k](res);
+                            if (k === 'success') {
+                                if (key === 'connectSocket') {
+                                    resolve(task);
+                                } else {
+                                    resolve(res);
+                                }
+                            } else if (k === 'fail') {
+                                reject(res);
+                            }
+                        };
+                    });
+                    task = wx[key](obj);
+                });
+                if (key === 'uploadFile' || key === 'downloadFile') {
+                    p.progress = function (cb) {
+                        task.onProgressUpdate(cb);
+                        return p;
+                    };
+                    p.abort = function (cb) {
+                        cb && cb();
+                        task.abort();
+                        return p;
+                    };
+                }
+                return p;
             };
-          });
-          task = wx[key](obj);
-        });
-        if (key === 'uploadFile' || key === 'downloadFile') {
-          p.progress = function (cb) {
-            task.onProgressUpdate(cb);
-            return p;
-          };
-          p.abort = function (cb) {
-            cb && cb();
-            task.abort();
-            return p;
-          };
+        } else {
+            ReactWX.wx[key] = function () {
+                return wx[key].apply(wx, arguments);
+            };
         }
-        return p;
-      };
-    } else {
-      ReactWX.wx[key] = function () {
-        return wx[key].apply(wx, arguments);
-      };
-    }
-  });
+    });
 }
 function pxTransform(size) {
-  var _config = this.config,
-      designWidth = _config.designWidth,
-      deviceRatio = _config.deviceRatio;
-  return parseInt(size, 10) / deviceRatio + 'rpx';
+    var deviceRatio = this.wxConfig.deviceRatio;
+    return parseInt(size, 10) / deviceRatio + 'rpx';
 }
 function initNativeApi(ReactWX) {
-  ReactWX.wx = {};
-  processApis(ReactWX);
-  ReactWX.request = request;
-  if (typeof getCurrentPages == 'function') {
-    ReactWX.getCurrentPages = getCurrentPages;
-  }
-  if (typeof getApp == 'function') {
-    ReactWX.getApp = getApp;
-  }
-  ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
-  ReactWX.pxTransform = pxTransform.bind(ReactWX);
+    ReactWX.wx = {};
+    processApis(ReactWX);
+    ReactWX.request = request;
+    if (typeof getCurrentPages == 'function') {
+        ReactWX.getCurrentPages = getCurrentPages;
+    }
+    if (typeof getApp == 'function') {
+        ReactWX.getApp = getApp;
+    }
+    ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
+    ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
 
 var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
-  return target.replace(rhyphen, '$1-$2').toLowerCase();
+    return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
 function transform(obj) {
-  var _this = this;
-  return Object.keys(obj).map(function (item) {
-    var value = obj[item].toString();
-    value = value.replace(/(\d+)px/gi, function (str, match) {
-      return _this.pxTransform(match);
-    });
-    return hyphen(item) + ': ' + value;
-  }).join(';');
+    var _this = this;
+    return Object.keys(obj).map(function (item) {
+        var value = obj[item].toString();
+        value = value.replace(/(\d+)px/gi, function (str, match) {
+            return _this.pxTransform(match);
+        });
+        return hyphen(item) + ': ' + value;
+    }).join(';');
 }
 function collectStyle(obj, props, key) {
-  if (props) {
-    var str = transform.call(this, obj);
-    props[key] = str;
-  } else {
-    console.warn('props 为空');
-  }
-  return obj;
+    if (props) {
+        var str = transform.call(this, obj);
+        props[key] = str;
+    } else {
+        console.warn('props 为空');
+    }
+    return obj;
 }
 
 function cleanChildren(array) {
@@ -2445,7 +2486,7 @@ function cleanChildren(array) {
         return array;
     }
     return array.map(function (el) {
-        if (el.type == "#text") {
+        if (el.type == '#text') {
             return el.props;
         } else {
             return {
@@ -2457,27 +2498,27 @@ function cleanChildren(array) {
     });
 }
 var autoContainer = {
-    type: "root",
+    type: 'root',
     appendChild: noop,
     props: null,
     children: []
 };
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
-    var n = name.charAt(0) == "o" ? 2 : 5;
+    var n = name.charAt(0) == 'o' ? 2 : 5;
     var type = name.slice(n).toLowerCase();
-    var eventCode = props["data-" + type + "-fn"];
-    return eventCode + (key != null ? "-" + key : "");
+    var eventCode = props['data-' + type + '-uid'];
+    return eventCode + (key != null ? '-' + key : '');
 }
 var Renderer$1 = createRenderer({
     render: render,
     updateAttribute: function updateAttribute(fiber) {
         var props = fiber.props,
             lastProps = fiber.lastProps;
-        var classId = props["data-class-code"];
-        var instanceId = props["data-instance-code"];
+        var classId = props['data-class-uid'];
+        var instanceId = props['data-instance-uid'];
         if (classId) {
-            var clazz = eventSystem.classCache[classId];
+            var clazz = classCached[classId];
             if (clazz && clazz.instances) {
                 var instance = clazz.instances[instanceId];
                 if (instance) {
@@ -2491,7 +2532,7 @@ var Renderer$1 = createRenderer({
                     if (lastProps) {
                         for (var _name in lastProps) {
                             if (onEvent.test(_name) && !props[_name]) {
-                                var code = getEventHashCode(_name, lastProps, fiber.key);
+                                code = getEventHashCode(_name, lastProps, fiber.key);
                                 delete cached[code];
                             }
                         }
@@ -2582,38 +2623,37 @@ function remove(children, node) {
 
 var win = getWindow();
 var React = void 0;
-var classCache = eventSystem.classCache;
 var render$1 = Renderer$1.render;
 React = win.React = win.ReactDOM = {
-  eventSystem: eventSystem,
-  miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
-    var clazz = miniCreateClass.apply(null, arguments);
-    var uuid = clazz.prototype.classCode;
-    classCache[uuid] = clazz;
-    return clazz;
-  },
-  findDOMNode: function findDOMNode(fiber) {
-    console.log('小程序不支持findDOMNode');
-  },
-  version: '1.4.6',
-  render: render$1,
-  hydrate: render$1,
-  template: template,
-  createPage: createPage,
-  Fragment: Fragment,
-  PropTypes: PropTypes,
-  Children: Children,
-  createPortal: createPortal,
-  createContext: createContext,
-  Component: Component,
-  createRef: createRef,
-  forwardRef: forwardRef,
-  createElement: createElement,
-  cloneElement: cloneElement,
-  PureComponent: PureComponent,
-  isValidElement: isValidElement,
-  createFactory: createFactory,
-  collectStyle: collectStyle
+    eventSystem: eventSystem,
+    miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
+        var clazz = miniCreateClass.apply(null, arguments);
+        var uuid = clazz.prototype.classUid;
+        classCached[uuid] = clazz;
+        return clazz;
+    },
+    findDOMNode: function findDOMNode() {
+        console.log('小程序不支持findDOMNode');
+    },
+    version: '1.4.6',
+    render: render$1,
+    hydrate: render$1,
+    template: template,
+    createPage: createPage,
+    Fragment: Fragment,
+    PropTypes: PropTypes,
+    Children: Children,
+    createPortal: createPortal,
+    createContext: createContext,
+    Component: Component,
+    createRef: createRef,
+    forwardRef: forwardRef,
+    createElement: createElement,
+    cloneElement: cloneElement,
+    PureComponent: PureComponent,
+    isValidElement: isValidElement,
+    createFactory: createFactory,
+    collectStyle: collectStyle
 };
 initNativeApi(React);
 var React$1 = React;

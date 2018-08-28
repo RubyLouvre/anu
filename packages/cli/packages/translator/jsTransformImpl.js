@@ -247,10 +247,17 @@ module.exports = {
                     )
                 );
                 if (!isEmpty) {
-                    path.fragmentID = 'f' + path.node.start + path.node.end;
-                    set.add(path.fragmentID);
+                    path.fragmentUid = 'f' + path.node.start + path.node.end;
+                    set.add(path.fragmentUid);
                     attributes.push(
-                        utils.createAttribute('fragmentID', path.fragmentID)
+                        utils.createAttribute('classUid', modules.classUid),
+                        utils.createAttribute(
+                            'instanceUid',
+                            t.jSXExpressionContainer(
+                                t.identifier('this.props.instanceUid')
+                            )
+                        ),
+                        utils.createAttribute('fragmentUid', path.fragmentUid)
                     );
                 }
             } else {
@@ -260,11 +267,11 @@ module.exports = {
             }
         },
         exit(path, state) {
-            if (path.fragmentID) {
+            if (path.fragmentUid) {
                 let modules = getAnu(state);
                 var template = utils.createElement(
                     'template',
-                    [utils.createAttribute('name', path.fragmentID)],
+                    [utils.createAttribute('name', path.fragmentUid)],
                     path.parentPath.node.children
                 );
                 var wxml = helpers
@@ -277,7 +284,7 @@ module.exports = {
                 }
                 queue.wxml.push({
                     type: 'wxml',
-                    path: modules.fragmentPath + path.fragmentID + '.wxml',
+                    path: modules.fragmentPath + path.fragmentUid + '.wxml',
                     code: prettifyXml(wxml, {
                         indent: 2
                     })
@@ -292,10 +299,9 @@ module.exports = {
         var attrs = path.parentPath.node.attributes;
         if (/^(?:on|catch)[A-Z]/.test(attrName)) {
             var n = attrName.charAt(0) == 'o' ? 2 : 5;
-            var value = utils.createUUID();
-            var name = `data-${attrName.slice(n).toLowerCase()}-fn`;
-
-            attrs.push(utils.createAttribute(name, value));
+            var eventName = attrName.slice(n).toLowerCase();
+            var name = `data-${eventName}-uid`;
+            attrs.push(utils.createAttribute(name, 'e'+path.node.start+path.node.end));
             if (!attrs.setClassCode) {
                 attrs.setClassCode = true;
                 var keyValue;
@@ -309,11 +315,11 @@ module.exports = {
                     }
                 }
                 attrs.push(
-                    utils.createAttribute('data-class-code', modules.classCode),
+                    utils.createAttribute('data-class-uid', modules.classUid),
                     t.JSXAttribute(
-                        t.JSXIdentifier('data-instance-code'),
+                        t.JSXIdentifier('data-instance-uid'),
                         t.jSXExpressionContainer(
-                            t.identifier('this.props.instanceCode')
+                            t.identifier('this.props.instanceUid')
                         )
                     )
                 );

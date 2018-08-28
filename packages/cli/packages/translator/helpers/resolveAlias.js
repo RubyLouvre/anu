@@ -1,7 +1,6 @@
 const path = require('path');
 const cwd = process.cwd();
 // eslint-disable-next-line
-const log = console.log;
 module.exports = (nPath, modules, name)=>{
 
 

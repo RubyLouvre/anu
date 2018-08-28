@@ -12,7 +12,10 @@ module.exports = {
         );
     },
     createAttribute: function(name, value) {
-        return t.JSXAttribute(t.JSXIdentifier(name), t.stringLiteral(value));
+        return t.JSXAttribute(
+            t.JSXIdentifier(name),
+            typeof value == 'object' ? value : t.stringLiteral(value)
+        );
     },
     createUUID: function() {
         return (Math.random() + '').slice(-4) + (Math.random() + '').slice(-4);

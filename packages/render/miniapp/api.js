@@ -1,11 +1,11 @@
-import { onAndSyncApis, noPromiseApis, otherApis } from "./apiList";
+import { onAndSyncApis, noPromiseApis, otherApis } from './apiList';
 
 function initPxTransform() {
     var wxConfig = (this.wxConfig = this.wxConfig || {});
     var windowWidth = 375;
     wxConfig.designWidth = windowWidth;
     wxConfig.deviceRatio = 750 / windowWidth / 2;
-    if (typeof wx !== void 666) {
+    if (typeof wx !== 'undefined') {
         wx.getSystemInfo({
             success: function(res) {
                 windowWidth = res.windowWidth;
@@ -46,25 +46,25 @@ const RequestQueue = {
 
 function request(options) {
     options = options || {};
-    if (typeof options === "string") {
+    if (typeof options === 'string') {
         options = {
             url: options
         };
     }
-    const originSuccess = options["success"];
-    const originFail = options["fail"];
-    const originComplete = options["complete"];
+    const originSuccess = options['success'];
+    const originFail = options['fail'];
+    const originComplete = options['complete'];
     const p = new Promise((resolve, reject) => {
-        options["success"] = res => {
+        options['success'] = res => {
             originSuccess && originSuccess(res);
             resolve(res);
         };
-        options["fail"] = res => {
+        options['fail'] = res => {
             originFail && originFail(res);
             reject(res);
         };
 
-        options["complete"] = res => {
+        options['complete'] = res => {
             originComplete && originComplete(res);
         };
 
@@ -81,27 +81,27 @@ function processApis(ReactWX) {
                 options = options || {};
                 let task = null;
                 let obj = Object.assign({}, options);
-                if (typeof options === "string") {
+                if (typeof options === 'string') {
                     return wx[key](options);
                 }
                 const p = new Promise((resolve, reject) => {
-                    ["fail", "success", "complete"].forEach(k => {
+                    ['fail', 'success', 'complete'].forEach(k => {
                         obj[k] = res => {
                             options[k] && options[k](res);
-                            if (k === "success") {
-                                if (key === "connectSocket") {
+                            if (k === 'success') {
+                                if (key === 'connectSocket') {
                                     resolve(task);
                                 } else {
                                     resolve(res);
                                 }
-                            } else if (k === "fail") {
+                            } else if (k === 'fail') {
                                 reject(res);
                             }
                         };
                     });
                     task = wx[key](obj);
                 });
-                if (key === "uploadFile" || key === "downloadFile") {
+                if (key === 'uploadFile' || key === 'downloadFile') {
                     p.progress = cb => {
                         task.onProgressUpdate(cb);
                         return p;
@@ -123,18 +123,18 @@ function processApis(ReactWX) {
 }
 
 function pxTransform(size) {
-    let deviceRatio  = this.wxConfig.deviceRatio
-    return parseInt(size, 10) / deviceRatio + "rpx";
+    let deviceRatio  = this.wxConfig.deviceRatio;
+    return parseInt(size, 10) / deviceRatio + 'rpx';
 }
 
 export function initNativeApi(ReactWX) {
     ReactWX.wx = {};
     processApis(ReactWX);
     ReactWX.request = request;
-    if (typeof getCurrentPages == "function") {
+    if (typeof getCurrentPages == 'function') {
         ReactWX.getCurrentPages = getCurrentPages;
     }
-    if (typeof getApp == "function") {
+    if (typeof getApp == 'function') {
         ReactWX.getApp = getApp;
     }
     ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
