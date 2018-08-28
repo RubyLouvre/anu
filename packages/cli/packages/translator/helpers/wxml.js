@@ -35,15 +35,15 @@ function wxml(code, modules) {
 }
 var visitor = {
     JSXOpeningElement: {
-        exit: function(path) {
-            var openTag = path.node.name;
+        exit: function(astPath) {
+            var openTag = astPath.node.name;
             if (
                 openTag.type === 'JSXMemberExpression' &&
                 openTag.object.name === 'React' &&
                 openTag.property.name === 'template'
             ) {
                 var array, is, key;
-                path.node.attributes.forEach(function(el) {
+                astPath.node.attributes.forEach(function(el) {
                     var attrName = el.name.name;
                     var attrValue = el.value.value;
                     if (/^\{\{.+\}\}/.test(attrValue)) {
@@ -62,7 +62,7 @@ var visitor = {
                 var attributes = [];
                 var template = jsx.createElement('template', attributes, []);
                 template.key = key;
-                var p = path.parentPath.parentPath,
+                var p = astPath.parentPath.parentPath,
                     inLoop,
                     dataName = 'data';
                 while (p.parentPath) {
@@ -91,14 +91,14 @@ var visitor = {
                     );
                 }
 
-                path.parentPath.replaceWith(template);
+                astPath.parentPath.replaceWith(template);
             }
         }
     },
-    JSXAttribute(path) {
-        chineseHack.collect(path);
-        if (path.node.name.name === 'key') {
-            let node = path.node.value;
+    JSXAttribute(astPath) {
+        chineseHack.collect(astPath);
+        if (astPath.node.name.name === 'key') {
+            let node = astPath.node.value;
             let value;
 
             if (t.isStringLiteral(node)) {
@@ -110,22 +110,22 @@ var visitor = {
                     value = `{{${generate(node.expression).code}}}`;
                 }
             }
-            path.parentPath.node.attributes.push(
+            astPath.parentPath.node.attributes.push(
                 jsx.createAttribute('wx:key', value)
             );
-            path.remove();
+            astPath.remove();
             return;
         }
-        attrNameHelper(path);
+        attrNameHelper(astPath);
     },
 
     JSXExpressionContainer: {
         enter() {},
-        exit(path, state) {
+        exit(astPath, state) {
             var modules = state.file.opts.anu;
-            var expr = path.node.expression;
-            if (t.isJSXAttribute(path.parent)) {
-                attrValueHelper(path);
+            var expr = astPath.node.expression;
+            if (t.isJSXAttribute(astPath.parent)) {
+                attrValueHelper(astPath);
             } else if (
                 expr.type === 'MemberExpression' &&
                /props\.children/.test( generate(expr).code )
@@ -136,12 +136,12 @@ var visitor = {
                     jsx.createAttribute('is', '{{props.fragmentUid}}'),
                     jsx.createAttribute('data', '{{...props.fragmentData}}')
                 );
-                path.replaceWith(template);
+                astPath.replaceWith(template);
                 //  console.warn("小程序暂时不支持{this.props.children}");
             } else {
                 //返回block元素或template元素
                 var block = logicHelper(expr, modules);
-                path.replaceWith(block);
+                astPath.replaceWith(block);
             }
         }
     }
