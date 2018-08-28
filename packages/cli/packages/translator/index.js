@@ -171,6 +171,7 @@ class Parser {
             }
         });
     }
+
     generateCss(file) {
         return new Promise((resolve, reject) => {
             let { name, ext } = path.parse(file);
@@ -212,11 +213,15 @@ class Parser {
     }
 
     generateProjectConfig() {
+        const from = path.normalize(path.join(inputPath, 'project.config.json'));
+        const to = path.normalize(path.join(outputPath, 'project.config.json'));
+        fs.ensureFileSync(to);
         fs.copyFile(
-            path.join(inputPath, 'project.config.json'),
-            path.join(outputPath, 'project.config.json')
+            from,
+            to
         );
     }
+
     async codegen(file) {
         await this.generateBusinessJs(file);
         Promise.all([
@@ -231,6 +236,7 @@ class Parser {
             }
         });
     }
+
     watching() {
         this.compiler.watch(
             {

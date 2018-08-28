@@ -32,5 +32,5 @@ module.exports = {
             if (!list.includes(componentName)) list.push(componentName);
         });
     },
-    sepForRegex: process.platform === 'win32' ? `\\${path.win32}` : path.sep
+    sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };

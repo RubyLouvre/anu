@@ -154,7 +154,7 @@ module.exports = {
             queue.pageConfig.push({
                 type: 'json',
                 path: modules.sourcePath
-                    .replace(new RegExp(`${nPath.sep}src${nPath.sep}`), `${nPath.sep}dist${nPath.sep}`)
+                    .replace(new RegExp(`${utils.sepForRegex}src${utils.sepForRegex}`), `${utils.sepForRegex}dist${utils.sepForRegex}`)
                     .replace(/\.js$/, '.json'),
                 code: jsonStr
             });
