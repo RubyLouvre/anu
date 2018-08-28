@@ -16,7 +16,7 @@ class P extends React.Component {
                 },
                 {
                     title: '语法',
-                    url: '/pages/demo/express/index'
+                    url: '/pages/demo/syntax/index'
                 }
             ]
         };

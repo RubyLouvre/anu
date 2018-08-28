@@ -4,23 +4,26 @@ const path = require('path');
 const cwd = process.cwd();
 
 module.exports = {
-    createElement: function(nodeName, attrs, children) {
+    createElement(nodeName, attrs, children) {
         return t.JSXElement(
             t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, false),
             t.jSXClosingElement(t.JSXIdentifier(nodeName)),
             children
         );
     },
-    createAttribute: function(name, value) {
+    createAttribute(name, value) {
         return t.JSXAttribute(
             t.JSXIdentifier(name),
             typeof value == 'object' ? value : t.stringLiteral(value)
         );
     },
-    createUUID: function() {
+    createUUID() {
         return (Math.random() + '').slice(-4) + (Math.random() + '').slice(-4);
     },
-    copyCustomComponents: function(config, modules) {
+    getAnu(state) {
+        return state.file.opts.anu;
+    },
+    copyCustomComponents(config, modules) {
         Object.keys(config).forEach(componentName => {
             //对usingComponents直接copy目录
             let componentDir = path.dirname(config[componentName]);

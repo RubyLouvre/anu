@@ -22,14 +22,14 @@ import './pages/demo/native/image/index';
 import './pages/demo/native/video/index';
 import './pages/demo/native/camera/index';
 
-import './pages/demo/express/index';
-import './pages/demo/express/api/index';
-import './pages/demo/express/stateless/index';
-import './pages/demo/express/loop/index';
-import './pages/demo/express/extend/index';
-import './pages/demo/express/inlineStyle/index';
-import './pages/demo/express/loop3/index';
-import './pages/demo/express/children/index';
+import './pages/demo/syntax/index';
+import './pages/demo/syntax/api/index';
+import './pages/demo/syntax/stateless/index';
+import './pages/demo/syntax/loop/index';
+import './pages/demo/syntax/extend/index';
+import './pages/demo/syntax/inlineStyle/index';
+import './pages/demo/syntax/loop3/index';
+import './pages/demo/syntax/children/index';
 
 import './app.less';
 

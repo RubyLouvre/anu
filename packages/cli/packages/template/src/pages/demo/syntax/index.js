@@ -3,35 +3,35 @@ class Express extends React.Component {
     constructor() {
         super();
         this.state = {
-            title: '使用 React 编写小程序',
+            title: '语法相关',
             pages: [
                 {
                     title: 'API',
-                    url: '/pages/demo/express/api/index'
+                    url: '/pages/demo/syntax/api/index'
                 },
                 {
                     title: '继承',
-                    url: '/pages/demo/express/extend/index'
+                    url: '/pages/demo/syntax/extend/index'
                 },
                 {
                     title: '无状态组件',
-                    url: '/pages/demo/express/stateless/index'
+                    url: '/pages/demo/syntax/stateless/index'
                 },
                 {
                     title: '一重循环',
-                    url: '/pages/demo/express/loop/index'
+                    url: '/pages/demo/syntax/loop/index'
                 },
                 {
                     title: '三重循环',
-                    url: '/pages/demo/express/loop3/index'
+                    url: '/pages/demo/syntax/loop3/index'
                 },
                 {
                     title: '行内样式',
-                    url: '/pages/demo/express/inlineStyle/index'
+                    url: '/pages/demo/syntax/inlineStyle/index'
                 },
                 {
                     title: '组件套嵌内容',
-                    url: '/pages/demo/express/children/index'
+                    url: '/pages/demo/syntax/children/index'
                 }
                 
             ]
