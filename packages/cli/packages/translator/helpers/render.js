@@ -4,20 +4,20 @@ const t = require('babel-types');
 const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const queue = require('../queue');
-const nPath = require('path');
+const path = require('path');
 const { sepForRegex } = require('../utils');
 
 /**
  * 将return后面的内容进行转换，再变成wxml
  *
- * @param {Path} path ast节点
+ * @param {Path} astPath ast节点
  * @param {String} type 有状态组件｜无状态组件
  * @param {String} componentName 组件名
  */
 const deps = require('../deps');
 
-exports.exit = function(path, type, componentName, modules) {
-    const body = path.node.body.body;
+exports.exit = function(astPath, type, componentName, modules) {
+    const body = astPath.node.body.body;
 
     if (body.length > 1) {
         throw new Error(
@@ -63,11 +63,11 @@ exports.exit = function(path, type, componentName, modules) {
                 if (set) {
                     var fragmentPath = '/components/Fragments/';
                     //注意，这里只要目录名
-                    var relativePath = nPath.normalize(modules.sourcePath)
+                    var relativePath = path.normalize(modules.sourcePath)
                         .split('src')[1]
                         .replace(new RegExp(`[^${sepForRegex}]+.js`), '');
                     set.forEach(function(el) {
-                        var src = nPath.relative(
+                        var src = path.relative(
                             relativePath,
                             fragmentPath + el + '.wxml'
                         );
@@ -79,11 +79,11 @@ exports.exit = function(path, type, componentName, modules) {
             if (set) {
                 fragmentPath = '/components/Fragments/';
                 //注意，这里只要目录名
-                relativePath = nPath.normalize(modules.sourcePath)
+                relativePath = path.normalize(modules.sourcePath)
                     .split('src')[1]
                     .replace(new RegExp(`[^${sepForRegex}]+.js`), '');
                 set.forEach(function(el) {
-                    var src = nPath.relative(
+                    var src = path.relative(
                         relativePath,
                         fragmentPath + el + '.wxml'
                     );
@@ -93,7 +93,7 @@ exports.exit = function(path, type, componentName, modules) {
 
             queue.wxml.push({
                 type: 'wxml',
-                path: nPath.normalize(modules.sourcePath)
+                path: path.normalize(modules.sourcePath)
                     .replace(new RegExp(`${sepForRegex}src${sepForRegex}`), `${sepForRegex}dist${sepForRegex}`)
                     .replace(/\.js$/, '.wxml'),
                 code: prettifyXml(wxml, { indent: 2 })
@@ -105,10 +105,10 @@ exports.exit = function(path, type, componentName, modules) {
     }
 };
 
-exports.enter = function(path) {
-    if (path.node.key.name !== 'render') return;
+exports.enter = function(astPath) {
+    if (astPath.node.key.name !== 'render') return;
 
-    const body = path.node.body.body;
+    const body = astPath.node.body.body;
 
     if (body.length > 1) {
         throw new Error(
@@ -123,9 +123,9 @@ exports.enter = function(path) {
     switch (true) {
         case t.isIfStatement(expr):
             {
-                path.traverse({
-                    IfStatement(path) {
-                        const { test, consequent, alternate } = path.node;
+                astPath.traverse({
+                    IfStatement(astPath) {
+                        const { test, consequent, alternate } = astPath.node;
 
                         if (consequent.body.length > 1) {
                             throw new RangeError(
@@ -157,7 +157,7 @@ exports.enter = function(path) {
                             );
                         }
 
-                        path.replaceWith(
+                        astPath.replaceWith(
                             t.returnStatement(
                                 t.conditionalExpression(
                                     test,
