@@ -70,6 +70,9 @@ module.exports = function(astPath) {
                 throwEventValue(attrName, attrValue);
             }
             break;
+        case 'ConditionalExpression':
+            replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
+            break;
         default:
             // console.log('===0000=', astPath.node.expression.type);
             break;
