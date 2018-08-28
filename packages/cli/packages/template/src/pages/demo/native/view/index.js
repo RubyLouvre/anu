@@ -1,14 +1,13 @@
-import React from "@react";
+import React from '@react';
 import './index.less';
 
 class P extends React.Component {
     config = {
-        "navigationBarBackgroundColor": "#ffffff",
-        "navigationBarTextStyle": "#fff",
-        "navigationBarBackgroundColor": "#0088a4",
-        "navigationBarTitleText": "view demo",
-        "backgroundColor": "#eeeeee",
-        "backgroundTextStyle": "light"
+        'navigationBarTextStyle': '#fff',
+        'navigationBarBackgroundColor': '#0088a4',
+        'navigationBarTitleText': 'view demo',
+        'backgroundColor': '#eeeeee',
+        'backgroundTextStyle': 'light'
     }
     render() {
         return (

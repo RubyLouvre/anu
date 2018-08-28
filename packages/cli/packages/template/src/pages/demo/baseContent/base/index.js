@@ -1,6 +1,7 @@
-import React from "@react";
+import React from '@react';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             iconSize: [20, 30, 40, 50, 60, 70],
             iconColor: [

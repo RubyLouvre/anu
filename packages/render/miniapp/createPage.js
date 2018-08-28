@@ -1,31 +1,45 @@
-import {
-    eventSystem
-} from "./eventSystem";
-import {
-    render
-} from "react-fiber/scheduleWork";
-import {
-    createElement
-} from "react-core/createElement";
-import {
-    isFn, noop
-} from "react-core/util";
-import {
-    getUUID
-} from "./getUUID";
+import { render } from 'react-fiber/scheduleWork';
+import { createElement } from 'react-core/createElement';
+import { isFn, noop } from 'react-core/util';
+import { eventSystem } from './eventSystem';
+import { getUUID } from './utils';
 
 export function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
-    if (!instance.instanceCode) {
-        var uuid = "i" + getUUID();
-        instance.instanceCode = uuid;
+    if (!instance.instanceUid) {
+        var uuid = 'i' + getUUID();
+        instance.instanceUid = uuid;
         type.instances[uuid] = instance;
         //用于事件委托中
     }
-    instance.props.instanceCode = instance.instanceCode;
+    instance.props.instanceUid = instance.instanceUid;
+}
+function safeClone(originVal) {
+    let temp = originVal instanceof Array ? [] : {};
+    for (let item in originVal) {
+        if (originVal.hasOwnProperty(item)) {
+            let value = originVal[item];
+            if (isReferenceType(value)) {
+                if (value.$$typeof) {
+                    continue;
+                }
+                temp[item] = safeClone(value);
+            } else {
+                temp[item] = value;
+            }
+        }
+    }
+    return temp;
 }
 
+function isReferenceType(val) {
+    return (
+        val &&
+        (typeof val === 'object' ||
+            Object.prototype.toString.call(val) === '[object Array]')
+    );
+}
 export function createPage(PageClass, path, testObject) {
     //添加一个全局代理的事件句柄
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
@@ -36,24 +50,24 @@ export function createPage(PageClass, path, testObject) {
         createElement(PageClass, {
             path: path,
             isPageComponent: true
-        }), {
-            type: "page",
+        }),
+        {
+            type: 'page',
             props: {},
             children: [],
             root: true,
-            appendChild: function () {}
+            appendChild: function() {}
         }
     );
-    if(testObject) {
+    if (testObject){
         testObject.instance = instance;
     }
-
     //劫持setState
     var anuSetState = instance.setState;
     var anuForceUpdate = instance.forceUpdate;
     var updating = false,
         canSetData = false;
-    instance.forceUpdate = instance.setState = function (a) {
+    instance.forceUpdate = instance.setState = function(a) {
         var updateMethod = anuSetState;
         var cbIndex = 1;
         if (isFn(a) || a == null) {
@@ -75,7 +89,7 @@ export function createPage(PageClass, path, testObject) {
         var inst = this,
             cb = arguments[cbIndex],
             args = Array.prototype.slice.call(arguments);
-        args[cbIndex] = function () {
+        args[cbIndex] = function() {
             cb && cb.call(inst);
             if (canSetData) {
                 canSetData = false;
@@ -86,14 +100,14 @@ export function createPage(PageClass, path, testObject) {
                     context: pageInst.context
                 };
                 applyChildComponentData(data, pageInst.allTemplateData || []);
-                $wxPage.setData(data);
+                $wxPage.setData(safeClone(data));
             }
         };
         updateMethod.apply(this, args);
     };
     var $wxPage = {
         setData: noop
-    }
+    };
     var config = {
         data: {
             state: instance.state,
@@ -101,20 +115,20 @@ export function createPage(PageClass, path, testObject) {
             context: instance.context
         },
         dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function () {
+        onLoad: function() {
             $wxPage = this;
         },
         onShow: function onShow() {
             $wxPage = this;
-            PageClass.instances[instance.instanceCode] = instance;
+            PageClass.instances[instance.instanceUid] = instance;
             var fn = instance.componentDidShow;
             if (isFn(fn)) {
                 fn.call(instance);
             }
         },
         onHide: function onShow() {
-            delete PageClass.instances[instance.instanceCode];
-            var fn = instance.componentDidHide;;
+            delete PageClass.instances[instance.instanceUid];
+            var fn = instance.componentDidHide;
             if (isFn(fn)) {
                 fn.call(instance);
             }
@@ -128,11 +142,11 @@ export function createPage(PageClass, path, testObject) {
     };
     //添加子组件的数据
     applyChildComponentData(config.data, instance.allTemplateData || []);
-    return config;
+    return safeClone(config);
 }
 
 function applyChildComponentData(data, list) {
-    list.forEach(function (el) {
+    list.forEach(function(el) {
         if (data[el.templatedata]) {
             data[el.templatedata].push(el);
         } else {

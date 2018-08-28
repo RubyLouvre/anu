@@ -1,26 +1,18 @@
-const babel = require("babel-core");
-
+const babel = require('babel-core');
 
 let transform = {};
-transform.byCode = (code)=>{
-    result = babel.transform(code, {
+transform.byCode = code => {
+    return babel.transform(code, {
         babelrc: false,
-        plugins: [
-            "transform-es2015-modules-commonjs"
-        ]
-    })
-    return result;
-}
+        plugins: ['transform-es2015-modules-commonjs']
+    });
+};
 
-transform.byPath = (path)=>{
-    result = babel.transformFileSync(path, {
+transform.byPath = path => {
+    return babel.transformFileSync(path, {
         babelrc: false,
-        plugins: [
-            "transform-es2015-modules-commonjs"
-        ]
-    })
-    return result;
-}
-
+        plugins: ['transform-es2015-modules-commonjs']
+    });
+};
 
 module.exports = transform;

@@ -1,4 +1,4 @@
-const t = require("babel-types");
+const t = require('babel-types');
 
 module.exports = function(path, methodName) {
     //将类方法变成对象属性

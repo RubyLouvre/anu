@@ -23,7 +23,7 @@ import './pages/demo/native/video/index';
 import './pages/demo/native/camera/index';
 
 import './pages/demo/express/index';
-import "./pages/demo/express/api/index";
+import './pages/demo/express/api/index';
 import './pages/demo/express/stateless/index';
 import './pages/demo/express/loop/index';
 import './pages/demo/express/extend/index';
@@ -46,8 +46,10 @@ class Demo extends React.Component {
         ufo: 'ufo'
     };
     onLaunch() {
+        // eslint-disable-next-line
         console.log('App launched');
     }
 }
 
+// eslint-disable-next-line
 App(new Demo());

@@ -5,24 +5,24 @@ const useYarn = ()=>{
         execSync(
             'yarn --v',
             { stdio: 'ignore' }
-        )
-        return true
+        );
+        return true;
     } catch (e) {
-        return false
+        return false;
     }
-}
+};
 
 const useCnpm = ()=>{
     try {
         execSync(
             'cnpm --v',
             { stdio: 'ignore' }
-        )
-        return true
+        );
+        return true;
     } catch (e) {
-        return false
+        return false;
     }
-}
+};
 
 exports.useYarn = useYarn;
 exports.useCnpm = useCnpm;

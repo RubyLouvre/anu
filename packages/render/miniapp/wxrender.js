@@ -1,9 +1,9 @@
-import { noop, isFn } from "react-core/util";
-import { createRenderer } from "react-core/createRenderer";
-import { render } from "react-fiber/scheduleWork";
-import { onComponentDispose, onComponentUpdate } from "./template";
-import { onPageUpdate } from "./createPage";
-import { eventSystem } from "./eventSystem";
+import { noop, isFn } from 'react-core/util';
+import { createRenderer } from 'react-core/createRenderer';
+import { render } from 'react-fiber/scheduleWork';
+import { onComponentDispose, onComponentUpdate } from './template';
+import { onPageUpdate } from './createPage';
+import { classCached } from './utils';
 
 //其他Renderer也要实现这些方法
 function cleanChildren(array) {
@@ -11,7 +11,7 @@ function cleanChildren(array) {
         return array;
     }
     return array.map(function(el) {
-        if (el.type == "#text") {
+        if (el.type == '#text') {
             return el.props;
         } else {
             return {
@@ -23,26 +23,26 @@ function cleanChildren(array) {
     });
 }
 var autoContainer = {
-    type: "root",
+    type: 'root',
     appendChild: noop,
     props: null,
     children: []
 };
 var onEvent = /(?:on|catch)[A-Z]/;
-function getEventHashCode(name, props,key) {
-    var n = name.charAt(0) == "o" ? 2 : 5;
+function getEventHashCode(name, props, key) {
+    var n = name.charAt(0) == 'o' ? 2 : 5;
     var type = name.slice(n).toLowerCase();
-    var eventCode =  props[ "data-" + type + "-fn"]
-    return eventCode + (key != null ? "-" + key : "");
+    var eventCode = props['data-' + type + '-uid'];
+    return eventCode + (key != null ? '-' + key : '');
 }
 export let Renderer = createRenderer({
     render: render,
     updateAttribute(fiber) {
         let { props, lastProps } = fiber;
-        let classId = props["data-class-code"];
-        var instanceId = props["data-instance-code"];
+        let classId = props['data-class-uid'];
+        var instanceId = props['data-instance-uid'];
         if (classId) {
-            var clazz = eventSystem.classCache[classId];
+            var clazz = classCached[classId];
             if (clazz && clazz.instances) {
                 var instance = clazz.instances[instanceId];
                 if (instance) {
@@ -51,14 +51,18 @@ export let Renderer = createRenderer({
                         instance.$$eventCached || (instance.$$eventCached = {});
                     for (let name in props) {
                         if (onEvent.test(name) && isFn(props[name])) {
-                            var code = getEventHashCode(name,props, fiber.key);
+                            var code = getEventHashCode(name, props, fiber.key);
                             cached[code] = props[name];
                         }
                     }
                     if (lastProps) {
                         for (let name in lastProps) {
                             if (onEvent.test(name) && !props[name]) {
-                                var code = getEventHashCode(name,lastProps, fiber.key);
+                                code = getEventHashCode(
+                                    name,
+                                    lastProps,
+                                    fiber.key
+                                );
                                 delete cached[code];
                             }
                         }
@@ -97,14 +101,14 @@ export let Renderer = createRenderer({
     createElement(fiber) {
         return fiber.tag === 5
             ? {
-                  type: fiber.type,
-                  props: fiber.props || {},
-                  children: []
-              }
+                type: fiber.type,
+                props: fiber.props || {},
+                children: []
+            }
             : {
-                  type: fiber.type,
-                  props: fiber.props
-              };
+                type: fiber.type,
+                props: fiber.props
+            };
     },
     insertElement(fiber) {
         let dom = fiber.stateNode,

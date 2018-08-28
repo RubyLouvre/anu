@@ -1,7 +1,8 @@
-import React from "@react";
-import "./index.less";
+import React from '@react';
+import './index.less';
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             x: 0,
             y: 0,
@@ -23,10 +24,12 @@ class P extends React.Component {
     }
 
     onChange(e) {
+        // eslint-disable-next-line
         console.log(e.detail);
     }
 
     onScale(e) {
+        // eslint-disable-next-line
         console.log(e.detail);
     }
 

@@ -1,6 +1,7 @@
-import { extend } from "react-core/util";
-import { createElement } from "react-core/createElement";
-import { getUUID } from "./getUUID";
+import { extend } from 'react-core/util';
+import { createElement } from 'react-core/createElement';
+import { getUUID, classCached } from './utils';
+
 export function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
@@ -9,10 +10,10 @@ export function onComponentUpdate(fiber) {
     if (!instances) {
         return;
     }
-    var instanceCode = instance.instanceCode;
-    if (!instanceCode) {
-        instanceCode = instance.instanceCode = getUUID();
-        instances[instanceCode] = instance;
+    var instanceUid = instance.instanceUid;
+    if (!instanceUid) {
+        instanceUid = instance.instanceUid = getUUID();
+        instances[instanceUid] = instance;
         var p = fiber.return;
         while (p) {
             var inst = p._owner;
@@ -39,7 +40,7 @@ export function onComponentUpdate(fiber) {
             templatedata: inputProps.templatedata //template元素的
         };
         //注入
-        newData.props.instanceCode = instanceCode;
+        newData.props.instanceUid = instanceUid;
         //无状态组件的更新
         if (instance.__isStateless) {
             var checkProps = fiber.memoizedProps;
@@ -81,7 +82,7 @@ export function onComponentDispose(fiber) {
     }
     var pageInst = instance.$pageInst;
     if (pageInst) {
-        delete instances[instance.instanceCode];
+        delete instances[instance.instanceUid];
         var props = fiber.props;
         var arr = getData(pageInst);
         for (var i = 0, el; (el = arr[i++]); ) {
@@ -92,16 +93,34 @@ export function onComponentDispose(fiber) {
         }
     }
 }
+var ignoreObject = {
+    is: 1,
+    templatedata: 1,
+    classUid: 1,
+    instanceUid: 1
+};
 
 export function template(props) {
     //这是一个无状态组件，负责劫持用户传导下来的类，修改它的原型
     var clazz = props.is;
     var componentProps = {}; //必须将is移除，防止在setData中被序列化
     for (var i in props) {
-        if (i !== "is" && i != "templatedata") {
+        if (ignoreObject[i] !== 1) {
             componentProps[i] = props[i];
         }
     }
+    if (props.fragmentUid && props.classUid){
+        var parentClass = classCached[props.classUid];
+        if (parentClass && parentClass.instances){
+            var parentInstance =  parentClass.instances[props.instanceUid];
+            componentProps.fragmentData = {
+                state: parentInstance.state,
+                props: parentInstance.props,
+                context: parentInstance.context
+            };
+        }
+    }
+
     if (!clazz.hackByMiniApp) {
         clazz.hackByMiniApp = true;
         clazz.instances = clazz.instances || {};

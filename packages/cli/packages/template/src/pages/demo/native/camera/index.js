@@ -2,6 +2,7 @@ import React from '@react';
 
 class P extends React.Component {
     constructor() {
+        super();
         this.state = {
             mode: 'normal',
             devicePosition: 'back',
@@ -21,6 +22,7 @@ class P extends React.Component {
                 });
             },
             error: function(err) {
+                // eslint-disable-next-line
                 console.log(err);
             }
         });

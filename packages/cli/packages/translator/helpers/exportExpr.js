@@ -1,4 +1,4 @@
-const template = require("babel-template");
+const template = require('babel-template');
 
 module.exports = function xxx(name, isDefault) {
     if (isDefault == true) {

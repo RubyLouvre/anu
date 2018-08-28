@@ -1,8 +1,9 @@
-import React from "@react";
+import React from '@react';
 import './index.less';
 
 class P extends React.Component {
     constructor() {
+        super();
         this.order = ['red', 'yellow', 'blue', 'green', 'red'];
         this.state = {
             toView: 'red',
@@ -11,14 +12,17 @@ class P extends React.Component {
     }
 
     upper(e) {
+        // eslint-disable-next-line
         console.log(e);
     }
 
     lower(e) {
+        // eslint-disable-next-line
         console.log(e);
     }
 
     scroll(e) {
+        // eslint-disable-next-line
         console.log(e);
     }
 
