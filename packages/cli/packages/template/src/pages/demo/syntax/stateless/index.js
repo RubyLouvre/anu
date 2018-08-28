@@ -26,6 +26,7 @@ class P extends React.Component {
                     输入a
                     <input
                         type="number"
+                        style="border: 1px solid gray;width:50%"
                         value={this.state.a}
                         onChange={this.changeA.bind(this)}
                     />
@@ -34,6 +35,7 @@ class P extends React.Component {
                     输入b
                     <input
                         type="number"
+                        style="border: 1px solid gray;width:50%"
                         value={this.state.b}
                         onChange={this.changeB.bind(this)}
                     />

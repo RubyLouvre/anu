@@ -1854,19 +1854,24 @@ var eventSystem = {
     }
 };
 function createEvent(e, target) {
+    var event = {};
     if (e.detail) {
+        event.detail = e.detail;
         Object.assign(target, e.detail);
     }
-    var event = e.detail || {};
     event.stopPropagation = function () {
         console.warn('小程序不支持这方法，请使用catchXXX');
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
+    event.toString = eventString;
     event.currentTarget = event.target = target;
     event.touches = e.touches;
     event.timeStamp = e.timeStamp;
     return event;
+}
+function eventString() {
+    return '[object Event]';
 }
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
