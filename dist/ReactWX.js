@@ -1,7 +1,9 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-27
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-28
  * IE9+
  */
+
+import { classCached } from 'utils';
 
 var arrayPush = Array.prototype.push;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -665,40 +667,6 @@ function createContext(defaultValue, calculateChangedBits) {
         Provider: Provider,
         Consumer: Consumer
     };
-}
-
-var eventSystem = {
-    classCache: {},
-    dispatchEvent: function dispatchEvent(e) {
-        var target = e.currentTarget;
-        var dataset = target.dataset || {};
-        var eventUid = dataset[e.type + 'Uid'];
-        var classUid = dataset.classUid;
-        var componentClass = eventSystem.classCache[classUid];
-        var instanceUid = dataset.instanceUid;
-        var instance = componentClass.instances[instanceUid];
-        var key = dataset['key'];
-        if (instance) {
-            try {
-                var fn = instance.$$eventCached[eventUid + (key != null ? '-' + key : '')];
-                fn && fn.call(instance, createEvent(e, target));
-            } catch (e) {
-                console.log(e.stack);
-            }
-        }
-    }
-};
-function createEvent(e, target) {
-    var event = e.detail || {};
-    event.stopPropagation = function () {
-        console.warn('小程序不支持这方法，请使用catchXXX');
-    };
-    event.preventDefault = returnFalse;
-    event.type = e.type;
-    event.currentTarget = event.target = target;
-    event.touches = e.touches;
-    event.timeStamp = e.timeStamp;
-    return event;
 }
 
 function UpdateQueue() {
@@ -1856,12 +1824,46 @@ function getContainer(p) {
     }
 }
 
+var eventSystem = {
+    dispatchEvent: function dispatchEvent(e) {
+        var target = e.currentTarget;
+        var dataset = target.dataset || {};
+        var eventUid = dataset[e.type + 'Uid'];
+        var classUid = dataset.classUid;
+        var componentClass = classCached[classUid];
+        var instanceUid = dataset.instanceUid;
+        var instance = componentClass.instances[instanceUid];
+        var key = dataset['key'];
+        if (instance) {
+            try {
+                var fn = instance.$$eventCached[eventUid + (key != null ? '-' + key : '')];
+                fn && fn.call(instance, createEvent(e, target));
+            } catch (e) {
+                console.log(e.stack);
+            }
+        }
+    }
+};
+function createEvent(e, target) {
+    var event = e.detail || {};
+    event.stopPropagation = function () {
+        console.warn('小程序不支持这方法，请使用catchXXX');
+    };
+    event.preventDefault = returnFalse;
+    event.type = e.type;
+    event.currentTarget = event.target = target;
+    event.touches = e.touches;
+    event.timeStamp = e.timeStamp;
+    return event;
+}
+
 function _uuid() {
-   return (Math.random() + "").slice(-4);
+    return (Math.random() + '').slice(-4);
 }
 function getUUID() {
-   return _uuid() + _uuid();
+    return _uuid() + _uuid();
 }
+var classCached$1 = {};
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function onPageUpdate(fiber) {
@@ -2080,12 +2082,30 @@ function onComponentDispose(fiber) {
         }
     }
 }
+var ignoreObject = {
+    is: 1,
+    templatedata: 1,
+    fragmentUid: 1,
+    classUid: 1,
+    instanceUid: 1
+};
 function template(props) {
     var clazz = props.is;
     var componentProps = {};
     for (var i in props) {
-        if (i !== 'is' && i != 'templatedata') {
+        if (ignoreObject[i] !== 1) {
             componentProps[i] = props[i];
+        }
+    }
+    if (props.fragmentUid && props.classUid) {
+        var parentClass = classCached$1[props.classUid];
+        if (parentClass && parentClass.instances) {
+            var parentInstance = parentClass.instances[props.instanceUid];
+            props.fragmentData = {
+                state: parentInstance.state,
+                props: parentInstance.props,
+                context: parentInstance.context
+            };
         }
     }
     if (!clazz.hackByMiniApp) {
@@ -2604,17 +2624,16 @@ function remove(children, node) {
 
 var win = getWindow();
 var React = void 0;
-var classCache = eventSystem.classCache;
 var render$1 = Renderer$1.render;
 React = win.React = win.ReactDOM = {
     eventSystem: eventSystem,
     miniCreateClass: function miniCreateClass$$1(a, b, c, d) {
         var clazz = miniCreateClass.apply(null, arguments);
         var uuid = clazz.prototype.classUid;
-        classCache[uuid] = clazz;
+        classCached$1[uuid] = clazz;
         return clazz;
     },
-    findDOMNode: function findDOMNode(fiber) {
+    findDOMNode: function findDOMNode() {
         console.log('小程序不支持findDOMNode');
     },
     version: '1.4.6',

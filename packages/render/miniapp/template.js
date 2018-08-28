@@ -1,6 +1,7 @@
 import { extend } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
-import { getUUID } from './getUUID';
+import { getUUID, classCached } from './utils';
+
 export function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
@@ -92,16 +93,35 @@ export function onComponentDispose(fiber) {
         }
     }
 }
+var ignoreObject = {
+    is: 1,
+    templatedata: 1,
+    fragmentUid: 1,
+    classUid: 1,
+    instanceUid: 1
+};
 
 export function template(props) {
     //这是一个无状态组件，负责劫持用户传导下来的类，修改它的原型
     var clazz = props.is;
     var componentProps = {}; //必须将is移除，防止在setData中被序列化
     for (var i in props) {
-        if (i !== 'is' && i != 'templatedata') {
+        if (ignoreObject[i] !== 1) {
             componentProps[i] = props[i];
         }
     }
+    if (props.fragmentUid && props.classUid){
+        var parentClass = classCached[props.classUid];
+        if (parentClass && parentClass.instances){
+            var parentInstance =  parentClass.instances[props.instanceUid];
+            props.fragmentData = {
+                state: parentInstance.state,
+                props: parentInstance.props,
+                context:parentInstance.context
+            };
+        }
+    }
+
     if (!clazz.hackByMiniApp) {
         clazz.hackByMiniApp = true;
         clazz.instances = clazz.instances || {};

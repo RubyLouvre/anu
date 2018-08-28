@@ -1,18 +1,8 @@
-import {
-    eventSystem
-} from './eventSystem';
-import {
-    render
-} from 'react-fiber/scheduleWork';
-import {
-    createElement
-} from 'react-core/createElement';
-import {
-    isFn, noop
-} from 'react-core/util';
-import {
-    getUUID
-} from './getUUID';
+import { render } from 'react-fiber/scheduleWork';
+import { createElement } from 'react-core/createElement';
+import { isFn, noop } from 'react-core/util';
+import { eventSystem } from './eventSystem';
+import { getUUID } from './utils';
 
 export function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
@@ -25,13 +15,13 @@ export function onPageUpdate(fiber) {
     }
     instance.props.instanceUid = instance.instanceUid;
 }
-function safeClone (originVal) {
+function safeClone(originVal) {
     let temp = originVal instanceof Array ? [] : {};
     for (let item in originVal) {
         if (originVal.hasOwnProperty(item)) {
             let value = originVal[item];
             if (isReferenceType(value)) {
-                if (value.$$typeof){
+                if (value.$$typeof) {
                     continue;
                 }
                 temp[item] = safeClone(value);
@@ -44,8 +34,11 @@ function safeClone (originVal) {
 }
 
 function isReferenceType(val) {
-    return val && (typeof val === 'object' || 
-    Object.prototype.toString.call(val) === '[object Array]');
+    return (
+        val &&
+        (typeof val === 'object' ||
+            Object.prototype.toString.call(val) === '[object Array]')
+    );
 }
 export function createPage(PageClass, path) {
     //添加一个全局代理的事件句柄
@@ -57,12 +50,13 @@ export function createPage(PageClass, path) {
         createElement(PageClass, {
             path: path,
             isPageComponent: true
-        }), {
+        }),
+        {
             type: 'page',
             props: {},
             children: [],
             root: true,
-            appendChild: function () {}
+            appendChild: function() {}
         }
     );
     //劫持setState
@@ -70,7 +64,7 @@ export function createPage(PageClass, path) {
     var anuForceUpdate = instance.forceUpdate;
     var updating = false,
         canSetData = false;
-    instance.forceUpdate = instance.setState = function (a) {
+    instance.forceUpdate = instance.setState = function(a) {
         var updateMethod = anuSetState;
         var cbIndex = 1;
         if (isFn(a) || a == null) {
@@ -92,7 +86,7 @@ export function createPage(PageClass, path) {
         var inst = this,
             cb = arguments[cbIndex],
             args = Array.prototype.slice.call(arguments);
-        args[cbIndex] = function () {
+        args[cbIndex] = function() {
             cb && cb.call(inst);
             if (canSetData) {
                 canSetData = false;
@@ -118,7 +112,7 @@ export function createPage(PageClass, path) {
             context: instance.context
         },
         dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function () {
+        onLoad: function() {
             $wxPage = this;
         },
         onShow: function onShow() {
@@ -149,7 +143,7 @@ export function createPage(PageClass, path) {
 }
 
 function applyChildComponentData(data, list) {
-    list.forEach(function (el) {
+    list.forEach(function(el) {
         if (data[el.templatedata]) {
             data[el.templatedata].push(el);
         } else {

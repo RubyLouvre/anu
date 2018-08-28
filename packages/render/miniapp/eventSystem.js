@@ -1,20 +1,19 @@
 import { returnFalse } from 'react-core/util';
+import { classCached } from 'utils';
 
 export var eventSystem = {
-    classCache: {},
     dispatchEvent: function(e) {
         var target = e.currentTarget;
         var dataset = target.dataset || {};
         var eventUid = dataset[e.type + 'Uid']; //函数名
         var classUid = dataset.classUid; //类ID
-        var componentClass = eventSystem.classCache[classUid]; //类
+        var componentClass = classCached[classUid]; //类
         var instanceUid = dataset.instanceUid; //实例ID
         var instance = componentClass.instances[instanceUid];
         var key = dataset['key'];
         if (instance) {
             try {
                 var fn = instance.$$eventCached[eventUid + (key !=null ? '-' + key : '')];
-
                 fn && fn.call(instance, createEvent(e, target));
             } catch (e) {
                 console.log(e.stack);

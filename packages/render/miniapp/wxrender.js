@@ -29,10 +29,10 @@ var autoContainer = {
     children: []
 };
 var onEvent = /(?:on|catch)[A-Z]/;
-function getEventHashCode(name, props,key) {
+function getEventHashCode(name, props, key) {
     var n = name.charAt(0) == 'o' ? 2 : 5;
     var type = name.slice(n).toLowerCase();
-    var eventCode =  props[ 'data-' + type + '-uid'];
+    var eventCode = props['data-' + type + '-uid'];
     return eventCode + (key != null ? '-' + key : '');
 }
 export let Renderer = createRenderer({
@@ -51,14 +51,18 @@ export let Renderer = createRenderer({
                         instance.$$eventCached || (instance.$$eventCached = {});
                     for (let name in props) {
                         if (onEvent.test(name) && isFn(props[name])) {
-                            var code = getEventHashCode(name,props, fiber.key);
+                            var code = getEventHashCode(name, props, fiber.key);
                             cached[code] = props[name];
                         }
                     }
                     if (lastProps) {
                         for (let name in lastProps) {
                             if (onEvent.test(name) && !props[name]) {
-                                code = getEventHashCode(name,lastProps, fiber.key);
+                                code = getEventHashCode(
+                                    name,
+                                    lastProps,
+                                    fiber.key
+                                );
                                 delete cached[code];
                             }
                         }
