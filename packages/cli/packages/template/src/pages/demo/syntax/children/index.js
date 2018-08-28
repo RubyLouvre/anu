@@ -15,11 +15,25 @@ class P extends React.Component {
             show: !this.state.show
         });
     }
+    closeDialog(){
+        this.setState({
+            show: false
+        });
+    }
     render() {
         return (
             <div>
-                <div>类继承的演示</div>
-                {this.state.show ? <Dialog><p>777</p></Dialog> : null}
+                <div>演示组件标签包含其他内容</div>
+                {this.state.show ? <Dialog>
+                    <p>{this.state.title}</p>
+                    <p>弹窗其他内容1</p>
+                    <p>弹窗其他内容2</p>
+                    <p>
+                        <button type="default" size="mini" onTap={this.closeDialog.bind(this)}>
+                        关闭
+                        </button>
+                    </p>
+                </Dialog> : null}
 
                 <p>
                     <button type="primary" onTap={this.toggleDialog.bind(this)}>

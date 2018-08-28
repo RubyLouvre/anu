@@ -196,7 +196,7 @@ const install = projectRoot => {
         console.log(chalk.green('mpreact build'));
         console.log('  构建服务');
         console.log();
-        console.log(chalk.green('请敲入下面两行命令，享受您的开发之旅!'));
+        console.log(chalk.magenta('请敲入下面两行命令，享受您的开发之旅!'));
         console.log();
         console.log(`  cd ${projectRoot}`);
         console.log('  mpreact start');
