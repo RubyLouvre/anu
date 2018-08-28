@@ -2,6 +2,7 @@ const t = require('babel-types');
 const fs = require('fs-extra');
 const path = require('path');
 const cwd = process.cwd();
+
 module.exports = {
     createElement: function(nodeName, attrs, children) {
         return t.JSXElement(
@@ -19,7 +20,6 @@ module.exports = {
     createUUID: function() {
         return (Math.random() + '').slice(-4) + (Math.random() + '').slice(-4);
     },
-
     copyCustomComponents: function(config, modules) {
         Object.keys(config).forEach(componentName => {
             //对usingComponents直接copy目录
@@ -31,5 +31,6 @@ module.exports = {
             fs.copySync(src, dest);
             if (!list.includes(componentName)) list.push(componentName);
         });
-    }
+    },
+    sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };

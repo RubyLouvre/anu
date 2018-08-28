@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs-extra');
 
 const rollup = require('rollup');
-const rbabel =  require('rollup-plugin-babel');
+const rbabel = require('rollup-plugin-babel');
 //const resolve = require("rollup-plugin-node-resolve");
 const commonjs = require('rollup-plugin-commonjs');
 const rollupLess = require('rollup-plugin-less');
@@ -47,8 +47,7 @@ const getAlias = () => {
     return aliasConfig || {};
 };
 
-
-const print = (prefix, msg)=>{
+const print = (prefix, msg) => {
     // eslint-disable-next-line
     console.log(chalk.green(`${prefix} ${msg}`));
 };
@@ -62,19 +61,17 @@ class Parser {
                 // resolve({
                 //     extensions: ['.js', 'jsx']
                 // }),
-                alias(
-                    getAlias()
-                ),
+                alias(getAlias()),
                 commonjs({
                     include: 'node_modules/**'
                 }),
                 rollupLess({
-                    output: function(code){
+                    output: function(code) {
                         return code;
                     }
                 }),
                 rollupSass({
-                    output: function(code){
+                    output: function(code) {
                         return code;
                     }
                 }),
@@ -84,26 +81,24 @@ class Parser {
                     exclude: ['node_modules/**'],
                     presets: ['react'],
                     externalHelpers: false,
-                    plugins: [ 'transform-class-properties', 'transform-object-rest-spread'],
+                    plugins: [
+                        'transform-class-properties',
+                        'transform-object-rest-spread'
+                    ]
                 })
-                
             ]
         };
-
     }
     async parse() {
-        const bundle =  await rollup.rollup(this.inputConfig);
-        const files  = bundle.modules.map(function(item){
+        const bundle = await rollup.rollup(this.inputConfig);
+        const files = bundle.modules.map(function(item) {
             if (/commonjsHelpers|node_modules/.test(item.id)) return;
             return item.id;
         });
         this.startCodeGen(files);
     }
     startCodeGen(files) {
-       
-        let dependencies = files.sort(function(
-            path
-        ) {
+        let dependencies = files.sort(function(path) {
             if (path.indexOf('components') > 0) {
                 return 1; //确保组件最后执行
             }
@@ -149,7 +144,7 @@ class Parser {
         return new Promise((resolve, reject) => {
             let { name, ext } = path.parse(file);
             if (isLib(name) || !isJs(ext)) return;
-            while ( queue.wxml.length){
+            while (queue.wxml.length) {
                 let data = queue.wxml.shift();
                 if (!data) return;
                 let dist = data.path;
@@ -161,7 +156,6 @@ class Parser {
                     });
                 }
             }
-           
         });
     }
 
@@ -181,6 +175,7 @@ class Parser {
             }
         });
     }
+
     generateCss(file) {
         return new Promise((resolve, reject) => {
             let { name, ext } = path.parse(file);
@@ -224,12 +219,14 @@ class Parser {
     }
 
     generateProjectConfig() {
-        fs.ensureFileSync(path.join(outputPath, 'project.config.json'));
-        fs.copyFile(
-            path.join(inputPath, 'project.config.json'),
-            path.join(outputPath, 'project.config.json')
+        const from = path.normalize(
+            path.join(inputPath, 'project.config.json')
         );
+        const to = path.normalize(path.join(outputPath, 'project.config.json'));
+        fs.ensureFileSync(to);
+        fs.copyFile(from, to);
     }
+
     async codegen(file) {
         await this.generateBusinessJs(file);
         Promise.all([
@@ -244,6 +241,7 @@ class Parser {
             }
         });
     }
+
     watching() {
         let watchDir = path.dirname(this.entry);
         let watchConfig = {
@@ -253,17 +251,17 @@ class Parser {
             .watch(watchDir, watchConfig)
             .on('all', (event, file)=>{
                 if (event === 'change'){
-                    /*eslint-disable */
+                    /* eslint-disable */
                     console.log();
                     console.log(`updated: ${chalk.yellow(path.relative(cwd, file))}`);
                     console.log();
                     this.codegen(file);
-                    /*eslint-enable*/
+                    /* eslint-enable */
                 }
             });
 
         watcher.on('error', error => {
-            //eslint-disable-next-line
+            // eslint-disable-next-line
             console.error('Watcher failure', error);
             process.exit(1);
         });
