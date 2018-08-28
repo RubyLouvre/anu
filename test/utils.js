@@ -3,7 +3,6 @@ let jsTransform = require('../packages/cli/packages/translator/jsTransform');
 let helpers = require('../packages/cli/packages/translator/helpers');
 let q = require('../packages/cli/packages/translator/queue');
 
-
 function baseCode(code) {
   return `
     import React from '@react'
@@ -50,38 +49,37 @@ function transform(code) {
   return helpers.moduleToCjs.byCode(result.code).code;
 }
 
-
-
-  function evalClass(template) {
-    return eval(template);
-  }
+function evalClass(template) {
+  return eval(template);
+}
 
 //   let result = evalClass(template);
 //   console.log('result',result.data);
 
-  function getPropsStyle(props) {
-      for(let key in props) {
-          if(/^style\d{8}$/.test(key)) {
-              return key
-          }
-      }
+function getPropsStyle(props) {
+  for (let key in props) {
+    if (/^style\d{8}$/.test(key)) {
+      return key;
+    }
   }
+}
 
 //   console.log(getPropsStyle(result.data.props))
 
 let template = transform(`return (
-    <div class="loop3-container">
-    {this.state.array1.map(function(el) {
-      return (
-        <div key={el.name}>
-          <div class="index-item-1" style={{ backgroundColor: '#eee' }}>
-            {el.name}
-          </div>
-        </div>
-      );
-    })}
+    <div>
+    {this.state.arr.length === 0
+        ? null
+        : this.state.arr.map(function(e, i) {
+            return (
+              <div key={i} className="ratio-16-9 image-company-album">
+                loop1: {i}
+              </div>
+            );
+          })}
     </div>
-)`);
-  console.log('template', template)
-  let result = evalClass(template);
-  console.log('result',result.data);
+     )`);
+console.log(q.wxml[0].code);
+//   console.log('template', template)
+//   let result = evalClass(template);
+//   console.log('result',result.data);

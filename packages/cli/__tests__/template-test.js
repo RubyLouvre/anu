@@ -244,4 +244,62 @@ describe('Template', () => {
       });
   });
 
+  describe('三元表达式', () => {
+    test('属性中存在三元表达式', () => {
+      transform(
+        `return (
+              <div className={this.state.flag === clickValue ? 'checked' : ''}></div>
+               )
+             `
+      );
+      let template = q.wxml[q.wxml.length - 1].code;
+  
+      expect(template).toMatch(
+        prettifyXml(`<view class="{{state.flag === clickValue ? 'checked' : ''}}">\n</view>`)
+      );
+    });
+    test('属性中存在三元表达式 2', () => {
+      transform(
+        `return (
+                <div className={'row ' + (this.state.flag === clickValue ? 'checked' : '')}></div>
+                 )
+               `
+      );
+      let template = q.wxml[q.wxml.length - 1].code;
+      expect(template).toMatch(
+        prettifyXml(
+          `<view class="{{'row ' + (state.flag === clickValue ? 'checked' : '')}}">\n</view>`
+        )
+      );
+    });
+    // test('属性中存在三元表达式 3', () => {
+    //   transform(
+    //     `return (
+    //             <div className={this.props.iconList && this.props.iconList.length > 3 ? 'iconlist_wrap' : 'iconlist_wrap wrap-less'}></div>
+    //              )
+    //            `
+    //   );
+    //   let template = q.wxml[q.wxml.length - 1].code;
+    //   expect(template).toMatch(
+    //     prettifyXml(
+    //       `<view class="{{props.iconList && props.iconList.length > 3 ? 'iconlist_wrap' : 'iconlist_wrap wrap-less'}}">\n</view>`
+    //     )
+    //   );
+    // });
+  });
+
+  describe('props 属性值', () => {
+    test('内置组件', () => {
+        transform(
+          `return (<Dog hidden={true}></Dog>)`
+        );
+        let template = q.wxml[q.wxml.length - 1].code;
+        expect(template).toMatch(
+          prettifyXml(
+            `<view hidden="{{true}}">\n</view>`
+          )
+        );
+      });
+  })
+
 });
