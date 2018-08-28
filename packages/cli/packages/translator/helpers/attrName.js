@@ -1,5 +1,5 @@
-module.exports = function mapPropName(path) {
-    var nameNode = path.node.name;
+module.exports = function mapPropName(astPath) {
+    var nameNode = astPath.node.name;
     var orig = nameNode.name;
     if (/^catch[A-Z]/.test(orig)) {
         nameNode.name = 'catch' + orig.slice(5).toLowerCase();
