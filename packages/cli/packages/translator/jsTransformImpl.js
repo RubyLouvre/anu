@@ -6,6 +6,7 @@ const queue = require('./queue');
 const utils = require('./utils');
 const deps = require('./deps');
 //const prettifyXml = require('prettify-xml');
+const template = require('babel-template');
 
 /**
  * JS文件转译器
@@ -51,6 +52,7 @@ module.exports = {
                     modules.className,
                     modules
                 );
+                astPath.node.body.body.unshift(template( helpers.functionNameAliasConfig.h.init )());
             }
         }
     },
@@ -68,6 +70,12 @@ module.exports = {
                 //需要想办法处理无状态组件
                 helpers.render.exit(astPath, '无状态组件', name, modules);
             }
+
+            if ( astPath.parentPath.type === 'ExportDefaultDeclaration'
+                && modules.componentType === 'Component'
+            ){
+                astPath.node.body.body.unshift(template(helpers.functionNameAliasConfig.h.init )());
+            }
         }
     },
     ImportDeclaration(astPath, state) {
@@ -83,6 +91,8 @@ module.exports = {
             }
         }
 
+
+
         if (/\.(less|scss)$/.test(nPath.extname(source))) {
             astPath.remove();
         }
@@ -93,6 +103,7 @@ module.exports = {
 
             //process alias for package.json alias field;
             helpers.resolveAlias(astPath, modules, item.local.name);
+
         });
         helpers.copyNpmModules(modules.current, source, node);
     },
@@ -295,6 +306,9 @@ module.exports = {
         if (/^(?:on|catch)[A-Z]/.test(attrName)) {
             var n = attrName.charAt(0) == 'o' ? 2 : 5;
             var eventName = attrName.slice(n).toLowerCase();
+            if (eventName == 'click'){
+                eventName = 'tap';
+            }
             var name = `data-${eventName}-uid`;
             attrs.push(
                 utils.createAttribute(

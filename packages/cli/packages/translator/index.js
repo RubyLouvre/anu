@@ -24,7 +24,11 @@ const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
 
 if (nodejsVersion < 8) {
     // eslint-disable-next-line
-    console.log( `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold('7')}`);
+    console.log(
+        `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold(
+            '7'
+        )}`
+    );
 }
 
 const isLib = name => {
@@ -129,9 +133,9 @@ class Parser {
     async generateBusinessJs(file) {
         let { name, ext } = path.parse(file);
         let dist = file.replace('src', 'dist');
-        if( isLib(name) || !isJs(ext) ) return;
+        if (isLib(name) || !isJs(ext)) return;
         const code = jsTransform.transform(file);
-        if (/\/(?:pages|app|components)/.test(file)){
+        if (/\/(?:pages|app|components)/.test(file)) {
             fs.ensureFileSync(dist);
             fs.writeFile(dist, code, err => {
                 // eslint-disable-next-line
@@ -249,11 +253,13 @@ class Parser {
         };
         const watcher = chokidar
             .watch(watchDir, watchConfig)
-            .on('all', (event, file)=>{
-                if (event === 'change'){
+            .on('all', (event, file) => {
+                if (event === 'change') {
                     /* eslint-disable */
                     console.log();
-                    console.log(`updated: ${chalk.yellow(path.relative(cwd, file))}`);
+                    console.log(
+                        `updated: ${chalk.yellow(path.relative(cwd, file))}`
+                    );
                     console.log();
                     this.codegen(file);
                     /* eslint-enable */

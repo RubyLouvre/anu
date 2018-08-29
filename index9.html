@@ -15,247 +15,495 @@
 
     </div>
     <script>
-class Node {
-    constructor(data) {
-        this.data = data;
-        this.size = 1
-        this.left = null;
-        this.right = null;
-        this.parent = null;
-    }
-    update() {
-        var leftSize = this.left ? this.left.size : 0
-        var rightSize = this.right ? this.right.size : 0
-        this.size = leftSize + rightSize + 1;
-    }
-
-};
-
-class SBT {
-    constructor() {
-        this.root = null;
-        this._size = 0;
-    }
-    transplant(child, parent) {
-        if (!parent) {
-            this.root = child;
-        } else {
-            if (parent.data > child.data) {
-                parent.left = child
-            } else {
-                parent.right = child
+        class Node {
+            constructor(data) {
+                this.data = data;
+                this.size = 1
+                this.left = null;
+                this.right = null;
+                this.parent = null;
             }
-        }
-        if (child) {
-            child.parent = parent;
-        }
-    }
-    leftRotate(node) {
-        if (!node.right) {
-            return;
-        }
-        var child = node.right;
-        node.right = child.left;
-        if (child.left) {
-            //过继孩子
-            child.left.parent = node; //父属性修正1
-        }
-        this.transplant(child, node.parent) //父属性修正2
-        node.parent = child; //父属性修正3
-        child.left = node; //旋转
-        //其他属性更新
-        child.size = node.size;//child.update(),但直接赋值更快
-        node.update();
-    }
-    rightRotate(node) {
-        if (!node.left) {
-            return;
-        }
-        var child = node.left;
-        node.left = child.right;
-        if (child.right) {
-            //过继孩子
-            child.right.parent = node; //父属性修正1
-        }
-        this.transplant(child, node.parent) //父属性修正2
-        node.parent = child; //父属性修正3
-        child.right = node; //旋转
-        //其他属性更新
-        child.size = node.size;//child.update(),但直接赋值更快
-        node.update();
-    }
-    maintain(node, rightDeeper) {
-        var left = node.left;
-        var right = node.right;
-        if (!rightDeeper) {
-            if (!left) {
-                return
-            }
-            var rightSize = right && right.size || 0
-            var llSize = left.left && left.left.size || 0
-            var lrSize = left.right && left.right.size || 0
-            if (llSize > rightSize) {
-                this.rightRotate(node);
-            } else if (lrSize > rightSize) {
-                this.leftRotate(left);
-                this.rightRotate(node);
-            } else {
-                return;
+            update() {
+                var leftSize = this.left ? this.left.size : 0
+                var rightSize = this.right ? this.right.size : 0
+                this.size = leftSize + rightSize + 1;
             }
 
-        } else {
-            if (!right) {
-                return
-            }
-            var leftSize = left && left.size || 0
-            var rrSize = right.right && right.right.size || 0
-            var rlSize = right.left && right.left.size || 0
-            if (rrSize > leftSize) {
-                this.leftRotate(node);
-            } else if (rlSize > leftSize) {
-                this.rightRotate(right);
-                this.leftRotate(node);
-            } else {
-                return;
-            }
-        }
-    }
-
-    size() {
-        return this.root ? this.root.size : 0
-    }
-    find(data) {
-        var node = this.root;
-        while (node) {
-            var diff = data - node.data
-            if (diff == 0) {
-                break
-            } else if (diff < 0) {
-                node = node.left;
-            } else {
-                node = node.right;
-            }
-        }
-        if (node) {
-            return node
-        }
-        return null
-    }
-    insert(data) {
-        if (!this.root) {
-            this.root = new Node(data);
-            this._size++;
-            return true;
-        }
-        var node = this.root,
-            parent, paths = [];
-        while (node) {
-            paths.push(node);
-            var diff = data - node.data;
-            parent = node;
-            if (diff == 0) {
-                return false;
-            } else if (diff < 0) {
-                node = node.left;
-            } else {
-                node = node.right;
-            }
-        }
-        var node = new Node(data);
-        node.parent = parent
-        this._size++;
-        if (diff < 0) {
-            parent.left = node;
-        } else {
-            parent.right = node;
-        }
-        for (var i = paths.length - 1; i >= 0; i--) {
-            parent = paths[i];
-            parent.size++;
-            this.maintain(parent, data >= parent.data);
-        }
-        return true;
-    }
-    remove(data) {
-        if (!this.root) {
-            return false
-        }
-        var node = this.find(data);
-        if (node) {
-            //两个孩子的情况
-            if (node.left && node.right) {
-                var succ = this.maxNode(node.left); //求后继
-                node.data = succ.data;
-                node = succ; //转为一个孩子的情况
-            }
-            //一个或零个孩子的情况
-            this._size--;
-            var child = node.left || node.right || null;
-            var parent = node.parent,
-                p = parent,
-                paths = []
-            while (p) {
-                paths.push(p)
-                p = p.parent;
-            }
-            if (parent.left == node) {
-                parent.left = child
-            } else {
-                parent.right = child
-            }
-            if (child) {
-                child.parent = parent; //parent的size发生变化
-            }
-            while (p = paths.shift()) {
-                p.size--;
-                this.maintain(p, data >= p.data);
-            }
-        }
-    }
-    maxNode(node) {
-        var current = node || this.root;
-        while (current.right) {
-            current = node.right
-        }
-        return current;
-    }
-    toString(printNode) {
-        if (printNode === void 0) printNode = function (n) {
-            return n.data;
         };
 
-        var out = [];
-        printRow(this.root, '', true, function (v) {
-            return out.push(v);
-        }, printNode);
-        return out.join('');
-    };
-}
+        class SBT {
+            constructor() {
+                this.root = null;
+                this._size = 0;
+            }
+            transplant(child, parent) {
+                if (!parent) {
+                    this.root = child;
+                } else {
+                    if (parent.data > child.data) {
+                        parent.left = child
+                    } else {
+                        parent.right = child
+                    }
+                }
+                if (child) {
+                    child.parent = parent;
+                }
+            }
+            leftRotate(node) {
+                if (!node.right) {
+                    return;
+                }
+                var child = node.right;
+                node.right = child.left;
+                if (child.left) {
+                    //过继孩子
+                    child.left.parent = node; //父属性修正1
+                }
+                this.transplant(child, node.parent) //父属性修正2
+                node.parent = child; //父属性修正3
+                child.left = node; //旋转
+                //其他属性更新
+                child.size = node.size;//child.update(),但直接赋值更快
+                node.update();
+            }
+            rightRotate(node) {
+                if (!node.left) {
+                    return;
+                }
+                var child = node.left;
+                node.left = child.right;
+                if (child.right) {
+                    //过继孩子
+                    child.right.parent = node; //父属性修正1
+                }
+                this.transplant(child, node.parent) //父属性修正2
+                node.parent = child; //父属性修正3
+                child.right = node; //旋转
+                //其他属性更新
+                child.size = node.size;//child.update(),但直接赋值更快
+                node.update();
+            }
+            maintain(node, rightDeeper) {
+                var left = node.left;
+                var right = node.right;
+                if (!rightDeeper) {
+                    if (!left) {
+                        return
+                    }
+                    var rightSize = right && right.size || 0
+                    var llSize = left.left && left.left.size || 0
+                    var lrSize = left.right && left.right.size || 0
+                    if (llSize > rightSize) {
+                        this.rightRotate(node);
+                    } else if (lrSize > rightSize) {
+                        this.leftRotate(left);
+                        this.rightRotate(node);
+                    } else {
+                        return;
+                    }
 
-function printRow(root, prefix, isTail, out, printNode) {
-    if (root) {
-        out(("" + prefix + (isTail ? '└── ' : '├── ') + (printNode(root)) + "\n"));
-        var indent = prefix + (isTail ? '    ' : '│   ');
-        if (root.left) {
-            printRow(root.left, indent, false, out, printNode);
+                } else {
+                    if (!right) {
+                        return
+                    }
+                    var leftSize = left && left.size || 0
+                    var rrSize = right.right && right.right.size || 0
+                    var rlSize = right.left && right.left.size || 0
+                    if (rrSize > leftSize) {
+                        this.leftRotate(node);
+                    } else if (rlSize > leftSize) {
+                        this.rightRotate(right);
+                        this.leftRotate(node);
+                    } else {
+                        return;
+                    }
+                }
+            }
+
+            size() {
+                return this.root ? this.root.size : 0
+            }
+            find(data) {
+                var node = this.root;
+                while (node) {
+                    var diff = data - node.data
+                    if (diff == 0) {
+                        break
+                    } else if (diff < 0) {
+                        node = node.left;
+                    } else {
+                        node = node.right;
+                    }
+                }
+                if (node) {
+                    return node
+                }
+                return null
+            }
+            insert(data) {
+                if (!this.root) {
+                    this.root = new Node(data);
+                    this._size++;
+                    return true;
+                }
+                var node = this.root,
+                    parent, paths = [];
+                while (node) {
+                    paths.push(node);
+                    var diff = data - node.data;
+                    parent = node;
+                    if (diff == 0) {
+                        return false;
+                    } else if (diff < 0) {
+                        node = node.left;
+                    } else {
+                        node = node.right;
+                    }
+                }
+                var node = new Node(data);
+                node.parent = parent
+                this._size++;
+                if (diff < 0) {
+                    parent.left = node;
+                } else {
+                    parent.right = node;
+                }
+                for (var i = paths.length - 1; i >= 0; i--) {
+                    parent = paths[i];
+                    parent.size++;
+                    this.maintain(parent, data >= parent.data);
+                }
+                return true;
+            }
+            remove(data) {
+                if (!this.root) {
+                    return false
+                }
+                var node = this.find(data);
+                if (node) {
+                    //两个孩子的情况
+                    if (node.left && node.right) {
+                        var succ = this.maxNode(node.left); //求后继
+                        node.data = succ.data;
+                        node = succ; //转为一个孩子的情况
+                    }
+                    //一个或零个孩子的情况
+                    this._size--;
+                    var child = node.left || node.right || null;
+                    var parent = node.parent,
+                        p = parent,
+                        paths = []
+                    while (p) {
+                        paths.push(p)
+                        p = p.parent;
+                    }
+                    if (parent.left == node) {
+                        parent.left = child
+                    } else {
+                        parent.right = child
+                    }
+                    if (child) {
+                        child.parent = parent; //parent的size发生变化
+                    }
+                    while (p = paths.shift()) {
+                        p.size--;
+                        this.maintain(p, data >= p.data);
+                    }
+                }
+            }
+            maxNode(node) {
+                var node = node || this.root;
+                while (node.right) {
+                    node = node.right
+                }
+                return node;
+            }
+
+            inOrder(callback) {//左中右
+                this._forEach(this.root, callback, "middle");
+            }
+            preOrder(callback) {//
+                this._forEach(this.root, callback, "pre");
+            }
+            postOrder(callback) {
+                this._forEach(this.root, callback, "post");
+            }
+            _forEach(node, callback, type) {
+                if (node) {
+                    if (type === "middle") {//中序遍历
+                        this._forEach(node.left, callback, type);
+                        callback(node);
+                        this._forEach(node.right, callback, type);
+                    } else if (type === "pre") {//先序遍历
+                        callback(node);
+                        this._forEach(node.left, callback, type);
+                        this._forEach(node.right, callback, type);
+                    } else if (type === "post") {//后序遍历
+                        this._forEach(node.left, callback, type);
+                        this._forEach(node.right, callback, type);
+                        callback(node);
+                    }
+                }
+            }
+
+            preOrder(callback) {//中左右
+                var stack = []
+                var node = this.root;
+                while (node != null || stack.length) {//将所有孩子压栈
+                    if (node != null) {
+                        callback(node);//先于left之前访问
+                        stack.push(node);
+                        node = node.left
+                    } else {
+                        node = stack.pop();
+                        node = node.right
+                    }
+                }
+            }
+            inOrder(callback) {//左中右
+                var stack = []
+                var node = this.root;
+                while (node != null || stack.length) {//将所有孩子压栈
+                    if (node != null) {
+                        stack.push(node);
+                        node = node.left
+                    } else {
+                        node = stack.pop();
+                        callback(node);//先于right前访问
+                        node = node.right
+                    }
+                }
+            }
+            postOrder(callback) {//左右中
+                var stack = []
+                var out = []
+                var node = this.root;
+                while (node || stack.length) {//将所有孩子压栈
+                    if (node) {
+                        stack.push(node);
+                        out.push(node);
+                        node = node.right;//先放右孩子 
+                    } else {
+                        node = stack.pop();
+                        node = node.left//先放左孩子 
+                    }
+                }
+                while (out.length) {
+                    callback(out.pop())
+                }
+            }
+            height() {
+                return this.getNodeHeight(this.root);
+            }
+            //获取指定结点的度
+            getNodeHeight(node) {
+                if (node === null) {//递归出口
+                    return 0;
+                }
+                var leftChildHeight = this.getNodeHeight(node.left);
+                var rightChildHeight = this.getNodeHeight(node.right);
+                var max = Math.max(leftChildHeight, rightChildHeight);
+                return max + 1; //加上自己本身
+            }
+            breadthFirstTraval(callback) {
+                var queue = []
+                var out = []
+                var node = this.root;
+                node && queue.push(node)
+                while (queue.length) {
+                    node = queue.shift()//先进先出
+                    callback(node)
+                    if (node.left) {
+                        queue.push(node.left)
+                    }
+                    if (node.right) {
+                        queue.push(node.right)
+                    }
+                }
+            }
+            multiplyString(string, times) {
+                var str = "";
+                for (var i = 0; i < times; ++i) {
+                    str += string;
+                }
+                return str;
+            }
+
+            getSpaceBetweenLeftRightBranch(height) {
+                var noOfNodesBetweenLeftRightBranch = Math.pow(2, height - 1) - 1;
+
+                return this.multiplyString("  ", noOfNodesBetweenLeftRightBranch);
+            }
+
+            getSpaceBetweenRightLeftBranch(height) {
+                var noOfNodesBetweenLeftRightBranch = Math.pow(2, height - 1);
+
+                return this.multiplyString("  ", noOfNodesBetweenLeftRightBranch);
+            }
+
+            getStartingSpace(height) {
+                return this.multiplyString("  ", (Math.pow(2, height - 1)) >> 1);
+            }
+
+            getUnderScores(height) {
+                var noOfElementsToLeft = (Math.pow(2, height) - 1) >> 1;
+                var noOfUnderScores = noOfElementsToLeft
+                    - (Math.pow(2, height - 1) >> 1);
+
+                return this.multiplyString("__", noOfUnderScores);
+            }
+
+            getSpaceBetweenTwoNodes(height) {
+                if (height == 0)
+                    return "";
+
+                var noOfNodesInSubTreeOfNode = Math.pow(2, height - 1) >> 1;
+                /** Sum of spaces of the subtrees of nodes + the parent node */
+                var noOfSpacesBetweenTwoNodes = noOfNodesInSubTreeOfNode * 2 + 1;
+
+                return this.multiplyString("  ", noOfSpacesBetweenTwoNodes);
+            }
+            printNodes(queueOfNodes, noOfNodesAtCurrentHeight, height, out) {
+                var nodesAtHeight = []
+                nodesAtHeight.append = function(a){
+                     this.push(a)
+                     return this
+                }
+                var startSpace = this.getStartingSpace(height);
+                var spaceBetweenTwoNodes = this.getSpaceBetweenTwoNodes(height);
+
+                var underScore = this.getUnderScores(height);
+                var underScoreSpace = this.multiplyString(" ", underScore.length);
+
+                nodesAtHeight.append(startSpace)
+                for (var i = 0; i < noOfNodesAtCurrentHeight; i++) {
+                    var node = queueOfNodes[i]
+                    if (node == null) {
+                        nodesAtHeight.append(underScoreSpace)
+                            .append("  ")
+                            .append(underScoreSpace)
+                            .append(spaceBetweenTwoNodes);
+                    } else {
+                        nodesAtHeight
+                            .append(node.left != null ? underScore
+                                : underScoreSpace)
+                            .append(node.data)
+                            .append(node.right != null ? underScore
+                                : underScoreSpace)
+                            .append(spaceBetweenTwoNodes);
+                    }
+                }
+
+               var s = nodesAtHeight.join("").replace(/\s+$/, "");
+               out.push(s)
+            }
+            printBranches(queueOfNodes, noOfNodesAtCurrentHeight, height, out) {
+                if (height <= 1)
+                    return;
+                var brachesAtHeight = [];
+                brachesAtHeight.append = function(a){
+                     this.push(a)
+                     return this
+                }
+                var startSpace = this.getStartingSpace(height);
+                var leftRightSpace = this.getSpaceBetweenLeftRightBranch(height);
+                var rightLeftSpace = this.getSpaceBetweenRightLeftBranch(height);
+
+                brachesAtHeight
+                    .append(startSpace.substring(0, startSpace.length - 1));
+
+                for (var i = 0; i < noOfNodesAtCurrentHeight; i++) {
+                    var node = queueOfNodes[i]
+                    if (node == null) {
+                        brachesAtHeight.append(" ")
+                            .append(leftRightSpace)
+                            .append(" ")
+                            .append(rightLeftSpace);
+                    } else {
+                      //  brachesAtHeight.append(" ".repeat(node.data.length - 1))
+                        brachesAtHeight.append(node.left != null ? "/" : " ")
+                            .append(leftRightSpace)
+                            .append(node.right != null ? "\\" : " ")
+                            .append(rightLeftSpace);
+                    }
+                }
+
+                var str = brachesAtHeight.join("").replace(/\s+$/, "");
+                out.push(str)
+            }
+            prettyPrintTree() {
+                var queueOfNodes = []
+                var height = this.height()
+                var level = 0;
+                var noOfNodesAtCurrentHeight = 0;
+                if (this.root) {
+                    queueOfNodes.push(this.root);
+                }
+                var out = []
+                while (queueOfNodes.length && level < height) {
+                    noOfNodesAtCurrentHeight = Math.pow(2, level);
+                    //由空白，下划线与数字组成
+                    this.printNodes(queueOfNodes, noOfNodesAtCurrentHeight, height - level, out);
+                    this.printBranches(queueOfNodes, noOfNodesAtCurrentHeight, height
+                        - level, out);
+
+                    for (var i = 0; i < noOfNodesAtCurrentHeight; i++) {
+                        var currNode = queueOfNodes[0]
+                       // console.log(currNode)
+                        queueOfNodes.shift();
+                        if (currNode != null) {
+                            queueOfNodes.push(currNode.left);
+                            queueOfNodes.push(currNode.right);
+                        } else {
+                            queueOfNodes.push(null);
+                            queueOfNodes.push(null);
+                        }
+                    }
+                    level++;
+                }
+                console.log(out)
+                console.log(out.join("\n"))
+            }
+
+            toString() {
+                var node = this.root;
+                var out = []
+                this.preOrder(function (node) {
+                    var parent = node.parent
+                    if (parent) {
+                        var isRight = parent.right === node;
+                        out.push(parent.prefix + (isRight ? '└── ' : '├── ') + node.data);
+                        var indent = parent.prefix + (isRight ? '    ' : '│   ');
+                        node.prefix = indent
+                    } else {
+                        node.prefix = "   "
+                        out.push("└──" + node.data)
+                    }
+                })
+                return out.join("\n")
+
+
+            };
         }
-        if (root.right) {
-            printRow(root.right, indent, true, out, printNode);
-        }
-    }
-}
-var tree = new SBT(); //40, 30, 20, 60
-[10, 50, 40, 30, 20, 60, 55, 54, 53, 52, 51, 56].forEach(function (el, i) {
-    tree.insert(el)
-    console.log(tree + "")
-})
-console.log("delete...")
-tree.remove(60)
-console.log(tree + "")
-
-console.log(tree)
 
 
+
+
+        var tree = new SBT(); //10, 50, 40, 30, 20, 60, 55, 54, 53, 52, 51, 56
+        [10, 50, 47, 30, 200, 60, 55, 504, 53, 52, 51, 56].forEach(function (el, i) {
+            tree.insert(el)
+        })
+        //如果简化成一条链表，它可以是不断压入结点，到最左，然后再弹出来。
+        /*  [10, 50, 40].forEach(function (el, i) {
+              tree.insert(el)
+  
+          })*/
+        tree.prettyPrintTree()
+
+        tree.inOrder(function (el) {
+            console.log(el.data)
+        })
         // https://www.cnblogs.com/xrq730/p/6867924.html
         // https://blog.csdn.net/u011240877/article/details/53329023
         // https://www.cnblogs.com/skywang12345/p/3624343.html
