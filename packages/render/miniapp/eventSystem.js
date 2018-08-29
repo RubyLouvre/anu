@@ -1,5 +1,6 @@
 import { returnFalse } from 'react-core/util';
 import { classCached } from './utils';
+import { Renderer } from 'react-core/createRenderer';
 
 export var eventSystem = {
     dispatchEvent: function(e) {
@@ -11,26 +12,39 @@ export var eventSystem = {
         var instanceUid = dataset.instanceUid; //实例ID
         var instance = componentClass.instances[instanceUid];
         var key = dataset['key'];
-        if (instance) {
-            try {
-                var fn = instance.$$eventCached[eventUid + (key !=null ? '-' + key : '')];
-                fn && fn.call(instance, createEvent(e, target));
-            } catch (e) {
-                console.log(e.stack);
-            }
+        eventUid += (key !=null ? '-' + key : '');
+        if (instance ) {
+            Renderer.batchedUpdates(function() {
+                try {
+                    var fn = instance.$$eventCached[eventUid];
+                    fn && fn.call(instance, createEvent(e, target));
+                } catch (err) {
+                    // eslint-disable-next-line
+                    console.log(err.stack);
+                }
+            }, e);
         }
     }
 };
 //创建事件对象
 function createEvent(e, target) {
-    var event = e.detail || {};
+    var event = {};
+    if (e.detail) {
+        event.detail = e.detail;
+        Object.assign(target, e.detail);
+    }
     event.stopPropagation = function() {
+        // eslint-disable-next-line
         console.warn('小程序不支持这方法，请使用catchXXX');
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
+    event.toString = eventString;
     event.currentTarget = event.target = target;
     event.touches = e.touches;
     event.timeStamp = e.timeStamp;
     return event;
+}
+function eventString(){
+    return '[object Event]';
 }

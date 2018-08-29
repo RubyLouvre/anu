@@ -295,6 +295,9 @@ module.exports = {
         if (/^(?:on|catch)[A-Z]/.test(attrName)) {
             var n = attrName.charAt(0) == 'o' ? 2 : 5;
             var eventName = attrName.slice(n).toLowerCase();
+            if (eventName == 'click'){
+                eventName = 'tap';
+            }
             var name = `data-${eventName}-uid`;
             attrs.push(
                 utils.createAttribute(
