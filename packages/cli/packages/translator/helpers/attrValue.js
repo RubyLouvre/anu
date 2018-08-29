@@ -34,7 +34,7 @@ module.exports = function(astPath) {
         case 'BinaryExpression': // 1+ 2
             astPath.traverse({
                 ThisExpression(nodePath) {
-                    nodePath.replaceWith(t.identifier(nodePath.parent.property.name));
+                    nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
                 }
             });
             replaceWithExpr(astPath, generate(astPath.node.expression).code);

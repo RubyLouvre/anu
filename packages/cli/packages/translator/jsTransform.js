@@ -9,15 +9,16 @@ function miniappPlugin() {
     return {
         inherits: syntaxClassProperties,
         visitor: visitor,
-        manipulateOptions(opts){//解析每个文件前执行一次
-            var modules = opts.anu = {
+        manipulateOptions(opts) {
+            //解析每个文件前执行一次
+            var modules = (opts.anu = {
                 thisMethods: [],
                 staticMethods: [],
                 thisProperties: [],
-                importComponents: {},//import xxx form path进来的组件
-                usedComponents: {},//在<wxml/>中使用<import src="path">的组件
-                customComponents: []//定义在page.json中usingComponents对象的自定义组件
-            };
+                importComponents: {}, //import xxx form path进来的组件
+                usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
+                customComponents: [] //定义在page.json中usingComponents对象的自定义组件
+            });
             modules.sourcePath = opts.filename;
             modules.current = opts.filename.replace(process.cwd(), '');
             if (/\/components\//.test(opts.filename)) {
