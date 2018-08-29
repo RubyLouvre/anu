@@ -6,7 +6,7 @@ const babel = require('babel-core');
 const queue = require('../queue');
 const path = require('path');
 const functionAliasConig = require('./functionNameAliasConfig');
-const { sepForRegex } = require('../utils');
+const utils = require('./utils');
 
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -16,7 +16,7 @@ const { sepForRegex } = require('../utils');
  * @param {String} componentName 组件名
  */
 const deps = require('../deps');
-
+const srcFragment = path.sep + 'src' +  path.sep;
 exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
 
@@ -32,63 +32,47 @@ exports.exit = function(astPath, type, componentName, modules) {
 
     switch (true) {
         case t.isReturnStatement(expr):
-            {
-                var needWrap = expr.argument.type !== 'JSXElement';
-                var jsx = generate(expr.argument).code;
-                var jsxAst = babel.transform(jsx, {
-                    babelrc: false,
-                    plugins: [
-                        ['transform-react-jsx', {'pragma':  functionAliasConig.h.variableDeclarator }]
-                    ]
-                });
+            
+            var needWrap = expr.argument.type !== 'JSXElement';
+            var jsx = generate(expr.argument).code;
+            var jsxAst = babel.transform(jsx, {
+                babelrc: false,
+                plugins: [
+                    ['transform-react-jsx', {'pragma':  functionAliasConig.h.variableDeclarator }]
+                ]
+            });
 
-                expr.argument = jsxAst.ast.program.body[0];
+            expr.argument = jsxAst.ast.program.body[0];
 
-                jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
-                var wxml = wxmlHelper(jsx, modules);
-                if (needWrap) {
-                    wxml = wxml.slice(7, -9); //去掉<block> </block>;
-                } else {
-                    wxml = wxml.slice(0, -1); //去掉最后的;
-                }
-                if (modules.componentType === 'Component') {
-                    wxml = `<template name="${componentName}">${wxml}</template>`;
-                }
+            jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
+            var wxml = wxmlHelper(jsx, modules);
+            if (needWrap) {
+                wxml = wxml.slice(7, -9); //去掉<block> </block>;
+            } else {
+                wxml = wxml.slice(0, -1); //去掉最后的;
+            }
+            if (modules.componentType === 'Component') {
+                wxml = `<template name="${componentName}">${wxml}</template>`;
+            }
 
-                for (var i in modules.importComponents) {
-                    if (modules.usedComponents[i]) {
-                        wxml = `<import src="${
-                            modules.importComponents[i]
-                        }.wxml" />\n${wxml}`;
-                    }
-                }
-                var set = deps[componentName];
-                if (set) {
-                    var fragmentPath = '/components/Fragments/';
-                    //注意，这里只要目录名
-                    var relativePath = path
-                        .normalize(modules.sourcePath)
-                        .split('src')[1]
-                        .replace(new RegExp(`[^${sepForRegex}]+.js`), '');
-                    set.forEach(function(el) {
-                        var src = path.relative(
-                            relativePath,
-                            fragmentPath + el + '.wxml'
-                        );
-                        wxml = `<import src="${src}" />\n${wxml}`;
-                    });
+            for (var i in modules.importComponents) {
+                if (modules.usedComponents[i]) {
+                    wxml = `<import src="${
+                        modules.importComponents[i]
+                    }.wxml" />\n${wxml}`;
                 }
             }
-            set = deps[componentName];
+            var set = deps[componentName];
+              
             if (set) {
-                fragmentPath = '/components/Fragments/';
+                var fragmentPath = '/components/Fragments/';
                 //注意，这里只要目录名
-                relativePath = path
+                var relativePath = path.sep + path
                     .normalize(modules.sourcePath)
-                    .split('src')[1]
-                    .replace(new RegExp(`[^${sepForRegex}]+.js`), '');
+                    .split(srcFragment)[1]
+                    .replace(new RegExp(`[^${utils.sepForRegex}]+.js`), '');
                 set.forEach(function(el) {
-                    set.remove(el);//移除
+                    set.remove(el);
                     var src = path.relative(
                         relativePath,
                         fragmentPath + el + '.wxml'
@@ -96,14 +80,15 @@ exports.exit = function(astPath, type, componentName, modules) {
                     wxml = `<import src="${src}" />\n${wxml}`;
                 });
             }
+            
 
             queue.wxml.push({
                 type: 'wxml',
                 path: path
                     .normalize(modules.sourcePath)
                     .replace(
-                        new RegExp(`${sepForRegex}src${sepForRegex}`),
-                        `${sepForRegex}dist${sepForRegex}`
+                        srcFragment,
+                        `${path.sep}dist${path.sep}`
                     )
                     .replace(/\.js$/, '.wxml'),
                 code: prettifyXml(wxml, { indent: 2 })
