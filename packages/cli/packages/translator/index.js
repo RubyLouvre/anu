@@ -38,7 +38,7 @@ const isJs = ext => {
     return ext === '.js';
 };
 const isCss = ext => {
-    const defileStyle = ['.less', '.scss'];
+    const defileStyle = ['.less', '.scss', '.css'];
     return defileStyle.includes(ext);
 };
 
@@ -114,6 +114,7 @@ class Parser {
         });
 
         this.generateProjectConfig();
+        this.generateAssets();
     }
     generateLib(file) {
         return new Promise((resolve, reject) => {
@@ -187,7 +188,7 @@ class Parser {
             if (!isCss(ext)) return;
             let dist = path.join(path.dirname(distDir), `${name}.wxss`);
             let lessContent = fs.readFileSync(file).toString();
-            if (ext === '.less') {
+            if (ext === '.less' || ext === '.css') {
                 less.render(lessContent, {})
                     .then(res => {
                         fs.writeFile(dist, res.css, err => {
@@ -229,6 +230,23 @@ class Parser {
         const to = path.normalize(path.join(outputPath, 'project.config.json'));
         fs.ensureFileSync(to);
         fs.copyFile(from, to);
+    }
+
+    generateAssets() {
+        const dir = 'assets';
+        fs.copy(
+            path.join(inputPath, dir),
+            path.join(outputPath, dir),
+            (err)=>{
+                if (!err){
+                    print('build success:',  path.relative(cwd, path.join(outputPath, dir)) );
+                } else {
+                    // eslint-disable-next-line
+                    console.error(err);
+                }
+            }
+        );
+        
     }
 
     async codegen(file) {
