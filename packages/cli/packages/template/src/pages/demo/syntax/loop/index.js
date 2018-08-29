@@ -47,7 +47,17 @@ class P extends React.Component {
                     演示单重循环，点这里改变数组的个数
                 </div>
                 <div>
-                    {this.state.array.map(function(el) {
+                    {this.state.array.map(el => 
+                        <Dog name={el.name} key={el.name} />
+                    )}
+                </div>
+                <div>
+                    {this.state.array.map(el => {
+                        <Dog name={el.name} key={el.name} />;
+                    })}
+                </div>
+                <div>
+                    {this.state.array.map(function(el)  {
                         return <Dog name={el.name} key={el.name} />;
                     })}
                 </div>
