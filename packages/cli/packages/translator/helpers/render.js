@@ -20,12 +20,6 @@ const deps = require('../deps');
 exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
 
-    if (body.length > 1) {
-        throw new Error(
-            'render 函数中只能有一个 return 语句或者一个 if/else 分支'
-        );
-    }
-
     if (!body.length) return;
 
     const expr = body[0];
@@ -38,7 +32,10 @@ exports.exit = function(astPath, type, componentName, modules) {
                 var jsxAst = babel.transform(jsx, {
                     babelrc: false,
                     plugins: [
-                        ['transform-react-jsx', {'pragma':  functionAliasConig.h.variableDeclarator }]
+                        [
+                            'transform-react-jsx',
+                            { pragma: functionAliasConig.h.variableDeclarator }
+                        ]
                     ]
                 });
 
@@ -126,11 +123,41 @@ exports.enter = function(astPath) {
                                 test,
                                 consequent.body[0].argument ||
                                     t.stringLiteral(''),
-                                alternate.body[0].argument ||
-                                    t.stringLiteral('')
+                                alternate.body
+                                    ? alternate.body[0].argument
+                                    : t.stringLiteral('')
                             )
                         )
                     );
+                }
+            },
+            BlockStatement: {
+                enter(path) {
+                    if (path.node.body.length > 2)
+                        throw new Error(
+                            'render 方法中至多拥有两个节点，类型限定为 IfStatement 或者 ReturnStatement'
+                        );
+
+                    const [firstNode, secondeNode] = path.node.body;
+
+                    if (path.node.body.length > 1) {
+                        if (!t.isIfStatement(firstNode))
+                            throw new Error(
+                                '当 render 方法中含有两个节点时，第一个节点必须是 IfStatement'
+                            );
+                        if (!t.isReturnStatement(secondeNode))
+                            throw new Error(
+                                '当 render 方法中含有两个节点时，第二个节点必须是 ReturnStatement'
+                            );
+                        if (firstNode.alternate)
+                            throw new Error(
+                                '如果 render 方法第一个节点为 IfStatement，' +
+                                    '第二个节点为 ReturnStatement 则该 IfStatement 中不能有 else 分支'
+                            );
+
+                        firstNode.alternate = secondeNode.argument;
+                        path.node.body = [path.node.body[0]];
+                    }
                 }
             }
         });
