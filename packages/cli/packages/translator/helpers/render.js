@@ -5,6 +5,7 @@ const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const queue = require('../queue');
 const path = require('path');
+const functionAliasConig = require('./functionNameAliasConfig');
 const { sepForRegex } = require('../utils');
 
 /**
@@ -36,7 +37,9 @@ exports.exit = function(astPath, type, componentName, modules) {
                 var jsx = generate(expr.argument).code;
                 var jsxAst = babel.transform(jsx, {
                     babelrc: false,
-                    plugins: ['transform-react-jsx']
+                    plugins: [
+                        ['transform-react-jsx', {'pragma':  functionAliasConig.h.variableDeclarator }]
+                    ]
                 });
 
                 expr.argument = jsxAst.ast.program.body[0];
