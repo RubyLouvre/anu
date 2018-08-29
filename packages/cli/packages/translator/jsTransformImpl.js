@@ -230,7 +230,8 @@ module.exports = {
             }
         }
         if (
-            astPath.parentPath.type === 'JSXExpressionContainer' &&
+            (t.isJSXExpressionContainer(astPath.parentPath) ||
+                t.isConditionalExpression(astPath.parentPath)) &&
             callee.type == 'MemberExpression' &&
             callee.property.name === 'map' &&
             !args[1] &&
@@ -306,7 +307,7 @@ module.exports = {
         if (/^(?:on|catch)[A-Z]/.test(attrName)) {
             var n = attrName.charAt(0) == 'o' ? 2 : 5;
             var eventName = attrName.slice(n).toLowerCase();
-            if (eventName == 'click'){
+            if (eventName == 'click') {
                 eventName = 'tap';
             }
             var name = `data-${eventName}-uid`;

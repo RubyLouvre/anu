@@ -18,6 +18,10 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/stateless/index'
                 },
                 {
+                    title: '条件语句',
+                    url: '/pages/demo/syntax/if/index'
+                },
+                {
                     title: '一重循环',
                     url: '/pages/demo/syntax/loop/index'
                 },
