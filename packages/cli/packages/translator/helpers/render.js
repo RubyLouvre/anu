@@ -66,7 +66,7 @@ exports.exit = function(astPath, type, componentName, modules) {
                     .split(srcFragment)[1]
                     .replace(new RegExp(`[^${utils.sepForRegex}]+.js`), '');
                 set.forEach(function(el) {
-                    set.remove(el);
+                    set.delete(el);
                     var src = path.relative(
                         relativePath,
                         fragmentPath + el + '.wxml'

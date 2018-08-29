@@ -53,7 +53,7 @@ class P extends React.Component {
                 </div>
                 <div>
                     {this.state.array.map(el => {
-                        <Dog name={el.name} key={el.name} />;
+                        return <Dog name={el.name} key={el.name} />;
                     })}
                 </div>
                 <div>
