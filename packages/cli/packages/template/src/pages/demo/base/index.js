@@ -43,7 +43,14 @@ class P extends React.Component {
             text: textAry.join('\n')
         });
     }
-
+    componentWillMount(){
+        // eslint-disable-next-line
+        console.log('base componentWillMount');
+    }
+    componentDidMount(){
+        // eslint-disable-next-line
+        console.log('base componentDidMount');
+    }
     render() {
         return (
             <div class="container">

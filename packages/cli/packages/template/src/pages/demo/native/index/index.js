@@ -21,6 +21,14 @@ class P extends React.Component {
         backgroundColor: '#eeeeee',
         backgroundTextStyle: 'light'
     };
+    componentWillMount(){
+        // eslint-disable-next-line
+        console.log('native componentWillMount');
+    }
+    componentDidMount(){
+        // eslint-disable-next-line
+        console.log('native componentDidMount');
+    }
     render() {
         return (
             <div class="container">

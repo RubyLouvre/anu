@@ -43,105 +43,105 @@ function isReferenceType(val) {
 export function createPage(PageClass, path, testObject) {
     //添加一个全局代理的事件句柄
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-    //劫持页面组件的生命周期，与setState进行联动
-    //获取页面的组件实例
+  
     PageClass.instances = PageClass.instances || {};
-    var instance = render(
-        createElement(PageClass, {
-            path: path,
-            isPageComponent: true
-        }),
-        {
-            type: 'page',
-            props: {},
-            children: [],
-            root: true,
-            appendChild: function() {}
-        }
-    );
-    if (testObject){
-        testObject.instance = instance;
-    }
-    //劫持setState
-    var anuSetState = instance.setState;
-    var anuForceUpdate = instance.forceUpdate;
-    var updating = false,
-        canSetData = false;
-    instance.forceUpdate = instance.setState = function(a) {
-        var updateMethod = anuSetState;
-        var cbIndex = 1;
-        if (isFn(a) || a == null) {
-            updateMethod = anuForceUpdate;
-            cbIndex = 0;
-        }
-        var pageInst = this.$pageInst || this;
-        if (updating === false) {
-            //如果这是页面组件，则直接清空所有子组件
-            if (pageInst == this) {
-                pageInst.allTemplateData = []; //清空子组件
-            } else {
-                //如果是页面的子组件，通过template收集
-                this.updateWXData = true;
-            }
-            canSetData = true;
-            updating = true;
-        }
-        var inst = this,
-            cb = arguments[cbIndex],
-            args = Array.prototype.slice.call(arguments);
-        args[cbIndex] = function() {
-            cb && cb.call(inst);
-            if (canSetData) {
-                canSetData = false;
-                updating = false;
-                var data = {
-                    state: pageInst.state,
-                    props: pageInst.props,
-                    context: pageInst.context
+    var $wxPage = {
+            setData: noop
+        },
+        instance,
+        config = {
+            data: {},
+            dispatchEvent: eventSystem.dispatchEvent,
+            onLoad: function() {
+                $wxPage = this;
+                // eslint-disable-next-line
+                console.log("onLoad", path);
+              
+                instance = render(
+                    createElement(PageClass, {
+                        path: path,
+                        isPageComponent: true
+                    }),
+                    {
+                        type: 'page',
+                        props: {},
+                        children: [],
+                        root: true,
+                        appendChild: noop
+                    }
+                );
+                var anuSetState = instance.setState;
+                var anuForceUpdate = instance.forceUpdate;
+                var updating = false,
+                    canSetData = false;
+                //劫持页面组件的生命周期，与setState进行联动
+                instance.forceUpdate = instance.setState = function(a) {
+                    var updateMethod = anuSetState;
+                    var cbIndex = 1;
+                    if (isFn(a) || a == null) {
+                        updateMethod = anuForceUpdate;
+                        cbIndex = 0;
+                    }
+                    var pageInst = this.$pageInst || this;
+                    if (updating === false) {
+                        if (pageInst == this) {
+                            pageInst.allTemplateData = [];
+                        } else {
+                            this.updateWXData = true;
+                        }
+                        canSetData = true;
+                        updating = true;
+                    }
+                    var inst = this,
+                        cb = arguments[cbIndex],
+                        args = Array.prototype.slice.call(arguments);
+                    args[cbIndex] = function() {
+                        cb && cb.call(inst);
+                        if (canSetData) {
+                            canSetData = false;
+                            updating = false;
+                            var data = {
+                                state: pageInst.state,
+                                props: pageInst.props,
+                                context: pageInst.context
+                            };
+                            applyChildComponentData(
+                                data,
+                                pageInst.allTemplateData || []
+                            );
+                            $wxPage.setData(safeClone(data));
+                        }
+                    };
+                    updateMethod.apply(this, args);
                 };
-                applyChildComponentData(data, pageInst.allTemplateData || []);
-                $wxPage.setData(safeClone(data));
+                instance.forceUpdate();
+            },
+            onShow: function onShow() {
+                PageClass.instances[instance.instanceUid] = instance;
+                var fn = instance.componentDidShow;
+                if (isFn(fn)) {
+                    fn.call(instance);
+                }
+            },
+            onHide: function onShow() {
+                delete PageClass.instances[instance.instanceUid];
+                var fn = instance.componentDidHide;
+                if (isFn(fn)) {
+                    fn.call(instance);
+                }
+            },
+            onUnload: function onUnload() {
+                var fn = instance.componentWillUnmount;
+                if (isFn(fn)) {
+                    fn.call(instance);
+                }
+                instance = {};
             }
         };
-        updateMethod.apply(this, args);
-    };
-    var $wxPage = {
-        setData: noop
-    };
-    var config = {
-        data: {
-            state: instance.state,
-            props: instance.props,
-            context: instance.context
-        },
-        dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function() {
-            $wxPage = this;
-        },
-        onShow: function onShow() {
-            $wxPage = this;
-            PageClass.instances[instance.instanceUid] = instance;
-            var fn = instance.componentDidShow;
-            if (isFn(fn)) {
-                fn.call(instance);
-            }
-        },
-        onHide: function onShow() {
-            delete PageClass.instances[instance.instanceUid];
-            var fn = instance.componentDidHide;
-            if (isFn(fn)) {
-                fn.call(instance);
-            }
-        },
-        onUnload: function onUnload() {
-            var fn = instance.componentWillUnmount;
-            if (isFn(fn)) {
-                fn.call(instance);
-            }
-        }
-    };
-    //添加子组件的数据
-    applyChildComponentData(config.data, instance.allTemplateData || []);
+    if (testObject) {
+        config.onLoad();
+        testObject.instance = instance;
+    }
     return safeClone(config);
 }
 
