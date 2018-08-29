@@ -5,7 +5,7 @@ let helpers = require('../../packages/translator/helpers');
 function baseCode(code, state='', head='') {
   return `
     ${head}
-    import React from '@react'
+    import React from '../../../../dist/ReactWXTest'
     class Index extends React.Component {
       constructor(props) {
         super(props);

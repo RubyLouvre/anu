@@ -60,4 +60,211 @@ describe('loop', () => {
     </view>`)
     );
   });
+
+  test('支持逻辑表达式', () => {
+    transform(
+      `return (
+        <div>
+        {this.state.array.map(function(item) {
+          return (
+            <div>
+              {item.list.map(function(item2) {
+                return this.state.b1 && <span>{item2}</span>;
+              })}
+            </div>
+          );
+        })}
+      </div>
+      )`,
+      `array: [{ list: [1,2,3] }],
+      b1: true`
+    );
+    let template = q.wxml[q.wxml.length - 1].code;
+
+    expect(template).toMatch(
+      prettifyXml(
+        `<view>
+          <block wx:for="{{state.array}}" wx:for-item="item">
+            <view>
+              <block wx:for="{{item.list}}" wx:for-item="item2">
+                <block wx:if="{{state.b1}}">
+                  <text>{{item2}}</text>
+                </block>
+              </block>
+            </view>
+          </block>
+        </view>`
+      )
+    );
+  });
+
+  test('支持逻辑表达式2', () => {
+    transform(
+      `return (
+        <div>
+            {this.state.array.map(function (item) {
+              return (
+                <div>
+                  {item.list.map(function(item2) {
+                    return (
+                      this.state.b1 && (
+                        <div>
+                          {this.state.b2 && <div />}
+                          <div>
+                            <text />
+                            {this.state.b4 && <button />}
+                          </div>
+                          {this.state.b3 && <progress />}
+                        </div>
+                      )
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+      )`,
+      `array: [{ list: [1,2,3] }],
+      b1: true,
+      b2: true,
+      b3: true,
+      b4: true`
+    );
+    let template = q.wxml[q.wxml.length - 1].code;
+
+    expect(template).toMatch(
+      prettifyXml(
+        `<view>
+        <block wx:for="{{state.array}}" wx:for-item="item">
+          <view>
+            <block wx:for="{{item.list}}" wx:for-item="item2">
+              <block wx:if="{{state.b1}}">
+                <view>
+                  <block wx:if="{{state.b2}}">
+                    <view />
+                  </block>
+                  <view>
+                    <text />
+                    <block wx:if="{{state.b4}}">
+                      <button />
+                    </block>
+                  </view>
+                  <block wx:if="{{state.b3}}">
+                    <progress />
+                  </block>
+                </view>
+              </block>
+            </block>
+          </view>
+        </block>
+      </view>`
+      )
+    );
+  });
+
+//   test('支持逻辑表达式, 箭头函数', () => {
+//     transform(
+//       `return (
+//         <div>
+//             {this.state.array.map((item) => {
+//               return (
+//                 <div>
+//                   {item.list.map((item2) => {
+//                     return (
+//                       this.state.b1 && (
+//                         <div>
+//                           {this.state.b2 && <div />}
+//                           <div>
+//                             <text />
+//                             {this.state.b4 && <button />}
+//                           </div>
+//                           {this.state.b3 && <progress />}
+//                         </div>
+//                       )
+//                     );
+//                   })}
+//                 </div>
+//               );
+//             })}
+//           </div>
+//       )`,
+//       `array: [{ list: [1,2,3] }],
+//       b1: true,
+//       b2: true,
+//       b3: true,
+//       b4: true`
+//     );
+//     let template = q.wxml[q.wxml.length - 1].code;
+
+//     expect(template).toMatch(
+//       prettifyXml(
+//         `<view>
+//         <block wx:for="{{state.array}}" wx:for-item="item">
+//           <view>
+//             <block wx:for="{{item.list}}" wx:for-item="item2">
+//               <block wx:if="{{state.b1}}">
+//                 <view>
+//                   <block wx:if="{{state.b2}}">
+//                     <view />
+//                   </block>
+//                   <view>
+//                     <text />
+//                     <block wx:if="{{state.b4}}">
+//                       <button />
+//                     </block>
+//                   </view>
+//                   <block wx:if="{{state.b3}}">
+//                     <progress />
+//                   </block>
+//                 </view>
+//               </block>
+//             </block>
+//           </view>
+//         </block>
+//       </view>`
+//       )
+//     );
+//   });
+
+  test('支持条件表达式', () => {
+    transform(
+      `return (
+        <div>
+        {this.state.array.map(function(item) {
+          return (
+            <div>
+              {item.list.map(function(item2) {
+                return this.state.b1 ? <span>{item2}</span> : <span>text</span>;
+              })}
+            </div>
+          );
+        })}
+      </div>
+      )`,
+      `array: [{ list: [1,2,3] }],
+      b1: true`
+    );
+    let template = q.wxml[q.wxml.length - 1].code;
+
+    expect(template).toMatch(
+      prettifyXml(
+        `<view>
+        <block wx:for="{{state.array}}" wx:for-item="item">
+          <view>
+            <block wx:for="{{item.list}}" wx:for-item="item2">
+              <block>
+                <block wx:if="{{state.b1}}">
+                  <text>{{item2}}</text>
+                </block>
+                <block wx:else="true">
+                  <text>text</text>
+                </block>
+              </block>
+            </block>
+          </view>
+        </block>
+      </view>`
+      )
+    );
+  });
 });

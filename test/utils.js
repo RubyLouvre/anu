@@ -67,17 +67,7 @@ function getPropsStyle(props) {
 //   console.log(getPropsStyle(result.data.props))
 
 let template = transform(`return (
-    <div>
-    {this.state.arr.length === 0
-        ? null
-        : this.state.arr.map(function(e, i) {
-            return (
-              <div key={i} className="ratio-16-9 image-company-album">
-                loop1: {i}
-              </div>
-            );
-          })}
-    </div>
+    <div> {this.state.text || this.props.children} </div>
      )`);
 console.log(q.wxml[0].code);
 //   console.log('template', template)

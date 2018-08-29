@@ -201,8 +201,8 @@ describe('Template', () => {
     test('可以直接使用 this.state ', () => {
       let code = transform(
         `return (
-                    <div>{this.state.list[this.state.index]}</div>
-                  )`,
+                <div>{this.state.list[this.state.index]}</div>
+        )`,
         `list: ['a', 'b','c'], index: 0`
       );
 
