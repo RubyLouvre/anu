@@ -30,8 +30,8 @@ function logic(expr, modules) {
         expr.callee.property.name === 'map'
     ) {
         //处理列表指令
-        if (expr.arguments.type === 'ArrowFunctionExpression') {
-            return loop(expr.callee, expr.arguments, modules);
+        if (expr.arguments[0].type === 'ArrowFunctionExpression') {
+            return loop(expr.callee, expr.arguments[0], modules);
         } else if (
             expr.arguments[0] &&
             expr.arguments[0].type === 'FunctionExpression'
@@ -78,10 +78,10 @@ function loop(callee, fn, modules) {
         modules.indexName = fn.params[1].name;
         attrs.push(createAttribute('wx:for-index', fn.params[1].name));
     }
-    var body = fn.body.body.find(i => i.type === 'ReturnStatement');
+    var body = t.isBlockStatement(fn.body) ? fn.body.body.find(t.isReturnStatement) : fn.body;
     if (body) {
         //循环内部存在循环或条件
-        var child = logic(body.argument, modules);
+        var child = logic(t.isBlockStatement(fn.body) ? body.argument : body, modules);
         //如果数组的map迭代器的returnt第一个标签是组件，并且组件有key
         if (child.key) {
             attrs.push(
