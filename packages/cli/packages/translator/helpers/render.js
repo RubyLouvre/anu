@@ -5,7 +5,7 @@ const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const queue = require('../queue');
 const path = require('path');
-const functionAliasConig = require('./functionNameAliasConfig');
+const functionAliasConfig = require('./functionNameAliasConfig');
 const utils = require('../utils');
 
 /**
@@ -16,7 +16,7 @@ const utils = require('../utils');
  * @param {String} componentName 组件名
  */
 const deps = require('../deps');
-const srcFragment = path.sep + 'src' +  path.sep;
+const srcFragment = path.sep + 'src' + path.sep;
 exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
 
@@ -26,25 +26,29 @@ exports.exit = function(astPath, type, componentName, modules) {
 
     switch (true) {
         case t.isReturnStatement(expr):
-            
             var needWrap = expr.argument.type !== 'JSXElement';
             var jsx = generate(expr.argument).code;
             var jsxAst = babel.transform(jsx, {
                 babelrc: false,
                 plugins: [
-                    ['transform-react-jsx', {'pragma':  functionAliasConig.h.variableDeclarator }]
+                    [
+                        'transform-react-jsx',
+                        { pragma: functionAliasConfig.h.variableDeclarator }
+                    ]
                 ]
             });
 
             expr.argument = jsxAst.ast.program.body[0];
-
             jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
+
             var wxml = wxmlHelper(jsx, modules);
+
             if (needWrap) {
                 wxml = wxml.slice(7, -9); //去掉<block> </block>;
             } else {
                 wxml = wxml.slice(0, -1); //去掉最后的;
             }
+
             if (modules.componentType === 'Component') {
                 wxml = `<template name="${componentName}">${wxml}</template>`;
             }
@@ -56,15 +60,18 @@ exports.exit = function(astPath, type, componentName, modules) {
                     }.wxml" />\n${wxml}`;
                 }
             }
+
             var set = deps[componentName];
-              
+
             if (set) {
                 var fragmentPath = '/components/Fragments/';
-                //注意，这里只要目录名
-                var relativePath = path.sep + path
-                    .normalize(modules.sourcePath)
-                    .split(srcFragment)[1]
-                    .replace(new RegExp(`[^${utils.sepForRegex}]+.js`), '');
+                // 注意，这里只要目录名
+                var relativePath =
+                    path.sep +
+                    path
+                        .normalize(modules.sourcePath)
+                        .split(srcFragment)[1]
+                        .replace(new RegExp(`[^${utils.sepForRegex}]+.js`), '');
                 set.forEach(function(el) {
                     set.delete(el);
                     var src = path.relative(
@@ -74,16 +81,12 @@ exports.exit = function(astPath, type, componentName, modules) {
                     wxml = `<import src="${src}" />\n${wxml}`;
                 });
             }
-            
 
             queue.wxml.push({
                 type: 'wxml',
                 path: path
                     .normalize(modules.sourcePath)
-                    .replace(
-                        srcFragment,
-                        `${path.sep}dist${path.sep}`
-                    )
+                    .replace(srcFragment, `${path.sep}dist${path.sep}`)
                     .replace(/\.js$/, '.wxml'),
                 code: prettifyXml(wxml, { indent: 2 })
             });
@@ -100,6 +103,7 @@ exports.enter = function(astPath) {
             IfStatement: {
                 enter(path) {
                     const { test, consequent, alternate } = path.node;
+
                     path.replaceWith(
                         t.returnStatement(
                             t.conditionalExpression(
@@ -139,7 +143,7 @@ exports.enter = function(astPath) {
                             );
 
                         firstNode.alternate = secondeNode.argument;
-                        path.node.body = [path.node.body[0]];
+                        path.node.body = path.node.body.slice(0, 1);
                     }
                 }
             }
