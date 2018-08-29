@@ -234,12 +234,16 @@ class Parser {
 
     generateAssets() {
         const dir = 'assets';
+        const inputDir = path.join(inputPath, dir);
+        const distDir = path.join(outputPath, dir);
+        if (!fs.pathExistsSync(inputDir)) return;
+        fs.ensureDirSync(distDir);
         fs.copy(
-            path.join(inputPath, dir),
-            path.join(outputPath, dir),
+            inputDir,
+            distDir,
             (err)=>{
                 if (!err){
-                    print('build success:',  path.relative(cwd, path.join(outputPath, dir)) );
+                    print('build success:',  path.relative(cwd, distDir ) );
                 } else {
                     // eslint-disable-next-line
                     console.error(err);
