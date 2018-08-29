@@ -27,19 +27,19 @@ function logic(expr, modules) {
         return condition(expr.left, expr.right, null, modules);
     } else if (
         expr.type === 'CallExpression' &&
-    expr.callee.property.name === 'map'
+        expr.callee.property.name === 'map'
     ) {
-    //处理列表指令
+        //处理列表指令
         if (expr.arguments.type === 'ArrowFunctionExpression') {
             return loop(expr.callee, expr.arguments, modules);
         } else if (
             expr.arguments[0] &&
-      expr.arguments[0].type === 'FunctionExpression'
+            expr.arguments[0].type === 'FunctionExpression'
         ) {
             return loop(expr.callee, expr.arguments[0], modules);
         } else {
             throw generate(expr.callee.object).code +
-        '.map 后面的必须跟匿名函数或一个函数调用';
+                '.map 后面的必须跟匿名函数或一个函数调用';
         }
     } else {
         return wrapText(expr);
@@ -55,8 +55,8 @@ function condition(test, consequent, alternate, modules) {
     var ret = ifNode;
     // null就不用创建一个<block>元素了，&&表达式也不需要创建<block>元素
     if (alternate && alternate.type !== 'NullLiteral') {
-    //如果存在if分支，那么就再包一层，一共三个block,
-    // <block><block wx:if /><block wx:else /></block>
+        //如果存在if分支，那么就再包一层，一共三个block,
+        // <block><block wx:if /><block wx:else /></block>
         ret = createElement('block', [], [ifNode]);
 
         var elseNode = createElement(
@@ -80,21 +80,23 @@ function loop(callee, fn, modules) {
     }
     var body = fn.body.body.find(i => i.type === 'ReturnStatement');
     if (body) {
-    //循环内部存在循环或条件
+        //循环内部存在循环或条件
         var child = logic(body.argument, modules);
         //如果数组的map迭代器的returnt第一个标签是组件，并且组件有key
         if (child.key) {
             attrs.push(
                 createAttribute(
                     'wx:key',
-                    child.key.indexOf('.') > 0 ? child.key.split('.').pop() : '*this'
+                    child.key.indexOf('.') > 0
+                        ? child.key.split('.').pop()
+                        : '*this'
                 )
             );
         }
         var blockElement = createElement('block', attrs, [child]);
         return blockElement;
     } else {
-    //这里可能有if分支，需要优化
+        //这里可能有if分支，需要优化
     }
 }
 
