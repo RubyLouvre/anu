@@ -6,7 +6,7 @@ const babel = require('babel-core');
 const queue = require('../queue');
 const path = require('path');
 const functionAliasConig = require('./functionNameAliasConfig');
-const utils = require('./utils');
+const utils = require('../utils');
 
 /**
  * 将return后面的内容进行转换，再变成wxml
