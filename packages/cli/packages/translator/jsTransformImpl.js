@@ -308,6 +308,7 @@ module.exports = {
             var n = attrName.charAt(0) == 'o' ? 2 : 5;
             var eventName = attrName.slice(n).toLowerCase();
             if (eventName == 'click') {
+                astPath.node.name.name = n == 2 ? 'onTap': 'catchTap';
                 eventName = 'tap';
             }
             var name = `data-${eventName}-uid`;
