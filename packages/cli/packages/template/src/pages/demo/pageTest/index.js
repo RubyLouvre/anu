@@ -12,8 +12,8 @@ class P extends React.Component {
           logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/hotel2.png',
           showSpecialLogo: false,
           specialText: '',
-          url: '../../../pages/demo/baseContent/base/index'
-        },
+          url: '../../../pages/demo/base/index'
+        }, 
         {
           class: '',
           bizTitle: '内置组件',
@@ -28,7 +28,7 @@ class P extends React.Component {
           logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/train2.png',
           showSpecialLogo: false,
           specialText: '',
-          url: '../../../pages/demo/express/index'
+          url: '../../../pages/demo/syntax/index'
         },
         {
           class: '',
