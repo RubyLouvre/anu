@@ -32,6 +32,9 @@ import './pages/demo/syntax/loop3/index';
 import './pages/demo/syntax/if/index';
 import './pages/demo/syntax/children/index';
 
+import './pages/demo/pageTest/index';
+import './pages/demo/ticketSearch/index';
+
 import './app.less';
 
 class Demo extends React.Component {
