@@ -52,7 +52,7 @@ export function createPage(PageClass, path, testObject) {
         config = {
             data: {},
             dispatchEvent: eventSystem.dispatchEvent,
-            onLoad: function() {
+            onLoad: function(query) {
                 $wxPage = this;
                 // eslint-disable-next-line
                 console.log("onLoad", path);
@@ -60,6 +60,7 @@ export function createPage(PageClass, path, testObject) {
                 instance = render(
                     createElement(PageClass, {
                         path: path,
+                        query: query,
                         isPageComponent: true
                     }),
                     {

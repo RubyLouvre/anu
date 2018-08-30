@@ -1915,11 +1915,12 @@ function createPage(PageClass, path, testObject) {
         config = {
         data: {},
         dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function onLoad() {
+        onLoad: function onLoad(query) {
             $wxPage = this;
             console.log("onLoad", path);
             instance = render(createElement(PageClass, {
                 path: path,
+                query: query,
                 isPageComponent: true
             }), {
                 type: 'page',
