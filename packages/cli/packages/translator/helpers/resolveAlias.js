@@ -2,10 +2,15 @@ const path = require('path');
 const cwd = process.cwd();
 // eslint-disable-next-line
 module.exports = (astPath, modules, name) => {
+
     let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
     if (!aliasField) return;
 
     let importValue = astPath.node.source.value;
+
+    //防止与引入npm冲突
+    if (!aliasField[importValue.split('/')[0]]) return; 
+
     let { dir, base } = path.parse(importValue);
     let from = path.dirname(path.join(cwd, modules.current));
     let to = '';
