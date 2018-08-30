@@ -296,6 +296,7 @@
             height() {
                 return this.getNodeHeight(this.root);
             }
+
             //获取指定结点的度
             getNodeHeight(node) {
                 if (node === null) {//递归出口
@@ -361,14 +362,15 @@
                 var noOfNodesInSubTreeOfNode = Math.pow(2, height - 1) >> 1;
                 /** Sum of spaces of the subtrees of nodes + the parent node */
                 var noOfSpacesBetweenTwoNodes = noOfNodesInSubTreeOfNode * 2 + 1;
-
+                console.log("noOfSpacesBetweenTwoNodes", noOfSpacesBetweenTwoNodes)
                 return this.multiplyString("  ", noOfSpacesBetweenTwoNodes);
             }
             printNodes(queueOfNodes, noOfNodesAtCurrentHeight, height, out) {
                 var nodesAtHeight = []
-                nodesAtHeight.append = function(a){
-                     this.push(a)
-                     return this
+                console.log(queueOfNodes.concat(), height)
+                nodesAtHeight.append = function (a) {
+                    this.push(a)
+                    return this
                 }
                 var startSpace = this.getStartingSpace(height);
                 var spaceBetweenTwoNodes = this.getSpaceBetweenTwoNodes(height);
@@ -395,16 +397,16 @@
                     }
                 }
 
-               var s = nodesAtHeight.join("").replace(/\s+$/, "");
-               out.push(s)
+                var s = nodesAtHeight.join("").replace(/\s+$/, "");
+                out.push(s)
             }
             printBranches(queueOfNodes, noOfNodesAtCurrentHeight, height, out) {
                 if (height <= 1)
                     return;
                 var brachesAtHeight = [];
-                brachesAtHeight.append = function(a){
-                     this.push(a)
-                     return this
+                brachesAtHeight.append = function (a) {
+                    this.push(a)
+                    return this
                 }
                 var startSpace = this.getStartingSpace(height);
                 var leftRightSpace = this.getSpaceBetweenLeftRightBranch(height);
@@ -421,7 +423,7 @@
                             .append(" ")
                             .append(rightLeftSpace);
                     } else {
-                      //  brachesAtHeight.append(" ".repeat(node.data.length - 1))
+                        //  brachesAtHeight.append(" ".repeat(node.data.length - 1))
                         brachesAtHeight.append(node.left != null ? "/" : " ")
                             .append(leftRightSpace)
                             .append(node.right != null ? "\\" : " ")
@@ -450,7 +452,7 @@
 
                     for (var i = 0; i < noOfNodesAtCurrentHeight; i++) {
                         var currNode = queueOfNodes[0]
-                       // console.log(currNode)
+                        // console.log(currNode)
                         queueOfNodes.shift();
                         if (currNode != null) {
                             queueOfNodes.push(currNode.left);
@@ -465,35 +467,124 @@
                 console.log(out)
                 console.log(out.join("\n"))
             }
+            getLeftWhiteSpace(datas, el) {
 
-            toString() {
-                var node = this.root;
-                var out = []
-                this.preOrder(function (node) {
-                    var parent = node.parent
-                    if (parent) {
-                        var isRight = parent.right === node;
-                        out.push(parent.prefix + (isRight ? '└── ' : '├── ') + node.data);
-                        var indent = parent.prefix + (isRight ? '    ' : '│   ');
-                        node.prefix = indent
-                    } else {
-                        node.prefix = "   "
-                        out.push("└──" + node.data)
+
+
+                var sp = ""
+                for (var i = 0, n = datas.length; i < n; i++) {
+                    var elem = datas[i];
+                    sp += " ".repeat(elem.toString().length + 2)
+                    if (el === elem) {
+                        break
                     }
+                }
+                return sp;
+            }
+            getChild(el, ret, xxx) {
+
+                if (el.left && el.left.data < xxx) {
+                    ret.push(el.left)
+                    getChild(el.left, ret, xxx)
+                }
+
+                if (el.left && el.left.data < xxx) {
+                    ret.push(el.left)
+                    getChild(el.left, ret, xxx)
+                }
+
+                /*
+                      /              \
+                   __47__          __60__
+                  /      \        /      \
+                 10      51      55      200
+                   \    /  \       \       \
+                   30  50  52      56      504
+                
+                */
+                while (el) {
+
+                }
+            }
+            getLeftLine(datas, el, root) {
+                var sp = ""
+                for (var i = 0, n = datas.length; i < n; i++) {
+                    var elem = datas[i];
+                    if (elem == el) {
+                        ok = true
+                    } else if (ok) {
+                        if (elem != root) {
+                            sp += "_".repeat(elem.toString().length + 2)
+                        } else {
+                            break
+                        }
+                    }
+                }
+                return sp;
+            }
+            toString() {
+                var datas = []
+                this.inOrder(function (el) {
+                    datas.push(el.data)
                 })
-                return out.join("\n")
+                var out = []
+                var root = this.root;
+                if (root) {
+                    var left = root.left;
+                    if (left) {
+                 
+                        var sp =  getWhite(left, function(n){
+                            return n.data <= left.data
+                        })       
+                        var line = getLine(root,  function(n){
+                            return n.data > left.data && n.data < root.data
+                        })
+                        var sp2 =  getWhite(right, function(n){
+                            return n.data >= right.data
+                        })       
+                        var line2 = getLine(root,  function(n){
+                            return n.data > root.data && n.data < right.data
+                        })
+                        out.push(sp + line + "(" + root.data + ")"+ line2+ sp2)
+
+                    }
+                }
+
 
 
             };
         }
-
-
+        function getWhite(node, test) {
+            var obj = {
+                size: 0
+            }
+            collectCharLength(node, test, obj)
+            return " ".repeat(obj.size)
+        }
+        function collectCharLength(node, test, ret) {
+            if (test(node)) {
+                ret.size += node.data.toString().length + 2
+            }
+            var left = node.left
+            if (test(left)) {
+                ret.size += left.data.toString().length + 2
+            }
+            var right = node.right
+            if (test(right)) {
+                ret.size += right.data.toString().length + 2
+            }
+        }
 
 
         var tree = new SBT(); //10, 50, 40, 30, 20, 60, 55, 54, 53, 52, 51, 56
         [10, 50, 47, 30, 200, 60, 55, 504, 53, 52, 51, 56].forEach(function (el, i) {
             tree.insert(el)
         })
+        var ret = []
+        tree.inOrder(function (el) {
+            ret.push(el.data)
+        })
+        console.log(ret)
         //如果简化成一条链表，它可以是不断压入结点，到最左，然后再弹出来。
         /*  [10, 50, 40].forEach(function (el, i) {
               tree.insert(el)
