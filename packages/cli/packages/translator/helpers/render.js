@@ -97,54 +97,62 @@ exports.exit = function(astPath, type, componentName, modules) {
     }
 };
 
+function transformIfStatementToConditionalExpression(node) {
+    const { test, consequent, alternate } = node;
+    return t.conditionalExpression(
+        test,
+        transformConsequent(consequent),
+        transformAlternate(alternate)
+    );
+}
+
+function transformNonNullConsequentOrAlternate(node) {
+    if (t.isIfStatement(node))
+        return transformIfStatementToConditionalExpression(node);
+    if (t.isBlockStatement(node)) {
+        const item = node.body[0];
+        if (t.isReturnStatement(item)) return item.argument;
+        if (t.isIfStatement(item))
+            return transformIfStatementToConditionalExpression(item);
+        throw new Error('Invalid consequent or alternate node');
+    }
+    return t.nullLiteral();
+}
+
+function transformConsequent(node) {
+    if (t.isReturnStatement(node)) return node.argument;
+    return transformNonNullConsequentOrAlternate(node);
+}
+
+function transformAlternate(node) {
+    if (node == null) return t.returnStatement(t.nullLiteral());
+    if (t.isReturnStatement(node)) return node.argument;
+    return transformNonNullConsequentOrAlternate(node);
+}
+
 exports.enter = function(astPath) {
     if (astPath.node.key.name === 'render') {
         astPath.traverse({
             IfStatement: {
                 enter(path) {
-                    const { test, consequent, alternate } = path.node;
-
+                    const nextPath = path.getSibling(path.key + 1);
+                    if (t.isReturnStatement(nextPath)) {
+                        if (path.node.alternate == null) {
+                            path.node.alternate = nextPath.node;
+                            nextPath.remove();
+                        } else {
+                            throw new Error(
+                                '如果 render 方法中根节点同时存在 if 和 return 语句，则 if 语句不应有 else 分支'
+                            );
+                        }
+                    }
                     path.replaceWith(
                         t.returnStatement(
-                            t.conditionalExpression(
-                                test,
-                                consequent.body[0].argument ||
-                                    t.stringLiteral(''),
-                                alternate.body
-                                    ? alternate.body[0].argument
-                                    : t.stringLiteral('')
+                            transformIfStatementToConditionalExpression(
+                                path.node
                             )
                         )
                     );
-                }
-            },
-            BlockStatement: {
-                enter(path) {
-                    if (path.node.body.length > 2)
-                        throw new Error(
-                            'render 方法中至多拥有两个节点，类型限定为 IfStatement 或者 ReturnStatement'
-                        );
-
-                    const [firstNode, secondeNode] = path.node.body;
-
-                    if (path.node.body.length > 1) {
-                        if (!t.isIfStatement(firstNode))
-                            throw new Error(
-                                '当 render 方法中含有两个节点时，第一个节点必须是 IfStatement'
-                            );
-                        if (!t.isReturnStatement(secondeNode))
-                            throw new Error(
-                                '当 render 方法中含有两个节点时，第二个节点必须是 ReturnStatement'
-                            );
-                        if (firstNode.alternate)
-                            throw new Error(
-                                '如果 render 方法第一个节点为 IfStatement，' +
-                                    '第二个节点为 ReturnStatement 则该 IfStatement 中不能有 else 分支'
-                            );
-
-                        firstNode.alternate = secondeNode.argument;
-                        path.node.body = path.node.body.slice(0, 1);
-                    }
                 }
             }
         });

@@ -4,56 +4,81 @@ class P extends React.Component {
     constructor() {
         super();
         this.state = {
-            loop: true,
-            condition: true,
-            brands: ['BMW', 'Audi', 'Volkswagen', 'Lamborghini']
+            condition1: true,
+            condition2: true
         };
     }
 
-    toggleLoop() {
+    toggleCondition2() {
         this.setState({
-            loop: !this.state.loop
+            condition2: !this.state.condition2
         });
     }
 
-    toggleCondition() {
+    toggleCondition1() {
         this.setState({
-            condition: !this.state.condition
+            condition1: !this.state.condition1
         });
     }
 
     render() {
-        return (
-            <div>
-                <div>
-                    列表：
-                    {this.state.loop}
-                </div>
-                <button onTap={this.toggleLoop.bind(this)}>切换</button>
-                <div>
-                    条件：
-                    {this.state.condition}
-                </div>
-                <button onTap={this.toggleCondition.bind(this)}>切换</button>
-                <div>
-                    {this.state.loop ? (
-                        this.state.brands.map(function(brand, index) {
-                            if (this.state.condition) {
-                                return (
-                                    <div>
-                                        {index}. if: {brand}
-                                    </div>
-                                );
-                            } else {
-                                return <div>{index}. else</div>;
-                            }
-                        })
-                    ) : (
-                        <div>列表已关闭</div>
-                    )}
-                </div>
-            </div>
-        );
+        if (this.state.condition1) {
+            if (this.state.condition2) {
+                return (
+                    <div>
+                        <div>Condition1 active</div>
+                        <button onTap={this.toggleCondition1.bind(this)}>
+                            Inactive Condition1
+                        </button>
+                        <div>Condition2 active</div>
+                        <button onTap={this.toggleCondition2.bind(this)}>
+                            Inactive Condition2
+                        </button>
+                    </div>
+                );
+            } else {
+                return (
+                    <div>
+                        <div>Condition1 active</div>
+                        <button onTap={this.toggleCondition1.bind(this)}>
+                            Inactive Condition1
+                        </button>
+                        <div>Condition2 inactive</div>
+                        <button onTap={this.toggleCondition2.bind(this)}>
+                            Active Condition2
+                        </button>
+                    </div>
+                );
+            }
+        } else {
+            if (this.state.condition2) {
+                return (
+                    <div>
+                        <div>Condition1 inactive</div>
+                        <button onTap={this.toggleCondition1.bind(this)}>
+                            Active Condition1
+                        </button>
+                        <div>Condition2 active</div>
+                        <button onTap={this.toggleCondition2.bind(this)}>
+                            Inactive Condition2
+                        </button>
+                    </div>
+                );
+            } else {
+                return (
+                    <div>
+                        <div>Condition1 inactive</div>
+                        <button onTap={this.toggleCondition1.bind(this)}>
+                            Active Condition1
+                        </button>
+                        <div>Condition2 inactive</div>
+                        <button onTap={this.toggleCondition2.bind(this)}>
+                            Active Condition2
+                        </button>
+                    </div>
+                );
+            }
+        }
     }
 }
 
