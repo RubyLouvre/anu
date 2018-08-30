@@ -8,7 +8,7 @@ class P extends React.Component {
             pages: [
                 {
                     title: '基础内容',
-                    url: '/pages/demo/baseContent/base/index'
+                    url: '/pages/demo/base/index'
                 },
                 {
                     title: '内置组件',

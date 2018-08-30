@@ -130,7 +130,7 @@ function pxTransform(size) {
 export function initNativeApi(ReactWX) {
     ReactWX.wx = {};
     processApis(ReactWX);
-    ReactWX.request = request;
+    ReactWX.wx.request = request;
     if (typeof getCurrentPages == 'function') {
         ReactWX.getCurrentPages = getCurrentPages;
     }

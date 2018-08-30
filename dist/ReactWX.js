@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-29
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-30
  * IE9+
  */
 
@@ -2456,7 +2456,7 @@ function pxTransform(size) {
 function initNativeApi(ReactWX) {
     ReactWX.wx = {};
     processApis(ReactWX);
-    ReactWX.request = request;
+    ReactWX.wx.request = request;
     if (typeof getCurrentPages == 'function') {
         ReactWX.getCurrentPages = getCurrentPages;
     }
