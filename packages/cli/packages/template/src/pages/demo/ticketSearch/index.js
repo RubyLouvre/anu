@@ -20,7 +20,6 @@ class P extends React.Component {
     render() {
         return (
             <div className="page" style="{background-color: #feb64e}">
-                <lun />
                 <image className="sreach_bg" mode="scaleToFill" src="http://picbed.qunarzz.com/image/b96f82f01ef5850d50e93ea511f618fa.png"/>
                 <div style="{top: -15px}" className="search-container">
                     
