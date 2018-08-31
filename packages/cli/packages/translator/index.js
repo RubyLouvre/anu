@@ -176,6 +176,7 @@ class Parser {
     async generateBusinessJs(file) {
         let { name, ext } = path.parse(file);
         let dist = file.replace('src', 'dist');
+        
         if (isLib(name) || !isJs(ext)) return;
         let code =  jsTransform.transform(file);
         if (/\/(?:pages|app|components)/.test(file)) {
@@ -186,6 +187,15 @@ class Parser {
                 if (err) console.log(err);
                 print('build success:', path.relative(cwd, dist));
             });
+
+            //如果自己配置json, 先copy, 再根据config合并重新写入;
+            let srcJson = file.replace(/\.js$/, '.json');
+            let distJson = dist.replace(/\.js$/, '.json');
+            fs.ensureFileSync(distJson);
+            if (fs.existsSync(srcJson)){
+                fs.copyFileSync(srcJson, distJson);
+            }
+
         }
     }
     generateWxml(file) {
@@ -205,6 +215,7 @@ class Parser {
                         print('build success:', path.relative(cwd, dist));
                     });
                 }
+
             }
         });
     }
@@ -224,6 +235,8 @@ class Parser {
                 json = Object.assign( require(exitJsonFile), JSON.parse(data.code) );
                 json = JSON.stringify(json, null, 4);
             }
+            
+
            
             if (/pages|app|components/.test(dist)) {
                 fs.ensureFileSync(dist);
