@@ -241,10 +241,10 @@ module.exports = {
                 args[0].type === 'FunctionExpression'){
                 args[1] = t.identifier('this');
             }
-            if (args[0].params[1]){
-                modules.indexName = args[0].params[1].name;
+            if (!args[0].params[1]){
+                args[0].params[1] = t.identifier('i'+astPath.node.start);
             }
-          
+            modules.indexName = args[0].params[1].name;
         }
     },
 
