@@ -71,7 +71,7 @@ class P extends React.Component {
                     <div class="group">
                         {this.state.iconColor.map(function(item) {
                             return (
-                                <icon type="success" size="40" color={item} />
+                                <icon type="success" size="40" color={item} style={{color:item}}  />
                             );
                         })}
                     </div>
