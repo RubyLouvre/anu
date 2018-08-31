@@ -1,12 +1,13 @@
-const generate = require('babel-generator').default;
-const prettifyXml = require('prettify-xml');
-const t = require('babel-types');
-const wxmlHelper = require('./wxml');
-const babel = require('babel-core');
-const queue = require('../queue');
 const path = require('path');
-const functionAliasConfig = require('./functionNameAliasConfig');
+const t = require('babel-types');
+const babel = require('babel-core');
+const prettifyXml = require('prettify-xml');
+const generate = require('babel-generator').default;
+const deps = require('../deps');
+const queue = require('../queue');
 const utils = require('../utils');
+const wxmlHelper = require('./wxml');
+const functionAliasConfig = require('./functionNameAliasConfig');
 
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -15,7 +16,6 @@ const utils = require('../utils');
  * @param {String} type 有状态组件｜无状态组件
  * @param {String} componentName 组件名
  */
-const deps = require('../deps');
 const srcFragment = path.sep + 'src' + path.sep;
 exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
@@ -24,76 +24,71 @@ exports.exit = function(astPath, type, componentName, modules) {
 
     const expr = body[0];
 
-    switch (true) {
-        case t.isReturnStatement(expr):
-            var needWrap = expr.argument.type !== 'JSXElement';
-            var jsx = generate(expr.argument).code;
-            var jsxAst = babel.transform(jsx, {
-                babelrc: false,
-                plugins: [
-                    [
-                        'transform-react-jsx',
-                        { pragma: functionAliasConfig.h.variableDeclarator }
-                    ]
+    if (t.isReturnStatement(expr)) {
+        var needWrap = expr.argument.type !== 'JSXElement';
+        var jsx = generate(expr.argument).code;
+        var jsxAst = babel.transform(jsx, {
+            babelrc: false,
+            plugins: [
+                [
+                    'transform-react-jsx',
+                    { pragma: functionAliasConfig.h.variableDeclarator }
                 ]
-            });
+            ]
+        });
 
-            expr.argument = jsxAst.ast.program.body[0];
-            jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
+        expr.argument = jsxAst.ast.program.body[0];
+        jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
 
-            var wxml = wxmlHelper(jsx, modules);
+        var wxml = wxmlHelper(jsx, modules);
 
-            if (needWrap) {
-                wxml = wxml.slice(7, -9); //去掉<block> </block>;
-            } else {
-                wxml = wxml.slice(0, -1); //去掉最后的;
+        if (needWrap) {
+            wxml = wxml.slice(7, -9); //去掉<block> </block>;
+        } else {
+            wxml = wxml.slice(0, -1); //去掉最后的;
+        }
+
+        if (modules.componentType === 'Component') {
+            wxml = `<template name="${componentName}">${wxml}</template>`;
+        }
+
+        for (var i in modules.importComponents) {
+            if (modules.usedComponents[i]) {
+                wxml = `<import src="${
+                    modules.importComponents[i]
+                }.wxml" />\n${wxml}`;
             }
+        }
 
-            if (modules.componentType === 'Component') {
-                wxml = `<template name="${componentName}">${wxml}</template>`;
-            }
+        var set = deps[componentName];
 
-            for (var i in modules.importComponents) {
-                if (modules.usedComponents[i]) {
-                    wxml = `<import src="${
-                        modules.importComponents[i]
-                    }.wxml" />\n${wxml}`;
-                }
-            }
-
-            var set = deps[componentName];
-
-            if (set) {
-                var fragmentPath = '/components/Fragments/';
-                // 注意，这里只要目录名
-                var relativePath =
-                    path.sep +
-                    path
-                        .normalize(modules.sourcePath)
-                        .split(srcFragment)[1]
-                        .replace(new RegExp(`[^${utils.sepForRegex}]+.js`), '');
-                set.forEach(function(el) {
-                    set.delete(el);
-                    var src = path.relative(
-                        relativePath,
-                        fragmentPath + el + '.wxml'
-                    );
-                    wxml = `<import src="${src}" />\n${wxml}`;
-                });
-            }
-
-            queue.wxml.push({
-                type: 'wxml',
-                path: path
+        if (set) {
+            var fragmentPath = '/components/Fragments/';
+            // 注意，这里只要目录名
+            var relativePath =
+                path.sep +
+                path
                     .normalize(modules.sourcePath)
-                    .replace(srcFragment, `${path.sep}dist${path.sep}`)
-                    .replace(/\.js$/, '.wxml'),
-                code: prettifyXml(wxml, { indent: 2 })
+                    .split(srcFragment)[1]
+                    .replace(new RegExp(`[^${utils.sepForRegex}]+.js`), '');
+            set.forEach(function(el) {
+                set.delete(el);
+                var src = path.relative(
+                    relativePath,
+                    fragmentPath + el + '.wxml'
+                );
+                wxml = `<import src="${src}" />\n${wxml}`;
             });
-            break;
+        }
 
-        default:
-            break;
+        queue.wxml.push({
+            type: 'wxml',
+            path: path
+                .normalize(modules.sourcePath)
+                .replace(srcFragment, `${path.sep}dist${path.sep}`)
+                .replace(/\.js$/, '.wxml'),
+            code: prettifyXml(wxml, { indent: 2 })
+        });
     }
 };
 
@@ -136,6 +131,7 @@ exports.enter = function(astPath) {
             IfStatement: {
                 enter(path) {
                     const nextPath = path.getSibling(path.key + 1);
+
                     if (t.isReturnStatement(nextPath)) {
                         if (path.node.alternate == null) {
                             path.node.alternate = nextPath.node;
@@ -146,6 +142,7 @@ exports.enter = function(astPath) {
                             );
                         }
                     }
+
                     path.replaceWith(
                         t.returnStatement(
                             transformIfStatementToConditionalExpression(
