@@ -42,7 +42,7 @@ function createEvent(e, target) {
     event.toString = eventString;
     event.currentTarget = event.target = target;
     event.touches = e.touches;
-    event.timeStamp = e.timeStamp;
+    event.timeStamp = new Date - 0;
     return event;
 }
 function eventString(){
