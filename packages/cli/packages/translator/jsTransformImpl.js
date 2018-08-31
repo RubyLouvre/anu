@@ -1,6 +1,6 @@
 const t = require('babel-types');
 const generate = require('babel-generator').default;
-const nPath = require('path');
+const path = require('path');
 const helpers = require('./helpers');
 const queue = require('./queue');
 const utils = require('./utils');
@@ -86,14 +86,14 @@ module.exports = {
         if (modules.componentType === 'App') {
             if (/\/pages\//.test(source)) {
                 modules['appRoute'] = modules['appRoute'] || [];
-                modules['appRoute'].push(nPath.join(source));
+                modules['appRoute'].push( source.replace(/^\.\//, ''));
                 astPath.remove(); //移除分析依赖用的引用
             }
         }
 
 
 
-        if (/\.(less|scss)$/.test(nPath.extname(source))) {
+        if (/\.(less|scss)$/.test(path.extname(source))) {
             astPath.remove();
         }
 

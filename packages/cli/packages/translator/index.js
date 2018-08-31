@@ -13,7 +13,8 @@ const alias = require('rollup-plugin-alias');
 const chokidar = require('chokidar');
 // const uglifyJS = require('uglify-js').minify;
 // const cssmin = require('cssmin');
-
+const utils = require('./utils');
+const isComponentOrAppOrPage = new RegExp( utils.sepForRegex  + '(?:pages|app|components)'  );
 const less = require('less');
 const jsTransform = require('./jsTransform');
 const helpers = require('./helpers');
@@ -177,8 +178,8 @@ class Parser {
         let { name, ext } = path.parse(file);
         let dist = file.replace('src', 'dist');
         if (isLib(name) || !isJs(ext)) return;
-        let code =  jsTransform.transform(file);
-        if (/\/(?:pages|app|components)/.test(file)) {
+        let code = jsTransform.transform(file);
+        if (isComponentOrAppOrPage.test(file)) {
             fs.ensureFileSync(dist);
             if (!this.needBuild(dist, code)) return;
             fs.writeFile(dist, code, err => {
