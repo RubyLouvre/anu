@@ -192,8 +192,8 @@ class Parser {
             //如果自己配置json, 先copy, 再根据config合并重新写入;
             let srcJson = file.replace(/\.js$/, '.json');
             let distJson = dist.replace(/\.js$/, '.json');
-            fs.ensureFileSync(distJson);
             if (fs.existsSync(srcJson)){
+                fs.ensureFileSync(distJson);
                 fs.copyFileSync(srcJson, distJson);
             }
 
