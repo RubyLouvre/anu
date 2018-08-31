@@ -79,7 +79,6 @@ function loop(callee, fn, modules) {
 
     attrs.push(createAttribute('wx:for', parseExpr(callee.object)));
     attrs.push(createAttribute('wx:for-item', fn.params[0].name));
-
     if (fn.params[1]) {
         modules.indexName = fn.params[1].name;
         attrs.push(createAttribute('wx:for-index', fn.params[1].name));
