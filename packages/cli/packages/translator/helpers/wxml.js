@@ -68,25 +68,34 @@ var visitor = {
 				var attributes = [];
 				var template = utils.createElement('template', attributes, []);
 				template.key = key;
-				var	dataName = 'data';
-				
-               
+
 				//将组件变成template标签
 				if (!modules.indexName) {
 					attributes.push(
 						utils.createAttribute('is', is),
 						utils.createAttribute('data', `{{...${dataName}}}`),
 						utils.createAttribute('wx:for', `{{${array}}}`),
-						utils.createAttribute('wx:for-item', dataName),
+						utils.createAttribute('wx:for-item', 'data'),
 						utils.createAttribute('wx:for-index', 'index'),
 						utils.createAttribute('wx:key', '*this')
 					);
 				} else {
-					attributes.push(
-						utils.createAttribute('is', is),
-						utils.createAttribute('wx:if', `{{${array}[${modules.indexName}]}}`),
-						utils.createAttribute('data', `{{...${array}[${modules.indexName}]}}`)
-					);
+					if (modules.insideTheLoopIsComponent) {
+						attributes.push(
+							utils.createAttribute('is', is),
+							utils.createAttribute('wx:for', `{{${array}}}`),
+							utils.createAttribute('wx:for-item', modules.dataName),
+							utils.createAttribute('wx:for-index', modules.indexName),
+							utils.createAttribute('wx:key', (key.split(".") || ['','*this'])[1])
+						);
+						modules.replaceComponent = template;
+					} else {
+						attributes.push(
+							utils.createAttribute('is', is),
+							utils.createAttribute('wx:if', `{{${array}[${modules.indexName}]}}`),
+							utils.createAttribute('data', `{{...${array}[${modules.indexName}]}}`)
+						);
+					}
 				}
 
 				astPath.parentPath.replaceWith(template);
@@ -100,21 +109,17 @@ var visitor = {
 			let callee = node.callee;
 			//移除super()语句
 			if (callee.type == 'MemberExpression' && callee.property.name === 'map') {
-                let modules = utils.getAnu(state);
-              
+				let modules = utils.getAnu(state);
 				modules.indexName = args[0].params[1].name;
-                modules.dataName = args[0].params[0].name;
-                console.log("进入循环",modules.indexName)
+				modules.dataName = args[0].params[0].name;
 			}
-        },
-        exit(astPath, state){
-            let modules = utils.getAnu(state);
-            if(modules.indexName){
-                console.log("离开循环", modules.indexName)
-                modules.indexName = null;
-              
-            }
-        }
+		},
+		exit(astPath, state) {
+			let modules = utils.getAnu(state);
+			if (modules.indexName) {
+				modules.indexName = null;
+			}
+		},
 	},
 	JSXAttribute(astPath) {
 		chineseHack.collect(astPath);
@@ -141,7 +146,6 @@ var visitor = {
 	JSXExpressionContainer: {
 		enter() {},
 		exit(astPath, state) {
-			
 			var expr = astPath.node.expression;
 			if (t.isJSXAttribute(astPath.parent)) {
 				attrValueHelper(astPath);
@@ -155,10 +159,15 @@ var visitor = {
 				astPath.replaceWith(template);
 				//  console.warn("小程序暂时不支持{this.props.children}");
 			} else {
-                var modules = utils.getAnu(state);
+				var modules = utils.getAnu(state);
 				//返回block元素或template元素
 				var block = logicHelper(expr, modules);
 				astPath.replaceWith(block);
+				if (modules.replaceComponent) {
+					astPath.replaceWith(modules.replaceComponent);
+					modules.replaceComponent = false;
+					return;
+				}
 			}
 		},
 	},
