@@ -39,7 +39,7 @@ module.exports = (astPath, modules, name) => {
     }
 
     relativePath = path.relative(from, to);
-    let val = path.join(relativePath, target);
+    let val = path.join(relativePath, target).replace(/\\/g,'/');
     astPath.node.source.value = val;
 
     //重点，保持所有引入的组件名及它们的路径，用于<import />
