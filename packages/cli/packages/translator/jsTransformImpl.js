@@ -169,6 +169,7 @@ module.exports = {
 
                 queue.pageConfig.push({
                     type: 'json',
+                    sourcePath: modules.sourcePath,
                     path: modules.sourcePath
                         .replace(
                             new RegExp(
