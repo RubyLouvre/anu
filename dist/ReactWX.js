@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-29
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-30
  * IE9+
  */
 
@@ -1908,74 +1908,70 @@ function isReferenceType(val) {
 function createPage(PageClass, path, testObject) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     PageClass.instances = PageClass.instances || {};
-    var instance = render(createElement(PageClass, {
-        path: path,
-        isPageComponent: true
-    }), {
-        type: 'page',
-        props: {},
-        children: [],
-        root: true,
-        appendChild: function appendChild() {}
-    });
-    if (testObject) {
-        testObject.instance = instance;
-    }
-    var anuSetState = instance.setState;
-    var anuForceUpdate = instance.forceUpdate;
-    var updating = false,
-        canSetData = false;
-    instance.forceUpdate = instance.setState = function (a) {
-        var updateMethod = anuSetState;
-        var cbIndex = 1;
-        if (isFn(a) || a == null) {
-            updateMethod = anuForceUpdate;
-            cbIndex = 0;
-        }
-        var pageInst = this.$pageInst || this;
-        if (updating === false) {
-            if (pageInst == this) {
-                pageInst.allTemplateData = [];
-            } else {
-                this.updateWXData = true;
-            }
-            canSetData = true;
-            updating = true;
-        }
-        var inst = this,
-            cb = arguments[cbIndex],
-            args = Array.prototype.slice.call(arguments);
-        args[cbIndex] = function () {
-            cb && cb.call(inst);
-            if (canSetData) {
-                canSetData = false;
-                updating = false;
-                var data = {
-                    state: pageInst.state,
-                    props: pageInst.props,
-                    context: pageInst.context
-                };
-                applyChildComponentData(data, pageInst.allTemplateData || []);
-                $wxPage.setData(safeClone(data));
-            }
-        };
-        updateMethod.apply(this, args);
-    };
     var $wxPage = {
         setData: noop
-    };
-    var config = {
-        data: {
-            state: instance.state,
-            props: instance.props,
-            context: instance.context
-        },
+    },
+        instance,
+        config = {
+        data: {},
         dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function onLoad() {
+        onLoad: function onLoad(query) {
             $wxPage = this;
+            console.log("onLoad", path);
+            instance = render(createElement(PageClass, {
+                path: path,
+                query: query,
+                isPageComponent: true
+            }), {
+                type: 'page',
+                props: {},
+                children: [],
+                root: true,
+                appendChild: noop
+            });
+            var anuSetState = instance.setState;
+            var anuForceUpdate = instance.forceUpdate;
+            var updating = false,
+                canSetData = false;
+            instance.forceUpdate = instance.setState = function (a) {
+                var updateMethod = anuSetState;
+                var cbIndex = 1;
+                if (isFn(a) || a == null) {
+                    updateMethod = anuForceUpdate;
+                    cbIndex = 0;
+                }
+                var pageInst = this.$pageInst || this;
+                if (updating === false) {
+                    if (pageInst == this) {
+                        pageInst.allTemplateData = [];
+                    } else {
+                        this.updateWXData = true;
+                    }
+                    canSetData = true;
+                    updating = true;
+                }
+                var inst = this,
+                    cb = arguments[cbIndex],
+                    args = Array.prototype.slice.call(arguments);
+                args[cbIndex] = function () {
+                    cb && cb.call(inst);
+                    if (canSetData) {
+                        canSetData = false;
+                        updating = false;
+                        var data = {
+                            state: pageInst.state,
+                            props: pageInst.props,
+                            context: pageInst.context
+                        };
+                        applyChildComponentData(data, pageInst.allTemplateData || []);
+                        $wxPage.setData(safeClone(data));
+                    }
+                };
+                updateMethod.apply(this, args);
+            };
+            instance.forceUpdate();
         },
         onShow: function onShow() {
-            $wxPage = this;
             PageClass.instances[instance.instanceUid] = instance;
             var fn = instance.componentDidShow;
             if (isFn(fn)) {
@@ -1994,9 +1990,13 @@ function createPage(PageClass, path, testObject) {
             if (isFn(fn)) {
                 fn.call(instance);
             }
+            instance = {};
         }
     };
-    applyChildComponentData(config.data, instance.allTemplateData || []);
+    if (testObject) {
+        config.onLoad();
+        testObject.instance = instance;
+    }
     return safeClone(config);
 }
 function applyChildComponentData(data, list) {
@@ -2457,7 +2457,7 @@ function pxTransform(size) {
 function initNativeApi(ReactWX) {
     ReactWX.wx = {};
     processApis(ReactWX);
-    ReactWX.request = request;
+    ReactWX.wx.request = request;
     if (typeof getCurrentPages == 'function') {
         ReactWX.getCurrentPages = getCurrentPages;
     }

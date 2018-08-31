@@ -5,8 +5,8 @@ const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const queue = require('../queue');
 const path = require('path');
-const functionAliasConig = require('./functionNameAliasConfig');
-const { sepForRegex } = require('../utils');
+const functionAliasConfig = require('./functionNameAliasConfig');
+const utils = require('../utils');
 
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -16,15 +16,9 @@ const { sepForRegex } = require('../utils');
  * @param {String} componentName 组件名
  */
 const deps = require('../deps');
-
+const srcFragment = path.sep + 'src' + path.sep;
 exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
-
-    if (body.length > 1) {
-        throw new Error(
-            'render 函数中只能有一个 return 语句或者一个 if/else 分支'
-        );
-    }
 
     if (!body.length) return;
 
@@ -32,62 +26,54 @@ exports.exit = function(astPath, type, componentName, modules) {
 
     switch (true) {
         case t.isReturnStatement(expr):
-            {
-                var needWrap = expr.argument.type !== 'JSXElement';
-                var jsx = generate(expr.argument).code;
-                var jsxAst = babel.transform(jsx, {
-                    babelrc: false,
-                    plugins: [
-                        ['transform-react-jsx', {'pragma':  functionAliasConig.h.variableDeclarator }]
+            var needWrap = expr.argument.type !== 'JSXElement';
+            var jsx = generate(expr.argument).code;
+            var jsxAst = babel.transform(jsx, {
+                babelrc: false,
+                plugins: [
+                    [
+                        'transform-react-jsx',
+                        { pragma: functionAliasConfig.h.variableDeclarator }
                     ]
-                });
+                ]
+            });
 
-                expr.argument = jsxAst.ast.program.body[0];
+            expr.argument = jsxAst.ast.program.body[0];
+            jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
 
-                jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
-                var wxml = wxmlHelper(jsx, modules);
-                if (needWrap) {
-                    wxml = wxml.slice(7, -9); //去掉<block> </block>;
-                } else {
-                    wxml = wxml.slice(0, -1); //去掉最后的;
-                }
-                if (modules.componentType === 'Component') {
-                    wxml = `<template name="${componentName}">${wxml}</template>`;
-                }
+            var wxml = wxmlHelper(jsx, modules);
 
-                for (var i in modules.importComponents) {
-                    if (modules.usedComponents[i]) {
-                        wxml = `<import src="${
-                            modules.importComponents[i]
-                        }.wxml" />\n${wxml}`;
-                    }
-                }
-                var set = deps[componentName];
-                if (set) {
-                    var fragmentPath = '/components/Fragments/';
-                    //注意，这里只要目录名
-                    var relativePath = path
-                        .normalize(modules.sourcePath)
-                        .split('src')[1]
-                        .replace(new RegExp(`[^${sepForRegex}]+.js`), '');
-                    set.forEach(function(el) {
-                        var src = path.relative(
-                            relativePath,
-                            fragmentPath + el + '.wxml'
-                        );
-                        wxml = `<import src="${src}" />\n${wxml}`;
-                    });
+            if (needWrap) {
+                wxml = wxml.slice(7, -9); //去掉<block> </block>;
+            } else {
+                wxml = wxml.slice(0, -1); //去掉最后的;
+            }
+
+            if (modules.componentType === 'Component') {
+                wxml = `<template name="${componentName}">${wxml}</template>`;
+            }
+
+            for (var i in modules.importComponents) {
+                if (modules.usedComponents[i]) {
+                    wxml = `<import src="${
+                        modules.importComponents[i]
+                    }.wxml" />\n${wxml}`;
                 }
             }
-            set = deps[componentName];
+
+            var set = deps[componentName];
+
             if (set) {
-                fragmentPath = '/components/Fragments/';
-                //注意，这里只要目录名
-                relativePath = path
-                    .normalize(modules.sourcePath)
-                    .split('src')[1]
-                    .replace(new RegExp(`[^${sepForRegex}]+.js`), '');
+                var fragmentPath = '/components/Fragments/';
+                // 注意，这里只要目录名
+                var relativePath =
+                    path.sep +
+                    path
+                        .normalize(modules.sourcePath)
+                        .split(srcFragment)[1]
+                        .replace(new RegExp(`[^${utils.sepForRegex}]+.js`), '');
                 set.forEach(function(el) {
+                    set.delete(el);
                     var src = path.relative(
                         relativePath,
                         fragmentPath + el + '.wxml'
@@ -100,10 +86,7 @@ exports.exit = function(astPath, type, componentName, modules) {
                 type: 'wxml',
                 path: path
                     .normalize(modules.sourcePath)
-                    .replace(
-                        new RegExp(`${sepForRegex}src${sepForRegex}`),
-                        `${sepForRegex}dist${sepForRegex}`
-                    )
+                    .replace(srcFragment, `${path.sep}dist${path.sep}`)
                     .replace(/\.js$/, '.wxml'),
                 code: prettifyXml(wxml, { indent: 2 })
             });
@@ -114,20 +97,59 @@ exports.exit = function(astPath, type, componentName, modules) {
     }
 };
 
+function transformIfStatementToConditionalExpression(node) {
+    const { test, consequent, alternate } = node;
+    return t.conditionalExpression(
+        test,
+        transformConsequent(consequent),
+        transformAlternate(alternate)
+    );
+}
+
+function transformNonNullConsequentOrAlternate(node) {
+    if (t.isIfStatement(node))
+        return transformIfStatementToConditionalExpression(node);
+    if (t.isBlockStatement(node)) {
+        const item = node.body[0];
+        if (t.isReturnStatement(item)) return item.argument;
+        if (t.isIfStatement(item))
+            return transformIfStatementToConditionalExpression(item);
+        throw new Error('Invalid consequent or alternate node');
+    }
+    return t.nullLiteral();
+}
+
+function transformConsequent(node) {
+    if (t.isReturnStatement(node)) return node.argument;
+    return transformNonNullConsequentOrAlternate(node);
+}
+
+function transformAlternate(node) {
+    if (node == null) return t.returnStatement(t.nullLiteral());
+    if (t.isReturnStatement(node)) return node.argument;
+    return transformNonNullConsequentOrAlternate(node);
+}
+
 exports.enter = function(astPath) {
     if (astPath.node.key.name === 'render') {
         astPath.traverse({
             IfStatement: {
                 enter(path) {
-                    const { test, consequent, alternate } = path.node;
+                    const nextPath = path.getSibling(path.key + 1);
+                    if (t.isReturnStatement(nextPath)) {
+                        if (path.node.alternate == null) {
+                            path.node.alternate = nextPath.node;
+                            nextPath.remove();
+                        } else {
+                            throw new Error(
+                                '如果 render 方法中根节点同时存在 if 和 return 语句，则 if 语句不应有 else 分支'
+                            );
+                        }
+                    }
                     path.replaceWith(
                         t.returnStatement(
-                            t.conditionalExpression(
-                                test,
-                                consequent.body[0].argument ||
-                                    t.stringLiteral(''),
-                                alternate.body[0].argument ||
-                                    t.stringLiteral('')
+                            transformIfStatementToConditionalExpression(
+                                path.node
                             )
                         )
                     );

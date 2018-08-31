@@ -2,7 +2,7 @@ import React from '@react';
 import './pages/index/index';
 
 
-import './pages/demo/baseContent/base/index';
+import './pages/demo/base/index';
 
 import './pages/demo/native/index/index';
 import './pages/demo/native/button/index';
@@ -31,6 +31,8 @@ import './pages/demo/syntax/inlineStyle/index';
 import './pages/demo/syntax/loop3/index';
 import './pages/demo/syntax/if/index';
 import './pages/demo/syntax/children/index';
+
+import './pages/demo/ticketSearch/index';
 
 import './app.less';
 

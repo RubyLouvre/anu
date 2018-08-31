@@ -48,6 +48,14 @@ class Express extends React.Component {
         'backgroundColor': '#eeeeee',
         'backgroundTextStyle': 'light'
     }
+    componentWillMount(){
+        // eslint-disable-next-line
+        console.log('syntax componentWillMount');
+    }
+    componentDidMount(){
+        // eslint-disable-next-line
+        console.log('syntax componentDidMount');
+    }
     render() {
         return (
             <div class='container'>

@@ -31,10 +31,14 @@ module.exports = function(astPath) {
             }
             replaceWithExpr(astPath, attrValue);
             break;
-        case 'BinaryExpression': // 1+ 2
+        case 'BinaryExpression':
             astPath.traverse({
                 ThisExpression(nodePath) {
-                    nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
+                    if (t.isMemberExpression(nodePath.parentPath)) {
+                        nodePath.parentPath.replaceWith(
+                            t.identifier(nodePath.parent.property.name)
+                        );
+                    }
                 }
             });
             replaceWithExpr(astPath, generate(astPath.node.expression).code);
@@ -82,21 +86,24 @@ module.exports = function(astPath) {
             }
             break;
         case 'ConditionalExpression':
+            astPath.traverse({
+                ThisExpression(nodePath) {
+                    if (t.isMemberExpression(nodePath.parentPath)) {
+                        nodePath.parentPath.replaceWith(
+                            t.identifier(nodePath.parent.property.name)
+                        );
+                    }
+                }
+            });
             replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
             break;
         default:
-            // console.log('===0000=', astPath.node.expression.type);
             break;
     }
 };
-// var rhyphen = /([a-z\d])([A-Z]+)/g;
-// function hyphen(target) {
-//     //转换为连字符风格
-//     return target.replace(rhyphen, '$1-$2').toLowerCase();
-// }
 
 function throwEventValue(attrName, attrValue) {
-    throw `${attrName}的值必须是一个函数名，如this.xxx或this.xxx.bind(this),
+    throw `${attrName}的值必须是一个函数名，如 this.xxx 或 this.xxx.bind(this),
     但现在的值是${attrValue}`;
 }
 
