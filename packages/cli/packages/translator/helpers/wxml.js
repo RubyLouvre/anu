@@ -73,7 +73,7 @@ var visitor = {
 				if (!modules.indexName) {
 					attributes.push(
 						utils.createAttribute('is', is),
-						utils.createAttribute('data', `{{...${dataName}}}`),
+						utils.createAttribute('data', `{{...data}}`),
 						utils.createAttribute('wx:for', `{{${array}}}`),
 						utils.createAttribute('wx:for-item', 'data'),
 						utils.createAttribute('wx:for-index', 'index'),
@@ -84,7 +84,8 @@ var visitor = {
 						attributes.push(
 							utils.createAttribute('is', is),
 							utils.createAttribute('wx:for', `{{${array}}}`),
-							utils.createAttribute('wx:for-item', modules.dataName),
+                            utils.createAttribute('wx:for-item', modules.dataName),
+                            utils.createAttribute('data', `{{...${modules.dataName}}}`),
 							utils.createAttribute('wx:for-index', modules.indexName),
 							utils.createAttribute('wx:key', (key.split(".") || ['','*this'])[1])
 						);
@@ -144,7 +145,6 @@ var visitor = {
 	},
 
 	JSXExpressionContainer: {
-		enter() {},
 		exit(astPath, state) {
 			var expr = astPath.node.expression;
 			if (t.isJSXAttribute(astPath.parent)) {
