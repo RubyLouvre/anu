@@ -51,7 +51,7 @@ const getAlias = () => {
     for (let key in aliasField) {
         aliasConfig[key] = path.resolve(cwd, aliasField[key]);
     }
-    return aliasConfig || {};
+    return aliasConfig;
 };
 
 const print = (prefix, msg) => {
@@ -94,7 +94,12 @@ class Parser {
                         'transform-object-rest-spread'
                     ]
                 })
-            ]
+            ],
+            onwarn: (warning)=>{
+                if (warning.code === 'UNRESOLVED_IMPORT'){
+                    return;
+                }
+            }
         };
     }
     async parse() {
