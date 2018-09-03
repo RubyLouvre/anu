@@ -1,6 +1,6 @@
 const t = require('babel-types');
 const generate = require('babel-generator').default;
-const nPath = require('path');
+const path = require('path');
 const helpers = require('./helpers');
 const queue = require('./queue');
 const utils = require('./utils');
@@ -86,14 +86,14 @@ module.exports = {
         if (modules.componentType === 'App') {
             if (/\/pages\//.test(source)) {
                 modules['appRoute'] = modules['appRoute'] || [];
-                modules['appRoute'].push(nPath.join(source));
+                modules['appRoute'].push( source.replace(/^\.\//, ''));
                 astPath.remove(); //移除分析依赖用的引用
             }
         }
 
 
 
-        if (/\.(less|scss)$/.test(nPath.extname(source))) {
+        if (/\.(less|scss)$/.test(path.extname(source))) {
             astPath.remove();
         }
 
@@ -169,12 +169,11 @@ module.exports = {
 
                 queue.pageConfig.push({
                     type: 'json',
+                    sourcePath: modules.sourcePath,
                     path: modules.sourcePath
                         .replace(
-                            new RegExp(
-                                `${utils.sepForRegex}src${utils.sepForRegex}`
-                            ),
-                            `${utils.sepForRegex}dist${utils.sepForRegex}`
+                            /\/src\//,
+                            '/dist/'
                         )
                         .replace(/\.js$/, '.json'),
                     code: jsonStr
@@ -233,11 +232,17 @@ module.exports = {
             (t.isJSXExpressionContainer(astPath.parentPath) ||
                 t.isConditionalExpression(astPath.parentPath)) &&
             callee.type == 'MemberExpression' &&
-            callee.property.name === 'map' &&
-            !args[1] &&
-            args[0].type === 'FunctionExpression'
+            callee.property.name === 'map' 
+           
         ) {
-            args[1] = t.identifier('this');
+            if ( !args[1] &&
+                args[0].type === 'FunctionExpression'){
+                args[1] = t.identifier('this');
+            }
+            if (!args[0].params[1]){
+                args[0].params[1] = t.identifier('i'+astPath.node.start);
+            }
+            modules.indexName = args[0].params[1].name;
         }
     },
 
@@ -351,7 +356,7 @@ module.exports = {
         ) {
             var expr = attrValue.expression;
             var styleType = expr.type;
-            var styleRandName = 'style' + utils.createUUID();
+            var styleRandName = `"style${(astPath.node.start+astPath.node.end)}"` +(modules.indexName ? ' +'+ modules.indexName:'');
             if (styleType === 'Identifier') {
                 // 处理形如 <div style={formItemStyle}></div> 的style结构
                 var styleName = expr.name;
@@ -360,7 +365,7 @@ module.exports = {
                         t.JSXIdentifier('style'),
                         t.jSXExpressionContainer(
                             t.identifier(
-                                `React.collectStyle(${styleName}, this.props, '${styleRandName}')`
+                                `React.collectStyle(${styleName}, this.props, ${styleRandName})`
                             )
                         )
                     )
@@ -374,7 +379,7 @@ module.exports = {
                         t.JSXIdentifier('style'),
                         t.jSXExpressionContainer(
                             t.identifier(
-                                `React.collectStyle(${styleValue}, this.props, '${styleRandName}')`
+                                `React.collectStyle(${styleValue}, this.props, ${styleRandName})`
                             )
                         )
                     )

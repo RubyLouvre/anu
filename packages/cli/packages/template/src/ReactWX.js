@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-30
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-31
  * IE9+
  */
 
@@ -1867,7 +1867,7 @@ function createEvent(e, target) {
     event.toString = eventString;
     event.currentTarget = event.target = target;
     event.touches = e.touches;
-    event.timeStamp = e.timeStamp;
+    event.timeStamp = new Date() - 0;
     return event;
 }
 function eventString() {
@@ -1915,11 +1915,12 @@ function createPage(PageClass, path, testObject) {
         config = {
         data: {},
         dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function onLoad() {
+        onLoad: function onLoad(query) {
             $wxPage = this;
             console.log("onLoad", path);
             instance = render(createElement(PageClass, {
                 path: path,
+                query: query,
                 isPageComponent: true
             }), {
                 type: 'page',
