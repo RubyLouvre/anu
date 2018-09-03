@@ -79,7 +79,6 @@ class P extends React.Component {
 
     changeType(mode) {
         // eslint-disable-next-line
-        console.log(mode);
         this.setState({
             mode
         });
