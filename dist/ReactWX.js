@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-08-31
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-03
  * IE9+
  */
 
@@ -1857,6 +1857,7 @@ function createEvent(e, target) {
     var event = {};
     if (e.detail) {
         event.detail = e.detail;
+        Object.assign(event, e.detail);
         Object.assign(target, e.detail);
     }
     event.stopPropagation = function () {
