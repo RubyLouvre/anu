@@ -64,8 +64,8 @@ module.exports = function(astPath) {
                     // style={{}} 类型解析
                     let name = attrValue;
                     let styleID = name.match(/style\d+/)[0];
-                    if (name.indexOf('+') !== -1){
-                        var indexName = name.match(/\+\s*(\w+)/)[1];
+                    if (name.lastIndexOf('+') !== -1){
+                        var indexName = name.match(/\+\s*(i\d+)/)[1];
                         replaceWithExpr(astPath, `props['${styleID}' + ${indexName}] `  );
                     } else {
                         replaceWithExpr(astPath, `props.${styleID}`);
