@@ -1,5 +1,6 @@
 const path = require('path');
-const fsExtra = require('fs-extra');
+const fs = require('fs-extra');
+const cwd = process.cwd();
 
 const isNpm = function(astPath){
     const toString = Object.prototype.toString;
@@ -26,63 +27,60 @@ const isAlias = name => {
     return isAliasFlag;
 };
 
-const copyNodeModuleToBuildNpm = function(source) {
-    let nodeModulesSourcesPath = path.normalize(
-        path.join(process.cwd(), 'node_modules', source)
-    );
-    let nodeModelesBuildSourcesPath = path.normalize(
-        path.join(process.cwd(), `/dist/npm/${source}`)
-    );
-    let pkg = path.normalize(
-        path.join(nodeModulesSourcesPath, 'package.json')
-    );
-    let mainFild = require(pkg).main;
 
-    //拷贝package.json
-    let packageDest = path.normalize(
-        path.join(nodeModelesBuildSourcesPath, 'package.json')
-    );
-    fsExtra.ensureFileSync(packageDest);
-    fsExtra.copySync(pkg, packageDest);
-    //拷贝package.json中main字段指向的模块
-    let libSrc = path.join(nodeModulesSourcesPath, mainFild);
-    let libDest = path.join(nodeModelesBuildSourcesPath, mainFild);
-    fsExtra.ensureFileSync(libDest);
-    fsExtra.copySync(libSrc, libDest, {
-        overwrite: true,
-        errorOnExist: true
-    });
-};
-
-const getNodeModulePath = function(moduleCurrent, source) {
-    let from = path.normalize(
-        path.dirname(moduleCurrent.replace('src', 'dist'))
-    );
-    let to = path.normalize('/dist/npm/');
-    let relativePath = path.relative(from, to);
-    let nodeModelesBuildSourcesPath = path.join(
-        process.cwd(),
-        path.normalize(`/dist/npm/${source}`)
-    );
-    let pkg = path.join(nodeModelesBuildSourcesPath, 'package.json');
-    let mainFild = require(pkg).main;
-    if (!mainFild) {
+const hasMainFild = (npmName)=>{
+    const pkg = require( path.join( cwd, 'node_modules', npmName, 'package.json' ) );
+    if (!pkg.main){
         // eslint-disable-next-line
         console.log(
-            `无法读取${source} package, 请检查${source}目录下package.json中main字段是否正确`
+            `无法读取${npmName} package, 请检查${npmName}目录下package.json中main字段是否正确`
         );
         process.exit(1);
     }
-    let astValue = path.join(
-        relativePath,
-        source,
-        mainFild.replace(/\.(js)/, '')
-    );
-    return astValue;
+    return true;
 };
 
-module.exports = function(moduleCurrent, source, node) {
-    if (isBuildInLibs(source) || isAlias(source) || !isNpm(source)) return;
-    copyNodeModuleToBuildNpm(source);
-    node.source.value = getNodeModulePath(moduleCurrent, source);
+const copyNpm = (npmName)=>{
+
+    const npmDir = path.join(cwd, 'node_modules', npmName);
+    const npmPkg = path.join(npmDir, 'package.json');
+    const npmLib = path.join(npmDir, require(npmPkg).main );
+ 
+    const distDir = path.join(cwd, 'dist', 'npm', npmName);
+    const distPkg = path.join(distDir,'package.json');
+    const distLib = path.join(distDir, require(npmPkg).main );
+
+    fs.ensureFileSync(distPkg);
+    fs.ensureFileSync(distLib);
+
+    fs.copyFileSync(
+        npmPkg,
+        distPkg
+    );
+    fs.copyFileSync(
+        npmLib,
+        distLib
+    );
+    
+
+};
+
+const resolveNpmPath = (sourcePath, npmName)=>{
+    sourcePath = process.platform === 'win32' ? sourcePath : path.join(cwd, sourcePath);
+    let from = path.dirname(sourcePath.replace(/\/src\//, '/dist/'));
+    let pkgMain = require(path.join(cwd, 'node_modules', npmName, 'package.json')).main;
+    let to = path.join(cwd, 'dist', 'npm', npmName, pkgMain);
+    let relativePath = path.relative(from, to);
+    relativePath = process.platform === 'win32' ? relativePath.replace(/\\/g,'/') : relativePath;
+    return relativePath;
+    
+};
+
+
+module.exports = function(sourcePath, npmName, node) {
+    if (isBuildInLibs(npmName) || isAlias(npmName) || !isNpm(npmName)) return;
+    if (hasMainFild(npmName)){
+        copyNpm(npmName);
+        node.source.value = resolveNpmPath(sourcePath, npmName);
+    }
 };

@@ -6,7 +6,6 @@ const babel = require('babel-core');
 const queue = require('../queue');
 const path = require('path');
 const functionAliasConfig = require('./functionNameAliasConfig');
-const utils = require('../utils');
 
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -16,7 +15,6 @@ const utils = require('../utils');
  * @param {String} componentName 组件名
  */
 const deps = require('../deps');
-const srcFragment = path.sep + 'src' + path.sep;
 exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
 
@@ -64,29 +62,23 @@ exports.exit = function(astPath, type, componentName, modules) {
             var set = deps[componentName];
 
             if (set) {
-                var fragmentPath = '/components/Fragments/';
-                // 注意，这里只要目录名
-                var relativePath =
-                    path.sep +
-                    path
-                        .normalize(modules.sourcePath)
-                        .split(srcFragment)[1]
-                        .replace(new RegExp(`[^${utils.sepForRegex}]+.js`), '');
+                
+                let from = path.dirname(modules.sourcePath);
                 set.forEach(function(el) {
                     set.delete(el);
-                    var src = path.relative(
-                        relativePath,
-                        fragmentPath + el + '.wxml'
+                    var src = path.relative( 
+                        from, 
+                        path.join(process.cwd(), 'src', 'components', 'Fragments', el + '.wxml')
                     );
+                    src = process.platform === 'win32' ? src.replace(/\\/g,'/') : src;
                     wxml = `<import src="${src}" />\n${wxml}`;
                 });
             }
 
             queue.wxml.push({
                 type: 'wxml',
-                path: path
-                    .normalize(modules.sourcePath)
-                    .replace(srcFragment, `${path.sep}dist${path.sep}`)
+                path: modules.sourcePath
+                    .replace(/\/src\//, '/dist/')
                     .replace(/\.js$/, '.wxml'),
                 code: prettifyXml(wxml, { indent: 2 })
             });
