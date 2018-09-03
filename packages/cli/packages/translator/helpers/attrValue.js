@@ -65,7 +65,9 @@ module.exports = function(astPath) {
                     let name = attrValue;
                     let styleID = name.match(/style\d+/)[0];
                     if (name.lastIndexOf('+') !== -1){
-                        var indexName = name.match(/\+\s*(i\d+)/)[1];
+                       
+                        var indexName =  name.split('+').pop().match(/\w+/)[0];
+
                         replaceWithExpr(astPath, `props['${styleID}' + ${indexName}] `  );
                     } else {
                         replaceWithExpr(astPath, `props.${styleID}`);
