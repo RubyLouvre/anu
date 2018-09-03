@@ -5,7 +5,6 @@ const prettifyXml = require('prettify-xml');
 const generate = require('babel-generator').default;
 const deps = require('../deps');
 const queue = require('../queue');
-const utils = require('../utils');
 const wxmlHelper = require('./wxml');
 const functionAliasConfig = require('./functionNameAliasConfig');
 
@@ -16,7 +15,6 @@ const functionAliasConfig = require('./functionNameAliasConfig');
  * @param {String} type 有状态组件｜无状态组件
  * @param {String} componentName 组件名
  */
-const srcFragment = path.sep + 'src' + path.sep;
 exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
 
@@ -63,32 +61,34 @@ exports.exit = function(astPath, type, componentName, modules) {
         var set = deps[componentName];
 
         if (set) {
-            var fragmentPath = '/components/Fragments/';
-            // 注意，这里只要目录名
-            var relativePath =
-                path.sep +
-                path
-                    .normalize(modules.sourcePath)
-                    .split(srcFragment)[1]
-                    .replace(new RegExp(`[^${utils.sepForRegex}]+.js`), '');
+            let from = path.dirname(modules.sourcePath);
             set.forEach(function(el) {
                 set.delete(el);
                 var src = path.relative(
-                    relativePath,
-                    fragmentPath + el + '.wxml'
+                    from,
+                    path.join(
+                        process.cwd(),
+                        'src',
+                        'components',
+                        'Fragments',
+                        el + '.wxml'
+                    )
                 );
+                src =
+                    process.platform === 'win32'
+                        ? src.replace(/\\/g, '/')
+                        : src;
                 wxml = `<import src="${src}" />\n${wxml}`;
             });
-        }
 
-        queue.wxml.push({
-            type: 'wxml',
-            path: path
-                .normalize(modules.sourcePath)
-                .replace(srcFragment, `${path.sep}dist${path.sep}`)
-                .replace(/\.js$/, '.wxml'),
-            code: prettifyXml(wxml, { indent: 2 })
-        });
+            queue.wxml.push({
+                type: 'wxml',
+                path: modules.sourcePath
+                    .replace(/\/src\//, '/dist/')
+                    .replace(/\.js$/, '.wxml'),
+                code: prettifyXml(wxml, { indent: 2 })
+            });
+        }
     }
 };
 

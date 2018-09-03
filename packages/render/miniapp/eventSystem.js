@@ -31,6 +31,7 @@ function createEvent(e, target) {
     var event = {};
     if (e.detail) {
         event.detail = e.detail;
+        Object.assign(event, e.detail);
         Object.assign(target, e.detail);
     }
     event.stopPropagation = function() {

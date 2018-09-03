@@ -51,7 +51,7 @@ const getAlias = () => {
     for (let key in aliasField) {
         aliasConfig[key] = path.resolve(cwd, aliasField[key]);
     }
-    return aliasConfig || {};
+    return aliasConfig;
 };
 
 const print = (prefix, msg) => {
@@ -94,7 +94,12 @@ class Parser {
                         'transform-object-rest-spread'
                     ]
                 })
-            ]
+            ],
+            onwarn: (warning)=>{
+                if (warning.code === 'UNRESOLVED_IMPORT'){
+                    return;
+                }
+            }
         };
     }
     async parse() {
@@ -134,8 +139,14 @@ class Parser {
                 if (!this.needBuild(dist, result.code)) return;
                 code = this.uglify(code, 'js');
                 fs.writeFile(dist, code, err => {
-                    err ? reject(err) : resolve();
-                    print('build success:', path.relative(cwd, dist));
+                    if (err){
+                        reject(err);
+                        print('build fail:', path.relative(cwd, dist));
+                    } else {
+                        resolve();
+                        print('build success:', path.relative(cwd, dist));
+                    }
+                    
                 });
             }
         });
@@ -184,16 +195,21 @@ class Parser {
             fs.ensureFileSync(dist);
             if (!this.needBuild(dist, code)) return;
             fs.writeFile(dist, code, err => {
-                // eslint-disable-next-line
-                if (err) console.log(err);
-                print('build success:', path.relative(cwd, dist));
+                if (err){
+                    // eslint-disable-next-line
+                    console.log(err);
+                    print('build fail:', path.relative(cwd, dist));
+                } else {
+                    print('build success:', path.relative(cwd, dist));
+                }
+                
             });
 
             //如果自己配置json, 先copy, 再根据config合并重新写入;
             let srcJson = file.replace(/\.js$/, '.json');
             let distJson = dist.replace(/\.js$/, '.json');
-            fs.ensureFileSync(distJson);
             if (fs.existsSync(srcJson)){
+                fs.ensureFileSync(distJson);
                 fs.copyFileSync(srcJson, distJson);
             }
 
@@ -212,8 +228,13 @@ class Parser {
                     let code = data.code;
                     code = this.uglify(code, 'html');
                     fs.writeFile(dist, code || '', err => {
-                        err ? reject(err) : resolve();
-                        print('build success:', path.relative(cwd, dist));
+                        if (err){
+                            reject(err);
+                            print('build fail:', path.relative(cwd, dist));
+                        } else {
+                            resolve();
+                            print('build success:', path.relative(cwd, dist));
+                        }
                     });
                 }
 
@@ -231,19 +252,35 @@ class Parser {
             let exitJsonFile = data.sourcePath.replace(/\.js$/, '.json');
             let json = data.code;
             
-            //合并本地存在的json配置
-            if ( fs.pathExistsSync(exitJsonFile) ) {
-                json = Object.assign( require(exitJsonFile), JSON.parse(data.code) );
-                json = JSON.stringify(json, null, 4);
-            }
+            
+            
             
 
+            //合并本地存在的json配置
+            if ( fs.pathExistsSync(exitJsonFile) ) {
+                try {
+                    let localJson = require(exitJsonFile);
+                    json = Object.assign( localJson, JSON.parse(data.code) );
+                    json = JSON.stringify(json, null, 4);
+                } catch (err){
+                    // eslint-disable-next-line
+                    console.error(err);
+                    process.exit(1);
+                }
+                
+            }
+            
            
             if (/pages|app|components/.test(dist)) {
                 fs.ensureFileSync(dist);
-                fs.writeFile(dist, json || '', err => {
-                    err ? reject(err) : resolve();
-                    print('build success:', path.relative(cwd, dist));
+                fs.writeFile(dist, json, err => {
+                    if (err){
+                        reject(err);
+                        print('build fail:', path.relative(cwd, dist));
+                    } else {
+                        resolve();
+                        print('build success:', path.relative(cwd, dist));
+                    }
                 });
             }
         });
@@ -263,8 +300,14 @@ class Parser {
                         let code = res.css;
                         code = this.uglify(code, 'css');
                         fs.writeFile(dist, code, err => {
-                            err ? reject(err) : resolve();
-                            print('build success:', path.relative(cwd, dist));
+                            if (err){
+                                reject(err);
+                                print('build fail:', path.relative(cwd, dist));
+                            } else {
+                                resolve();
+                                print('build success:', path.relative(cwd, dist));
+                            }
+                            
                         });
                     })
                     .catch(err => {
@@ -287,8 +330,13 @@ class Parser {
                         let code = res.css.toString();
                         code = this.uglify(code, 'css');
                         fs.writeFile(dist, code, err => {
-                            err ? reject(err) : resolve();
-                            print('build success:', path.relative(cwd, dist));
+                            if (err){
+                                reject(err);
+                                print('build fail:', path.relative(cwd, dist));
+                            } else {
+                                resolve();
+                                print('build success:', path.relative(cwd, dist));
+                            }
                         });
                     }
                 );
@@ -307,10 +355,11 @@ class Parser {
         fs.ensureFileSync(to);
         fs.copyFile(from, to, (err)=>{
             if (err){
-                // eslint-disable-next-line
-                 console.log(err);
+                print('build fail:', path.relative(cwd, dist));
+            } else {
+                print('build success:', path.relative(cwd, dist));
             }
-            print('build success:', path.relative(cwd, dist));
+           
         });
     }
 
@@ -325,11 +374,12 @@ class Parser {
             inputDir,
             distDir,
             (err)=>{
-                if (!err){
-                    print('build success:',  path.relative(cwd, distDir ) );
-                } else {
+                if (err){
                     // eslint-disable-next-line
                     console.error(err);
+                    print('build fail:',  path.relative(cwd, distDir ) );
+                } else {
+                    print('build success:',  path.relative(cwd, distDir ) );
                 }
             }
         );

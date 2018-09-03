@@ -5,7 +5,7 @@ const generate = require('babel-generator').default;
 const attrValueHelper = require('./attrValue');
 const attrNameHelper = require('./attrName');
 const logicHelper = require('./logic');
-const jsx = require('../utils');
+const utils = require('../utils');
 const chineseHelper = require('./chinese');
 const slotHelper = require('./slot');
 
@@ -24,10 +24,10 @@ function wxml(code, modules) {
                     manipulateOptions(opts) {
                         //解析每个文件前执行一次
                         opts.anu = modules;
-                    }
+                    },
                 };
-            }
-        ]
+            },
+        ],
     });
     var html = result.code;
     if (chineseHack.unicodeNumber) {
@@ -41,10 +41,10 @@ var visitor = {
             var openTag = astPath.node.name;
             if (
                 openTag.type === 'JSXMemberExpression' &&
-                openTag.object.name === 'React' &&
-                openTag.property.name === 'template'
+				openTag.object.name === 'React' &&
+				openTag.property.name === 'template'
             ) {
-                var modules = jsx.getAnu(state);
+                var modules = utils.getAnu(state);
                 var array, is, key;
                 astPath.node.attributes.forEach(function(el) {
                     var attrName = el.name.name;
@@ -53,12 +53,7 @@ var visitor = {
                         attrValue = attrValue.slice(2, -2);
                     }
                     if (attrName === 'fragmentUid') {
-                        slotHelper(
-                            astPath.parentPath.node.children,
-                            el.value.value,
-                            modules,
-                            wxml
-                        );
+                        slotHelper(astPath.parentPath.node.children, el.value.value, modules, wxml);
                         // console.log('fragmentUid');
                     } else if (attrName === 'templatedata') {
                         array = attrValue;
@@ -71,40 +66,61 @@ var visitor = {
                     }
                 });
                 var attributes = [];
-                var template = jsx.createElement('template', attributes, []);
+                var template = utils.createElement('template', attributes, []);
                 template.key = key;
-                var p = astPath.parentPath.parentPath,
-                    inLoop,
-                    dataName = 'data';
-                while (p.parentPath) {
-                    p = p.parentPath;
-                    if (p.type === 'CallExpression') {
-                        inLoop = p.node.callee.property.name === 'map';
-                        dataName = p.node.arguments[0].params[0].name;
-                        break;
-                    }
-                }
+
                 //将组件变成template标签
-                if (!inLoop) {
+                if (!modules.indexName) {
                     attributes.push(
-                        jsx.createAttribute('is', is),
-                        jsx.createAttribute('data', `{{...${dataName}}}`),
-                        jsx.createAttribute('wx:for', `{{${array}}}`),
-                        jsx.createAttribute('wx:for-item', dataName),
-                        jsx.createAttribute('wx:for-index', 'index'),
-                        jsx.createAttribute('wx:key', '*this')
+                        utils.createAttribute('is', is),
+                        utils.createAttribute('data', '{{...data}}'),
+                        utils.createAttribute('wx:for', `{{${array}}}`),
+                        utils.createAttribute('wx:for-item', 'data'),
+                        utils.createAttribute('wx:for-index', 'index'),
+                        utils.createAttribute('wx:key', '*this')
                     );
                 } else {
-                    attributes.push(
-                        jsx.createAttribute('is', is),
-                        jsx.createAttribute('wx:if', `{{${array}[index]}}`),
-                        jsx.createAttribute('data', `{{...${array}[index]}}`)
-                    );
+                    if (modules.insideTheLoopIsComponent) {
+                        attributes.push(
+                            utils.createAttribute('is', is),
+                            utils.createAttribute('wx:for', `{{${array}}}`),
+                            utils.createAttribute('wx:for-item', modules.dataName),
+                            utils.createAttribute('data', `{{...${modules.dataName}}}`),
+                            utils.createAttribute('wx:for-index', modules.indexName),
+                            utils.createAttribute('wx:key', (key.split('.') || ['','*this'])[1])
+                        );
+                        modules.replaceComponent = template;
+                    } else {
+                        attributes.push(
+                            utils.createAttribute('is', is),
+                            utils.createAttribute('wx:if', `{{${array}[${modules.indexName}]}}`),
+                            utils.createAttribute('data', `{{...${array}[${modules.indexName}]}}`)
+                        );
+                    }
                 }
 
                 astPath.parentPath.replaceWith(template);
             }
-        }
+        },
+    },
+    CallExpression: {
+        enter(astPath, state) {
+            let node = astPath.node;
+            let args = node.arguments;
+            let callee = node.callee;
+            //移除super()语句
+            if (callee.type == 'MemberExpression' && callee.property.name === 'map') {
+                let modules = utils.getAnu(state);
+                modules.indexName = args[0].params[1].name;
+                modules.dataName = args[0].params[0].name;
+            }
+        },
+        exit(astPath, state) {
+            let modules = utils.getAnu(state);
+            if (modules.indexName) {
+                modules.indexName = null;
+            }
+        },
     },
     JSXAttribute(astPath) {
         chineseHack.collect(astPath);
@@ -121,9 +137,7 @@ var visitor = {
                     value = `{{${generate(node.expression).code}}}`;
                 }
             }
-            astPath.parentPath.node.attributes.push(
-                jsx.createAttribute('wx:key', value)
-            );
+            astPath.parentPath.node.attributes.push(utils.createAttribute('wx:key', value));
             astPath.remove();
             return;
         }
@@ -131,30 +145,31 @@ var visitor = {
     },
 
     JSXExpressionContainer: {
-        enter() {},
         exit(astPath, state) {
-            var modules = state.file.opts.anu;
             var expr = astPath.node.expression;
             if (t.isJSXAttribute(astPath.parent)) {
                 attrValueHelper(astPath);
-            } else if (
-                expr.type === 'MemberExpression' &&
-                /props\.children/.test(generate(expr).code)
-            ) {
+            } else if (expr.type === 'MemberExpression' && /props\.children/.test(generate(expr).code)) {
                 var attributes = [];
-                var template = jsx.createElement('template', attributes, []);
+                var template = utils.createElement('template', attributes, []);
                 attributes.push(
-                    jsx.createAttribute('is', '{{props.fragmentUid}}'),
-                    jsx.createAttribute('data', '{{...props.fragmentData}}')
+                    utils.createAttribute('is', '{{props.fragmentUid}}'),
+                    utils.createAttribute('data', '{{...props.fragmentData}}')
                 );
                 astPath.replaceWith(template);
                 //  console.warn("小程序暂时不支持{this.props.children}");
             } else {
+                var modules = utils.getAnu(state);
                 //返回block元素或template元素
                 var block = logicHelper(expr, modules);
                 astPath.replaceWith(block);
+                if (modules.replaceComponent) {
+                    astPath.replaceWith(modules.replaceComponent);
+                    modules.replaceComponent = false;
+                    return;
+                }
             }
-        }
-    }
+        },
+    },
 };
 module.exports = wxml;

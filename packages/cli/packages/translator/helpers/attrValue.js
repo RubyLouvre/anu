@@ -8,13 +8,6 @@ function bindEvent(astPath) {
     replaceWithExpr(astPath, 'dispatchEvent', true);
 }
 
-function stylePropsName(name) {
-    let regTpl = /'(.+)'\)/g;
-    let nameArrLen = name.split(',').length;
-    let propsName = name.split(',')[nameArrLen - 1].replace(regTpl, '$1');
-    return propsName.trim();
-}
-
 module.exports = function(astPath) {
     var expr = astPath.node.expression;
     var attrName = astPath.parent.name.name;
@@ -29,6 +22,7 @@ module.exports = function(astPath) {
             if (isEvent) {
                 throwEventValue(attrName, attrValue);
             }
+        
             replaceWithExpr(astPath, attrValue);
             break;
         case 'BinaryExpression':
@@ -68,9 +62,17 @@ module.exports = function(astPath) {
                     attrValue.indexOf('React.collectStyle') === 0
                 ) {
                     // style={{}} 类型解析
-                    // let name = attrValue.replace(regTpl, '$1').split(',')[2];
-                    let name = stylePropsName(attrValue);
-                    replaceWithExpr(astPath, `props.${name}`);
+                    let name = attrValue;
+                    let styleID = name.match(/style\d+/)[0];
+                    if (name.lastIndexOf('+') !== -1){
+                       
+                        var indexName =  name.split('+').pop().match(/\w+/)[0];
+
+                        replaceWithExpr(astPath, `props['${styleID}' + ${indexName}] `  );
+                    } else {
+                        replaceWithExpr(astPath, `props.${styleID}`);
+                    }
+                   
                 } else {
                     replaceWithExpr(astPath, attrValue);
                 }
@@ -79,7 +81,6 @@ module.exports = function(astPath) {
         case 'ObjectExpression':
             if (attrName === 'style') {
                 var styleValue = styleHelper(expr);
-
                 replaceWithExpr(astPath, styleValue, true);
             } else if (isEvent) {
                 throwEventValue(attrName, attrValue);
