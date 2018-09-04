@@ -199,17 +199,9 @@ class Parser {
         this.generateAssets();
     }
     startCodeGenJs(deps) {
-        let dependencies = deps.sort(function(file) {
-            if (file.indexOf('components') > 0) {
-                return 1; //确保组件最后执行
-            }
-            return 0;
-        });
-
-        dependencies.forEach(file => {
+        deps.forEach(file => {
             this.codegen(file);
         });
-        
     }
     startCodeGenCss(deps){
         deps.forEach(file => {
