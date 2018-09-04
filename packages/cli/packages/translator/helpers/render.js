@@ -49,8 +49,14 @@ exports.exit = function(astPath, type, componentName, modules) {
 
             if (modules.componentType === 'Component') {
                 wxml = `<template name="${componentName}">${wxml}</template>`;
+                deps[componentName] = deps[componentName] || {
+                    set: new Set()
+                };
             }
 
+            //如果这个JSX的主体是一个组件，那么它肯定在deps里面
+            var dep = deps[componentName];
+            //添加import语句产生的显式依赖
             for (var i in modules.importComponents) {
                 if (modules.usedComponents[i]) {
                     wxml = `<import src="${
@@ -58,37 +64,45 @@ exports.exit = function(astPath, type, componentName, modules) {
                     }.wxml" />\n${wxml}`;
                 }
             }
-
-            var set = deps[componentName];
-
-            if (set) {
-                
-                let from = path.dirname(modules.sourcePath);
-                set.forEach(function(el) {
-                    set.delete(el);
-                    var src = path.relative( 
-                        from, 
-                        path.join(process.cwd(), 'src', 'components', 'Fragments', el + '.wxml')
-                    );
-                    src = process.platform === 'win32' ? src.replace(/\\/g,'/') : src;
-                    wxml = `<import src="${src}" />\n${wxml}`;
-                });
-            }
-
-            queue.wxml.push({
+            var enqueueData = {
                 type: 'wxml',
                 path: modules.sourcePath
                     .replace(/\/src\//, '/dist/')
                     .replace(/\.js$/, '.wxml'),
                 code: prettifyXml(wxml, { indent: 2 })
-            });
+            };
+            //添加组件标签包含其他标签时（如<Dialog><p>xxx</p></Dialog>）产生的隐式依赖
+            if (dep && !dep.addImportTag) {
+                dep.data = enqueueData; //表明它已经放入列队，不要重复添加
+                dep.addImportTag = addImportTag;
+                dep.dirPath = path.dirname(modules.sourcePath);
+                dep.set.forEach(function(fragmentUid) {
+                    dep.set.delete(fragmentUid);
+                    dep.addImportTag(fragmentUid);
+                });
+            }
+            queue.wxml.push(enqueueData);
             break;
-
         default:
             break;
     }
 };
 
+function addImportTag(fragmentUid) {
+    var src = path.relative(
+        this.dirPath,
+        path.join(
+            process.cwd(),
+            'src',
+            'components',
+            'Fragments',
+            fragmentUid + '.wxml'
+        )
+    );
+    src = process.platform === 'win32' ? src.replace(/\\/g, '/') : src;
+    var wxml = `<import src="${src}" />\n${this.data.code}`;
+    return (this.data.code = wxml);
+}
 function transformIfStatementToConditionalExpression(node) {
     const { test, consequent, alternate } = node;
     return t.conditionalExpression(
