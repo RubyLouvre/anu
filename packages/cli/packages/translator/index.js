@@ -59,6 +59,43 @@ const print = (prefix, msg) => {
     console.log(chalk.green(`${prefix} ${msg}`));
 };
 
+function getExecutedOrder(list) {
+    let ret = [];
+    let loaded = {};
+    let fakeUrl = Math.random();
+
+    function sortOrder(list, parent) {
+        let needCheck = 0;
+        for (let i = 0, n = list.length; i < n; i++) {
+            let el = list[i];
+            if (el.deps.length) {
+                sortOrder(el.deps, el);
+            } else {
+                loaded[el.id] = true;
+                if (el.id !== fakeUrl){
+                    ret.push(el.id);
+                }
+                list.splice(i, 1);
+                i--;
+                needCheck++;
+            }
+        }
+        if (needCheck == list.length) {
+            if (!loaded[parent.id]) {
+                loaded[parent.id] = true;
+                if (fakeUrl !== parent.id){
+                    ret.push(parent.id);
+                }
+            }
+        } else if (needCheck) {
+            sortOrder(list, parent);
+        }
+    }
+
+    sortOrder(list, {id: fakeUrl});
+    return ret;
+}
+
 class Parser {
     constructor(entry) {
         this.entry = entry;
@@ -104,14 +141,26 @@ class Parser {
     }
     async parse() {
         const bundle = await rollup.rollup(this.inputConfig);
-        const files = bundle.modules.map(function(item) {
-            if (/commonjsHelpers|node_modules/.test(item.id)) return;
-            return item.id;
+        const files = [], cssFiles = [];
+        bundle.modules.forEach(function(item) {
+            const id = item.id;
+            if (/commonjsHelpers|node_modules/.test(id)){
+                return;
+            } 
+            if (/\.(?:less|scss)$/.test(id)){
+                cssFiles.push(id);
+                return;
+            }
+            files.push({
+                id: id,
+                deps: item.dependencies
+            });
         });
-        this.startCodeGen(files);
+        let sorted =  getExecutedOrder(files);
+        this.startCodeGen(sorted);
     }
-    startCodeGen(files) {
-        let dependencies = files.sort(function(path) {
+    startCodeGen() {
+        /*  let dependencies = files.sort(function(path) {
             if (path.indexOf('components') > 0) {
                 return 1; //确保组件最后执行
             }
@@ -121,7 +170,7 @@ class Parser {
         dependencies.forEach(path => {
             this.codegen(path);
         });
-
+*/
         this.generateProjectConfig();
         this.generateAssets();
         
@@ -252,10 +301,7 @@ class Parser {
             let exitJsonFile = data.sourcePath.replace(/\.js$/, '.json');
             let json = data.code;
             
-            
-            
-            
-
+        
             //合并本地存在的json配置
             if ( fs.pathExistsSync(exitJsonFile) ) {
                 try {
