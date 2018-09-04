@@ -17,9 +17,9 @@ describe('loop', () => {
     expect(template).toMatch(
       prettifyXml(
         `<view>
-        <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i494">
+        <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i494" wx:key="*this">
           <view>
-            <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i568">
+            <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i568" wx:key="*this">
               <view>{{item2}}</view>
             </block>
           </view>
@@ -50,8 +50,8 @@ describe('loop', () => {
       <block>
         <block wx:if="{{state.arr.length === 0}}">{{null}}</block>
         <block wx:else="true">
-          <block wx:for="{{state.arr}}" wx:for-item="e" wx:for-index="i">
-            <view class="ratio-16-9 image-company-album" wx:key="{{i}}">
+          <block wx:for="{{state.arr}}" wx:for-item="e" wx:for-index="i" wx:key="*this">
+            <view class="ratio-16-9 image-company-album">
               loop1: {{i}}
             </view>
           </block>
@@ -84,9 +84,9 @@ describe('loop', () => {
     expect(template).toMatch(
       prettifyXml(
         `<view>
-          <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i537">
+          <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i537" wx:key="*this">
             <view>
-              <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i627">
+              <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i627" wx:key="*this">
                 <block wx:if="{{state.b1}}">
                   <text>{{item2}}</text>
                 </block>
@@ -135,9 +135,9 @@ describe('loop', () => {
     expect(template).toMatch(
       prettifyXml(
         `<view>
-        <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i589">
+        <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i589" wx:key="*this">
           <view>
-            <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i692">
+            <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i692" wx:key="*this">
               <block wx:if="{{state.b1}}">
                 <view>
                   <block wx:if="{{state.b2}}">
@@ -249,9 +249,9 @@ describe('loop', () => {
     expect(template).toMatch(
       prettifyXml(
         `<view>
-        <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i537">
+        <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i537" wx:key="*this">
           <view>
-            <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i627">
+            <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i627" wx:key="*this">
               <block>
                 <block wx:if="{{state.b1}}">
                   <text>{{item2}}</text>
