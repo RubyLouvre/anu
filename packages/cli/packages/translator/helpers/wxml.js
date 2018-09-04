@@ -35,6 +35,9 @@ function wxml(code, modules) {
     }
     return html;
 }
+function genKey(key){
+   return key.indexOf(".") > 0 ? key.split('.').pop(): '*this';
+}
 var visitor = {
     JSXOpeningElement: {
         exit: function(astPath, state) {
@@ -45,7 +48,7 @@ var visitor = {
 				openTag.property.name === 'template'
             ) {
                 var modules = utils.getAnu(state);
-                var array, is, key;
+                var array, is, key = "";
                 astPath.node.attributes.forEach(function(el) {
                     var attrName = el.name.name;
                     var attrValue = el.value.value;
@@ -67,7 +70,7 @@ var visitor = {
                 });
                 var attributes = [];
                 var template = utils.createElement('template', attributes, []);
-                template.key = key;
+               // template.key = key;
 
                 //将组件变成template标签
                 if (!modules.indexName) {
@@ -77,7 +80,7 @@ var visitor = {
                         utils.createAttribute('wx:for', `{{${array}}}`),
                         utils.createAttribute('wx:for-item', 'data'),
                         utils.createAttribute('wx:for-index', 'index'),
-                        utils.createAttribute('wx:key', '*this')
+                        utils.createAttribute('wx:key', genKey(key))
                     );
                 } else {
                     if (modules.insideTheLoopIsComponent) {
@@ -87,7 +90,7 @@ var visitor = {
                             utils.createAttribute('wx:for-item', modules.dataName),
                             utils.createAttribute('data', `{{...${modules.dataName}}}`),
                             utils.createAttribute('wx:for-index', modules.indexName),
-                            utils.createAttribute('wx:key', (key.split('.') || ['','*this'])[1])
+                            utils.createAttribute('wx:key', genKey(key))
                         );
                         modules.replaceComponent = template;
                     } else {
