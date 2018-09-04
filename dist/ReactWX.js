@@ -1995,9 +1995,11 @@ function createPage(PageClass, path, testObject) {
         }
     };
     if (testObject) {
-        config.setData = noop;
+        config.setData = function (obj) {
+            config.data = obj;
+        };
         config.onLoad();
-        return instance;
+        return config;
     }
     return safeClone(config);
 }
