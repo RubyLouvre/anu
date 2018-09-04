@@ -122,7 +122,7 @@ var visitor = {
             }
         },
     },
-    JSXAttribute(astPath) {
+    JSXAttribute(astPath) {       
         chineseHack.collect(astPath);
         if (astPath.node.name.name === 'key') {
             let node = astPath.node.value;
