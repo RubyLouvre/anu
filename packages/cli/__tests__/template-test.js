@@ -12,7 +12,7 @@ describe('Template', () => {
       );
 
       let inst = evalClass(code);
-      expect(getPropsStyle(inst.data.props)).toMatch(`color: red`);
+      expect(getPropsStyle(inst.data.props)[0]).toMatch(`color: red`);
     });
 
     test('style 有 - 符号', () => {
@@ -23,7 +23,7 @@ describe('Template', () => {
       );
 
       let inst = evalClass(code);
-      expect(getPropsStyle(inst.data.props)).toMatch(`font-size: 16rpx`);
+      expect(getPropsStyle(inst.data.props)[0]).toMatch(`font-size: 16rpx`);
     });
 
     test('多个对象', () => {
@@ -34,7 +34,7 @@ describe('Template', () => {
       );
 
       let inst = evalClass(code);
-      expect(getPropsStyle(inst.data.props)).toMatch(
+      expect(getPropsStyle(inst.data.props)[0]).toMatch(
         `margin-top: 10rpx;font-size: 13rpx;line-height: 25rpx`
       );
     });
@@ -69,7 +69,7 @@ describe('Template', () => {
       );
 
       let inst = evalClass(code);
-      expect(getPropsStyle(inst.data.props)).toMatch(`z-index: 3`);
+      expect(getPropsStyle(inst.data.props)[0]).toMatch(`z-index: 3`);
     });
 
     test('能在循环中使用', () => {
@@ -100,8 +100,40 @@ describe('Template', () => {
             ]`
       );
       let inst = evalClass(code);
-      expect(getPropsStyle(inst.data.props)).toMatch(`background-color: #eee`);
+      expect(getPropsStyle(inst.data.props)[0]).toMatch(`background-color: #eee`);
     });
+
+    test('能在循环中使用2', () => {
+        let code = transform(
+          `return (
+                <div class="loop3-container">
+                {this.state.array1.map(function(el, index) {
+                  return (
+                    <div key={el.name}>
+                      <div class="index-item-1" style={{ width: index+'px' }}>
+                        {el.name}
+                      </div>
+                    </div>
+                  );
+                })}
+                </div>
+            )`,
+          `array1: [
+                {
+                  name: "动物1"
+                },
+                {
+                  name: "动物2"
+                },
+                {
+                  name: "动物3"
+                }
+              ]`
+        );
+        let inst = evalClass(code);
+        expect(getPropsStyle(inst.data.props)[0]).toMatch(`width: 0rpx`);
+        expect(getPropsStyle(inst.data.props)[1]).toMatch(`width: 1rpx`);
+      });
 
     test('能在多重循环中使用', () => {
       let code = transform(
@@ -173,7 +205,7 @@ describe('Template', () => {
             ]`
       );
       let inst = evalClass(code);
-      expect(getPropsStyle(inst.data.props)).toMatch(`background-color: #ddd`);
+      expect(getPropsStyle(inst.data.props)[0]).toMatch(`background-color: #ddd`);
     });
 
     test('style object 变量', () => {
@@ -191,7 +223,7 @@ describe('Template', () => {
       );
 
       let inst = evalClass(code);
-      expect(getPropsStyle(inst.data.props)).toMatch(
+      expect(getPropsStyle(inst.data.props)[0]).toMatch(
         `margin-bottom: 10rpx;text-align: center;padding: 10rpx 10rpx 10rpx 10rpx;font-weight: bold`
       );
     });
@@ -225,23 +257,19 @@ describe('Template', () => {
 
   describe('大小写', () => {
     test('单驼峰内置组件', () => {
-      let code = transform(
-        `return (<Dog>{this.state.list[this.state.index]}</Dog>)`
-      );
+      let code = transform(`return (<Dog>{this.state.list[this.state.index]}</Dog>)`);
 
       let template = q.wxml[q.wxml.length - 1].code;
       expect(template).toMatch(prettifyXml(`<view>{{state.list[state.index]}}</view>`));
     });
 
     test('双驼峰内置组件', () => {
-        let code = transform(
-          `return (<ScrollView>{this.state.list[this.state.index]}</ScrollView>)`
-        );
-  
-        let template = q.wxml[q.wxml.length - 1].code;
-        console.log('template', template)
-        expect(template).toMatch(prettifyXml(`<view>{{state.list[state.index]}}</view>`));
-      });
+      let code = transform(`return (<ScrollView>{this.state.list[this.state.index]}</ScrollView>)`);
+
+      let template = q.wxml[q.wxml.length - 1].code;
+      console.log('template', template);
+      expect(template).toMatch(prettifyXml(`<view>{{state.list[state.index]}}</view>`));
+    });
   });
 
   describe('三元表达式', () => {
@@ -253,7 +281,7 @@ describe('Template', () => {
              `
       );
       let template = q.wxml[q.wxml.length - 1].code;
-  
+
       expect(template).toMatch(
         prettifyXml(`<view class="{{state.flag === clickValue ? 'checked' : ''}}">\n</view>`)
       );
@@ -290,16 +318,9 @@ describe('Template', () => {
 
   describe('props 属性值', () => {
     test('内置组件', () => {
-        transform(
-          `return (<Dog hidden={true}></Dog>)`
-        );
-        let template = q.wxml[q.wxml.length - 1].code;
-        expect(template).toMatch(
-          prettifyXml(
-            `<view hidden="{{true}}">\n</view>`
-          )
-        );
-      });
-  })
-
+      transform(`return (<Dog hidden={true}></Dog>)`);
+      let template = q.wxml[q.wxml.length - 1].code;
+      expect(template).toMatch(prettifyXml(`<view hidden="{{true}}">\n</view>`));
+    });
+  });
 });

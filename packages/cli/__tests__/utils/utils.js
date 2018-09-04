@@ -2,7 +2,7 @@ let babel = require('babel-core');
 let jsTransform = require('../../packages/translator/jsTransform');
 let helpers = require('../../packages/translator/helpers');
 // let React = require('../../../../dist')
-function baseCode(code, state='', head='') {
+function baseCode(code, state = '', head = '') {
   return `
     ${head}
     import React from '../../../../dist/ReactWXTest'
@@ -29,10 +29,7 @@ function baseCode(code, state='', head='') {
     `;
 }
 
-
-
 exports.transform = function(code, state, head) {
-
   code = baseCode(code, state, head);
   var result = babel.transform(code, {
     babelrc: false,
@@ -45,17 +42,19 @@ exports.transform = function(code, state, head) {
   });
 
   return helpers.moduleToCjs.byCode(result.code).code;
-}
+};
 
 exports.evalClass = function(template) {
-    return eval(template);
-}
+  return eval(template);
+};
 
-exports.getPropsStyle = function (props) {
-    for(let key in props) {
-        if(/^style\d{4}/.test(key)) {
-            return props[key]
-        }
+exports.getPropsStyle = function(props) {
+  let styles = [];
+  for (let key in props) {
+    if (/^style\d{2,}/.test(key)) {
+      styles.push(props[key]);
     }
-}
+  }
 
+  return styles;
+};
