@@ -12,6 +12,8 @@
 
 详见 https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
 
+拼多多模板，请找开右上角 “>>” 详情，  不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书 打上勾
+
 
 ![image](https://user-images.githubusercontent.com/190846/45038189-53f44a80-b093-11e8-9ecb-a4080f21b262.png)
 
