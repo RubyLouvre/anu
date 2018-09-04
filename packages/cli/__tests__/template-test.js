@@ -72,6 +72,30 @@ describe('Template', () => {
       expect(getPropsStyle(inst.data.props)[0]).toMatch(`z-index: 3`);
     });
 
+    test('style state 变量2', () => {
+      let code = transform(
+        `return (
+                <div style={{ width: this.state.rate + 'px' }}></div>
+              )`,
+        `rate: 5`
+      );
+
+      let inst = evalClass(code);
+      expect(getPropsStyle(inst.data.props)[0]).toMatch(`width: 5rpx`);
+    });
+
+    test('可以使用模版字符串', () => {
+      let code = transform(
+        `return (
+                <div style={{ width: \`\$\{this.state.rate\}px\` }}></div>
+              )`,
+        `rate: 5`
+      );
+
+      let inst = evalClass(code);
+      expect(getPropsStyle(inst.data.props)[0]).toMatch(`width: 5rpx`);
+    });
+
     test('能在循环中使用', () => {
       let code = transform(
         `return (
@@ -104,8 +128,8 @@ describe('Template', () => {
     });
 
     test('能在循环中使用2', () => {
-        let code = transform(
-          `return (
+      let code = transform(
+        `return (
                 <div class="loop3-container">
                 {this.state.array1.map(function(el, index) {
                   return (
@@ -118,7 +142,7 @@ describe('Template', () => {
                 })}
                 </div>
             )`,
-          `array1: [
+        `array1: [
                 {
                   name: "动物1"
                 },
@@ -129,11 +153,11 @@ describe('Template', () => {
                   name: "动物3"
                 }
               ]`
-        );
-        let inst = evalClass(code);
-        expect(getPropsStyle(inst.data.props)[0]).toMatch(`width: 0rpx`);
-        expect(getPropsStyle(inst.data.props)[1]).toMatch(`width: 1rpx`);
-      });
+      );
+      let inst = evalClass(code);
+      expect(getPropsStyle(inst.data.props)[0]).toMatch(`width: 0rpx`);
+      expect(getPropsStyle(inst.data.props)[1]).toMatch(`width: 1rpx`);
+    });
 
     test('能在多重循环中使用', () => {
       let code = transform(
