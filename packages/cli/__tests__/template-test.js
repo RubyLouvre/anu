@@ -72,6 +72,18 @@ describe('Template', () => {
       expect(getPropsStyle(inst.data.props)[0]).toMatch(`z-index: 3`);
     });
 
+    test('style state 变量2', () => {
+        let code = transform(
+          `return (
+                <div style={{ width: this.state.rate + 'px' }}></div>
+              )`,
+          `rate: 5`
+        );
+  
+        let inst = evalClass(code);
+        expect(getPropsStyle(inst.data.props)[0]).toMatch(`width: 5rpx`);
+      });
+
     test('能在循环中使用', () => {
       let code = transform(
         `return (

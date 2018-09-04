@@ -23,7 +23,13 @@ function baseCode(code) {
                 {
                   name: "动物3"
                 }
-              ]
+              ],
+              
+            array: [{ list: [1,2,3] }],
+            b1: true,
+            b2: true,
+            b3: true,
+            b4: true
         }
       }
      
@@ -37,6 +43,7 @@ function baseCode(code) {
 
 function transform(code) {
   code = baseCode(code);
+  console.log('code', code)
   var result = babel.transform(code, {
     babelrc: false,
     plugins: [
@@ -72,11 +79,17 @@ function getPropsStyle(props) {
 //   console.log(getPropsStyle(result.data.props))
 
 let template = transform(`return (
-    <div style={{width: '200px'}}> {this.state.text || this.props.children} </div>
-     )`);
+    <div>
+    {this.state.array.map( (item) => {
+      return (
+        this.state.b1 && <div></div>
+      );
+    })}
+  </div>
+  )`);
 // console.log(q.wxml[0].code);
-// console.log('template', template)
-let result = evalClass(template);
-console.log('result', result);
+console.log('template', template)
+// let result = evalClass(template);
+// console.log('result', result);
 
-console.log(getPropsStyle(result.data.props));
+// console.log(getPropsStyle(result.data.props));
