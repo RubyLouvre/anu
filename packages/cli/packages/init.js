@@ -49,18 +49,26 @@ const pkgJsonTemplate = {
     }
 };
 
+let TEMPLATE = '';
 const init = appName => {
     checkNameIsOk(appName)
-        .then(() => {
-            return ask();
+        .then(()=>{
+            return askTemplate();
         })
-        .then(res => {
-            if (res.css === 'scss') {
-                pkgJsonTemplate['devDependencies']['node-sass'] = '^4.9.3';
-            }
-
+        .then((res) => {
+            TEMPLATE = res.template;
+            pkgJsonTemplate['devDependencies']['node-sass'] = '^4.9.3';
             writeDir(appName);
+            
         })
+        // .then(res => {
+        //     console.log(res, '---res')
+        //     if (res.css === 'scss') {
+        //         pkgJsonTemplate['devDependencies']['node-sass'] = '^4.9.3';
+        //     }
+
+        //     writeDir(appName);
+        // })
         .catch(err => {
             // eslint-disable-next-line
             console.log(err);
@@ -95,26 +103,49 @@ const checkNameIsOk = appName => {
     });
 };
 
-const ask = () => {
+// const ask = () => {
+//     const q = [];
+//     const css = [
+//         {
+//             name: 'Less',
+//             value: 'less'
+//         },
+//         {
+//             name: 'Sass',
+//             value: 'scss'
+//         }
+//     ];
+
+//     q.push({
+//         type: 'list',
+//         name: 'css',
+//         message: '请选择 CSS 预处理器 (Less/Sass)',
+//         choices: css
+//     });
+
+//     return inquirer.prompt(q);
+// };
+
+
+const askTemplate = ()=>{
     const q = [];
-    const css = [
+    const list = [
         {
-            name: 'Less',
-            value: 'less'
+            name: '旅游网站',
+            value: 'qunar'
         },
         {
-            name: 'Sass',
-            value: 'scss'
+            name: '拼多多商城',
+            value: 'pdd'
         }
+        
     ];
-
     q.push({
         type: 'list',
-        name: 'css',
-        message: '请选择 CSS 预处理器 (Less/Sass)',
-        choices: css
+        name: 'template',
+        message: '请选择模板',
+        choices: list
     });
-
     return inquirer.prompt(q);
 };
 
@@ -147,15 +178,12 @@ const writeDir = appName => {
         path.join(ownRoot, 'packages', 'template')
     );
     templates.forEach(item => {
-        if (ignore.has(item)) return;
-        let src = path.join(ownRoot, 'packages', 'template', item);
-        let dest = path.join(appName, item);
+        if (ignore.has(item) || item !=  TEMPLATE) return;
+        let src = path.join(ownRoot, 'packages', 'template', item, 'src');
+        let dest = path.join(appName, 'src');
         fs.copySync(src, dest);
     });
 
-    /**
-     * 换行符了解一下？？？
-     */
     // eslint-disable-next-line
     console.log(
         `\n项目 ${chalk.green(appName)} 创建成功, 路径: ${chalk.green(
@@ -166,9 +194,8 @@ const writeDir = appName => {
     //写入package.json
     writePkgJson(appName);
     // console.log();
-    /**
-     * 换行符了解一下？？？
-     */
+    
+
     // eslint-disable-next-line
     console.log(chalk.green('\n开始安装依赖,请稍候...\n'));
     // console.log();

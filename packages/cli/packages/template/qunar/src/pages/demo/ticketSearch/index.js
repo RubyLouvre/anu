@@ -1,5 +1,5 @@
 import React from '@react';
-import './index.less'
+import './index.less';
 class P extends React.Component {
     constructor() {
         super();
@@ -11,10 +11,10 @@ class P extends React.Component {
             displayDate: '8月28日',
             dateWeek: '周二',
             isOnlyGaotie: false
-        }
+        };
     }
     config = {
-        "backgroundColor": "#feb64e",
+        'backgroundColor': '#feb64e',
         'navigationBarBackgroundColor': '#feb64e'
     }
     render() {
@@ -79,6 +79,6 @@ class P extends React.Component {
             </div>
         );
     }
-};
+}
 
 export default P;
