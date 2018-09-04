@@ -59,37 +59,46 @@ const print = (prefix, msg) => {
     console.log(chalk.green(`${prefix} ${msg}`));
 };
 function getExecutedOrder(list) {
-    var ret = [];
-    var loaded = {};
-    var fakeUrl = Math.random();
-    var allDeps = {};
+    let ret = [];
+    let loaded = {};
+    let fakeUrl = Math.random() + '.js';
+    let allDeps = {};
 
-    function sortOrder(list, parent, flag) {
-        var needCheck = 0, arr = [], again = false;
-        for (var i = 0, n = list.length; i < n; i++) {
-            var el = list[i];
-            if (!el) {
+    function sortOrder(list, parent) {
+        let needCheck = 0, delayFiles = [], again = false;
+        let n = list.length;
+        for (let i = 0; i < n; i++) {
+            let el = list[i];
+            if (!el) {//i--变成undefined
                 continue;
             }
-            if (typeof el == 'number') {
-                if (allDeps[el]) {
+            if (typeof el != 'object') {
+                if (allDeps[el]) { //如果它是字符串，变成｛id, deps｝
                     el = allDeps[el]; //转换成对象
                 } else {
-                    again = true;
-                    continue;
+                    if (el.slice(-3) !== '.js') {//如果是.less, .scss
+                        needCheck++;
+                        ret.push(el);
+                        loaded[el] = true;
+                        list.splice(i, 1);
+                        i--;
+                        continue;
+                    } else {
+                        again = true;
+                        continue;
+                    }
                 }
             } else {
                 allDeps[el.id] = el;
             }
-
             if (loaded[el.id]) {
                 needCheck++;
+                loaded[el.id] = true;
                 list.splice(i, 1);
                 i--;
             } else {
                 if (el.deps.length) {
-                    arr.push(el);
-                    // sortOrder(el.deps, el);
+                    delayFiles.push(el);
                 } else {
                     //如果没有依赖
                     if (el.id !== fakeUrl && !loaded[el.id]) {
@@ -101,13 +110,9 @@ function getExecutedOrder(list) {
                     needCheck++;
                 }
             }
-            //如果存在依赖
         }
-        if (again){ //保存所有数字都能从allDeps拿到数据
-            sortOrder(list, parent, true);
-        }
-        if (flag){
-            return;
+        if (again) { //保存所有数字都能从allDeps拿到数据
+            sortOrder(list, parent);
         }
         if (needCheck === n) {
             if (parent.id !== fakeUrl && !loaded[parent.id]) {
@@ -115,19 +120,16 @@ function getExecutedOrder(list) {
                 ret.push(parent.id);
             }
         }
-       
-        if (needCheck && arr.length) {
-            arr.forEach(function (el) {
+        if (needCheck && delayFiles.length) {
+            delayFiles.forEach(function (el) {
                 sortOrder(el.deps, el);
             });
         }
-        if (needCheck &&  list.length){
+        if (needCheck && list.length) {
             sortOrder(list, parent);
         }
     }
-
     sortOrder(list, { id: fakeUrl });
-
     return ret;
 }
 class Parser {
@@ -190,7 +192,10 @@ class Parser {
                 deps: item.dependencies
             });
         });
+       
         let sorted =  getExecutedOrder(files);
+        // eslint-disable-next-line
+        console.log(sorted);
         this.startCodeGen(sorted);
     }
     startCodeGen() {
@@ -467,6 +472,7 @@ class Parser {
     }
 
     async codegen(file) {
+        
         await this.generateBusinessJs(file);
         Promise.all([
             this.generateWxml(file),
