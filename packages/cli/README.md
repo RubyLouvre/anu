@@ -13,5 +13,5 @@
 详见 https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
 
 
-![image](https://user-images.githubusercontent.com/190846/45037896-a6813700-b092-11e8-8577-4ef9c4446bfb.png)
-![image](https://user-images.githubusercontent.com/190846/45037924-b6991680-b092-11e8-883a-9097c8b4c763.png)
+![image](https://user-images.githubusercontent.com/190846/45038189-53f44a80-b093-11e8-9ecb-a4080f21b262.png)
+
