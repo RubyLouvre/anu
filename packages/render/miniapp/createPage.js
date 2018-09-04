@@ -51,6 +51,7 @@ export function createPage(PageClass, path, testObject) {
         instance,
         config = {
             data: {},
+           
             dispatchEvent: eventSystem.dispatchEvent,
             onLoad: function(query) {
                 $wxPage = this;
@@ -140,8 +141,11 @@ export function createPage(PageClass, path, testObject) {
             }
         };
     if (testObject) {
+        config.setData = function(obj){
+            config.data = obj;
+        };
         config.onLoad();
-        testObject.instance = instance;
+        return config;
     }
     return safeClone(config);
 }

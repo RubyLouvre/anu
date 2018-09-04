@@ -43,6 +43,9 @@ const pkgJsonTemplate = {
         'babel-template': '^6.26.0',
         'babel-traverse': '^6.26.0',
         'babel-types': '^6.26.0'
+    },
+    'dependencies': {
+        'weapp-async-await': '^1.0.1'
     }
 };
 

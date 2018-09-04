@@ -58,7 +58,80 @@ const print = (prefix, msg) => {
     // eslint-disable-next-line
     console.log(chalk.green(`${prefix} ${msg}`));
 };
+function getExecutedOrder(list) {
+    let ret = [];
+    let loaded = {};
+    let fakeUrl = Math.random() + '.js';
+    let allDeps = {};
 
+    function sortOrder(list, parent) {
+        let needCheck = 0, delayFiles = [], again = false;
+        let n = list.length;
+        for (let i = 0; i < n; i++) {
+            let el = list[i];
+            if (!el) {//i--变成undefined
+                continue;
+            }
+            if (typeof el != 'object') {
+                if (allDeps[el]) { //如果它是字符串，变成｛id, deps｝
+                    el = allDeps[el]; //转换成对象
+                } else {
+                    if (el.slice(-3) !== '.js') {//如果是.less, .scss
+                        needCheck++;
+                        ret.push(el);
+                        loaded[el] = true;
+                        list.splice(i, 1);
+                        i--;
+                        continue;
+                    } else {
+                        again = true;
+                        continue;
+                    }
+                }
+            } else {
+                allDeps[el.id] = el;
+            }
+            if (loaded[el.id]) {
+                needCheck++;
+                loaded[el.id] = true;
+                list.splice(i, 1);
+                i--;
+            } else {
+                if (el.deps.length) {
+                    delayFiles.push(el);
+                } else {
+                    //如果没有依赖
+                    if (el.id !== fakeUrl && !loaded[el.id]) {
+                        loaded[el.id] = true;
+                        ret.push(el.id);
+                    }
+                    list.splice(i, 1);
+                    i--;
+                    needCheck++;
+                }
+            }
+        }
+        if (again) { //保存所有数字都能从allDeps拿到数据
+            sortOrder(list, parent);
+        }
+        if (needCheck === n) {
+            if (parent.id !== fakeUrl && !loaded[parent.id]) {
+                loaded[parent.id] = true;
+                ret.push(parent.id);
+            }
+        }
+        if (needCheck && delayFiles.length) {
+            delayFiles.forEach(function (el) {
+                sortOrder(el.deps, el);
+            });
+        }
+        if (needCheck && list.length) {
+            sortOrder(list, parent);
+        }
+    }
+    sortOrder(list, { id: fakeUrl });
+    return ret;
+}
 class Parser {
     constructor(entry) {
         this.entry = entry;
@@ -104,27 +177,36 @@ class Parser {
     }
     async parse() {
         const bundle = await rollup.rollup(this.inputConfig);
-        const files = bundle.modules.map(function(item) {
-            if (/commonjsHelpers|node_modules/.test(item.id)) return;
-            return item.id;
-        });
-        this.startCodeGen(files);
-    }
-    startCodeGen(files) {
-        let dependencies = files.sort(function(path) {
-            if (path.indexOf('components') > 0) {
-                return 1; //确保组件最后执行
+        const files = [], cssFiles = [];
+        bundle.modules.forEach(function(item) {
+            const id = item.id;
+            if (/commonjsHelpers|node_modules/.test(id)){
+                return;
+            } 
+            if (/\.(?:less|scss)$/.test(id)){
+                cssFiles.push(id);
+                return;
             }
-            return 0;
+            files.push({
+                id: id,
+                deps: item.dependencies
+            });
         });
-
-        dependencies.forEach(path => {
-            this.codegen(path);
-        });
-
+        let sorted = getExecutedOrder(files);
+        this.startCodeGenJs(sorted);
+        this.startCodeGenCss(cssFiles);
         this.generateProjectConfig();
         this.generateAssets();
-        
+    }
+    startCodeGenJs(deps) {
+        deps.forEach(file => {
+            this.codegen(file);
+        });
+    }
+    startCodeGenCss(deps){
+        deps.forEach(file => {
+            this.generateCss(file);
+        });
     }
     
     generateLib(file) {
@@ -252,10 +334,7 @@ class Parser {
             let exitJsonFile = data.sourcePath.replace(/\.js$/, '.json');
             let json = data.code;
             
-            
-            
-            
-
+        
             //合并本地存在的json配置
             if ( fs.pathExistsSync(exitJsonFile) ) {
                 try {
@@ -295,7 +374,7 @@ class Parser {
             let lessContent = fs.readFileSync(file).toString();
             fs.ensureFileSync(dist);
             if (ext === '.less' || ext === '.css') {
-                less.render(lessContent, {})
+                less.render(lessContent, {filename: path.resolve(file) })
                     .then(res => {
                         let code = res.css;
                         code = this.uglify(code, 'css');
@@ -311,7 +390,11 @@ class Parser {
                         });
                     })
                     .catch(err => {
-                        throw err;
+                        if (err){
+                            // eslint-disable-next-line
+                            console.log(err);
+                        }
+                        
                     });
             }
 
@@ -387,12 +470,12 @@ class Parser {
     }
 
     async codegen(file) {
+        
         await this.generateBusinessJs(file);
         Promise.all([
             this.generateWxml(file),
             this.generateLib(file),
-            this.generatePageJson(file),
-            this.generateCss(file)
+            this.generatePageJson(file)
         ])
             .catch(err => {
                 if (err) {
