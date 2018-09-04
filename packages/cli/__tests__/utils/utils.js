@@ -53,7 +53,7 @@ exports.evalClass = function(template) {
 
 exports.getPropsStyle = function (props) {
     for(let key in props) {
-        if(/^style\d{8}$/.test(key)) {
+        if(/^style\d{4}/.test(key)) {
             return props[key]
         }
     }

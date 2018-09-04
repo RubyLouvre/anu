@@ -31,6 +31,7 @@ function createEvent(e, target) {
     var event = {};
     if (e.detail) {
         event.detail = e.detail;
+        Object.assign(event, e.detail);
         Object.assign(target, e.detail);
     }
     event.stopPropagation = function() {
@@ -42,7 +43,7 @@ function createEvent(e, target) {
     event.toString = eventString;
     event.currentTarget = event.target = target;
     event.touches = e.touches;
-    event.timeStamp = e.timeStamp;
+    event.timeStamp = new Date - 0;
     return event;
 }
 function eventString(){

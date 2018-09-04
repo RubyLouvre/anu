@@ -23,13 +23,11 @@ module.exports = function slotHelper(
     );
     var wxml = wxmlHelper(generate(template).code, modules).replace(/;$/, '');
     if (!modules.fragmentPath) {
-        modules.fragmentPath =
-            modules.sourcePath.split(`src${path.sep}pages`)[0] +
-            `dist${path.sep}components${path.sep}Fragments${path.sep}`;
+        modules.fragmentPath = path.join(process.cwd(), 'dist', 'components', 'Fragments');
     }
     queue.wxml.push({
         type: 'wxml',
-        path: modules.fragmentPath + fragmentUid + '.wxml',
+        path: path.join(modules.fragmentPath,  fragmentUid + '.wxml'),
         code: prettifyXml(wxml, {
             indent: 2
         })

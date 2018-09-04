@@ -17,14 +17,14 @@ describe('loop', () => {
     expect(template).toMatch(
       prettifyXml(
         `<view>
-          <block wx:for="{{state.array}}" wx:for-item="item">
+        <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i494">
           <view>
-          <block wx:for="{{item.list}}" wx:for-item="item2">
-          <view>{{item2}}</view>
-          </block>
+            <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i568">
+              <view>{{item2}}</view>
+            </block>
           </view>
-          </block>
-          </view>`
+        </block>
+      </view>`
       )
     );
   });
@@ -84,9 +84,9 @@ describe('loop', () => {
     expect(template).toMatch(
       prettifyXml(
         `<view>
-          <block wx:for="{{state.array}}" wx:for-item="item">
+          <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i537">
             <view>
-              <block wx:for="{{item.list}}" wx:for-item="item2">
+              <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i627">
                 <block wx:if="{{state.b1}}">
                   <text>{{item2}}</text>
                 </block>
@@ -135,9 +135,9 @@ describe('loop', () => {
     expect(template).toMatch(
       prettifyXml(
         `<view>
-        <block wx:for="{{state.array}}" wx:for-item="item">
+        <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i589">
           <view>
-            <block wx:for="{{item.list}}" wx:for-item="item2">
+            <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i692">
               <block wx:if="{{state.b1}}">
                 <view>
                   <block wx:if="{{state.b2}}">
@@ -249,9 +249,9 @@ describe('loop', () => {
     expect(template).toMatch(
       prettifyXml(
         `<view>
-        <block wx:for="{{state.array}}" wx:for-item="item">
+        <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i537">
           <view>
-            <block wx:for="{{item.list}}" wx:for-item="item2">
+            <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i627">
               <block>
                 <block wx:if="{{state.b1}}">
                   <text>{{item2}}</text>
