@@ -31,6 +31,7 @@ import './pages/demo/syntax/inlineStyle/index';
 import './pages/demo/syntax/loop3/index';
 import './pages/demo/syntax/if/index';
 import './pages/demo/syntax/children/index';
+import './pages/demo/syntax/await/index';
 
 import './pages/demo/ticketSearch/index';
 
