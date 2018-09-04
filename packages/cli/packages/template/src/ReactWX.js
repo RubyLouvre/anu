@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-03
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-04
  * IE9+
  */
 
@@ -1995,8 +1995,9 @@ function createPage(PageClass, path, testObject) {
         }
     };
     if (testObject) {
+        config.setData = noop;
         config.onLoad();
-        testObject.instance = instance;
+        return instance;
     }
     return safeClone(config);
 }
