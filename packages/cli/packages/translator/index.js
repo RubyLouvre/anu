@@ -192,27 +192,29 @@ class Parser {
                 deps: item.dependencies
             });
         });
-       
-        let sorted =  getExecutedOrder(files);
-        // eslint-disable-next-line
-        console.log(sorted);
-        this.startCodeGen(sorted);
+        let sorted = getExecutedOrder(files);
+        this.startCodeGenJs(sorted);
+        this.startCodeGenCss(cssFiles);
+        this.generateProjectConfig();
+        this.generateAssets();
     }
-    startCodeGen() {
-        /*  let dependencies = files.sort(function(path) {
-            if (path.indexOf('components') > 0) {
+    startCodeGenJs(deps) {
+        let dependencies = deps.sort(function(file) {
+            if (file.indexOf('components') > 0) {
                 return 1; //确保组件最后执行
             }
             return 0;
         });
 
-        dependencies.forEach(path => {
-            this.codegen(path);
+        dependencies.forEach(file => {
+            this.codegen(file);
         });
-*/
-        this.generateProjectConfig();
-        this.generateAssets();
         
+    }
+    startCodeGenCss(deps){
+        deps.forEach(file => {
+            this.generateCss(file);
+        });
     }
     
     generateLib(file) {
@@ -380,7 +382,7 @@ class Parser {
             let lessContent = fs.readFileSync(file).toString();
             fs.ensureFileSync(dist);
             if (ext === '.less' || ext === '.css') {
-                less.render(lessContent, {})
+                less.render(lessContent, {filename: path.resolve(file) })
                     .then(res => {
                         let code = res.css;
                         code = this.uglify(code, 'css');
@@ -396,7 +398,11 @@ class Parser {
                         });
                     })
                     .catch(err => {
-                        throw err;
+                        if (err){
+                            // eslint-disable-next-line
+                            console.log(err);
+                        }
+                        
                     });
             }
 
@@ -477,8 +483,7 @@ class Parser {
         Promise.all([
             this.generateWxml(file),
             this.generateLib(file),
-            this.generatePageJson(file),
-            this.generateCss(file)
+            this.generatePageJson(file)
         ])
             .catch(err => {
                 if (err) {
