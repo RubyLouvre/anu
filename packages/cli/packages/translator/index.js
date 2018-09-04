@@ -58,44 +58,78 @@ const print = (prefix, msg) => {
     // eslint-disable-next-line
     console.log(chalk.green(`${prefix} ${msg}`));
 };
-
 function getExecutedOrder(list) {
-    let ret = [];
-    let loaded = {};
-    let fakeUrl = Math.random();
+    var ret = [];
+    var loaded = {};
+    var fakeUrl = Math.random();
+    var allDeps = {};
 
-    function sortOrder(list, parent) {
-        let needCheck = 0;
-        for (let i = 0, n = list.length; i < n; i++) {
-            let el = list[i];
-            if (el.deps.length) {
-                sortOrder(el.deps, el);
-            } else {
-                loaded[el.id] = true;
-                if (el.id !== fakeUrl){
-                    ret.push(el.id);
+    function sortOrder(list, parent, flag) {
+        var needCheck = 0, arr = [], again = false;
+        for (var i = 0, n = list.length; i < n; i++) {
+            var el = list[i];
+            if (!el) {
+                continue;
+            }
+            if (typeof el == 'number') {
+                if (allDeps[el]) {
+                    el = allDeps[el]; //转换成对象
+                } else {
+                    again = true;
+                    continue;
                 }
+            } else {
+                allDeps[el.id] = el;
+            }
+
+            if (loaded[el.id]) {
+                needCheck++;
                 list.splice(i, 1);
                 i--;
-                needCheck++;
-            }
-        }
-        if (needCheck == list.length) {
-            if (!loaded[parent.id]) {
-                loaded[parent.id] = true;
-                if (fakeUrl !== parent.id){
-                    ret.push(parent.id);
+            } else {
+                if (el.deps.length) {
+                    arr.push(el);
+                    // sortOrder(el.deps, el);
+                } else {
+                    //如果没有依赖
+                    if (el.id !== fakeUrl && !loaded[el.id]) {
+                        loaded[el.id] = true;
+                        ret.push(el.id);
+                    }
+                    list.splice(i, 1);
+                    i--;
+                    needCheck++;
                 }
             }
-        } else if (needCheck) {
+            //如果存在依赖
+        }
+        if (again){ //保存所有数字都能从allDeps拿到数据
+            sortOrder(list, parent, true);
+        }
+        if (flag){
+            return;
+        }
+        if (needCheck === n) {
+            if (parent.id !== fakeUrl && !loaded[parent.id]) {
+                loaded[parent.id] = true;
+                ret.push(parent.id);
+            }
+        }
+       
+        if (needCheck && arr.length) {
+            arr.forEach(function (el) {
+                sortOrder(el.deps, el);
+            });
+        }
+        if (needCheck &&  list.length){
             sortOrder(list, parent);
         }
     }
 
-    sortOrder(list, {id: fakeUrl});
+    sortOrder(list, { id: fakeUrl });
+
     return ret;
 }
-
 class Parser {
     constructor(entry) {
         this.entry = entry;
