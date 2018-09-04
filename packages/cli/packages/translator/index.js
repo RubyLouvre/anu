@@ -58,7 +58,78 @@ const print = (prefix, msg) => {
     // eslint-disable-next-line
     console.log(chalk.green(`${prefix} ${msg}`));
 };
+function getExecutedOrder(list) {
+    var ret = [];
+    var loaded = {};
+    var fakeUrl = Math.random();
+    var allDeps = {};
 
+    function sortOrder(list, parent, flag) {
+        var needCheck = 0, arr = [], again = false;
+        for (var i = 0, n = list.length; i < n; i++) {
+            var el = list[i];
+            if (!el) {
+                continue;
+            }
+            if (typeof el == 'number') {
+                if (allDeps[el]) {
+                    el = allDeps[el]; //转换成对象
+                } else {
+                    again = true;
+                    continue;
+                }
+            } else {
+                allDeps[el.id] = el;
+            }
+
+            if (loaded[el.id]) {
+                needCheck++;
+                list.splice(i, 1);
+                i--;
+            } else {
+                if (el.deps.length) {
+                    arr.push(el);
+                    // sortOrder(el.deps, el);
+                } else {
+                    //如果没有依赖
+                    if (el.id !== fakeUrl && !loaded[el.id]) {
+                        loaded[el.id] = true;
+                        ret.push(el.id);
+                    }
+                    list.splice(i, 1);
+                    i--;
+                    needCheck++;
+                }
+            }
+            //如果存在依赖
+        }
+        if (again){ //保存所有数字都能从allDeps拿到数据
+            sortOrder(list, parent, true);
+        }
+        if (flag){
+            return;
+        }
+        if (needCheck === n) {
+            if (parent.id !== fakeUrl && !loaded[parent.id]) {
+                loaded[parent.id] = true;
+                ret.push(parent.id);
+            }
+        }
+       
+        if (needCheck && arr.length) {
+            arr.forEach(function (el) {
+                sortOrder(el.deps, el);
+            });
+        }
+        if (needCheck &&  list.length){
+            sortOrder(list, parent);
+        }
+    }
+
+    sortOrder(list, { id: fakeUrl });
+
+    return ret;
+}
 class Parser {
     constructor(entry) {
         this.entry = entry;
@@ -104,14 +175,26 @@ class Parser {
     }
     async parse() {
         const bundle = await rollup.rollup(this.inputConfig);
-        const files = bundle.modules.map(function(item) {
-            if (/commonjsHelpers|node_modules/.test(item.id)) return;
-            return item.id;
+        const files = [], cssFiles = [];
+        bundle.modules.forEach(function(item) {
+            const id = item.id;
+            if (/commonjsHelpers|node_modules/.test(id)){
+                return;
+            } 
+            if (/\.(?:less|scss)$/.test(id)){
+                cssFiles.push(id);
+                return;
+            }
+            files.push({
+                id: id,
+                deps: item.dependencies
+            });
         });
-        this.startCodeGen(files);
+        let sorted =  getExecutedOrder(files);
+        this.startCodeGen(sorted);
     }
-    startCodeGen(files) {
-        let dependencies = files.sort(function(path) {
+    startCodeGen() {
+        /*  let dependencies = files.sort(function(path) {
             if (path.indexOf('components') > 0) {
                 return 1; //确保组件最后执行
             }
@@ -121,7 +204,7 @@ class Parser {
         dependencies.forEach(path => {
             this.codegen(path);
         });
-
+*/
         this.generateProjectConfig();
         this.generateAssets();
         
@@ -252,10 +335,7 @@ class Parser {
             let exitJsonFile = data.sourcePath.replace(/\.js$/, '.json');
             let json = data.code;
             
-            
-            
-            
-
+        
             //合并本地存在的json配置
             if ( fs.pathExistsSync(exitJsonFile) ) {
                 try {
