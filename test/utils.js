@@ -2,17 +2,28 @@ let babel = require('babel-core');
 let jsTransform = require('../packages/cli/packages/translator/jsTransform');
 let helpers = require('../packages/cli/packages/translator/helpers');
 let q = require('../packages/cli/packages/translator/queue');
-
+// let react = require('../dist/ReactWXTest')
 
 function baseCode(code) {
   return `
-    import React from '@react'
+    import React from '../dist/ReactWXTest'
 
     class Index extends React.Component {
       constructor(props) {
         super(props);
         this.state={
-            flag: null
+            flag: null,
+            array1: [
+                {
+                  name: "动物1"
+                },
+                {
+                  name: "动物2"
+                },
+                {
+                  name: "动物3"
+                }
+              ]
         }
       }
      
@@ -39,27 +50,33 @@ function transform(code) {
   return helpers.moduleToCjs.byCode(result.code).code;
 }
 
-
-
-  function evalClass(template) {
-    return eval(template);
-  }
+function evalClass(template) {
+  return eval(template);
+  //   return testObject
+}
 
 //   let result = evalClass(template);
 //   console.log('result',result.data);
 
-  function getPropsStyle(props) {
-      for(let key in props) {
-          if(/^style\d{8}$/.test(key)) {
-              return key
-          }
-      }
+function getPropsStyle(props) {
+  let styles = [];
+  for (let key in props) {
+    if (/^style\d{2,}/.test(key)) {
+      styles.push(props[key]);
+    }
   }
+
+  return styles
+}
 
 //   console.log(getPropsStyle(result.data.props))
 
 let template = transform(`return (
-    <div className={'row ' + (this.state.flag === clickValue ? 'checked' : '')}></div>
-  )`);
+    <div style={{width: '200px'}}> {this.state.text || this.props.children} </div>
+     )`);
+// console.log(q.wxml[0].code);
+// console.log('template', template)
+let result = evalClass(template);
+console.log('result', result);
 
-  console.log(q.wxml);
+console.log(getPropsStyle(result.data.props));
