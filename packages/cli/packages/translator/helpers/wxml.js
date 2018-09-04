@@ -122,12 +122,12 @@ var visitor = {
             }
         },
     },
-    JSXAttribute(astPath) {       
+    JSXAttribute(astPath,state) {       
         chineseHack.collect(astPath);
         if (astPath.node.name.name === 'key') {
             let node = astPath.node.value;
             let value;
-
+            let modules = utils.getAnu(state);
             if (t.isStringLiteral(node)) {
                 value = node.value;
             } else {
@@ -137,7 +137,7 @@ var visitor = {
                     value = `{{${generate(node.expression).code}}}`;
                 }
             }
-            astPath.parentPath.node.attributes.push(utils.createAttribute('wx:key', value));
+            modules.key = value;
             astPath.remove();
             return;
         }

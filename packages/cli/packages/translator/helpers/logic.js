@@ -80,7 +80,15 @@ function loop(callee, fn, modules) {
     attrs.push(createAttribute('wx:for', parseExpr(callee.object)));
     attrs.push(createAttribute('wx:for-item', fn.params[0].name));
     attrs.push(createAttribute('wx:for-index', fn.params[1].name));
-    
+    if (modules.key){
+        attrs.push(createAttribute('wx:key', 
+            modules.key.indexOf('.') > 0? modules.key.split('.').pop() : '*this'
+        ));
+        modules.key = null;
+    } else {
+        attrs.push(createAttribute('wx:key', '*this' ));
+        // console.log( fn.params[1].name);
+    }
 
     const body = t.isBlockStatement(fn.body)
         ? fn.body.body.find(t.isReturnStatement)
@@ -92,20 +100,9 @@ function loop(callee, fn, modules) {
             t.isBlockStatement(fn.body) ? body.argument : body,
             modules
         );
-        //console.log(child.openingElement.name)
-        // 如果数组的 map 迭代器的 return 第一个标签是组件，并且组件有 key
-        if (child.key) {
-            attrs.push(
-                createAttribute(
-                    'wx:key',
-                    child.key.indexOf('.') > 0
-                        ? child.key.split('.').pop()
-                        : '*this'
-                )
-            );
-        }
+
         var blockElement = createElement('block', attrs, [child]);
-        modules.insideTheLoopIsComponent = child.openingElement.name.name === "template"
+        modules.insideTheLoopIsComponent = child.openingElement.name.name === 'template';
         return blockElement;
     } else {
         // eslint-disable-next-line
