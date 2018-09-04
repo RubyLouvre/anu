@@ -83,9 +83,8 @@ const copyNpm = (npmName)=>{
                         if (name === 'require'){
                             let npmName = astPath.node.arguments[0].value;
                             if (isBuildInLibs(npmName) || isAlias(npmName) || !isNpm(npmName)) return;
-                            
                             copyNpm(npmName);
-                            astPath.node.arguments[0].value = resolveNpmPath(path.relative(cwd, srcNpmPkgDir), npmName);
+                            astPath.node.arguments[0].value = resolveNpmPath(srcNpmPkgDir, npmName);
                             hasDeps = true;
                         }
                     }
@@ -96,7 +95,7 @@ const copyNpm = (npmName)=>{
    
 
     if (hasDeps){
-        let hasDepsDist = srcNpmPkgDir.replace(/\/node_modules\//, '/dist/npm/');
+        let hasDepsDist = path.join(cwd, 'dist', 'npm', path.relative(  path.join(cwd, 'node_modules'), srcNpmPkgDir ) );
         fs.ensureFileSync(hasDepsDist);
         fs.writeFileSync(hasDepsDist, result.code);
     }
@@ -108,17 +107,19 @@ const copyNpm = (npmName)=>{
 
 
 const resolveNpmPath = (sourcePath, npmName)=>{
-    let npmNameAry = npmName.split('/');
-    sourcePath = process.platform === 'win32' ? sourcePath : path.join(cwd, sourcePath);
 
+    let npmNameAry = npmName.split('/');
     let from = '';
     let to = '';
-    
     if (/node_modules/.test(sourcePath)){
         //node_modules中模块存在依赖
-        from = path.dirname(sourcePath.replace(/\/node_modules\//, '/dist/npm/'));
+        let dir = path.relative( path.join(cwd, 'node_modules'),  sourcePath);
+        dir = path.join(cwd, 'dist', 'npm', dir);
+        from = path.dirname(dir);
     } else {
-        from = path.dirname(sourcePath.replace(/\/src\//, '/dist/'));
+        let dir =  path.relative( path.join(cwd, 'src'),  sourcePath);
+        dir = path.join(cwd, 'dist', dir);
+        from = path.dirname(dir);
     }
 
     if (npmNameAry.length > 1){
@@ -130,12 +131,14 @@ const resolveNpmPath = (sourcePath, npmName)=>{
     let relativePath = path.relative(from, to);
 
     relativePath = process.platform === 'win32' ? relativePath.replace(/\\/g,'/') : relativePath;
+   
     return relativePath;
     
 };
 
 
 module.exports = function(sourcePath, npmName, node) {
+    sourcePath = process.platform === 'win32' ? sourcePath : path.join(cwd, sourcePath);
     if (isBuildInLibs(npmName) || isAlias(npmName) || !isNpm(npmName)) return;
     if (hasMainFild(npmName)){
         copyNpm(npmName);
