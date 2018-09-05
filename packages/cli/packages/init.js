@@ -30,7 +30,8 @@ const pkgJsonTemplate = {
         'babel-plugin-transform-object-rest-spread': '^6.26.0',
         'babel-plugin-transform-react-jsx': '^6.24.1',
         'babel-preset-react': '^6.24.1',
-        'weapp-async-await': '^1.0.1'
+        'weapp-async-await': '^1.0.1',
+        'node-sass': '^4.9.3'
     },
     dependencies: {}
 };
@@ -43,7 +44,6 @@ const init = appName => {
         })
         .then((res) => {
             TEMPLATE = res.template;
-            pkgJsonTemplate['devDependencies']['node-sass'] = '^4.9.3';
             writeDir(appName);
             
         })
@@ -141,6 +141,11 @@ const writePkgJson = appName => {
         appName: path.basename(appName)
     };
     let result = JSON.parse(template(data));
+    if (utils.useYarn()){
+        //yarn add pkg@version --dev
+        delete result.devDependencies;
+    }
+    
     fs.writeFileSync(
         path.join(appName, 'package.json'),
         JSON.stringify(result, null, 4)
@@ -189,18 +194,38 @@ const writeDir = appName => {
     install(appName);
 };
 
+
+const getDevDeps = ()=>{
+    let deps = pkgJsonTemplate.devDependencies;
+    let result = [];
+    Object.keys(deps).forEach((name)=>{
+        result.push(
+            `${name}@${deps[name]}`
+        );
+    });
+    return result;
+};
+
+
+
 const install = projectRoot => {
     let bin = '';
-    let option = ['install'];
+    let option = [];
     process.chdir(projectRoot);
     if (utils.useYarn()) {
-        bin = 'yarn';
+        bin = 'yarnpkg';
+        option.push('add', '--exact');
+        option = option.concat(getDevDeps());
+        option.push('--dev');
     } else if (utils.useCnpm()) {
         bin = 'cnpm';
+        option.push('install');
     } else {
         bin = 'npm';
+        option.push('install');
     }
 
+   
     var result = spawn.sync(bin, option, { stdio: 'inherit' });
     if (!result.error) {
         /* eslint-disable */
