@@ -3,7 +3,7 @@ const execSync = require('child_process').execSync;
 const useYarn = ()=>{
     try {
         execSync(
-            'yarn --v',
+            'yarn --version',
             { stdio: 'ignore' }
         );
         return true;
