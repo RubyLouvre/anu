@@ -11,6 +11,9 @@ const exists = fs.existsSync;
 
 const ignore = new Set(['.DS_Store', '.git', '.gitignore']);
 
+const useYarn = utils.useYarn();
+const useCnpm = utils.useCnpm();
+
 const pkgJsonTemplate = {
     license: 'MIT',
     version: '1.0.0',
@@ -141,7 +144,7 @@ const writePkgJson = appName => {
         appName: path.basename(appName)
     };
     let result = JSON.parse(template(data));
-    if (utils.useYarn()){
+    if (useYarn){
         //yarn add pkg@version --dev
         delete result.devDependencies;
     }
@@ -212,12 +215,12 @@ const install = projectRoot => {
     let bin = '';
     let option = [];
     process.chdir(projectRoot);
-    if (utils.useYarn()) {
+    if (useYarn) {
         bin = 'yarnpkg';
         option.push('add', '--exact');
         option = option.concat(getDevDeps());
         option.push('--dev');
-    } else if (utils.useCnpm()) {
+    } else if (useCnpm) {
         bin = 'cnpm';
         option.push('install');
     } else {

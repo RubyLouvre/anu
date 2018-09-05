@@ -298,7 +298,17 @@ class Parser {
         } else {
             let dist = path.join(cwd, 'dist',  path.relative(path.join(cwd, 'src'), file) );
             fs.ensureFileSync(dist);
-            fs.copyFile(file, dist);
+            if (!this.needBuild(dist, code)) return;
+            fs.writeFile(dist, code, err => {
+                if (err){
+                    // eslint-disable-next-line
+                    console.log(err);
+                    print('build fail:', path.relative(cwd, dist));
+                } else {
+                    print('build success:', path.relative(cwd, dist));
+                }
+                
+            });
         }
     }
     generateWxml(file) {
