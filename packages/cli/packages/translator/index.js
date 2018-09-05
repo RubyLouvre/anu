@@ -295,6 +295,10 @@ class Parser {
                 fs.copyFileSync(srcJson, distJson);
             }
 
+        } else {
+            let dist = path.join(cwd, 'dist',  path.relative(path.join(cwd, 'src'), file) );
+            fs.ensureFileSync(dist);
+            fs.copyFile(file, dist);
         }
     }
     generateWxml(file) {
