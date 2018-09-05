@@ -6,46 +6,54 @@ export function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
     var instances = type.instances;
-    //不是使用miniCreateClass创建的组件直接返回
-    if (!instances) {
-        return;
-    }
     var instanceUid = instance.instanceUid;
+
+    //不是使用miniCreateClass创建的组件直接返回
+    var parentInst = null;
     if (!instanceUid) {
         instanceUid = instance.instanceUid = getUUID();
         instances[instanceUid] = instance;
         var p = fiber.return;
         while (p) {
-            var inst = p._owner;
-            if (inst) {
-                if (inst.$pageInst) {
-                    //如果它的父组件已经保存了$pageInst
-                    instance.$pageInst = inst.$pageInst;
+            if (p.name !== 'template' && p.tag < 4 ){
+                var stateNode = p.stateNode;
+                if (!parentInst){
+                    parentInst = instance.$parentInst = stateNode;
+                }
+                if (p.props.isPageComponent){
+                    instance.$pageInst = stateNode;
                     break;
-                } else if (inst.props && inst.props.isPageComponent) {
-                    instance.$pageInst = inst;
+                }
+                if (stateNode.$pageInst){
+                    instance.$pageInst = stateNode.$pageInst;
                     break;
                 }
             }
+            p = p.return;
         }
     }
-    var inputProps = fiber._owner.props;
-    var pageInst = instance.$pageInst;
-    if (pageInst) {
-        var arr = getData(pageInst);
+    parentInst = instance.$parentInst;
+    if (parentInst) {
+        var inputProps = fiber._owner.props;
+        var uuid = inputProps.templatedata;
         var newData = {
             props: instance.props,
             state: instance.state,
             context: instance.context,
-            templatedata: inputProps.templatedata //template元素的
+            templatedata: uuid
         };
-        //注入
+        instance.wxData = newData;
+        if (!parentInst.props.isPageComponent){
+            var list = parentInst.wxData[uuid] || (parentInst.wxData[uuid] = []);
+            list.push(newData);
+            return;
+        }
+        var arr = getData(parentInst);
         newData.props.instanceUid = instanceUid;
-        //无状态组件的更新
         if (instance.__isStateless) {
             var checkProps = fiber.memoizedProps;
             var usePush = true;
-            for (var i = 0, el; (el = arr[i++]); ) {
+            for (var i = 0, el; el = arr[i++];) {
                 if (el.props === checkProps) {
                     extend(el, newData);
                     usePush = false;
@@ -57,10 +65,9 @@ export function onComponentUpdate(fiber) {
             }
             return;
         }
-
         if (instance.updateWXData) {
-            var checkProps = fiber.memoizedProps;
-            for (var i = 0, el; (el = arr[i++]); ) {
+            checkProps = fiber.memoizedProps;
+            for (var i = 0, el; el = arr[i++];) {
                 if (el.props === checkProps) {
                     extend(el, newData);
                     break;
