@@ -9,7 +9,7 @@ const inquirer = require('inquirer');
 const ownRoot = path.join(__dirname, '..');
 const exists = fs.existsSync;
 
-const ignore = new Set(['.DS_Store']);
+const ignore = new Set(['.DS_Store', '.git', '.gitignore']);
 
 const pkgJsonTemplate = {
     license: 'MIT',
@@ -21,32 +21,18 @@ const pkgJsonTemplate = {
             '@components': 'src/components'
         }
     },
-    devDependencies: {
-        'babel-generator': '^6.26.1',
-        'babel-jest': '^22.4.3',
-        'babel-plugin-istanbul': '^4.1.1',
-        'babel-plugin-module-resolver': '^3.1.1',
-        'babel-plugin-syntax-async-generators': '^6.13.0',
-        'babel-plugin-syntax-class-properties': '^6.13.0',
+    devDependencies : {
+        'babel-plugin-transform-async-to-generator': '^6.24.1',
         'babel-plugin-transform-class-properties': '^6.24.1',
         'babel-plugin-transform-decorators-legacy': '^1.3.5',
         'babel-plugin-transform-es2015-classes': '^6.24.1',
         'babel-plugin-transform-es2015-modules-commonjs': '^6.26.2',
         'babel-plugin-transform-object-rest-spread': '^6.26.0',
         'babel-plugin-transform-react-jsx': '^6.24.1',
-        'babel-plugin-transform-react-jsx-source': '^6.22.0',
-        'babel-plugin-transform-runtime': '^6.23.0',
-        'babel-preset-es2015': '^6.24.1',
         'babel-preset-react': '^6.24.1',
-        'babel-preset-stage-0': '^6.24.1',
-        'babel-runtime': '^6.26.0',
-        'babel-template': '^6.26.0',
-        'babel-traverse': '^6.26.0',
-        'babel-types': '^6.26.0'
-    },
-    'dependencies': {
         'weapp-async-await': '^1.0.1'
-    }
+    },
+    dependencies: {}
 };
 
 let TEMPLATE = '';
