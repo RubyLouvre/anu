@@ -9,7 +9,7 @@ const inquirer = require('inquirer');
 const ownRoot = path.join(__dirname, '..');
 const exists = fs.existsSync;
 
-const ignore = new Set(['.DS_Store']);
+const ignore = new Set(['.DS_Store', '.git', '.gitignore']);
 
 const pkgJsonTemplate = {
     license: 'MIT',
@@ -21,46 +21,40 @@ const pkgJsonTemplate = {
             '@components': 'src/components'
         }
     },
-    devDependencies: {
-        'babel-generator': '^6.26.1',
-        'babel-jest': '^22.4.3',
-        'babel-plugin-istanbul': '^4.1.1',
-        'babel-plugin-module-resolver': '^3.1.1',
-        'babel-plugin-syntax-async-generators': '^6.13.0',
-        'babel-plugin-syntax-class-properties': '^6.13.0',
+    devDependencies : {
+        'babel-plugin-transform-async-to-generator': '^6.24.1',
         'babel-plugin-transform-class-properties': '^6.24.1',
         'babel-plugin-transform-decorators-legacy': '^1.3.5',
         'babel-plugin-transform-es2015-classes': '^6.24.1',
         'babel-plugin-transform-es2015-modules-commonjs': '^6.26.2',
         'babel-plugin-transform-object-rest-spread': '^6.26.0',
         'babel-plugin-transform-react-jsx': '^6.24.1',
-        'babel-plugin-transform-react-jsx-source': '^6.22.0',
-        'babel-plugin-transform-runtime': '^6.23.0',
-        'babel-preset-es2015': '^6.24.1',
         'babel-preset-react': '^6.24.1',
-        'babel-preset-stage-0': '^6.24.1',
-        'babel-runtime': '^6.26.0',
-        'babel-template': '^6.26.0',
-        'babel-traverse': '^6.26.0',
-        'babel-types': '^6.26.0'
-    },
-    'dependencies': {
         'weapp-async-await': '^1.0.1'
-    }
+    },
+    dependencies: {}
 };
 
+let TEMPLATE = '';
 const init = appName => {
     checkNameIsOk(appName)
-        .then(() => {
-            return ask();
+        .then(()=>{
+            return askTemplate();
         })
-        .then(res => {
-            if (res.css === 'scss') {
-                pkgJsonTemplate['devDependencies']['node-sass'] = '^4.9.3';
-            }
-
+        .then((res) => {
+            TEMPLATE = res.template;
+            pkgJsonTemplate['devDependencies']['node-sass'] = '^4.9.3';
             writeDir(appName);
+            
         })
+        // .then(res => {
+        //     console.log(res, '---res')
+        //     if (res.css === 'scss') {
+        //         pkgJsonTemplate['devDependencies']['node-sass'] = '^4.9.3';
+        //     }
+
+        //     writeDir(appName);
+        // })
         .catch(err => {
             // eslint-disable-next-line
             console.log(err);
@@ -95,26 +89,49 @@ const checkNameIsOk = appName => {
     });
 };
 
-const ask = () => {
+// const ask = () => {
+//     const q = [];
+//     const css = [
+//         {
+//             name: 'Less',
+//             value: 'less'
+//         },
+//         {
+//             name: 'Sass',
+//             value: 'scss'
+//         }
+//     ];
+
+//     q.push({
+//         type: 'list',
+//         name: 'css',
+//         message: '请选择 CSS 预处理器 (Less/Sass)',
+//         choices: css
+//     });
+
+//     return inquirer.prompt(q);
+// };
+
+
+const askTemplate = ()=>{
     const q = [];
-    const css = [
+    const list = [
         {
-            name: 'Less',
-            value: 'less'
+            name: '旅游网站',
+            value: 'qunar'
         },
         {
-            name: 'Sass',
-            value: 'scss'
+            name: '拼多多商城',
+            value: 'pdd'
         }
+        
     ];
-
     q.push({
         type: 'list',
-        name: 'css',
-        message: '请选择 CSS 预处理器 (Less/Sass)',
-        choices: css
+        name: 'template',
+        message: '请选择模板',
+        choices: list
     });
-
     return inquirer.prompt(q);
 };
 
@@ -147,15 +164,12 @@ const writeDir = appName => {
         path.join(ownRoot, 'packages', 'template')
     );
     templates.forEach(item => {
-        if (ignore.has(item)) return;
-        let src = path.join(ownRoot, 'packages', 'template', item);
-        let dest = path.join(appName, item);
+        if (ignore.has(item) || item !=  TEMPLATE) return;
+        let src = path.join(ownRoot, 'packages', 'template', item, 'src');
+        let dest = path.join(appName, 'src');
         fs.copySync(src, dest);
     });
 
-    /**
-     * 换行符了解一下？？？
-     */
     // eslint-disable-next-line
     console.log(
         `\n项目 ${chalk.green(appName)} 创建成功, 路径: ${chalk.green(
@@ -166,9 +180,8 @@ const writeDir = appName => {
     //写入package.json
     writePkgJson(appName);
     // console.log();
-    /**
-     * 换行符了解一下？？？
-     */
+    
+
     // eslint-disable-next-line
     console.log(chalk.green('\n开始安装依赖,请稍候...\n'));
     // console.log();
