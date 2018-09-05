@@ -56,7 +56,7 @@ resolve: {
          // If you reference prop-types or create-react-class
          // Need to add the following alias
          'prop-types': 'anujs/lib/ReactPropTypes',
-         'create-react-class': 'anujs/lib/createClass'
+         'create-react-class': 'anujs/lib/createClass',
          // If you use the onTouchTap event on the mobile side
          'react-tap-event-plugin': 'anujs/lib/injectTapEventPlugin',
     }

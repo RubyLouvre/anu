@@ -76,6 +76,19 @@ module.exports = {
             ){
                 astPath.node.body.body.unshift(template(helpers.functionNameAliasConfig.h.init )());
             }
+
+
+            //需要引入weapp-async-await
+            if (name === '_asyncToGenerator'){
+                astPath.insertBefore(
+                    template(
+                        `var weAsync = require('weapp-async-await');
+                         var Promise = weAsync.Promise;
+                         var regeneratorRuntime = weAsync.regeneratorRuntime;
+                        `
+                    )()
+                );
+            }
         }
     },
     ImportDeclaration(astPath, state) {
@@ -244,6 +257,10 @@ module.exports = {
             }
             modules.indexName = args[0].params[1].name;
         }
+
+        if (callee.name === 'require'){
+            helpers.copyNpmModules(modules.current, node.arguments[0].value, node);
+        }
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
@@ -252,11 +269,13 @@ module.exports = {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
             if (modules.importComponents[nodeName]) {
-                var set = deps[nodeName] || (deps[nodeName] = new Set());
+                let dep = deps[nodeName] || (deps[nodeName] = {
+                    set: new Set()
+                });
                 modules.usedComponents[nodeName] = true;
                 astPath.node.name.name = 'React.template';
-                var children = astPath.parentPath.node.children;
-                var isEmpty = true;
+                let children = astPath.parentPath.node.children;
+                let isEmpty = true;
                 // eslint-disable-next-line
                 for (var i = 0, el; (el = children[i++]); ) {
                     if (el.type === 'JSXText' && !el.value.trim().length) {
@@ -279,10 +298,15 @@ module.exports = {
                         t.jSXExpressionContainer(t.identifier(nodeName))
                     )
                 );
-                if (!isEmpty) {
-                    astPath.fragmentUid =
+                if (!isEmpty) { //创建
+                    var fragmentUid =
                         'f' + astPath.node.start + astPath.node.end;
-                    set.add(astPath.fragmentUid);
+                    
+                    if (dep.addImportTag){
+                        dep.addImportTag(fragmentUid);
+                    } else {
+                        dep.set.add(fragmentUid);
+                    }
                     attributes.push(
                         utils.createAttribute('classUid', modules.classUid),
                         utils.createAttribute(
@@ -293,7 +317,7 @@ module.exports = {
                         ),
                         utils.createAttribute(
                             'fragmentUid',
-                            astPath.fragmentUid
+                            fragmentUid
                         )
                     );
                 }

@@ -39,6 +39,7 @@ function transform(sourcePath) {
             'syntax-jsx',
             'transform-decorators-legacy',
             'transform-object-rest-spread',
+            'transform-async-to-generator',
             miniappPlugin
         ]
     });
