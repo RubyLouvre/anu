@@ -22,10 +22,22 @@ module.exports = function(astPath) {
             if (isEvent) {
                 throwEventValue(attrName, attrValue);
             }
-        
+
             replaceWithExpr(astPath, attrValue);
             break;
         case 'BinaryExpression':
+            astPath.traverse({
+                ThisExpression(nodePath) {
+                    if (t.isMemberExpression(nodePath.parentPath)) {
+                        nodePath.parentPath.replaceWith(
+                            t.identifier(nodePath.parent.property.name)
+                        );
+                    }
+                }
+            });
+            replaceWithExpr(astPath, generate(astPath.node.expression).code);
+            break;
+        case 'LogicalExpression':
             astPath.traverse({
                 ThisExpression(nodePath) {
                     if (t.isMemberExpression(nodePath.parentPath)) {
@@ -64,15 +76,19 @@ module.exports = function(astPath) {
                     // style={{}} 类型解析
                     let name = attrValue;
                     let styleID = name.match(/style\d+/)[0];
-                    if (name.lastIndexOf('+') !== -1){
-                       
-                        var indexName =  name.split('+').pop().match(/\w+/)[0];
+                    if (name.lastIndexOf('+') !== -1) {
+                        var indexName = name
+                            .split('+')
+                            .pop()
+                            .match(/\w+/)[0];
 
-                        replaceWithExpr(astPath, `props['${styleID}' + ${indexName}] `  );
+                        replaceWithExpr(
+                            astPath,
+                            `props['${styleID}' + ${indexName}] `
+                        );
                     } else {
                         replaceWithExpr(astPath, `props.${styleID}`);
                     }
-                   
                 } else {
                     replaceWithExpr(astPath, attrValue);
                 }
