@@ -29,6 +29,7 @@ import './pages/demo/syntax/loop/index';
 import './pages/demo/syntax/extend/index';
 import './pages/demo/syntax/inlineStyle/index';
 import './pages/demo/syntax/loop3/index';
+import './pages/demo/syntax/loopEvent/index';
 import './pages/demo/syntax/if/index';
 import './pages/demo/syntax/children/index';
 import './pages/demo/syntax/await/index';

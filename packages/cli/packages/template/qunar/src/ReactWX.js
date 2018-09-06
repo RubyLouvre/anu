@@ -2500,143 +2500,143 @@ function collectStyle(obj, props, key) {
 }
 
 function cleanChildren(array) {
-    if (!Array.isArray(array)) {
-        return array;
-    }
-    return array.map(function (el) {
-        if (el.type == '#text') {
-            return el.props;
-        } else {
-            return {
-                type: el.type,
-                props: el.props,
-                children: cleanChildren(el.children)
-            };
-        }
-    });
+	if (!Array.isArray(array)) {
+		return array;
+	}
+	return array.map(function (el) {
+		if (el.type == '#text') {
+			return el.props;
+		} else {
+			return {
+				type: el.type,
+				props: el.props,
+				children: cleanChildren(el.children)
+			};
+		}
+	});
 }
 var autoContainer = {
-    type: 'root',
-    appendChild: noop,
-    props: null,
-    children: []
+	type: 'root',
+	appendChild: noop,
+	props: null,
+	children: []
 };
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
-    var n = name.charAt(0) == 'o' ? 2 : 5;
-    var type = name.slice(n).toLowerCase();
-    var eventCode = props['data-' + type + '-uid'];
-    return eventCode + (key != null ? '-' + key : '');
+	var n = name.charAt(0) == 'o' ? 2 : 5;
+	var type = name.slice(n).toLowerCase();
+	var eventCode = props['data-' + type + '-uid'];
+	return eventCode + (key != null ? '-' + key : '');
 }
 var Renderer$1 = createRenderer({
-    render: render,
-    updateAttribute: function updateAttribute(fiber) {
-        var props = fiber.props,
-            lastProps = fiber.lastProps;
-        var classId = props['data-class-uid'];
-        var instanceId = props['data-instance-uid'];
-        if (classId) {
-            var clazz = classCached[classId];
-            if (clazz && clazz.instances) {
-                var instance = clazz.instances[instanceId];
-                if (instance) {
-                    var cached = instance.$$eventCached || (instance.$$eventCached = {});
-                    for (var name in props) {
-                        if (onEvent.test(name) && isFn(props[name])) {
-                            var code = getEventHashCode(name, props, fiber.key);
-                            cached[code] = props[name];
-                        }
-                    }
-                    if (lastProps) {
-                        for (var _name in lastProps) {
-                            if (onEvent.test(_name) && !props[_name]) {
-                                code = getEventHashCode(_name, lastProps, fiber.key);
-                                delete cached[code];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
-    updateContent: function updateContent(fiber) {
-        fiber.stateNode.props = fiber.props;
-    },
-    onUpdate: function onUpdate(fiber) {
-        if (fiber.type.instances) {
-            if (fiber.props.isPageComponent) {
-                onPageUpdate(fiber);
-            } else {
-                onComponentUpdate(fiber);
-            }
-        }
-    },
-    onDispose: function onDispose(fiber) {
-        if (fiber.type.instances) {
-            if (!fiber.props.isPageComponent) {
-                onComponentDispose(fiber);
-            }
-        }
-    },
-    getRoot: function getRoot() {
-        return autoContainer;
-    },
-    getChildren: function getChildren() {
-        return cleanChildren(autoContainer.children || []);
-    },
-    createElement: function createElement(fiber) {
-        return fiber.tag === 5 ? {
-            type: fiber.type,
-            props: fiber.props || {},
-            children: []
-        } : {
-            type: fiber.type,
-            props: fiber.props
-        };
-    },
-    insertElement: function insertElement(fiber) {
-        var dom = fiber.stateNode,
-            parentNode = fiber.parent,
-            forwardFiber = fiber.forwardFiber,
-            before = forwardFiber ? forwardFiber.stateNode : null,
-            children = parentNode.children;
-        try {
-            if (before == null) {
-                if (dom !== children[0]) {
-                    remove(children, dom);
-                    children.unshift(dom);
-                }
-            } else {
-                if (dom !== children[children.length - 1]) {
-                    remove(children, dom);
-                    var i = children.indexOf(before);
-                    children.splice(i + 1, 0, dom);
-                }
-            }
-        } catch (e) {
-            throw e;
-        }
-    },
-    emptyElement: function emptyElement(fiber) {
-        var dom = fiber.stateNode;
-        var children = dom && dom.children;
-        if (dom && Array.isArray(children)) {
-            children.forEach(Renderer$1.removeElement);
-        }
-    },
-    removeElement: function removeElement(fiber) {
-        if (fiber.parent) {
-            var parent = fiber.parent;
-            var node = fiber.stateNode;
-            remove(parent.children, node);
-        }
-    }
+	render: render,
+	updateAttribute: function updateAttribute(fiber) {
+		var props = fiber.props,
+		    lastProps = fiber.lastProps;
+		var classId = props['data-class-uid'];
+		var instanceId = props['data-instance-uid'];
+		if (classId) {
+			var clazz = classCached[classId];
+			if (clazz && clazz.instances) {
+				var instance = clazz.instances[instanceId];
+				if (instance) {
+					var cached = instance.$$eventCached || (instance.$$eventCached = {});
+					for (var name in props) {
+						if (onEvent.test(name) && isFn(props[name])) {
+							var code = getEventHashCode(name, props, props['data-key']);
+							cached[code] = props[name];
+						}
+					}
+					if (lastProps) {
+						for (var _name in lastProps) {
+							if (onEvent.test(_name) && !props[_name]) {
+								code = getEventHashCode(_name, lastProps, lastProps['data-key']);
+								delete cached[code];
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	updateContent: function updateContent(fiber) {
+		fiber.stateNode.props = fiber.props;
+	},
+	onUpdate: function onUpdate(fiber) {
+		if (fiber.type.instances) {
+			if (fiber.props.isPageComponent) {
+				onPageUpdate(fiber);
+			} else {
+				onComponentUpdate(fiber);
+			}
+		}
+	},
+	onDispose: function onDispose(fiber) {
+		if (fiber.type.instances) {
+			if (!fiber.props.isPageComponent) {
+				onComponentDispose(fiber);
+			}
+		}
+	},
+	getRoot: function getRoot() {
+		return autoContainer;
+	},
+	getChildren: function getChildren() {
+		return cleanChildren(autoContainer.children || []);
+	},
+	createElement: function createElement(fiber) {
+		return fiber.tag === 5 ? {
+			type: fiber.type,
+			props: fiber.props || {},
+			children: []
+		} : {
+			type: fiber.type,
+			props: fiber.props
+		};
+	},
+	insertElement: function insertElement(fiber) {
+		var dom = fiber.stateNode,
+		    parentNode = fiber.parent,
+		    forwardFiber = fiber.forwardFiber,
+		    before = forwardFiber ? forwardFiber.stateNode : null,
+		    children = parentNode.children;
+		try {
+			if (before == null) {
+				if (dom !== children[0]) {
+					remove(children, dom);
+					children.unshift(dom);
+				}
+			} else {
+				if (dom !== children[children.length - 1]) {
+					remove(children, dom);
+					var i = children.indexOf(before);
+					children.splice(i + 1, 0, dom);
+				}
+			}
+		} catch (e) {
+			throw e;
+		}
+	},
+	emptyElement: function emptyElement(fiber) {
+		var dom = fiber.stateNode;
+		var children = dom && dom.children;
+		if (dom && Array.isArray(children)) {
+			children.forEach(Renderer$1.removeElement);
+		}
+	},
+	removeElement: function removeElement(fiber) {
+		if (fiber.parent) {
+			var parent = fiber.parent;
+			var node = fiber.stateNode;
+			remove(parent.children, node);
+		}
+	}
 });
 function remove(children, node) {
-    var index = children.indexOf(node);
-    if (index !== -1) {
-        children.splice(index, 1);
-    }
+	var index = children.indexOf(node);
+	if (index !== -1) {
+		children.splice(index, 1);
+	}
 }
 
 var win = getWindow();

@@ -1,6 +1,6 @@
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
-import { isFn, noop } from 'react-core/util';
+import { isFn, noop, extend } from 'react-core/util';
 import { eventSystem } from './eventSystem';
 import { getUUID } from './utils';
 
