@@ -139,6 +139,7 @@ var visitor = {
                 callee.property.name === 'map'
             ) {
                 let modules = utils.getAnu(state);
+
                 modules.indexName = args[0].params[1].name;
                 modules.dataName = args[0].params[0].name;
             }

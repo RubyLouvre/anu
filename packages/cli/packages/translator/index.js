@@ -164,7 +164,9 @@ class Parser {
                     externalHelpers: false,
                     plugins: [
                         'transform-class-properties',
-                        'transform-object-rest-spread'
+                        'transform-object-rest-spread',
+
+                        'transform-es2015-template-literals',
                     ]
                 })
             ],
@@ -295,6 +297,20 @@ class Parser {
                 fs.copyFileSync(srcJson, distJson);
             }
 
+        } else {
+            let dist = path.join(cwd, 'dist',  path.relative(path.join(cwd, 'src'), file) );
+            fs.ensureFileSync(dist);
+            if (!this.needBuild(dist, code)) return;
+            fs.writeFile(dist, code, err => {
+                if (err){
+                    // eslint-disable-next-line
+                    console.log(err);
+                    print('build fail:', path.relative(cwd, dist));
+                } else {
+                    print('build success:', path.relative(cwd, dist));
+                }
+                
+            });
         }
     }
     generateWxml(file) {

@@ -40,6 +40,7 @@ function transform(sourcePath) {
             'transform-decorators-legacy',
             'transform-object-rest-spread',
             'transform-async-to-generator',
+            'transform-es2015-template-literals',
             miniappPlugin
         ]
     });
@@ -47,7 +48,6 @@ function transform(sourcePath) {
     return helpers.moduleToCjs.byCode(result.code).code;
 }
 
-// module.exports = transform;
 module.exports = {
     transform,
     miniappPlugin
