@@ -40,6 +40,8 @@ function transform(sourcePath) {
             'transform-decorators-legacy',
             'transform-object-rest-spread',
             'transform-async-to-generator',
+            'transform-template-literals',
+            'transform-shorthand-properties',
             miniappPlugin
         ]
     });

@@ -51,13 +51,11 @@ export function createPage(PageClass, path, testObject) {
         instance,
         config = {
             data: {},
-           
             dispatchEvent: eventSystem.dispatchEvent,
             onLoad: function(query) {
                 $wxPage = this;
                 // eslint-disable-next-line
                 console.log("onLoad", path);
-              
                 instance = render(
                     createElement(PageClass, {
                         path: path,
@@ -111,28 +109,35 @@ export function createPage(PageClass, path, testObject) {
                                 data,
                                 pageInst.allTemplateData || []
                             );
-                            $wxPage.setData(safeClone(data));
+                            $wxPage.setData(safeClone(data), function () {
+                                // eslint-disable-next-line
+                                // console.log(this, safeClone(data), 'setData完毕');
+                            });
                         }
                     };
                     updateMethod.apply(this, args);
                 };
                 instance.forceUpdate();
             },
-            onShow: function onShow() {
+            onShow() {
                 PageClass.instances[instance.instanceUid] = instance;
                 var fn = instance.componentDidShow;
                 if (isFn(fn)) {
                     fn.call(instance);
                 }
             },
-            onHide: function onShow() {
+            onHide() {
                 delete PageClass.instances[instance.instanceUid];
                 var fn = instance.componentDidHide;
                 if (isFn(fn)) {
                     fn.call(instance);
                 }
             },
-            onUnload: function onUnload() {
+            onReady(){
+                // eslint-disable-next-line
+                // console.log('onReady',path);
+            },
+            onUnload() {
                 var fn = instance.componentWillUnmount;
                 if (isFn(fn)) {
                     fn.call(instance);

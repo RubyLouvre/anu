@@ -229,37 +229,45 @@ module.exports = {
             astPath.remove();
         }
     },
-    CallExpression(astPath, state) {
-        let node = astPath.node;
-        let args = node.arguments;
-        let callee = node.callee;
-        let modules = utils.getAnu(state);
-        //移除super()语句
-        if (modules.walkingMethod == 'constructor') {
-            if (callee.type === 'Super') {
-                astPath.remove();
-                return;
+    CallExpression:{
+        enter(astPath, state) {
+            let node = astPath.node;
+            let args = node.arguments;
+            let callee = node.callee;
+            let modules = utils.getAnu(state);
+            //移除super()语句
+            if (modules.walkingMethod == 'constructor') {
+                if (callee.type === 'Super') {
+                    astPath.remove();
+                    return;
+                }
             }
-        }
-        if (
-            (t.isJSXExpressionContainer(astPath.parentPath) ||
+            if (
+                (t.isJSXExpressionContainer(astPath.parentPath) ||
                 t.isConditionalExpression(astPath.parentPath)) &&
             callee.type == 'MemberExpression' &&
             callee.property.name === 'map' 
            
-        ) {
-            if ( !args[1] &&
+            ) {
+                if ( !args[1] &&
                 args[0].type === 'FunctionExpression'){
-                args[1] = t.identifier('this');
+                    args[1] = t.identifier('this');
+                }
+                if (!args[0].params[1]){
+                    args[0].params[1] = t.identifier('i'+astPath.node.start);
+                }
+                modules.indexName = args[0].params[1].name;
             }
-            if (!args[0].params[1]){
-                args[0].params[1] = t.identifier('i'+astPath.node.start);
-            }
-            modules.indexName = args[0].params[1].name;
-        }
 
-        if (callee.name === 'require'){
-            helpers.copyNpmModules(modules.current, node.arguments[0].value, node);
+            if (callee.name === 'require'){
+                helpers.copyNpmModules(modules.current, node.arguments[0].value, node);
+            }
+        },
+        exit(astPath, state){
+            let modules = utils.getAnu(state);
+            if (modules.indexName){
+                modules.indexName = null;
+            }
         }
     },
 
@@ -327,6 +335,9 @@ module.exports = {
                 }
             }
         }
+    },
+    JSXText(astPath){
+        astPath.node.value = astPath.node.value.replace(/\r?\n/g, "")
     },
     JSXAttribute: function(astPath, state) {
         let modules = utils.getAnu(state);
