@@ -61,7 +61,7 @@ function toWarnDev(msg, deprecated) {
         throw msg;
     }
 }
-function extend$1(obj, props) {
+function extend(obj, props) {
     for (var i in props) {
         if (hasOwnProperty.call(props, i)) {
             obj[i] = props[i];
@@ -74,7 +74,7 @@ function inherit(SubClass, SupClass) {
     var orig = SubClass.prototype;
     Bridge.prototype = SupClass.prototype;
     var fn = SubClass.prototype = new Bridge();
-    extend$1(fn, orig);
+    extend(fn, orig);
     fn.constructor = SubClass;
     return fn;
 }
@@ -89,9 +89,9 @@ function miniCreateClass(ctor, superClass, methods, statics) {
     };
     Ctor.displayName = className;
     var fn = inherit(Ctor, superClass);
-    extend$1(fn, methods);
+    extend(fn, methods);
     if (statics) {
-        extend$1(Ctor, statics);
+        extend(Ctor, statics);
     }
     return Ctor;
 }
@@ -118,7 +118,7 @@ function typeNumber(data) {
 }
 
 function createRenderer(methods) {
-    return extend$1(Renderer, methods);
+    return extend(Renderer, methods);
 }
 var middlewares = [];
 var Renderer = {
@@ -477,7 +477,7 @@ function traverseCallback(bookKeeping, child, childKey) {
         mapChildren(mappedChild, childKey, K, result);
     } else if (mappedChild != null) {
         if (isValidElement(mappedChild)) {
-            mappedChild = extend$1({}, mappedChild);
+            mappedChild = extend({}, mappedChild);
             mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + "/" : "") + childKey;
         }
         result.push(mappedChild);
@@ -695,7 +695,7 @@ function createInstance(fiber, context) {
     fiber.errorHook = "constructor";
     try {
         if (isStateless) {
-            extend$1(instance, {
+            extend(instance, {
                 __isStateless: true,
                 __init: true,
                 renderImpl: type,
@@ -750,7 +750,7 @@ function createInstance(fiber, context) {
 }
 
 function Fiber(vnode) {
-    extend$1(this, vnode);
+    extend(this, vnode);
     var type = vnode.type || "ProxyComponent(react-hot-loader)";
     this.name = type.displayName || type.name || type;
     this.effectTag = 1;
@@ -1064,7 +1064,7 @@ function mergeStates(fiber, nextProps) {
     if (n === 0) {
         return state;
     }
-    var nextState = extend$1({}, state);
+    var nextState = extend({}, state);
     var fail = true;
     for (var i = 0; i < n; i++) {
         var pending = pendings[i];
@@ -1078,7 +1078,7 @@ function mergeStates(fiber, nextProps) {
                 }
             }
             fail = false;
-            extend$1(nextState, pending);
+            extend(nextState, pending);
         }
     }
     if (fail) {
@@ -1302,7 +1302,7 @@ function diffChildren(parentFiber, children) {
             if (isSameNode(_oldFiber, _newFiber)) {
                 alternate = new Fiber(_oldFiber);
                 var oldRef = _oldFiber.ref;
-                _newFiber = extend$1(_oldFiber, _newFiber);
+                _newFiber = extend(_oldFiber, _newFiber);
                 delete _newFiber.disposed;
                 _newFiber.alternate = alternate;
                 if (_newFiber.ref && _newFiber.deleteRef) {
@@ -2056,7 +2056,7 @@ function onComponentUpdate(fiber) {
             var usePush = true;
             for (var i = 0, el; el = arr[i++];) {
                 if (el.props === checkProps) {
-                    extend$1(el, data);
+                    extend(el, data);
                     usePush = false;
                     break;
                 }
@@ -2069,7 +2069,7 @@ function onComponentUpdate(fiber) {
         if (instance.updateWXData) {
             for (var i = 0, el; el = arr[i++];) {
                 if (el.props === checkProps) {
-                    extend$1(el, data);
+                    extend(el, data);
                     break;
                 }
             }

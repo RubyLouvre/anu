@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-05
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-06
  * IE9+
  */
 
@@ -1935,6 +1935,7 @@ function createPage(PageClass, path, testObject) {
                 var updating = false,
                     canSetData = false;
                 instance.forceUpdate = instance.setState = function (a) {
+                    instance.wxData = instance.wxData || {};
                     var updateMethod = anuSetState;
                     var cbIndex = 1;
                     if (isFn(a) || a == null) {
@@ -1944,7 +1945,7 @@ function createPage(PageClass, path, testObject) {
                     var pageInst = this.$pageInst || this;
                     if (updating === false) {
                         if (pageInst == this) {
-                            pageInst.allTemplateData = [];
+                            pageInst.wxData = {};
                         } else {
                             this.updateWXData = true;
                         }
@@ -1959,13 +1960,14 @@ function createPage(PageClass, path, testObject) {
                         if (canSetData) {
                             canSetData = false;
                             updating = false;
-                            var data = {
+                            var data = pageInst.wxData;
+                            extend(data, {
                                 state: pageInst.state,
                                 props: pageInst.props,
                                 context: pageInst.context
-                            };
-                            applyChildComponentData(data, pageInst.allTemplateData || []);
+                            });
                             $wxPage.setData(safeClone(data), function () {
+                                console.log('setData', data);
                             });
                         }
                     };
@@ -2006,15 +2008,6 @@ function createPage(PageClass, path, testObject) {
     }
     return safeClone(config);
 }
-function applyChildComponentData(data, list) {
-    list.forEach(function (el) {
-        if (data[el.templatedata]) {
-            data[el.templatedata].push(el);
-        } else {
-            data[el.templatedata] = [el];
-        }
-    });
-}
 
 function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
@@ -2033,6 +2026,9 @@ function onComponentUpdate(fiber) {
                     parentInst = instance.$parentInst = stateNode;
                 }
                 if (p.props.isPageComponent) {
+                    if (!stateNode.wxData) {
+                        stateNode.wxData = {};
+                    }
                     instance.$pageInst = stateNode;
                     break;
                 }
@@ -2048,46 +2044,38 @@ function onComponentUpdate(fiber) {
     if (parentInst) {
         var inputProps = fiber._owner.props;
         var uuid = inputProps.templatedata;
-        var newData = {
-            props: instance.props,
-            state: instance.state,
-            context: instance.context,
-            templatedata: uuid
-        };
-        instance.wxData = newData;
-        if (!parentInst.props.isPageComponent) {
-            var list = parentInst.wxData[uuid] || (parentInst.wxData[uuid] = []);
-            list.push(newData);
-            return;
-        }
-        var arr = getData(parentInst);
-        newData.props.instanceUid = instanceUid;
+        var data = instance.wxData || (instance.wxData = {});
+        data.props = instance.props;
+        data.state = instance.state;
+        data.context = instance.context;
+        data.templatedata = uuid;
+        var arr = getData(parentInst, uuid);
+        data.props.instanceUid = instanceUid;
+        var checkProps = fiber.memoizedProps;
         if (instance.__isStateless) {
-            var checkProps = fiber.memoizedProps;
             var usePush = true;
             for (var i = 0, el; el = arr[i++];) {
                 if (el.props === checkProps) {
-                    extend(el, newData);
+                    extend(el, data);
                     usePush = false;
                     break;
                 }
             }
             if (usePush) {
-                arr.push(newData);
+                arr.push(data);
             }
             return;
         }
         if (instance.updateWXData) {
-            checkProps = fiber.memoizedProps;
             for (var i = 0, el; el = arr[i++];) {
                 if (el.props === checkProps) {
-                    extend(el, newData);
+                    extend(el, data);
                     break;
                 }
             }
             delete instance.updateWXData;
         } else {
-            arr.push(newData);
+            arr.push(data);
         }
     }
 }
@@ -2098,11 +2086,13 @@ function onComponentDispose(fiber) {
     if (!instances) {
         return;
     }
-    var pageInst = instance.$pageInst;
-    if (pageInst) {
+    var parentInst = instance.$parentInst;
+    if (parentInst) {
         delete instances[instance.instanceUid];
         var props = fiber.props;
-        var arr = getData(pageInst);
+        var inputProps = fiber._owner.props;
+        var uuid = inputProps.templatedata;
+        var arr = getData(parentInst, uuid);
         for (var i = 0, el; el = arr[i++];) {
             if (el.props === props) {
                 arr.splice(i, 1);
@@ -2163,8 +2153,8 @@ function template(props) {
     }
     return createElement(clazz, componentProps);
 }
-function getData(instance) {
-    return instance.allTemplateData || (instance.allTemplateData = []);
+function getData(instance, uuid) {
+    return instance.wxData[uuid] || (instance.wxData[uuid] = []);
 }
 
 var onAndSyncApis = {
@@ -2684,7 +2674,6 @@ React = win.React = win.ReactDOM = {
     collectStyle: collectStyle
 };
 initNativeApi(React);
-var React$1 = React;
 
 
-module.exports = React$1;
+module.exports = React;
