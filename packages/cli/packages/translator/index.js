@@ -130,6 +130,10 @@ function getExecutedOrder(list) {
         }
     }
     sortOrder(list, { id: fakeUrl });
+    if (list.length){
+        // eslint-disable-next-line
+        console.warn('发生循环依赖，导致无法解析，请查看以下文件', list);
+    }
     return ret;
 }
 class Parser {
@@ -139,9 +143,6 @@ class Parser {
         this.inputConfig = {
             input: this.entry,
             plugins: [
-                // resolve({
-                //     extensions: ['.js', 'jsx']
-                // }),
                 alias(getAlias()),
                 commonjs({
                     include: 'node_modules/**'
@@ -180,6 +181,7 @@ class Parser {
     async parse() {
         const bundle = await rollup.rollup(this.inputConfig);
         const files = [], cssFiles = [];
+        const aaa =[];
         bundle.modules.forEach(function(item) {
             const id = item.id;
             if (/commonjsHelpers|node_modules/.test(id)){
@@ -189,11 +191,14 @@ class Parser {
                 cssFiles.push(id);
                 return;
             }
+            aaa.push(id);
             files.push({
                 id: id,
                 deps: item.dependencies
             });
         });
+      
+        // console.log('====',files, files.length);
         let sorted = getExecutedOrder(files);
         this.startCodeGenJs(sorted);
         this.startCodeGenCss(cssFiles);
