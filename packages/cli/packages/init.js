@@ -34,8 +34,7 @@ const pkgJsonTemplate = {
         'babel-plugin-transform-es2015-template-literals': '^6.22.0',
         'babel-plugin-transform-react-jsx': '^6.24.1',
         'babel-preset-react': '^6.24.1',
-        'weapp-async-await': '^1.0.1',
-        'node-sass': '^4.9.3'
+        'weapp-async-await': '^1.0.1'
     },
     dependencies: {}
 };
