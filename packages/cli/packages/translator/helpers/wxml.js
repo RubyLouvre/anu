@@ -36,7 +36,7 @@ function wxml(code, modules) {
     return html;
 }
 function genKey(key){
-   return key.indexOf(".") > 0 ? key.split('.').pop(): '*this';
+    return key.indexOf('.') > 0 ? key.split('.').pop(): '*this';
 }
 var visitor = {
     JSXOpeningElement: {
@@ -48,7 +48,7 @@ var visitor = {
 				openTag.property.name === 'template'
             ) {
                 var modules = utils.getAnu(state);
-                var array, is, key = "";
+                var array, is, key = '';
                 astPath.node.attributes.forEach(function(el) {
                     var attrName = el.name.name;
                     var attrValue = el.value.value;
@@ -70,7 +70,7 @@ var visitor = {
                 });
                 var attributes = [];
                 var template = utils.createElement('template', attributes, []);
-               // template.key = key;
+                // template.key = key;
 
                 //将组件变成template标签
                 if (!modules.indexName) {
@@ -114,6 +114,7 @@ var visitor = {
             //移除super()语句
             if (callee.type == 'MemberExpression' && callee.property.name === 'map') {
                 let modules = utils.getAnu(state);
+
                 modules.indexName = args[0].params[1].name;
                 modules.dataName = args[0].params[0].name;
             }

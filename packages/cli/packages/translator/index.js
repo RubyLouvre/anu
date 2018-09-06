@@ -167,7 +167,6 @@ class Parser {
                         'transform-object-rest-spread',
 
                         'transform-es2015-template-literals',
-                        'transform-shorthand-properties',
                     ]
                 })
             ],
