@@ -1,18 +1,18 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-04
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-05
  * IE9+
  */
 
 var arrayPush = Array.prototype.push;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
-var gSBU = "getSnapshotBeforeUpdate";
-var gDSFP = "getDerivedStateFromProps";
-var hasSymbol = typeof Symbol === "function" && Symbol["for"];
+var gSBU = 'getSnapshotBeforeUpdate';
+var gDSFP = 'getDerivedStateFromProps';
+var hasSymbol = typeof Symbol === 'function' && Symbol['for'];
 var effects = [];
 var topFibers = [];
 var topNodes = [];
 var emptyObject = {};
-var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
+var REACT_ELEMENT_TYPE = hasSymbol ? Symbol['for']('react.element') : 0xeac7;
 function noop() {}
 function Fragment(props) {
     return props.children;
@@ -39,7 +39,7 @@ var fakeWindow = {};
 function getWindow() {
     try {
         if (!window) {
-            throw "no window";
+            throw 'no window';
         }
         return window;
     } catch (e) {
@@ -55,9 +55,9 @@ function isMounted(instance) {
     return !!(fiber && fiber.hasMounted);
 }
 function toWarnDev(msg, deprecated) {
-    msg = deprecated ? msg + " is deprecated" : msg;
+    msg = deprecated ? msg + ' is deprecated' : msg;
     var process = getWindow().process;
-    if (process && process.env.NODE_ENV === "development") {
+    if (process && process.env.NODE_ENV === 'development') {
         throw msg;
     }
 }
@@ -79,11 +79,11 @@ function inherit(SubClass, SupClass) {
     return fn;
 }
 try {
-    var supportEval = Function("a", "return a + 1")(2) == 3;
+    var supportEval = Function('a', 'return a + 1')(2) == 3;
 } catch (e) {}
 function miniCreateClass(ctor, superClass, methods, statics) {
-    var className = ctor.name || "IEComponent";
-    var Ctor = supportEval ? Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }")(superClass, ctor) : function ReactInstance() {
+    var className = ctor.name || 'IEComponent';
+    var Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : function ReactInstance() {
         superClass.apply(this, arguments);
         ctor.apply(this, arguments);
     };
@@ -96,15 +96,15 @@ function miniCreateClass(ctor, superClass, methods, statics) {
     return Ctor;
 }
 function isFn(obj) {
-    return __type.call(obj) === "[object Function]";
+    return __type.call(obj) === '[object Function]';
 }
 var numberMap = {
-    "[object Boolean]": 2,
-    "[object Number]": 3,
-    "[object String]": 4,
-    "[object Function]": 5,
-    "[object Symbol]": 6,
-    "[object Array]": 7
+    '[object Boolean]': 2,
+    '[object Number]': 3,
+    '[object String]': 4,
+    '[object Function]': 5,
+    '[object Symbol]': 6,
+    '[object Array]': 7
 };
 function typeNumber(data) {
     if (data === null) {
@@ -137,7 +137,7 @@ var Renderer = {
     fireMiddlewares: function fireMiddlewares(begin) {
         var index = begin ? middlewares.length - 1 : 0,
             delta = begin ? -1 : 1,
-            method = begin ? "begin" : "end",
+            method = begin ? 'begin' : 'end',
             obj = void 0;
         while (obj = middlewares[index]) {
             obj[method]();
@@ -162,11 +162,11 @@ function Component(props, context) {
 Component.prototype = {
     constructor: Component,
     replaceState: function replaceState() {
-        toWarnDev("replaceState", true);
+        toWarnDev('replaceState', true);
     },
     isReactComponent: returnTrue,
     isMounted: function isMounted$$1() {
-        toWarnDev("isMounted", true);
+        toWarnDev('isMounted', true);
         return this.updater.isMounted(this);
     },
     setState: function setState(state, cb) {
@@ -176,11 +176,11 @@ Component.prototype = {
         this.updater.enqueueSetState(this, true, cb);
     },
     render: function render() {
-        throw "must implement render";
+        throw 'must implement render';
     }
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj; };
 var RESERVED_PROPS = {
     key: true,
     ref: true,
@@ -227,15 +227,15 @@ function createElement(type, config) {
         argsLen = children.length;
     if (type && type.call) {
         tag = type.prototype && type.prototype.render ? 2 : 1;
-    } else if (type + "" !== type) {
-        toWarnDev("React.createElement: type is invalid.");
+    } else if (type + '' !== type) {
+        toWarnDev('React.createElement: type is invalid.');
     }
     if (config != null) {
         if (hasValidRef(config)) {
             ref = config.ref;
         }
         if (hasValidKey(config)) {
-            key = "" + config.key;
+            key = '' + config.key;
         }
     }
     props = makeProps(type, config || {}, props, children, argsLen);
@@ -258,7 +258,7 @@ function cloneElement(element, config) {
             owner = Renderer.currentOwner;
         }
         if (hasValidKey(config)) {
-            key = "" + config.key;
+            key = '' + config.key;
         }
     }
     props = makeProps(type, config || {}, props, children, argsLen);
@@ -281,7 +281,7 @@ function ReactElement(type, tag, props, key, ref, owner) {
         var refType = typeNumber(ref);
         if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
             if (refType < 4) {
-                ref += "";
+                ref += '';
             }
             ret.ref = ref;
         } else {
@@ -295,7 +295,7 @@ function isValidElement(vnode) {
     return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
 }
 function createVText(text) {
-    return ReactElement("#text", 6, text + "");
+    return ReactElement('#text', 6, text + '');
 }
 function escape(key) {
     var escapeRegex = /[=:]/g;
@@ -328,7 +328,7 @@ function flattenCb(context, child, key, childType) {
     if (!flattenObject[key]) {
         flattenObject[key] = child;
     } else {
-        key = "." + flattenIndex;
+        key = '.' + flattenIndex;
         flattenObject[key] = child;
     }
     flattenIndex++;
@@ -338,18 +338,18 @@ function fiberizeChildren(children, fiber) {
     flattenIndex = 0;
     if (children !== void 666) {
         lastText = null;
-        traverseAllChildren(children, "", flattenCb);
+        traverseAllChildren(children, '', flattenCb);
     }
     flattenIndex = 0;
     return fiber.children = flattenObject;
 }
 function getComponentKey(component, index) {
-    if ((typeof component === "undefined" ? "undefined" : _typeof(component)) === 'object' && component !== null && component.key != null) {
+    if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
         return escape(component.key);
     }
     return index.toString(36);
 }
-var SEPARATOR = ".";
+var SEPARATOR = '.';
 var SUBSEPARATOR = ':';
 function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
     var childType = typeNumber(children);
@@ -370,8 +370,8 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
         case 8:
             if (children.$$typeof || children instanceof Component) {
                 invokeCallback = true;
-            } else if (children.hasOwnProperty("toString")) {
-                children = children + "";
+            } else if (children.hasOwnProperty('toString')) {
+                children = children + '';
                 invokeCallback = true;
                 childType = 3;
             }
@@ -379,7 +379,7 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
     }
     if (invokeCallback) {
         callback(bookKeeping, children,
-        nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
+            nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
         return 1;
     }
     var subtreeCount = 0;
@@ -403,10 +403,10 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
         }
         return subtreeCount;
     }
-    throw "children: type is invalid.";
+    throw 'children: type is invalid.';
 }
 var REAL_SYMBOL = hasSymbol && Symbol.iterator;
-var FAKE_SYMBOL = "@@iterator";
+var FAKE_SYMBOL = '@@iterator';
 function getIteractor(a) {
     var iteratorFn = REAL_SYMBOL && a[REAL_SYMBOL] || a[FAKE_SYMBOL];
     if (iteratorFn && iteratorFn.call) {
@@ -419,13 +419,13 @@ var Children = {
         if (isValidElement(children)) {
             return children;
         }
-        throw new Error("expect only one child");
+        throw new Error('expect only one child');
     },
     count: function count(children) {
         if (children == null) {
             return 0;
         }
-        return traverseAllChildren(children, "", noop);
+        return traverseAllChildren(children, '', noop);
     },
     map: function map(children, func, context) {
         return proxyIt(children, func, [], context);
@@ -448,11 +448,11 @@ function K(el) {
     return el;
 }
 function mapChildren(children, prefix, func, result, context) {
-    var keyPrefix = "";
+    var keyPrefix = '';
     if (prefix != null) {
-        keyPrefix = escapeUserProvidedKey(prefix) + "/";
+        keyPrefix = escapeUserProvidedKey(prefix) + '/';
     }
-    traverseAllChildren(children, "", traverseCallback, {
+    traverseAllChildren(children, '', traverseCallback, {
         context: context,
         keyPrefix: keyPrefix,
         func: func,
@@ -462,7 +462,7 @@ function mapChildren(children, prefix, func, result, context) {
 }
 var userProvidedKeyEscapeRegex = /\/+/g;
 function escapeUserProvidedKey(text) {
-    return ("" + text).replace(userProvidedKeyEscapeRegex, "$&/");
+    return ('' + text).replace(userProvidedKeyEscapeRegex, '$&/');
 }
 function traverseCallback(bookKeeping, child, childKey) {
     var result = bookKeeping.result,
@@ -478,7 +478,7 @@ function traverseCallback(bookKeeping, child, childKey) {
     } else if (mappedChild != null) {
         if (isValidElement(mappedChild)) {
             mappedChild = extend({}, mappedChild);
-            mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + "/" : "") + childKey;
+            mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + '/' : '') + childKey;
         }
         result.push(mappedChild);
     }
@@ -583,7 +583,7 @@ function createEventEmitter(value) {
     };
 }
 function createContext(defaultValue, calculateChangedBits) {
-    var contextProp = "__create-react-context-" + gud() + "__";
+    var contextProp = '__create-react-context-' + gud() + '__';
     function create(obj, value) {
         obj[contextProp] = value;
         return obj;
@@ -686,13 +686,13 @@ function createInstance(fiber, context) {
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = {
-        refs: {},
-        props: props,
-        context: context,
-        ref: ref,
-        __proto__: type.prototype
-    };
-    fiber.errorHook = "constructor";
+            refs: {},
+            props: props,
+            context: context,
+            ref: ref,
+            __proto__: type.prototype
+        };
+    fiber.errorHook = 'constructor';
     try {
         if (isStateless) {
             extend(instance, {
@@ -709,7 +709,7 @@ function createInstance(fiber, context) {
                     if (a && a.render) {
                         delete this.__isStateless;
                         for (var i in a) {
-                            instance[i == "render" ? "renderImpl" : i] = a[i];
+                            instance[i == 'render' ? 'renderImpl' : i] = a[i];
                         }
                     } else if (this.__init) {
                         this.__keep = {
@@ -731,7 +731,7 @@ function createInstance(fiber, context) {
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
-                throw type.name + " doesn't extend React.Component";
+                throw type.name + ' doesn\'t extend React.Component';
             }
         }
     } finally {
@@ -751,7 +751,7 @@ function createInstance(fiber, context) {
 
 function Fiber(vnode) {
     extend(this, vnode);
-    var type = vnode.type || "ProxyComponent(react-hot-loader)";
+    var type = vnode.type || 'ProxyComponent(react-hot-loader)';
     this.name = type.displayName || type.name || type;
     this.effectTag = 1;
 }
@@ -815,7 +815,7 @@ function applyCallback(host, hook, args) {
     var fiber = host._reactInternalFiber;
     fiber.errorHook = hook;
     var fn = host[hook];
-    if (hook == "componentWillUnmount") {
+    if (hook == 'componentWillUnmount') {
         host[hook] = noop;
     }
     if (fn) {
@@ -824,13 +824,13 @@ function applyCallback(host, hook, args) {
     return true;
 }
 function describeError(names, hook) {
-    var segments = ["**" + hook + "** method occur error "];
+    var segments = ['**' + hook + '** method occur error '];
     names.forEach(function (name, i) {
         if (names[i + 1]) {
-            segments.push("in " + name + " (created By " + names[i + 1] + ")");
+            segments.push('in ' + name + ' (created By ' + names[i + 1] + ')');
         }
     });
-    return segments.join("\n\r").trim();
+    return segments.join('\n\r').trim();
 }
 function findCatchComponent(fiber, names, hook) {
     var instance = void 0,
@@ -868,7 +868,7 @@ function findCatchComponent(fiber, names, hook) {
                     boundary = f;
                 }
                 if (!boundary.catchError) {
-                    if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
+                    if (hook == 'componentWillUnmount' || hook == 'componentDidUpdate') {
                         boundary.effectTag = CAPTURE;
                     } else {
                         boundary.effectTag = effectTag * CAPTURE;
@@ -1154,7 +1154,7 @@ function updateClassComponent(fiber, info) {
     Renderer.onUpdate(fiber);
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
-    var rendered = applyCallback(instance, "render", []);
+    var rendered = applyCallback(instance, 'render', []);
     diffChildren(fiber, rendered);
 }
 function applybeforeMountHooks(fiber, instance, newProps) {
@@ -1162,7 +1162,7 @@ function applybeforeMountHooks(fiber, instance, newProps) {
     if (instance.__useNewHooks) {
         setStateByProps(instance, fiber, newProps, instance.state);
     } else {
-        callUnsafeHook(instance, "componentWillMount", []);
+        callUnsafeHook(instance, 'componentWillMount', []);
     }
     delete fiber.setout;
     mergeStates(fiber, newProps);
@@ -1180,7 +1180,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     if (!instance.__useNewHooks) {
         if (propsChanged || contextChanged) {
             var prevState = instance.state;
-            callUnsafeHook(instance, "componentWillReceiveProps", [newProps, newContext]);
+            callUnsafeHook(instance, 'componentWillReceiveProps', [newProps, newContext]);
             if (prevState !== instance.state) {
                 fiber.memoizedState = instance.state;
             }
@@ -1199,16 +1199,16 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     } else {
         var args = [newProps, newState, newContext];
         fiber.updateQueue = UpdateQueue();
-        if (!updateQueue.isForced && !applyCallback(instance, "shouldComponentUpdate", args)) {
+        if (!updateQueue.isForced && !applyCallback(instance, 'shouldComponentUpdate', args)) {
             fiber.updateFail = true;
         } else if (!instance.__useNewHooks) {
-            callUnsafeHook(instance, "componentWillUpdate", args);
+            callUnsafeHook(instance, 'componentWillUpdate', args);
         }
     }
 }
 function callUnsafeHook(a, b, c) {
     applyCallback(a, b, c);
-    applyCallback(a, "UNSAFE_" + b, c);
+    applyCallback(a, 'UNSAFE_' + b, c);
 }
 function isSameNode(a, b) {
     if (a.type === b.type && a.key === b.key) {
@@ -1354,7 +1354,7 @@ var Refs = {
                 fiber.deleteRef = true;
             }
         } catch (e) {
-            pushError(fiber, "ref", e);
+            pushError(fiber, 'ref', e);
         }
     }
 };
@@ -1377,7 +1377,7 @@ var refStrategy = {
     }
 };
 
-var domFns = ["insertElement", "updateContent", "updateAttribute"];
+var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
 var domEffects = [PLACE, CONTENT, ATTR];
 var domRemoved = [];
 function commitDFSImpl(fiber) {
@@ -1469,10 +1469,10 @@ function commitEffects(fiber) {
                     break;
                 case HOOK:
                     if (fiber.hasMounted) {
-                        guardCallback(instance, "componentDidUpdate", [updater.prevProps, updater.prevState, updater.snapshot]);
+                        guardCallback(instance, 'componentDidUpdate', [updater.prevProps, updater.prevState, updater.snapshot]);
                     } else {
                         fiber.hasMounted = true;
-                        guardCallback(instance, "componentDidMount", []);
+                        guardCallback(instance, 'componentDidMount', []);
                     }
                     delete fiber._hydrating;
                     if (fiber.catchError) {
@@ -1543,7 +1543,7 @@ function disposeFiber(fiber, force) {
             Renderer.onDispose(fiber);
             if (fiber.hasMounted) {
                 stateNode.updater.enqueueSetState = returnFalse;
-                guardCallback(stateNode, "componentWillUnmount", []);
+                guardCallback(stateNode, 'componentWillUnmount', []);
                 delete fiber.stateNode;
             }
         }
@@ -1777,7 +1777,7 @@ function validateTag(el) {
 function createContainer(root, onlyGet, validate) {
     validate = validate || validateTag;
     if (!validate(root)) {
-        throw "container is not a element";
+        throw 'container is not a element';
     }
     root.anuProp = 2018;
     var useProp = root.anuProp === 2018;
@@ -1798,7 +1798,7 @@ function createContainer(root, onlyGet, validate) {
     var container = new Fiber({
         stateNode: root,
         tag: 5,
-        name: "hostRoot",
+        name: 'hostRoot',
         contextStack: [{}],
         containerStack: [root],
         microtasks: [],
@@ -1875,7 +1875,7 @@ function eventString() {
     return '[object Event]';
 }
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof$1 = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj; };
 function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
@@ -1910,90 +1910,93 @@ function createPage(PageClass, path, testObject) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     PageClass.instances = PageClass.instances || {};
     var $wxPage = {
-        setData: noop
-    },
+            setData: noop
+        },
         instance,
         config = {
-        data: {},
-        dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function onLoad(query) {
-            $wxPage = this;
-            console.log("onLoad", path);
-            instance = render(createElement(PageClass, {
-                path: path,
-                query: query,
-                isPageComponent: true
-            }), {
-                type: 'page',
-                props: {},
-                children: [],
-                root: true,
-                appendChild: noop
-            });
-            var anuSetState = instance.setState;
-            var anuForceUpdate = instance.forceUpdate;
-            var updating = false,
-                canSetData = false;
-            instance.forceUpdate = instance.setState = function (a) {
-                var updateMethod = anuSetState;
-                var cbIndex = 1;
-                if (isFn(a) || a == null) {
-                    updateMethod = anuForceUpdate;
-                    cbIndex = 0;
-                }
-                var pageInst = this.$pageInst || this;
-                if (updating === false) {
-                    if (pageInst == this) {
-                        pageInst.allTemplateData = [];
-                    } else {
-                        this.updateWXData = true;
+            data: {},
+            dispatchEvent: eventSystem.dispatchEvent,
+            onLoad: function onLoad(query) {
+                $wxPage = this;
+                console.log('onLoad', path);
+                instance = render(createElement(PageClass, {
+                    path: path,
+                    query: query,
+                    isPageComponent: true
+                }), {
+                    type: 'page',
+                    props: {},
+                    children: [],
+                    root: true,
+                    appendChild: noop
+                });
+                var anuSetState = instance.setState;
+                var anuForceUpdate = instance.forceUpdate;
+                var updating = false,
+                    canSetData = false;
+                instance.forceUpdate = instance.setState = function (a) {
+                    var updateMethod = anuSetState;
+                    var cbIndex = 1;
+                    if (isFn(a) || a == null) {
+                        updateMethod = anuForceUpdate;
+                        cbIndex = 0;
                     }
-                    canSetData = true;
-                    updating = true;
-                }
-                var inst = this,
-                    cb = arguments[cbIndex],
-                    args = Array.prototype.slice.call(arguments);
-                args[cbIndex] = function () {
-                    cb && cb.call(inst);
-                    if (canSetData) {
-                        canSetData = false;
-                        updating = false;
-                        var data = {
-                            state: pageInst.state,
-                            props: pageInst.props,
-                            context: pageInst.context
-                        };
-                        applyChildComponentData(data, pageInst.allTemplateData || []);
-                        $wxPage.setData(safeClone(data));
+                    var pageInst = this.$pageInst || this;
+                    if (updating === false) {
+                        if (pageInst == this) {
+                            pageInst.allTemplateData = [];
+                        } else {
+                            this.updateWXData = true;
+                        }
+                        canSetData = true;
+                        updating = true;
                     }
+                    var inst = this,
+                        cb = arguments[cbIndex],
+                        args = Array.prototype.slice.call(arguments);
+                    args[cbIndex] = function () {
+                        cb && cb.call(inst);
+                        if (canSetData) {
+                            canSetData = false;
+                            updating = false;
+                            var data = {
+                                state: pageInst.state,
+                                props: pageInst.props,
+                                context: pageInst.context
+                            };
+                            applyChildComponentData(data, pageInst.allTemplateData || []);
+                            $wxPage.setData(safeClone(data), function () {
+                            });
+                        }
+                    };
+                    updateMethod.apply(this, args);
                 };
-                updateMethod.apply(this, args);
-            };
-            instance.forceUpdate();
-        },
-        onShow: function onShow() {
-            PageClass.instances[instance.instanceUid] = instance;
-            var fn = instance.componentDidShow;
-            if (isFn(fn)) {
-                fn.call(instance);
+                instance.forceUpdate();
+            },
+            onShow: function onShow() {
+                PageClass.instances[instance.instanceUid] = instance;
+                var fn = instance.componentDidShow;
+                if (isFn(fn)) {
+                    fn.call(instance);
+                }
+            },
+            onHide: function onHide() {
+                delete PageClass.instances[instance.instanceUid];
+                var fn = instance.componentDidHide;
+                if (isFn(fn)) {
+                    fn.call(instance);
+                }
+            },
+            onReady: function onReady() {
+            },
+            onUnload: function onUnload() {
+                var fn = instance.componentWillUnmount;
+                if (isFn(fn)) {
+                    fn.call(instance);
+                }
+                instance = {};
             }
-        },
-        onHide: function onShow() {
-            delete PageClass.instances[instance.instanceUid];
-            var fn = instance.componentDidHide;
-            if (isFn(fn)) {
-                fn.call(instance);
-            }
-        },
-        onUnload: function onUnload() {
-            var fn = instance.componentWillUnmount;
-            if (isFn(fn)) {
-                fn.call(instance);
-            }
-            instance = {};
-        }
-    };
+        };
     if (testObject) {
         config.setData = function (obj) {
             config.data = obj;
@@ -2017,37 +2020,47 @@ function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
     var instances = type.instances;
-    if (!instances) {
-        return;
-    }
     var instanceUid = instance.instanceUid;
+    var parentInst = null;
     if (!instanceUid) {
         instanceUid = instance.instanceUid = getUUID();
         instances[instanceUid] = instance;
         var p = fiber.return;
         while (p) {
-            var inst = p._owner;
-            if (inst) {
-                if (inst.$pageInst) {
-                    instance.$pageInst = inst.$pageInst;
+            if (p.name !== 'template' && p.tag < 4) {
+                var stateNode = p.stateNode;
+                if (!parentInst) {
+                    parentInst = instance.$parentInst = stateNode;
+                }
+                if (p.props.isPageComponent) {
+                    instance.$pageInst = stateNode;
                     break;
-                } else if (inst.props && inst.props.isPageComponent) {
-                    instance.$pageInst = inst;
+                }
+                if (stateNode.$pageInst) {
+                    instance.$pageInst = stateNode.$pageInst;
                     break;
                 }
             }
+            p = p.return;
         }
     }
-    var inputProps = fiber._owner.props;
-    var pageInst = instance.$pageInst;
-    if (pageInst) {
-        var arr = getData(pageInst);
+    parentInst = instance.$parentInst;
+    if (parentInst) {
+        var inputProps = fiber._owner.props;
+        var uuid = inputProps.templatedata;
         var newData = {
             props: instance.props,
             state: instance.state,
             context: instance.context,
-            templatedata: inputProps.templatedata
+            templatedata: uuid
         };
+        instance.wxData = newData;
+        if (!parentInst.props.isPageComponent) {
+            var list = parentInst.wxData[uuid] || (parentInst.wxData[uuid] = []);
+            list.push(newData);
+            return;
+        }
+        var arr = getData(parentInst);
         newData.props.instanceUid = instanceUid;
         if (instance.__isStateless) {
             var checkProps = fiber.memoizedProps;
@@ -2065,7 +2078,7 @@ function onComponentUpdate(fiber) {
             return;
         }
         if (instance.updateWXData) {
-            var checkProps = fiber.memoizedProps;
+            checkProps = fiber.memoizedProps;
             for (var i = 0, el; el = arr[i++];) {
                 if (el.props === checkProps) {
                     extend(el, newData);
@@ -2155,187 +2168,187 @@ function getData(instance) {
 }
 
 var onAndSyncApis = {
-  onSocketOpen: true,
-  onSocketError: true,
-  onSocketMessage: true,
-  onSocketClose: true,
-  onBackgroundAudioPlay: true,
-  onBackgroundAudioPause: true,
-  onBackgroundAudioStop: true,
-  onNetworkStatusChange: true,
-  onAccelerometerChange: true,
-  onCompassChange: true,
-  onBluetoothAdapterStateChange: true,
-  onBluetoothDeviceFound: true,
-  onBLEConnectionStateChange: true,
-  onBLECharacteristicValueChange: true,
-  onBeaconUpdate: true,
-  onBeaconServiceChange: true,
-  onUserCaptureScreen: true,
-  onHCEMessage: true,
-  onGetWifiList: true,
-  onWifiConnected: true,
-  setStorageSync: true,
-  getStorageSync: true,
-  getStorageInfoSync: true,
-  removeStorageSync: true,
-  clearStorageSync: true,
-  getSystemInfoSync: true,
-  getExtConfigSync: true,
-  getLogManager: true
+    onSocketOpen: true,
+    onSocketError: true,
+    onSocketMessage: true,
+    onSocketClose: true,
+    onBackgroundAudioPlay: true,
+    onBackgroundAudioPause: true,
+    onBackgroundAudioStop: true,
+    onNetworkStatusChange: true,
+    onAccelerometerChange: true,
+    onCompassChange: true,
+    onBluetoothAdapterStateChange: true,
+    onBluetoothDeviceFound: true,
+    onBLEConnectionStateChange: true,
+    onBLECharacteristicValueChange: true,
+    onBeaconUpdate: true,
+    onBeaconServiceChange: true,
+    onUserCaptureScreen: true,
+    onHCEMessage: true,
+    onGetWifiList: true,
+    onWifiConnected: true,
+    setStorageSync: true,
+    getStorageSync: true,
+    getStorageInfoSync: true,
+    removeStorageSync: true,
+    clearStorageSync: true,
+    getSystemInfoSync: true,
+    getExtConfigSync: true,
+    getLogManager: true
 };
 var noPromiseApis = {
-  stopRecord: true,
-  getRecorderManager: true,
-  pauseVoice: true,
-  stopVoice: true,
-  pauseBackgroundAudio: true,
-  stopBackgroundAudio: true,
-  getBackgroundAudioManager: true,
-  createAudioContext: true,
-  createInnerAudioContext: true,
-  createVideoContext: true,
-  createCameraContext: true,
-  navigateBack: true,
-  createMapContext: true,
-  canIUse: true,
-  startAccelerometer: true,
-  stopAccelerometer: true,
-  startCompass: true,
-  stopCompass: true,
-  hideToast: true,
-  hideLoading: true,
-  showNavigationBarLoading: true,
-  hideNavigationBarLoading: true,
-  createAnimation: true,
-  pageScrollTo: true,
-  createSelectorQuery: true,
-  createCanvasContext: true,
-  createContext: true,
-  drawCanvas: true,
-  hideKeyboard: true,
-  stopPullDownRefresh: true,
-  arrayBufferToBase64: true,
-  base64ToArrayBuffer: true,
-  getUpdateManager: true,
-  createWorker: true
+    stopRecord: true,
+    getRecorderManager: true,
+    pauseVoice: true,
+    stopVoice: true,
+    pauseBackgroundAudio: true,
+    stopBackgroundAudio: true,
+    getBackgroundAudioManager: true,
+    createAudioContext: true,
+    createInnerAudioContext: true,
+    createVideoContext: true,
+    createCameraContext: true,
+    navigateBack: true,
+    createMapContext: true,
+    canIUse: true,
+    startAccelerometer: true,
+    stopAccelerometer: true,
+    startCompass: true,
+    stopCompass: true,
+    hideToast: true,
+    hideLoading: true,
+    showNavigationBarLoading: true,
+    hideNavigationBarLoading: true,
+    createAnimation: true,
+    pageScrollTo: true,
+    createSelectorQuery: true,
+    createCanvasContext: true,
+    createContext: true,
+    drawCanvas: true,
+    hideKeyboard: true,
+    stopPullDownRefresh: true,
+    arrayBufferToBase64: true,
+    base64ToArrayBuffer: true,
+    getUpdateManager: true,
+    createWorker: true
 };
 var otherApis = {
-  uploadFile: true,
-  downloadFile: true,
-  connectSocket: true,
-  sendSocketMessage: true,
-  closeSocket: true,
-  chooseImage: true,
-  previewImage: true,
-  getImageInfo: true,
-  saveImageToPhotosAlbum: true,
-  startRecord: true,
-  playVoice: true,
-  getBackgroundAudioPlayerState: true,
-  playBackgroundAudio: true,
-  seekBackgroundAudio: true,
-  chooseVideo: true,
-  saveVideoToPhotosAlbum: true,
-  loadFontFace: true,
-  saveFile: true,
-  getFileInfo: true,
-  getSavedFileList: true,
-  getSavedFileInfo: true,
-  removeSavedFile: true,
-  openDocument: true,
-  setStorage: true,
-  getStorage: true,
-  getStorageInfo: true,
-  removeStorage: true,
-  clearStorage: true,
-  navigateTo: true,
-  redirectTo: true,
-  switchTab: true,
-  reLaunch: true,
-  getLocation: true,
-  chooseLocation: true,
-  openLocation: true,
-  getSystemInfo: true,
-  getNetworkType: true,
-  makePhoneCall: true,
-  scanCode: true,
-  setClipboardData: true,
-  getClipboardData: true,
-  openBluetoothAdapter: true,
-  closeBluetoothAdapter: true,
-  getBluetoothAdapterState: true,
-  startBluetoothDevicesDiscovery: true,
-  stopBluetoothDevicesDiscovery: true,
-  getBluetoothDevices: true,
-  getConnectedBluetoothDevices: true,
-  createBLEConnection: true,
-  closeBLEConnection: true,
-  getBLEDeviceServices: true,
-  getBLEDeviceCharacteristics: true,
-  readBLECharacteristicValue: true,
-  writeBLECharacteristicValue: true,
-  notifyBLECharacteristicValueChange: true,
-  startBeaconDiscovery: true,
-  stopBeaconDiscovery: true,
-  getBeacons: true,
-  setScreenBrightness: true,
-  getScreenBrightness: true,
-  setKeepScreenOn: true,
-  vibrateLong: true,
-  vibrateShort: true,
-  addPhoneContact: true,
-  getHCEState: true,
-  startHCE: true,
-  stopHCE: true,
-  sendHCEMessage: true,
-  startWifi: true,
-  stopWifi: true,
-  connectWifi: true,
-  getWifiList: true,
-  setWifiList: true,
-  getConnectedWifi: true,
-  showToast: true,
-  showLoading: true,
-  showModal: true,
-  showActionSheet: true,
-  setNavigationBarTitle: true,
-  setNavigationBarColor: true,
-  setTabBarBadge: true,
-  removeTabBarBadge: true,
-  showTabBarRedDot: true,
-  hideTabBarRedDot: true,
-  setTabBarStyle: true,
-  setTabBarItem: true,
-  showTabBar: true,
-  hideTabBar: true,
-  setTopBarText: true,
-  startPullDownRefresh: true,
-  canvasToTempFilePath: true,
-  canvasGetImageData: true,
-  canvasPutImageData: true,
-  getExtConfig: true,
-  login: true,
-  checkSession: true,
-  authorize: true,
-  getUserInfo: true,
-  requestPayment: true,
-  showShareMenu: true,
-  hideShareMenu: true,
-  updateShareMenu: true,
-  getShareInfo: true,
-  chooseAddress: true,
-  addCard: true,
-  openCard: true,
-  openSetting: true,
-  getSetting: true,
-  getWeRunData: true,
-  navigateToMiniProgram: true,
-  navigateBackMiniProgram: true,
-  chooseInvoiceTitle: true,
-  checkIsSupportSoterAuthentication: true,
-  startSoterAuthentication: true,
-  checkIsSoterEnrolledInDevice: true
+    uploadFile: true,
+    downloadFile: true,
+    connectSocket: true,
+    sendSocketMessage: true,
+    closeSocket: true,
+    chooseImage: true,
+    previewImage: true,
+    getImageInfo: true,
+    saveImageToPhotosAlbum: true,
+    startRecord: true,
+    playVoice: true,
+    getBackgroundAudioPlayerState: true,
+    playBackgroundAudio: true,
+    seekBackgroundAudio: true,
+    chooseVideo: true,
+    saveVideoToPhotosAlbum: true,
+    loadFontFace: true,
+    saveFile: true,
+    getFileInfo: true,
+    getSavedFileList: true,
+    getSavedFileInfo: true,
+    removeSavedFile: true,
+    openDocument: true,
+    setStorage: true,
+    getStorage: true,
+    getStorageInfo: true,
+    removeStorage: true,
+    clearStorage: true,
+    navigateTo: true,
+    redirectTo: true,
+    switchTab: true,
+    reLaunch: true,
+    getLocation: true,
+    chooseLocation: true,
+    openLocation: true,
+    getSystemInfo: true,
+    getNetworkType: true,
+    makePhoneCall: true,
+    scanCode: true,
+    setClipboardData: true,
+    getClipboardData: true,
+    openBluetoothAdapter: true,
+    closeBluetoothAdapter: true,
+    getBluetoothAdapterState: true,
+    startBluetoothDevicesDiscovery: true,
+    stopBluetoothDevicesDiscovery: true,
+    getBluetoothDevices: true,
+    getConnectedBluetoothDevices: true,
+    createBLEConnection: true,
+    closeBLEConnection: true,
+    getBLEDeviceServices: true,
+    getBLEDeviceCharacteristics: true,
+    readBLECharacteristicValue: true,
+    writeBLECharacteristicValue: true,
+    notifyBLECharacteristicValueChange: true,
+    startBeaconDiscovery: true,
+    stopBeaconDiscovery: true,
+    getBeacons: true,
+    setScreenBrightness: true,
+    getScreenBrightness: true,
+    setKeepScreenOn: true,
+    vibrateLong: true,
+    vibrateShort: true,
+    addPhoneContact: true,
+    getHCEState: true,
+    startHCE: true,
+    stopHCE: true,
+    sendHCEMessage: true,
+    startWifi: true,
+    stopWifi: true,
+    connectWifi: true,
+    getWifiList: true,
+    setWifiList: true,
+    getConnectedWifi: true,
+    showToast: true,
+    showLoading: true,
+    showModal: true,
+    showActionSheet: true,
+    setNavigationBarTitle: true,
+    setNavigationBarColor: true,
+    setTabBarBadge: true,
+    removeTabBarBadge: true,
+    showTabBarRedDot: true,
+    hideTabBarRedDot: true,
+    setTabBarStyle: true,
+    setTabBarItem: true,
+    showTabBar: true,
+    hideTabBar: true,
+    setTopBarText: true,
+    startPullDownRefresh: true,
+    canvasToTempFilePath: true,
+    canvasGetImageData: true,
+    canvasPutImageData: true,
+    getExtConfig: true,
+    login: true,
+    checkSession: true,
+    authorize: true,
+    getUserInfo: true,
+    requestPayment: true,
+    showShareMenu: true,
+    hideShareMenu: true,
+    updateShareMenu: true,
+    getShareInfo: true,
+    chooseAddress: true,
+    addCard: true,
+    openCard: true,
+    openSetting: true,
+    getSetting: true,
+    getWeRunData: true,
+    navigateToMiniProgram: true,
+    navigateBackMiniProgram: true,
+    chooseInvoiceTitle: true,
+    checkIsSupportSoterAuthentication: true,
+    startSoterAuthentication: true,
+    checkIsSoterEnrolledInDevice: true
 };
 
 function initPxTransform() {
@@ -2672,5 +2685,6 @@ React = win.React = win.ReactDOM = {
 };
 initNativeApi(React);
 var React$1 = React;
+
 
 module.exports = React$1;

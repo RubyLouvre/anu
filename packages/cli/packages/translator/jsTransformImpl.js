@@ -5,7 +5,6 @@ const helpers = require('./helpers');
 const queue = require('./queue');
 const utils = require('./utils');
 const deps = require('./deps');
-//const prettifyXml = require('prettify-xml');
 const template = require('babel-template');
 
 /**
@@ -336,9 +335,7 @@ module.exports = {
             }
         }
     },
-    JSXText(astPath){
-        astPath.node.value = astPath.node.value.replace(/\r?\n/g, "")
-    },
+
     JSXAttribute: function(astPath, state) {
         let modules = utils.getAnu(state);
         let attrName = astPath.node.name.name;

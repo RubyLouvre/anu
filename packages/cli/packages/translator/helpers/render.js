@@ -1,5 +1,4 @@
 const generate = require('babel-generator').default;
-const prettifyXml = require('prettify-xml');
 const t = require('babel-types');
 const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
@@ -77,7 +76,7 @@ exports.exit = function(astPath, type, componentName, modules) {
                 path: modules.sourcePath
                     .replace(/\/src\//, '/dist/')
                     .replace(/\.js$/, '.wxml'),
-                code: prettifyXml(wxml, { indent: 2 })
+                code: wxml //prettifyXml(wxml, { indent: 2 })
             };
             //添加组件标签包含其他标签时（如<Dialog><p>xxx</p></Dialog>）产生的隐式依赖
             if (dep && !dep.addImportTag) {
