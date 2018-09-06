@@ -76,6 +76,7 @@ export function createPage(PageClass, path, testObject) {
                     canSetData = false;
                 //劫持页面组件的生命周期，与setState进行联动
                 instance.forceUpdate = instance.setState = function(a) {
+                    instance.wxData = instance.wxData || {};
                     var updateMethod = anuSetState;
                     var cbIndex = 1;
                     if (isFn(a) || a == null) {
@@ -85,7 +86,7 @@ export function createPage(PageClass, path, testObject) {
                     var pageInst = this.$pageInst || this;
                     if (updating === false) {
                         if (pageInst == this) {
-                            pageInst.allTemplateData = [];
+                            pageInst.wxData = {};
                         } else {
                             this.updateWXData = true;
                         }
@@ -100,18 +101,16 @@ export function createPage(PageClass, path, testObject) {
                         if (canSetData) {
                             canSetData = false;
                             updating = false;
-                            var data = {
+                            var data = pageInst.wxData;
+                            extend(data, {
                                 state: pageInst.state,
                                 props: pageInst.props,
                                 context: pageInst.context
-                            };
-                            applyChildComponentData(
-                                data,
-                                pageInst.allTemplateData || []
-                            );
-                            $wxPage.setData(safeClone(data), function () {
+                            });
+
+                            $wxPage.setData(safeClone(data), function() {
                                 // eslint-disable-next-line
-                                // console.log(this, safeClone(data), 'setData完毕');
+                                console.log("setData", data);
                             });
                         }
                     };

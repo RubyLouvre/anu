@@ -1,3 +1,5 @@
+// eslint-disable-next-line
+import React from '@react';
 import Count from '../Count/index';
 export default function Dialog(props) {
     return (
