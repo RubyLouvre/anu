@@ -164,7 +164,9 @@ class Parser {
                     externalHelpers: false,
                     plugins: [
                         'transform-class-properties',
-                        'transform-object-rest-spread'
+                        'transform-object-rest-spread',
+
+                        'transform-es2015-template-literals',
                     ]
                 })
             ],

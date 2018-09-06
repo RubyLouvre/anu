@@ -1,6 +1,6 @@
 module.exports = {
     h: {
         variableDeclarator: 'h',
-        init: 'var h = React.createElement'
+        init: 'var h = React.createElement;'
     }
 };
