@@ -3,9 +3,9 @@ let q = require('../packages/translator/queue');
 const prettifyXml = require('prettify-xml');
 
 describe('if statement', () => {
-  test('简单情况', () => {
-    transform(
-      ` 
+    test('简单情况', () => {
+        transform(
+            ` 
       if (this.state.tasks !== null) {
         return <View className='page-body'>tasks</View>
       }
@@ -13,14 +13,14 @@ describe('if statement', () => {
           <div className="page-body"><span>Hello world!</span></div>
        )
      `,
-      `task: []`
-    );
+            'task: []'
+        );
 
-    let template = q.wxml[q.wxml.length - 1].code;
+        let template = q.wxml[q.wxml.length - 1].code;
 
-    expect(template).toMatch(
-      prettifyXml(
-        `<block>
+        expect(template).toMatch(
+            prettifyXml(
+                `<block>
             <block wx:if="{{state.tasks !== null}}">
                 <view class="page-body">tasks</view>
             </block>
@@ -30,13 +30,13 @@ describe('if statement', () => {
                 </view>
             </block>
         </block>`
-      )
-    );
-  });
+            )
+        );
+    });
 
-  test(' if-else', () => {
-    transform(
-      `
+    test(' if-else', () => {
+        transform(
+            `
           if (this.state.tasks !== null) {
             return <View className='page-body'>tasks</View>
           } else if(this.state.task.length === 0) {
@@ -49,14 +49,14 @@ describe('if statement', () => {
              )
           }
          `,
-      `task: []`
-    );
+            'task: []'
+        );
 
-    let template = q.wxml[q.wxml.length - 1].code;
+        let template = q.wxml[q.wxml.length - 1].code;
 
-    expect(template).toMatch(
-      prettifyXml(
-        `<block>
+        expect(template).toMatch(
+            prettifyXml(
+                `<block>
             <block wx:if="{{state.tasks !== null}}">
                 <view class="page-body">tasks</view>
             </block>
@@ -75,7 +75,7 @@ describe('if statement', () => {
                 </block>
             </block>
         </block>`
-      )
-    );
-  });
+            )
+        );
+    });
 });

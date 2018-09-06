@@ -22,7 +22,8 @@
     "ignore": [
       "**/dist/*.js",
       "**/node_modules/**/*",
-      "**/ReactWX.js"
+      "**/ReactWX.js",
+      "**/__tests__/**/*"
     ]
   },
   "repository": {

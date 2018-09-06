@@ -337,7 +337,7 @@ module.exports = {
         }
     },
     JSXText(astPath){
-        astPath.node.value = astPath.node.value.replace(/\r?\n/g, "")
+        astPath.node.value = astPath.node.value.replace(/\r?\n/g, '');
     },
     JSXAttribute: function(astPath, state) {
         let modules = utils.getAnu(state);

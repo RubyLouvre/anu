@@ -3,7 +3,7 @@ let jsTransform = require('../../packages/translator/jsTransform');
 let helpers = require('../../packages/translator/helpers');
 // let React = require('../../../../dist')
 function baseCode(code, state = '', head = '') {
-  return `
+    return `
     ${head}
     import React from '../../../../dist/ReactWXTest'
     class Index extends React.Component {
@@ -30,31 +30,31 @@ function baseCode(code, state = '', head = '') {
 }
 
 exports.transform = function(code, state, head) {
-  code = baseCode(code, state, head);
-  var result = babel.transform(code, {
-    babelrc: false,
-    plugins: [
-      'syntax-jsx',
-      'transform-decorators-legacy',
-      'transform-object-rest-spread',
-      jsTransform.miniappPlugin
-    ]
-  });
+    code = baseCode(code, state, head);
+    var result = babel.transform(code, {
+        babelrc: false,
+        plugins: [
+            'syntax-jsx',
+            'transform-decorators-legacy',
+            'transform-object-rest-spread',
+            jsTransform.miniappPlugin
+        ]
+    });
 
-  return helpers.moduleToCjs.byCode(result.code).code;
+    return helpers.moduleToCjs.byCode(result.code).code;
 };
 
 exports.evalClass = function(template) {
-  return eval(template);
+    return eval(template);
 };
 
 exports.getPropsStyle = function(props) {
-  let styles = [];
-  for (let key in props) {
-    if (/^style\d{2,}/.test(key)) {
-      styles.push(props[key]);
+    let styles = [];
+    for (let key in props) {
+        if (/^style\d{2,}/.test(key)) {
+            styles.push(props[key]);
+        }
     }
-  }
 
-  return styles;
+    return styles;
 };
