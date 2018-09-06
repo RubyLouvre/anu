@@ -17,7 +17,6 @@ describe('if statement', () => {
         );
 
         let template = getTemplate(q);
-
         expect(template).toMatch(
             prettifyXml(
                 `<block>

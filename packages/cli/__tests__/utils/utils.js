@@ -47,9 +47,12 @@ exports.transform = function(code, state, head) {
 
 exports.evalClass = function(template) {
     return eval(template);
+<<<<<<< HEAD
 };
 exports.getTemplate = function getTemplate(q){
     return prettifyXml(q.wxml[q.wxml.length - 1].code);
+=======
+>>>>>>> 4e4df4eb0f2d6acd6d0b38211c2a2fc25becf5bb
 };
 exports.getPropsStyle = function(props) {
     let styles = [];

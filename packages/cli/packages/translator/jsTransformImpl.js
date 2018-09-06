@@ -335,7 +335,6 @@ module.exports = {
             }
         }
     },
-
     JSXAttribute: function(astPath, state) {
         let modules = utils.getAnu(state);
         let attrName = astPath.node.name.name;
