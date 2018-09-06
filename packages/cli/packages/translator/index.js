@@ -11,6 +11,7 @@ const rollupLess = require('rollup-plugin-less');
 const rollupSass = require('rollup-plugin-sass');
 const alias = require('rollup-plugin-alias');
 const chokidar = require('chokidar');
+const spawn = require('cross-spawn');
 // const uglifyJS = require('uglify-js').minify;
 // const cssmin = require('cssmin');
 const utils = require('./utils');
@@ -24,6 +25,8 @@ let inputPath = path.join(cwd, 'src');
 let outputPath = path.join(cwd, 'dist');
 let entry = path.join(inputPath, 'app.js');
 const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
+const useYarn = require('../utils/index').useYarn();
+const useCnpm = require('../utils/index').useCnpm();
 
 if (nodejsVersion < 8) {
     // eslint-disable-next-line
@@ -420,6 +423,38 @@ class Parser {
             }
 
             if (ext === '.scss') {
+                const pkgPath =  path.join(cwd, 'node_modules', 'node-sass', 'package.json');
+                const isInstalledNodeSass = fs.existsSync(pkgPath) && require(pkgPath)['main'];
+                if (!isInstalledNodeSass){
+                    // eslint-disable-next-line
+                    console.log(chalk.green('缺少node-sass依赖, 正在安装, 请稍候...'));
+                    let pkg = 'node-sass@^4.9.3';
+                    let bin = '';
+                    let options = [];
+                    if (useYarn){
+                        bin = 'yarn';
+                        options.push('add', '--exact', pkg, '--dev');
+                       
+                    } else if (useCnpm){
+                        bin = 'cnpm';
+                        options.push('install', pkg, '--save-dev');
+                    } else {
+                        bin = 'npm';
+                        options.push('install', pkg, '--save-dev');
+                    }
+
+                    let result = spawn.sync(bin, options, { stdio: 'inherit' });
+                    if (result.error) {
+                        // eslint-disable-next-line
+                        console.log(result.error);
+                        process.exit(1);
+                    }
+                    // eslint-disable-next-line
+                    console.log(chalk.green('node-sass安装成功\n'));
+
+                }
+                
+
                 const sass = require(path.join(
                     cwd,
                     'node_modules',
