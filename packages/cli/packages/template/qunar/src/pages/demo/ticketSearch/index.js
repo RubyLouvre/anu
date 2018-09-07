@@ -33,7 +33,7 @@ class P extends React.Component {
     fun_tip() {
         wx.showModal({
             title: '提示',
-            content: '该部分禁展示，无具体功能!',
+            content: '该部分仅展示，无具体功能!',
             showCancel: false
         });
     }
