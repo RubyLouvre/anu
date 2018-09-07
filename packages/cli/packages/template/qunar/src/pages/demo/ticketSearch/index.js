@@ -7,7 +7,7 @@ class P extends React.Component {
         this.state = {
             depCity: '北京',
             arrCity: '上海',
-            exchangeStatus: '',
+            exchangeStatus: false,
             displayDate: '8月28日',
             dateWeek: '周二',
             isOnlyGaotie: false
@@ -27,6 +27,19 @@ class P extends React.Component {
             url: '../../demo/calendar/index'
         });
     }
+    exChangeCity() {
+        this.setState({ exchangeStatus: !this.state.exchangeStatus });
+    }
+    fun_tip() {
+        wx.showModal({
+            title: '提示',
+            content: '该部分禁展示，无具体功能!',
+            showCancel: false
+        });
+    }
+    handleChangeSwitch() {
+        this.setState({isOnlyGaotie: !this.state.isOnlyGaotie});
+    }
   config = {
       backgroundColor: '#feb64e',
       navigationBarBackgroundColor: '#feb64e'
@@ -41,14 +54,16 @@ class P extends React.Component {
               />
               <div style="{top: -15px}" className="search-container">
                   <div className="citySelector">
-                      <div className="cityTap">
+                      <div onTap={this.fun_tip} className="cityTap">
                           <div
-                              className={'depCityContent ' + (this.state.exchangeStatus ? 'depCity-changig' : '')}
+                              className={
+                                  'depCityContent ' + (this.state.exchangeStatus ? 'depCity-changing' : '')
+                              }
                           >
                               {this.state.depCity}
                           </div>
                       </div>
-                      <div className="city_change">
+                      <div onTap={this.exChangeCity.bind(this)} className="city_change">
                           <image
                               className="exchange-logo"
                               mode="widthFix"
@@ -59,7 +74,7 @@ class P extends React.Component {
                               src="../../../assets/image/search_btn.png"
                           />
                       </div>
-                      <div className="cityTap">
+                      <div onTap={this.fun_tip} className="cityTap">
                           <div
                               className={
                                   'arrCityContent ' + (this.state.exchangeStatus ? 'arrCity-changing' : '')
@@ -92,19 +107,17 @@ class P extends React.Component {
                 只查看高铁/动车
                           </div>
                       </div>
-                      <switch checked={this.state.isOnlyGaotie} color="#00bcd4" />
+                      <switch checked={this.state.isOnlyGaotie} onChange={this.handleChangeSwitch.bind(this)} color="#00bcd4" />
                   </div>
 
-                  <div className="search-button">搜 索</div>
+                  <div onTap={this.fun_tip} className="search-button">搜 索</div>
 
                   <div className="actions-container">
-                      <div className="order-action">
-                          <text className="g-q-iconfont order-icon" />
+                      <div onTap={this.fun_tip} className="order-action">
                           <text className="action-text">我的订单</text>
                       </div>
                       <div className="seprator" />
-                      <div className="feedback-action">
-                          <text className="g-q-iconfont feedback-icon" />
+                      <div onTap={this.fun_tip} className="feedback-action">
                           <text className="action-text">咨询反馈</text>
                       </div>
                   </div>
@@ -112,7 +125,7 @@ class P extends React.Component {
 
               <div className="welfare-entrance">
                   <div className="welfare-content">
-                      <div className="welfare-action">
+                      <div onTap={this.fun_tip} className="welfare-action">
                           <image
                               className="welfare-icon"
                               src="http://s.qunarzz.com/open_m_train/miniprogram/home_redpack.png"
@@ -120,7 +133,7 @@ class P extends React.Component {
                           <text className="action-text">优惠拼团</text>
                       </div>
                       <div className="seprator" />
-                      <div className="welfare-action">
+                      <div onTap={this.fun_tip} className="welfare-action">
                           <image
                               className="welfare-icon"
                               src="http://s.qunarzz.com/open_m_train/miniprogram/home_welfare.png"
