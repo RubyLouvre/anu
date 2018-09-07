@@ -1,5 +1,5 @@
 import React from '@react';
-import Calendar from '../../../components/calendar/index';
+import Calendar from '../../../components/Calendar/index';
 class P extends React.Component {
     constructor() {
         super();

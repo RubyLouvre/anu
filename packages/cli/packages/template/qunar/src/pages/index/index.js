@@ -49,11 +49,11 @@ class P extends React.Component {
                 },
                 {
                     class: '',
-                    bizTitle: '船票',
+                    bizTitle: '嵌套组件测试',
                     logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/ship1.png',
                     showSpecialLogo: false,
                     specialText: '',
-                    url: ''
+                    url: '../../pages/demo/moultiComponent/index'
                 },
                 {
                     class: 'radius-bottom-left',
