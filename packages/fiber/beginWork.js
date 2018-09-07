@@ -11,9 +11,7 @@ import {
     HOOK,
     CONTENT,
     REF,
-    //  NULLREF,
     CALLBACK,
-    NOWORK,
     WORKING
 } from "./effectTag";
 import {
@@ -108,10 +106,6 @@ function updateHostComponent(fiber, info) {
         fiber.stateNode = Renderer.createElement(fiber);
     }
     const parent = fiber.parent;
-    /* if (!parent.insertPoint) {
-        parent.insertPoint = getInsertPoint(fiber);
-    }
-    */
 
     fiber.forwardFiber = parent.insertPoint;
 

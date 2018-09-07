@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-06
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-07
  * IE9+
  */
 
@@ -1932,10 +1932,20 @@ function createPage(PageClass, path, testObject) {
             });
             var anuSetState = instance.setState;
             var anuForceUpdate = instance.forceUpdate;
-            var updating = false,
-                canSetData = false;
+            var updating = false;
+            var canSetData = false;
+            function updatePage(pageInst) {
+                var data = pageInst.wxData;
+                extend(data, {
+                    state: pageInst.state,
+                    props: pageInst.props,
+                    context: pageInst.context
+                });
+                $wxPage.setData(safeClone(data), function () {
+                    console.log('setData', data);
+                });
+            }
             instance.forceUpdate = instance.setState = function (a) {
-                instance.wxData = instance.wxData || {};
                 var updateMethod = anuSetState;
                 var cbIndex = 1;
                 if (isFn(a) || a == null) {
@@ -1952,28 +1962,20 @@ function createPage(PageClass, path, testObject) {
                     canSetData = true;
                     updating = true;
                 }
-                var inst = this,
-                    cb = arguments[cbIndex],
-                    args = Array.prototype.slice.call(arguments);
+                var cb = arguments[cbIndex];
+                var args = Array.prototype.slice.call(arguments);
                 args[cbIndex] = function () {
-                    cb && cb.call(inst);
+                    cb && cb.call(this);
                     if (canSetData) {
                         canSetData = false;
                         updating = false;
-                        var data = pageInst.wxData;
-                        extend(data, {
-                            state: pageInst.state,
-                            props: pageInst.props,
-                            context: pageInst.context
-                        });
-                        $wxPage.setData(safeClone(data), function () {
-                            console.log("setData", data);
-                        });
+                        updatePage(pageInst);
                     }
                 };
                 updateMethod.apply(this, args);
             };
-            instance.forceUpdate();
+            instance.wxData = instance.wxData || {};
+            updatePage(instance);
         },
         onShow: function onShow() {
             PageClass.instances[instance.instanceUid] = instance;

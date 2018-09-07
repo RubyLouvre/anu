@@ -72,51 +72,51 @@ export function createPage(PageClass, path, testObject) {
                 );
                 var anuSetState = instance.setState;
                 var anuForceUpdate = instance.forceUpdate;
-                var updating = false,
-                    canSetData = false;
-                //劫持页面组件的生命周期，与setState进行联动
-                instance.forceUpdate = instance.setState = function(a) {
-                    instance.wxData = instance.wxData || {};
-                    var updateMethod = anuSetState;
-                    var cbIndex = 1;
-                    if (isFn(a) || a == null) {
-                        updateMethod = anuForceUpdate;
-                        cbIndex = 0;
-                    }
-                    var pageInst = this.$pageInst || this;
-                    if (updating === false) {
-                        if (pageInst == this) {
-                            pageInst.wxData = {};
-                        } else {
-                            this.updateWXData = true;
-                        }
-                        canSetData = true;
-                        updating = true;
-                    }
-                    var inst = this,
-                        cb = arguments[cbIndex],
-                        args = Array.prototype.slice.call(arguments);
-                    args[cbIndex] = function() {
-                        cb && cb.call(inst);
-                        if (canSetData) {
-                            canSetData = false;
-                            updating = false;
-                            var data = pageInst.wxData;
-                            extend(data, {
-                                state: pageInst.state,
-                                props: pageInst.props,
-                                context: pageInst.context
-                            });
-
-                            $wxPage.setData(safeClone(data), function() {
-                                // eslint-disable-next-line
-                                console.log("setData", data);
-                            });
-                        }
-                    };
-                    updateMethod.apply(this, args);
-                };
-                instance.forceUpdate();
+                var updating = false;
+                var canSetData = false;
+                function updatePage(pageInst) {
+					var data = pageInst.wxData;
+					extend(data, {
+						state: pageInst.state,
+						props: pageInst.props,
+						context: pageInst.context,
+					});
+					$wxPage.setData(safeClone(data), function() {
+						console.log('setData', data);
+					});
+				}
+				instance.forceUpdate = instance.setState = function(a) {
+					var updateMethod = anuSetState;
+					var cbIndex = 1;
+					if (isFn(a) || a == null) {
+						updateMethod = anuForceUpdate;
+						cbIndex = 0;
+					}
+					var pageInst = this.$pageInst || this;
+					if (updating === false) {
+						if (pageInst == this) {
+							pageInst.wxData = {};
+						} else {
+							this.updateWXData = true;
+						}
+						canSetData = true;
+						updating = true;
+					}
+					var cb = arguments[cbIndex];
+					var args = Array.prototype.slice.call(arguments);
+					args[cbIndex] = function() {
+						cb && cb.call(this);
+						if (canSetData) {
+							canSetData = false;
+							updating = false;
+							updatePage(pageInst);
+						}
+					};
+					updateMethod.apply(this, args);
+				};
+				
+				instance.wxData = instance.wxData || {};
+				updatePage(instance);
             },
             onShow() {
                 PageClass.instances[instance.instanceUid] = instance;

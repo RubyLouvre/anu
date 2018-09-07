@@ -92,43 +92,20 @@ const checkNameIsOk = appName => {
     });
 };
 
-// const ask = () => {
-//     const q = [];
-//     const css = [
-//         {
-//             name: 'Less',
-//             value: 'less'
-//         },
-//         {
-//             name: 'Sass',
-//             value: 'scss'
-//         }
-//     ];
-
-//     q.push({
-//         type: 'list',
-//         name: 'css',
-//         message: '请选择 CSS 预处理器 (Less/Sass)',
-//         choices: css
-//     });
-
-//     return inquirer.prompt(q);
-// };
-
 
 const askTemplate = ()=>{
     const q = [];
     const list = [
         {
-            name: '旅游网站',
+            name: '去哪儿',
             value: 'qunar'
         },
         {
-            name: '拼多多商城',
+            name: '拼XX',
             value: 'pdd'
         },
         {
-            name: '音乐播放器',
+            name: '网X云音乐',
             value: 'music'
         }
         
