@@ -2,7 +2,7 @@ import React from '@react';
 import './index.scss';
 // eslint-disable-next-line
 import Dialog from '@components/dialog/index';
-import LotteryDraw from '@components/LotteryDraw/index';
+import LotteryDraw from '../../components/LotteryDraw/index';
 class Cart extends React.Component {
     constructor() {
         super();
@@ -22,31 +22,17 @@ class Cart extends React.Component {
       enablePullDownRefresh: true
   };
 
-  //   tap() {
-  //     wx.showModal({
-  //         title: '购物车',
-  //         content: '该功能未实现',
-  //         success: function(res) {
-  //           if (res.confirm) {
-  //             console.log('用户点击确定')
-  //           } else if (res.cancel) {
-  //             console.log('用户点击取消')
-  //           }
-  //         }
-  //       })
-  //   }
+  tap() {
+      this.setState({
+          visible: false
+      });
+  }
 
   componentWillMount() {
       this.setState({
           visible: false
       });
   }
-
-  //   tap() {
-  //     this.setState({
-  //       visible: false
-  //     });
-  //   }
 
   onOk() {
       this.setState({
@@ -63,8 +49,10 @@ class Cart extends React.Component {
   render() {
       return (
           <div className="cart-container">
-              <image src={this.state.cartImg} onTap={this.tap} className="cart-image" />
-              <view>{this.state.tipWords}</view>
+              <div>
+                  <image src={this.state.cartImg} onTap={this.tap} className="cart-image" />
+                  <view>{this.state.tipWords}</view>
+              </div>
               {/* <Dialog
           visible={this.state.visible}
           onOk={this.onOk.bind(this)}
@@ -75,10 +63,12 @@ class Cart extends React.Component {
                   <div className="ys-mask" onTap={this.onCanel} />
                   <div className="ys-dialog">
                       <div className="ys-dialog-contetn">
+                          <image src='../../assets/images/lottery_draw_log.png' class='lottery_draw_log' />
                           <LotteryDraw onOk={this.onOk.bind(this)} />
                       </div>
                   </div>
               </div>
+
           </div>
       );
   }

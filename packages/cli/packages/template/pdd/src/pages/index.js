@@ -28,6 +28,7 @@ class P extends React.Component {
       // eslint-disable-next-line
     console.log('weixinchat onLoad');
       //sliderList
+      this._isMounted = true;
       var that = this;
       wx.request({
           url: 'http://yapi.demo.qunar.com/mock/17668/wemall/venues/venuesList',
@@ -62,6 +63,19 @@ class P extends React.Component {
               }, 1500);
           }
       });
+
+      setTimeout(function() {
+          if (!that.state.loadingHidden && that._isMounted) {
+              wx.showModal({
+                  title: '提示',
+                  content: '不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书'
+              });
+          }
+      }, 6000);
+  }
+
+  componentWillUnmount() {
+      this._isMounted = false;
   }
 
   render() {
