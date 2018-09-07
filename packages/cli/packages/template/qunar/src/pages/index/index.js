@@ -32,7 +32,7 @@ class P extends React.Component {
                 },
                 {
                     class: '',
-                    bizTitle: '车牌搜索',
+                    bizTitle: '车票搜索',
                     businessUrl: '/common/pages/search/index?from=home&bizType=bus',
                     logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/bus1.png',
                     showSpecialLogo: false,
@@ -134,15 +134,26 @@ class P extends React.Component {
       navigationBarTextStyle: '#fff'
   };
   gotoSome(url) {
-      url && wx.navigateTo({ url });
+      if (url){
+          wx.navigateTo({ url });
+      } else {
+          this.fun_tip();
+      }
   }
   componentDidMount() {
       // eslint-disable-next-line
-      console.log('page did mount!');
+    console.log('page did mount!');
   }
   componentWillMount() {
       // eslint-disable-next-line
-      console.log('page will mount!');
+    console.log('page will mount!');
+  }
+  fun_tip() {
+      wx.showModal({
+          title: '提示',
+          content: '该部分仅展示，无具体功能!',
+          showCancel: false
+      });
   }
   render() {
       return (
@@ -174,7 +185,7 @@ class P extends React.Component {
               <div class="tool-wrapper">
                   {this.state.toolData.map(function(item, index) {
                       return (
-                          <div class="tool-item" key={index}>
+                          <div onTap={this.fun_tip} class="tool-item" key={index}>
                               <image src={item.url} />
                               <text>{item.title}</text>
                           </div>
@@ -192,7 +203,7 @@ class P extends React.Component {
                       {this.state.specialOfferData.map(function(item, index) {
                           return (
                               <block key={index}>
-                                  <swiper-item class="special-offer-item">
+                                  <swiper-item onTap={this.fun_tip}  class="special-offer-item">
                                       <image src={item.url} />
                                       <text>{item.title}</text>
                                   </swiper-item>
@@ -204,7 +215,7 @@ class P extends React.Component {
               <div class="activity">
                   <div class="title">活动专区</div>
                   <div class="activity-wrapper">
-                      <div class="left-content">
+                      <div onTap={this.fun_tip} class="left-content">
                           <image src="https://img1.qunarzz.com/order/comp/1808/c3/dda9c77c3b1d8802.png" />
                           <div class="content">
                               <text class="title">何时飞</text>
@@ -212,7 +223,7 @@ class P extends React.Component {
                           </div>
                       </div>
                       <div class="right-content">
-                          <div class="right-content-wrapper">
+                          <div onTap={this.fun_tip} class="right-content-wrapper">
                               <image
                                   src="https://img1.qunarzz.com/order/comp/1808/3b/fd717d94ed8b6102.jpg
 "
@@ -222,7 +233,7 @@ class P extends React.Component {
                                   <text class="desc">简直惊悚</text>
                               </div>
                           </div>
-                          <div class="right-content-wrapper">
+                          <div onTap={this.fun_tip} class="right-content-wrapper">
                               <image src="https://img1.qunarzz.com/order/comp/1806/1c/61cd118da20ec702.jpg" />
                               <div class="content">
                                   <text class="title">飞行宝贝</text>
