@@ -36,6 +36,7 @@ import './pages/demo/syntax/await/index';
 
 import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';
+import './pages/demo/moultiComponent/index';
 
 import './app.less';
 
