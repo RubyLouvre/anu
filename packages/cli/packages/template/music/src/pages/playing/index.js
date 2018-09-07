@@ -5,8 +5,7 @@ import common from '../../utils/util';
 import './index.less';
 import Lrc from '@components/lrc/index';
 import Loading from '@components/Loading/index';
-// eslint-disable-next-line
-let app = getApp();
+let app = React.getApp();
 
 class Playing extends React.Component {
     constructor() {
@@ -44,9 +43,9 @@ class Playing extends React.Component {
                 id: id
             },
             success: function(res) {
-                // eslint-disable-next-line
-                console.log('res', res.data);
+                
                 let curplay = res.data.songs[0];
+                app.globalData.curplay = curplay;
                 that.setState({
                     start: 0,
                     share: {
@@ -59,6 +58,13 @@ class Playing extends React.Component {
                     duration: common.formatduration(curplay.dt || curplay.duration),
                     loading: false
                 });
+                wx.setNavigationBarTitle({ title: app.globalData.curplay.name });
+                app.seekmusic(1);
+                // common.loadrec(app.globalData.cookie, 0, 0, that.state.music.id, function (res) {
+                //     that.setData({
+                //       commentscount: res.total
+                //     })
+                //   })
             }
         });
     }

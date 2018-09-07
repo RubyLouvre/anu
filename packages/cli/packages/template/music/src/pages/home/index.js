@@ -5,8 +5,7 @@ import url from '../../utils/bsurl';
 let bsurl = url.bsurl;
 import './index.less';
 import CateModal from '@components/cateModal/index';
-// eslint-disable-next-line
-var app = getApp();
+var app = React.getApp();
 class P extends React.Component {
     constructor() {
         super();
@@ -18,12 +17,7 @@ class P extends React.Component {
             music: {},
             playing: false,
             playtype: {},
-            banner: [
-                {
-                    pic: 'https://p1.music.126.net/whUPtMMdXHLfceuFt4vNBg==/109951163537455414.jpg'
-                },
-                { pic: 'https://p1.music.126.net/Yd78k9-bMIRZQ96mNTlFiA==/109951163537349659.jpg' }
-            ],
+            banner: [4],
             thisday: new Date().getDate(),
             cateisShow: true,
             playlist: {
@@ -100,12 +94,15 @@ class P extends React.Component {
       let result = [];
       let arr = ['personalized', 'personalized/newsong', 'personalized/mv', 'personalized/djprogram'];
       for (let i = 0; i < arr.length; i++) {
-          result[i] = new Promise((resolve) => {
+          result[i] = new Promise((resolve, reject) => {
               wx.request({
                   url: bsurl + arr[i],
                   data: { cookie: app.globalData.cookie },
                   success: function(res) {
                       resolve(res.data.result);
+                  },
+                  fail: function() {
+                      reject('请求失败');
                   }
               });
           });
