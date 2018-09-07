@@ -1,0 +1,174 @@
+page {
+    height: 100%;
+}
+.m-calendar {
+    margin-top: 42px;
+    background-color:#fff;
+    height: 100%;
+    overflow: hidden;
+}
+.e-head {
+    position:fixed;
+    width:100%;
+    top: 0;
+    left: 0;
+    z-index:10;
+    background-color:#fff;
+    border-bottom: 1rpx solid #e5e5e5;
+    display: flex;
+}
+
+.e-head .w{
+    flex: 1;
+    font-size: 24rpx;
+    text-align: center;
+    height: 21px;
+    line-height: 21px;
+}
+
+.e-head .s{
+    color: #fe9808;
+}
+
+.e-month {
+    background: #fff;
+}
+
+.e-month .b-header {
+    text-align: center;
+    font-size: 18px;
+    height: 30px;
+    line-height: 30px;
+    border-top: 1px solid #dce1e6;
+    padding-top: 8px;
+}
+.e-month .b-header:first-child {
+    border-top: 0;
+}
+.e-month .b-row {
+    margin: 0 2px;
+    display: flex;
+}
+
+.e-month .b-row .item{
+    flex: 1;
+    width: 0;
+    position: relative;
+    margin-bottom: 5px;
+    font-size: 18px;
+    text-align: center;
+    height: 60px;
+    line-height: 60px;
+    border-radius: 4px;
+    z-index: 1;
+    text-align: center;
+}
+
+.multi .e-month .b-row .item.select,
+.multi .e-month .b-row .item-a:active {
+    background-color: #f5f5f5;
+    width: 90%;
+}
+.multi .e-month .b-row .item.select .day,
+.multi .e-month .b-row .item.select .holiday,
+.multi .e-month .b-row .item.select .ban,
+.multi .e-month .b-row .item.select .xiu,
+.multi .e-month .b-row .item.select .text,
+.multi .e-month .b-row .item-a:active {
+    color: #00bcd4;
+}
+
+.e-month .b-row .text,
+.e-month .b-row .highlight{
+    position: absolute;
+    font-size: 11px;
+    transform: scale(0.92);
+    left: 0;
+    text-align: center;
+    bottom: 22px;
+    height: 20px;
+    color: #666;
+    width: 100%;
+    color: #888;
+}
+
+.e-month .b-row .text .rmb {
+    color: #888;
+}
+
+.e-month .b-row .highlight,
+.e-month .b-row .highlight .rmb{
+    color: #fe9808;
+}
+
+.e-month .b-row .holiday,
+.e-month .b-row .ban,
+.e-month .b-row .xiu{
+    position: absolute;
+    top: 3px;
+    left: 0;
+    display: block;
+    width: 100%;
+    height: 20px;
+    line-height: 20px;
+    font-size: 11px;
+    transform: scale(0.92);
+    color: #fe9808;
+}
+
+.e-month .b-row .ban{
+    color: #bbb;
+}
+
+.e-month .b-row .disabled,
+.e-month .b-row .disabled .holiday,
+.e-month .b-row .disabled .ban,
+.e-month .b-row .disabled .xiu{
+    color: #c7ced4;
+}
+
+.e-month .b-row .weekend{
+    color: #fe9808;
+}
+
+.e-month .b-row .select,
+.e-month .b-row .item-a:active{
+    color: #fff;
+    background: #11b4ca;
+}
+.e-month .b-row .select-second {
+    color: #fff;
+    background: #ccc;
+}
+
+.e-month .b-row .select .holiday,
+.e-month .b-row .select .ban,
+.e-month .b-row .select .xiu,
+.e-month .b-row .select .text,
+.e-month .b-row .select .text .rmb{
+    color: #fff;
+}
+.multi .e-month .b-row .disabled:active,
+.e-month .b-row .disabled:active{
+    color: #c7ced4;
+    background: #fff;
+}
+
+.e-btn {
+    position: fixed;
+    z-index: 9999;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    font-size: 17px;
+    background-color: #ff9705;
+    color: #fff;
+}
+.e-btn:active {
+    background-color: #cc7904;
+}
+.e-btn-padding {
+    height: 50px;
+}
