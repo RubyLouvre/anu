@@ -32,18 +32,8 @@ module.exports = function(astPath) {
             replaceWithExpr(astPath, attrValue);
             break;
         case 'BinaryExpression':
-            astPath.traverse({
-                ThisExpression(nodePath) {
-                    if (t.isMemberExpression(nodePath.parentPath)) {
-                        nodePath.parentPath.replaceWith(
-                            t.identifier(nodePath.parent.property.name)
-                        );
-                    }
-                }
-            });
-            replaceWithExpr(astPath, generate(astPath.node.expression).code);
-            break;
         case 'LogicalExpression':
+        case 'UnaryExpression':
             astPath.traverse({
                 ThisExpression(nodePath) {
                     if (t.isMemberExpression(nodePath.parentPath)) {
