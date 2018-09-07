@@ -26,6 +26,10 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/loop/index'
                 },
                 {
+                    title: '二重循环',
+                    url: '/pages/demo/syntax/loopEvent/index'
+                },
+                {
                     title: '三重循环',
                     url: '/pages/demo/syntax/loop3/index'
                 },

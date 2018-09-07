@@ -4,27 +4,29 @@ import { getUUID, classCached } from './utils';
 
 export function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
+
     var type = fiber.type;
     var instances = type.instances;
     var instanceUid = instance.instanceUid;
-
-    //不是使用miniCreateClass创建的组件直接返回
     var parentInst = null;
     if (!instanceUid) {
         instanceUid = instance.instanceUid = getUUID();
         instances[instanceUid] = instance;
         var p = fiber.return;
         while (p) {
-            if (p.name !== 'template' && p.tag < 4 ){
+            if (p.name !== 'template' && p.tag < 4) {
                 var stateNode = p.stateNode;
-                if (!parentInst){
+                if (!parentInst) {
                     parentInst = instance.$parentInst = stateNode;
                 }
-                if (p.props.isPageComponent){
+                if (p.props.isPageComponent) {
+                    if (!stateNode.wxData) {
+                        stateNode.wxData = {};
+                    }
                     instance.$pageInst = stateNode;
                     break;
                 }
-                if (stateNode.$pageInst){
+                if (stateNode.$pageInst) {
                     instance.$pageInst = stateNode.$pageInst;
                     break;
                 }
@@ -36,46 +38,38 @@ export function onComponentUpdate(fiber) {
     if (parentInst) {
         var inputProps = fiber._owner.props;
         var uuid = inputProps.templatedata;
-        var newData = {
-            props: instance.props,
-            state: instance.state,
-            context: instance.context,
-            templatedata: uuid
-        };
-        instance.wxData = newData;
-        if (!parentInst.props.isPageComponent){
-            var list = parentInst.wxData[uuid] || (parentInst.wxData[uuid] = []);
-            list.push(newData);
-            return;
-        }
-        var arr = getData(parentInst);
-        newData.props.instanceUid = instanceUid;
+        var data = instance.wxData || (instance.wxData = {});
+        data.props = instance.props;
+        data.state = instance.state;
+        data.context = instance.context;
+        data.templatedata = uuid;
+        var arr = getData(parentInst, uuid);
+        data.props.instanceUid = instanceUid;
+        var checkProps = fiber.memoizedProps;
         if (instance.__isStateless) {
-            var checkProps = fiber.memoizedProps;
             var usePush = true;
-            for (var i = 0, el; el = arr[i++];) {
+            for (var i = 0, el; (el = arr[i++]); ) {
                 if (el.props === checkProps) {
-                    extend(el, newData);
+                    extend(el, data);
                     usePush = false;
                     break;
                 }
             }
             if (usePush) {
-                arr.push(newData);
+                arr.push(data);
             }
             return;
         }
         if (instance.updateWXData) {
-            checkProps = fiber.memoizedProps;
-            for (var i = 0, el; el = arr[i++];) {
+            for (var i = 0, el; (el = arr[i++]); ) {
                 if (el.props === checkProps) {
-                    extend(el, newData);
+                    extend(el, data);
                     break;
                 }
             }
             delete instance.updateWXData;
         } else {
-            arr.push(newData);
+            arr.push(data);
         }
     }
 }
@@ -87,11 +81,13 @@ export function onComponentDispose(fiber) {
     if (!instances) {
         return;
     }
-    var pageInst = instance.$pageInst;
-    if (pageInst) {
+    var parentInst = instance.$parentInst;
+    if (parentInst) {
         delete instances[instance.instanceUid];
         var props = fiber.props;
-        var arr = getData(pageInst);
+        var inputProps = fiber._owner.props;
+        var uuid = inputProps.templatedata;
+        var arr = getData(parentInst, uuid);
         for (var i = 0, el; (el = arr[i++]); ) {
             if (el.props === props) {
                 arr.splice(i, 1);
@@ -157,6 +153,7 @@ export function template(props) {
     return createElement(clazz, componentProps);
 }
 
-function getData(instance) {
-    return instance.allTemplateData || (instance.allTemplateData = []);
+function getData(instance, uuid) {
+    return instance.wxData[uuid] || (instance.wxData[uuid] = []);
 }
+

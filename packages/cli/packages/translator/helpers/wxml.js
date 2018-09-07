@@ -24,10 +24,10 @@ function wxml(code, modules) {
                     manipulateOptions(opts) {
                         //解析每个文件前执行一次
                         opts.anu = modules;
-                    },
+                    }
                 };
-            },
-        ],
+            }
+        ]
     });
     var html = result.code;
     if (chineseHack.unicodeNumber) {
@@ -35,8 +35,8 @@ function wxml(code, modules) {
     }
     return html;
 }
-function genKey(key){
-    return key.indexOf('.') > 0 ? key.split('.').pop(): '*this';
+function genKey(key) {
+    return key.indexOf('.') > 0 ? key.split('.').pop() : '*this';
 }
 var visitor = {
     JSXOpeningElement: {
@@ -44,11 +44,13 @@ var visitor = {
             var openTag = astPath.node.name;
             if (
                 openTag.type === 'JSXMemberExpression' &&
-				openTag.object.name === 'React' &&
-				openTag.property.name === 'template'
+                openTag.object.name === 'React' &&
+                openTag.property.name === 'template'
             ) {
                 var modules = utils.getAnu(state);
-                var array, is, key = '';
+                var array,
+                    is,
+                    key = '';
                 astPath.node.attributes.forEach(function(el) {
                     var attrName = el.name.name;
                     var attrValue = el.value.value;
@@ -56,7 +58,12 @@ var visitor = {
                         attrValue = attrValue.slice(2, -2);
                     }
                     if (attrName === 'fragmentUid') {
-                        slotHelper(astPath.parentPath.node.children, el.value.value, modules, wxml);
+                        slotHelper(
+                            astPath.parentPath.node.children,
+                            el.value.value,
+                            modules,
+                            wxml
+                        );
                         // console.log('fragmentUid');
                     } else if (attrName === 'templatedata') {
                         array = attrValue;
@@ -87,24 +94,39 @@ var visitor = {
                         attributes.push(
                             utils.createAttribute('is', is),
                             utils.createAttribute('wx:for', `{{${array}}}`),
-                            utils.createAttribute('wx:for-item', modules.dataName),
-                            utils.createAttribute('data', `{{...${modules.dataName}}}`),
-                            utils.createAttribute('wx:for-index', modules.indexName),
+                            utils.createAttribute(
+                                'wx:for-item',
+                                modules.dataName
+                            ),
+                            utils.createAttribute(
+                                'data',
+                                `{{...${modules.dataName}}}`
+                            ),
+                            utils.createAttribute(
+                                'wx:for-index',
+                                modules.indexName
+                            ),
                             utils.createAttribute('wx:key', genKey(key))
                         );
                         modules.replaceComponent = template;
                     } else {
                         attributes.push(
                             utils.createAttribute('is', is),
-                            utils.createAttribute('wx:if', `{{${array}[${modules.indexName}]}}`),
-                            utils.createAttribute('data', `{{...${array}[${modules.indexName}]}}`)
+                            utils.createAttribute(
+                                'wx:if',
+                                `{{${array}[${modules.indexName}]}}`
+                            ),
+                            utils.createAttribute(
+                                'data',
+                                `{{...${array}[${modules.indexName}]}}`
+                            )
                         );
                     }
                 }
 
                 astPath.parentPath.replaceWith(template);
             }
-        },
+        }
     },
     CallExpression: {
         enter(astPath, state) {
@@ -112,7 +134,10 @@ var visitor = {
             let args = node.arguments;
             let callee = node.callee;
             //移除super()语句
-            if (callee.type == 'MemberExpression' && callee.property.name === 'map') {
+            if (
+                callee.type == 'MemberExpression' &&
+                callee.property.name === 'map'
+            ) {
                 let modules = utils.getAnu(state);
 
                 modules.indexName = args[0].params[1].name;
@@ -124,9 +149,9 @@ var visitor = {
             if (modules.indexName) {
                 modules.indexName = null;
             }
-        },
+        }
     },
-    JSXAttribute(astPath,state) {       
+    JSXAttribute(astPath, state) {
         chineseHack.collect(astPath);
         if (astPath.node.name.name === 'key') {
             let node = astPath.node.value;
@@ -153,7 +178,10 @@ var visitor = {
             var expr = astPath.node.expression;
             if (t.isJSXAttribute(astPath.parent)) {
                 attrValueHelper(astPath);
-            } else if (expr.type === 'MemberExpression' && /props\.children/.test(generate(expr).code)) {
+            } else if (
+                expr.type === 'MemberExpression' &&
+                /props\.children/.test(generate(expr).code)
+            ) {
                 var attributes = [];
                 var template = utils.createElement('template', attributes, []);
                 attributes.push(
@@ -173,7 +201,7 @@ var visitor = {
                     return;
                 }
             }
-        },
-    },
+        }
+    }
 };
 module.exports = wxml;
