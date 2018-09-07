@@ -3,7 +3,7 @@ const path = require('path');
 const cwd = process.cwd();
 const src = path.join(cwd, 'dist/ReactWX.js');
 
-const template = ['qunar', 'pdd'];
+const template = ['qunar', 'pdd', 'music'];
 
 template.forEach((item)=>{
     const dist = path.join(cwd, `packages/cli/packages/template/${item}/src/ReactWX.js`);
