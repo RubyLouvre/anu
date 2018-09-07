@@ -1,53 +1,52 @@
 import React from '@react';
-
 class LotteryDraw extends React.Component {
     constructor(props) {
         super();
-        // eslint-disable-next-line
-        console.log('props',props);
         this.state = {
-            data: props.awardData || [],
-            awardsList: [],
-            btnDisabled: '',
             animationData: {},
-            animationRun: {},
-            animationInit: {}
+            awardsList: [],
+            awardData: props.awardData || [],
+            btnDisabled: ''
         };
     }
     getLottery() {
         var that = this;
 
-        //中奖逻辑
-        var awardIndex = this.props.awardIndex !== undefined
-            ? this.props.awardIndex
-            : Math.floor(Math.random() * this.state.data.length);
+        // 抽奖逻辑
+        var awardIndex =
+      this.props.awardIndex !== undefined
+          ? this.props.awardIndex
+          : Math.floor(Math.random() * this.state.awardData.length);
 
-        // 初始化 rotate
+        // 获取奖品配置
+        var awardsConfig = this.state.awardData;
+
+        // 旋转抽奖
+        let runDegs = 360 * 8 - awardIndex * (360 / awardsConfig.length);
+
+        // 初始化
         var animationInit = wx.createAnimation({
             duration: 1
         });
-        this.setState({ animationInit });
+
         animationInit.rotate(0).step();
+        this.setState({ animationData: animationInit.export(), btnDisabled: 'disabled' });
+        // 开始抽奖
 
-        this.setState({ animationData: animationInit.export() });
-        this.setState({ btnDisabled: 'disabled' });
-
-        // 旋转抽奖
         setTimeout(function() {
             var animationRun = wx.createAnimation({
-                duration: 4000,
+                duration: 3000,
                 timingFunction: 'ease'
             });
-            that.state.animationRun = animationRun;
-            animationRun.rotate(360 * 8 - awardIndex * (360 / that.state.data.length)).step();
+            animationRun.rotate(runDegs).step();
             that.setState({ animationData: animationRun.export() });
-        }, 100);
+        }, 300);
 
         // 中奖提示
         setTimeout(function() {
             wx.showModal({
                 title: '恭喜',
-                content: '获得' + that.state.data[awardIndex].name,
+                content: '获得' + awardsConfig[awardIndex].name,
                 showCancel: false,
                 success: function() {
                     that.props.onOk();
@@ -56,28 +55,26 @@ class LotteryDraw extends React.Component {
             that.setState({
                 btnDisabled: ''
             });
-        }, 4100);
+        }, 3300);
     }
-
     componentDidMount() {
+    // 初始化奖品数据
         let defaultConfig = [
             { index: 0, name: '1元红包' },
             { index: 1, name: '5元话费' },
             { index: 2, name: '6元红包' },
             { index: 3, name: '8元红包' },
             { index: 4, name: '10元话费' },
-            { index: 5, name: '10元红包' },
-            { index: 6, name: '11元红包' },
-            { index: 7, name: '11元红包' }
+            { index: 5, name: '10元红包' }
         ];
         let config;
-        if (this.state.data.length === 0) {
-            this.setState({ data: defaultConfig });
+        if (!this.state.awardData.length) {
             config = defaultConfig;
+            this.setState({ awardData: defaultConfig });
         } else {
-            config = this.state.data;
+            config = this.state.awardData;
         }
-    
+
         // 绘制转盘
         var len = config.length,
             rotateDeg = 360 / len / 2 + 90,
@@ -101,29 +98,30 @@ class LotteryDraw extends React.Component {
 
             // 颜色间隔
             if (i % 2 == 0) {
-                ctx.setFillStyle('#ffb820');
+                ctx.setFillStyle('rgba(255,184,32,.1)');
             } else {
-                ctx.setFillStyle('#ffcb3f');
+                ctx.setFillStyle('rgba(255,203,63,.1)');
             }
 
             // 填充扇形
             ctx.fill();
             // 绘制边框
             ctx.setLineWidth(0.5);
-            ctx.setStrokeStyle('#e4370e');
+            ctx.setStrokeStyle('rgba(228,55,14,.1)');
             ctx.stroke();
 
             // 恢复前一个状态
             ctx.restore();
 
             // 奖项列表
-            html.push({ turn: i * turnNum + 'turn', award: config[i].name });
+            html.push({
+                turn: i * turnNum + 'turn',
+                lineTurn: i * turnNum + turnNum / 2 + 'turn',
+                award: config[i].name
+            });
         }
-        this.setState({ awardsList: html });
-
-        wx.drawCanvas({
-            canvasId: 'lotteryCanvas',
-            actions: ctx.getActions()
+        this.setState({
+            awardsList: html
         });
     }
     render() {
@@ -135,11 +133,26 @@ class LotteryDraw extends React.Component {
                         class="canvas-element"
                         canvas-id="lotteryCanvas"
                     />
-                    {this.state.awardsList.map(function(item, index) {
-                        return (
-                            <div class="canvas-list" key={index}>
-                                <div class="canvas-item">
-                                    <text
+
+                    <div class="canvas-line">
+                        {this.state.awardsList.map(function(item, index) {
+                            return (
+                                <div
+                                    class="canvas-litem"
+                                    key={index}
+                                    style={{
+                                        '-webkit-transform': 'rotate(' + item.lineTurn + ')',
+                                        transform: 'rotate(' + item.lineTurn + ')'
+                                    }}
+                                />
+                            );
+                        })}
+                    </div>
+                    <div class="canvas-list">
+                        {this.state.awardsList.map(function(item, index) {
+                            return (
+                                <div class="canvas-item" key={index}>
+                                    <div
                                         class="canvas-item-text"
                                         style={{
                                             '-webkit-transform': 'rotate(' + item.turn + ')',
@@ -147,13 +160,12 @@ class LotteryDraw extends React.Component {
                                         }}
                                     >
                                         {item.award}
-                                    </text>
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
-
                 <div onTap={this.getLottery.bind(this)} class={'canvas-btn ' + this.state.btnDisabled}>
           抽奖
                 </div>

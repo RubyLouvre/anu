@@ -1,4 +1,6 @@
 import React from '@react';
+// eslint-disable-next-line
+var now = Date.now();
 class RightNav extends React.Component {
     constructor() {
         super();

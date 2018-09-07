@@ -28,12 +28,12 @@ page {
   position: fixed;
   z-index: 5000;
   width: 80%;
-  max-width: 300px;
+  max-width: 310px;
   top: 50%;
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
-//   background-color: #ffffff;
+  //   background-color: #ffffff;
   text-align: center;
   border-radius: 3px;
   overflow: hidden;
@@ -105,4 +105,10 @@ page {
   transform-origin: 0 0;
   -webkit-transform: scaleX(0.5);
   transform: scaleX(0.5);
+}
+.lottery_draw_log {
+  display: block;
+  margin: 0 auto;
+  width: 520rpx;
+  height: 145rpx;
 }

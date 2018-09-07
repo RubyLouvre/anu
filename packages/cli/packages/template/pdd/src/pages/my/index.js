@@ -7,6 +7,7 @@ class MY extends React.Component {
         super();
         this.state = {
             userInfo: {},
+            show: true,
             userListInfo: [
                 {
                     icon: '../../assets/images/iconfont-dingdan.png',
@@ -53,14 +54,13 @@ class MY extends React.Component {
 
   componentWillMount() {
       // console.log(app)
-      var that = this;
-      app.getUserInfo(function(userInfo) {
-          // eslint-disable-next-line
-          console.log('userInfo', userInfo);
-          that.setData({
-              userInfo: userInfo
-          });
-      });
+      // var that = this;
+      // app.getUserInfo(function(userInfo) {
+      //   console.log('userInfo', userInfo);
+      //   that.setData({
+      //     userInfo: userInfo
+      //   });
+      // });
   }
 
   show(text) {
@@ -71,16 +71,32 @@ class MY extends React.Component {
       });
   }
 
+  getUserInfo(e) {
+    
+      this.setState({
+          userInfo: e.userInfo,
+          show: false
+      });
+  }
+
   render() {
       return (
           <div className="chat-container">
               <div className="userinfo">
-                  <image
-                      className="userinfo-avatar"
-                      src={this.state.userInfo.avatarUrl}
-                      background-size="cover"
-                  />
-                  <div className="userinfo-nickname">{this.state.userInfo.nickName}</div>
+                  {this.state.show ? (
+                      <button open-type="getUserInfo" onGetuserInfo={this.getUserInfo}>
+              获取用户登录信息
+                      </button>
+                  ) : (
+                      <div>
+                          <image
+                              className="userinfo-avatar"
+                              src={this.state.userInfo.avatarUrl}
+                              background-size="cover"
+                          />
+                          <div className="userinfo-nickname">{this.state.userInfo.nickName}</div>
+                      </div>
+                  )}
               </div>
               <div className="info_list">
                   {this.state.userListInfo.map(function(item) {
