@@ -41,11 +41,11 @@ class P extends React.Component {
                 },
                 {
                     class: '',
-                    bizTitle: '专车·巴士',
+                    bizTitle: '日期选择',
                     logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/car1.png',
                     showSpecialLogo: false,
                     specialText: '',
-                    url: ''
+                    url: '../../pages/demo/calendar/index'
                 },
                 {
                     class: '',
