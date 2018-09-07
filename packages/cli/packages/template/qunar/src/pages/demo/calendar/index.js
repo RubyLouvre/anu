@@ -4,13 +4,26 @@ class P extends React.Component {
     constructor() {
         super();
     }
+    handleShowDate(date) {
+        wx.showModal({
+            title: '提示',
+            content:
+        '选择日期为：' + date.getFullYear() + '年' + (date.getMonth()+1) + '月' + date.getDate() + '日',
+            success: e => {
+                if (e.confirm) {
+                    var app = React.getApp();
+                    app.globalData.dateSelect = date;
+                    wx.navigateBack();
+                }
+            }
+        });
+    }
     render() {
         return (
             <div class="calendar-containar">
-                <Calendar />
+                <Calendar handleTransmitDate={this.handleShowDate.bind(this)} />
             </div>
         );
     }
 }
-
 export default P;

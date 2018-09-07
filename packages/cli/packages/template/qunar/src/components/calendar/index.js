@@ -50,10 +50,10 @@ class Calendar extends React.Component {
                     firstDay = new Date(iYear, iMonth - 1, 1).getDay();
                 }
                 // 是否遍历完当月日期
-                if (dayIndex > yearMonth[iMonth-1]) {
+                if (dayIndex > yearMonth[iMonth - 1]) {
                     break;
                 }
-                // 
+                //
                 for (var k = 0; k < 7; k++) {
                     if (firstDay !== -1 && k < firstDay) {
                         arr.push({ isBlank: true });
@@ -63,7 +63,7 @@ class Calendar extends React.Component {
                                 isBlank: false,
                                 showDate: dayIndex,
                                 isWeekend: k === 0 || k === 6 ? true : false,
-                                date: new Date(iYear,iMonth-1,dayIndex++)
+                                date: new Date(iYear, iMonth - 1, dayIndex++)
                             };
                             arr.push(item);
                         } else {
@@ -79,9 +79,7 @@ class Calendar extends React.Component {
         this.setState({ calendarArray: data });
     }
     getDate(date) {
-        var app = React.getApp();
-        app.globalData.dateSelect = date;
-        wx.navigateBack();
+        this.props.handleTransmitDate && this.props.handleTransmitDate(date);
     }
     render() {
         return (
@@ -108,13 +106,16 @@ class Calendar extends React.Component {
                                     {month.daysArray.map(function(itemRow, Row) {
                                         return (
                                             <div class="b-row" key={Row}>
-                                                {itemRow.map(function(item1,index1) {
+                                                {itemRow.map(function(item1, index1) {
                                                     return (
                                                         <block key={index1}>
                                                             {item1.isBlank ? (
                                                                 <div class="item" />
                                                             ) : (
-                                                                <div onTap={this.getDate.bind(this,item1.date)} class={'item item-a ' + (item1.isWeekend ? 'weekend' : '')}>
+                                                                <div
+                                                                    onTap={this.getDate.bind(this, item1.date)}
+                                                                    class={'item item-a ' + (item1.isWeekend ? 'weekend' : '')}
+                                                                >
                                                                     <div class="day">{item1.showDate}</div>
                                                                 </div>
                                                             )}
