@@ -126,6 +126,10 @@ const askTemplate = ()=>{
         {
             name: '拼多多商城',
             value: 'pdd'
+        },
+        {
+            name: '音乐播放器',
+            value: 'music'
         }
         
     ];
