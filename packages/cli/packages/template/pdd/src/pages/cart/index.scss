@@ -28,7 +28,7 @@ page {
   position: fixed;
   z-index: 5000;
   width: 80%;
-  max-width: 310px;
+  min-width: 310px;
   top: 50%;
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
