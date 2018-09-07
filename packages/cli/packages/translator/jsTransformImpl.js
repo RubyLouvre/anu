@@ -248,13 +248,14 @@ module.exports = {
                 if (!args[1] && args[0].type === 'FunctionExpression') {
                     args[1] = t.identifier('this');
                 }
-                if (!args[0].params[0]) {
-                    args[0].params[0] = t.identifier(
+                let params = args[0].params;
+                if (!params[0]) {
+                    params[0] = t.identifier(
                         'item' + astPath.node.start
                     );
                 }
-                if (!args[0].params[1]) {
-                    args[0].params[1] = t.identifier('i' + astPath.node.start);
+                if (!params[1]) {
+                    params[1] = t.identifier('i' + astPath.node.start);
                 }
                 var indexName = args[0].params[1].name;
                 if (modules.indexArr) {
