@@ -1,10 +1,8 @@
 import React from '@react';
 
 class PlayListComponent extends React.Component {
-    constructor(props) {
+    constructor() {
         super();
-        // eslint-disable-next-line
-        console.log('props', props);
     }
 
     render() {
