@@ -307,11 +307,12 @@ module.exports = {
 		if (/^(?:on|catch)[A-Z]/.test(attrName)) {
 			var n = attrName.charAt(0) == 'o' ? 2 : 5;
 			var eventName = attrName.slice(n).toLowerCase();
-			if (eventName == 'click') {//onClick映射为onTap, catchClick映射为catchTap
+			if (eventName == 'click') {
+				//onClick映射为onTap, catchClick映射为catchTap
 				astPath.node.name.name = n == 2 ? 'onTap' : 'catchTap';
 				eventName = 'tap';
-            }
-            //事件存在的标签，必须添加上data-eventName-uid, data-class-uid, data-instance-uid
+			}
+			//事件存在的标签，必须添加上data-eventName-uid, data-class-uid, data-instance-uid
 			var name = `data-${eventName}-uid`;
 			attrs.push(utils.createAttribute(name, 'e' + astPath.node.start + astPath.node.end));
 			if (!attrs.setClassCode) {
@@ -322,8 +323,8 @@ module.exports = {
 						'data-instance-uid',
 						t.jSXExpressionContainer(t.identifier('this.props.instanceUid'))
 					)
-                );
-                //如果是位于循环里，还必须加上data-key，防止事件回调乱窜
+				);
+				//如果是位于循环里，还必须加上data-key，防止事件回调乱窜
 				if (modules.indexArr) {
 					attrs.push(
 						utils.createAttribute(
@@ -338,31 +339,29 @@ module.exports = {
 			var expr = attrValue.expression;
 			var styleType = expr.type;
 			var isIdentifier = styleType === 'Identifier';
-			if (isIdentifier || styleType === 'ObjectExpression')
-				if (styleType === 'Identifier') {
-					var styleRandName =
-						`"style${astPath.node.start + astPath.node.end}"` +
-						(modules.indexName ? ' +' + modules.indexName : '');
-					// Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
-					// ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
-					var styleName = isIdentifier ? expr.name : generate(expr).code;
-					attrs.push(
-						utils.createAttribute(
-							'style',
-							t.jSXExpressionContainer(
-								t.identifier(`React.collectStyle(${styleName}, this.props, ${styleRandName})`)
-							)
+			if (isIdentifier || styleType === 'ObjectExpression') {
+				var styleRandName =
+					`"style${astPath.node.start + astPath.node.end}"` +
+					(modules.indexName ? ' +' + modules.indexName : '');
+				//Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
+				//ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
+				var styleName = isIdentifier ? expr.name : generate(expr).code;
+				attrs.push(
+					utils.createAttribute('style',
+						t.jSXExpressionContainer(
+							t.identifier(`React.collectStyle(${styleName}, this.props, ${styleRandName})`)
 						)
-					);
-					astPath.remove();
-				}
+					)
+				);
+				astPath.remove();
+			}
 		}
 	},
 
 	JSXClosingElement: function(astPath, state) {
 		let modules = utils.getAnu(state);
-        let nodeName = astPath.node.name.name;
-        //将组件标签转换成React.template标签，html标签转换成view/text标签
+		let nodeName = astPath.node.name.name;
+		//将组件标签转换成React.template标签，html标签转换成view/text标签
 		if (!modules.importComponents[nodeName] && nodeName !== 'React.template') {
 			helpers.nodeName(astPath, modules);
 		} else {
