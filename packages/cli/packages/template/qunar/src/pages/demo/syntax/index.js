@@ -44,6 +44,10 @@ class Express extends React.Component {
                 {
                     title: 'async/await',
                     url: '/pages/demo/syntax/await/index'
+                },
+                {
+                    title: '组件嵌套组件',
+                    url: '/pages/demo/syntax/multiple/index'
                 }
                 
             ]
