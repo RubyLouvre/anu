@@ -33,10 +33,10 @@ import './pages/demo/syntax/inlineStyle/index';
 import './pages/demo/syntax/if/index';
 import './pages/demo/syntax/children/index';
 import './pages/demo/syntax/await/index';
+import './pages/demo/syntax/multiple/index';
 
 import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';
-import './pages/demo/moultiComponent/index';
 
 import './app.less';
 
