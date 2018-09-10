@@ -2,8 +2,7 @@ let babel = require('babel-core');
 const prettifyXml = require('prettify-xml');
 let jsTransform = require('../../packages/translator/jsTransform');
 let helpers = require('../../packages/translator/helpers');
-// let React = require('../../../../dist')
-function baseCode(code, state = '', head = '') {
+function baseCode(code, state = '', head = '', methods = '') {
     return `
     ${head}
     import React from '../../../../dist/ReactWXTest'
@@ -14,7 +13,7 @@ function baseCode(code, state = '', head = '') {
             ${state}
         }
       }
-      
+      ${methods}
       config = {
         navigationBarTextStyle: '#fff',
         navigationBarBackgroundColor: '#0088a4',
@@ -30,14 +29,16 @@ function baseCode(code, state = '', head = '') {
     `;
 }
 
-exports.transform = function(code, state, head) {
-    code = baseCode(code, state, head);
+exports.transform = function(code, state, head, methods) {
+    code = baseCode(code, state, head, methods);
     var result = babel.transform(code, {
         babelrc: false,
         plugins: [
             'syntax-jsx',
             'transform-decorators-legacy',
             'transform-object-rest-spread',
+            'transform-async-to-generator',
+            'transform-es2015-template-literals',
             jsTransform.miniappPlugin
         ]
     });
