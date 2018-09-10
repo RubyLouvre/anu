@@ -10,7 +10,7 @@
 4. 定位到  `<project-name>` 目录下 `mpreact start` 开始监听文件变化，<br />
 5. 用微信开发工具打开当中的dist目录，自己在src目录中进行开发<br />
 
-详见 https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
+详见 https://rubylouvre.github.io/nanachi/index.html 或  https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
 
 拼多多模板，请打开右上角 “>>” 详情，  不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书 打上勾
 
