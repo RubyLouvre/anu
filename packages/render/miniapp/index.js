@@ -12,7 +12,7 @@ import {
     createFactory
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
-import { createPage } from './createPage';
+import { createPage, applyAppStore } from './createPage';
 import { template } from './template';
 import { eventSystem } from './eventSystem';
 import { initNativeApi } from './api';
@@ -38,6 +38,7 @@ React = win.React = win.ReactDOM = {
     findDOMNode: function() {
         console.log('小程序不支持findDOMNode');
     },
+    applyAppStore,
     //fiber底层API
     version: 'VERSION',
     render: render,

@@ -48,6 +48,10 @@ class Express extends React.Component {
                 {
                     title: '组件嵌套组件',
                     url: '/pages/demo/syntax/multiple/index'
+                },
+                {
+                    title: 'redux',
+                    url: '/pages/demo/syntax/redux1/index'
                 }
                 
             ]
