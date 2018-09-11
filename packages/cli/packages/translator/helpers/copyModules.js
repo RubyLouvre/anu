@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs-extra');
-const babel = require('babel-core');
+//const babel = require('babel-core');
 const cwd = process.cwd();
 
 const isNpm = function(astPath){
@@ -42,63 +42,72 @@ const hasMainFild = (npmName)=>{
 };
 
 
-const resolveExt = (name)=>{
-    let result = /\.js$/.test(name) ? name : `${name}.js`;
-    return result;
-};
+// const resolveExt = (name)=>{
+//     let result = /\.js$/.test(name) ? name : `${name}.js`;
+//     return result;
+// };
 
 const copyNpm = (npmName)=>{
 
     let npmNameAry = npmName.split('/');
-    const npmPkg = path.join(cwd, 'node_modules', npmNameAry[0], 'package.json');
+    // const npmPkg = path.join(cwd, 'node_modules', npmNameAry[0], 'package.json');
 
-    let mainFiled = require(npmPkg).main;
-    let srcNpmPkgDir = '';
-    let distLib = '';
+    // let mainFiled = require(npmPkg).main;
+    // let srcNpmPkgDir = '';
+    // let distLib = '';
     
-    if (npmNameAry.length > 1){
-        //require('a/b/c')
-        srcNpmPkgDir = path.join(cwd, 'node_modules', resolveExt(npmName) );  
-        distLib = path.join(cwd, 'dist', 'npm', resolveExt(npmName));         
-    } else {
-        //require('a');
-        srcNpmPkgDir = path.join(cwd, 'node_modules', npmName, resolveExt( mainFiled )  );  
-        distLib = path.join(cwd, 'dist', 'npm' , npmName,   resolveExt( mainFiled ) );     
-    }
+    // if (npmNameAry.length > 1){
+    //     //require('a/b/c')
+    //     srcNpmPkgDir = path.join(cwd, 'node_modules', resolveExt(npmName) );  
+    //     distLib = path.join(cwd, 'dist', 'npm', resolveExt(npmName));         
+    // } else {
+    //     //require('a');
+    //     srcNpmPkgDir = path.join(cwd, 'node_modules', npmName, resolveExt( mainFiled )  );  
+    //     distLib = path.join(cwd, 'dist', 'npm' , npmName,   resolveExt( mainFiled ) );     
+    // }
 
-    fs.ensureFileSync(distLib);
-    fs.copyFile(
-        srcNpmPkgDir,
-        distLib
+    // fs.ensureFileSync(distLib);
+    // fs.copyFile(
+    //     srcNpmPkgDir,
+    //     distLib
+    // );
+
+
+    let distLibTem = path.join(cwd, 'dist', 'npm', npmNameAry[0]);
+    let srcNpmPkgDirTem = path.join(cwd, 'node_modules', npmNameAry[0]);
+    fs.ensureDirSync(distLibTem);
+    fs.copy(
+        srcNpmPkgDirTem,
+        distLibTem
     );
 
 
-    let hasDeps = false;
-    const result = babel.transformFileSync(srcNpmPkgDir, {
-        plugins: [
-            {
-                visitor: {
-                    CallExpression(astPath){
-                        let name = astPath.node.callee.name;
-                        if (name === 'require'){
-                            let npmName = astPath.node.arguments[0].value;
-                            if (isBuildInLibs(npmName) || isAlias(npmName) || !isNpm(npmName)) return;
-                            copyNpm(npmName);
-                            astPath.node.arguments[0].value = resolveNpmPath(srcNpmPkgDir, npmName);
-                            hasDeps = true;
-                        }
-                    }
-                }
-            }
-        ]
-    });
+    // let hasDeps = false;
+    // const result = babel.transformFileSync(srcNpmPkgDir, {
+    //     plugins: [
+    //         {
+    //             visitor: {
+    //                 CallExpression(astPath){
+    //                     let name = astPath.node.callee.name;
+    //                     if (name === 'require'){
+    //                         let npmName = astPath.node.arguments[0].value;
+    //                         if (isBuildInLibs(npmName) || isAlias(npmName) || !isNpm(npmName)) return;
+    //                         copyNpm(npmName);
+    //                         astPath.node.arguments[0].value = resolveNpmPath(srcNpmPkgDir, npmName);
+    //                         hasDeps = true;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     ]
+    // });
    
 
-    if (hasDeps){
-        let hasDepsDist = path.join(cwd, 'dist', 'npm', path.relative(  path.join(cwd, 'node_modules'), srcNpmPkgDir ) );
-        fs.ensureFileSync(hasDepsDist);
-        fs.writeFileSync(hasDepsDist, result.code);
-    }
+    // if (hasDeps){
+    //     let hasDepsDist = path.join(cwd, 'dist', 'npm', path.relative(  path.join(cwd, 'node_modules'), srcNpmPkgDir ) );
+    //     fs.ensureFileSync(hasDepsDist);
+    //     fs.writeFileSync(hasDepsDist, result.code);
+    // }
                        
 };
 

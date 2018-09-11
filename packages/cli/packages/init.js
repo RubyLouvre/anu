@@ -97,16 +97,16 @@ const askTemplate = ()=>{
     const q = [];
     const list = [
         {
-            name: '去哪儿',
-            value: 'qunar'
-        },
-        {
             name: '拼XX',
             value: 'pdd'
         },
         {
             name: '网X云音乐',
             value: 'music'
+        },
+        {
+            name: '去哪儿',
+            value: 'qunar'
         }
         
     ];
