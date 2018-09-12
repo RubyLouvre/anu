@@ -220,33 +220,6 @@
                 return node;
             }
 
-            inOrder(callback) {//左中右
-                this._forEach(this.root, callback, "middle");
-            }
-            preOrder(callback) {//
-                this._forEach(this.root, callback, "pre");
-            }
-            postOrder(callback) {
-                this._forEach(this.root, callback, "post");
-            }
-            _forEach(node, callback, type) {
-                if (node) {
-                    if (type === "middle") {//中序遍历
-                        this._forEach(node.left, callback, type);
-                        callback(node);
-                        this._forEach(node.right, callback, type);
-                    } else if (type === "pre") {//先序遍历
-                        callback(node);
-                        this._forEach(node.left, callback, type);
-                        this._forEach(node.right, callback, type);
-                    } else if (type === "post") {//后序遍历
-                        this._forEach(node.left, callback, type);
-                        this._forEach(node.right, callback, type);
-                        callback(node);
-                    }
-                }
-            }
-
             preOrder(callback) {//中左右
                 var stack = []
                 var node = this.root;
@@ -296,7 +269,30 @@
             height() {
                 return this.getNodeHeight(this.root);
             }
-
+            printNodeByLevel(callback) {
+                var queue = []
+                var out = []
+                var node = this.root;
+                if (node) {
+                    queue.push(node)
+                    queue.push(0)
+                }
+                while (queue.length) {
+                    node = queue.shift()//先进先出
+                    if (node) {
+                        callback(node)
+                        if (node.left) {
+                            queue.push(node.left)
+                        }
+                        if (node.right) {
+                            queue.push(node.right)
+                        }
+                    } else if (queue.length) {
+                        queue.push(0)
+                        callback(0)
+                    }
+                }
+            }
             //获取指定结点的度
             getNodeHeight(node) {
                 if (node === null) {//递归出口
@@ -323,255 +319,133 @@
                     }
                 }
             }
-            multiplyString(string, times) {
-                var str = "";
-                for (var i = 0; i < times; ++i) {
-                    str += string;
-                }
-                return str;
-            }
 
-            getSpaceBetweenLeftRightBranch(height) {
-                var noOfNodesBetweenLeftRightBranch = Math.pow(2, height - 1) - 1;
-
-                return this.multiplyString("  ", noOfNodesBetweenLeftRightBranch);
-            }
-
-            getSpaceBetweenRightLeftBranch(height) {
-                var noOfNodesBetweenLeftRightBranch = Math.pow(2, height - 1);
-
-                return this.multiplyString("  ", noOfNodesBetweenLeftRightBranch);
-            }
-
-            getStartingSpace(height) {
-                return this.multiplyString("  ", (Math.pow(2, height - 1)) >> 1);
-            }
-
-            getUnderScores(height) {
-                var noOfElementsToLeft = (Math.pow(2, height) - 1) >> 1;
-                var noOfUnderScores = noOfElementsToLeft
-                    - (Math.pow(2, height - 1) >> 1);
-
-                return this.multiplyString("__", noOfUnderScores);
-            }
-
-            getSpaceBetweenTwoNodes(height) {
-                if (height == 0)
-                    return "";
-
-                var noOfNodesInSubTreeOfNode = Math.pow(2, height - 1) >> 1;
-                /** Sum of spaces of the subtrees of nodes + the parent node */
-                var noOfSpacesBetweenTwoNodes = noOfNodesInSubTreeOfNode * 2 + 1;
-                console.log("noOfSpacesBetweenTwoNodes", noOfSpacesBetweenTwoNodes)
-                return this.multiplyString("  ", noOfSpacesBetweenTwoNodes);
-            }
-            printNodes(queueOfNodes, noOfNodesAtCurrentHeight, height, out) {
-                var nodesAtHeight = []
-                console.log(queueOfNodes.concat(), height)
-                nodesAtHeight.append = function (a) {
-                    this.push(a)
-                    return this
-                }
-                var startSpace = this.getStartingSpace(height);
-                var spaceBetweenTwoNodes = this.getSpaceBetweenTwoNodes(height);
-
-                var underScore = this.getUnderScores(height);
-                var underScoreSpace = this.multiplyString(" ", underScore.length);
-
-                nodesAtHeight.append(startSpace)
-                for (var i = 0; i < noOfNodesAtCurrentHeight; i++) {
-                    var node = queueOfNodes[i]
-                    if (node == null) {
-                        nodesAtHeight.append(underScoreSpace)
-                            .append("  ")
-                            .append(underScoreSpace)
-                            .append(spaceBetweenTwoNodes);
-                    } else {
-                        nodesAtHeight
-                            .append(node.left != null ? underScore
-                                : underScoreSpace)
-                            .append(node.data)
-                            .append(node.right != null ? underScore
-                                : underScoreSpace)
-                            .append(spaceBetweenTwoNodes);
-                    }
-                }
-
-                var s = nodesAtHeight.join("").replace(/\s+$/, "");
-                out.push(s)
-            }
-            printBranches(queueOfNodes, noOfNodesAtCurrentHeight, height, out) {
-                if (height <= 1)
-                    return;
-                var brachesAtHeight = [];
-                brachesAtHeight.append = function (a) {
-                    this.push(a)
-                    return this
-                }
-                var startSpace = this.getStartingSpace(height);
-                var leftRightSpace = this.getSpaceBetweenLeftRightBranch(height);
-                var rightLeftSpace = this.getSpaceBetweenRightLeftBranch(height);
-
-                brachesAtHeight
-                    .append(startSpace.substring(0, startSpace.length - 1));
-
-                for (var i = 0; i < noOfNodesAtCurrentHeight; i++) {
-                    var node = queueOfNodes[i]
-                    if (node == null) {
-                        brachesAtHeight.append(" ")
-                            .append(leftRightSpace)
-                            .append(" ")
-                            .append(rightLeftSpace);
-                    } else {
-                        //  brachesAtHeight.append(" ".repeat(node.data.length - 1))
-                        brachesAtHeight.append(node.left != null ? "/" : " ")
-                            .append(leftRightSpace)
-                            .append(node.right != null ? "\\" : " ")
-                            .append(rightLeftSpace);
-                    }
-                }
-
-                var str = brachesAtHeight.join("").replace(/\s+$/, "");
-                out.push(str)
-            }
-            prettyPrintTree() {
-                var queueOfNodes = []
-                var height = this.height()
-                var level = 0;
-                var noOfNodesAtCurrentHeight = 0;
-                if (this.root) {
-                    queueOfNodes.push(this.root);
-                }
+            printNodeByLevel(callback) {
+                var queue = []
                 var out = []
-                while (queueOfNodes.length && level < height) {
-                    noOfNodesAtCurrentHeight = Math.pow(2, level);
-                    //由空白，下划线与数字组成
-                    this.printNodes(queueOfNodes, noOfNodesAtCurrentHeight, height - level, out);
-                    this.printBranches(queueOfNodes, noOfNodesAtCurrentHeight, height
-                        - level, out);
-
-                    for (var i = 0; i < noOfNodesAtCurrentHeight; i++) {
-                        var currNode = queueOfNodes[0]
-                        // console.log(currNode)
-                        queueOfNodes.shift();
-                        if (currNode != null) {
-                            queueOfNodes.push(currNode.left);
-                            queueOfNodes.push(currNode.right);
-                        } else {
-                            queueOfNodes.push(null);
-                            queueOfNodes.push(null);
+                var node = this.root;
+                if (node) {
+                    queue.push(node)
+                    queue.push(0)
+                }
+                while (queue.length) {
+                    node = queue.shift()//先进先出
+                    if (node) {
+                        callback(node)
+                        if (node.left) {
+                            queue.push(node.left)
                         }
-                    }
-                    level++;
-                }
-                console.log(out)
-                console.log(out.join("\n"))
-            }
-            getLeftWhiteSpace(datas, el) {
-
-
-
-                var sp = ""
-                for (var i = 0, n = datas.length; i < n; i++) {
-                    var elem = datas[i];
-                    sp += " ".repeat(elem.toString().length + 2)
-                    if (el === elem) {
-                        break
-                    }
-                }
-                return sp;
-            }
-            getChild(el, ret, xxx) {
-
-                if (el.left && el.left.data < xxx) {
-                    ret.push(el.left)
-                    getChild(el.left, ret, xxx)
-                }
-
-                if (el.left && el.left.data < xxx) {
-                    ret.push(el.left)
-                    getChild(el.left, ret, xxx)
-                }
-
-                /*
-                      /              \
-                   __47__          __60__
-                  /      \        /      \
-                 10      51      55      200
-                   \    /  \       \       \
-                   30  50  52      56      504
-                
-                */
-                while (el) {
-
-                }
-            }
-            getLeftLine(datas, el, root) {
-                var sp = ""
-                for (var i = 0, n = datas.length; i < n; i++) {
-                    var elem = datas[i];
-                    if (elem == el) {
-                        ok = true
-                    } else if (ok) {
-                        if (elem != root) {
-                            sp += "_".repeat(elem.toString().length + 2)
-                        } else {
-                            break
+                        if (node.right) {
+                            queue.push(node.right)
                         }
+                    } else if (queue.length) {
+                        callback(0)
+                        queue.push(0) //用于分隔当前层
                     }
                 }
-                return sp;
             }
             toString() {
-                var datas = []
-                this.inOrder(function (el) {
-                    datas.push(el.data)
-                })
-                var out = []
-                var root = this.root;
-                if (root) {
-                    var left = root.left;
-                    if (left) {
-                 
-                        var sp =  getWhite(left, function(n){
-                            return n.data <= left.data
-                        })       
-                        var line = getLine(root,  function(n){
-                            return n.data > left.data && n.data < root.data
-                        })
-                        var sp2 =  getWhite(right, function(n){
-                            return n.data >= right.data
-                        })       
-                        var line2 = getLine(root,  function(n){
-                            return n.data > root.data && n.data < right.data
-                        })
-                        out.push(sp + line + "(" + root.data + ")"+ line2+ sp2)
-
+                //辅助方法，让数据居中对齐
+                const brickLen = 6, SW = " ", LINE = "_"
+                function displayData(node) {
+                    var s = "(" + node.data + ")", right = true, isLeaf = !node.left && !node.right
+                    for (var i = s.length; i < brickLen; i++) {
+                        if (right) {
+                            s = s + (isLeaf ? SW : LINE);
+                        } else {
+                            s = (isLeaf ? SW : LINE) + s;
+                        }
+                        right = !right
                     }
+                    return s;
                 }
+                //创建4个字符的空白或下划线
+                function createPadding(s, n) {
+                    var ret = "";
+                    n = n || brickLen;
+                    for (var i = 0; i < n; i++) {
+                        ret += s;
+                    }
+                    return ret;
+                }
+                //====================================
+                //添加索引值
+                var index = 0;
+                tree.inOrder(function (el) {
+                    el.index = index++;
+                })
+                // 收集每一层的结点
+                var allLevelNodes = [];
+                var array = [];
+                tree.printNodeByLevel(function (node) {
+                    if (node !== 0) {
+                        array.push(node);
+                    } else {
+                        allLevelNodes.push(array);
+                        array = [];
+                    }
+                })
+                if (array.length) {
+                    allLevelNodes.push(array);
+                }
+                //brickes中有数据的层，branches只是用来放斜线的层,都是二维数组
+                var brickes = [];
+                var branches = [];
+                for (var i = 0, n = allLevelNodes.length; i < n; i++) {
+                    if (!brickes[i]) {
+                        brickes[i] = [];
+                        branches[i] = [];
+                    }
+                    var cbrick = brickes[i];
+                    var cbranch = branches[i];
+                    var level = allLevelNodes[i];
+                    while (level.length) {
+                        var el = level.shift();
+                        var j = el.index;
+                        //确保cbrick[j]与cbranch[j]等长
+                        cbrick[j] = displayData(el);
+                        cbranch[j] = createPadding(SW, cbrick[j].length);
 
+                        if (el.parent) {
+                            var pbrick = brickes[i - 1];
+                            var pbranch = branches[i - 1];
+                            var pindex = el.parent.index;
+                            if (el == el.parent.left) {//左子树
+                                for (var k = j + 1; k < pindex; k++) {
+                                    pbrick[k] = createPadding(LINE);
+                                }
+                                for (var k = j + 1; k < pindex; k++) {
+                                    pbranch[k] = createPadding(SW);
+                                }
+                                pbranch[j] = createPadding(SW, brickLen - 1) + "/"
+                            } else {//右子树
+                                for (var k = pindex + 1; k < j; k++) {
+                                    pbrick[k] = createPadding(LINE);
+                                }
+                                for (var k = pindex + 1; k < j; k++) {
+                                    pbranch[k] = createPadding(SW);
+                                }
+                                pbranch[j] = "\\" + createPadding(SW, brickLen - 1)
+                            }
+                        }
+                        j--;
+                        inner:
+                        while (j > -1) { //添加空白
+                            if (cbrick[j] == null) {//将非空节点变成空字符串
+                                cbrick[j] = createPadding(SW);
+                                cbranch[j] = createPadding(SW)
+                            } else {
+                                break inner;
+                            }
+                            j--;
+                        }
+                    }
 
+                }
+                return brickes.map(function (el, i) {
+                    return el.join("") + "\n" + branches[i].join("")
+                }).join("\n")
 
-            };
-        }
-        function getWhite(node, test) {
-            var obj = {
-                size: 0
-            }
-            collectCharLength(node, test, obj)
-            return " ".repeat(obj.size)
-        }
-        function collectCharLength(node, test, ret) {
-            if (test(node)) {
-                ret.size += node.data.toString().length + 2
-            }
-            var left = node.left
-            if (test(left)) {
-                ret.size += left.data.toString().length + 2
-            }
-            var right = node.right
-            if (test(right)) {
-                ret.size += right.data.toString().length + 2
             }
         }
 
@@ -580,24 +454,21 @@
         [10, 50, 47, 30, 200, 60, 55, 504, 53, 52, 51, 56].forEach(function (el, i) {
             tree.insert(el)
         })
-        var ret = []
-        tree.inOrder(function (el) {
-            ret.push(el.data)
-        })
-        console.log(ret)
-        //如果简化成一条链表，它可以是不断压入结点，到最左，然后再弹出来。
-        /*  [10, 50, 40].forEach(function (el, i) {
-              tree.insert(el)
-  
-          })*/
-        tree.prettyPrintTree()
 
-        tree.inOrder(function (el) {
-            console.log(el.data)
-        })
+        console.log(tree + "")
+
+
+       //从数组取得第一个，建一个数组，空白+数字
+       // 下一层， 
+     //  for(var i = 0, allLevelNodes)
+     //  console.log(allLevelNodes)
+      //  array.length = 0
+
         // https://www.cnblogs.com/xrq730/p/6867924.html
         // https://blog.csdn.net/u011240877/article/details/53329023
         // https://www.cnblogs.com/skywang12345/p/3624343.html
+
+
     </script>
 
 </html>

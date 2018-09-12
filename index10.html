@@ -16,236 +16,222 @@
     </div>
     <script>
         class Node {
-            constructor(data) {
-                this.size = 1
-                this.data = data;
+            constructor(low, high, parent) {
+                this.begin = low;
+                this.end = high;
                 this.left = null;
                 this.right = null;
-                this.parent = null;
-                this.disposed = false;
+                this.parent = parent;
             }
             update() {
-                var leftSize = this.left ? this.left.size : 0
-                var rightSize = this.right ? this.right.size : 0
-                this.size = leftSize + rightSize + (this.disposed ? 0 : 1)
+                this.sum = (this.left ? this.left.sum : 0) + (this.right ? this.right.sum : 0)
+                this.min = this.left && this.right ? Math.min(this.left.min, this.right.min) :
+                    this.left ? this.left.min : this.right.min
+                this.max = this.left && this.right ? Math.max(this.left.max, this.right.max) :
+                    this.left ? this.left.max : this.right.max
             }
-
         };
 
-        class Scapegoat {
+        class SegmentTree {
             constructor() {
                 this.root = null;
                 this._size = 0;
             }
             size() {
-                return this.root ? this.root.size : 0
+                return this._size;
             }
-            find(data) {
-                var node = this.root;
-                while (node) {
-                    var diff = data - node.data
-                    if (diff == 0) {
-                        break
-                    } else if (diff < 0) {
-                        node = node.left;
-                    } else {
-                        node = node.right;
-                    }
+            buildNode(l, h, parent, array) {
+                var node = new Node(l, h, parent)
+                this._size++
+                if (l < h) {
+                    var mid = (l + h) >> 1;
+                    node.left = this.buildNode(l, mid, node, array);
+                    node.right = this.buildNode(mid + 1, h, node, array);
+                    node.update();
+                } else if (l == h) {
+                    node.sum = array[l]
+                    node.min = array[l]
+                    node.max = array[l]
                 }
-                if (node && !node.disposed) {
-                    return node
-                }
-                return null
-            }
-            insert(data) {
-                if (!this.root) {
-                    this.root = new Node(data)
-                    this._size = 1
-                } else {
-                    var node = this.root,
-                        parent = null,
-                        paths = []
-
-                    while (node) {
-                        parent = node;
-                        paths.push(node)
-                        var diff = data - node.data
-                        if (diff == 0) {
-                            return
-                        } else if (diff < 0) {
-                            node = node.left
-                        } else {
-                            node = node.right
-                        }
-                    }
-                    var node = new Node(data)
-                    this._size++;
-                    node.parent = parent;
-                    if (diff < 0) {
-                        parent.left = node
-                    } else {
-                        parent.right = node;
-                    }
-                    var badNode
-                    for (var i = paths.length - 1; i >= 0; i--) {
-                        node = paths[i]
-                        node.size++;
-                        if (!this.isBalance(node)) {
-                            badNode = node;
-                        }
-                    }
-                    if (badNode) {
-                        this.rebuild(badNode);
-                    }
-                }
-                return true
-            }
-            inOrder(node, array) { //中序遍历
-                if (node) {
-                    this.inOrder(node.left, array);
-                    if (!node.disposed) {
-                        array.push(node) // 构建序列 
-                    }
-                    this.inOrder(node.right, array);
-                    node.left = node.right = null; //清空孩子!!!
-                }
-            }
-            rebuild(node) {
-                var parent = node.parent;
-                var array = [];
-                this.inOrder(node, array)
-                var child = this.divide(array, 0, array.length)
-                //设置新子树的根的属性
-                child.parent = parent;
-                if (!parent) {
-                    this.root = child;
-                } else {
-                    if (parent.left == node) {
-                        parent.left = child;
-                    } else {
-                        parent.right = child;
-                    }
-                }
-            }
-            divide(array, l, r) {
-                if (l >= r) return null;
-                var mid = (l + r) >> 1;
-                var node = array[mid];
-                var child = this.divide(array, l, mid);
-                if (child) {
-                    child.parent = node;
-                    node.left = child;
-                }
-                child = this.divide(array, mid + 1, r);
-                if (child) {
-                    child.parent = node;
-                    node.right = child;
-                }
-                node.update() // 自底向上维护，先维护子树 
                 return node
             }
-            isBalance(node) {
-                // 左子树大小 < alpha * 根大小 并且 右子树大小 < alpha * 根大小
-                // alpha越小，树越稠密，插入效率低，查询效率高；
-                // alpha越大，树越稀疏，插入效率高，查询效率低；
-                var alpha = 0.65;
-                var size = node.size * alpha
-                var leftSize = node.left && node.left.size || 0
-                var rightSize = node.right && node.right.size || 0
-                return leftSize < size && rightSize < size;
-            }
-            remove(data) {
-                var node = this.find(data);
-                if (node && !node.disposed) {
-                    this._size--;
-                    node.disposed = true;
-                    node.size--;
-                    var p = node.parent
-                    while (p) {
-                        p.update()
-                        p = p.parent;
+            inOrder(callback) {//左中右
+                var stack = []
+                var node = this.root;
+                while (node != null || stack.length) {//将所有孩子压栈
+                    if (node != null) {
+                        stack.push(node);
+                        node = node.left
+                    } else {
+                        node = stack.pop();
+                        callback(node);//先于right前访问
+                        node = node.right
                     }
                 }
             }
-            toString(printNode) {
-                printNode = printNode || function (n) {
-                    return n ? n.data : "null"
-                };
-                var out = [];
-                //最开始的空白是root right创造的
-                printRow(this.root, '', true, function (v) {
-                    return out.push(v);
-                }, printNode);
-                return out.join('\n');
-            };
-        }
-        function genWh(n) {
-            var r = ""
-            for (var i = 0; i < n; i++) {
-                r += " "
-            }
-            return r
-        }
-        
-
-        function getPrintLine(node, spaces) {
-            var sb = ""
-
-            if (node.data == Number.MIN_VALUE) {
-                // for child nodes, print spaces
-                for (var i = 0; i < 2 * spaces; i++) {
-                    sb += " "
+            printNodeByLevel(callback) {
+                var queue = []
+                var out = []
+                var node = this.root;
+                if (node) {
+                    queue.push(node)
+                    queue.push(0)
                 }
+                while (queue.length) {
+                    node = queue.shift()//先进先出
+                    if (node) {
+                        callback(node)
+                        if (node.left) {
+                            queue.push(node.left)
+                        }
+                        if (node.right) {
+                            queue.push(node.right)
+                        }
+                    } else if (queue.length) {
+                        callback(0)
+                        queue.push(0) //用于分隔当前层
+                    }
+                }
+            }
+            query(L, R, node, cb) {
+                var l = node.begin, r = node.end;
+                if (L <= l && r <= R) {
+                    //在区间内直接返回
+                    cb(node)
+                    return
+                }
+                var m = (l + r) >> 1;
+                if (L <= m) {
+                    this.query(L, R, node.left, cb)
+                }
+                if (R > m) {
+                    this.query(L, R, node.right, cb)
+                }
+            }
+            //https://blog.csdn.net/YitongJun/article/details/53193724
+            querySum(begin, end) {
+                var sum = 0;
+                this.query(begin, end, this.root, function (node) {
+                    sum += node.sum
+                })
+                return sum;
+            }
+            toString() {
+                const brickLen = 6, SW = " ", LINE = "_"
+                //辅助方法，让数据居中对齐
+                function displayData(node) {
+                    var right = true, isLeaf = !node.left && !node.right
+                    var s = "[" + [node.begin, node.end].join(",") + "]"
+                    for (var i = s.length; i < brickLen; i++) {
+                        if (right) {
+                            s = s + SW;
+                        } else {
+                            s = SW + s;
+                        }
+                        right = !right
+                    }
+                    return s
+                }
+                //创建4个字符的空白或下划线
+                function createPadding(s, n) {
+                    var ret = "";
+                    n = n || brickLen
+                    for (var i = 0; i < n; i++) {
+                        ret += s;
+                    }
+                    return ret;
+                }
+                //====================================
+                //添加索引值
+                var index = 0;
+                tree.inOrder(function (el) {
+                    el.index = index++;
+                })
+                // 收集每一层的结点
+                var allLevelNodes = [];
+                var array = [];
+                tree.printNodeByLevel(function (node) {
+                    if (node !== 0) {
+                        array.push(node);
+                    } else {
+                        allLevelNodes.push(array);
+                        array = [];
+                    }
+                })
+                if (array.length) {
+                    allLevelNodes.push(array);
+                }
+                //brickes中有数据的层，branches只是用来放斜线的层,都是二维数组
+                var brickes = [];
+                var branches = [];
+                for (var i = 0, n = allLevelNodes.length; i < n; i++) {
+                    if (!brickes[i]) {
+                        brickes[i] = [];
+                        branches[i] = [];
+                    }
+                    var cbrick = brickes[i];
+                    var cbranch = branches[i];
+                    var level = allLevelNodes[i];
+                    while (level.length) {
+                        var el = level.shift();
+                        var j = el.index;
+                        cbrick[j] = displayData(el);
+                        cbranch[j] = createPadding(" ", cbrick[j].length);
 
-                return sb.toString();
+                        if (el.parent) {
+                            var pbrick = brickes[i - 1];
+                            var pbranch = branches[i - 1];
+                            var pindex = el.parent.index;
+                            if (el == el.parent.left) {//左子树
+                                for (var k = j + 1; k < pindex; k++) {
+                                    pbrick[k] = createPadding(LINE);
+                                }
+                                for (var k = j + 1; k < pindex; k++) {
+                                    pbranch[k] = createPadding(SW);
+                                }
+                                pbranch[j] = createPadding(SW, brickLen - 1) + "/"
+                            } else {//右子树
+                                for (var k = pindex + 1; k < j; k++) {
+                                    pbrick[k] = createPadding(LINE);
+                                }
+                                for (var k = pindex + 1; k < j; k++) {
+                                    pbranch[k] = createPadding(SW);
+                                }
+                                pbranch[j] = "\\" + createPadding(SW, brickLen - 1)
+                            }
+                        }
+                        j--;
+                        inner:
+                        while (j > -1) { //添加空白
+                            if (cbrick[j] == null) {
+                                cbrick[j] = createPadding(SW);
+                                cbranch[j] = createPadding(SW)
+                            } else {
+                                break inner;
+                            }
+                            j--;
+                        }
+                    }
+
+                }
+                return brickes.map(function (el, i) {
+                    return el.join("") + "\n" + branches[i].join("")
+                }).join("\n")
+
             }
 
-            var i = 0;
-            var to = spaces / 2;
-
-            for (; i < to; i++) {
-                sb += ' ';
-            }
-            to += spaces / 2;
-            var ch = ' ';
-            if (node.left != null) {
-                ch = '_';
-            }
-            for (; i < to; i++) {
-                sb += (ch);
+            build(array) {
+                var l = 0, h = array.length - 1;
+                this.root = this.buildNode(l, h, null, array);
             }
 
-            var value = node.data;
-            sb += (value);
-
-            to += spaces / 2;
-            ch = ' ';
-            if (node.right != null) {
-                ch = '_';
-            }
-            for (i += value.length(); i < to; i++) {
-                sb += (ch);
-            }
-
-            to += spaces / 2;
-            for (; i < to; i++) {
-                sb += (' ');
-            }
-
-            return sb
         }
 
-     
-        var tree = new Scapegoat(); // 30, 20, 60, 55, 54, 53, 52, 51, 56
-        [10, 50, 40, 30, 20, 60, 55, 54, 53, 52, 51, 56].forEach(function (el, i) {
-            tree.insert(el)
-            console.log(tree + "")
-        })
-        console.log("delete...")
-        tree.remove(60)
-        console.log(tree + "")
 
-        console.log(tree)
+        var tree = new SegmentTree();
+        tree.build([1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1])
+        console.log(tree + "")
+        console.log(tree.querySum(2, 4))
 
         /*
         https://blog.csdn.net/BerryKanry/article/details/75448176
