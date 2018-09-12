@@ -77,7 +77,7 @@ class P extends React.Component {
                     logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/travel2.png',
                     showSpecialLogo: false,
                     specialText: 'if测试',
-                    url: ''
+                    url: '../../pages/demo/strategy/index'
                 }
             ],
 

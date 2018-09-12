@@ -39,6 +39,7 @@ import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';
 import './pages/demo/boat/index';
 import './pages/demo/scenic/index';
+import './pages/demo/strategy/index';
 
 import './app.less';
 

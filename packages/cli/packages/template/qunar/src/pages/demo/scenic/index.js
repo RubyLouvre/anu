@@ -19,7 +19,6 @@ class P extends React.Component {
             success: function(data) {
                 wx.hideLoading();
                 that.setState({data: data.data});
-
             }
         });
     }
@@ -32,7 +31,7 @@ class P extends React.Component {
     }
     config = {
         backgrounColor: '#FFF',
-        navigationBarBackgroundColor: '#00ccff',
+        navigationBarBackgroundColor: '#1890ff',
         navigationBarTitleText: '景点门票',
         navigationBarTextStyle: '#d5d6d6'
     };
