@@ -53,7 +53,7 @@ class P extends React.Component {
                     logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/ship1.png',
                     showSpecialLogo: false,
                     specialText: '',
-                    url: ''
+                    url: '../../pages/demo/boat/index'
                 },
                 {
                     class: 'radius-bottom-left',
