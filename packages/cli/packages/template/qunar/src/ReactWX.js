@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-07
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-13
  * IE9+
  */
 
@@ -1877,136 +1877,136 @@ function eventString() {
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function onPageUpdate(fiber) {
-	var instance = fiber.stateNode;
-	var type = fiber.type;
-	if (!instance.instanceUid) {
-		var uuid = 'i' + getUUID();
-		instance.instanceUid = uuid;
-		type.instances[uuid] = instance;
-	}
-	instance.props.instanceUid = instance.instanceUid;
+    var instance = fiber.stateNode;
+    var type = fiber.type;
+    if (!instance.instanceUid) {
+        var uuid = 'i' + getUUID();
+        instance.instanceUid = uuid;
+        type.instances[uuid] = instance;
+    }
+    instance.props.instanceUid = instance.instanceUid;
 }
 function safeClone(originVal) {
-	var temp = originVal instanceof Array ? [] : {};
-	for (var item in originVal) {
-		if (originVal.hasOwnProperty(item)) {
-			var value = originVal[item];
-			if (isReferenceType(value)) {
-				if (value.$$typeof) {
-					continue;
-				}
-				temp[item] = safeClone(value);
-			} else {
-				temp[item] = value;
-			}
-		}
-	}
-	return temp;
+    var temp = originVal instanceof Array ? [] : {};
+    for (var item in originVal) {
+        if (originVal.hasOwnProperty(item)) {
+            var value = originVal[item];
+            if (isReferenceType(value)) {
+                if (value.$$typeof) {
+                    continue;
+                }
+                temp[item] = safeClone(value);
+            } else {
+                temp[item] = value;
+            }
+        }
+    }
+    return temp;
 }
 function isReferenceType(val) {
-	return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
 }
 function createPage(PageClass, path, testObject) {
-	PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-	PageClass.instances = PageClass.instances || {};
-	var $wxPage = {
-		setData: noop
-	},
-	    instance,
-	    config = {
-		data: {},
-		dispatchEvent: eventSystem.dispatchEvent,
-		onLoad: function onLoad(query) {
-			$wxPage = this;
-			console.log('onLoad', path);
-			instance = render(createElement(PageClass, {
-				path: path,
-				query: query,
-				isPageComponent: true
-			}), {
-				type: 'page',
-				props: {},
-				children: [],
-				root: true,
-				appendChild: noop
-			});
-			var anuSetState = instance.setState;
-			var anuForceUpdate = instance.forceUpdate;
-			var updating = false;
-			var canSetData = false;
-			function updatePage(pageInst) {
-				var data = pageInst.wxData;
-				extend(data, {
-					state: pageInst.state,
-					props: pageInst.props,
-					context: pageInst.context
-				});
-				$wxPage.setData(safeClone(data), function () {
-					console.log('setData complete');
-				});
-			}
-			instance.forceUpdate = instance.setState = function (a) {
-				var updateMethod = anuSetState;
-				var cbIndex = 1;
-				if (isFn(a) || a == null) {
-					updateMethod = anuForceUpdate;
-					cbIndex = 0;
-				}
-				var pageInst = this.$pageInst || this;
-				if (updating === false) {
-					if (pageInst == this) {
-						pageInst.wxData = {};
-					} else {
-						this.updateWXData = true;
-					}
-					canSetData = true;
-					updating = true;
-				}
-				var cb = arguments[cbIndex];
-				var args = Array.prototype.slice.call(arguments);
-				args[cbIndex] = function () {
-					cb && cb.call(this);
-					if (canSetData) {
-						canSetData = false;
-						updating = false;
-						updatePage(pageInst);
-					}
-				};
-				updateMethod.apply(this, args);
-			};
-			instance.wxData = instance.wxData || {};
-			updatePage(instance);
-		},
-		onShow: function onShow() {
-			PageClass.instances[instance.instanceUid] = instance;
-			var fn = instance.componentDidShow;
-			if (isFn(fn)) {
-				fn.call(instance);
-			}
-		},
-		onHide: function onHide() {
-			delete PageClass.instances[instance.instanceUid];
-			var fn = instance.componentDidHide;
-			if (isFn(fn)) {
-				fn.call(instance);
-			}
-		},
-		onUnload: function onUnload() {
-			var fn = instance.componentWillUnmount;
-			if (isFn(fn)) {
-				fn.call(instance);
-			}
-			instance = {};
-		}
-	};
-	if (testObject) {
-		config.setData = function (obj) {
-			config.data = obj;
-		};
-		config.onLoad();
-		return config;
-	}
-	return safeClone(config);
+    PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
+    PageClass.instances = PageClass.instances || {};
+    var $wxPage = {
+        setData: noop
+    },
+        instance,
+        config = {
+        data: {},
+        dispatchEvent: eventSystem.dispatchEvent,
+        onLoad: function onLoad(query) {
+            $wxPage = this;
+            console.log('onLoad', path);
+            instance = render(createElement(PageClass, {
+                path: path,
+                query: query,
+                isPageComponent: true
+            }), {
+                type: 'page',
+                props: {},
+                children: [],
+                root: true,
+                appendChild: noop
+            });
+            var anuSetState = instance.setState;
+            var anuForceUpdate = instance.forceUpdate;
+            var updating = false;
+            var canSetData = false;
+            function updatePage(pageInst) {
+                var data = pageInst.wxData;
+                extend(data, {
+                    state: pageInst.state,
+                    props: pageInst.props,
+                    context: pageInst.context
+                });
+                $wxPage.setData(safeClone(data), function () {
+                    console.log('setData complete');
+                });
+            }
+            instance.forceUpdate = instance.setState = function (a) {
+                var updateMethod = anuSetState;
+                var cbIndex = 1;
+                if (isFn(a) || a == null) {
+                    updateMethod = anuForceUpdate;
+                    cbIndex = 0;
+                }
+                var pageInst = this.$pageInst || this;
+                if (updating === false) {
+                    if (pageInst == this) {
+                        pageInst.wxData = {};
+                    } else {
+                        this.updateWXData = true;
+                    }
+                    canSetData = true;
+                    updating = true;
+                }
+                var cb = arguments[cbIndex];
+                var args = Array.prototype.slice.call(arguments);
+                args[cbIndex] = function () {
+                    cb && cb.call(this);
+                    if (canSetData) {
+                        canSetData = false;
+                        updating = false;
+                        updatePage(pageInst);
+                    }
+                };
+                updateMethod.apply(this, args);
+            };
+            instance.wxData = instance.wxData || {};
+            updatePage(instance);
+        },
+        onShow: function onShow() {
+            PageClass.instances[instance.instanceUid] = instance;
+            var fn = instance.componentDidShow;
+            if (isFn(fn)) {
+                fn.call(instance);
+            }
+        },
+        onHide: function onHide() {
+            delete PageClass.instances[instance.instanceUid];
+            var fn = instance.componentDidHide;
+            if (isFn(fn)) {
+                fn.call(instance);
+            }
+        },
+        onUnload: function onUnload() {
+            var fn = instance.componentWillUnmount;
+            if (isFn(fn)) {
+                fn.call(instance);
+            }
+            instance = {};
+        }
+    };
+    if (testObject) {
+        config.setData = function (obj) {
+            config.data = obj;
+        };
+        config.onLoad();
+        return config;
+    }
+    return safeClone(config);
 }
 
 function onComponentUpdate(fiber) {
@@ -2066,7 +2066,7 @@ function onComponentUpdate(fiber) {
             }
             return;
         }
-        if (instance.updateWXData) {
+        if (instance.updateWXData || fiber._hydrating) {
             for (var i = 0, el; el = arr[i++];) {
                 if (el.props === checkProps) {
                     extend(el, data);

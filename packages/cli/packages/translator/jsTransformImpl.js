@@ -16,6 +16,11 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
+function addCreatePage(name, path, modules){
+    if (name == modules.className){
+        path.insertBefore(modules.createPage);
+    }
+}
 /**
  * JS文件转译器
  */
@@ -129,9 +134,18 @@ module.exports = {
         });
         helpers.copyNpmModules(modules.current, source, node);
     },
+    ExportDefaultDeclaration: {
+        exit(astPath, state) {
+            var modules = utils.getAnu(state);
+            if (modules.componentType == 'Page') {
+                let declaration = astPath.node.declaration;
+                //延后createPage语句在其同名的export语句前
+                addCreatePage(declaration.name, astPath, modules);
+            }
+        }
+    },
 
     ExportNamedDeclaration: {
-        enter() {},
         exit(astPath) {
             let declaration = astPath.node.declaration;
             if (!declaration) {
@@ -325,7 +339,7 @@ module.exports = {
                 attributes.push(
                     utils.createAttribute(
                         'templatedata',
-                        'data' + utils.createUUID()
+                        'data' + utils.createUUID(astPath)
                     ),
                     t.JSXAttribute(
                         t.JSXIdentifier('is'),
@@ -335,7 +349,7 @@ module.exports = {
                 if (!isEmpty) {
                     //处理slot
                     var fragmentUid =
-                        'f' + astPath.node.start + astPath.node.end;
+                        'f' + utils.createUUID(astPath);
                     if (dep.addImportTag) {
                         dep.addImportTag(fragmentUid);
                     } else {
@@ -377,7 +391,7 @@ module.exports = {
             attrs.push(
                 utils.createAttribute(
                     name,
-                    'e' + astPath.node.start + astPath.node.end
+                    'e' + utils.createUUID(astPath)
                 )
             );
             if (!attrs.setClassCode) {
@@ -413,7 +427,7 @@ module.exports = {
             var isIdentifier = styleType === 'Identifier';
             if (isIdentifier || styleType === 'ObjectExpression') {
                 var styleRandName =
-                    `"style${astPath.node.start + astPath.node.end}"` +
+                    `"style${utils.createUUID(astPath)}"` +
                     (modules.indexName ? ' +' + modules.indexName : '');
                 //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
                 //ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构

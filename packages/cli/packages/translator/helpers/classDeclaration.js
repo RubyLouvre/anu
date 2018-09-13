@@ -9,7 +9,7 @@ module.exports = {
         var modules = utils.getAnu(state);
         modules.className = astPath.node.id.name;
         modules.parentName = generate(astPath.node.superClass).code || 'Object';
-        modules.classUid = 'c' + astPath.node.start + astPath.node.end;
+        modules.classUid = 'c' + utils.createUUID(astPath);
     },
     exit(astPath, state) {
         // 将类表式变成函数调用
@@ -61,12 +61,14 @@ module.exports = {
                     )
                 }
             );
-            var p = astPath;
+            modules.createPage = createPage;
+            /*  var p = astPath;
             //好像不能上升到根节点Program，只能上升到VariableDeclaration
             while (p.type != 'VariableDeclaration') {
                 p = p.parentPath;
             }
             p.insertAfter(createPage);
+            */
         }
     }
 };

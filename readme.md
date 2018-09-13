@@ -28,7 +28,7 @@ source： https://bundlephobia.com/
 5. Supports 99% antd components (`antd`is an enterprise-class UI components in China).
 6. Excellent browser compatibility, easy to handle all kinds of business under IE6-8.
 7. It comes with a painless state manager **Rematch** and a handy router **Reach**.
-8. Support wechat miniapp https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
+8. Support wechat miniapp(微信小程序) https://rubylouvre.github.io/nanachi/
 
 ### boilerplate 
 
