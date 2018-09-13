@@ -4,7 +4,6 @@ const ignoreObject = {
     is: 1,
     $$loop: 1,
     $$index: 1,
-    $$indexValue: 1,
     classUid: 1,
     instanceUid: 1
 };
@@ -44,7 +43,7 @@ export function onComponentUpdate(fiber) {
     if (parentInst) {
         var inputProps = fiber._owner.props;
         var uuid = inputProps.$$loop;
-        var index = inputProps.$$indexValue;
+        var index = inputProps.$$index;
         if (index != null){
             uuid += index;
         }
@@ -69,7 +68,7 @@ export function onComponentDispose(fiber) {
         delete instances[instance.instanceUid];
         var inputProps = fiber._owner.props;
         var uuid = inputProps.$$loop;
-        var index = inputProps.$$indexValue;
+        var index = inputProps.$$index;
         if (index != null){
             uuid += index;
         }

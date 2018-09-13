@@ -72,7 +72,7 @@ var visitor = {
                         key = attrValue;
                     } else if (attrName === 'key') {
                         key = attrValue;
-                    } else if (attrName == '$$indexValue') {
+                    } else if (attrName == '$$index') {
                         indexArr = attrValue;
                     }
                 });

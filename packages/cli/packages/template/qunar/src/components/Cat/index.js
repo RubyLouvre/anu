@@ -2,5 +2,5 @@
 import React from '@react';
 
 export default function Cat(props){
-    return <div>Cat: {props.id}_{props.content}</div>;
+    return <div>Cat[{props.id}]:{props.content}</div>
 }

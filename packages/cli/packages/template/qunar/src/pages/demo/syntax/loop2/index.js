@@ -1,4 +1,6 @@
 import React from '@react';
+import Fish from '@components/Fish/index';
+
 import './index.less';
 class P extends React.Component {
     constructor() {
@@ -36,8 +38,9 @@ class P extends React.Component {
                             <div>
                                 {item.map(function(el) {
                                     return (
-                                        <text class="grid" onClick={this.getData.bind(this, el)}>{el.title}
-                                        </text>
+                                        <div class="grid" onClick={this.getData.bind(this, el)}>
+                                        <Fish content={el.title} />
+                                        </div>
                                     );
                                 })}
                             </div>

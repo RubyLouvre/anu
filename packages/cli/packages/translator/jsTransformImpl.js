@@ -352,10 +352,6 @@ module.exports = {
                     attributes.push(
                         utils.createAttribute(
                             '$$index',
-                            modules.indexArr.join('')
-                        ),
-                        utils.createAttribute(
-                            '$$indexValue',
                             t.jSXExpressionContainer(
                                 t.identifier(modules.indexArr.join('+\'-\'+'))
                             )
