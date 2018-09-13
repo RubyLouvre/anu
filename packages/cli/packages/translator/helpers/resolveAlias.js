@@ -7,7 +7,6 @@ module.exports = (astPath, modules, name) => {
     if (!aliasField) return;
 
     let importValue = astPath.node.source.value;
-
     //防止与引入npm冲突
     if (!aliasField[importValue.split('/')[0]]) return; 
 

@@ -60,14 +60,15 @@ export function onComponentUpdate(fiber) {
             }
             return;
         }
-        if (instance.updateWXData) {
+        //   if (instance.updateWXData) {
+        if (fiber._hydrating){
             for (var i = 0, el; (el = arr[i++]); ) {
                 if (el.props === checkProps) {
                     extend(el, data);
                     break;
                 }
             }
-            delete instance.updateWXData;
+            // delete instance.updateWXData;
         } else {
             arr.push(data);
         }

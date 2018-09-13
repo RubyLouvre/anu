@@ -17,8 +17,8 @@ module.exports = {
             typeof value == 'object' ? value : t.stringLiteral(value)
         );
     },
-    createUUID() {
-        return (Math.random() + '').slice(-4) + (Math.random() + '').slice(-4);
+    createUUID(astPath) {
+        return astPath.node.start + astPath.node.end;
     },
     getAnu(state) {
         return state.file.opts.anu;
