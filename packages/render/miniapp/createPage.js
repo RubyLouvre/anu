@@ -93,7 +93,7 @@ export function createPage(PageClass, path, testObject) {
                         if (pageInst == this) {
                             pageInst.wxData = {};
                         } else {
-                            this.updateWXData = true;
+                            // this.updateWXData = true;
                         }
                         canSetData = true;
                         updating = true;

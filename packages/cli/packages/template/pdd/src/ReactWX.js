@@ -1956,8 +1956,6 @@ function createPage(PageClass, path, testObject) {
                 if (updating === false) {
                     if (pageInst == this) {
                         pageInst.wxData = {};
-                    } else {
-                        this.updateWXData = true;
                     }
                     canSetData = true;
                     updating = true;
@@ -2052,29 +2050,15 @@ function onComponentUpdate(fiber) {
         var arr = getData(parentInst, uuid);
         data.props.instanceUid = instanceUid;
         var checkProps = fiber.memoizedProps;
-        if (instance.__isStateless) {
-            var usePush = true;
-            for (var i = 0, el; el = arr[i++];) {
-                if (el.props === checkProps) {
-                    extend(el, data);
-                    usePush = false;
-                    break;
-                }
+        var usePush = true;
+        for (var i = 0, el; el = arr[i++];) {
+            if (el.props === checkProps) {
+                extend(el, data);
+                usePush = false;
+                break;
             }
-            if (usePush) {
-                arr.push(data);
-            }
-            return;
         }
-        if (instance.updateWXData || fiber._hydrating) {
-            for (var i = 0, el; el = arr[i++];) {
-                if (el.props === checkProps) {
-                    extend(el, data);
-                    break;
-                }
-            }
-            delete instance.updateWXData;
-        } else {
+        if (usePush) {
             arr.push(data);
         }
     }

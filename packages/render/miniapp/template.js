@@ -1,4 +1,4 @@
-import { extend } from 'react-core/util';
+import { extend, get } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 import { getUUID, classCached } from './utils';
 
@@ -36,6 +36,7 @@ export function onComponentUpdate(fiber) {
     }
     parentInst = instance.$parentInst;
     if (parentInst) {
+      
         var inputProps = fiber._owner.props;
         var uuid = inputProps.templatedata;
         var data = instance.wxData || (instance.wxData = {});
@@ -46,31 +47,33 @@ export function onComponentUpdate(fiber) {
         var arr = getData(parentInst, uuid);
         data.props.instanceUid = instanceUid;
         var checkProps = fiber.memoizedProps;
-        if (instance.__isStateless) {
-            var usePush = true;
-            for (var i = 0, el; (el = arr[i++]); ) {
-                if (el.props === checkProps) {
-                    extend(el, data);
-                    usePush = false;
-                    break;
-                }
+        //  if (instance.__isStateless) {
+        var usePush = true;
+        for (var i = 0, el; (el = arr[i++]); ) {
+            if (el.props === checkProps) {
+                extend(el, data);
+                usePush = false;
+                break;
             }
-            if (usePush) {
-                arr.push(data);
-            }
-            return;
         }
-        if (instance.updateWXData || fiber._hydrating) {
-            for (var i = 0, el; (el = arr[i++]); ) {
+        if (usePush) {
+            arr.push(data);
+        }
+        /*
+        return;
+        if (instance.hasSetState || fiber._hydrating) {
+        for (var i = 0, el; (el = arr[i++]); ) {
                 if (el.props === checkProps) {
                     extend(el, data);
+                    if (usePush) 
                     break;
                 }
             }
-            delete instance.updateWXData;
+           delete instance.hasSetState;
         } else {
             arr.push(data);
         }
+        */
     }
 }
 
