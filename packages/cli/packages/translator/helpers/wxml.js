@@ -35,9 +35,7 @@ function wxml(code, modules) {
     }
     return html;
 }
-function genKey(key) {
-    return key.indexOf('.') > 0 ? key.split('.').pop() : '*this';
-}
+
 var visitor = {
     JSXOpeningElement: {
         exit: function(astPath, state) {
@@ -87,10 +85,21 @@ var visitor = {
                         utils.createAttribute('wx:for', `{{${array}}}`),
                         utils.createAttribute('wx:for-item', 'data'),
                         utils.createAttribute('wx:for-index', 'index'),
-                        utils.createAttribute('wx:key', genKey(key))
+                        utils.createAttribute('wx:key', utils.genKey(key))
                     );
                 } else {
-                    if (modules.insideTheLoopIsComponent) {
+                    var p = astPath, insideTheLoopIsComponent = false;
+                    while (p.parentPath){
+                        if (p.parentPath.type == 'CallExpression'){
+                            if ( utils.isLoopMap(p.parentPath.node) ){
+                                insideTheLoopIsComponent = true;
+                                break;
+                            }
+                          
+                        }
+                        p = p.parentPath;
+                    }
+                    if (modules.insideTheLoopIsComponent || insideTheLoopIsComponent) {
                         attributes.push(
                             utils.createAttribute('is', is),
                             utils.createAttribute('wx:for', `{{${array}}}`),
@@ -106,7 +115,7 @@ var visitor = {
                                 'wx:for-index',
                                 modules.indexName
                             ),
-                            utils.createAttribute('wx:key', genKey(key))
+                            utils.createAttribute('wx:key', utils.genKey(key))
                         );
                         modules.replaceComponent = template;
                     } else {

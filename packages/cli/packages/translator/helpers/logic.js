@@ -80,13 +80,12 @@ function loop(callee, fn, modules) {
     attrs.push(createAttribute('wx:for', parseExpr(callee.object)));
     attrs.push(createAttribute('wx:for-item', fn.params[0].name));
     attrs.push(createAttribute('wx:for-index', fn.params[1].name));
-    if (modules.key){
-        attrs.push(createAttribute('wx:key', 
-            modules.key.indexOf('.') > 0? modules.key.split('.').pop() : '*this'
-        ));
+    if (modules.key) {
+        attrs.push(createAttribute('wx:key', jsx.genKey(modules.key)));
+
         modules.key = null;
     } else {
-        attrs.push(createAttribute('wx:key', '*this' ));
+        attrs.push(createAttribute('wx:key', '*this'));
         // console.log( fn.params[1].name);
     }
 
@@ -102,7 +101,8 @@ function loop(callee, fn, modules) {
         );
 
         var blockElement = createElement('block', attrs, [child]);
-        modules.insideTheLoopIsComponent = child.openingElement.name.name === 'template';
+        modules.insideTheLoopIsComponent =
+            child.openingElement.name.name === 'template';
         return blockElement;
     } else {
         // eslint-disable-next-line

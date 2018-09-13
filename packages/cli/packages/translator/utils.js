@@ -33,8 +33,19 @@ module.exports = {
     createUUID(astPath) {
         return astPath.node.start + astPath.node.end;
     },
+    genKey(key){
+        key = key+'';
+        if (/\{\{/.test(key)){
+            key = key.slice(2,-2);
+        }
+        return key.indexOf('.') > 0 ? key.split('.').pop() : '*this';
+    },
     getAnu(state) {
         return state.file.opts.anu;
+    },
+    isLoopMap(node){
+        return node.type == 'CallExpression' && node.callee && 
+           node.callee.type == 'MemberExpression' && node.callee.property.name == 'map';
     },
     copyCustomComponents(config, modules) {
         Object.keys(config).forEach(componentName => {
