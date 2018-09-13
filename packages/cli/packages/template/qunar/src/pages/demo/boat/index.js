@@ -47,7 +47,7 @@ class P extends React.Component {
                 <div class='content'>
                     <div class='city-select-container'>
                         <div onTap={this.fun_tip.bind(this)}  class='orgin-city-wrapper'>
-                            <div cglobalDatalass='tip-wrapper'><i class='dot'></i><span>出发</span></div>
+                            <div class='tip-wrapper'><i class='dot'></i><span>出发</span></div>
                             <div class='orgin-ctiy'>{this.state.orginCity}</div>
                         </div>
                         <div onTap={this.exChangeCity.bind(this)} class='switch-logo'>

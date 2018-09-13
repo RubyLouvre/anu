@@ -1,5 +1,5 @@
 import React from '@react';
-class LotteryDraw extends React.Component {
+class TurnTable extends React.Component {
     constructor(props) {
         super();
         this.state = {
@@ -174,4 +174,4 @@ class LotteryDraw extends React.Component {
     }
 }
 
-export default LotteryDraw;
+export default TurnTable;
