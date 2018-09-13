@@ -78,10 +78,7 @@ var visitor = {
                 });
                 var attributes = [];
                 var template = utils.createElement('template', attributes, []);
-                // template.key = key;
                 //将组件变成template标签
-                // console.log(is, indexArr, '-----------');
-                //  if (!modules.indexName) {
                 if (!indexArr) {
                     attributes.push(
                         utils.createAttribute('is', is),
@@ -106,30 +103,6 @@ var visitor = {
                 astPath.parentPath.replaceWith(template);
             }
         }
-    },
-    CallExpression: {
-        /*  enter(astPath, state) {
-            let node = astPath.node;
-            let args = node.arguments;
-            let callee = node.callee;
-            //移除super()语句
-            if (
-                callee.type == 'MemberExpression' &&
-                callee.property.name === 'map'
-            ) {
-                let modules = utils.getAnu(state);
-
-                modules.indexName = args[0].params[1].name;
-                modules.dataName = args[0].params[0].name;
-            }
-        },
-        exit(astPath, state) {
-            let modules = utils.getAnu(state);
-            if (modules.indexName) {
-                modules.indexName = null;
-            }
-        }
-        */
     },
     JSXAttribute(astPath, state) {
         chineseHack.collect(astPath);
@@ -175,14 +148,6 @@ var visitor = {
                 //返回block元素或template元素
                 var block = logicHelper(expr, modules);
                 astPath.replaceWith(block);
-                /*
-                //忠实原来的结构
-                if (modules.replaceComponent) {
-                    astPath.replaceWith(modules.replaceComponent);
-                    modules.replaceComponent = false;
-                    return;
-                }
-                */
             }
         }
     }
