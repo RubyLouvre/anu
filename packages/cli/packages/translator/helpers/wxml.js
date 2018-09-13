@@ -48,7 +48,8 @@ var visitor = {
                 var modules = utils.getAnu(state);
                 var array,
                     is,
-                    key = '';
+                    key = '',
+                    comIndex;
                 astPath.node.attributes.forEach(function(el) {
                     var attrName = el.name.name;
                     var attrValue = el.value.value;
@@ -63,7 +64,7 @@ var visitor = {
                             wxml
                         );
                         // console.log('fragmentUid');
-                    } else if (attrName === 'templatedata') {
+                    } else if (attrName === '$$loop') {
                         array = attrValue;
                     } else if (attrName === 'is') {
                         is = attrValue;
@@ -71,68 +72,36 @@ var visitor = {
                         key = attrValue;
                     } else if (attrName === 'key') {
                         key = attrValue;
+                    } else if (attrName == '$$index') {
+                        comIndex = attrValue;
                     }
                 });
                 var attributes = [];
                 var template = utils.createElement('template', attributes, []);
                 // template.key = key;
-
                 //将组件变成template标签
-                if (!modules.indexName) {
+                //  if (!modules.indexName) {
+                if (!comIndex) {
                     attributes.push(
                         utils.createAttribute('is', is),
                         utils.createAttribute('data', '{{...data}}'),
-                        utils.createAttribute('wx:for', `{{${array}}}`),
+                        utils.createAttribute('wx:for', `{{components.${array}}}`),
                         utils.createAttribute('wx:for-item', 'data'),
                         utils.createAttribute('wx:for-index', 'index'),
                         utils.createAttribute('wx:key', utils.genKey(key))
                     );
                 } else {
-                    var p = astPath, insideTheLoopIsComponent = false;
-                    while (p.parentPath){
-                        if (p.parentPath.type == 'CallExpression'){
-                            if ( utils.isLoopMap(p.parentPath.node) ){
-                                insideTheLoopIsComponent = true;
-                                break;
-                            }
-                          
-                        }
-                        p = p.parentPath;
-                    }
-                    if (modules.insideTheLoopIsComponent || insideTheLoopIsComponent) {
-                        attributes.push(
-                            utils.createAttribute('is', is),
-                            utils.createAttribute('wx:for', `{{${array}}}`),
-                            utils.createAttribute(
-                                'wx:for-item',
-                                modules.dataName
-                            ),
-                            utils.createAttribute(
-                                'data',
-                                `{{...${modules.dataName}}}`
-                            ),
-                            utils.createAttribute(
-                                'wx:for-index',
-                                modules.indexName
-                            ),
-                            utils.createAttribute('wx:key', utils.genKey(key))
-                        );
-                        modules.replaceComponent = template;
-                    } else {
-                        attributes.push(
-                            utils.createAttribute('is', is),
-                            utils.createAttribute(
-                                'wx:if',
-                                `{{${array}[${modules.indexName}]}}`
-                            ),
-                            utils.createAttribute(
-                                'data',
-                                `{{...${array}[${modules.indexName}]}}`
-                            )
-                        );
-                    }
+                    attributes.push(
+                        utils.createAttribute('is', is),
+                        utils.createAttribute(
+                            'wx:for',
+                            `{{components['${array}'+${comIndex} ]}}`
+                        ),
+                        utils.createAttribute('wx:for-item', 'data'),
+                        utils.createAttribute('data', '{{...data}}'),
+                        utils.createAttribute('wx:key', utils.genKey(key))
+                    );
                 }
-
                 astPath.parentPath.replaceWith(template);
             }
         }
@@ -204,11 +173,14 @@ var visitor = {
                 //返回block元素或template元素
                 var block = logicHelper(expr, modules);
                 astPath.replaceWith(block);
+                /*
+                //忠实原来的结构
                 if (modules.replaceComponent) {
                     astPath.replaceWith(modules.replaceComponent);
                     modules.replaceComponent = false;
                     return;
                 }
+                */
             }
         }
     }

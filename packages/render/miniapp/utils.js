@@ -7,3 +7,9 @@ export function getUUID(){
 }
 //用于保存所有用miniCreateClass创建的类，然后在事件系统中用到
 export var classCached = {};
+
+export function newData(){
+    return {
+        components: {}
+    };
+}

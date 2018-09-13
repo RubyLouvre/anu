@@ -16,8 +16,8 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-function addCreatePage(name, path, modules){
-    if (name == modules.className){
+function addCreatePage(name, path, modules) {
+    if (name == modules.className) {
         path.insertBefore(modules.createPage);
     }
 }
@@ -338,7 +338,7 @@ module.exports = {
                 var attributes = astPath.node.attributes;
                 attributes.push(
                     utils.createAttribute(
-                        'templatedata',
+                        '$$loop',
                         'data' + utils.createUUID(astPath)
                     ),
                     t.JSXAttribute(
@@ -346,10 +346,24 @@ module.exports = {
                         t.jSXExpressionContainer(t.identifier(nodeName))
                     )
                 );
+                if (modules.indexName) {
+                    attributes.push(
+                        utils.createAttribute(
+                            '$$index',
+                            modules.indexArr.join('')
+                        ),
+                        utils.createAttribute(
+                            '$$indexValue',
+                            t.jSXExpressionContainer(
+                                t.identifier(modules.indexArr.join(''))
+                            )
+                        )
+                    );
+                }
+
                 if (!isEmpty) {
                     //处理slot
-                    var fragmentUid =
-                        'f' + utils.createUUID(astPath);
+                    var fragmentUid = 'f' + utils.createUUID(astPath);
                     if (dep.addImportTag) {
                         dep.addImportTag(fragmentUid);
                     } else {
@@ -389,10 +403,7 @@ module.exports = {
             //事件存在的标签，必须添加上data-eventName-uid, data-class-uid, data-instance-uid
             var name = `data-${eventName}-uid`;
             attrs.push(
-                utils.createAttribute(
-                    name,
-                    'e' + utils.createUUID(astPath)
-                )
+                utils.createAttribute(name, 'e' + utils.createUUID(astPath))
             );
             if (!attrs.setClassCode) {
                 attrs.setClassCode = true;

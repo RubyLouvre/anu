@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-08-31
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-09-13
  */
 
 (function (global, factory) {
@@ -8,16 +8,16 @@
     (global.React = factory());
 }(this, (function () {
     var arrayPush = Array.prototype.push;
-    var innerHTML = "dangerouslySetInnerHTML";
+    var innerHTML = 'dangerouslySetInnerHTML';
     var hasOwnProperty = Object.prototype.hasOwnProperty;
-    var gSBU = "getSnapshotBeforeUpdate";
-    var gDSFP = "getDerivedStateFromProps";
-    var hasSymbol = typeof Symbol === "function" && Symbol["for"];
+    var gSBU = 'getSnapshotBeforeUpdate';
+    var gDSFP = 'getDerivedStateFromProps';
+    var hasSymbol = typeof Symbol === 'function' && Symbol['for'];
     var effects = [];
     var topFibers = [];
     var topNodes = [];
     var emptyObject = {};
-    var REACT_ELEMENT_TYPE = hasSymbol ? Symbol["for"]("react.element") : 0xeac7;
+    var REACT_ELEMENT_TYPE = hasSymbol ? Symbol['for']('react.element') : 0xeac7;
     function noop() {}
     function Fragment(props) {
         return props.children;
@@ -44,7 +44,7 @@
     function getWindow() {
         try {
             if (!window) {
-                throw "no window";
+                throw 'no window';
             }
             return window;
         } catch (e) {
@@ -60,9 +60,9 @@
         return !!(fiber && fiber.hasMounted);
     }
     function toWarnDev(msg, deprecated) {
-        msg = deprecated ? msg + " is deprecated" : msg;
+        msg = deprecated ? msg + ' is deprecated' : msg;
         var process = getWindow().process;
-        if (process && process.env.NODE_ENV === "development") {
+        if (process && process.env.NODE_ENV === 'development') {
             throw msg;
         }
     }
@@ -84,11 +84,11 @@
         return fn;
     }
     try {
-        var supportEval = Function("a", "return a + 1")(2) == 3;
+        var supportEval = Function('a', 'return a + 1')(2) == 3;
     } catch (e) {}
     function miniCreateClass(ctor, superClass, methods, statics) {
-        var className = ctor.name || "IEComponent";
-        var Ctor = supportEval ? Function("superClass", "ctor", "return function " + className + " (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }")(superClass, ctor) : function ReactInstance() {
+        var className = ctor.name || 'IEComponent';
+        var Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : function ReactInstance() {
             superClass.apply(this, arguments);
             ctor.apply(this, arguments);
         };
@@ -105,11 +105,11 @@
         return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
     }
     function isFn(obj) {
-        return __type.call(obj) === "[object Function]";
+        return __type.call(obj) === '[object Function]';
     }
     var rword = /[^, ]+/g;
     function oneObject(array, val) {
-        if (array + "" === array) {
+        if (array + '' === array) {
             array = array.match(rword) || [];
         }
         var result = {},
@@ -121,7 +121,7 @@
     }
     var rcamelize = /[-_][^-_]/g;
     function camelize(target) {
-        if (!target || target.indexOf("-") < 0 && target.indexOf("_") < 0) {
+        if (!target || target.indexOf('-') < 0 && target.indexOf('_') < 0) {
             return target;
         }
         var str = target.replace(rcamelize, function (match) {
@@ -133,12 +133,12 @@
         return str.charAt(0).toLowerCase() + str.slice(1);
     }
     var numberMap = {
-        "[object Boolean]": 2,
-        "[object Number]": 3,
-        "[object String]": 4,
-        "[object Function]": 5,
-        "[object Symbol]": 6,
-        "[object Array]": 7
+        '[object Boolean]': 2,
+        '[object Number]': 3,
+        '[object String]': 4,
+        '[object Function]': 5,
+        '[object Symbol]': 6,
+        '[object Array]': 7
     };
     function typeNumber(data) {
         if (data === null) {

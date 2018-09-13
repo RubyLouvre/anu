@@ -2,7 +2,7 @@ import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
 import { isFn, noop, extend } from 'react-core/util';
 import { eventSystem } from './eventSystem';
-import { getUUID } from './utils';
+import { getUUID, newData } from './utils';
 
 export function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
@@ -46,7 +46,7 @@ export function createPage(PageClass, path, testObject) {
         },
         instance,
         config = {
-            data: {},
+            data: newData(),
             dispatchEvent: eventSystem.dispatchEvent,
             onLoad: function(query) {
                 $wxPage = this;
@@ -77,8 +77,9 @@ export function createPage(PageClass, path, testObject) {
                         props: pageInst.props,
                         context: pageInst.context,
                     });
+
                     $wxPage.setData(safeClone(data), function() {
-                        console.log('setData complete');
+                        // console.log('setData complete',data);
                     });
                 }
                 instance.forceUpdate = instance.setState = function(a) {
@@ -91,7 +92,7 @@ export function createPage(PageClass, path, testObject) {
                     var pageInst = this.$pageInst || this;
                     if (updating === false) {
                         if (pageInst == this) {
-                            pageInst.wxData = {};
+                            pageInst.wxData = newData();
                         } else {
                             // this.updateWXData = true;
                         }
@@ -111,7 +112,7 @@ export function createPage(PageClass, path, testObject) {
                     updateMethod.apply(this, args);
                 };
 
-                instance.wxData = instance.wxData || {};
+                instance.wxData = instance.wxData || newData();
                 updatePage(instance);
             },
             onShow() {

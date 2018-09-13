@@ -1829,6 +1829,11 @@ function getUUID() {
     return _uuid() + _uuid();
 }
 var classCached = {};
+function newData() {
+    return {
+        components: {}
+    };
+}
 
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
@@ -1914,7 +1919,7 @@ function createPage(PageClass, path, testObject) {
     },
         instance,
         config = {
-        data: {},
+        data: newData(),
         dispatchEvent: eventSystem.dispatchEvent,
         onLoad: function onLoad(query) {
             $wxPage = this;
@@ -1942,7 +1947,6 @@ function createPage(PageClass, path, testObject) {
                     context: pageInst.context
                 });
                 $wxPage.setData(safeClone(data), function () {
-                    console.log('setData complete');
                 });
             }
             instance.forceUpdate = instance.setState = function (a) {
@@ -1955,7 +1959,7 @@ function createPage(PageClass, path, testObject) {
                 var pageInst = this.$pageInst || this;
                 if (updating === false) {
                     if (pageInst == this) {
-                        pageInst.wxData = {};
+                        pageInst.wxData = newData();
                     }
                     canSetData = true;
                     updating = true;
@@ -1972,7 +1976,7 @@ function createPage(PageClass, path, testObject) {
                 };
                 updateMethod.apply(this, args);
             };
-            instance.wxData = instance.wxData || {};
+            instance.wxData = instance.wxData || newData();
             updatePage(instance);
         },
         onShow: function onShow() {
@@ -2007,6 +2011,14 @@ function createPage(PageClass, path, testObject) {
     return safeClone(config);
 }
 
+var ignoreObject = {
+    is: 1,
+    $$loop: 1,
+    $$index: 1,
+    $$indexValue: 1,
+    classUid: 1,
+    instanceUid: 1
+};
 function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
@@ -2025,7 +2037,7 @@ function onComponentUpdate(fiber) {
                 }
                 if (p.props.isPageComponent) {
                     if (!stateNode.wxData) {
-                        stateNode.wxData = {};
+                        stateNode.wxData = newData();
                     }
                     instance.$pageInst = stateNode;
                     break;
@@ -2041,26 +2053,17 @@ function onComponentUpdate(fiber) {
     parentInst = instance.$parentInst;
     if (parentInst) {
         var inputProps = fiber._owner.props;
-        var uuid = inputProps.templatedata;
-        var data = instance.wxData || (instance.wxData = {});
+        var uuid = inputProps.$$loop;
+        var index = inputProps.$$indexValue;
+        if (index != null) {
+            uuid += index;
+        }
+        var data = instance.wxData || (instance.wxData = newData());
         data.props = instance.props;
+        data.props.instanceUid = instance.instanceUid;
         data.state = instance.state;
         data.context = instance.context;
-        data.templatedata = uuid;
-        var arr = getData(parentInst, uuid);
-        data.props.instanceUid = instanceUid;
-        var checkProps = fiber.memoizedProps;
-        var usePush = true;
-        for (var i = 0, el; el = arr[i++];) {
-            if (el.props === checkProps) {
-                extend(el, data);
-                usePush = false;
-                break;
-            }
-        }
-        if (usePush) {
-            arr.push(data);
-        }
+        getData(parentInst)[uuid] = [data];
     }
 }
 function onComponentDispose(fiber) {
@@ -2073,24 +2076,15 @@ function onComponentDispose(fiber) {
     var parentInst = instance.$parentInst;
     if (parentInst) {
         delete instances[instance.instanceUid];
-        var props = fiber.props;
         var inputProps = fiber._owner.props;
-        var uuid = inputProps.templatedata;
-        var arr = getData(parentInst, uuid);
-        for (var i = 0, el; el = arr[i++];) {
-            if (el.props === props) {
-                arr.splice(i, 1);
-                break;
-            }
+        var uuid = inputProps.$$loop;
+        var index = inputProps.$$indexValue;
+        if (index != null) {
+            uuid += index;
         }
+        delete getData(parentInst)[uuid];
     }
 }
-var ignoreObject = {
-    is: 1,
-    templatedata: 1,
-    classUid: 1,
-    instanceUid: 1
-};
 function template(props) {
     var clazz = props.is;
     var componentProps = {};
@@ -2137,8 +2131,8 @@ function template(props) {
     }
     return createElement(clazz, componentProps);
 }
-function getData(instance, uuid) {
-    return instance.wxData[uuid] || (instance.wxData[uuid] = []);
+function getData(instance) {
+    return instance.wxData.components;
 }
 
 var onAndSyncApis = {

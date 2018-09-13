@@ -34,6 +34,10 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/loop3/index'
                 },
                 {
+                    title: '循环里面交替使用两种不同组件（对话形式）',
+                    url: '/pages/demo/syntax/loop4/index'
+                },
+                {
                     title: '行内样式',
                     url: '/pages/demo/syntax/inlineStyle/index'
                 },

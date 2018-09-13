@@ -1,7 +1,13 @@
-import { extend, get } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
-import { getUUID, classCached } from './utils';
-
+import { getUUID, newData, classCached } from './utils';
+const ignoreObject = {
+    is: 1,
+    $$loop: 1,
+    $$index: 1,
+    $$indexValue: 1,
+    classUid: 1,
+    instanceUid: 1
+};
 export function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
 
@@ -21,7 +27,7 @@ export function onComponentUpdate(fiber) {
                 }
                 if (p.props.isPageComponent) {
                     if (!stateNode.wxData) {
-                        stateNode.wxData = {};
+                        stateNode.wxData = newData();
                     }
                     instance.$pageInst = stateNode;
                     break;
@@ -36,44 +42,18 @@ export function onComponentUpdate(fiber) {
     }
     parentInst = instance.$parentInst;
     if (parentInst) {
-      
         var inputProps = fiber._owner.props;
-        var uuid = inputProps.templatedata;
-        var data = instance.wxData || (instance.wxData = {});
+        var uuid = inputProps.$$loop;
+        var index = inputProps.$$indexValue;
+        if (index != null){
+            uuid += index;
+        }
+        var data = instance.wxData || (instance.wxData = newData());
         data.props = instance.props;
+        data.props.instanceUid = instance.instanceUid;
         data.state = instance.state;
         data.context = instance.context;
-        data.templatedata = uuid;
-        var arr = getData(parentInst, uuid);
-        data.props.instanceUid = instanceUid;
-        var checkProps = fiber.memoizedProps;
-        //  if (instance.__isStateless) {
-        var usePush = true;
-        for (var i = 0, el; (el = arr[i++]); ) {
-            if (el.props === checkProps) {
-                extend(el, data);
-                usePush = false;
-                break;
-            }
-        }
-        if (usePush) {
-            arr.push(data);
-        }
-        /*
-        return;
-        if (instance.hasSetState || fiber._hydrating) {
-        for (var i = 0, el; (el = arr[i++]); ) {
-                if (el.props === checkProps) {
-                    extend(el, data);
-                    if (usePush) 
-                    break;
-                }
-            }
-           delete instance.hasSetState;
-        } else {
-            arr.push(data);
-        }
-        */
+        getData(parentInst)[uuid] = [data];
     }
 }
 
@@ -87,24 +67,16 @@ export function onComponentDispose(fiber) {
     var parentInst = instance.$parentInst;
     if (parentInst) {
         delete instances[instance.instanceUid];
-        var props = fiber.props;
         var inputProps = fiber._owner.props;
-        var uuid = inputProps.templatedata;
-        var arr = getData(parentInst, uuid);
-        for (var i = 0, el; (el = arr[i++]); ) {
-            if (el.props === props) {
-                arr.splice(i, 1);
-                break;
-            }
+        var uuid = inputProps.$$loop;
+        var index = inputProps.$$indexValue;
+        if (index != null){
+            uuid += index;
         }
+        delete getData(parentInst)[uuid];
     }
 }
-var ignoreObject = {
-    is: 1,
-    templatedata: 1,
-    classUid: 1,
-    instanceUid: 1
-};
+
 
 export function template(props) {
     //这是一个无状态组件，负责劫持用户传导下来的类，修改它的原型
@@ -156,6 +128,6 @@ export function template(props) {
     return createElement(clazz, componentProps);
 }
 
-function getData(instance, uuid) {
-    return instance.wxData[uuid] || (instance.wxData[uuid] = []);
+function getData(instance) {
+    return instance.wxData.components; 
 }
