@@ -1,0 +1,15 @@
+<import src="../../../../components/Fish/index.wxml" />
+<view>
+                <view>测试循环中的事件，点击下方格子</view>
+                <view>
+					title:
+                    {{state.title}}
+                    {{'  key '}}
+                    {{state.key}}
+                </view>
+                <view class="grid-wrap">
+                    <block wx:for="{{state.trs}}" wx:for-item="item" wx:for-index="i954" wx:key="*this"><view>
+                                <block wx:for="{{item}}" wx:for-item="el" wx:for-index="i1090" wx:key="*this"><text class="grid" bindtap="dispatchEvent" data-tap-uid="e2473" data-class-uid="c1703" data-instance-uid="{{props.instanceUid}}" data-key="{{i954 + '-' + i1090}}">{{el.title}}                                            <template is="Fish" wx:for="{{components['data2649'+i954 + '-' + i1090 ]}}" wx:for-item="data" data="{{...data}}" wx:key="*this"></template>                                        </text></block>
+                            </view></block>
+                </view>
+            </view>

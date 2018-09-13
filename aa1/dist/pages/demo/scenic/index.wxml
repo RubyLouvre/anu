@@ -1,0 +1,25 @@
+<view class="scenic">
+                <view class="input-wrapper">
+                    <input placeholder="请输入城市或景点" type="text" />
+                </view>
+                <view class="scenic-content">
+                    <block wx:for="{{state.data}}" wx:for-item="item" wx:for-index="index" wx:key="*this"><view class="item">
+                                    <view class="title-wrapper">
+                                        <view class="mark"></view>
+                                        <view class="title">{{item.title}}</view>
+                                    </view>
+                                    <block wx:for="{{item.data}}" wx:for-item="item" wx:for-index="index" wx:key="*this"><view bindtap="dispatchEvent" class="scenic-item" data-tap-uid="e3783" data-class-uid="c3251" data-instance-uid="{{props.instanceUid}}" data-key="{{index + '-' + index}}">
+                                                    <image class="left-content" src="{{item.url}}" />
+                                                    <view class="right-content">
+                                                        <view class="scenic-name">{{item.name}}</view>
+                                                        <view class="desc">{{item.desc}}</view>
+                                                        <view class="comment">{{item.comment + '评论'}}</view>
+                                                        <view class="price-distance">
+                                                            <view class="price">{{'￥' + item.price}}</view>
+                                                            <view class="distance">{{item.distance + 'km'}}</view>
+                                                        </view>
+                                                    </view>
+                                                </view></block>
+                                </view></block>
+                </view>
+            </view>

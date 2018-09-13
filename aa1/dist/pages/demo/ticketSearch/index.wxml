@@ -1,0 +1,62 @@
+<view class="page" style="{background-color: #feb64e}">
+              <image class="sreach_bg" mode="scaleToFill" src="http://picbed.qunarzz.com/image/b96f82f01ef5850d50e93ea511f618fa.png" />
+              <view style="{top: -15px}" class="search-container">
+                  <view class="citySelector">
+                      <view bindtap="dispatchEvent" class="cityTap" data-tap-uid="e3498" data-class-uid="c5976" data-instance-uid="{{props.instanceUid}}">
+                          <view class="{{'depCityContent ' + (state.exchangeStatus ? 'depCity-changing' : '')}}">
+                              {{state.depCity}}
+                          </view>
+                      </view>
+                      <view bindtap="dispatchEvent" class="city_change" data-tap-uid="e4360" data-class-uid="c5976" data-instance-uid="{{props.instanceUid}}">
+                          <image class="exchange-logo" mode="widthFix" src="../../../assets/image/train_icon.png" />
+                          <image class="{{'exchange-btn ' + (state.exchangeStatus ? 'btn-rotating' : '')}}" src="../../../assets/image/search_btn.png" />
+                      </view>
+                      <view bindtap="dispatchEvent" class="cityTap" data-tap-uid="e5544" data-class-uid="c5976" data-instance-uid="{{props.instanceUid}}">
+                          <view class="{{'arrCityContent ' + (state.exchangeStatus ? 'arrCity-changing' : '')}}">
+                              {{state.arrCity}}
+                          </view>
+                      </view>
+                  </view>
+
+                  <view bindtap="dispatchEvent" class="dateSelector" data-tap-uid="e6439" data-class-uid="c5976" data-instance-uid="{{props.instanceUid}}">
+                      {{state.displayDate}}
+                      <view class="date-week">{{state.dateWeek}}</view>
+                  </view>
+
+                  <view class="switch-content">
+                      <view class="switch-label">
+                          <image class="hight-speed" mode="widthFix" src="../../../assets/image/train_highSpeed.png" />
+                          <view class="{{state.isOnlyGaotie ? 'switch-context switch-label-check' : 'switch-context switch-label-uncheck'}}">
+                只查看高铁/动车
+                          </view>
+                      </view>
+                      <switch checked="{{state.isOnlyGaotie}}" bindchange="dispatchEvent" color="#00bcd4" data-change-uid="e8543" data-class-uid="c5976" data-instance-uid="{{props.instanceUid}}" />
+                  </view>
+
+                  <view bindtap="dispatchEvent" class="search-button" data-tap-uid="e8746" data-class-uid="c5976" data-instance-uid="{{props.instanceUid}}">搜 索</view>
+
+                  <view class="actions-container">
+                      <view bindtap="dispatchEvent" class="order-action" data-tap-uid="e9024" data-class-uid="c5976" data-instance-uid="{{props.instanceUid}}">
+                          <text class="action-text">我的订单</text>
+                      </view>
+                      <view class="seprator" />
+                      <view bindtap="dispatchEvent" class="feedback-action" data-tap-uid="e9468" data-class-uid="c5976" data-instance-uid="{{props.instanceUid}}">
+                          <text class="action-text">咨询反馈</text>
+                      </view>
+                  </view>
+              </view>
+
+              <view class="welfare-entrance">
+                  <view class="welfare-content">
+                      <view bindtap="dispatchEvent" class="welfare-action" data-tap-uid="e10112" data-class-uid="c5976" data-instance-uid="{{props.instanceUid}}">
+                          <image class="welfare-icon" src="http://s.qunarzz.com/open_m_train/miniprogram/home_redpack.png" />
+                          <text class="action-text">优惠拼团</text>
+                      </view>
+                      <view class="seprator" />
+                      <view bindtap="dispatchEvent" class="welfare-action" data-tap-uid="e10992" data-class-uid="c5976" data-instance-uid="{{props.instanceUid}}">
+                          <image class="welfare-icon" src="http://s.qunarzz.com/open_m_train/miniprogram/home_welfare.png" />
+                          <text class="action-text">我的福利</text>
+                      </view>
+                  </view>
+              </view>
+          </view>

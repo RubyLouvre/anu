@@ -1,0 +1,8 @@
+<view class="container">
+                <checkbox-group bindchange="dispatchEvent" data-change-uid="e2142" data-class-uid="c1638" data-instance-uid="{{props.instanceUid}}">
+                    <block wx:for="{{state.items}}" wx:for-item="item" wx:for-index="i1109" wx:key="*this"><label>
+                                <checkbox value="{{item.name}}" checked="{{item.checked}}" />
+                                {{item.value}}
+                            </label></block>
+                </checkbox-group>
+            </view>

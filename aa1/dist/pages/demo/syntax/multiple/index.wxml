@@ -1,0 +1,4 @@
+<import src="../../../../components/Super/index.wxml" />
+<view class="mouti-compoent-wrapper">
+                <template is="Super" data="{{...data}}" wx:for="{{components.data503}}" wx:for-item="data" wx:for-index="index" wx:key="*this"></template>
+            </view>

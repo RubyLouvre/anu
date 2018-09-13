@@ -1,0 +1,25 @@
+<view class="container">
+                <view class="section section_gap">
+                    <text class="section__title">设置step</text>
+                    <view class="body-div">
+                        <slider bindchange="dispatchEvent" step="5" data-change-uid="e2011" data-class-uid="c2076" data-instance-uid="{{props.instanceUid}}" />
+                    </view>
+                </view>
+                <view class="section section_gap">
+                    <text class="section__title">显示当前value</text>
+                    <view class="body-div">
+                        <slider bindchange="dispatchEvent" show-value data-change-uid="e2577" data-class-uid="c2076" data-instance-uid="{{props.instanceUid}}" />
+                    </view>
+                </view>
+
+                <view class="section section_gap">
+                    <text class="section__title">设置最小/最大值</text>
+                    <view class="body-div">
+                        <slider bindchange="dispatchEvent" min="50" max="200" show-value data-change-uid="e3203" data-class-uid="c2076" data-instance-uid="{{props.instanceUid}}" />
+                    </view>
+                </view>
+                <view class="section section_gap">
+                    <switch checked bindchange="dispatchEvent" data-change-uid="e3817" data-class-uid="c2076" data-instance-uid="{{props.instanceUid}}" />
+                    <switch bindchange="dispatchEvent" data-change-uid="e3939" data-class-uid="c2076" data-instance-uid="{{props.instanceUid}}" />
+                </view>
+            </view>

@@ -1,0 +1,15 @@
+<view class="container async-job-list">
+                <view class="async-job-list-item">
+                    <view>upload image</view>
+                    <block wx:if="{{state.imgPath}}"><image src="{{state.imgPath}}" /></block>
+                    <button bindtap="dispatchEvent" data-tap-uid="e6006" data-class-uid="c3551" data-instance-uid="{{props.instanceUid}}">choose image</button>
+                </view>
+                <view class="async-job-list-item">
+                    <view>send request</view>
+                    <button bindtap="dispatchEvent" data-tap-uid="e6406" data-class-uid="c3551" data-instance-uid="{{props.instanceUid}}">send request</button>
+                </view>
+                <view class="async-job-list-item">
+                    <view>get location</view>
+                    <button bindtap="dispatchEvent" data-tap-uid="e6806" data-class-uid="c3551" data-instance-uid="{{props.instanceUid}}">get location</button>
+                </view>
+            </view>

@@ -1,0 +1,9 @@
+<view style="display:flex;flex-direction:column;align-items:center;padding-top:25rpx;">
+                <view>
+                    <audio src="{{state.audio.src}}" loop="{{state.audio.loop}}" controls="{{state.audio.controls}}" poster="{{state.audio.poster}}" name="{{state.audio.name}}" author="{{state.audio.author}}" bindplay="dispatchEvent" bindend="dispatchEvent" bindpause="dispatchEvent" binderror="dispatchEvent" data-play-uid="e3654" data-class-uid="c2297" data-instance-uid="{{props.instanceUid}}" data-end-uid="e3744" data-pause-uid="e3836" data-error-uid="e3930" />
+                </view>
+                <view style="font-size: 32rpx;">
+                    <text style="color: #999;">当前状态：</text>
+                    <text style="{{state.color}}">{{state.state}}</text>
+                </view>
+            </view>

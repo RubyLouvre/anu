@@ -262,12 +262,7 @@ module.exports = {
                 }
             }
             //处理循环语
-            if (
-                (t.isJSXExpressionContainer(astPath.parentPath) ||
-                    t.isConditionalExpression(astPath.parentPath)) &&
-                callee.type == 'MemberExpression' &&
-                callee.property.name === 'map'
-            ) {
+            if (utils.isLoopMap(astPath)){
                 //添加上第二参数
                 if (!args[1] && args[0].type === 'FunctionExpression') {
                     args[1] = t.identifier('this');
@@ -299,11 +294,16 @@ module.exports = {
         },
         exit(astPath, state) {
             let modules = utils.getAnu(state);
-            if (modules.indexName) {
-                modules.indexName = null;
-                modules.indexArr.pop();
-                if (!modules.indexArr.length) {
-                    delete modules.indexArr;
+            if (utils.isLoopMap(astPath)){
+                var indexArr = modules.indexArr;
+                if (indexArr) {
+                    indexArr.pop();
+                    if (!indexArr.length) {
+                        delete modules.indexArr;
+                        modules.indexName = null;
+                    } else {
+                        modules.indexName = indexArr[indexArr.length-1];
+                    }
                 }
             }
         }
@@ -346,7 +346,9 @@ module.exports = {
                         t.jSXExpressionContainer(t.identifier(nodeName))
                     )
                 );
-                if (modules.indexName) {
+               
+                if (modules.indexArr) {
+                    //  console.log(nodeName, modules.indexArr+'' );
                     attributes.push(
                         utils.createAttribute(
                             '$$index',
@@ -355,7 +357,7 @@ module.exports = {
                         utils.createAttribute(
                             '$$indexValue',
                             t.jSXExpressionContainer(
-                                t.identifier(modules.indexArr.join(''))
+                                t.identifier(modules.indexArr.join('+\'-\'+'))
                             )
                         )
                     );

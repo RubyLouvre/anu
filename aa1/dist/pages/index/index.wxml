@@ -1,0 +1,55 @@
+<view class="page">
+              <image mode="aspectFit" class="top-image" src="https://s.qunarzz.com/wechatapp/home/banner0510-002.png" />
+              <view class="nav-wrapper">
+                  <block wx:for="{{state.indexPageIcons}}" wx:for-item="item" wx:for-index="index" wx:key="*this"><view class="{{'item-wrapper ' + item.class}}" bindtap="dispatchEvent" data-tap-uid="e12532" data-class-uid="c9906" data-instance-uid="{{props.instanceUid}}" data-key="{{index}}">
+                              <image src="{{item.logoSrc}}" class="itemBgc" />
+                              <text class="title">{{item.bizTitle}}</text>
+                              <block><block wx:if="{{item.showSpecialLogo && item.specialText.length}}"><view class="special-text">{{item.specialText}}</view></block><block wx:else="true">{{''}}</block></block>
+                          </view></block>
+              </view>
+              <view class="tool-wrapper">
+                  <block wx:for="{{state.toolData}}" wx:for-item="item" wx:for-index="index" wx:key="*this"><view bindtap="dispatchEvent" class="tool-item" data-tap-uid="e14038" data-class-uid="c9906" data-instance-uid="{{props.instanceUid}}" data-key="{{index}}">
+                              <image src="{{item.url}}" />
+                              <text>{{item.title}}</text>
+                          </view></block>
+              </view>
+              <view class="special-offer">
+                  <view class="title">特价专区</view>
+                  <swiper class="special-offer-wrapper" interval="2500" autoplay="true" display-multiple-items="3">
+                      <block wx:for="{{state.specialOfferData}}" wx:for-item="item" wx:for-index="index" wx:key="*this"><block>
+                                  <swiper-item bindtap="dispatchEvent" class="special-offer-item" data-tap-uid="e15614" data-class-uid="c9906" data-instance-uid="{{props.instanceUid}}" data-key="{{index}}">
+                                      <image src="{{item.url}}" />
+                                      <text>{{item.title}}</text>
+                                  </swiper-item>
+                              </block></block>
+                  </swiper>
+              </view>
+              <view class="activity">
+                  <view class="title">活动专区</view>
+                  <view class="activity-wrapper">
+                      <view bindtap="dispatchEvent" class="left-content" data-tap-uid="e16674" data-class-uid="c9906" data-instance-uid="{{props.instanceUid}}">
+                          <image src="https://img1.qunarzz.com/order/comp/1808/c3/dda9c77c3b1d8802.png" />
+                          <view class="content">
+                              <text class="title">何时飞</text>
+                              <text class="desc">机票趋势早知道</text>
+                          </view>
+                      </view>
+                      <view class="right-content">
+                          <view bindtap="dispatchEvent" class="right-content-wrapper" data-tap-uid="e17606" data-class-uid="c9906" data-instance-uid="{{props.instanceUid}}">
+                              <image src="https://img1.qunarzz.com/order/comp/1808/3b/fd717d94ed8b6102.jpg\\n" />
+                              <view class="content">
+                                  <text class="title">人格测试</text>
+                                  <text class="desc">简直惊悚</text>
+                              </view>
+                          </view>
+                          <view bindtap="dispatchEvent" class="right-content-wrapper" data-tap-uid="e18630" data-class-uid="c9906" data-instance-uid="{{props.instanceUid}}">
+                              <image src="https://img1.qunarzz.com/order/comp/1806/1c/61cd118da20ec702.jpg" />
+                              <view class="content">
+                                  <text class="title">飞行宝贝</text>
+                                  <text class="desc">榜单有礼</text>
+                              </view>
+                          </view>
+                      </view>
+                  </view>
+              </view>
+          </view>

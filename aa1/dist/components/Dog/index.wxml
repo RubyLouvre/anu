@@ -1,0 +1,4 @@
+<template name="Dog"><view style="{{props.style608}}">
+                名字：{{state.name}} 年龄：{{state.age}} 岁
+                <button catchtap="dispatchEvent" data-tap-uid="e848" data-class-uid="c590" data-instance-uid="{{props.instanceUid}}">换一个年龄</button>
+            </view></template>

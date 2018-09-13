@@ -1,0 +1,88 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "regenerator-runtime",
+        "scope": null,
+        "escapedName": "regenerator-runtime",
+        "name": "regenerator-runtime",
+        "rawSpec": "",
+        "spec": "latest",
+        "type": "tag"
+      },
+      "/Users/qitmac000080/weapp-async-await"
+    ]
+  ],
+  "_cnpm_publish_time": 1533325182041,
+  "_from": "regenerator-runtime@latest",
+  "_hasShrinkwrap": false,
+  "_id": "regenerator-runtime@0.12.1",
+  "_inCache": true,
+  "_location": "/regenerator-runtime",
+  "_nodeVersion": "8.11.3",
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/regenerator-runtime_0.12.1_1533325181899_0.976485214602661"
+  },
+  "_npmUser": {
+    "name": "benjamn",
+    "email": "ben@benjamn.com"
+  },
+  "_npmVersion": "6.3.0",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "regenerator-runtime",
+    "scope": null,
+    "escapedName": "regenerator-runtime",
+    "name": "regenerator-runtime",
+    "rawSpec": "",
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npm.taobao.org/regenerator-runtime/download/regenerator-runtime-0.12.1.tgz",
+  "_shasum": "fa1a71544764c036f8c49b13a08b2594c9f8a0de",
+  "_shrinkwrap": null,
+  "_spec": "regenerator-runtime",
+  "_where": "/Users/qitmac000080/weapp-async-await",
+  "author": {
+    "name": "Ben Newman",
+    "email": "bn@cs.stanford.edu"
+  },
+  "dependencies": {},
+  "description": "Runtime for Regenerator-compiled generator and async functions.",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "fa1a71544764c036f8c49b13a08b2594c9f8a0de",
+    "size": 7612,
+    "noattachment": false,
+    "tarball": "http://registry.npm.taobao.org/regenerator-runtime/download/regenerator-runtime-0.12.1.tgz"
+  },
+  "keywords": [
+    "regenerator",
+    "runtime",
+    "generator",
+    "async"
+  ],
+  "license": "MIT",
+  "main": "runtime-module.js",
+  "maintainers": [
+    {
+      "name": "benjamn",
+      "email": "bn@cs.stanford.edu"
+    }
+  ],
+  "name": "regenerator-runtime",
+  "optionalDependencies": {},
+  "publish_time": 1533325182041,
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/facebook/regenerator/tree/master/packages/regenerator-runtime"
+  },
+  "version": "0.12.1"
+}

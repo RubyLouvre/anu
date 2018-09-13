@@ -1,0 +1,81 @@
+<view>
+                <view class="page-body">
+                    <view class="page-section">
+                        <view class="page-section-title">
+                            movable-view区域小于movable-area
+                        </view>
+                        <movable-area>
+                            <movable-view x="{{state.x}}" y="{{state.y}}" direction="all">
+                                text
+                            </movable-view>
+                        </movable-area>
+                    </view>
+                    <view class="btn-area">
+                        <button size="default" bindtap="dispatchEvent" class="page-body-button" type="primary" data-tap-uid="e2888" data-class-uid="c4841" data-instance-uid="{{props.instanceUid}}">
+                            click me to move to (30px, 30px)
+                        </button>
+                    </view>
+
+                    <view class="page-section">
+                        <view class="page-section-title">
+                            movable-view区域大于movable-area
+                        </view>
+                        <movable-area>
+                            <movable-view class="max" direction="all">
+                                text
+                            </movable-view>
+                        </movable-area>
+                    </view>
+
+                    <view class="page-section">
+                        <view class="page-section-title">只可以横向移动</view>
+                        <movable-area>
+                            <movable-view direction="horizontal">
+                                text
+                            </movable-view>
+                        </movable-area>
+                    </view>
+
+                    <view class="page-section">
+                        <view class="page-section-title">只可以纵向移动</view>
+                        <movable-area>
+                            <movable-view direction="vertical">
+                                text
+                            </movable-view>
+                        </movable-area>
+                    </view>
+
+                    <view class="page-section">
+                        <view class="page-section-title">可超出边界</view>
+                        <movable-area>
+                            <movable-view direction="all" out-of-bounds>
+                                text
+                            </movable-view>
+                        </movable-area>
+                    </view>
+
+                    <view class="page-section">
+                        <view class="page-section-title">带有惯性</view>
+                        <movable-area>
+                            <movable-view direction="all" inertia>
+                                text
+                            </movable-view>
+                        </movable-area>
+                    </view>
+
+                    <view class="page-section">
+                        <view class="page-section-title">可放缩</view>
+                        <movable-area scale-area>
+                            <movable-view direction="all" bindchange="dispatchEvent" bindscale="dispatchEvent" scale scale-min="0.5" scale-max="4" scale-value="{{state.scale}}" data-change-uid="e7862" data-class-uid="c4841" data-instance-uid="{{props.instanceUid}}" data-scale-uid="e7974">
+                                text
+                            </movable-view>
+                        </movable-area>
+                    </view>
+
+                    <view class="btn-area">
+                        <button bindtap="dispatchEvent" class="page-body-button" type="primary" data-tap-uid="e8969" data-class-uid="c4841" data-instance-uid="{{props.instanceUid}}">
+                            click me to scale to 3.0
+                        </button>
+                    </view>
+                </view>
+            </view>

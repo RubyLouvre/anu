@@ -1,0 +1,15 @@
+<import src="../../../../components/Count/index.wxml" />
+<view>
+                <view>无狀态组件</view>
+                <view>
+					输入a(绑定onInput事件)
+                    <input type="number" style="border: 1px solid gray;width:50%" value="{{state.a}}" bindchange="dispatchEvent" data-change-uid="e1498" data-class-uid="c1351" data-instance-uid="{{props.instanceUid}}" />
+                </view>
+                <view>
+					输入b(绑定onChange事件)
+                    <input type="number" style="border: 1px solid gray;width:50%" value="{{state.b}}" bindchange="dispatchEvent" data-change-uid="e2140" data-class-uid="c1351" data-instance-uid="{{props.instanceUid}}" />
+                </view>
+                <view>
+                    <template is="Count" data="{{...data}}" wx:for="{{components.data2391}}" wx:for-item="data" wx:for-index="index" wx:key="*this"></template>
+                </view>
+            </view>

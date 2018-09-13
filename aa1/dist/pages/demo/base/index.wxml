@@ -1,0 +1,37 @@
+<view class="container">
+                <view class="item-list">
+                    <view class="item-list-hd">Icon</view>
+                    <view class="group">
+                        <block wx:for="{{state.iconSize}}" wx:for-item="item" wx:for-index="i1529" wx:key="*this"><icon type="success" size="{{item}}" /></block>
+                    </view>
+
+                    <view class="group">
+                        <block wx:for="{{state.iconType}}" wx:for-item="item" wx:for-index="i1763" wx:key="*this"><icon type="{{item}}" size="40" /></block>
+                    </view>
+
+                    <view class="group">
+                        <block wx:for="{{state.iconColor}}" wx:for-item="item" wx:for-index="i1992" wx:key="*this"><icon type="success" size="40" color="{{item}}" style="{{props['style4345' + i1992] }}" /></block>
+                    </view>
+                </view>
+
+                <view class="item">
+                    <view class="item-list-hd">text</view>
+                    <view class="btn-area">
+                        <view class="body-div">
+                            <text>{{state.text}}</text>
+                            <button bindtap="dispatchEvent" data-tap-uid="e5192" data-class-uid="c3312" data-instance-uid="{{props.instanceUid}}">add line</button>
+                            <button bindtap="dispatchEvent" data-tap-uid="e5337" data-class-uid="c3312" data-instance-uid="{{props.instanceUid}}">remove line</button>
+                        </view>
+                    </view>
+                </view>
+
+                <view class="item">
+                    <view class="item-list-hd">progress</view>
+                    <view class="btn-area">
+                        <progress percent="20" show-info />
+                        <progress percent="40" show-info stroke-width="12" />
+                        <progress percent="60" show-info color="pink" />
+                        <progress percent="80" show-info active />
+                    </view>
+                </view>
+            </view>

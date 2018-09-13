@@ -1,0 +1,9 @@
+<view class="container">
+                <view class="item-list">
+                    <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="i1114" wx:key="*this"><view class="item">
+                                <navigator open-type="navigate" hover-class="navigator-hover" url="{{item.url}}">
+                                    {{item.name}}
+                                </navigator>
+                            </view></block>
+                </view>
+            </view>

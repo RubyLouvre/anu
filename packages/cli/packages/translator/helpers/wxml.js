@@ -49,7 +49,7 @@ var visitor = {
                 var array,
                     is,
                     key = '',
-                    comIndex;
+                    indexArr;
                 astPath.node.attributes.forEach(function(el) {
                     var attrName = el.name.name;
                     var attrValue = el.value.value;
@@ -72,16 +72,17 @@ var visitor = {
                         key = attrValue;
                     } else if (attrName === 'key') {
                         key = attrValue;
-                    } else if (attrName == '$$index') {
-                        comIndex = attrValue;
+                    } else if (attrName == '$$indexValue') {
+                        indexArr = attrValue;
                     }
                 });
                 var attributes = [];
                 var template = utils.createElement('template', attributes, []);
                 // template.key = key;
                 //将组件变成template标签
+                // console.log(is, indexArr, '-----------');
                 //  if (!modules.indexName) {
-                if (!comIndex) {
+                if (!indexArr) {
                     attributes.push(
                         utils.createAttribute('is', is),
                         utils.createAttribute('data', '{{...data}}'),
@@ -95,7 +96,7 @@ var visitor = {
                         utils.createAttribute('is', is),
                         utils.createAttribute(
                             'wx:for',
-                            `{{components['${array}'+${comIndex} ]}}`
+                            `{{components['${array}'+${indexArr} ]}}`
                         ),
                         utils.createAttribute('wx:for-item', 'data'),
                         utils.createAttribute('data', '{{...data}}'),
@@ -107,7 +108,7 @@ var visitor = {
         }
     },
     CallExpression: {
-        enter(astPath, state) {
+        /*  enter(astPath, state) {
             let node = astPath.node;
             let args = node.arguments;
             let callee = node.callee;
@@ -128,6 +129,7 @@ var visitor = {
                 modules.indexName = null;
             }
         }
+        */
     },
     JSXAttribute(astPath, state) {
         chineseHack.collect(astPath);

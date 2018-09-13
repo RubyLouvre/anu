@@ -1,0 +1,19 @@
+<view class="page-body">
+                <view class="page-section">
+                    <view class="page-section-title">
+                        输入区域高度自适应，不会出现滚动条
+                    </view>
+                    <view class="textarea-wrp">
+                        <textarea bindblur="dispatchEvent" auto-height data-blur-uid="e1242" data-class-uid="c1139" data-instance-uid="{{props.instanceUid}}" />
+                    </view>
+                </view>
+
+                <view class="page-section">
+                    <view class="page-section-title">
+                        这是一个可以自动聚焦的textarea
+                    </view>
+                    <view class="textarea-wrp">
+                        <textarea auto-focus="true" style="height: 3em" />
+                    </view>
+                </view>
+            </view>
