@@ -16,6 +16,12 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
+function addCreatePage(name, path, modules){
+    // console.log(name, modules.className );
+    if (name == modules.className){
+        path.insertBefore(modules.createPage);
+    }
+}
 /**
  * JS文件转译器
  */
@@ -129,11 +135,23 @@ module.exports = {
         });
         helpers.copyNpmModules(modules.current, source, node);
     },
-
+    ExportDefaultDeclaration: {
+        exit(astPath, state) {
+            var modules = utils.getAnu(state);
+            if (modules.componentType == 'Page'){
+               
+                let declaration = astPath.node.declaration;
+                addCreatePage(declaration.name, astPath, modules);
+            }
+           
+            
+        }
+    },
     ExportNamedDeclaration: {
         enter() {},
         exit(astPath) {
             let declaration = astPath.node.declaration;
+
             if (!declaration) {
                 var map = astPath.node.specifiers.map(function(el) {
                     return helpers.exportExpr(el.local.name);
@@ -155,6 +173,7 @@ module.exports = {
                     declaration,
                     helpers.exportExpr(id)
                 ]);
+               
             }
         }
     },

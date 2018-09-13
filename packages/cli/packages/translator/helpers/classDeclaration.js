@@ -66,7 +66,8 @@ module.exports = {
             while (p.type != 'VariableDeclaration') {
                 p = p.parentPath;
             }
-            p.insertAfter(createPage);
+            modules.createPage = createPage;
+            // p.insertAfter(createPage);
         }
     }
 };
