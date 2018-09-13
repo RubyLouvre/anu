@@ -1957,7 +1957,7 @@ function createPage(PageClass, path, testObject) {
                     if (pageInst == this) {
                         pageInst.wxData = {};
                     } else {
-                        get(this)._hydrating = true;
+                        this.updateWXData = true;
                     }
                     canSetData = true;
                     updating = true;
@@ -2066,13 +2066,14 @@ function onComponentUpdate(fiber) {
             }
             return;
         }
-        if (fiber._hydrating) {
+        if (instance.updateWXData || fiber._hydrating) {
             for (var i = 0, el; el = arr[i++];) {
                 if (el.props === checkProps) {
                     extend(el, data);
                     break;
                 }
             }
+            delete instance.updateWXData;
         } else {
             arr.push(data);
         }

@@ -1,6 +1,6 @@
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
-import { isFn, noop, extend, get } from 'react-core/util';
+import { isFn, noop, extend } from 'react-core/util';
 import { eventSystem } from './eventSystem';
 import { getUUID } from './utils';
 
@@ -93,8 +93,7 @@ export function createPage(PageClass, path, testObject) {
                         if (pageInst == this) {
                             pageInst.wxData = {};
                         } else {
-                            get(this)._hydrating = true;
-                            //this.updateWXData = true;
+                            this.updateWXData = true;
                         }
                         canSetData = true;
                         updating = true;

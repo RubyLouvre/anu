@@ -60,15 +60,14 @@ export function onComponentUpdate(fiber) {
             }
             return;
         }
-        //   if (instance.updateWXData) {
-        if (fiber._hydrating){
+        if (instance.updateWXData || fiber._hydrating) {
             for (var i = 0, el; (el = arr[i++]); ) {
                 if (el.props === checkProps) {
                     extend(el, data);
                     break;
                 }
             }
-            // delete instance.updateWXData;
+            delete instance.updateWXData;
         } else {
             arr.push(data);
         }
@@ -113,10 +112,10 @@ export function template(props) {
             componentProps[i] = props[i];
         }
     }
-    if (props.fragmentUid && props.classUid){
+    if (props.fragmentUid && props.classUid) {
         var parentClass = classCached[props.classUid];
-        if (parentClass && parentClass.instances){
-            var parentInstance =  parentClass.instances[props.instanceUid];
+        if (parentClass && parentClass.instances) {
+            var parentInstance = parentClass.instances[props.instanceUid];
             componentProps.fragmentData = {
                 state: parentInstance.state,
                 props: parentInstance.props,
@@ -157,4 +156,3 @@ export function template(props) {
 function getData(instance, uuid) {
     return instance.wxData[uuid] || (instance.wxData[uuid] = []);
 }
-

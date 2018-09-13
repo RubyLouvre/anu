@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-06
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-13
  * IE9+
  */
 
@@ -1932,10 +1932,20 @@ function createPage(PageClass, path, testObject) {
                 });
                 var anuSetState = instance.setState;
                 var anuForceUpdate = instance.forceUpdate;
-                var updating = false,
-                    canSetData = false;
+                var updating = false;
+                var canSetData = false;
+                function updatePage(pageInst) {
+                    var data = pageInst.wxData;
+                    extend(data, {
+                        state: pageInst.state,
+                        props: pageInst.props,
+                        context: pageInst.context
+                    });
+                    $wxPage.setData(safeClone(data), function () {
+                        console.log('setData complete');
+                    });
+                }
                 instance.forceUpdate = instance.setState = function (a) {
-                    instance.wxData = instance.wxData || {};
                     var updateMethod = anuSetState;
                     var cbIndex = 1;
                     if (isFn(a) || a == null) {
@@ -1947,33 +1957,25 @@ function createPage(PageClass, path, testObject) {
                         if (pageInst == this) {
                             pageInst.wxData = {};
                         } else {
-                            this.updateWXData = true;
+                            get(this)._hydrating = true;
                         }
                         canSetData = true;
                         updating = true;
                     }
-                    var inst = this,
-                        cb = arguments[cbIndex],
-                        args = Array.prototype.slice.call(arguments);
+                    var cb = arguments[cbIndex];
+                    var args = Array.prototype.slice.call(arguments);
                     args[cbIndex] = function () {
-                        cb && cb.call(inst);
+                        cb && cb.call(this);
                         if (canSetData) {
                             canSetData = false;
                             updating = false;
-                            var data = pageInst.wxData;
-                            extend(data, {
-                                state: pageInst.state,
-                                props: pageInst.props,
-                                context: pageInst.context
-                            });
-                            $wxPage.setData(safeClone(data), function () {
-                                console.log('setData', data);
-                            });
+                            updatePage(pageInst);
                         }
                     };
                     updateMethod.apply(this, args);
                 };
-                instance.forceUpdate();
+                instance.wxData = instance.wxData || {};
+                updatePage(instance);
             },
             onShow: function onShow() {
                 PageClass.instances[instance.instanceUid] = instance;
@@ -1988,8 +1990,6 @@ function createPage(PageClass, path, testObject) {
                 if (isFn(fn)) {
                     fn.call(instance);
                 }
-            },
-            onReady: function onReady() {
             },
             onUnload: function onUnload() {
                 var fn = instance.componentWillUnmount;
@@ -2066,14 +2066,13 @@ function onComponentUpdate(fiber) {
             }
             return;
         }
-        if (instance.updateWXData) {
+        if (fiber._hydrating) {
             for (var i = 0, el; el = arr[i++];) {
                 if (el.props === checkProps) {
                     extend(el, data);
                     break;
                 }
             }
-            delete instance.updateWXData;
         } else {
             arr.push(data);
         }
@@ -2532,7 +2531,7 @@ var Renderer$1 = createRenderer({
     render: render,
     updateAttribute: function updateAttribute(fiber) {
         var props = fiber.props,
-            lastProps = fiber.lastProps;
+		    lastProps = fiber.lastProps;
         var classId = props['data-class-uid'];
         var instanceId = props['data-instance-uid'];
         if (classId) {
@@ -2543,14 +2542,14 @@ var Renderer$1 = createRenderer({
                     var cached = instance.$$eventCached || (instance.$$eventCached = {});
                     for (var name in props) {
                         if (onEvent.test(name) && isFn(props[name])) {
-                            var code = getEventHashCode(name, props, fiber.key);
+                            var code = getEventHashCode(name, props, props['data-key']);
                             cached[code] = props[name];
                         }
                     }
                     if (lastProps) {
                         for (var _name in lastProps) {
                             if (onEvent.test(_name) && !props[_name]) {
-                                code = getEventHashCode(_name, lastProps, fiber.key);
+                                code = getEventHashCode(_name, lastProps, lastProps['data-key']);
                                 delete cached[code];
                             }
                         }
@@ -2596,10 +2595,10 @@ var Renderer$1 = createRenderer({
     },
     insertElement: function insertElement(fiber) {
         var dom = fiber.stateNode,
-            parentNode = fiber.parent,
-            forwardFiber = fiber.forwardFiber,
-            before = forwardFiber ? forwardFiber.stateNode : null,
-            children = parentNode.children;
+		    parentNode = fiber.parent,
+		    forwardFiber = fiber.forwardFiber,
+		    before = forwardFiber ? forwardFiber.stateNode : null,
+		    children = parentNode.children;
         try {
             if (before == null) {
                 if (dom !== children[0]) {
