@@ -130,8 +130,8 @@ class P extends React.Component {
   config = {
       backgrounColor: '#FFF',
       navigationBarBackgroundColor: '#feb64e',
-      navigationBarTitleText: 'mpreact',
-      navigationBarTextStyle: '#fff'
+      navigationBarTitleText: 'Qunar',
+      navigationBarTextStyle: 'white'
   };
   gotoSome(url) {
       if (url){
@@ -247,4 +247,5 @@ class P extends React.Component {
       );
   }
 }
+
 export default P;
