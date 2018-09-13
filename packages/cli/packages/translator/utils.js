@@ -17,6 +17,19 @@ module.exports = {
             typeof value == 'object' ? value : t.stringLiteral(value)
         );
     },
+    isRenderProps(attrValue) {
+        if (
+            attrValue.expression &&
+            attrValue.type == 'JSXExpressionContainer'
+        ) {
+            var type = attrValue.expression.type;
+            return (
+                type == 'FunctionExpression' ||
+                type === 'ArrowFunctionExpression'
+            );
+        }
+        return false;
+    },
     createUUID(astPath) {
         return astPath.node.start + astPath.node.end;
     },
