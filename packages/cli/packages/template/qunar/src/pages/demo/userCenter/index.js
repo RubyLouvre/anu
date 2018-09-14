@@ -79,8 +79,8 @@ class P extends React.Component {
         return (
             <div class='user-center'>
                 <div class='user-information'>
-                    <image src='../../../assets/image/homepage_select.png' class='user-image' />
-                    <span class='user-name'>去哪儿用户</span>
+                    <image src='https://s.qunarzz.com/wechatapp/common/images/my/unLogin.png' class='user-image' />
+                    <span class='user-name'>授权登录</span>
                 </div>
                 <div onTap={this.fun_tip.bind(this)} class='qunar-information'>
                     <span>关注公众号</span>

@@ -91,36 +91,7 @@ class Demo extends React.Component {
         // eslint-disable-next-line
         console.log('App launched');
     }
-    tabBar = {
-        'color': '#929292',
-        'selectedColor': '#00bcd4',
-        'borderStyle': 'black',
-        'backgroundColor': '#ffffff',
-        'list': [
-            {
-                'pagePath': './pages/index/index',
-                'iconPath': './assets/image/homepage_normal.png',
-                'selectedIconPath': './assets/image/homepage_select.png',
-                'text': '首页',
-                'name': 'Home',
-                'selected': true
-            },
-            {
-                'pagePath': './pages/demo/question/index',
-                'iconPath': 'common/images/home/question_normal.png',
-                'selectedIconPath': 'common/images/home/question_select.png',
-                'text': '问答社区',
-                'name': 'questionAndAnswer'
-            },
-            {
-                'pagePath': './pages/demo/userCenter/index',
-                'iconPath': 'common/images/home/uc_normal.png',
-                'selectedIconPath': 'common/images/home/uc_select.png',
-                'text': '我的',
-                'name': 'My'
-            }
-        ]
-    }
+
 }
 
 // eslint-disable-next-line
