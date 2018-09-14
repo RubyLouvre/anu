@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-13
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-14
  * IE9+
  */
 
@@ -2476,6 +2476,16 @@ function collectStyle(obj, props, key) {
     return obj;
 }
 
+function renderProps(props) {
+    var parentClass = classCached[props.classUid];
+    if (parentClass && parentClass.instances) {
+        var instance = parentClass.instances[props.instanceUid];
+        var wxData = instance.wxData;
+        instance.wxData.renderData = Object.assign({}, wxData);
+    }
+    return null;
+}
+
 function cleanChildren(array) {
 	if (!Array.isArray(array)) {
 		return array;
@@ -2635,6 +2645,7 @@ React = win.React = win.ReactDOM = {
     hydrate: render$1,
     template: template,
     createPage: createPage,
+    renderProps: renderProps,
     Fragment: Fragment,
     PropTypes: PropTypes,
     Children: Children,

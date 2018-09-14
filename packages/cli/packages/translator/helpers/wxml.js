@@ -49,7 +49,7 @@ var visitor = {
                     var template = utils.createElement('template', attributes, []);
                     attributes.push(
                         utils.createAttribute('is', '{{props.renderUid}}'),
-                        utils.createAttribute('data', '{{...self}}')
+                        utils.createAttribute('data', '{{...renderData}}')
                     );
                     var children = astPath.parentPath.parentPath.node.children;
                     //去掉后面的{{this.props.render()}}

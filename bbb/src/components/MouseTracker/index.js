@@ -8,15 +8,21 @@ class MouseTracker extends React.Component {
     }
   
     handleMouseMove(event) {
+        var e;
+        if (event.type== 'touchmove'){
+            e =  event.touches[0];
+        } else {
+            e = event;
+        }
         this.setState({
-            x: event.pageX,
-            y: event.pageY
+            x: e.pageX,
+            y: e.pageY
         });
     }
   
     render() {
         return (
-            <div style={{ height: '100%' }} onMouseMove={this.handleMouseMove}>
+            <div style={{ height: '100%' }} onTouchMove={this.handleMouseMove}>
                 <h1>Move the mouse around!</h1>
                 <p>The current mouse position{this.props.renderUid} is ({this.state.x}, {this.state.y})</p>
                 <p>{this.props.render(this.state)}</p>

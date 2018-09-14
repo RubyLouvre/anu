@@ -18,6 +18,7 @@ import { eventSystem } from './eventSystem';
 import { initNativeApi } from './api';
 import { collectStyle } from './collectStyle';
 import { classCached } from './utils';
+import { renderProps } from './renderProps';
 
 import { Renderer } from './wxrender';
 let win = getWindow();
@@ -44,6 +45,7 @@ React = win.React = win.ReactDOM = {
     hydrate: render,
     template,
     createPage,
+    renderProps,
     //  unstable_batchedUpdates: DOMRenderer.batchedUpdates,
     Fragment,
     PropTypes,

@@ -276,33 +276,18 @@ module.exports = {
                     }
                 }
                 if (p.type === 'JSXElement' && d){
-                    /* var args2 = node.arguments.map(function(el){
-                        return generate(el).code; 
-                    });
-                    */
                     //<React.renderProps renderUid={this.props.renderUid} data={[this.state]} />
                     var renderProps =  utils.createElement('React.renderProps',[
-                        utils.createAttribute('renderUid',   t.jSXExpressionContainer(t.identifier('this.props'))),
+                        utils.createAttribute('instanceUid',t.jSXExpressionContainer(t.identifier('this.props.instanceUid'))),
                         utils.createAttribute('classUid', modules.classUid),
-                        /*  utils.createAttribute('params', t.jSXExpressionContainer(
-                            t.identifier('['+args2.join(',')+']')
-                        ))
-                        */
                     ],[]);   
                     var arr = p.node.children;
                     var index = arr.indexOf(d.node);
-                   
-                    if (index !== -1){
-                        //  console.log(d);
+                    if (index !== -1){ //插入React.renderProps标签
                         arr.splice(index, 0, renderProps);
                     }
-                   
-                   
                 }
-
             }
-
-          
             //处理循环语
             if (utils.isLoopMap(astPath)) {
                 //添加上第二参数
