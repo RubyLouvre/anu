@@ -33,8 +33,8 @@ const pkgJsonTemplate = {
         'babel-plugin-transform-object-rest-spread': '^6.26.0',
         'babel-plugin-transform-es2015-template-literals': '^6.22.0',
         'babel-plugin-transform-react-jsx': '^6.24.1',
-        'babel-preset-react': '^6.24.1',
-        'weapp-async-await': '^1.0.2'
+        'babel-plugin-transform-node-env-inline': '^0.4.3',
+        'babel-preset-react': '^6.24.1'
     },
     dependencies: {}
 };
@@ -50,14 +50,6 @@ const init = appName => {
             writeDir(appName);
             
         })
-        // .then(res => {
-        //     console.log(res, '---res')
-        //     if (res.css === 'scss') {
-        //         pkgJsonTemplate['devDependencies']['node-sass'] = '^4.9.3';
-        //     }
-
-        //     writeDir(appName);
-        // })
         .catch(err => {
             // eslint-disable-next-line
             console.log(err);
@@ -191,6 +183,20 @@ const getDevDeps = ()=>{
 };
 
 
+const removeLockFile = (dir)=>{
+    let lockFile = [
+        'package-lock.json',
+        'yarn.lock'
+    ];
+    lockFile.forEach((file)=>{
+        fs.remove( path.join(dir, file), (err)=>{
+            if (err){
+                // eslint-disable-next-line
+                console.log(err);
+            }
+        } );
+    });
+};
 
 const install = projectRoot => {
     let bin = '';
@@ -209,9 +215,10 @@ const install = projectRoot => {
         option.push('install');
     }
 
-   
+    
     var result = spawn.sync(bin, option, { stdio: 'inherit' });
     if (!result.error) {
+        removeLockFile(process.cwd());
         /* eslint-disable */
         console.log(chalk.green('依赖安装完毕!🍺'));
         console.log();

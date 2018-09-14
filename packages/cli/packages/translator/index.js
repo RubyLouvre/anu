@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 
 const rollup = require('rollup');
 const rbabel = require('rollup-plugin-babel');
-//const resolve = require("rollup-plugin-node-resolve");
+//const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const rollupLess = require('rollup-plugin-less');
 const rollupSass = require('rollup-plugin-sass');
@@ -147,6 +147,9 @@ class Parser {
             input: this.entry,
             plugins: [
                 alias(getAlias()),
+                // resolve({
+                //     include: 'node_modules/**'
+                // }),
                 commonjs({
                     include: 'node_modules/**'
                 }),
@@ -169,7 +172,6 @@ class Parser {
                     plugins: [
                         'transform-class-properties',
                         'transform-object-rest-spread',
-
                         'transform-es2015-template-literals',
                     ]
                 })
@@ -201,8 +203,11 @@ class Parser {
             });
         });
       
-        // console.log('====',files, files.length);
         let sorted = getExecutedOrder(files);
+        this.codeGen(sorted, cssFiles);
+       
+    }
+    codeGen(sorted, cssFiles){
         this.startCodeGenJs(sorted);
         this.startCodeGenCss(cssFiles);
         this.generateProjectConfig();
@@ -218,7 +223,6 @@ class Parser {
             this.generateCss(file);
         });
     }
-    
     generateLib(file) {
         return new Promise((resolve, reject) => {
             let { name, ext } = path.parse(file);
@@ -561,6 +565,7 @@ class Parser {
                     );
                     this.inputConfig.input = file;
                     this.parse();
+                    
 
                 }
             });
