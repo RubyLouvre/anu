@@ -51,7 +51,11 @@ class Express extends React.Component {
                 },
                 {
                     title: 'redux',
-                    url: '/pages/demo/syntax/redux1/index'
+                    url: '/pages/demo/syntax/redux/index'
+                },
+                {
+                    title: 'react-redux',
+                    url: '/pages/demo/syntax/reactRedux/index'
                 }
                 
             ]

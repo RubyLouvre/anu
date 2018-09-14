@@ -37,7 +37,11 @@ import './pages/demo/syntax/multiple/index';
 
 import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';
-import './pages/demo/syntax/redux1/index';
+
+import './pages/demo/syntax/redux/index';
+import './pages/demo/syntax/reactRedux/index';
+
+
 
 import './app.less';
 
