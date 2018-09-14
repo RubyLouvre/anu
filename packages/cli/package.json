@@ -36,6 +36,7 @@
     "inquirer": "^6.0.0",
     "less": "^3.8.1",
     "prettify-xml": "^1.2.0",
+    "resolve": "^1.8.1",
     "rollup": "^0.63.5",
     "rollup-plugin-alias": "^1.4.0",
     "rollup-plugin-babel": "^3.0.7",
