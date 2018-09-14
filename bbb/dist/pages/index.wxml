@@ -1,0 +1,5 @@
+<import src="../components/Cursor/index.wxml" />
+<import src="../components/MouseTracker/index.wxml" />
+<view>
+                <template is="MouseTracker" data="{{...data}}" wx:for="{{components.data736}}" wx:for-item="data" wx:for-index="index" wx:key="*this"></template>
+            </view>

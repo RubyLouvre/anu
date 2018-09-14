@@ -1,0 +1,19 @@
+<import src="../../components/LotteryDraw/index.wxml" />
+<view class="cart-container">
+              <view>
+                  <image src="{{state.cartImg}}" bindtap="dispatchEvent" class="cart-image" data-tap-uid="e12761292" data-class-uid="c1882060" data-instance-uid="{{props.instanceUid}}" />
+                  <view>{{state.tipWords}}</view>
+              </view>
+              {{}}
+
+              <view hidden="{{state.visible}}">
+                  <view class="ys-mask" bindtap="dispatchEvent" data-tap-uid="e16471667" data-class-uid="c1882060" data-instance-uid="{{props.instanceUid}}" />
+                  <view class="ys-dialog">
+                      <view class="ys-dialog-contetn">
+                          <image src="../../assets/images/lottery_draw_log.png" class="lottery_draw_log" />
+                          <template is="LotteryDraw" data="{{...data}}" wx:for="{{data99114141}}" wx:for-item="data" wx:for-index="index" wx:key="*this"></template>
+                      </view>
+                  </view>
+              </view>
+
+          </view>

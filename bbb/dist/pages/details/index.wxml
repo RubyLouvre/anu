@@ -1,0 +1,13 @@
+<view class="chat-container">
+              <view>
+                  <swiper class="swiper_box" indicator-dots="{{state.indicatorDots}}" vertical="{{state.vertical}}" autoplay="{{state.autoplay}}" interval="{{state.interval}}" duration="{{state.duration}}" bindchange="dispatchEvent" data-change-uid="e16821710" data-class-uid="c512371" data-instance-uid="{{props.instanceUid}}">
+                      <block wx:for="{{state.imgUrls}}" wx:for-item="item" wx:for-index="i1754" wx:key="*this"><swiper-item>
+                                  <image src="{{item}}" class="slide-image" />
+                              </swiper-item></block>
+                  </swiper>
+              </view>
+              <view class="shopping_container">
+                  <view class="title">{{state.shopppingDetails.title}}</view>
+                  <view class="reason">{{state.shopppingDetails.reason}}</view>
+              </view>
+          </view>

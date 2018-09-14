@@ -46,6 +46,7 @@ module.exports = {
                     false
                 );
             }
+
             helpers.render.enter(
                 astPath,
                 '有状态组件',
@@ -139,7 +140,7 @@ module.exports = {
             var modules = utils.getAnu(state);
             if (modules.componentType == 'Page') {
                 let declaration = astPath.node.declaration;
-                //延后createPage语句在其同名的export语句前
+                //延后插入createPage语句在其同名的export语句前
                 addCreatePage(declaration.name, astPath, modules);
             }
         }
@@ -261,8 +262,49 @@ module.exports = {
                     return;
                 }
             }
+          
+            if (callee.property && callee.property.name == 'render'){
+                var p = astPath, checkIndex =4, d;
+                while (p.type != 'JSXElement'){
+                    if (p.type === 'JSXExpressionContainer'){
+                        d = p;
+                    }
+                    p = p.parentPath;
+                    
+                    if (checkIndex-- == 0){
+                        break;
+                    }
+                }
+                if (p.type === 'JSXElement' && d){
+                    /* var args2 = node.arguments.map(function(el){
+                        return generate(el).code; 
+                    });
+                    */
+                    //<React.renderProps renderUid={this.props.renderUid} data={[this.state]} />
+                    var renderProps =  utils.createElement('React.renderProps',[
+                        utils.createAttribute('renderUid',   t.jSXExpressionContainer(t.identifier('this.props'))),
+                        utils.createAttribute('classUid', modules.classUid),
+                        /*  utils.createAttribute('params', t.jSXExpressionContainer(
+                            t.identifier('['+args2.join(',')+']')
+                        ))
+                        */
+                    ],[]);   
+                    var arr = p.node.children;
+                    var index = arr.indexOf(d.node);
+                   
+                    if (index !== -1){
+                        //  console.log(d);
+                        arr.splice(index, 0, renderProps);
+                    }
+                   
+                   
+                }
+
+            }
+
+          
             //处理循环语
-            if (utils.isLoopMap(astPath)){
+            if (utils.isLoopMap(astPath)) {
                 //添加上第二参数
                 if (!args[1] && args[0].type === 'FunctionExpression') {
                     args[1] = t.identifier('this');
@@ -283,7 +325,8 @@ module.exports = {
                 }
                 modules.indexName = indexName;
             }
-
+           
+            //如果是页面是var a = require("react")
             if (callee.name === 'require') {
                 helpers.copyNpmModules(
                     modules.current,
@@ -294,7 +337,7 @@ module.exports = {
         },
         exit(astPath, state) {
             let modules = utils.getAnu(state);
-            if (utils.isLoopMap(astPath)){
+            if (utils.isLoopMap(astPath)) {
                 var indexArr = modules.indexArr;
                 if (indexArr) {
                     indexArr.pop();
@@ -302,7 +345,7 @@ module.exports = {
                         delete modules.indexArr;
                         modules.indexName = null;
                     } else {
-                        modules.indexName = indexArr[indexArr.length-1];
+                        modules.indexName = indexArr[indexArr.length - 1];
                     }
                 }
             }
@@ -320,6 +363,7 @@ module.exports = {
                     (deps[nodeName] = {
                         set: new Set()
                     });
+                astPath.componentName = nodeName;
                 modules.usedComponents[nodeName] = true;
                 astPath.node.name.name = 'React.template';
                 let children = astPath.parentPath.node.children;
@@ -336,6 +380,7 @@ module.exports = {
                 }
 
                 var attributes = astPath.node.attributes;
+                modules.is && modules.is.push(nodeName);
                 attributes.push(
                     utils.createAttribute(
                         '$$loop',
@@ -346,7 +391,7 @@ module.exports = {
                         t.jSXExpressionContainer(t.identifier(nodeName))
                     )
                 );
-               
+
                 if (modules.indexArr) {
                     //  console.log(nodeName, modules.indexArr+'' );
                     attributes.push(
@@ -385,73 +430,138 @@ module.exports = {
             }
         }
     },
-    JSXAttribute: function(astPath, state) {
-        let modules = utils.getAnu(state);
-        let attrName = astPath.node.name.name;
-        let attrValue = astPath.node.value;
-        var attrs = astPath.parentPath.node.attributes;
-        if (/^(?:on|catch)[A-Z]/.test(attrName)) {
-            var n = attrName.charAt(0) == 'o' ? 2 : 5;
-            var eventName = attrName.slice(n).toLowerCase();
-            if (eventName == 'click') {
-                //onClick映射为onTap, catchClick映射为catchTap
-                astPath.node.name.name = n == 2 ? 'onTap' : 'catchTap';
-                eventName = 'tap';
-            }
-            //事件存在的标签，必须添加上data-eventName-uid, data-class-uid, data-instance-uid
-            var name = `data-${eventName}-uid`;
-            attrs.push(
-                utils.createAttribute(name, 'e' + utils.createUUID(astPath))
-            );
-            if (!attrs.setClassCode) {
-                attrs.setClassCode = true;
-                attrs.push(
-                    utils.createAttribute('data-class-uid', modules.classUid),
-                    utils.createAttribute(
-                        'data-instance-uid',
-                        t.jSXExpressionContainer(
-                            t.identifier('this.props.instanceUid')
-                        )
-                    )
-                );
-                //如果是位于循环里，还必须加上data-key，防止事件回调乱窜
-                if (modules.indexArr) {
+    JSXAttribute: {
+        enter: function(astPath, state) {
+           
+            let attrName = astPath.node.name.name;
+            let attrValue = astPath.node.value;
+          
+            if (t.isJSXExpressionContainer(attrValue)) {
+                let modules = utils.getAnu(state);
+                let attrs = astPath.parentPath.node.attributes;
+                var expr = attrValue.expression;
+                if (/^(?:on|catch)[A-Z]/.test(attrName)) {
+                    var n = attrName.charAt(0) == 'o' ? 2 : 5;
+                    var eventName = attrName.slice(n).toLowerCase();
+                    if (eventName == 'click') {
+                        //onClick映射为onTap, catchClick映射为catchTap
+                        astPath.node.name.name = n == 2 ? 'onTap' : 'catchTap';
+                        eventName = 'tap';
+                    }
+                    //事件存在的标签，必须添加上data-eventName-uid, data-class-uid, data-instance-uid
+                    var name = `data-${eventName}-uid`;
                     attrs.push(
                         utils.createAttribute(
-                            'data-key',
-                            t.jSXExpressionContainer(
-                                t.identifier(modules.indexArr.join('+\'-\'+'))
-                            )
+                            name,
+                            'e' + utils.createUUID(astPath)
                         )
                     );
+                    if (!attrs.setClassCode) {
+                        attrs.setClassCode = true;
+                        attrs.push(
+                            utils.createAttribute(
+                                'data-class-uid',
+                                modules.classUid
+                            ),
+                            utils.createAttribute(
+                                'data-instance-uid',
+                                t.jSXExpressionContainer(
+                                    t.identifier('this.props.instanceUid')
+                                )
+                            )
+                        );
+                        //如果是位于循环里，还必须加上data-key，防止事件回调乱窜
+                        if (modules.indexArr) {
+                            attrs.push(
+                                utils.createAttribute(
+                                    'data-key',
+                                    t.jSXExpressionContainer(
+                                        t.identifier(
+                                            modules.indexArr.join('+\'-\'+')
+                                        )
+                                    )
+                                )
+                            );
+                        }
+                    }
+                } else if (attrName === 'style') {
+                    //将动态样式封装到React.collectStyle中
+                    var styleType = expr.type;
+                    var isIdentifier = styleType === 'Identifier';
+                    if (isIdentifier || styleType === 'ObjectExpression') {
+                        var styleRandName =
+                            `"style${utils.createUUID(astPath)}"` +
+                            (modules.indexName ? ' +' + modules.indexName : '');
+                        //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
+                        //ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
+                        var styleName = isIdentifier
+                            ? expr.name
+                            : generate(expr).code;
+                        attrs.push(
+                            utils.createAttribute(
+                                'style',
+                                t.jSXExpressionContainer(
+                                    t.identifier(
+                                        `React.collectStyle(${styleName}, this.props, ${styleRandName})`
+                                    )
+                                )
+                            )
+                        );
+                        astPath.remove();
+                    }
+                } else if (attrName == 'render') {
+                    var type = expr.type;
+                    if (
+                        type === 'FunctionExpression' ||
+                        type == 'ArrowFunctionExpression'
+                    ) {
+                        var uuid = 'render'+utils.createUUID(astPath);
+                        attrs.push(utils.createAttribute('renderUid',uuid));
+                        astPath.parentPath.renderProps = attrValue;
+                        astPath.parentPath.renderUid = uuid;
+                        // astPath.parentPath.host = 
+                        modules.is = [];
+                        // console.log(generate(attrValue).code);
+                    }
                 }
             }
-        } else if (
-            attrName === 'style' &&
-            t.isJSXExpressionContainer(attrValue)
-        ) {
-            //将动态样式封装到React.collectStyle中
-            var expr = attrValue.expression;
-            var styleType = expr.type;
-            var isIdentifier = styleType === 'Identifier';
-            if (isIdentifier || styleType === 'ObjectExpression') {
-                var styleRandName =
-                    `"style${utils.createUUID(astPath)}"` +
-                    (modules.indexName ? ' +' + modules.indexName : '');
-                //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
-                //ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
-                var styleName = isIdentifier ? expr.name : generate(expr).code;
-                attrs.push(
-                    utils.createAttribute(
-                        'style',
-                        t.jSXExpressionContainer(
-                            t.identifier(
-                                `React.collectStyle(${styleName}, this.props, ${styleRandName})`
-                            )
-                        )
-                    )
+        },
+        exit(astPath,state) {
+            let attrName = astPath.node.name.name;
+            // let attrValue = astPath.node.value;
+            if (attrName == 'render' && astPath.parentPath.renderProps) {
+                let attrValue = astPath.parentPath.renderProps;
+                let fragmentUid = astPath.parentPath.renderUid;
+                delete astPath.parentPath.renderProps;
+                let modules = utils.getAnu(state);
+                let subComponents = {};
+                modules.is.forEach(function(a){
+                    subComponents[a] = path.join('..', a, 'index');
+                });
+                var componentName = astPath.parentPath.componentName;
+                var dep = deps[componentName];
+              
+                if (dep.addImportTag) {
+                    dep.addImportTag(fragmentUid);
+                } else {
+                    dep.set.add(fragmentUid);
+                }
+                 
+                // console.log(subComponents, modules.usedComponents);
+                helpers.render.exit(
+                    { 
+                        node: attrValue.expression
+                    },
+                    'renderProps',
+                    fragmentUid,
+                    {
+                        sourcePath:  path.join(process.cwd(), 'src', 'components', 'Fragments', fragmentUid+'.js'),
+                        componentType: 'Component',
+                        importComponents: subComponents,
+                        usedComponents: modules.usedComponents
+                    }
                 );
-                astPath.remove();
+              
             }
         }
     },

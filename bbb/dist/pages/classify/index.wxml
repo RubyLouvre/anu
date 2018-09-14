@@ -1,0 +1,9 @@
+<import src="../../components/navRight/index.wxml" />
+<view class="chat-container">
+              <view class="nav_left">
+                  <block wx:for="{{state.navLeftItems}}" wx:for-item="item" wx:for-index="index" wx:key="id}}"><view class="{{'nav_left_items ' + (state.curIndex === index ? 'active' : '')}}" bindtap="dispatchEvent" data-tap-uid="e22102264" data-class-uid="c1022858" data-instance-uid="{{props.instanceUid}}" data-key="{{index}}">
+                              {{item.desc}}
+                          </view></block>
+              </view>
+              <template is="RightNav" data="{{...data}}" wx:for="{{data99212088}}" wx:for-item="data" wx:for-index="index" wx:key="*this"></template>
+          </view>

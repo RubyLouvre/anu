@@ -1,0 +1,21 @@
+<view class="chat-container">
+              <block wx:for="{{state.list}}" wx:for-item="item" wx:for-index="i1079" wx:key="id}}"><navigator url="{{'../details/index?id=' + item.id}}">
+                          <view class="brand_item">
+                              <image src="{{item.goodspics}}" class="pic" />
+
+                              <view class="right_cont">
+                                  <view class="country">
+                                      {{item.country}}
+                    直采 {{item.bigname}}
+                    发货
+                                  </view>
+                                  <view class="name">{{item.title}}</view>
+                                  <view class="price">
+                                      <text class="marketprice">                      ￥{{item.marketprice}}.00                                      </text>
+                                      <text class="discount">8折</text>
+                                      <text class="ourprice">                      ￥{{item.ourprice}}.00                                      </text>
+                                  </view>
+                              </view>
+                          </view>
+                      </navigator></block>
+          </view>

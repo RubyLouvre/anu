@@ -1,0 +1,6 @@
+<import src="../Fragments/render747.wxml" />
+<template name="MouseTracker"><view bindmousemove="dispatchEvent" style="{{props.style844}}" data-mousemove-uid="e906" data-class-uid="c749" data-instance-uid="{{props.instanceUid}}">
+                <view>Move the mouse around!</view>
+                <view>The current mouse position{{props.renderUid}} is ({{state.x}}, {{state.y}})</view>
+                <view><template is="{{props.renderUid}}" data="{{...self}}"></template></view>
+            </view></template>

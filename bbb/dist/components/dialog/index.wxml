@@ -1,0 +1,19 @@
+<template name="Dialog">
+    <view hidden="{{props.visible}}">
+        <view class="ys-mask" />
+        <view class="ys-dialog">
+            <view class="ys-dialog-title">{{state.title}}</view>
+            <view class="ys-dialog-content">{{state.content}}</view>
+            <view class="ys-dialog-bottom">
+                <button class="ys-dialog-btn" bindtap="dispatchEvent" data-tap-uid="e695721" 
+                data-class-uid="c29960" data-instance-uid="{{props.instanceUid}}">
+                    {{state.cancelText}}
+                </button>
+                <view class="ys-dialog-btn ys-dialog-ok-btn" bindtap="dispatchEvent" data-tap-uid="e823846"
+                 data-class-uid="c29960" data-instance-uid="{{props.instanceUid}}">
+                    {{state.okText}}
+                </view>
+            </view>
+        </view>
+    </view>
+</template>
