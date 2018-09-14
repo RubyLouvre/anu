@@ -1,5 +1,0 @@
-<view>
-                <view style="{{props.style1235}}">async/await</view>
-                <view>status: {{state.status}}</view>
-                <button bindtap="dispatchEvent" data-tap-uid="e1466" data-class-uid="c869" data-instance-uid="{{props.instanceUid}}">试一试</button>
-            </view>

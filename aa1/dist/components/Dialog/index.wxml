@@ -1,6 +1,0 @@
-<import src="../Fragments/f1120.wxml" />
-<import src="../Count/index.wxml" />
-<template name="Dialog"><view style="background:#f3f3f3;border:2px solid #dadada;margin:3px;">
-            <view><template is="{{props.fragmentUid}}" data="{{...props.fragmentData}}"></template></view>
-            <template is="Count" data="{{...data}}" wx:for="{{components.data567}}" wx:for-item="data" wx:for-index="index" wx:key="*this"></template>
-        </view></template>

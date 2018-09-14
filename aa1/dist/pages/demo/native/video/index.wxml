@@ -1,8 +1,0 @@
-<view class="container">
-                <view class="page_hd">{{state.title}}</view>
-                <view class="page_bd">
-                    <view class="navigation">
-                        <video src="{{state.src}}" controls="{{state.controls}}" danmuList="{{state.danmuList}}" loop="{{state.loop}}" enableDanmu="{{state.enableDanmu}}" danmuBtn="{{state.danmuBtn}}" />
-                    </view>
-                </view>
-            </view>

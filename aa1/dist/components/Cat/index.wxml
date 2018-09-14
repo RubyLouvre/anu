@@ -1,1 +1,0 @@
-<template name="Cat"><view>Cat: {{props.id}}_{{props.content}}</view></template>

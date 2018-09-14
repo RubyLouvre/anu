@@ -1,1 +1,0 @@
-<template name="Fish"><view>Fish: {{props.id}}_{{props.content}}</view></template>

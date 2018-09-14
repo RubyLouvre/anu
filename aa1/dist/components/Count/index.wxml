@@ -1,1 +1,0 @@
-<template name="Count"><view>{{props.a}}+{{props.b}}={{props.a + props.b}}</view></template>

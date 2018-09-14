@@ -1,5 +1,0 @@
-<import src="../Parent/index.wxml" />
-<template name="Super"><view class="super">
-				<view class="title">最外层组件</view>
-				<template is="Parent" data="{{...data}}" wx:for="{{components.data662}}" wx:for-item="data" wx:for-index="index" wx:key="*this"></template>
-			</view></template>
