@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-13
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-14
  * IE9+
  */
 
@@ -1870,14 +1870,10 @@ function createEvent(e, target) {
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
-    event.toString = eventString;
     event.currentTarget = event.target = target;
     event.touches = e.touches;
     event.timeStamp = new Date() - 0;
     return event;
-}
-function eventString() {
-    return '[object Event]';
 }
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -2476,6 +2472,16 @@ function collectStyle(obj, props, key) {
     return obj;
 }
 
+function renderProps(props) {
+    var parentClass = classCached[props.classUid];
+    if (parentClass && parentClass.instances) {
+        var instance = parentClass.instances[props.instanceUid];
+        var wxData = instance.wxData;
+        instance.wxData.renderData = Object.assign({}, wxData);
+    }
+    return null;
+}
+
 function cleanChildren(array) {
 	if (!Array.isArray(array)) {
 		return array;
@@ -2635,6 +2641,7 @@ React = win.React = win.ReactDOM = {
     hydrate: render$1,
     template: template,
     createPage: createPage,
+    renderProps: renderProps,
     Fragment: Fragment,
     PropTypes: PropTypes,
     Children: Children,

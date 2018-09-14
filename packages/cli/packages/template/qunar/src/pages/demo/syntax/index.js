@@ -52,8 +52,11 @@ class Express extends React.Component {
                 {
                     title: '组件嵌套组件',
                     url: '/pages/demo/syntax/multiple/index'
+                },
+                {
+                    title: 'Render Props',
+                    url: '/pages/demo/syntax/renderprops/index'
                 }
-                
             ]
         };
     }

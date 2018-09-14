@@ -474,9 +474,9 @@ module.exports = {
                     var styleType = expr.type;
                     var isIdentifier = styleType === 'Identifier';
                     if (isIdentifier || styleType === 'ObjectExpression') {
+                        var ii = modules.indexArr ?  modules.indexArr.join('+\'-\'+') : ""
                         var styleRandName =
-                            `"style${utils.createUUID(astPath)}"` +
-                            (modules.indexName ? ' +' + modules.indexName : '');
+                            `'style${utils.createUUID(astPath)}'` + (ii ? ' +' +ii : '');
                         //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
                         //ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
                         var styleName = isIdentifier

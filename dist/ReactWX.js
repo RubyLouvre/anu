@@ -1870,14 +1870,10 @@ function createEvent(e, target) {
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
-    event.toString = eventString;
     event.currentTarget = event.target = target;
     event.touches = e.touches;
     event.timeStamp = new Date() - 0;
     return event;
-}
-function eventString() {
-    return '[object Event]';
 }
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
