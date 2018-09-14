@@ -28,7 +28,6 @@ import './pages/demo/syntax/stateless/index';
 import './pages/demo/syntax/loop/index';
 import './pages/demo/syntax/loop2/index';
 import './pages/demo/syntax/loop3/index';
-import './pages/demo/syntax/loop4/index';
 import './pages/demo/syntax/extend/index';
 import './pages/demo/syntax/inlineStyle/index';
 import './pages/demo/syntax/if/index';
@@ -42,7 +41,8 @@ import './pages/demo/boat/index';
 import './pages/demo/scenic/index';
 import './pages/demo/strategy/index';
 import './pages/demo/userCenter/index';
-import './pages/demo/question/index';
+import './pages/demo/question/index/index';
+import './pages/demo/question/detail/index';
 
 import './app.less';
 
@@ -69,7 +69,7 @@ class Demo extends React.Component {
                     'selected': true
                 },
                 {
-                    'pagePath': 'pages/demo/question/index',
+                    'pagePath': 'pages/demo/question/index/index',
                     'iconPath': 'assets/image/question_normal.png',
                     'selectedIconPath': 'assets/image/question_select.png',
                     'text': '问答社区',
@@ -92,7 +92,7 @@ class Demo extends React.Component {
         // eslint-disable-next-line
         console.log('App launched');
     }
-
+    
 }
 
 // eslint-disable-next-line
