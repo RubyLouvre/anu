@@ -15,6 +15,7 @@ class P extends React.Component {
     constructor(props) {
         super(props);
         this.increment = props.increment;
+        
         this.incrementAsync = props.incrementAsync;
     }
     render(){

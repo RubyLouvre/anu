@@ -1,10 +1,12 @@
 import React from '@react';
 import './index.less';
+
 // eslint-disable-next-line
 class P extends React.Component {
     constructor() {
         super();
         this.state = {
+            list: [],
             indexPageIcons: [
                 {
                     class: 'radius-top-left',
@@ -142,7 +144,8 @@ class P extends React.Component {
   }
   componentDidMount() {
       // eslint-disable-next-line
-    console.log('page did mount!');
+     console.log('page did mount!');
+    
   }
   componentWillMount() {
       // eslint-disable-next-line
@@ -247,3 +250,5 @@ class P extends React.Component {
       );
   }
 }
+
+export default P;
