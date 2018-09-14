@@ -41,6 +41,8 @@ import './pages/demo/calendar/index';
 import './pages/demo/boat/index';
 import './pages/demo/scenic/index';
 import './pages/demo/strategy/index';
+import './pages/demo/userCenter/index';
+import './pages/demo/question/index';
 
 import './app.less';
 
@@ -51,6 +53,36 @@ class Demo extends React.Component {
             navigationBarBackgroundColor: '#0088a4',
             navigationBarTitleText: 'mpreact',
             navigationBarTextStyle: '#fff'
+        },
+        tabBar: {
+            'color': '#929292',
+            'selectedColor': '#00bcd4',
+            'borderStyle': 'black',
+            'backgroundColor': '#ffffff',
+            'list': [
+                {
+                    'pagePath': 'pages/index/index',
+                    'iconPath': 'assets/image/homepage_normal.png',
+                    'selectedIconPath': 'assets/image/homepage_select.png',
+                    'text': '首页',
+                    'name': 'Home',
+                    'selected': true
+                },
+                {
+                    'pagePath': 'pages/demo/question/index',
+                    'iconPath': 'assets/image/question_normal.png',
+                    'selectedIconPath': 'assets/image/question_select.png',
+                    'text': '问答社区',
+                    'name': 'questionAndAnswer'
+                },
+                {
+                    'pagePath': 'pages/demo/userCenter/index',
+                    'iconPath': 'assets/image/uc_normal.png',
+                    'selectedIconPath': 'assets/image/uc_select.png',
+                    'text': '我的',
+                    'name': 'My'
+                }
+            ]
         }
     };
     globalData = {
@@ -60,6 +92,7 @@ class Demo extends React.Component {
         // eslint-disable-next-line
         console.log('App launched');
     }
+
 }
 
 // eslint-disable-next-line

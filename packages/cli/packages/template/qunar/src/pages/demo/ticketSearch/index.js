@@ -38,11 +38,12 @@ class P extends React.Component {
         });
     }
     handleChangeSwitch() {
-        this.setState({isOnlyGaotie: !this.state.isOnlyGaotie});
+        this.setState({ isOnlyGaotie: !this.state.isOnlyGaotie });
     }
   config = {
       backgroundColor: '#feb64e',
-      navigationBarBackgroundColor: '#feb64e'
+      navigationBarBackgroundColor: '#feb64e',
+      navigationBarTitleText: '车牌搜索'
   };
   render() {
       return (
@@ -107,10 +108,16 @@ class P extends React.Component {
                 只查看高铁/动车
                           </div>
                       </div>
-                      <switch checked={this.state.isOnlyGaotie} onChange={this.handleChangeSwitch.bind(this)} color="#00bcd4" />
+                      <switch
+                          checked={this.state.isOnlyGaotie}
+                          onChange={this.handleChangeSwitch.bind(this)}
+                          color="#00bcd4"
+                      />
                   </div>
 
-                  <div onTap={this.fun_tip} className="search-button">搜 索</div>
+                  <div onTap={this.fun_tip} className="search-button">
+            搜 索
+                  </div>
 
                   <div className="actions-container">
                       <div onTap={this.fun_tip} className="order-action">
