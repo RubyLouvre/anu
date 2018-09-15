@@ -18,7 +18,7 @@ function transform(obj) {
         .join(';');
 }
 
-export function collectStyle(obj, props, key) {
+export function toStyle(obj, props, key) {
     if (props) {
         var str = transform.call(this, obj);
         props[key] = str;

@@ -277,13 +277,13 @@ module.exports = {
                 }
                 if (p.type === 'JSXElement' && d){
                     //<React.renderProps renderUid={this.props.renderUid} data={[this.state]} />
-                    var renderProps =  utils.createElement('React.renderProps',[
+                    var renderProps =  utils.createElement('React.toRenderProps',[
                         utils.createAttribute('instanceUid',t.jSXExpressionContainer(t.identifier('this.props.instanceUid'))),
                         utils.createAttribute('classUid', modules.classUid),
                     ],[]);   
                     var arr = p.node.children;
                     var index = arr.indexOf(d.node);
-                    if (index !== -1){ //插入React.renderProps标签
+                    if (index !== -1){ //插入React.toRenderProps标签
                         arr.splice(index, 0, renderProps);
                     }
                 }
@@ -350,7 +350,7 @@ module.exports = {
                     });
                 astPath.componentName = nodeName;
                 modules.usedComponents[nodeName] = true;
-                astPath.node.name.name = 'React.template';
+                astPath.node.name.name = 'React.toComponent';
                 let children = astPath.parentPath.node.children;
                 let isEmpty = true;
                 // eslint-disable-next-line
@@ -409,7 +409,7 @@ module.exports = {
                     );
                 }
             } else {
-                if (nodeName != 'React.template') {
+                if (nodeName != 'React.toComponent') {
                     helpers.nodeName(astPath, modules);
                 }
             }
@@ -470,7 +470,7 @@ module.exports = {
                         }
                     }
                 } else if (attrName === 'style') {
-                    //将动态样式封装到React.collectStyle中
+                    //将动态样式封装到React.toStyle中
                     var styleType = expr.type;
                     var isIdentifier = styleType === 'Identifier';
                     if (isIdentifier || styleType === 'ObjectExpression') {
@@ -487,7 +487,7 @@ module.exports = {
                                 'style',
                                 t.jSXExpressionContainer(
                                     t.identifier(
-                                        `React.collectStyle(${styleName}, this.props, ${styleRandName})`
+                                        `React.toStyle(${styleName}, this.props, ${styleRandName})`
                                     )
                                 )
                             )
@@ -563,14 +563,14 @@ module.exports = {
     JSXClosingElement: function(astPath, state) {
         let modules = utils.getAnu(state);
         let nodeName = astPath.node.name.name;
-        //将组件标签转换成React.template标签，html标签转换成view/text标签
+        //将组件标签转换成React.toComponent标签，html标签转换成view/text标签
         if (
             !modules.importComponents[nodeName] &&
-            nodeName !== 'React.template'
+            nodeName !== 'React.toComponent'
         ) {
             helpers.nodeName(astPath, modules);
         } else {
-            astPath.node.name.name = 'React.template';
+            astPath.node.name.name = 'React.toComponent';
         }
     }
 };

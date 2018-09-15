@@ -1,8 +1,8 @@
 import { noop, isFn } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
-import { onComponentDispose, onComponentUpdate } from './template';
-import { onPageUpdate } from './createPage';
+import { onComponentDispose, onComponentUpdate } from './toComponent';
+import { onPageUpdate } from './toPage';
 import { classCached } from './utils';
 
 //其他Renderer也要实现这些方法

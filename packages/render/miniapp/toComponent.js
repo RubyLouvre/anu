@@ -19,7 +19,7 @@ export function onComponentUpdate(fiber) {
         instances[instanceUid] = instance;
         var p = fiber.return;
         while (p) {
-            if (p.name !== 'template' && p.tag < 4) {
+            if (p.name !== 'toComponent' && p.tag < 4) {
                 var stateNode = p.stateNode;
                 if (!parentInst) {
                     parentInst = instance.$parentInst = stateNode;
@@ -77,7 +77,7 @@ export function onComponentDispose(fiber) {
 }
 
 
-export function template(props) {
+export function toComponent(props) {
     //这是一个无状态组件，负责劫持用户传导下来的类，修改它的原型
     var clazz = props.is;
     var componentProps = {}; //必须将is移除，防止在setData中被序列化

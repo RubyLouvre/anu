@@ -2,7 +2,6 @@ import { Children } from 'react-core/Children';
 import { PropTypes } from 'react-core/PropTypes';
 import { Component } from 'react-core/Component';
 import { PureComponent } from 'react-core/PureComponent';
-import { createRef, forwardRef } from 'react-core/createRef';
 import { createPortal } from 'react-core/createPortal';
 import { createContext } from 'react-core/createContext';
 import {
@@ -12,15 +11,17 @@ import {
     createFactory
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
-import { createPage } from './createPage';
-import { template } from './template';
-import { eventSystem } from './eventSystem';
-import { initNativeApi } from './api';
-import { collectStyle } from './collectStyle';
 import { classCached } from './utils';
-import { renderProps } from './renderProps';
-
+import { initNativeApi } from './api';
+import { eventSystem } from './eventSystem';
 import { Renderer } from './wxrender';
+
+import { toComponent } from './toComponent';
+import { toStyle } from './toStyle';
+import { toRenderProps } from './toRenderProps';
+import { toPage } from './toPage';
+
+
 let win = getWindow();
 let React;
 
@@ -29,13 +30,7 @@ let { render } = Renderer;
 React = win.React = win.ReactDOM = {
     //平台相关API
     eventSystem,
-    miniCreateClass: function(a, b, c, d) {
-        //保存所有class到classCache中，方便在事件回调中找到对应实例
-        var clazz = miniCreateClass.apply(null, arguments);
-        var uuid = clazz.prototype.classUid;
-        classCached[uuid] = clazz;
-        return clazz;
-    },
+
     findDOMNode: function() {
         console.log('小程序不支持findDOMNode');
     },
@@ -43,25 +38,30 @@ React = win.React = win.ReactDOM = {
     version: 'VERSION',
     render: render,
     hydrate: render,
-    template,
-    createPage,
-    renderProps,
-    //  unstable_batchedUpdates: DOMRenderer.batchedUpdates,
+
     Fragment,
     PropTypes,
     Children,
     createPortal,
     createContext,
     Component,
-    createRef,
-    forwardRef,
-    // createClass,
     createElement,
     cloneElement,
     PureComponent,
     isValidElement,
     createFactory,
-    collectStyle
+
+    toClass: function(a, b, c, d) {
+        //保存所有class到classCache中，方便在事件回调中找到对应实例
+        var clazz = miniCreateClass.apply(null, arguments);
+        var uuid = clazz.prototype.classUid;
+        classCached[uuid] = clazz;
+        return clazz;
+    },
+    toRenderProps,
+    toComponent,
+    toPage,
+    toStyle
 };
 initNativeApi(React);
 export default React;

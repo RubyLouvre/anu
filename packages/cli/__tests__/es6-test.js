@@ -2,7 +2,6 @@ const babel = require('babel-core');
 const { transform, getTemplate, evalClass } = require('./utils/utils');
 let q = require('../packages/translator/queue');
 const prettifyXml = require('prettify-xml');
-const fs = require('fs-extra');
 
 
 describe('es6 support', ()=>{

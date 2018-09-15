@@ -25,7 +25,7 @@ function baseCode(code, state = '', head = '', methods = '') {
        ${code}
       }
     }
-    React.createPage(Index, 'pages/index/index', {});
+    React.toPage(Index, 'pages/index/index', {});
     `;
 }
 

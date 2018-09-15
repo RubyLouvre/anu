@@ -7,7 +7,7 @@ const styleHelper = require('./inlineStyle');
 function bindEvent(astPath) {
 	replaceWithExpr(astPath, 'dispatchEvent', true);
 }
-// 形如 React.collectStyle({ width: index + 'px' }, this.props, "style2313" + index)
+// 形如 React.toStyle({ width: index + 'px' }, this.props, "style2313" + index)
 // 输出  "style2313" + index)
 // function handlePropsStyleName(str) {
 //     let strArr = str.split(',');
@@ -59,7 +59,7 @@ module.exports = function(astPath) {
 					throwEventValue(attrName, attrValue);
 				}
 			} else {
-				if (attrName === 'style' && attrValue.indexOf('React.collectStyle') === 0) {
+				if (attrName === 'style' && attrValue.indexOf('React.toStyle') === 0) {
 					// style={{}} 类型解析
 					let start = attrValue.indexOf("'style");
 					let end = attrValue.lastIndexOf(')');

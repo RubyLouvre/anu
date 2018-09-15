@@ -36,7 +36,7 @@ function safeClone(originVal) {
 function isReferenceType(val) {
     return val && (typeof val === 'object' || Object.prototype.toString.call(val) === '[object Array]');
 }
-export function createPage(PageClass, path, testObject) {
+export function toPage(PageClass, path, testObject) {
     //添加一个全局代理的事件句柄
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
 

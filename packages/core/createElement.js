@@ -126,7 +126,7 @@ function ReactElement(type, tag, props, key, ref, owner) {
         ret.key = key || null;
         let refType = typeNumber(ref);
         if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
-            //boolean number, string, function
+            //boolean number, string, function,object
             if (refType < 4) {
                 ref += "";
             }

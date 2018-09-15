@@ -43,7 +43,7 @@ var visitor = {
             if (
                 openTag.type === 'JSXMemberExpression' &&
                 openTag.object.name === 'React' ){
-                if ( openTag.property.name === 'renderProps'){
+                if ( openTag.property.name === 'toRenderProps'){
                     var attributes = [];
                     //实现render props;
                     var template = utils.createElement('template', attributes, []);
@@ -57,7 +57,7 @@ var visitor = {
                     children.splice(i+1, 1);
                     astPath.parentPath.replaceWith(template);
                     
-                } else if (openTag.property.name === 'template'){
+                } else if (openTag.property.name === 'toComponent'){
                     var modules = utils.getAnu(state);
                     var array,
                         is,
