@@ -2447,6 +2447,14 @@ function toPage(PageClass, path, testObject) {
             instance = {};
         }
     };
+    'onPageScroll,onShareAppMessage,onReachBottom,onPullDownRefresh'.replace(/\w+/g, function (hook) {
+        config[hook] = function () {
+            var fn = instance[hook];
+            if (isFn(fn)) {
+                fn.apply(instance, arguments);
+            }
+        };
+    });
     if (testObject) {
         config.setData = function (obj) {
             config.data = obj;
