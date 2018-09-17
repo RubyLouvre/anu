@@ -2680,3 +2680,4 @@ initNativeApi(React);
 var React$1 = React;
 
 export default React$1;
+export { Children, createElement, Component };
