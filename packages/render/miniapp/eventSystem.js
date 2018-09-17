@@ -40,12 +40,8 @@ function createEvent(e, target) {
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
-    event.toString = eventString;
     event.currentTarget = event.target = target;
     event.touches = e.touches;
     event.timeStamp = new Date - 0;
     return event;
-}
-function eventString(){
-    return '[object Event]';
 }

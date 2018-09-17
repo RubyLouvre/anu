@@ -34,6 +34,8 @@ import './pages/demo/syntax/if/index';
 import './pages/demo/syntax/children/index';
 import './pages/demo/syntax/await/index';
 import './pages/demo/syntax/multiple/index';
+import './pages/demo/syntax/renderprops/index';
+// import './pages/demo/syntax/redux/index';
 
 import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';
@@ -45,6 +47,7 @@ import './pages/demo/question/index/index';
 import './pages/demo/question/detail/index';
 
 import './app.less';
+import store from './store/index';
 
 class Demo extends React.Component {
     config = {
@@ -94,6 +97,7 @@ class Demo extends React.Component {
     }
     
 }
+React.applyAppStore(store);
 
 // eslint-disable-next-line
 App(new Demo());

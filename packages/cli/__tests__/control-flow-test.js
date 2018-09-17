@@ -7,7 +7,7 @@ describe('if statement', () => {
         transform(
             ` 
       if (this.state.tasks !== null) {
-        return <View className='page-body'>tasks</View>
+        return <view className='page-body'>tasks</view>
       }
       return (
           <div className="page-body"><span>Hello world!</span></div>
@@ -37,11 +37,11 @@ describe('if statement', () => {
         transform(
             `
           if (this.state.tasks !== null) {
-            return <View className='page-body'>tasks</View>
+            return <view className='page-body'>tasks</view>
           } else if(this.state.task.length === 0) {
-            return <View className='page-body'>
+            return <view className='page-body'>
               <Text>{tasks.length}</Text>
-            </View>
+            </view>
           } else {
             return (
                 <div className="page-body"><span>Hello world!</span></div>

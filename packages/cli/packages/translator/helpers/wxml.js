@@ -42,66 +42,81 @@ var visitor = {
             var openTag = astPath.node.name;
             if (
                 openTag.type === 'JSXMemberExpression' &&
-                openTag.object.name === 'React' &&
-                openTag.property.name === 'template'
-            ) {
-                var modules = utils.getAnu(state);
-                var array,
-                    is,
-                    key = '',
-                    indexArr;
-                astPath.node.attributes.forEach(function(el) {
-                    var attrName = el.name.name;
-                    var attrValue = el.value.value;
-                    if (/^\{\{.+\}\}/.test(attrValue)) {
-                        attrValue = attrValue.slice(2, -2);
-                    }
-                    if (attrName === 'fragmentUid') {
-                        slotHelper(
-                            astPath.parentPath.node.children,
-                            el.value.value,
-                            modules,
-                            wxml
+                openTag.object.name === 'React' ){
+                if ( openTag.property.name === 'toRenderProps'){
+                    var attributes = [];
+                    //实现render props;
+                    var template = utils.createElement('template', attributes, []);
+                    attributes.push(
+                        utils.createAttribute('is', '{{props.renderUid}}'),
+                        utils.createAttribute('data', '{{...renderData}}')
+                    );
+                    var children = astPath.parentPath.parentPath.node.children;
+                    //去掉后面的{{this.props.render()}}
+                    var i = children.indexOf(astPath.parentPath.node);
+                    children.splice(i+1, 1);
+                    astPath.parentPath.replaceWith(template);
+                    
+                } else if (openTag.property.name === 'toComponent'){
+                    var modules = utils.getAnu(state);
+                    var array,
+                        is,
+                        key = '',
+                        indexArr;
+                    astPath.node.attributes.forEach(function(el) {
+                        var attrName = el.name.name;
+                        var attrValue = el.value.value;
+                        if (/^\{\{.+\}\}/.test(attrValue)) {
+                            attrValue = attrValue.slice(2, -2);
+                        }
+                        if (attrName === 'fragmentUid') {
+                            slotHelper(
+                                astPath.parentPath.node.children,
+                                el.value.value,
+                                modules,
+                                wxml
+                            );
+                        } else if (attrName === '$$loop') {
+                            array = attrValue;
+                        } else if (attrName === 'is') {
+                            is = attrValue;
+                        } else if (attrName === 'wx:key') {
+                            key = attrValue;
+                        } else if (attrName === 'key') {
+                            key = attrValue;
+                        } else if (attrName == '$$index') {
+                            indexArr = attrValue;
+                        }
+                    });
+                    attributes = [];
+                    template = utils.createElement('template', attributes, []);
+                    //将组件变成template标签
+                    if (!indexArr) {
+                        attributes.push(
+                            utils.createAttribute('is', is),
+                            utils.createAttribute('data', '{{...data}}'),
+                            utils.createAttribute('wx:for', `{{components.${array}}}`),
+                            utils.createAttribute('wx:for-item', 'data'),
+                            utils.createAttribute('wx:for-index', 'index'),
+                            utils.createAttribute('wx:key', utils.genKey(key))
                         );
-                        // console.log('fragmentUid');
-                    } else if (attrName === '$$loop') {
-                        array = attrValue;
-                    } else if (attrName === 'is') {
-                        is = attrValue;
-                    } else if (attrName === 'wx:key') {
-                        key = attrValue;
-                    } else if (attrName === 'key') {
-                        key = attrValue;
-                    } else if (attrName == '$$index') {
-                        indexArr = attrValue;
+                    } else {
+                        attributes.push(
+                            utils.createAttribute('is', is),
+                            utils.createAttribute(
+                                'wx:for',
+                                `{{components['${array}'+${indexArr} ]}}`
+                            ),
+                            utils.createAttribute('wx:for-item', 'data'),
+                            utils.createAttribute('data', '{{...data}}'),
+                            utils.createAttribute('wx:key', utils.genKey(key))
+                        );
                     }
-                });
-                var attributes = [];
-                var template = utils.createElement('template', attributes, []);
-                //将组件变成template标签
-                if (!indexArr) {
-                    attributes.push(
-                        utils.createAttribute('is', is),
-                        utils.createAttribute('data', '{{...data}}'),
-                        utils.createAttribute('wx:for', `{{components.${array}}}`),
-                        utils.createAttribute('wx:for-item', 'data'),
-                        utils.createAttribute('wx:for-index', 'index'),
-                        utils.createAttribute('wx:key', utils.genKey(key))
-                    );
-                } else {
-                    attributes.push(
-                        utils.createAttribute('is', is),
-                        utils.createAttribute(
-                            'wx:for',
-                            `{{components['${array}'+${indexArr} ]}}`
-                        ),
-                        utils.createAttribute('wx:for-item', 'data'),
-                        utils.createAttribute('data', '{{...data}}'),
-                        utils.createAttribute('wx:key', utils.genKey(key))
-                    );
+                    astPath.parentPath.replaceWith(template);
                 }
-                astPath.parentPath.replaceWith(template);
+
             }
+            
         }
     },
     JSXAttribute(astPath, state) {

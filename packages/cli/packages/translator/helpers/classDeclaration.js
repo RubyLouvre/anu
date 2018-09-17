@@ -30,7 +30,7 @@ module.exports = {
             )
         );
         const call = t.expressionStatement(
-            t.callExpression(t.identifier('React.miniCreateClass'), [
+            t.callExpression(t.identifier('React.toClass'), [
                 t.identifier(modules.className),
                 t.identifier(modules.parentName),
                 t.objectExpression(modules.thisMethods),
@@ -49,9 +49,9 @@ module.exports = {
             }
         }
         if (modules.componentType === 'Page') {
-            // 动态生成Page组件的Page(React.createPage(className,astPath))调用
-            // Page(React.createPage(PPP, "pages/demo/stateless/aaa"));
-            var createPage = template('Page(React.createPage(className,astPath))')(
+            // 动态生成Page组件的Page(React.toPage(className,astPath))调用
+            // Page(React.toPage(PPP, "pages/demo/stateless/aaa"));
+            var createPage = template('Page(React.toPage(className,astPath))')(
                 {
                     className: t.identifier(modules.className),
                     astPath: t.stringLiteral(

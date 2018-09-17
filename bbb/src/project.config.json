@@ -1,0 +1,36 @@
+{
+    "description": "使用 React 来写小程序",
+    "packOptions": {
+      "ignore": []
+    },
+    "setting": {
+      "urlCheck": true,
+      "es6": true,
+      "postcss": true,
+      "minified": true,
+      "newFeature": true
+    },
+    "compileType": "miniprogram",
+    "libVersion": "2.0.4",
+    "appid": "wx6eb16582ff13fa5f",
+    "projectname": "",
+    "condition": {
+      "search": {
+        "current": -1,
+        "list": []
+      },
+      "conversation": {
+        "current": -1,
+        "list": []
+      },
+      "game": {
+        "currentL": -1,
+        "list": []
+      },
+      "miniprogram": {
+        "current": -1,
+        "list": []
+      }
+    }
+  }
+  
