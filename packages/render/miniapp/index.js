@@ -65,3 +65,8 @@ React = win.React = win.ReactDOM = {
 };
 initNativeApi(React);
 export default React;
+export {
+    Children,
+    createElement,
+    Component
+};

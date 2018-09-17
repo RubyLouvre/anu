@@ -12,7 +12,7 @@ export default {
     output: {
         strict: false,
         format: 'es',
-        exports: 'default',
+        // exports: 'default',
         file: './dist/ReactWX.js',
         name: 'React'
     },

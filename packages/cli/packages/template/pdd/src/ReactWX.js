@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-15
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-17
  * IE9+
  */
 
@@ -2649,3 +2649,4 @@ initNativeApi(React);
 var React$1 = React;
 
 export default React$1;
+export { Children, createElement, Component };
