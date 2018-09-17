@@ -36,6 +36,8 @@ import './pages/demo/syntax/children/index';
 import './pages/demo/syntax/await/index';
 import './pages/demo/syntax/multiple/index';
 import './pages/demo/syntax/renderprops/index';
+import './pages/demo/syntax/request/index';
+
 // import './pages/demo/syntax/redux/index';
 
 import './pages/demo/ticketSearch/index';
