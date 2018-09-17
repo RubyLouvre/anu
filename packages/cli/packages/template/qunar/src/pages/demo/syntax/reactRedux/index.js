@@ -26,4 +26,6 @@ class P extends React.Component {
     }
 }
 
-export default  connect(mapState, mapDispatch)(P);
+// eslint-disable-next-line
+P = connect(mapState, mapDispatch)(P);
+export default P;
