@@ -1,6 +1,6 @@
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
-import { isFn, noop, extend } from 'react-core/util';
+import { isFn, noop, extend ,miniCreateClass} from 'react-core/util';
 import { eventSystem } from './eventSystem';
 import { getUUID, newData } from './utils';
 
@@ -36,6 +36,20 @@ function safeClone(originVal) {
 function isReferenceType(val) {
     return val && (typeof val === 'object' || Object.prototype.toString.call(val) === '[object Array]');
 }
+var appStore;
+var Provider = miniCreateClass(function (props) {
+    this.store = props.store;
+}, {
+    getChildContext: function getChildContext() {
+        return { store: this.store };
+    },
+    render: function render$$1() {
+        return this.props.children;
+    }
+});
+export function applyAppStore(store){
+    appStore = store;
+}
 export function toPage(PageClass, path, testObject) {
     //添加一个全局代理的事件句柄
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
@@ -51,13 +65,17 @@ export function toPage(PageClass, path, testObject) {
             onLoad: function(query) {
                 $wxPage = this;
                 // eslint-disable-next-line
-				console.log('onLoad', path);
+                console.log('onLoad', path);
+                var topComponent = createElement(PageClass, {
+                    path: path,
+                    query: query,
+                    isPageComponent: true
+                });
+                if (appStore) {
+                    topComponent = createElement(Provider, { store: appStore }, topComponent);
+                }
                 instance = render(
-                    createElement(PageClass, {
-                        path: path,
-                        query: query,
-                        isPageComponent: true,
-                    }),
+                    topComponent,
                     {
                         type: 'page',
                         props: {},
@@ -79,7 +97,7 @@ export function toPage(PageClass, path, testObject) {
                     });
 
                     $wxPage.setData(safeClone(data), function() {
-                        // console.log('setData complete',data);
+                        console.log('setData complete',data);
                     });
                 }
                 instance.forceUpdate = instance.setState = function(a) {
