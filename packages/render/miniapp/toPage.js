@@ -1,6 +1,7 @@
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
-import { isFn, noop, extend ,miniCreateClass} from 'react-core/util';
+import { Component } from 'react-core/Component';
+import { isFn, noop, extend , get, miniCreateClass} from 'react-core/util';
 import { eventSystem } from './eventSystem';
 import { getUUID, newData } from './utils';
 
@@ -39,7 +40,7 @@ function isReferenceType(val) {
 var appStore;
 var Provider = miniCreateClass(function (props) {
     this.store = props.store;
-}, {
+}, Component, {
     getChildContext: function getChildContext() {
         return { store: this.store };
     },
@@ -84,6 +85,9 @@ export function toPage(PageClass, path, testObject) {
                         appendChild: noop,
                     }
                 );
+                if (appStore) {
+                    instance = get(instance).child.stateNode;
+                }
                 var anuSetState = instance.setState;
                 var anuForceUpdate = instance.forceUpdate;
                 var updating = false;
@@ -111,9 +115,7 @@ export function toPage(PageClass, path, testObject) {
                     if (updating === false) {
                         if (pageInst == this) {
                             pageInst.wxData = newData();
-                        } else {
-                            // this.updateWXData = true;
-                        }
+                        } 
                         canSetData = true;
                         updating = true;
                     }

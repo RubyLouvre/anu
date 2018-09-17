@@ -2341,7 +2341,7 @@ function isReferenceType(val) {
 var appStore;
 var Provider = miniCreateClass(function (props) {
     this.store = props.store;
-}, {
+}, Component, {
     getChildContext: function getChildContext() {
         return { store: this.store };
     },
@@ -2380,6 +2380,9 @@ function toPage(PageClass, path, testObject) {
                 root: true,
                 appendChild: noop
             });
+            if (appStore) {
+                instance = get(instance).child.stateNode;
+            }
             var anuSetState = instance.setState;
             var anuForceUpdate = instance.forceUpdate;
             var updating = false;
