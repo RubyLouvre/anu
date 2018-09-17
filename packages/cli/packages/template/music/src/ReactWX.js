@@ -2341,7 +2341,7 @@ function isReferenceType(val) {
 var appStore;
 var Provider = miniCreateClass(function (props) {
     this.store = props.store;
-}, {
+}, Component, {
     getChildContext: function getChildContext() {
         return { store: this.store };
     },
@@ -2380,6 +2380,9 @@ function toPage(PageClass, path, testObject) {
                 root: true,
                 appendChild: noop
             });
+            if (appStore) {
+                instance = get(instance).child.stateNode;
+            }
             var anuSetState = instance.setState;
             var anuForceUpdate = instance.forceUpdate;
             var updating = false;
@@ -2447,6 +2450,14 @@ function toPage(PageClass, path, testObject) {
             instance = {};
         }
     };
+    'onPageScroll,onShareAppMessage,onReachBottom,onPullDownRefresh'.replace(/\w+/g, function (hook) {
+        config[hook] = function () {
+            var fn = instance[hook];
+            if (isFn(fn)) {
+                fn.apply(instance, arguments);
+            }
+        };
+    });
     if (testObject) {
         config.setData = function (obj) {
             config.data = obj;

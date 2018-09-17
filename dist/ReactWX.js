@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-15
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-17
  * IE9+
  */
 
@@ -2338,6 +2338,20 @@ function safeClone(originVal) {
 function isReferenceType(val) {
     return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
 }
+var appStore;
+var Provider = miniCreateClass(function (props) {
+    this.store = props.store;
+}, Component, {
+    getChildContext: function getChildContext() {
+        return { store: this.store };
+    },
+    render: function render$$1() {
+        return this.props.children;
+    }
+});
+function applyAppStore(store) {
+    appStore = store;
+}
 function toPage(PageClass, path, testObject) {
     PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
     PageClass.instances = PageClass.instances || {};
@@ -2351,17 +2365,24 @@ function toPage(PageClass, path, testObject) {
         onLoad: function onLoad(query) {
             $wxPage = this;
             console.log('onLoad', path);
-            instance = render(createElement(PageClass, {
+            var topComponent = createElement(PageClass, {
                 path: path,
                 query: query,
                 isPageComponent: true
-            }), {
+            });
+            if (appStore) {
+                topComponent = createElement(Provider, { store: appStore }, topComponent);
+            }
+            instance = render(topComponent, {
                 type: 'page',
                 props: {},
                 children: [],
                 root: true,
                 appendChild: noop
             });
+            if (appStore) {
+                instance = get(instance).child.stateNode;
+            }
             var anuSetState = instance.setState;
             var anuForceUpdate = instance.forceUpdate;
             var updating = false;
@@ -2374,6 +2395,7 @@ function toPage(PageClass, path, testObject) {
                     context: pageInst.context
                 });
                 $wxPage.setData(safeClone(data), function () {
+                    console.log('setData complete', data);
                 });
             }
             instance.forceUpdate = instance.setState = function (a) {
@@ -2428,6 +2450,14 @@ function toPage(PageClass, path, testObject) {
             instance = {};
         }
     };
+    'onPageScroll,onShareAppMessage,onReachBottom,onPullDownRefresh'.replace(/\w+/g, function (hook) {
+        config[hook] = function () {
+            var fn = instance[hook];
+            if (isFn(fn)) {
+                fn.apply(instance, arguments);
+            }
+        };
+    });
     if (testObject) {
         config.setData = function (obj) {
             config.data = obj;
@@ -2640,6 +2670,7 @@ React = win.React = win.ReactDOM = {
         classCached[uuid] = clazz;
         return clazz;
     },
+    applyAppStore: applyAppStore,
     toRenderProps: toRenderProps,
     toComponent: toComponent,
     toPage: toPage,

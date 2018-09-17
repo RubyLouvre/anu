@@ -47,7 +47,7 @@ import './pages/demo/question/index/index';
 import './pages/demo/question/detail/index';
 
 import './app.less';
-import store from './store/index';
+//import store from './store/index';
 
 class Demo extends React.Component {
     config = {
@@ -97,7 +97,7 @@ class Demo extends React.Component {
     }
     
 }
-React.applyAppStore(store);
+// React.applyAppStore({});
 
 // eslint-disable-next-line
 App(new Demo());
