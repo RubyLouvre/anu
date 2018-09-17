@@ -1,1 +1,0 @@
-<template name="Cursor"><view src="https://www.baidu.com/img/baidu_jgylogo3.gif" style="{{props.style559}}">cursor</view></template>
