@@ -56,6 +56,10 @@ class Express extends React.Component {
                 {
                     title: 'Render Props',
                     url: '/pages/demo/syntax/renderprops/index'
+                },
+                {
+                    title: 'Redux',
+                    url: '/pages/demo/syntax/redux/index'
                 }
             ]
         };

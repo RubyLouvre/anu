@@ -19,7 +19,7 @@ import { Renderer } from './wxrender';
 import { toComponent } from './toComponent';
 import { toStyle } from './toStyle';
 import { toRenderProps } from './toRenderProps';
-import { toPage } from './toPage';
+import { toPage, applyAppStore } from './toPage';
 
 
 let win = getWindow();
@@ -58,6 +58,7 @@ React = win.React = win.ReactDOM = {
         classCached[uuid] = clazz;
         return clazz;
     },
+    applyAppStore,
     toRenderProps,
     toComponent,
     toPage,
