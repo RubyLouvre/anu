@@ -17,7 +17,7 @@ node_modules/
 *.ipr
 *.iml
 *.iws
-
+package-lock.json
 # temp ignore
 *.log
 *.cache
