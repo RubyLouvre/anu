@@ -8,7 +8,6 @@ const npmResolve = require('resolve');
 const esToCjs = require('./moduleToCjs');
 const {isNpm, isBuildInLibs, isAlias, installer} = require('../utils');
 
-
 let libAlias = {
     'react': path.join(cwd, 'dist', 'ReactWX.js')
     // 'prop-types': path.join(cwd, 'dist', 'ReactPropTypes.js')
@@ -17,7 +16,10 @@ let libAlias = {
 const isAvailableNpmName = (name)=>{
     return isBuildInLibs(name) || isAlias(name) || isNpm(name);
 };
+
+
 let distNpmCache = {};
+let analysisDepsCache = {};
 
 //获取依赖pkg中main指向
 const resolveNpmModule = (name)=>{
@@ -38,6 +40,7 @@ const resolveNpmModule = (name)=>{
 
 const writeContent = (data, isCache = true)=>{
     let {dist, content} = data;
+
     if (isCache){
         if (distNpmCache[dist] === content) return;
     }
@@ -112,15 +115,16 @@ const hackReactWXExportDefault = (name, astPath)=>{
 
 const analysisDeps = (src, name) =>{
     let npmSrc = getNpmPath(src, name);
+    if (analysisDepsCache[npmSrc]) return; //已分析过的不再分析
     let code = babel.transformFileSync(npmSrc, {
         plugins: [
             {
                 visitor: {
                     CallExpression(astPath){
+                        
                         let callName = astPath.node.callee.name;
                         if (callName === 'require'){
                             let name = astPath.node.arguments[0].value;
-                            
                             if (libAlias[name]){
                                 //如果有别名配置，只更新路径
                                 updateNpmAliasPath(npmSrc, name, astPath.node);
@@ -131,8 +135,11 @@ const analysisDeps = (src, name) =>{
                                 //递归分析
                                 analysisDeps(npmSrc, name);
                             }
+                            
+                            analysisDepsCache[npmSrc] = true;
                              
                         }
+                        
                     }
                 }
             },
@@ -201,19 +208,20 @@ const resolveNpmAliasPath = (src, name)=>{
     return relativePath;
 };
 
-const updateNpmPath = (src, name, node)=>{
-    let updatedPath = resolveNpmPath(src, name);
+const updateRequireOrImportValue = (node, updatedPath)=>{
     node.callee && node.callee.name === 'require'
         ? node.arguments[0].value = updatedPath  //require CallExpression
         : node.source.value = updatedPath;       //ImportDeclaration
+};
+const updateNpmPath = (src, name, node)=>{
+    let updatedPath = resolveNpmPath(src, name);
+    updateRequireOrImportValue(node, updatedPath);
 };
 
 const updateNpmAliasPath = (src, name, node)=>{
     //别名配置
     let updatedPath = resolveNpmAliasPath(src, name);
-    node.callee && node.callee.name === 'require'
-        ? node.arguments[0].value = updatedPath  //require CallExpression
-        : node.source.value = updatedPath;       //ImportDeclaration
+    updateRequireOrImportValue(node, updatedPath);
 };
 
 
@@ -221,9 +229,7 @@ const updateNpmAliasPath = (src, name, node)=>{
 module.exports = function(sourcePath, name, node) {
     let src = process.platform === 'win32' ? sourcePath : path.join(cwd, sourcePath);
     if (isAvailableNpmName(name)) return;
-
     updateNpmPath(src, name, node); 
-
     analysisDeps(src, name);
     
 };
