@@ -45,6 +45,8 @@ import './pages/demo/strategy/index';
 import './pages/demo/userCenter/index';
 import './pages/demo/question/index/index';
 import './pages/demo/question/detail/index';
+import './pages/demo/cardList/index';
+import './pages/demo/citySelect/index';
 
 import './app.less';
 //import store from './store/index';

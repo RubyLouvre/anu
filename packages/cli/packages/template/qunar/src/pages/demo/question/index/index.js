@@ -7,7 +7,8 @@ class P extends React.Component {
         this.state = {
             navBtnActiveIndex: 1,
             isQuestion: true,
-            data: []
+            data: [],
+            city: '北京'
         };
     }
     navItemClick(navBtnActiveIndex) {
@@ -39,12 +40,22 @@ class P extends React.Component {
     componentDidMount() {
         this.getData();
     }
+    componentDidShow() {
+        let app = React.getApp();
+        if (app.globalData.citySelect) {
+            this.setState({city: app.globalData.citySelect});
+        }
+    }
     config = {
         backgroundColor: '#fff',
         navigationBarBackgroundColor: '#fff',
         navigationBarTitleText: '趣问答',
         navigationBarTextStyle: 'black'
     };
+    toCitySelect() {
+        this.navItemClick(2);
+        wx.navigateTo({ url: '../../citySelect/index' });
+    }
     render() {
         return (
             <div class='question'>
@@ -52,8 +63,8 @@ class P extends React.Component {
                     <div onTap={this.navItemClick.bind(this,0)} class={'nav-btn ' + (this.state.navBtnActiveIndex === 0 ? 'active': '')}>我的问答</div>
                     <div onTap={this.navItemClick.bind(this,1)} class={'nav-btn ' + (this.state.navBtnActiveIndex === 1 ? 'active': '')}>推荐</div>
                     <div class={'nav-btn ' + (this.state.navBtnActiveIndex === 2 ? 'active': '')}>
-                        <text onTap={this.navItemClick.bind(this,2)}>北京</text>
-                        <image class='open-icon' src= {'../../../../assets/image/' + (this.state.navBtnActiveIndex === 2 ? 'open_select.png': 'open.png')} />
+                        <text onTap={this.navItemClick.bind(this,2)}>{this.state.city}</text>
+                        <image onTap={this.toCitySelect.bind(this)} class='open-icon' src= {'../../../../assets/image/' + (this.state.navBtnActiveIndex === 2 ? 'open_select.png': 'open.png')} />
                     </div>
                     <div class={'switch-bar ' + (this.state.navBtnActiveIndex === 1 ? '' : this.state.navBtnActiveIndex === 0 ? 'first-choose' : 'third-choose') }></div>
                 </div>

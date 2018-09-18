@@ -10,7 +10,8 @@ class P extends React.Component {
             exchangeStatus: false,
             displayDate: '8月28日',
             dateWeek: '周二',
-            isOnlyGaotie: false
+            isOnlyGaotie: false,
+            isStartCity: true
         };
     }
     componentDidMount() {
@@ -21,10 +22,31 @@ class P extends React.Component {
         let date = React.getApp().globalData.dateSelect;
         this.setState({ displayDate: date.getMonth() + 1 + '月' + date.getDate() + '日' });
         this.setState({ dateWeek: week[date.getDay()] });
+
+        let app = React.getApp();
+        if (app.globalData.citySelect) {
+            if (!this.state.isStartCity) {
+                this.setState({arrCity: app.globalData.citySelect});
+            } else {
+                this.setState({depCity: app.globalData.citySelect});
+            }
+        }
     }
     toDateSelect() {
         wx.navigateTo({
             url: '../../demo/calendar/index'
+        });
+    }
+    toCitySelect(isStartCity) {
+        this.setState({isStartCity});
+        let app = React.getApp();
+        if (!isStartCity) {
+            app.globalData.citySelect = '上海';
+        } else {
+            app.globalData.citySelect = '北京';
+        }
+        wx.navigateTo({
+            url: '../../demo/citySelect/index'
         });
     }
     exChangeCity() {
@@ -55,31 +77,28 @@ class P extends React.Component {
               />
               <div style="{top: -15px}" className="search-container">
                   <div className="citySelector">
-                      <div onTap={this.fun_tip} className="cityTap">
+                      <div onTap={this.toCitySelect.bind(this,true)} className="cityTap">
                           <div
-                              className={
-                                  'depCityContent ' + (this.state.exchangeStatus ? 'depCity-changing' : '')
-                              }
+                              className='depCityContent'
                           >
                               {this.state.depCity}
                           </div>
                       </div>
-                      <div onTap={this.exChangeCity.bind(this)} className="city_change">
+                      <div className="city_change">
                           <image
                               className="exchange-logo"
                               mode="widthFix"
                               src="../../../assets/image/train_icon.png"
                           />
                           <image
-                              className={'exchange-btn ' + (this.state.exchangeStatus ? 'btn-rotating' : '')}
+                              className='exchange-btn'
                               src="../../../assets/image/search_btn.png"
                           />
                       </div>
-                      <div onTap={this.fun_tip} className="cityTap">
+                      
+                      <div onTap={this.toCitySelect.bind(this,false)} className="cityTap">
                           <div
-                              className={
-                                  'arrCityContent ' + (this.state.exchangeStatus ? 'arrCity-changing' : '')
-                              }
+                              className='arrCityContent'
                           >
                               {this.state.arrCity}
                           </div>
