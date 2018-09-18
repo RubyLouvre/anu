@@ -15,7 +15,7 @@ const useYarn = ()=>{
 const useCnpm = ()=>{
     try {
         execSync(
-            'cnpm --v',
+            'cnpm -v',
             { stdio: 'ignore' }
         );
         return true;
