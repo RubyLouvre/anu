@@ -13,3 +13,8 @@ export function newData(){
         components: {}
     };
 }
+export var currentPage = {
+    value: {
+        props: {}
+    }
+};

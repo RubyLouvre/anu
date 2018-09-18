@@ -11,7 +11,7 @@ import {
     createFactory
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
-import { classCached } from './utils';
+import { classCached,currentPage } from './utils';
 import { initNativeApi } from './api';
 import { eventSystem } from './eventSystem';
 import { Renderer } from './wxrender';
@@ -50,8 +50,8 @@ React = win.React = win.ReactDOM = {
     PureComponent,
     isValidElement,
     createFactory,
-
-    toClass: function(a, b, c, d) {
+    currentPage,
+    toClass: function() {
         //保存所有class到classCache中，方便在事件回调中找到对应实例
         var clazz = miniCreateClass.apply(null, arguments);
         var uuid = clazz.prototype.classUid;

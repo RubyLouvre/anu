@@ -14,6 +14,12 @@ export function onPageUpdate(fiber) {
         type.instances[uuid] = instance;
         //用于事件委托中
     }
+    instance.wxData = {
+        props: instance.props,
+        state: instance.state,
+        context:instance.context,
+        components: {}
+    };
     instance.props.instanceUid = instance.instanceUid;
 }
 function safeClone(originVal) {
@@ -85,21 +91,17 @@ export function toPage(PageClass, path, testObject) {
                         appendChild: noop,
                     }
                 );
+               
                 if (appStore) {
                     instance = get(instance).child.stateNode;
                 }
+                PageClass = instance.constructor;
                 var anuSetState = instance.setState;
                 var anuForceUpdate = instance.forceUpdate;
                 var updating = false;
                 var canSetData = false;
                 function updatePage(pageInst) {
                     var data = pageInst.wxData;
-                    extend(data, {
-                        state: pageInst.state,
-                        props: pageInst.props,
-                        context: pageInst.context,
-                    });
-
                     $wxPage.setData(safeClone(data), function() {
                         console.log('setData complete',data);
                     });
@@ -133,17 +135,24 @@ export function toPage(PageClass, path, testObject) {
                 };
 
                 instance.wxData = instance.wxData || newData();
+                if (!instance.wxData.props) {
+                    extend(instance.wxData, {
+                        state: instance.state,
+                        props: instance.props,
+                        context: instance.context
+                    });
+                }
                 updatePage(instance);
             },
             onShow() {
-                PageClass.instances[instance.instanceUid] = instance;
+                //   PageClass.instances[instance.instanceUid] = instance;
                 var fn = instance.componentDidShow;
                 if (isFn(fn)) {
                     fn.call(instance);
                 }
             },
             onHide() {
-                delete PageClass.instances[instance.instanceUid];
+                //  delete PageClass.instances[instance.instanceUid];
                 var fn = instance.componentDidHide;
                 if (isFn(fn)) {
                     fn.call(instance);
