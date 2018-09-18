@@ -28,7 +28,6 @@ import './pages/demo/syntax/stateless/index';
 import './pages/demo/syntax/loop/index';
 import './pages/demo/syntax/loop2/index';
 import './pages/demo/syntax/loop3/index';
-import './pages/demo/syntax/loop4/index';
 import './pages/demo/syntax/extend/index';
 import './pages/demo/syntax/inlineStyle/index';
 import './pages/demo/syntax/if/index';
@@ -36,6 +35,8 @@ import './pages/demo/syntax/children/index';
 import './pages/demo/syntax/await/index';
 import './pages/demo/syntax/multiple/index';
 import './pages/demo/syntax/renderprops/index';
+import './pages/demo/syntax/request/index';
+
 // import './pages/demo/syntax/redux/index';
 
 import './pages/demo/ticketSearch/index';
@@ -44,7 +45,10 @@ import './pages/demo/boat/index';
 import './pages/demo/scenic/index';
 import './pages/demo/strategy/index';
 import './pages/demo/userCenter/index';
-import './pages/demo/question/index';
+import './pages/demo/question/index/index';
+import './pages/demo/question/detail/index';
+import './pages/demo/cardList/index';
+import './pages/demo/citySelect/index';
 
 import './app.less';
 //import store from './store/index';
@@ -72,7 +76,7 @@ class Demo extends React.Component {
                     'selected': true
                 },
                 {
-                    'pagePath': 'pages/demo/question/index',
+                    'pagePath': 'pages/demo/question/index/index',
                     'iconPath': 'assets/image/question_normal.png',
                     'selectedIconPath': 'assets/image/question_select.png',
                     'text': '问答社区',
@@ -95,7 +99,7 @@ class Demo extends React.Component {
         // eslint-disable-next-line
         console.log('App launched');
     }
-
+    
 }
 // React.applyAppStore({});
 

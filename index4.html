@@ -2,103 +2,68 @@
 <html>
 
 <head>
-    <title>example</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-	<script type='text/javascript' src="./dist/React.js"></script>
-	<script type='text/javascript' src="./lib/ReactPropTypes.js"></script>
+  <title>example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script type='text/javascript' src="./dist/React.js"></script>
+  <script type='text/javascript' src="./lib/ReactPropTypes.js"></script>
 
-    <script type='text/javascript' src="./lib/babel.js"></script>
-   <!-- <script type='text/javascript' src="./react.js"></script>
+  <script type='text/javascript' src="./lib/babel.js"></script>
+  <!-- <script type='text/javascript' src="./react.js"></script>
     <script type='text/javascript' src="./react-dom.js"></script>-->
 </head>
 
 <body>
 
-    <div id='root' class="root">
+  <div id='root' class="root">
 
-    </div>
-    <script type='text/babel'>
+  </div>
+  <script type='text/babel'>
         
         var container = document.getElementById('root');
           var div = container;
           if (!window.ReactDOM) {
               window.ReactDOM = React;
 		  }
-		  const renderSubtreeIntoContainer = ReactDOM
-  .unstable_renderSubtreeIntoContainer;
-		  var PropTypes = ReactPropTypes
-          var expect = function(a) {
-              return {
-                  toBe: function(b) {
-                      console.log(a, 'vs', b, a === b);
-                  },
-                  toEqual(b) {
-                      console.log(a, 'vs', b, a + '' === b + '');
-                  },
-                  toThrow(){
-                      try{
-                          a()
-                      }catch(e){
-                          console.log(e,"catch")
-                      }
-                  }
-              };
-		 };
-		var log = {
-			push(a){
-				console.log(a)
-			}
-		}
+		
 	 
-    const portal = document.createElement('div');
+ class MouseTracker extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.state = { x: 0, y: 0 };
+  }
 
-    class Component extends React.Component {
-      static contextTypes = {
-        foo: PropTypes.string.isRequired,
-        getFoo: PropTypes.func.isRequired,
-      };
+  handleMouseMove(event) {
+    this.setState({
+      x: event.clientX,
+      y: event.clientY
+    });
+  }
 
-      render() {
-        return <div>{this.context.foo + '-' + this.context.getFoo()}</div>;
-      }
-    }
+  render() {
+    return (
+      <div style={{ height: '100%' }} onMouseMove={this.handleMouseMove}>
+        <h1>Move the mouse around!</h1>
+        <p>The current mouse position is ({this.state.x}, {this.state.y})</p>
+        <p>{this.props.render(this.state)}</p>
+      </div>
+    );
+  }
+}
+class Cat extends React.Component {
+  render() {
+    const mouse = this.props.mouse
+    return ( <img src="https://www.baidu.com/img/baidu_jgylogo3.gif" style={{ position: 'absolute', left: mouse.x, top: mouse.y }} />
+    );
+  }
+}
 
-    class Parent extends React.Component {
-      static childContextTypes = {
-        foo: PropTypes.string.isRequired,
-        getFoo: PropTypes.func.isRequired,
-      };
 
-      state = {
-        bar: 'initial',
-      };
-
-      getChildContext() {
-        return {
-          foo: this.state.bar,
-          getFoo: () => this.state.bar,
-        };
-      }
-
-      render() {
-        return null;
-      }
-
-      componentDidMount() {
-        renderSubtreeIntoContainer(this, <Component />, portal);
-      }
-
-      componentDidUpdate() {
-        renderSubtreeIntoContainer(this, <Component />, portal);
-      }
-    }
-
-    const instance = ReactDOM.render(<Parent />, container);
-    expect(portal.firstChild.innerHTML).toBe('initial-initial');
-	instance.setState({bar: 'changed'});
-	console.log("================")
-    expect(portal.firstChild.innerHTML).toBe('changed-changed');
+    const instance = ReactDOM.render(<MouseTracker render={(state)=>{
+      return <Cat mouse={state} />
+    }}></MouseTracker>, container);
+  
    </script>
-</html>
 
+</html>

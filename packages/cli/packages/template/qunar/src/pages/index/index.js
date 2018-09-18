@@ -57,11 +57,11 @@ class P extends React.Component {
                 },
                 {
                     class: 'radius-bottom-left',
-                    bizTitle: '旅游',
+                    bizTitle: '瀑布流',
                     logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/vacation2.png',
                     showSpecialLogo: false,
                     specialText: '',
-                    url: ''
+                    url: '../../pages/demo/cardList/index'
                 },
                 {
                     class: '',
