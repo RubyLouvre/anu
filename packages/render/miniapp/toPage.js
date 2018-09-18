@@ -99,7 +99,6 @@ export function toPage(PageClass, path, testObject) {
 				PageClass = instance.constructor;
 				var anuSetState = instance.setState;
 				var anuForceUpdate = instance.forceUpdate;
-				var updating = false;
 				var canSetData = false;
 				function updatePage(pageInst) {
 					var data = pageInst.wxData;
@@ -116,9 +115,8 @@ export function toPage(PageClass, path, testObject) {
 						cbIndex = 0;
 					}
 					var pageInst = this.$pageInst || this;
-					if (updating === false) {
+					if (canSetData === false) {
 						canSetData = true;
-						updating = true;
 					}
 					var cb = arguments[cbIndex];
 					var args = Array.prototype.slice.call(arguments);
@@ -126,7 +124,6 @@ export function toPage(PageClass, path, testObject) {
 						cb && cb.call(this);
 						if (canSetData) {
 							canSetData = false;
-							updating = false;
 							updatePage(pageInst);
 						}
 					};
