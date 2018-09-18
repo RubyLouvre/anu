@@ -52,6 +52,7 @@ export let Renderer = createRenderer({
                         if (onEvent.test(name) && isFn(props[name])) {
                             var code = getEventHashCode(name, props, props['data-key']);
                             cached[code] = props[name];
+                            cached[code+"Fiber"] = fiber;
                         }
                     }
                     if (lastProps) {
@@ -59,6 +60,7 @@ export let Renderer = createRenderer({
                             if (onEvent.test(name) && !props[name]) {
                                 code = getEventHashCode(name, lastProps, lastProps['data-key']);
                                 delete cached[code];
+                                delete cached[code+"Fiber"]
                             }
                         }
                     }
@@ -71,27 +73,17 @@ export let Renderer = createRenderer({
         fiber.stateNode.props = fiber.props;
     },
     onUpdate(fiber) {
-        /*  if (fiber.stateNode.classUid) {
-            if (fiber.props.isPageComponent) {
-                onPageUpdate(fiber);
-            } else {
-                onComponentUpdate(fiber);
-            }
-        }
-        */
         if (fiber.props.isPageComponent && currentPage.value.props.path != fiber.props.path){
             currentPage.value = fiber.stateNode;
             onPageUpdate(fiber);
-        } else if (fiber.stateNode.classUid){
+        } else if (fiber.props.wxComponentFlag){
             onComponentUpdate(fiber);
         }
     },
     onDispose(fiber) {
-        //  if (fiber.stateNode.classUid) {
-        if (fiber.stateNode.classUid) {
+        if (fiber.props.wxComponentFlag) {
             onComponentDispose(fiber);
         }
-        //  }
     },
 
     getRoot() {
