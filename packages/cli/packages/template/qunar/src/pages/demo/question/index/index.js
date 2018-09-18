@@ -7,7 +7,8 @@ class P extends React.Component {
         this.state = {
             navBtnActiveIndex: 1,
             isQuestion: true,
-            data: []
+            data: [],
+            city: '北京'
         };
     }
     navItemClick(navBtnActiveIndex) {
@@ -33,8 +34,17 @@ class P extends React.Component {
             }
         });
     }
+    questionDetail() {
+        wx.navigateTo({ url: '../detail/index' });
+    }
     componentDidMount() {
         this.getData();
+    }
+    componentDidShow() {
+        let app = React.getApp();
+        if (app.globalData.citySelect) {
+            this.setState({city: app.globalData.citySelect});
+        }
     }
     config = {
         backgroundColor: '#fff',
@@ -42,15 +52,19 @@ class P extends React.Component {
         navigationBarTitleText: '趣问答',
         navigationBarTextStyle: 'black'
     };
+    toCitySelect() {
+        this.navItemClick(2);
+        wx.navigateTo({ url: '../../citySelect/index' });
+    }
     render() {
         return (
             <div class='question'>
                 <div class='nav-wrapper'>
                     <div onTap={this.navItemClick.bind(this,0)} class={'nav-btn ' + (this.state.navBtnActiveIndex === 0 ? 'active': '')}>我的问答</div>
                     <div onTap={this.navItemClick.bind(this,1)} class={'nav-btn ' + (this.state.navBtnActiveIndex === 1 ? 'active': '')}>推荐</div>
-                    <div onTap={this.navItemClick.bind(this,2)} class={'nav-btn ' + (this.state.navBtnActiveIndex === 2 ? 'active': '')}>
-                        <text>北京</text>
-                        {/* <image src= '' /> */}
+                    <div class={'nav-btn ' + (this.state.navBtnActiveIndex === 2 ? 'active': '')}>
+                        <text onTap={this.navItemClick.bind(this,2)}>{this.state.city}</text>
+                        <image onTap={this.toCitySelect.bind(this)} class='open-icon' src= {'../../../../assets/image/' + (this.state.navBtnActiveIndex === 2 ? 'open_select.png': 'open.png')} />
                     </div>
                     <div class={'switch-bar ' + (this.state.navBtnActiveIndex === 1 ? '' : this.state.navBtnActiveIndex === 0 ? 'first-choose' : 'third-choose') }></div>
                 </div>
@@ -66,7 +80,7 @@ class P extends React.Component {
                                         </div>
                                     </div>
                                     <div class='no-data-prompt'>
-                                        <image src='../../../assets/image/order_none.png'/>
+                                        <image src='../../../../assets/image/order_none.png' />
                                         <div class='message'>{this.state.isQuestion ? '您还没有发布过问题，去提问吧~' : '您还没有发布过回答，去回答吧~'}</div>
                                     </div>
                                 </div>
@@ -80,7 +94,7 @@ class P extends React.Component {
                                     {
                                         this.state.data.map(function(item,index) {
                                             return (
-                                                <div class='question-item' key={index}>
+                                                <div onTap={this.questionDetail.bind(this)} class='question-item' key={index}>
                                                     {
                                                         item.isRemark ? <div class={'remark ' + (item.remark === '最新' ? 'new' : item.remark === '置顶' ? 'stick' : 'hot')}>{item.remark}</div> : ''
                                                     }
@@ -88,11 +102,11 @@ class P extends React.Component {
                                                     <div class='desc hide-text'>{item.desc}</div>
                                                     <div class='other-message'>
                                                         <div class='other-message-item'>
-                                                            <image class='eye' src='../../../assets/image/eye.png' />
+                                                            <image class='eye' src='../../../../assets/image/eye.png' />
                                                             <text class='eye-text'>{item.seeNum}</text>
                                                         </div>
                                                         <div class='other-message-item'>
-                                                            <image src='../../../assets/image/message.png' />
+                                                            <image src='../../../../assets/image/message.png' />
                                                             <text>{item.commentNum}</text>
                                                         </div>
                                                     </div>

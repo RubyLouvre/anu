@@ -1,0 +1,68 @@
+page{
+    background-color: rgb(240, 240, 240);
+}
+.city-select {
+    position: relative;
+    .search-wrapper {
+        padding: 20rpx 30rpx;
+        background-color: #fff;
+        font-size: 0;
+        input {
+            padding: 0 60rpx;
+            box-sizing: border-box;
+            margin-right: 20rpx;
+            height: 50rpx;
+            font-size: 22rpx;
+            text-align: center;
+            color: #6c6e6e;
+            border-radius: 25rpx;
+            background-color: rgb(241, 241, 241);
+            transition: width 300ms ease;
+        }
+        image {
+            position: absolute;
+            top: 30rpx;
+            left: 50rpx;
+            width: 32rpx;
+            height: 32rpx;
+        }
+    }
+    .city-wrapper {
+        font-size: 0;
+        .city-item-wrapper {
+            .title{
+                display: block;
+                padding: 5rpx 30rpx;
+                font-size: 22rpx;
+                color: #69c0ff;
+            }
+        }
+        .city-item {
+            width: 100%;
+            padding: 0 30rpx;
+            padding-top: 30rpx;
+            background-color: #fff;
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: row;
+            justify-content: flex-start;
+            .item {
+                box-sizing: border-box;
+                flex: 0 0 160rpx;
+                border-radius: 5rpx;
+                border: 1px solid rgb(230, 230, 230);
+                margin-right: 10rpx;
+                margin-bottom: 30rpx;
+                text-align: center;
+                font-size: 27rpx;
+                &:active {
+                    background-color: #40a9ff;
+                    color: #fff;
+                }
+            }
+            .no-margin-left {
+                margin-right: 0;
+            }
+        }
+    }
+}
