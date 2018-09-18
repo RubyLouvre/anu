@@ -24,19 +24,8 @@ let cwd = process.cwd();
 let inputPath = path.join(cwd, 'src');
 let outputPath = path.join(cwd, 'dist');
 let entry = path.join(inputPath, 'app.js');
-const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
 const useYarn = require('../utils/index').useYarn();
 const useCnpm = require('../utils/index').useCnpm();
-
-if (nodejsVersion < 8) {
-    // eslint-disable-next-line
-    console.log(
-        `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold(
-            '7'
-        )}`
-    );
-}
-
 const isLib = name => {
     return name.toUpperCase() === 'REACTWX';
 };
