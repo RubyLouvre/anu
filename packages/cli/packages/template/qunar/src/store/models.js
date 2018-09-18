@@ -1,4 +1,4 @@
-export const count = {
+var count = {
     state: 0, // initial state
     reducers: {
         // handle state changes with pure functions
@@ -15,3 +15,4 @@ export const count = {
         }
     })
 };
+export default count;
