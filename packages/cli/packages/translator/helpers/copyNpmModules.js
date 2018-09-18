@@ -125,7 +125,7 @@ const analysisDeps = (src, name) =>{
                                 //如果有别名配置，只更新路径
                                 updateNpmAliasPath(npmSrc, name, astPath.node);
                                 
-                                //hackReactWXExportDefault(name, astPath);
+                                hackReactWXExportDefault(name, astPath);
                             } else {
                                 updateNpmPath(npmSrc, name, astPath.node);
                                 //递归分析
