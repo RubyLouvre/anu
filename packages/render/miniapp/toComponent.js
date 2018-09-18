@@ -13,7 +13,6 @@ export function onComponentUpdate(fiber) {
     
     instance.$pageInst = currentPage.value;
     var parentInst = null;
-    console.log(type == instance.constructor, 'onComponentUpdate');
     if (! type.instances) {
         type.instances = type.instances || {};
         var setState = type.prototype.setState;
@@ -112,7 +111,6 @@ export function toComponent(props) {
         var parentClass = classCached[props.classUid];
         if (parentClass && parentClass.instances) {
             var parentInstance = parentClass.instances[props.instanceUid];
-
             componentProps.fragmentData = {
                 state: parentInstance.state,
                 props: parentInstance.props,
@@ -120,7 +118,7 @@ export function toComponent(props) {
             };
         }
     }
-
+    componentProps.wxComponentFlag = true
     return createElement(clazz, componentProps);
 }
 
