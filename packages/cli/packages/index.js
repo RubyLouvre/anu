@@ -9,7 +9,7 @@ const buildMap = {
 const buildErrText = {
     'baidu': '百度小程序正在努力支持中, 请静候佳音',
     'ali': '支付宝小程序正在努力支持中, 请静候佳音',
-    'quick': '快应用序在努力支持中, 请静候佳音'
+    'quick': '快应用正在努力支持中, 请静候佳音'
 };
 const LetUsRoll = (args)=>{
     let argList = args[0].split(':');
