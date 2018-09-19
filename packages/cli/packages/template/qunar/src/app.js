@@ -39,7 +39,7 @@ import './pages/demo/syntax/multiple/index';
 import './pages/demo/syntax/renderprops/index';
 import './pages/demo/syntax/request/index';
 
-// import './pages/demo/syntax/redux/index';
+import './pages/demo/syntax/redux/index';
 
 import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';
@@ -53,7 +53,7 @@ import './pages/demo/cardList/index';
 import './pages/demo/citySelect/index';
 
 import './app.less';
-//import store from './store/index';
+import store from './store/index';
 
 class Demo extends React.Component {
     config = {
@@ -103,7 +103,7 @@ class Demo extends React.Component {
     }
     
 }
-// React.applyAppStore(store);
+React.applyAppStore(store);
 
 // eslint-disable-next-line
 App(new Demo());
