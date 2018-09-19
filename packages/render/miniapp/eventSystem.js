@@ -11,9 +11,16 @@ export var eventSystem = {
         var componentClass = classCached[classUid]; //类
         var instanceUid = dataset.instanceUid; //实例ID
         var instance = componentClass.instances[instanceUid];
+        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
+        if (e.type == 'change' && fiber) {
+            //微信的change会误触发
+            if (fiber.props.value + '' == e.detail.value) {
+                return;
+            }
+        }
         var key = dataset['key'];
-        eventUid += (key !=null ? '-' + key : '');
-        if (instance ) {
+        eventUid += key != null ? '-' + key : '';
+        if (instance) {
             Renderer.batchedUpdates(function() {
                 try {
                     var fn = instance.$$eventCached[eventUid];
@@ -36,12 +43,12 @@ function createEvent(e, target) {
     }
     event.stopPropagation = function() {
         // eslint-disable-next-line
-        console.warn('小程序不支持这方法，请使用catchXXX');
+        console.warn("小程序不支持这方法，请使用catchXXX");
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
     event.currentTarget = event.target = target;
     event.touches = e.touches;
-    event.timeStamp = new Date - 0;
+    event.timeStamp = new Date() - 0;
     return event;
 }

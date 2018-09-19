@@ -1,9 +1,19 @@
 #!/usr/bin/env node
-
+'use strict';
+const nodejsVersion = Number(process.version.match(/v(\d+)/)[1]);
+const chalk = require('chalk');
+if (nodejsVersion < 8) {
+    // eslint-disable-next-line
+    console.log(
+        `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold(
+            '7'
+        )}`
+    );
+    process.exit(1);
+}
 const program = require('commander');
 const VERSION = require('../package').version;
 const LetUsRoll = require('../packages/index');
-const chalk = require('chalk');
 
 program
     .name('mpreact')

@@ -1,7 +1,7 @@
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
 import { Component } from 'react-core/Component';
-import { isFn, noop, extend , get, miniCreateClass} from 'react-core/util';
+import { isFn, noop, get, miniCreateClass } from 'react-core/util';
 import { eventSystem } from './eventSystem';
 import { getUUID, newData } from './utils';
 
@@ -14,6 +14,8 @@ export function onPageUpdate(fiber) {
         type.instances[uuid] = instance;
         //用于事件委托中
     }
+    instance.wxData = newData()
+    };
     instance.props.instanceUid = instance.instanceUid;
 }
 function safeClone(originVal) {
@@ -35,73 +37,92 @@ function safeClone(originVal) {
 }
 
 function isReferenceType(val) {
-    return val && (typeof val === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+    return (
+        val &&
+        (typeof val === 'object' ||
+            Object.prototype.toString.call(val) === '[object Array]')
+    );
 }
 var appStore;
-var Provider = miniCreateClass(function (props) {
-    this.store = props.store;
-}, Component, {
-    getChildContext: function getChildContext() {
-        return { store: this.store };
+var Provider = miniCreateClass(
+    function(props) {
+        this.store = props.store;
     },
-    render: function render$$1() {
-        return this.props.children;
+    Component,
+    {
+        getChildContext: function getChildContext() {
+            return { store: this.store };
+        },
+        render: function render$$1() {
+            return this.props.children;
+        }
     }
-});
-export function applyAppStore(store){
+);
+export function applyAppStore(store) {
     appStore = store;
 }
 export function toPage(PageClass, path, testObject) {
     //添加一个全局代理的事件句柄
-    PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
+    //  PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
 
     PageClass.instances = PageClass.instances || {};
     var $wxPage = {
-            setData: noop,
+            setData: noop
         },
         instance,
+        instanceProvideData,
         config = {
             data: newData(),
             dispatchEvent: eventSystem.dispatchEvent,
             onLoad: function(query) {
                 $wxPage = this;
                 // eslint-disable-next-line
-                console.log('onLoad', path);
+                console.log("onLoad", path);
                 var topComponent = createElement(PageClass, {
                     path: path,
-                    query: query,
-                    isPageComponent: true
+                    query: query
                 });
                 if (appStore) {
-                    topComponent = createElement(Provider, { store: appStore }, topComponent);
+                    topComponent = createElement(
+                        Provider,
+                        {
+                            path: path,
+                            store: appStore
+                        },
+                        topComponent
+                    );
                 }
-                instance = render(
-                    topComponent,
-                    {
-                        type: 'page',
-                        props: {},
-                        children: [],
-                        root: true,
-                        appendChild: noop,
+                topComponent.props.isPageComponent = true;
+                instance = render(topComponent, {
+                    type: 'page',
+                    props: {},
+                    children: [],
+                    root: true,
+                    appendChild: noop
+                });
+                instanceProvideData = instance;
+                //得到用户定义的组件，如果用户使用了redux,那么它会用上<Provider />与<Connect />
+                while (!instanceProvideData.classUid) {
+                    var fiber = get(instanceProvideData).child;
+                    if (fiber && fiber.stateNode) {
+                        instanceProvideData = fiber.stateNode;
                     }
-                );
-                if (appStore) {
+                }
+                /*  if (appStore) {
                     instance = get(instance).child.stateNode;
                 }
+				PageClass = instance.constructor;
+				*/
                 var anuSetState = instance.setState;
                 var anuForceUpdate = instance.forceUpdate;
-                var updating = false;
                 var canSetData = false;
                 function updatePage(pageInst) {
                     var data = pageInst.wxData;
-                    extend(data, {
-                        state: pageInst.state,
-                        props: pageInst.props,
-                        context: pageInst.context,
-                    });
-
+                    data.state = instanceProvideData.state;
+                    data.context = instanceProvideData.context;
+                    data.props = instanceProvideData.props;
                     $wxPage.setData(safeClone(data), function() {
-                        console.log('setData complete',data);
+                        console.log('setData complete', data);
                     });
                 }
                 instance.forceUpdate = instance.setState = function(a) {
@@ -112,12 +133,8 @@ export function toPage(PageClass, path, testObject) {
                         cbIndex = 0;
                     }
                     var pageInst = this.$pageInst || this;
-                    if (updating === false) {
-                        if (pageInst == this) {
-                            pageInst.wxData = newData();
-                        } 
+                    if (canSetData === false) {
                         canSetData = true;
-                        updating = true;
                     }
                     var cb = arguments[cbIndex];
                     var args = Array.prototype.slice.call(arguments);
@@ -125,7 +142,6 @@ export function toPage(PageClass, path, testObject) {
                         cb && cb.call(this);
                         if (canSetData) {
                             canSetData = false;
-                            updating = false;
                             updatePage(pageInst);
                         }
                     };
@@ -133,37 +149,38 @@ export function toPage(PageClass, path, testObject) {
                 };
 
                 instance.wxData = instance.wxData || newData();
+
                 updatePage(instance);
             },
             onShow() {
-                PageClass.instances[instance.instanceUid] = instance;
-                var fn = instance.componentDidShow;
+                //   PageClass.instances[instance.instanceUid] = instance;
+                var fn = instanceProvideData.componentDidShow;
                 if (isFn(fn)) {
-                    fn.call(instance);
+                    fn.call(instanceProvideData);
                 }
             },
             onHide() {
-                delete PageClass.instances[instance.instanceUid];
-                var fn = instance.componentDidHide;
+                //  delete PageClass.instances[instance.instanceUid];
+                var fn = instanceProvideData.componentDidHide;
                 if (isFn(fn)) {
-                    fn.call(instance);
+                    fn.call(instanceProvideData);
                 }
             },
             onUnload() {
-                var fn = instance.componentWillUnmount;
+                var fn = instanceProvideData.componentWillUnmount;
                 if (isFn(fn)) {
-                    fn.call(instance);
+                    fn.call(instanceProvideData);
                 }
                 instance = {};
-            },
+            }
         };
     'onPageScroll,onShareAppMessage,onReachBottom,onPullDownRefresh'.replace(
         /\w+/g,
         function(hook) {
             config[hook] = function() {
-                var fn = instance[hook];
+                var fn = instanceProvideData[hook];
                 if (isFn(fn)) {
-                    fn.apply(instance, arguments);
+                    fn.apply(instanceProvideData, arguments);
                 }
             };
         }

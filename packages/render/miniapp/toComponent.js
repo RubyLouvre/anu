@@ -1,5 +1,5 @@
 import { createElement } from 'react-core/createElement';
-import { getUUID, newData, classCached } from './utils';
+import { getUUID, newData, classCached, currentPage } from './utils';
 const ignoreObject = {
     is: 1,
     $$loop: 1,
@@ -9,30 +9,48 @@ const ignoreObject = {
 };
 export function onComponentUpdate(fiber) {
     var instance = fiber.stateNode;
-
     var type = fiber.type;
-    var instances = type.instances;
-    var instanceUid = instance.instanceUid;
+    
+    instance.$pageInst = currentPage.value;
     var parentInst = null;
+    if (! type.instances) {
+        type.instances = type.instances || {};
+        var setState = type.prototype.setState;
+        var forceUpdate = type.prototype.forceUpdate;
+        if (setState && !setState.fromPage) {
+            var fn = type.prototype.setState = function () {
+                var pageInst = this.$pageInst;
+                if (pageInst) {
+                    pageInst.setState.apply(this, arguments);
+                } else {
+                    setState.apply(this, arguments);
+                }
+            };
+            fn.fromPage = true;
+            type.prototype.forceUpdate = function () {
+                var pageInst = this.$pageInst;
+                if (pageInst) {
+                    pageInst.forceUpdate.apply(this, arguments);
+                } else {
+                    forceUpdate.apply(this, arguments);
+                }
+            };
+        }
+    }
+    var instanceUid = instance.instanceUid;
+    var instances = type.instances;
     if (!instanceUid) {
         instanceUid = instance.instanceUid = getUUID();
         instances[instanceUid] = instance;
         var p = fiber.return;
-        while (p) {
+        while (p) {//找到离它最近的父组件
             if (p.name !== 'toComponent' && p.tag < 4) {
                 var stateNode = p.stateNode;
                 if (!parentInst) {
                     parentInst = instance.$parentInst = stateNode;
-                }
-                if (p.props.isPageComponent) {
-                    if (!stateNode.wxData) {
-                        stateNode.wxData = newData();
+                    if (!parentInst.wxData){
+                        parentInst.wxData = newData();
                     }
-                    instance.$pageInst = stateNode;
-                    break;
-                }
-                if (stateNode.$pageInst) {
-                    instance.$pageInst = stateNode.$pageInst;
                     break;
                 }
             }
@@ -42,17 +60,24 @@ export function onComponentUpdate(fiber) {
     parentInst = instance.$parentInst;
     if (parentInst) {
         var inputProps = fiber._owner.props;
-        var uuid = inputProps.$$loop;
+        var uuid = inputProps.$$loop,
+            data;
         var index = inputProps.$$index;
-        if (index != null){
+        if (index != null) {
             uuid += index;
         }
-        var data = instance.wxData || (instance.wxData = newData());
+        if (!uuid) {
+            data = currentPage.value.wxData;
+        } else {
+            data = instance.wxData || (instance.wxData = newData());
+        }
         data.props = instance.props;
         data.props.instanceUid = instance.instanceUid;
         data.state = instance.state;
         data.context = instance.context;
-        getData(parentInst)[uuid] = [data];
+        if (uuid) {
+            getData(parentInst)[uuid] = [data];
+        }
     }
 }
 
@@ -69,13 +94,12 @@ export function onComponentDispose(fiber) {
         var inputProps = fiber._owner.props;
         var uuid = inputProps.$$loop;
         var index = inputProps.$$index;
-        if (index != null){
+        if (index != null) {
             uuid += index;
         }
         delete getData(parentInst)[uuid];
     }
 }
-
 
 export function toComponent(props) {
     //这是一个无状态组件，负责劫持用户传导下来的类，修改它的原型
@@ -97,36 +121,10 @@ export function toComponent(props) {
             };
         }
     }
-
-    if (!clazz.hackByMiniApp) {
-        clazz.hackByMiniApp = true;
-        clazz.instances = clazz.instances || {};
-        var setState = clazz.prototype.setState;
-        var forceUpdate = clazz.prototype.forceUpdate;
-        //只对有状态组件的setState/forceUpate进行处理
-        if (setState && !setState.fromPage) {
-            var fn = (clazz.prototype.setState = function() {
-                var pageInst = this.$pageInst;
-                if (pageInst) {
-                    pageInst.setState.apply(this, arguments);
-                } else {
-                    setState.apply(this, arguments);
-                }
-            });
-            fn.fromPage = true;
-            clazz.prototype.forceUpdate = function() {
-                var pageInst = this.$pageInst;
-                if (pageInst) {
-                    pageInst.forceUpdate.apply(this, arguments);
-                } else {
-                    forceUpdate.apply(this, arguments);
-                }
-            };
-        }
-    }
+    componentProps.wxComponentFlag = true;
     return createElement(clazz, componentProps);
 }
 
 function getData(instance) {
-    return instance.wxData.components; 
+    return instance.wxData.components;
 }

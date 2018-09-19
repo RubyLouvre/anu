@@ -117,6 +117,7 @@ const analysisDeps = (src, name) =>{
     let npmSrc = getNpmPath(src, name);
     if (analysisDepsCache[npmSrc]) return; //已分析过的不再分析
     let code = babel.transformFileSync(npmSrc, {
+        babelrc: false,
         plugins: [
             {
                 visitor: {
@@ -135,15 +136,25 @@ const analysisDeps = (src, name) =>{
                                 //递归分析
                                 analysisDeps(npmSrc, name);
                             }
-                            
                             analysisDepsCache[npmSrc] = true;
                              
                         }
                         
+                    },
+                    MemberExpression(astPath){
+                        let path = astPath;
+                        if (path.matchesPattern('process.env.NODE_ENV')) {
+                            path.replaceWith(t.valueToNode(process.env.NODE_ENV));
+                            if (path.parentPath.isBinaryExpression()) {
+                                const evaluated = path.parentPath.evaluate();
+                                if (evaluated.confident) {
+                                    path.parentPath.replaceWith(t.valueToNode(evaluated.value));
+                                }
+                            }
+                        }
                     }
                 }
-            },
-            'transform-node-env-inline',
+            }
             
         ]
     }).code;
