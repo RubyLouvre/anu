@@ -25,7 +25,7 @@ class P extends React.Component {
     checkboxChange(e) {
         // eslint-disable-next-line
         console.log('checkbox发生change事件，携带value值为：', e.target.value);
-        React.wx.showModal({
+        React.api.showModal({
             title: '提示',
             content: JSON.stringify(e.target.value)
         });

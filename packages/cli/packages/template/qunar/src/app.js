@@ -103,7 +103,7 @@ class Demo extends React.Component {
     }
     
 }
-// React.applyAppStore({});
+// React.applyAppStore(store);
 
 // eslint-disable-next-line
 App(new Demo());

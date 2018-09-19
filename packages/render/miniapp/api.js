@@ -1,12 +1,12 @@
 import { onAndSyncApis, noPromiseApis, otherApis } from './apiList';
 
 function initPxTransform() {
-    var wxConfig = (this.wxConfig = this.wxConfig || {});
+    var wxConfig = this.api;
     var windowWidth = 375;
     wxConfig.designWidth = windowWidth;
     wxConfig.deviceRatio = 750 / windowWidth / 2;
-    if (typeof wx !== 'undefined') {
-        wx.getSystemInfo({
+    if (wxConfig.getSystemInfo) {
+        wxConfig.getSystemInfo({
             success: function(res) {
                 windowWidth = res.windowWidth;
                 wxConfig.designWidth = windowWidth;
@@ -39,7 +39,7 @@ const RequestQueue = {
                 completeFn && completeFn.apply(options, [...arguments]);
                 this.run();
             };
-            wx.request(options);
+            this.facade.request(options);
         }
     }
 };
@@ -73,16 +73,16 @@ function request(options) {
     return p;
 }
 
-function processApis(ReactWX) {
+function processApis(ReactWX, facade) {
     const weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
     Object.keys(weApis).forEach(key => {
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
-            ReactWX.wx[key] = options => {
+            ReactWX.api[key] = options => {
                 options = options || {};
                 let task = null;
                 let obj = Object.assign({}, options);
                 if (typeof options === 'string') {
-                    return wx[key](options);
+                    return facade[key](options);
                 }
                 const p = new Promise((resolve, reject) => {
                     ['fail', 'success', 'complete'].forEach(k => {
@@ -99,7 +99,7 @@ function processApis(ReactWX) {
                             }
                         };
                     });
-                    task = wx[key](obj);
+                    task = facade[key](obj);
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
                     p.progress = cb => {
@@ -115,28 +115,29 @@ function processApis(ReactWX) {
                 return p;
             };
         } else {
-            ReactWX.wx[key] = function() {
-                return wx[key].apply(wx, arguments);
+            ReactWX.api[key] = function() {
+                return facade[key].apply(facade, arguments);
             };
         }
     });
 }
 
 function pxTransform(size) {
-    let deviceRatio  = this.wxConfig.deviceRatio;
+    let deviceRatio = this.api.deviceRatio;
     return parseInt(size, 10) / deviceRatio + 'rpx';
 }
 
-export function initNativeApi(ReactWX) {
-    ReactWX.wx = {};
-    processApis(ReactWX);
-    ReactWX.wx.request = request;
+export function injectAPIs(ReactWX, facade) {
+    ReactWX.api = {};
+    processApis(ReactWX, facade);
+    ReactWX.api.request = request;
     if (typeof getCurrentPages == 'function') {
         ReactWX.getCurrentPages = getCurrentPages;
     }
     if (typeof getApp == 'function') {
         ReactWX.getApp = getApp;
     }
+    RequestQueue.facade = facade;
     ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
     ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }

@@ -10,7 +10,7 @@ export var eventSystem = {
         var classUid = dataset.classUid; //类ID
         var componentClass = classCached[classUid]; //类
         var instanceUid = dataset.instanceUid; //实例ID
-        var instance = componentClass.instances[instanceUid];
+        var instance = componentClass[instanceUid];
         var fiber = instance.$$eventCached[eventUid + 'Fiber'];
         if (e.type == 'change' && fiber) {
             //微信的change会误触发

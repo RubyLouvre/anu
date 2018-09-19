@@ -64,7 +64,7 @@ class MY extends React.Component {
   }
 
   show(text) {
-      wx.showToast({
+      React.api.showToast({
           title: text,
           icon: 'success',
           duration: 2000
