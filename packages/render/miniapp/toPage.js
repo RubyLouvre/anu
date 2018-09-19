@@ -14,8 +14,8 @@ export function onPageUpdate(fiber) {
         type.instances[uuid] = instance;
         //用于事件委托中
     }
-    instance.wxData = newData()
-    };
+    instance.wxData = newData();
+    
     instance.props.instanceUid = instance.instanceUid;
 }
 function safeClone(originVal) {

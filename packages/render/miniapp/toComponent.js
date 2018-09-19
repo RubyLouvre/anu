@@ -67,7 +67,7 @@ export function onComponentUpdate(fiber) {
             uuid += index;
         }
         if (!uuid) {
-            data = currentPage.value.wxData;
+            data = instance.wxData = currentPage.value.wxData;
         } else {
             data = instance.wxData || (instance.wxData = newData());
         }

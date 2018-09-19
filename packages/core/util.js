@@ -47,17 +47,16 @@ export let __type = Object.prototype.toString;
 var fakeWindow = {};
 export function getWindow() {
     try {
-        if (!window){
-            throw 'no window';
+        if (window){
+            return window;
         }
-        return window;
-    } catch (e) {
-        try {
+    } catch (e) {/*kill*/}
+    try {
+        if (global){
             return global;
-        } catch (e) {
-            return fakeWindow;
         }
-    }
+    } catch (e) {/*kill*/}
+    return fakeWindow;
 }
 export function isMounted(instance) {
     var fiber = get(instance);
