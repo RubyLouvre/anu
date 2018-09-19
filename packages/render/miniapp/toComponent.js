@@ -48,6 +48,9 @@ export function onComponentUpdate(fiber) {
                 var stateNode = p.stateNode;
                 if (!parentInst) {
                     parentInst = instance.$parentInst = stateNode;
+                    if (!parentInst.wxData){
+                        parentInst.wxData = newData();
+                    }
                     break;
                 }
             }
@@ -118,7 +121,7 @@ export function toComponent(props) {
             };
         }
     }
-    componentProps.wxComponentFlag = true
+    componentProps.wxComponentFlag = true;
     return createElement(clazz, componentProps);
 }
 
