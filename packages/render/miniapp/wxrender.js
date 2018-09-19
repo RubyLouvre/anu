@@ -1,33 +1,10 @@
-import { noop, isFn } from 'react-core/util';
+import { isFn } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
 import { onComponentDispose, onComponentUpdate } from './toComponent';
 import { onPageUpdate } from './toPage';
 import { classCached, currentPage } from './utils';
 
-//其他Renderer也要实现这些方法
-function cleanChildren(array) {
-    if (!Array.isArray(array)) {
-        return array;
-    }
-    return array.map(function(el) {
-        if (el.type == '#text') {
-            return el.props;
-        } else {
-            return {
-                type: el.type,
-                props: el.props,
-                children: cleanChildren(el.children),
-            };
-        }
-    });
-}
-var autoContainer = {
-    type: 'root',
-    appendChild: noop,
-    props: null,
-    children: [],
-};
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
     var n = name.charAt(0) == 'o' ? 2 : 5;
@@ -43,8 +20,8 @@ export let Renderer = createRenderer({
         var instanceId = props['data-instance-uid'];
         if (classId) {
             var clazz = classCached[classId];
-            if (clazz && clazz.instances) {
-                var instance = clazz.instances[instanceId];
+            if (clazz && clazz) {
+                var instance = clazz[instanceId];
                 if (instance) {
                     //保存用户创建的事件在实例上
                     var cached = instance.$$eventCached || (instance.$$eventCached = {});
@@ -52,7 +29,7 @@ export let Renderer = createRenderer({
                         if (onEvent.test(name) && isFn(props[name])) {
                             var code = getEventHashCode(name, props, props['data-key']);
                             cached[code] = props[name];
-                            cached[code+"Fiber"] = fiber;
+                            cached[code+'Fiber'] = fiber;
                         }
                     }
                     if (lastProps) {
@@ -60,7 +37,7 @@ export let Renderer = createRenderer({
                             if (onEvent.test(name) && !props[name]) {
                                 code = getEventHashCode(name, lastProps, lastProps['data-key']);
                                 delete cached[code];
-                                delete cached[code+"Fiber"]
+                                delete cached[code+'Fiber'];
                             }
                         }
                     }
@@ -84,13 +61,6 @@ export let Renderer = createRenderer({
         if (fiber.props.wxComponentFlag) {
             onComponentDispose(fiber);
         }
-    },
-
-    getRoot() {
-        return autoContainer;
-    },
-    getChildren() {
-        return cleanChildren(autoContainer.children || []);
     },
     createElement(fiber) {
         return fiber.tag === 5

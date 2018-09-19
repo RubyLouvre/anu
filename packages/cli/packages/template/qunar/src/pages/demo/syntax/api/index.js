@@ -18,7 +18,7 @@ class P extends React.Component {
     };
 
     chooseImage() {
-        React.wx
+        React.api
             .chooseImage({
                 count: 1, // 默认9
                 sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
@@ -37,7 +37,7 @@ class P extends React.Component {
     }
 
     sendRequest() {
-        React.wx
+        React.api
             .request({
                 url: 'test.php',
                 data: {
@@ -50,7 +50,7 @@ class P extends React.Component {
                 console.log(res);
             })
             .catch(function() {
-                React.wx.showModal({
+                React.api.showModal({
                     title: '提示',
                     content: '服务器出错了',
                     success: function(res) {
@@ -67,12 +67,12 @@ class P extends React.Component {
     }
 
     getLocation() {
-        React.wx
+        React.api
             .getLocation({
                 type: 'wgs84'
             })
             .then(function(res) {
-                return React.wx.showModal({
+                return React.api.showModal({
                     title: '提示',
                     content: `latitude: ${res.latitude},  longitude: ${
                         res.longitude

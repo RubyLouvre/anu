@@ -22,7 +22,7 @@ class Brand extends React.Component {
   componentWillMount() {
       //sliderList
       var that = this;
-      wx.request({
+      React.api.request({
           url: 'http://yapi.demo.qunar.com/mock/17668/wemall/venues/getBrandAndType',
           method: 'GET',
           data: {},

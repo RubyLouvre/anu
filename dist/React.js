@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-09-17
+ * by 司徒正美 Copyright 2018-09-19
  * IE9+
  */
 
@@ -43,17 +43,16 @@
     var fakeWindow = {};
     function getWindow() {
         try {
-            if (!window) {
-                throw 'no window';
+            if (window) {
+                return window;
             }
-            return window;
-        } catch (e) {
-            try {
+        } catch (e) {        }
+        try {
+            if (global) {
                 return global;
-            } catch (e) {
-                return fakeWindow;
             }
-        }
+        } catch (e) {        }
+        return fakeWindow;
     }
     function isMounted(instance) {
         var fiber = get(instance);
@@ -3040,7 +3039,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: "1.4.6",
+            version: "1.4.7",
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,

@@ -12,7 +12,7 @@ class P extends React.Component {
     }
 
     takePhoto() {
-        const ctx = wx.createCameraContext();
+        const ctx = React.api.createCameraContext();
 
         ctx.takePhoto({
             quality: 'high',

@@ -22,20 +22,20 @@ class P extends React.Component {
     }
     getData() {
         let that = this;
-        wx.showLoading({
+        React.api.showLoading({
             title: '获取资源中',
             mask: true
         });
-        wx.request({
+        React.api.request({
             url: 'http://yapi.demo.qunar.com/mock/18752/qunar/question',
             success: function(data) {
-                wx.hideLoading();
+                React.api.hideLoading();
                 that.setState({data: data.data});
             }
         });
     }
     questionDetail() {
-        wx.navigateTo({ url: '../detail/index' });
+        React.api.navigateTo({ url: '../detail/index' });
     }
     componentDidMount() {
         this.getData();
@@ -54,7 +54,7 @@ class P extends React.Component {
     };
     toCitySelect() {
         this.navItemClick(2);
-        wx.navigateTo({ url: '../../citySelect/index' });
+        React.api.navigateTo({ url: '../../citySelect/index' });
     }
     render() {
         return (

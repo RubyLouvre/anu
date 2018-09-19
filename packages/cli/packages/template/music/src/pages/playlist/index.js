@@ -18,7 +18,7 @@ class PlayList extends React.Component {
             playtype: 1,
             loading: true,
             toplist: false,
-            user: wx.getStorageSync('user') || {},
+            user: React.api.getStorageSync('user') || {},
             listLoading: true
         };
     }
@@ -26,7 +26,7 @@ class PlayList extends React.Component {
     componentWillMount() {
         var that = this;
         let query = this.props.query;
-        wx.request({
+        React.api.request({
             url: bsurl + 'playlist/detail',
             data: {
                 id: query.pid,
@@ -49,12 +49,12 @@ class PlayList extends React.Component {
                     listLoading: false
                 });
 
-                wx.setNavigationBarTitle({
+                React.api.setNavigationBarTitle({
                     title: res.data.playlist.name
                 });
             },
             fail: function() {
-                wx.navigateBack({
+                React.api.navigateBack({
                     delta: 1
                 });
             }

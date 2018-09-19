@@ -11,11 +11,9 @@ export function onPageUpdate(fiber) {
     if (!instance.instanceUid) {
         var uuid = 'i' + getUUID();
         instance.instanceUid = uuid;
-        type.instances[uuid] = instance;
-        //用于事件委托中
+        type[uuid] = instance;
     }
     instance.wxData = newData();
-    
     instance.props.instanceUid = instance.instanceUid;
 }
 function safeClone(originVal) {
@@ -35,7 +33,11 @@ function safeClone(originVal) {
     }
     return temp;
 }
-
+const HookMap = {
+    'onShow': 'componentDidShow',
+    'onHide': 'componentDidHide',
+    'onUnload':'componentWillUnmount'
+};
 function isReferenceType(val) {
     return (
         val &&
@@ -45,7 +47,7 @@ function isReferenceType(val) {
 }
 var appStore;
 var Provider = miniCreateClass(
-    function(props) {
+    function Provider(props) {
         this.store = props.store;
     },
     Component,
@@ -63,26 +65,23 @@ export function applyAppStore(store) {
 }
 export function toPage(PageClass, path, testObject) {
     //添加一个全局代理的事件句柄
-    //  PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-
-    PageClass.instances = PageClass.instances || {};
     var $wxPage = {
             setData: noop
         },
-        instance,
-        instanceProvideData,
+        pageInstance, //页面实例
+        pageViewInstance,//页面视图实例
         config = {
             data: newData(),
             dispatchEvent: eventSystem.dispatchEvent,
             onLoad: function(query) {
                 $wxPage = this;
-                // eslint-disable-next-line
-                console.log("onLoad", path);
                 var topComponent = createElement(PageClass, {
                     path: path,
                     query: query
                 });
                 if (appStore) {
+                    //让页面组件依装成普通组件，这样框架才会让它进onComponentUpdate方法，并添加上instanceUid
+                    topComponent.props.wxComponentFlag = true;
                     topComponent = createElement(
                         Provider,
                         {
@@ -93,39 +92,34 @@ export function toPage(PageClass, path, testObject) {
                     );
                 }
                 topComponent.props.isPageComponent = true;
-                instance = render(topComponent, {
+                pageInstance = render(topComponent, {
                     type: 'page',
                     props: {},
                     children: [],
                     root: true,
                     appendChild: noop
                 });
-                instanceProvideData = instance;
+                pageViewInstance = pageInstance;
                 //得到用户定义的组件，如果用户使用了redux,那么它会用上<Provider />与<Connect />
-                while (!instanceProvideData.classUid) {
-                    var fiber = get(instanceProvideData).child;
+                while (!pageViewInstance.classUid) {
+                    var fiber = get(pageViewInstance).child;
                     if (fiber && fiber.stateNode) {
-                        instanceProvideData = fiber.stateNode;
+                        pageViewInstance = fiber.stateNode;
                     }
                 }
-                /*  if (appStore) {
-                    instance = get(instance).child.stateNode;
-                }
-				PageClass = instance.constructor;
-				*/
-                var anuSetState = instance.setState;
-                var anuForceUpdate = instance.forceUpdate;
+                var anuSetState = pageInstance.setState;
+                var anuForceUpdate = pageInstance.forceUpdate;
                 var canSetData = false;
                 function updatePage(pageInst) {
                     var data = pageInst.wxData;
-                    data.state = instanceProvideData.state;
-                    data.context = instanceProvideData.context;
-                    data.props = instanceProvideData.props;
+                    data.state = pageViewInstance.state;
+                    data.context = pageViewInstance.context;
+                    data.props = pageViewInstance.props;
                     $wxPage.setData(safeClone(data), function() {
                         console.log('setData complete', data);
                     });
                 }
-                instance.forceUpdate = instance.setState = function(a) {
+                pageInstance.forceUpdate = pageInstance.setState = function(a) {
                     var updateMethod = anuSetState;
                     var cbIndex = 1;
                     if (isFn(a) || a == null) {
@@ -148,43 +142,23 @@ export function toPage(PageClass, path, testObject) {
                     updateMethod.apply(this, args);
                 };
 
-                instance.wxData = instance.wxData || newData();
+                pageInstance.wxData = pageInstance.wxData || newData();
 
-                updatePage(instance);
-            },
-            onShow() {
-                //   PageClass.instances[instance.instanceUid] = instance;
-                var fn = instanceProvideData.componentDidShow;
-                if (isFn(fn)) {
-                    fn.call(instanceProvideData);
-                }
-            },
-            onHide() {
-                //  delete PageClass.instances[instance.instanceUid];
-                var fn = instanceProvideData.componentDidHide;
-                if (isFn(fn)) {
-                    fn.call(instanceProvideData);
-                }
-            },
-            onUnload() {
-                var fn = instanceProvideData.componentWillUnmount;
-                if (isFn(fn)) {
-                    fn.call(instanceProvideData);
-                }
-                instance = {};
+                updatePage(pageInstance);
             }
         };
-    'onPageScroll,onShareAppMessage,onReachBottom,onPullDownRefresh'.replace(
-        /\w+/g,
-        function(hook) {
-            config[hook] = function() {
-                var fn = instanceProvideData[hook];
-                if (isFn(fn)) {
-                    fn.apply(instanceProvideData, arguments);
-                }
-            };
-        }
-    );
+    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh',
+        'onShow', 'onHide', 'onUnload').forEach(function(hook){
+        config[hook] = function() {
+            var name = HookMap[hook] || hook;
+            var fn = pageViewInstance[name];
+            if (isFn(fn)) {
+                fn.apply(pageViewInstance, arguments);
+            }
+        };
+
+    });
+
     if (testObject) {
         config.setData = function(obj) {
             config.data = obj;

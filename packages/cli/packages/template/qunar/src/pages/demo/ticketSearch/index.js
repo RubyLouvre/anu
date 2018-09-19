@@ -33,7 +33,7 @@ class P extends React.Component {
         }
     }
     toDateSelect() {
-        wx.navigateTo({
+        React.api.navigateTo({
             url: '../../demo/calendar/index'
         });
     }
@@ -45,7 +45,7 @@ class P extends React.Component {
         } else {
             app.globalData.citySelect = '北京';
         }
-        wx.navigateTo({
+        React.api.navigateTo({
             url: '../../demo/citySelect/index'
         });
     }
@@ -53,7 +53,7 @@ class P extends React.Component {
         this.setState({ exchangeStatus: !this.state.exchangeStatus });
     }
     fun_tip() {
-        wx.showModal({
+        React.api.showModal({
             title: '提示',
             content: '该部分仅展示，无具体功能!',
             showCancel: false

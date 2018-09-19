@@ -9,7 +9,7 @@ class P extends React.Component {
     }
     componentDidMount() {
         let that = this;
-        React.wx.request({
+        React.api.request({
             url: 'http://yapi.demo.qunar.com/mock/18752/qunar/city',
             success: function(data) {
                 let curData = that.cleanData(data.data);
@@ -39,7 +39,7 @@ class P extends React.Component {
     render() {
         return (
             <div class='city-select'>
-                <p>就是使用React.wx.request,对wx.request做了并发处理</p>
+                <p>就是使用React.api.request,对wx .request做了并发处理</p>
                 <p>https://developers.weixin.qq.com/miniprogram/dev/api/network/request/wx.request.html</p>
                 {this.state.data.map(function(el){
                     return <p>{el.title}-------

@@ -20,7 +20,7 @@ class List extends React.Component {
   componentWillMount() {
       var that = this;
       // console.log(this.props.query)
-      wx.request({
+      React.api.request({
           url:
         'http://yapi.demo.qunar.com/mock/17668/wemall/goods/inqGoodsByTypeBrand?brand=' +
         this.props.query.brand +

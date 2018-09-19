@@ -59,7 +59,7 @@ class P extends React.Component {
       let that = this;
       let rec = this.state.rec;
       //banner，
-      wx.request({
+      React.api.request({
           url: bsurl + 'banner',
           data: { cookie: app.globalData.cookie },
           success: function(res) {
@@ -68,7 +68,7 @@ class P extends React.Component {
               });
           }
       });
-      wx.request({
+      React.api.request({
           url: bsurl + 'playlist/catlist',
           complete: function(res) {
               that.setState({
@@ -95,7 +95,7 @@ class P extends React.Component {
       let arr = ['personalized', 'personalized/newsong', 'personalized/mv', 'personalized/djprogram'];
       for (let i = 0; i < arr.length; i++) {
           result[i] = new Promise((resolve, reject) => {
-              wx.request({
+              React.api.request({
                   url: bsurl + arr[i],
                   data: { cookie: app.globalData.cookie },
                   success: function(res) {
@@ -121,7 +121,7 @@ class P extends React.Component {
           this.gplaylist();
       }
       if (index == 2 && !this.state.djcate.loading) {
-          wx.request({
+          React.api.request({
               url: bsurl + 'djradio/catelist',
               success: function(res) {
                   var catelist = res.data;
@@ -138,7 +138,7 @@ class P extends React.Component {
           this.setState({
               sort: this.state.sort
           });
-          wx.request({
+          React.api.request({
               url: bsurl + 'toplist/detail',
               success: function(res) {
                   res.data.idx = 3;
@@ -153,7 +153,7 @@ class P extends React.Component {
   gplaylist(isadd) {
       // 分类歌单列表
       var that = this;
-      wx.request({
+      React.api.request({
           url: bsurl + 'top/playlist',
           data: {
               limit: that.state.playlist.limit,

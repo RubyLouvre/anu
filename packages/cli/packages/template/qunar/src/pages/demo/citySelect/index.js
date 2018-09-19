@@ -12,14 +12,14 @@ class P extends React.Component {
     }
     componentDidMount() {
         let that = this;
-        wx.showLoading({
+        React.api.showLoading({
             title: '获取资源中',
             mask: true
         });
-        React.wx.request({
+        React.api.request({
             url: 'http://yapi.demo.qunar.com/mock/18752/qunar/city',
             success: function(data) {
-                wx.hideLoading();
+                React.api.hideLoading();
                 let curData = that.cleanData(data.data);
                 that.setState({data: curData});
             }
@@ -45,7 +45,7 @@ class P extends React.Component {
         return result;
     }
     itemClick(city){
-        wx.showModal({
+        React.api.showModal({
             title: '提示',
             content:
         '当前选择城市为：' + city,
@@ -53,7 +53,7 @@ class P extends React.Component {
                 if (e.confirm) {
                     var app = React.getApp();
                     app.globalData.citySelect = city;
-                    wx.navigateBack();
+                    React.api.navigateBack();
                 }
             }
         });
