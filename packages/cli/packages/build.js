@@ -1,4 +1,4 @@
-const transform = require('./translatorAli/index');
+const transform = require('./translator/index');
 const build = arg => transform(arg);
 
 module.exports = build;
