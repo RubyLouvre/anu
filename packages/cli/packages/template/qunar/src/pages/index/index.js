@@ -135,7 +135,7 @@ class P extends React.Component {
   };
   gotoSome(url) {
       if (url){
-          wx.navigateTo({ url });
+          React.api.navigateTo({ url });
       } else {
           this.fun_tip();
       }
@@ -149,7 +149,7 @@ class P extends React.Component {
     console.log('page will mount!');
   }
   fun_tip() {
-      wx.showModal({
+      React.api.showModal({
           title: '提示',
           content: '该部分仅展示，无具体功能!',
           showCancel: false

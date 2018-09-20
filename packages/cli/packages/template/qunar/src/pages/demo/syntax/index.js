@@ -62,6 +62,10 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/redux/index'
                 },
                 {
+                    title: 'Redux只是显示数据',
+                    url: '/pages/demo/syntax/redux2/index'
+                },
+                {
                     title: '数据请求',
                     url: '/pages/demo/syntax/request/index'
                 }

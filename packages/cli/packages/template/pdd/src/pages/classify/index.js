@@ -26,7 +26,7 @@ class Classify extends React.Component {
 
   componentWillMount() {
       var that = this;
-      wx.request({
+      React.api.request({
           url: 'http://yapi.demo.qunar.com/mock/17668/wemall/goodstype/typebrandList',
           method: 'GET',
           data: {},

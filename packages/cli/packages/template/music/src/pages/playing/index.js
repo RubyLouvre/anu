@@ -37,7 +37,7 @@ class Playing extends React.Component {
 
     playmusic(id) {
         let that = this;
-        wx.request({
+        React.api.request({
             url: bsurl + 'music/detail',
             data: {
                 id: id
@@ -58,7 +58,7 @@ class Playing extends React.Component {
                     duration: common.formatduration(curplay.dt || curplay.duration),
                     loading: false
                 });
-                wx.setNavigationBarTitle({ title: app.globalData.curplay.name });
+                React.api.setNavigationBarTitle({ title: app.globalData.curplay.name });
                 app.seekmusic(1);
                 // common.loadrec(app.globalData.cookie, 0, 0, that.state.music.id, function (res) {
                 //     that.setData({

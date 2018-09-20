@@ -10,14 +10,14 @@ class P extends React.Component{
     }
     componentDidMount() {
         let that = this;
-        wx.showLoading({
+        React.api.showLoading({
             title: '获取资源中',
             mask: true
         });
-        wx.request({
+        React.api.request({
             url: 'http://yapi.demo.qunar.com/mock/18752/qunar/cardList',
             success: function(data) {
-                wx.hideLoading();
+                React.api.hideLoading();
                 that.setState({data: data.data});
             }
         });
@@ -32,14 +32,14 @@ class P extends React.Component{
     };
     onReachBottom () {
         let that = this;
-        wx.showLoading({
+        React.api.showLoading({
             title: '获取资源中',
             mask: true
         });
-        wx.request({
+        React.api.request({
             url: 'http://yapi.demo.qunar.com/mock/18752/qunar/cardList',
             success: function(data) {
-                wx.hideLoading();
+                React.api.hideLoading();
                 that.setState({data: [...that.state.data,...data.data]});
             }
         });

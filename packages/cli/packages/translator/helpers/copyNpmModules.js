@@ -25,7 +25,8 @@ let analysisDepsCache = {};
 const resolveNpmModule = (name)=>{
     let npmSrc = '';
     try {
-        npmSrc = npmResolve.sync(name, {basedir: path.join(cwd, 'node_modules')} );
+        //注意moduleDirectory参数，永远在当前project目录查找node_modules，防止向上递归查找， 详见https://nodejs.org/api/modules.html#modules_all_together
+        npmSrc = npmResolve.sync(name, {basedir: cwd, moduleDirectory: path.join(cwd, 'node_modules')});
     } catch (err){
         // eslint-disable-next-line
         console.log( chalk.red(`缺少依赖: ${name}, 正在自动安装中, 请稍候`) );
@@ -34,6 +35,7 @@ const resolveNpmModule = (name)=>{
             npmSrc = npmResolve.sync(name, {basedir: path.join(cwd, 'node_modules')} );
         });
     }
+
     return npmSrc;
     
 };
@@ -114,8 +116,12 @@ const hackReactWXExportDefault = (name, astPath)=>{
 
 
 const analysisDeps = (src, name) =>{
+
+   
     let npmSrc = getNpmPath(src, name);
     if (analysisDepsCache[npmSrc]) return; //已分析过的不再分析
+    
+    analysisDepsCache[npmSrc] = true;
     let code = babel.transformFileSync(npmSrc, {
         babelrc: false,
         plugins: [

@@ -60,12 +60,12 @@ class Demo extends React.Component {
       // eslint-disable-next-line
     console.log('App launched');
       //调用登录接口
-      wx.login({
+      React.api.login({
           success: function(r) {
               if (r.code) {
                   // eslint-disable-next-line
                   let code = r.code;
-                  wx.getUserInfo({
+                  React.api.getUserInfo({
                       success: function() {
                           // console.log('res', res);
                       }
@@ -81,12 +81,12 @@ class Demo extends React.Component {
 //       typeof cb == 'function' && cb(this.globalData.userInfo);
 //     } else {
 //       //调用登录接口
-//       wx.login({
+//       React.api.login({
 //         success: function(res) {
 //           if (res.code) {
 //             console.log('code', res.code);
 //           }
-//           //   wx.getUserInfo({
+//           //   React.api.getUserInfo({
 //           //     success: function (res) {
 //           //       that.globalData.userInfo = res.userInfo
 //           //       typeof cb == "function" && cb(that.globalData.userInfo)
