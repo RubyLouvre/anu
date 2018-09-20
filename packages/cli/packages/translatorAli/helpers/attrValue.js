@@ -17,7 +17,7 @@ function bindEvent(astPath) {
 module.exports = function(astPath) {
     var expr = astPath.node.expression;
     var attrName = astPath.parent.name.name;
-    var isEvent = /^(bind|catch)/.test(attrName);
+    var isEvent = /^(on|catch)/.test(attrName);
     var attrValue = generate(expr).code;
     switch (astPath.node.expression.type) {
         case 'NumericLiteral': //11
