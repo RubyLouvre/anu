@@ -68,14 +68,14 @@ exports.exit = function(astPath, type, componentName, modules) {
                 if (modules.usedComponents[i]) {
                     wxml = `<import src="${
                         modules.importComponents[i]
-                    }.wxml" />\n${wxml}`;
+                    }.swan" />\n${wxml}`;
                 }
             }
             var enqueueData = {
                 type: 'wxml',
                 path: modules.sourcePath
                     .replace(/\/src\//, '/dist/')
-                    .replace(/\.js$/, '.wxml'),
+                    .replace(/\.js$/, '.swan'),
                 code: wxml //prettifyXml(wxml, { indent: 2 })
             };
             //添加组件标签包含其他标签时（如<Dialog><p>xxx</p></Dialog>）产生的隐式依赖
@@ -103,7 +103,7 @@ function addImportTag(fragmentUid) {
             'src',
             'components',
             'Fragments',
-            fragmentUid + '.wxml'
+            fragmentUid + '.swan'
         )
     );
     src = process.platform === 'win32' ? src.replace(/\\/g, '/') : src;

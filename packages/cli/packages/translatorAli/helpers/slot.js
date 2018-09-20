@@ -2,6 +2,7 @@ var path = require('path');
 const jsx = require('../utils');
 const generate = require('babel-generator').default;
 const queue = require('../queue');
+const templateExt = '.axml';
 /**
  * 用于生成组件标签的innerHTML中对应的Fragment
  * @param {*} children 
@@ -26,7 +27,7 @@ module.exports = function slotHelper(
     }
     queue.wxml.push({
         type: 'wxml',
-        path: path.join(modules.fragmentPath,  fragmentUid + '.wxml'),
+        path: path.join(modules.fragmentPath,  fragmentUid + templateExt),
         code: wxml
     });
 };
