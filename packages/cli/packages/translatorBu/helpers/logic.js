@@ -53,7 +53,7 @@ function logic(expr, modules) {
 function condition(test, consequent, alternate, modules) {
     var ifNode = createElement(
         'block',
-        [createAttribute('wx:if', parseExpr(test))],
+        [createAttribute('s-if', parseExpr(test))],
         [logic(consequent, modules) || wrapText(consequent)]
     );
     var ret = ifNode;
@@ -77,9 +77,9 @@ function condition(test, consequent, alternate, modules) {
 function loop(callee, fn, modules) {
     const attrs = [];
 
-    attrs.push(createAttribute('wx:for', parseExpr(callee.object)));
-    attrs.push(createAttribute('wx:for-item', fn.params[0].name));
-    attrs.push(createAttribute('wx:for-index', fn.params[1].name));
+    attrs.push(createAttribute('s-for', parseExpr(callee.object)));
+    attrs.push(createAttribute('s-for-item', fn.params[0].name));
+    attrs.push(createAttribute('s-for-index', fn.params[1].name));
     if (modules.key) {
         attrs.push(createAttribute('wx:key', jsx.genKey(modules.key)));
 

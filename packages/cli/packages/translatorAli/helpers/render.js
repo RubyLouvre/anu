@@ -5,6 +5,7 @@ const babel = require('babel-core');
 const queue = require('../queue');
 const path = require('path');
 const functionAliasConfig = require('./functionNameAliasConfig');
+const templateExt = '.axml';
 
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -68,14 +69,14 @@ exports.exit = function(astPath, type, componentName, modules) {
                 if (modules.usedComponents[i]) {
                     wxml = `<import src="${
                         modules.importComponents[i]
-                    }.wxml" />\n${wxml}`;
+                    }.axml" />\n${wxml}`;
                 }
             }
             var enqueueData = {
                 type: 'wxml',
                 path: modules.sourcePath
                     .replace(/\/src\//, '/dist/')
-                    .replace(/\.js$/, '.wxml'),
+                    .replace(/\.js$/, templateExt),
                 code: wxml //prettifyXml(wxml, { indent: 2 })
             };
             //添加组件标签包含其他标签时（如<Dialog><p>xxx</p></Dialog>）产生的隐式依赖
@@ -103,7 +104,7 @@ function addImportTag(fragmentUid) {
             'src',
             'components',
             'Fragments',
-            fragmentUid + '.wxml'
+            fragmentUid + templateExt
         )
     );
     src = process.platform === 'win32' ? src.replace(/\\/g, '/') : src;

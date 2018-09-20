@@ -80,7 +80,7 @@ var visitor = {
                             array = attrValue;
                         } else if (attrName === 'is') {
                             is = attrValue;
-                        } else if (attrName === 'wx:key') {
+                        } else if (attrName === 'a:key') {
                             key = attrValue;
                         } else if (attrName === 'key') {
                             key = attrValue;
@@ -95,21 +95,21 @@ var visitor = {
                         attributes.push(
                             utils.createAttribute('is', is),
                             utils.createAttribute('data', '{{...data}}'),
-                            utils.createAttribute('wx:for', `{{components.${array}}}`),
-                            utils.createAttribute('wx:for-item', 'data'),
-                            utils.createAttribute('wx:for-index', 'index'),
-                            utils.createAttribute('wx:key', utils.genKey(key))
+                            utils.createAttribute('a:for', `{{components.${array}}}`),
+                            utils.createAttribute('a:for-item', 'data'),
+                            utils.createAttribute('a:for-index', 'index'),
+                            utils.createAttribute('a:key', utils.genKey(key))
                         );
                     } else {
                         attributes.push(
                             utils.createAttribute('is', is),
                             utils.createAttribute(
-                                'wx:for',
+                                'a:for',
                                 `{{components['${array}'+${indexArr} ]}}`
                             ),
-                            utils.createAttribute('wx:for-item', 'data'),
+                            utils.createAttribute('a:for-item', 'data'),
                             utils.createAttribute('data', '{{...data}}'),
-                            utils.createAttribute('wx:key', utils.genKey(key))
+                            utils.createAttribute('a:key', utils.genKey(key))
                         );
                     }
                     astPath.parentPath.replaceWith(template);
