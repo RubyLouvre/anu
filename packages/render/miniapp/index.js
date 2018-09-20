@@ -12,7 +12,7 @@ import {
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 import { classCached,currentPage } from './utils';
-import { initNativeApi } from './api';
+import { injectAPIs } from './api';
 import { eventSystem } from './eventSystem';
 import { Renderer } from './wxrender';
 
@@ -27,7 +27,7 @@ let React;
 
 let { render } = Renderer;
 
-React = win.React = win.ReactDOM = {
+React = win.React =  {
     //平台相关API
     eventSystem,
 
@@ -64,7 +64,15 @@ React = win.React = win.ReactDOM = {
     toPage,
     toStyle
 };
-initNativeApi(React);
+var apiContainer = {};
+if (typeof wx != 'undefined'){
+    apiContainer = wx;
+} else if (typeof my !== 'undefined'){
+    apiContainer = my;
+} else if (typeof swan !== 'undefined'){
+    apiContainer = swan;
+}
+injectAPIs(React, apiContainer);
 export default React;
 export {
     Children,

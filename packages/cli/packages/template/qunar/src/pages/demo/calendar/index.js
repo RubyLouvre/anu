@@ -5,7 +5,7 @@ class P extends React.Component {
         super();
     }
     handleShowDate(date) {
-        wx.showModal({
+        React.api.showModal({
             title: '提示',
             content:
         '选择日期为：' + date.getFullYear() + '年' + (date.getMonth()+1) + '月' + date.getDate() + '日',
@@ -13,7 +13,7 @@ class P extends React.Component {
                 if (e.confirm) {
                     var app = React.getApp();
                     app.globalData.dateSelect = date;
-                    wx.navigateBack();
+                    React.api.navigateBack();
                 }
             }
         });

@@ -4,10 +4,10 @@ const jsx = require('../utils');
 const chalk = require('chalk');
 const { createElement, createAttribute } = jsx;
 /**
- * 本模板将array.map(fn)变成<block wx:for="{{}}"></block>
- * 将if(xxx){}变成<block wx:if="{{xxx}}"></block>
- * 将xxx? aaa: bbb变成<block wx:if="aaa">aaa</block>
- * <block wx:if="!xxx">bbb</block>
+ * 本模板将array.map(fn)变成<block a:for="{{}}"></block>
+ * 将if(xxx){}变成<block a:if="{{xxx}}"></block>
+ * 将xxx? aaa: bbb变成<block a:if="aaa">aaa</block>
+ * <block a:if="!xxx">bbb</block>
  */
 const rexpr = /(^|[^\w.])this\./g;
 
@@ -60,7 +60,7 @@ function condition(test, consequent, alternate, modules) {
     // null就不用创建一个<block>元素了，&&表达式也不需要创建<block>元素
     if (alternate && alternate.type !== 'NullLiteral') {
         // 如果存在if分支，那么就再包一层，一共三个block,
-        // <block><block wx:if /><block wx:else /></block>
+        // <block><block a:if /><block a:else /></block>
         ret = createElement('block', [], [ifNode]);
 
         var elseNode = createElement(

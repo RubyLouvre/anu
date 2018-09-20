@@ -35,7 +35,7 @@ class P extends React.Component {
         navigationBarTitleText: '船票',
     }
     fun_tip() {
-        wx.showModal({
+        React.api.showModal({
             title: '提示',
             content: '该部分仅展示，无具体功能!',
             showCancel: false
@@ -43,12 +43,12 @@ class P extends React.Component {
     }
     toCitySelect(isStartCity) {
         this.setState({isStartCity});
-        wx.navigateTo({
+        React.api.navigateTo({
             url: '../../demo/citySelect/index'
         });
     }
     toDateSelect() {
-        wx.navigateTo({
+        React.api.navigateTo({
             url: '../../demo/calendar/index'
         });
     }

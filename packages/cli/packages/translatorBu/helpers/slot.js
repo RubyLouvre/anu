@@ -26,7 +26,7 @@ module.exports = function slotHelper(
     }
     queue.wxml.push({
         type: 'wxml',
-        path: path.join(modules.fragmentPath,  fragmentUid + '.wxml'),
+        path: path.join(modules.fragmentPath,  fragmentUid + '.swan'),
         code: wxml
     });
 };

@@ -25,7 +25,7 @@ class TurnTable extends React.Component {
         let runDegs = 360 * 8 - awardIndex * (360 / awardsConfig.length);
 
         // 初始化
-        var animationInit = wx.createAnimation({
+        var animationInit = React.api.createAnimation({
             duration: 1
         });
 
@@ -34,7 +34,7 @@ class TurnTable extends React.Component {
         // 开始抽奖
 
         setTimeout(function() {
-            var animationRun = wx.createAnimation({
+            var animationRun = React.api.createAnimation({
                 duration: 3000,
                 timingFunction: 'ease'
             });
@@ -44,7 +44,7 @@ class TurnTable extends React.Component {
 
         // 中奖提示
         setTimeout(function() {
-            wx.showModal({
+            React.api.showModal({
                 title: '恭喜',
                 content: '获得' + awardsConfig[awardIndex].name,
                 showCancel: false,
@@ -81,7 +81,7 @@ class TurnTable extends React.Component {
             html = [],
             turnNum = 1 / len; // 文字旋转 turn 值
 
-        var ctx = wx.createContext();
+        var ctx = React.api.createContext();
         for (var i = 0; i < len; i++) {
             // 保存当前状态
             ctx.save();

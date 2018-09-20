@@ -43,7 +43,7 @@ class P extends React.Component {
                 this.fun_tip();
                 break;
             case 4:
-                wx.showModal({
+                React.api.showModal({
                     title: '请拨打客服电话',
                     content: '95117',
                     showCancel: true,
@@ -53,7 +53,7 @@ class P extends React.Component {
                 });
                 break;
             case 5:
-                wx.showModal({
+                React.api.showModal({
                     title: '确认退出登录',
                     showCancel: true,
                     confirmColor: '#73d13d'
@@ -63,7 +63,7 @@ class P extends React.Component {
         }
     }
     fun_tip() {
-        wx.showModal({
+        React.api.showModal({
             title: '提示',
             content: '该部分仅展示，无具体功能!',
             showCancel: false

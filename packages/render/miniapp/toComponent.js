@@ -13,35 +13,33 @@ export function onComponentUpdate(fiber) {
     
     instance.$pageInst = currentPage.value;
     var parentInst = null;
-    if (! type.instances) {
-        type.instances = type.instances || {};
-        var setState = type.prototype.setState;
+   
+    var setState = type.prototype.setState;
+    if (setState && !setState.fromPage) {
         var forceUpdate = type.prototype.forceUpdate;
-        if (setState && !setState.fromPage) {
-            var fn = type.prototype.setState = function () {
-                var pageInst = this.$pageInst;
-                if (pageInst) {
-                    pageInst.setState.apply(this, arguments);
-                } else {
-                    setState.apply(this, arguments);
-                }
-            };
-            fn.fromPage = true;
-            type.prototype.forceUpdate = function () {
-                var pageInst = this.$pageInst;
-                if (pageInst) {
-                    pageInst.forceUpdate.apply(this, arguments);
-                } else {
-                    forceUpdate.apply(this, arguments);
-                }
-            };
-        }
+        var fn = type.prototype.setState = function () {
+            var pageInst = this.$pageInst;
+            if (pageInst) {
+                pageInst.setState.apply(this, arguments);
+            } else {
+                setState.apply(this, arguments);
+            }
+        };
+        fn.fromPage = true;
+        type.prototype.forceUpdate = function () {
+            var pageInst = this.$pageInst;
+            if (pageInst) {
+                pageInst.forceUpdate.apply(this, arguments);
+            } else {
+                forceUpdate.apply(this, arguments);
+            }
+        };
     }
+    
     var instanceUid = instance.instanceUid;
-    var instances = type.instances;
     if (!instanceUid) {
         instanceUid = instance.instanceUid = getUUID();
-        instances[instanceUid] = instance;
+        type[instanceUid] = instance;
         var p = fiber.return;
         while (p) {//找到离它最近的父组件
             if (p.name !== 'toComponent' && p.tag < 4) {
@@ -59,7 +57,7 @@ export function onComponentUpdate(fiber) {
     }
     parentInst = instance.$parentInst;
     if (parentInst) {
-        var inputProps = fiber._owner.props;
+        var inputProps = Object(fiber._owner).props || {};
         var uuid = inputProps.$$loop,
             data;
         var index = inputProps.$$index;
@@ -67,7 +65,7 @@ export function onComponentUpdate(fiber) {
             uuid += index;
         }
         if (!uuid) {
-            data = currentPage.value.wxData;
+            data = instance.wxData = currentPage.value.wxData;
         } else {
             data = instance.wxData || (instance.wxData = newData());
         }
@@ -84,13 +82,9 @@ export function onComponentUpdate(fiber) {
 export function onComponentDispose(fiber) {
     var instance = fiber.stateNode;
     var type = fiber.type;
-    var instances = type.instances;
-    if (!instances) {
-        return;
-    }
     var parentInst = instance.$parentInst;
     if (parentInst) {
-        delete instances[instance.instanceUid];
+        delete type[instance.instanceUid];
         var inputProps = fiber._owner.props;
         var uuid = inputProps.$$loop;
         var index = inputProps.$$index;
@@ -112,8 +106,8 @@ export function toComponent(props) {
     }
     if (props.fragmentUid && props.classUid) {
         var parentClass = classCached[props.classUid];
-        if (parentClass && parentClass.instances) {
-            var parentInstance = parentClass.instances[props.instanceUid];
+        if (parentClass) {
+            var parentInstance = parentClass[props.instanceUid];
             componentProps.fragmentData = {
                 state: parentInstance.state,
                 props: parentInstance.props,

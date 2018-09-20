@@ -12,14 +12,14 @@ class P extends React.Component {
     }
     componentDidMount() {
         let that = this;
-        wx.showLoading({
+        React.api.showLoading({
             title: '获取资源中',
             mask: true
         });
-        wx.request({
+        React.api.request({
             url: 'http://yapi.demo.qunar.com/mock/18752/qunar/question/detail',
             success: function(data) {
-                wx.hideLoading();
+                React.api.hideLoading();
                 that.setState({data: data.data});
                 that.setState({answer: [...that.state.answer,...data.data.answer]});            }
         });

@@ -30,7 +30,7 @@ class P extends React.Component {
       //sliderList
       this._isMounted = true;
       var that = this;
-      wx.request({
+      React.api.request({
           url: 'http://yapi.demo.qunar.com/mock/17668/wemall/venues/venuesList',
           method: 'GET',
           data: {},
@@ -45,7 +45,7 @@ class P extends React.Component {
       });
 
       //choiceList
-      wx.request({
+      React.api.request({
           url: 'http://yapi.demo.qunar.com/mock/17668/wemall/venues/choiceList',
           method: 'GET',
           data: {},
@@ -66,7 +66,7 @@ class P extends React.Component {
 
       setTimeout(function() {
           if (!that.state.loadingHidden && that._isMounted) {
-              wx.showModal({
+              React.api.showModal({
                   title: '提示',
                   content: '不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书'
               });
