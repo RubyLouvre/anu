@@ -20,6 +20,7 @@ import { toComponent } from './toComponent';
 import { toStyle } from './toStyle';
 import { toRenderProps } from './toRenderProps';
 import { toPage, applyAppStore } from './toPage';
+import { aliApis } from './aliApis';
 
 
 let win = getWindow();
@@ -63,7 +64,7 @@ React = win.React =  {
     toComponent,
     toPage,
     toStyle,
-    appType: 'wx'
+    appType: 'ali'
 };
 var apiContainer = {};
 if (typeof wx != 'undefined'){
@@ -72,8 +73,8 @@ if (typeof wx != 'undefined'){
     apiContainer = my;
 } else if (typeof swan !== 'undefined'){
     apiContainer = swan;
-} 
-injectAPIs(React, apiContainer);
+}
+injectAPIs(React, apiContainer, aliApis);
 export default React;
 export {
     Children,
