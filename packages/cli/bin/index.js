@@ -69,10 +69,10 @@ if( !supportBuildConfig[buildType].support ){
 
 switch(args[0]){
     case 'start':
-        require('./build');
+        require('../src/index');
         break;
     case 'build':
-        require('./build');
+        require('../src/index');
         break;
     default:
         require('../src/init')(args[0]);
