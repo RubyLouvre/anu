@@ -235,19 +235,8 @@ module.exports = {
         }
     },
     MemberExpression() {},
-    AssignmentExpression(astPath, state) {
-        let modules = utils.getAnu(state);
-        // 转换微信小程序component的properties对象为defaultProps
-        let left = astPath.node.left;
-        if (
-            modules.className &&
-            t.isMemberExpression(left) &&
-            left.object.name === modules.className &&
-            left.property.name === 'defaultProps'
-        ) {
-            //helpers.defaultProps(astPath.node.right.properties, modules);
-            astPath.remove();
-        }
+    AssignmentExpression() {
+        
     },
     CallExpression: {
         enter(astPath, state) {
@@ -474,7 +463,7 @@ module.exports = {
                     var styleType = expr.type;
                     var isIdentifier = styleType === 'Identifier';
                     if (isIdentifier || styleType === 'ObjectExpression') {
-                        var ii = modules.indexArr ?  modules.indexArr.join('+\'-\'+') : ""
+                        var ii = modules.indexArr ?  modules.indexArr.join('+\'-\'+') : '';
                         var styleRandName =
                             `'style${utils.createUUID(astPath)}'` + (ii ? ' +' +ii : '');
                         //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
@@ -540,7 +529,8 @@ module.exports = {
                     'renderProps',
                     fragmentUid,
                     {
-                        sourcePath:  path.join(process.cwd(), 'src', 'components', 'Fragments', fragmentUid+'.js'),
+                        sourcePath:  path.join(process.cwd(), 'src', 'components',
+                            'Fragments', fragmentUid+'.js'),
                         componentType: 'Component',
                         importComponents: subComponents,
                         usedComponents: modules.usedComponents

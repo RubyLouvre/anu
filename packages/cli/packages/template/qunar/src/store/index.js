@@ -7,7 +7,7 @@ import count from './countModel';
 const store = init({
     models: { 
         count
-     }
+    }
 });
 /*
 //将所有模型放入全局store中
