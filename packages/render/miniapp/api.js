@@ -77,7 +77,7 @@ function request(options) {
     return p;
 }
 
-function processApis(ReactWX, facade, override) {
+function processApis(ReactWX, facade) {
     const weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
     Object.keys(weApis).forEach(key => {
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
@@ -125,9 +125,7 @@ function processApis(ReactWX, facade, override) {
         }
     });
 
-    if (override){
-        Object.assign(ReactWX.api, override);
-    }
+    
 }
 
 function pxTransform(size) {
@@ -135,7 +133,7 @@ function pxTransform(size) {
     return parseInt(size, 10) / deviceRatio + 'rpx';
 }
 
-export function injectAPIs(ReactWX, facade) {
+export function injectAPIs(ReactWX, facade, override) {
     ReactWX.api = {};
     processApis(ReactWX, facade);
     ReactWX.api.request = request;
@@ -144,6 +142,11 @@ export function injectAPIs(ReactWX, facade) {
     }
     if (typeof getApp == 'function') {
         ReactWX.getApp = getApp;
+    }
+
+    if (override){
+       var obj = override(facade)
+       Object.assign(ReactWX.api, obj);
     }
     RequestQueue.facade = facade;
     ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
