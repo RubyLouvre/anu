@@ -1,0 +1,175 @@
+page{
+    position: relative;
+    background-color: rgb(240, 240, 240);
+}
+.question {
+   .nav-wrapper {
+       position: fixed;
+       top: 0;
+       left: 0;
+       z-index: 999;
+       width: 100%;
+       padding: 0 30rpx;
+       padding-bottom: 5rpx;
+       background-color: #fff;
+       .nav-btn {
+           display: inline-block;
+           margin-right: 50rpx;
+           line-height: 60rpx;
+           font-size: 28rpx;
+           color: #000;
+           &:last-child {
+               margin-right: 0;
+           }
+           &.active{
+               color: #22a0fa;
+           }
+           .open-icon {
+               display: inline-block;
+               margin-left: 10rpx;
+               width: 25rpx;
+               height: 15rpx;
+           }
+       }
+       .switch-bar {
+           position: absolute;
+           bottom: 1rpx;
+           left: 194rpx;
+           width: 50rpx;
+           height: 6rpx;
+           border-radius: 3rpx;
+           background-color: #22a0fa;
+           transition: left 250ms ease;
+           &.first-choose {
+               left: 60rpx;
+           }
+           &.third-choose {
+               left: 300rpx;
+           }
+       }
+   }
+   .content {
+       margin-top: 80rpx;
+       background-color: #fff;
+        .my-question-answer {
+            .tool {
+                position: relative;
+                padding: 0 30rpx;
+                border-bottom: 1px solid rgb(240, 240, 240);
+                line-height: 60rpx;
+                font-size: 22rpx;
+                letter-spacing: 1rpx;
+                color: rgb(197, 195, 195);
+                .switch-wrapper {
+                    position: absolute;
+                    top: 0;
+                    right: 30rpx;
+                    line-height: 60rpx;
+                }
+            }
+            .no-data-prompt {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%);
+                image {
+                    display: block;
+                    margin: 0 auto;
+                    margin-bottom: 30rpx;
+                    width: 180rpx;
+                    height: 101rpx;
+                }
+                .message {
+                    font-size: 22rpx;
+                    letter-spacing: 1rpx;
+                    color: rgb(197, 195, 195);
+                }
+            }
+        }
+        .question-item {
+            position: relative;
+            padding: 20rpx 30rpx;
+            padding-top: 40rpx;
+            height: 220rpx;
+            border-bottom: 1px solid rgb(240, 240, 240);
+            background-color: #fff;
+            font-size: 0;
+            .remark {
+                display: inline-block;
+                padding: 0 12rpx;
+                margin-right: 15rpx;
+                border-radius: 4rpx;
+                font-size: 20rpx;
+                font-weight: 700;
+                vertical-align: top;
+                line-height: 40rpx;
+                &.hot {
+                    background-color: #ffccc7;
+                    color: #f5222d;
+                }
+                &.stick {
+                    background-color: #ffe7ba;
+                    color: #fa8c16; 
+                }
+                &.new {
+                    background-color: #bae7ff;
+                    color: #1890ff; 
+                }
+            }
+            .title {
+                display: inline;
+                font-size: 30rpx;
+                letter-spacing: 1rpx;
+                font-weight: 700;
+                line-height: 40rpx;
+            }
+            .desc {
+                margin-top: 20rpx;
+                font-size: 22rpx;
+                letter-spacing: 1rpx;
+                color: rgb(175, 174, 174);
+            }
+            .hide-text {
+                overflow: hidden;
+                text-overflow:ellipsis;//文本溢出显示省略号
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+            }
+            .other-message {
+                position: absolute;
+                bottom: 20rpx;
+                right: 30rpx;
+                font-size: 0;
+                .other-message-item {
+                    display: inline-block;
+                    margin-right: 20rpx;
+                    font-size: 0;
+                    &:last-child {
+                        margin-right: 0;
+                    }
+                    image {
+                        display: inline-block;
+                        margin-right: 10rpx;
+                        width: 25rpx;
+                        height: 25rpx;
+                        vertical-align: top;
+                        &.eye {
+                            width: 32rpx;
+                            height: 32rpx;
+    
+                        }
+                    }
+                    .eye-text {
+                        line-height: 32rpx;
+                    }
+                    text {
+                        line-height: 25rpx;
+                        font-size: 20rpx;
+                        color: rgb(175, 174, 174);
+                    }
+                }
+            }
+        }
+   } 
+}
