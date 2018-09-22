@@ -65,7 +65,7 @@ function condition(test, consequent, alternate, modules) {
 
         var elseNode = createElement(
             'block',
-            [createAttribute('wx:else', 'true')],
+            [createAttribute('s-elif', 'true')],
             [logic(alternate, modules) || wrapText(alternate)]
         );
         ret.children.push(elseNode);
