@@ -1,0 +1,65 @@
+page{
+    background-color: #fff;
+}
+.strategy {
+    padding: 25rpx;
+    .strategy-item {
+        position: relative;
+        margin-bottom: 30rpx;
+        &:last-child {
+            margin-bottom: 0;
+        }
+        .big-image {
+            display: block;
+            width: 700rpx;
+            height: 350rpx;
+            border-radius: 5rpx;
+        }
+        .strategy-item-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 660rpx;
+            height: 290rpx;
+            padding: 30rpx 20rpx;
+            color: #fff;
+            .desc {
+                font-size: 26rpx;
+                letter-spacing: 1rpx;
+                margin-bottom: 10rpx;
+            }
+            .date {
+                font-size: 22rpx;
+            }
+            .user-wrapper {
+                position: absolute;
+                bottom: 40rpx;
+                left: 20rpx;
+                font-size: 0;
+                .user-image {
+                    display: inline-block;
+                    margin-right: 15rpx;
+                    width: 60rpx;
+                    height: 60rpx;
+                    border-radius: 30rpx;
+                    background-color: #fff;
+                    vertical-align: top;
+                    image {
+                        position: relative;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%,-50%);
+                        width: 50rpx;
+                        height: 50rpx;
+                        border-radius: 25rpx;
+                    }
+                }
+                .user-name {
+                    display: inline-block;
+                    line-height: 60rpx;
+                    font-size: 26rpx;
+                }
+            }
+        }
+    }
+}

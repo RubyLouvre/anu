@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 'use strict';
+const utils = require('./utils/index');
 const chalk = require('chalk');
-if ( Number(process.version.match(/v(\d+)/)[1]) < 8) {
+if (utils.getNodeVersion() < 8) {
     // eslint-disable-next-line
     console.log( `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold(7)}`);
     process.exit(1);
@@ -31,6 +32,7 @@ const program = require('commander');
 const VERSION = require('../package').version;
 function getBuildType(args){
     let argList = args[0].split(':');
+    //let commond = argList[0];
     let type = argList[1];
     type = !type ? 'wx' : type.toLowerCase();
     return type;
@@ -59,9 +61,9 @@ if (typeof args[0] === 'undefined') {
 
 
 let buildType =  getBuildType(args);
-if( !supportBuildConfig[buildType].support ){
+if( !supportBuildConfig(buildType).support ){
     console.log(
-        chalk.red(supportBuildConfig[buildType].text)
+        chalk.red(supportBuildConfig(buildType).text)
     )
     process.exit(1);
 }
@@ -69,15 +71,15 @@ if( !supportBuildConfig[buildType].support ){
 
 switch(args[0]){
     case 'start':
-        require('../src/index');
+        require('./bin/build');
         break;
     case 'build':
-        require('../src/index');
+        require('./bin/build');
         break;
     default:
-        require('../src/init')(args[0]);
+        require('./bin/init')
 }
-
+//require('./')
 
 
 
