@@ -6,6 +6,7 @@ if ( Number(process.version.match(/v(\d+)/)[1]) < 8) {
     console.log( `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold(7)}`);
     process.exit(1);
 }
+const config = require('../src/config');
 //const commonds = ['mpreact', 'nanachi'];
 
 const supportBuildConfig = {
@@ -18,7 +19,7 @@ const supportBuildConfig = {
         text: '百度小程序正在努力支持中, 请静候佳音'
     },
     'ali': {
-        support: false,
+        support: true,
         text: '支付宝小程序正在努力支持中, 请静候佳音'
     },
     'quick': {
@@ -59,20 +60,20 @@ if (typeof args[0] === 'undefined') {
 
 
 let buildType =  getBuildType(args);
-if( !supportBuildConfig[buildType].support ){
+if(!config[buildType].support ){
     console.log(
-        chalk.red(supportBuildConfig[buildType].text)
+        chalk.red(config[buildType].text)
     )
     process.exit(1);
 }
-
+config['buildType'] = buildType;
 
 switch(args[0]){
     case 'start':
-        require('../src/index');
+        require('../src/index')('start', buildType);
         break;
     case 'build':
-        require('../src/index');
+        require('../src/index')('build', buildType);
         break;
     default:
         require('../src/init')(args[0]);

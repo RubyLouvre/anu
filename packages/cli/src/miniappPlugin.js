@@ -133,7 +133,7 @@ module.exports = {
             //process alias for package.json alias field;
             helpers.resolveAlias(astPath, modules, item.local.name);
         });
-        helpers.copyNpmModules(modules.current, source, node);
+        // helpers.copyNpmModules(modules.current, source, node);
     },
     ExportDefaultDeclaration: {
         exit(astPath, state) {
@@ -203,9 +203,8 @@ module.exports = {
                 }
                 jsonStr = JSON.stringify(config, null, 4);
 
-                queue.pageConfig.push({
+                queue.push({
                     type: 'json',
-                    sourcePath: modules.sourcePath,
                     path: modules.sourcePath
                         .replace(/\/src\//, '/dist/')
                         .replace(/\.js$/, '.json'),
@@ -302,11 +301,11 @@ module.exports = {
            
             //如果是页面是var a = require("react")
             if (callee.name === 'require') {
-                helpers.copyNpmModules(
-                    modules.current,
-                    node.arguments[0].value,
-                    node
-                );
+                // helpers.copyNpmModules(
+                //     modules.current,
+                //     node.arguments[0].value,
+                //     node
+                // );
             }
         },
         exit(astPath, state) {

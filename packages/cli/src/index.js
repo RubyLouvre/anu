@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const rollup = require('rollup');
 const rbabel = require('rollup-plugin-babel');
-//const resolve = require('rollup-plugin-node-resolve');
+const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const rollupLess = require('rollup-plugin-less');
 const rollupSass = require('rollup-plugin-sass');
@@ -13,7 +13,10 @@ const spawn = require('cross-spawn');
 const utils = require('./utils');
 const isComponentOrAppOrPage = new RegExp( utils.sepForRegex  + '(?:pages|app|components)'  );
 const less = require('less');
-const jsTransform = require('./jsTransform');
+const miniTransform = require('./miniTransform');
+const styleTransform = require('./styleTransform');
+const resolveNpmModule = require('./resolveNpmModule');
+const generate = require('./generate');
 const helpers = require('./helpers');
 const queue = require('./queue');
 const config = require('./config');
@@ -21,25 +24,7 @@ let cwd = process.cwd();
 let inputPath = path.join(cwd, 'src');
 let outputPath = path.join(cwd, 'dist');
 let entry = path.join(inputPath, 'app.js');
-let useYarn = (()=>{
-    let key = 'useYarn';
-    if (config[key]){
-        return config[key];
-    } else {
-        config[key] = utils.useYarn();
-        return config[key];
-    }
-})();
-
-let useCnpm = (()=>{
-    let key = 'useCnpm';
-    if (config[key]){
-        return config[key];
-    } else {
-        config[key] = utils.useCnpm();
-        return config[key];
-    }
-})();
+const log = console.log;
 
 let libNames = (()=>{
     var list = [];
@@ -53,15 +38,24 @@ let libNames = (()=>{
 })();
 
 
-const isLib = name => {
+const isLib = filePath => {
+    let name = path.parse(filePath).name;
     return libNames.includes(name.toUpperCase());
-};
-const isJs = ext => {
-    return ext === '.js';
 };
 const isCss = ext => {
     const defileStyle = ['.less', '.scss', '.css'];
     return defileStyle.includes(ext);
+};
+
+const isNpmModules = (path)=>{
+    return /\/node_modules\//.test(path);
+};
+const isStyle = (path)=>{
+    return /\.(?:less|scss|sass)$/.test(path);
+};
+
+const isJs = (path)=>{
+    return /\.js$/.test(path);
 };
 
 const getAlias = () => {
@@ -70,12 +64,8 @@ const getAlias = () => {
     for (let key in aliasField) {
         aliasConfig[key] = path.resolve(cwd, aliasField[key]);
     }
+    aliasConfig = Object.assign(aliasConfig, {'react': aliasConfig['@react']});
     return aliasConfig;
-};
-
-const print = (prefix, msg) => {
-    // eslint-disable-next-line
-    console.log(chalk.green(`${prefix} ${msg}`));
 };
 function getExecutedOrder(list) {
     let ret = [];
@@ -155,17 +145,23 @@ function getExecutedOrder(list) {
     }
     return ret;
 }
+
 class Parser {
     constructor(entry) {
         this.entry = entry;
         this.isWatching = false;
+        this.jsFiles = [];
+        this.styleFiles = [];
+        this.npmFiles = [];
+        this.libFiles = [];
         this.inputConfig = {
             input: this.entry,
             plugins: [
                 alias(getAlias()),
-                // resolve({
-                //     include: 'node_modules/**'
-                // }),
+                resolve({
+                    //从项目node_modules目录中搜索npm模块
+                    jail: path.join(cwd, 'node_modules')
+                }),
                 commonjs({
                     include: 'node_modules/**'
                 }),
@@ -182,7 +178,6 @@ class Parser {
                 rbabel({
                     babelrc: false,
                     runtimeHelpers: true,
-                    exclude: ['node_modules/**'],
                     presets: ['react'],
                     externalHelpers: false,
                     plugins: [
@@ -194,373 +189,110 @@ class Parser {
             ],
             onwarn: (warning)=>{
                 if (warning.code === 'UNRESOLVED_IMPORT'){
-                    return;
+
+                    console.log( chalk.red(`缺少依赖: ${warning.source}, 正在自动安装中, 请稍候`) );
+                    utils.installer(warning.source, ()=>{
+                        //依赖安装成功
+                        //npmSrc = npmResolve.sync(name, {basedir: path.join(cwd, 'node_modules')} );
+                    });
                 }
             }
         };
     }
     async parse() {
         const bundle = await rollup.rollup(this.inputConfig);
-        const files = [], cssFiles = [];
-        const aaa =[];
+        const self = this;
         bundle.modules.forEach(function(item) {
             const id = item.id;
-            if (/commonjsHelpers|node_modules/.test(id)){
+            
+            if (/commonjsHelpers/.test(id)){
                 return;
             } 
-            if (/\.(?:less|scss)$/.test(id)){
-                cssFiles.push(id);
+
+            if (isLib(id)){
+                this.libFiles.push(id);
                 return;
             }
-            aaa.push(id);
-            files.push({
-                id: id,
-                deps: item.dependencies
-            });
+
+            if (isNpmModules(id)){
+                //npm中会涉及到ast处理路径
+                self.npmFiles.push({
+                    id: id,
+                    ast: item.ast
+                });
+                return;
+            }
+           
+            if (isStyle(id)){
+                self.styleFiles.push(id);
+                return;
+            }
+
+            if (isJs(id)){
+                self.jsFiles.push(id);
+            }
+
+            // files.push({
+            //     id: id,
+            //     deps: item.dependencies
+            // });
         });
       
-        let sorted = getExecutedOrder(files);
-        this.codeGen(sorted, cssFiles);
+       
+        //let sorted = getExecutedOrder(files);
+        // let sorted = files;
+
+        //console.log(queue.length);
+        await this.transform();
+        //console.log(queue.length);
+        generate();
+        
        
     }
-    codeGen(sorted, cssFiles){
-        this.startCodeGenJs(sorted);
-        this.startCodeGenCss(cssFiles);
-        this.generateProjectConfig();
-        this.generateAssets();
+    transform(){
+        this.updateStyleQueue(this.styleFiles);
+        this.updateJsQueue(this.jsFiles);
+        this.updateNpmQueue(this.npmFiles);
     }
-    startCodeGenJs(deps) {
-        deps.forEach(file => {
-            this.codegen(file);
+    updateJsQueue(jsFiles){
+        jsFiles.forEach((filePath)=>{
+            miniTransform.transform(filePath);
         });
     }
-    startCodeGenCss(deps){
-        deps.forEach(file => {
-            this.generateCss(file);
+    updateStyleQueue(styleFiles){
+        styleFiles.forEach((filePath)=>{
+            styleTransform(filePath, styleFiles);
         });
-    }
-    generateLib(file) {
-        return new Promise((resolve, reject) => {
-            let { name, ext } = path.parse(file);
-            let dist = file.replace('src', 'dist');
-            if (isLib(name) && isJs(ext)) {
-                let result = helpers.moduleToCjs.byPath(file);
-                let code = result.code;
-                fs.ensureFileSync(dist);
-                
-                if (!this.needBuild(dist, result.code)) return;
-                code = this.uglify(code, 'js');
-                fs.writeFile(dist, code, err => {
-                    if (err){
-                        reject(err);
-                        print('build fail:', path.relative(cwd, dist));
-                    } else {
-                        resolve();
-                        print('build success:', path.relative(cwd, dist));
-                    }
-                    
-                });
-            }
-        });
-    }
-    uglify(code, type){
-        // eslint-disable-next-line
-        let _t = type;
-
-        return code;
-        // return code;
-        // const methods = {
-        //     css: cssmin,
-        //     js: uglifyJS
-        // };
-
-        // if (!this.isWatching){
-        //     let res = methods[type](code);
-        //     result =  type === 'js' ? res.code : res;
-        // } else {
-        //     result = code;
+        // for(let i = 0; i < styleFiles.length; i++){
+        //     styleTransform(styleFiles[i], styleFiles);
         // }
-       
-        // return result;
     }
-    minifyJson(code){
-        let result = '';
-        if (!this.isWatching){
-            result = JSON.stringify(code);
-        } else {
-            result = JSON.stringify(code, null, 4);
-        }
-        return result;
+    updateNpmQueue(npmFiles){
+        npmFiles.forEach((item)=>{
+            //rollup处理commonjs模块时候，会在id加上commonjs-proxy:前缀
+            if (/commonjs-proxy\:/.test(item.id)){
+                item.id = item.id.split(':')[1];
+                item.moduleType = 'cjs';
+            } else {
+                item.moduleType = 'es';
+            }
+            resolveNpmModule(item);
+           
+        });
     }
+    // transformStyle(){
+    //     this.cssFiles.forEach((filePath)=>{
+    //         let distPath = filePath.replace(/\/src\//, '\/dist\/');
+    //         queue.push({
+    //             type: 
+    //         })
+    //     })
+    // }
     needBuild(dist, code){
         if (!this.isWatching) return true;
         //https://github.com/rollup/rollup-watch/blob/80c921eb8e4854622b31c6ba81c88281897f92d1/src/index.js#L19
         return fs.readFileSync(dist, 'utf-8') != code;
     }
-    async generateBusinessJs(file) {
-        let { name, ext } = path.parse(file);
-        let dist = file.replace('src', 'dist');
-        
-        if (isLib(name) || !isJs(ext)) return;
-        let code = jsTransform.transform(file);
-        if (isComponentOrAppOrPage.test(file)) {
-            fs.ensureFileSync(dist);
-            if (!this.needBuild(dist, code)) return;
-            fs.writeFile(dist, code, err => {
-                if (err){
-                    // eslint-disable-next-line
-                    console.log(err);
-                    print('build fail:', path.relative(cwd, dist));
-                } else {
-                    print('build success:', path.relative(cwd, dist));
-                }
-                
-            });
-
-            //如果自己配置json, 先copy, 再根据config合并重新写入;
-            let srcJson = file.replace(/\.js$/, '.json');
-            let distJson = dist.replace(/\.js$/, '.json');
-            if (fs.existsSync(srcJson)){
-                fs.ensureFileSync(distJson);
-                fs.copyFileSync(srcJson, distJson);
-            }
-
-        } else {
-            let dist = path.join(cwd, 'dist',  path.relative(path.join(cwd, 'src'), file) );
-            fs.ensureFileSync(dist);
-            if (!this.needBuild(dist, code)) return;
-            fs.writeFile(dist, code, err => {
-                if (err){
-                    // eslint-disable-next-line
-                    console.log(err);
-                    print('build fail:', path.relative(cwd, dist));
-                } else {
-                    print('build success:', path.relative(cwd, dist));
-                }
-                
-            });
-        }
-    }
-    generateWxml(file) {
-        return new Promise((resolve, reject) => {
-            let { name, ext } = path.parse(file);
-            if (isLib(name) || !isJs(ext)) return;
-            while (queue.wxml.length) {
-                let data = queue.wxml.shift();
-                if (!data) return;
-                let dist = data.path;
-                if (/pages|components/.test(dist)) {
-                    fs.ensureFileSync(dist);
-                    let code = data.code;
-                    code = this.uglify(code, 'html');
-                    fs.writeFile(dist, code || '', err => {
-                        if (err){
-                            reject(err);
-                            print('build fail:', path.relative(cwd, dist));
-                        } else {
-                            resolve();
-                            print('build success:', path.relative(cwd, dist));
-                        }
-                    });
-                }
-
-            }
-        });
-    }
-
-    generatePageJson(file) {
-        return new Promise((resolve, reject) => {
-            let { name, ext } = path.parse(file);
-            if (isLib(name) || !isJs(ext)) return;
-            let data = queue.pageConfig.shift();
-            if (!data) return;
-            let dist = data.path;
-            let exitJsonFile = data.sourcePath.replace(/\.js$/, '.json');
-            let json = data.code;
-            
-        
-            //合并本地存在的json配置
-            if ( fs.pathExistsSync(exitJsonFile) ) {
-                try {
-                    let localJson = require(exitJsonFile);
-                    json = Object.assign( localJson, JSON.parse(data.code) );
-                    json = JSON.stringify(json, null, 4);
-                } catch (err){
-                    // eslint-disable-next-line
-                    console.error(err);
-                    process.exit(1);
-                }
-                
-            }
-            
-           
-            if (/pages|app|components/.test(dist)) {
-                fs.ensureFileSync(dist);
-                fs.writeFile(dist, json, err => {
-                    if (err){
-                        reject(err);
-                        print('build fail:', path.relative(cwd, dist));
-                    } else {
-                        resolve();
-                        print('build success:', path.relative(cwd, dist));
-                    }
-                });
-            }
-        });
-    }
-
-    generateCss(file) {
-        return new Promise((resolve, reject) => {
-            let { name, ext } = path.parse(file);
-            let distDir = file.replace('src', 'dist');
-            if (!isCss(ext)) return;
-            let dist = path.join(path.dirname(distDir), `${name}.wxss`);
-            let lessContent = fs.readFileSync(file).toString();
-            fs.ensureFileSync(dist);
-            if (ext === '.less' || ext === '.css') {
-                less.render(lessContent, {filename: path.resolve(file) })
-                    .then(res => {
-                        let code = res.css;
-                        code = this.uglify(code, 'css');
-                        fs.writeFile(dist, code, err => {
-                            if (err){
-                                reject(err);
-                                print('build fail:', path.relative(cwd, dist));
-                            } else {
-                                resolve();
-                                print('build success:', path.relative(cwd, dist));
-                            }
-                            
-                        });
-                    })
-                    .catch(err => {
-                        if (err){
-                            // eslint-disable-next-line
-                            console.log(err);
-                        }
-                        
-                    });
-            }
-
-            if (ext === '.scss') {
-                const pkgPath =  path.join(cwd, 'node_modules', 'node-sass', 'package.json');
-                const isInstalledNodeSass = fs.existsSync(pkgPath) && require(pkgPath)['main'];
-                if (!isInstalledNodeSass){
-                    // eslint-disable-next-line
-                    console.log(chalk.green('缺少node-sass依赖, 正在安装, 请稍候...'));
-                    let pkg = 'node-sass@^4.9.3';
-                    let bin = '';
-                    let options = [];
-                    if (useYarn){
-                        bin = 'yarn';
-                        options.push('add', '--exact', pkg, '--dev');
-                       
-                    } else if (useCnpm){
-                        bin = 'cnpm';
-                        options.push('install', pkg, '--save-dev');
-                    } else {
-                        bin = 'npm';
-                        options.push('install', pkg, '--save-dev');
-                    }
-
-                    let result = spawn.sync(bin, options, { stdio: 'inherit' });
-                    if (result.error) {
-                        // eslint-disable-next-line
-                        console.log(result.error);
-                        process.exit(1);
-                    }
-                    // eslint-disable-next-line
-                    console.log(chalk.green('node-sass安装成功\n'));
-
-                }
-                
-
-                const sass = require(path.join(
-                    cwd,
-                    'node_modules',
-                    'node-sass'
-                ));
-                sass.render(
-                    {
-                        file: file
-                    },
-                    (err, res) => {
-                        if (err) throw err;
-                        let code = res.css.toString();
-                        code = this.uglify(code, 'css');
-                        fs.writeFile(dist, code, err => {
-                            if (err){
-                                reject(err);
-                                print('build fail:', path.relative(cwd, dist));
-                            } else {
-                                resolve();
-                                print('build success:', path.relative(cwd, dist));
-                            }
-                        });
-                    }
-                );
-            }
-        });
-    }
-
-    generateProjectConfig() {
-        let fileName = 'project.config.json';
-        const dist = path.join(outputPath, fileName);
-        if (!this.needBuild(dist, fs.readFileSync(path.join(inputPath, fileName), 'utf-8') )) return;
-        const from = path.normalize(
-            path.join(inputPath, fileName)
-        );
-        const to = path.normalize(dist);
-        fs.ensureFileSync(to);
-        fs.copyFile(from, to, (err)=>{
-            if (err){
-                print('build fail:', path.relative(cwd, dist));
-            } else {
-                print('build success:', path.relative(cwd, dist));
-            }
-           
-        });
-    }
-
-    generateAssets() {
-        //to do 差异化copy
-        const dir = 'assets';
-        const inputDir = path.join(inputPath, dir);
-        const distDir = path.join(outputPath, dir);
-        if (!fs.pathExistsSync(inputDir)) return;
-        fs.ensureDirSync(distDir);
-        fs.copy(
-            inputDir,
-            distDir,
-            (err)=>{
-                if (err){
-                    // eslint-disable-next-line
-                    console.error(err);
-                    print('build fail:',  path.relative(cwd, distDir ) );
-                } else {
-                    print('build success:',  path.relative(cwd, distDir ) );
-                }
-            }
-        );
-        
-    }
-
-    async codegen(file) {
-        
-        await this.generateBusinessJs(file);
-        Promise.all([
-            this.generateWxml(file),
-            this.generateLib(file),
-            this.generatePageJson(file)
-        ])
-            .catch(err => {
-                if (err) {
-                // eslint-disable-next-line
-                console.log(chalk.red('ERR_MSG: ' + err));
-                }
-            });
-    }
-
     watching() {
         let watchDir = path.dirname(this.entry);
         let watchConfig = {
@@ -594,7 +326,7 @@ class Parser {
     }
 }
 
-async function build(arg) {
+async function build(arg, buildType) {
     if (arg === 'start'){
         // eslint-disable-next-line
         console.log(chalk.green('watching files...'));

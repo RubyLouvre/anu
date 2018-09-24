@@ -1,6 +1,10 @@
 let syntaxClassProperties = require('babel-plugin-syntax-class-properties');
 let babel = require('babel-core');
-let visitor = require('./jsTransformImpl');
+let queue = require('./queue');
+let path = require('path');
+let config = require('./config');
+let visitor = require('./miniappPlugin');
+let cwd = process.cwd();
 let helpers = require('./helpers');
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
@@ -25,15 +29,25 @@ function miniappPlugin() {
                 modules.componentType = 'Component';
             } else if (/\/pages\//.test(opts.filename)) {
                 modules.componentType = 'Page';
-            } else if (/app\.js/.test(opts.filename)) {
+            } else if (/app\.js$/.test(opts.filename)) {
                 modules.componentType = 'App';
             }
         }
     };
 }
 
+function getDistPath(filePath){
+    let { name, dir } = path.parse(filePath);
+    let relativePath = path.relative( path.join(cwd, 'src'), dir);
+    let distDir = path.join(cwd, 'dist', relativePath);
+    let ext = config[config['buildType']].jsExt; //获取构建的文件后缀名
+    let distFilePath = path.join(distDir, `${name}.${ext}` );
+    return distFilePath;
+}
+
 function transform(sourcePath) {
-    var result = babel.transformFileSync(sourcePath, {
+    
+    let result = babel.transformFileSync(sourcePath, {
         babelrc: false,
         plugins: [
             'syntax-jsx',
@@ -45,7 +59,14 @@ function transform(sourcePath) {
         ]
     });
 
-    return helpers.moduleToCjs.byCode(result.code).code;
+  
+    queue.push({
+        code: helpers.moduleToCjs.byCode(result.code).code,
+        type: 'js',
+        path: getDistPath(sourcePath)
+        
+    });
+    //return helpers.moduleToCjs.byCode(result.code).code;
 }
 
 module.exports = {

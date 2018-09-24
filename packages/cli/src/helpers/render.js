@@ -88,7 +88,7 @@ exports.exit = function(astPath, type, componentName, modules) {
                     dep.addImportTag(fragmentUid);
                 });
             }
-            queue.wxml.push(enqueueData);
+            queue.push(enqueueData);
             break;
         default:
             break;
