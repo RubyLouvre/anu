@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-25
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-09-25
  * IE9+
  */
 
@@ -2609,6 +2609,49 @@ function toRenderProps(props) {
     return null;
 }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+var aliApis = function aliApis(api) {
+  var _ref;
+  return _ref = {
+    showModal: function showModal() {
+      var _arguments$ = arguments[0],
+          cancelText = _arguments$.cancelText,
+          confirmText = _arguments$.confirmText;
+      arguments[0].cancelButtonText = cancelText;
+      arguments[0].confirmButtonText = confirmText;
+      return api.confirm.apply(api, arguments);
+    },
+    showActionSheet: function showActionSheet() {
+      var itemList = arguments[0].itemList;
+      arguments[0].items = itemList;
+      return api.showActionSheet.apply(api, arguments);
+    }
+  }, _defineProperty(_ref, "showActionSheet", function showActionSheet() {
+    var _arguments$2 = arguments[0],
+        title = _arguments$2.title,
+        icon = _arguments$2.icon;
+    arguments[0].content = title;
+    arguments[0].type = icon;
+    return api.showActionSheet.apply(api, arguments);
+  }), _defineProperty(_ref, "showLoading", function showLoading() {
+    var title = arguments[0].title;
+    arguments[0].content = title;
+    return api.showLoading.apply(api, arguments);
+  }), _defineProperty(_ref, "setNavigationBarTitle", function setNavigationBarTitle() {
+    arguments[0].image = null;
+    arguments[0].backgroundColor = null;
+    arguments[0].borderBottomColor = null;
+    arguments[0].reset = null;
+    return api.setNavigationBar.apply(api, arguments);
+  }), _defineProperty(_ref, "setNavigationBarColor", function setNavigationBarColor() {
+    arguments[0].image = null;
+    arguments[0].title = null;
+    arguments[0].borderBottomColor = null;
+    arguments[0].reset = null;
+    return api.setNavigationBar.apply(api, arguments);
+  }), _ref;
+};
+
 var win = getWindow();
 var React = void 0;
 var render$1 = Renderer$1.render;
@@ -2643,7 +2686,7 @@ React = win.React = {
     toComponent: toComponent,
     toPage: toPage,
     toStyle: toStyle,
-    appType: 'wx'
+    appType: 'ali'
 };
 var apiContainer = {};
 if (typeof wx != 'undefined') {
@@ -2653,7 +2696,7 @@ if (typeof wx != 'undefined') {
 } else if (typeof swan !== 'undefined') {
     apiContainer = swan;
 }
-injectAPIs(React, apiContainer);
+injectAPIs(React, apiContainer, aliApis);
 var React$1 = React;
 
 export default React$1;
