@@ -68,7 +68,6 @@ if(!config[buildType].support ){
 }
 config['buildType'] = buildType;
 
-console.log(1);
 switch(args[0]){
     case 'start':
         require('../src/index')('start', buildType);
@@ -79,7 +78,6 @@ switch(args[0]){
     default:
         require('../src/init')(args[0]);
 }
-console.log(2);
 
 
 

@@ -57,6 +57,15 @@ const isJs = (path)=>{
     return /\.js$/.test(path);
 };
 
+const getAlias = () => {
+    let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
+    let aliasConfig = {};
+    for (let key in aliasField) {
+        aliasConfig[key] = path.resolve(cwd, aliasField[key]);
+    }
+    aliasConfig = Object.assign(aliasConfig, {'react': aliasConfig['@react']});
+    return aliasConfig;
+};
 function getExecutedOrder(list) {
     let ret = [];
     let loaded = {};
@@ -147,9 +156,9 @@ class Parser {
         this.inputConfig = {
             input: this.entry,
             plugins: [
-                alias( utils.getAlias() ),
+                alias(getAlias()),
                 resolve({
-                    //从项目node_modules目录中搜索npm模块
+                    //从项目node_modules目录中搜索npm模块, 防止向父级查找
                     jail: path.join(cwd, 'node_modules')
                 }),
                 commonjs({
@@ -178,22 +187,20 @@ class Parser {
                 })
             ],
             onwarn: (warning)=>{
+                //return false;
                 if (warning.code === 'UNRESOLVED_IMPORT'){
-
                     
-                    // console.log( chalk.red(`缺少依赖: ${warning.source}, 正在自动安装中, 请稍候`) );
-                    // utils.installer(warning.source, ()=>{
-                    //     //依赖安装成功
-                    //     //npmSrc = npmResolve.sync(name, {basedir: path.join(cwd, 'node_modules')} );
-                    // });
+                    console.log( chalk.red(`缺少依赖: ${warning.source}, 正在自动安装中, 请稍候`) );
+                    utils.installer(warning.source, ()=>{
+                        //依赖安装成功
+                        //npmSrc = npmResolve.sync(name, {basedir: path.join(cwd, 'node_modules')} );
+                    });
                 }
             }
         };
     }
     async parse() {
-        console.log('before--');
         const bundle = await rollup.rollup(this.inputConfig);
-        console.log('after--');
         const self = this;
         bundle.modules.forEach(function(item) {
             const id = item.id;
@@ -208,7 +215,6 @@ class Parser {
             }
 
             if (isNpmModules(id)){
-                //npm中会涉及到ast处理路径
                 self.npmFiles.push({
                     id: id,
                     originalCode: item.originalCode
@@ -222,12 +228,9 @@ class Parser {
             }
 
             if (isJs(id)){
-                
-                
-
+               
                 self.jsFiles.push({
-                    id: item.id,
-                    code: item.originalCode,
+                    id: id,
                     resolvedIds: item.resolvedIds
                 });
             }
@@ -243,9 +246,7 @@ class Parser {
         // let sorted = files;
 
         //console.log(queue.length);
-        //console.log('before');
         await this.transform();
-        // console.log('after');
         //console.log(queue.length);
         generate();
         
@@ -256,10 +257,9 @@ class Parser {
         this.updateJsQueue(this.jsFiles);
         this.updateNpmQueue(this.npmFiles);
     }
-    updateJsQueue(files){
-        files.forEach((file)=>{
-            let {id, resolvedIds, code} = file;
-            miniTransform.transform(id, code,  resolvedIds);
+    updateJsQueue(jsFiles){
+        jsFiles.forEach((file)=>{
+            miniTransform.transform(file.id, file.resolvedIds);
         });
     }
     updateStyleQueue(styleFiles){
@@ -271,20 +271,23 @@ class Parser {
         // }
     }
     updateNpmQueue(npmFiles){
-        
         npmFiles.forEach((item)=>{
             //rollup处理commonjs模块时候，会在id加上commonjs-proxy:前缀
             if (/commonjs-proxy\:/.test(item.id)){
                 item.id = item.id.split(':')[1];
-            } 
+                item.moduleType = 'cjs';
+            } else {
+                item.moduleType = 'es';
+            }
             resolveNpm(item);
+           
         });
     }
-    // needBuild(dist, code){
-    //     if (!this.isWatching) return true;
-    //     //https://github.com/rollup/rollup-watch/blob/80c921eb8e4854622b31c6ba81c88281897f92d1/src/index.js#L19
-    //     return fs.readFileSync(dist, 'utf-8') != code;
-    // }
+    needBuild(dist, code){
+        if (!this.isWatching) return true;
+        //https://github.com/rollup/rollup-watch/blob/80c921eb8e4854622b31c6ba81c88281897f92d1/src/index.js#L19
+        return fs.readFileSync(dist, 'utf-8') != code;
+    }
     watching() {
         let watchDir = path.dirname(this.entry);
         let watchConfig = {

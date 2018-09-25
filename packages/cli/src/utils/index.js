@@ -8,7 +8,6 @@ const chalk = require('chalk');
 const spawn = require('cross-spawn');
 const config = require('../config');
 
-var resolveP  = require('babel-plugin-module-resolver').default;
 let utils = {
     getNodeVersion(){
         return Number(process.version.match(/v(\d+)/)[1]);
@@ -172,7 +171,6 @@ let utils = {
         let distJs = id.replace(/\/src\//, '/dist/');
         let distNpm = depFile.replace(/\/node_modules\//, '/dist/npm/');
 
-
         //根据被依赖文件和依赖文件，求相对路径
         let aliasPath = path.relative( path.dirname(distJs),  distNpm);
         return aliasPath;
@@ -181,13 +179,8 @@ let utils = {
         let aliasPath = path.relative( path.dirname(id),  depFile);
         return aliasPath;
     },
-    resolveAlias(id, deps){
-        
+    colletAlias(id, deps){
         let resolvedAlias = {};
-         
-
-           
-
         Object.keys(deps).forEach((aliasName)=>{
 
             /**
@@ -198,8 +191,7 @@ let utils = {
              * @rematch/core          //npm模块
              */
             if (!this.isAlias(aliasName)) return false;
-
-
+           
             //to do: windows路径处理
             let dep = deps[aliasName];
             let resolvedPath = '';
@@ -210,19 +202,13 @@ let utils = {
              * 2: 处理依赖node_modules的相对路径
              */
 
-
             if (/\/node_modules\//.test(dep)){
                 resolvedPath = this.resolveNpmAlias(id, dep);
             } else {
                 resolvedPath = this.resolveCustomAlias(id, dep);
             }
-           
             resolvedAlias[aliasName] = resolvedPath;
-
-
-
         });
-
         return resolvedAlias;
 
     },

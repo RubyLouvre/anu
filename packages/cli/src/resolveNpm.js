@@ -1,6 +1,4 @@
-const generate = require('babel-generator').default;
 const babel = require('babel-core');
-const traverse = require('babel-traverse').default;
 const queue = require('./queue');
 const cwd = process.cwd();
 const path = require('path');
@@ -13,7 +11,7 @@ const isNpm = (npmName)=>{
 };
 
 //todo windows路径兼容
-const resolveNpmPath = (id, npmPath)=>{
+const resolveNpmDepPath = (id, npmPath)=>{
     let distDir = id.replace(/\/node_modules\//, '/dist/npm/' );     //含有依赖的文件路径
     let distRequired = npmPath.replace(/\/node_modules\//, '/dist/npm/' ); //被依赖的文件路径
     let relativePath = path.relative( path.dirname(distDir),  distRequired);
@@ -26,7 +24,8 @@ const getDistPath = (id)=>{
 };
 
 module.exports = (file)=>{
-    let {id, originalCode} = file;
+    let {id, originalCode, moduleType} = file;
+   
     let code = babel.transform(originalCode, {
         babelrc: false,
         plugins: [
@@ -38,8 +37,8 @@ module.exports = (file)=>{
                         if (!isNpm(value)) return; //文件中可能存在相对路径模块引用, 不需要更改路径位置
                         if (value !=='react'){
                             //文件中中react需要配置alias路径
-                            let npmPath = nodeResolve.sync(value, {basedir: cwd, moduleDirectory: path.join(cwd, 'node_modules')});
-                            node.source.value = resolveNpmPath(id, npmPath);
+                            let depFile = nodeResolve.sync(value, {basedir: cwd, moduleDirectory: path.join(cwd, 'node_modules')});
+                            node.source.value = resolveNpmDepPath(id, depFile);
                         }
                        
                     },
@@ -51,22 +50,23 @@ module.exports = (file)=>{
                         if (!isNpm(value)) return; //文件中可能存在相对路径模块引用, 不需要更改路径位置
                         if (value !=='react'){
                             //react需要配置alias路径
-                            let npmPath = nodeResolve.sync(value, {basedir: cwd, moduleDirectory: path.join(cwd, 'node_modules')});
-                            node.arguments[0].value = resolveNpmPath(id, npmPath);
+                            let depFile = nodeResolve.sync(value, {basedir: cwd, moduleDirectory: path.join(cwd, 'node_modules')});
+                            node.arguments[0].value = resolveNpmDepPath(id, depFile);
                         }
                     }
                 }
             },
             ['module-resolver', {
-                'root': [ path.join(cwd, 'dist') ],
+                'root': ['./'],
                 'alias': {
-                    'react': './ReactWX.js',
+                    'react': './src/ReactWX.js',
                 }
             }],
-            'transform-es2015-modules-commonjs'
+            ['transform-node-env-inline'],
+            ...(moduleType === 'es' ? ['transform-es2015-modules-commonjs'] : [])
+            
         ]
     }).code;
-
 
     queue.push({
         code: code,

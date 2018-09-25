@@ -48,13 +48,10 @@ function getDistPath(filePath){
 }
 
 //var resolveP  = require('babel-plugin-module-resolver');
-
-function transform(sourcePath, code, resolvedIds) {
-
-   
-
-
-    let result = babel.transform(code, {
+var log = console.log;
+function transform(sourcePath, resolvedIds) {
+    
+    let result = babel.transformFileSync(sourcePath, {
         babelrc: false,
         plugins: [
             'syntax-jsx',
@@ -63,34 +60,38 @@ function transform(sourcePath, code, resolvedIds) {
             'transform-async-to-generator',
             'transform-es2015-template-literals',
             miniappPlugin,
-            'transform-es2015-modules-commonjs', 
             ['module-resolver', {
                 'root':  './',  //从项目根路径搜索
-                'alias': {
-                    '@react' : './src/ReactWX.js',
-                    '@components': './src/components',
+                // 'alias': {
+                //     '@react' : './src/ReactWX.js',
+                //     '@components': './src/components',
+                //     ...d
                     
-                },
-                resolvePath(s, current){
-                    // console.log(1);
-                    // // console.log(sourcePath);
-                    // // console.log(current, '---cur');
-                    // // console.log();
-                    // // // if(/@react/.test(current)){
-                    // // //     return 'sdfsdfsdf'
-                    // // // }
-                    // console.log(s);
                     
-                    // console.log(current);
-                    // console.log();
-                    // console.log();
-
-                    //return './sdfdsf'
+                // },
+                resolvePath(moduleName){
+                    var aliasMap = utils.colletAlias(sourcePath, resolvedIds);
+                    //某些模块中不存在任何依赖
+                    if(aliasMap[moduleName]){
+                        return aliasMap[moduleName];
+                    }
                 }
             }],
+            // [
+            //     'transform-es2015-modules-commonjs',
+            //     {
+            //        // loose: true
+            //     }
+            // ]
+           // 'transform-es2015-modules-commonjs'
         ]
     });
 
+
+    // result = babel.transform(result.code, {
+    //     babelrc: false,
+    //     plugins: ['transform-es2015-modules-commonjs']
+    // });
     queue.push({
         code: result.code,
         type: 'js',
