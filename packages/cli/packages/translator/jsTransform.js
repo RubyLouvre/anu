@@ -41,11 +41,12 @@ function transform(sourcePath) {
             'transform-object-rest-spread',
             'transform-async-to-generator',
             'transform-es2015-template-literals',
-            miniappPlugin
+            miniappPlugin,
+            'transform-es2015-modules-commonjs'
         ]
     });
 
-    return helpers.moduleToCjs.byCode(result.code).code;
+    return result.code;
 }
 
 module.exports = {

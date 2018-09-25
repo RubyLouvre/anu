@@ -1,11 +1,12 @@
 const t = require('babel-types');
 const generate = require('babel-generator').default;
+const template = require('babel-template');
 const path = require('path');
-const helpers = require('./helpers');
 const queue = require('./queue');
 const utils = require('./utils');
 const deps = require('./deps');
-const template = require('babel-template');
+const config = require('./config');
+const helpers = require(`./${config[config['buildType']]['helpers']}`);
 const inlineElement = {
     text: 1,
     span: 1,
@@ -131,7 +132,7 @@ module.exports = {
             modules.importComponents[item.local.name] = source;
 
             //process alias for package.json alias field;
-            helpers.resolveAlias(astPath, modules, item.local.name);
+           // helpers.resolveAlias(astPath, modules, item.local.name);
         });
         // helpers.copyNpmModules(modules.current, source, node);
     },

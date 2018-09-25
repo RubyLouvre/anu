@@ -7,6 +7,8 @@ const cwd = process.cwd();
 const chalk = require('chalk');
 const spawn = require('cross-spawn');
 const config = require('../config');
+
+var resolveP  = require('babel-plugin-module-resolver').default;
 let utils = {
     getNodeVersion(){
         return Number(process.version.match(/v(\d+)/)[1]);
@@ -151,6 +153,77 @@ let utils = {
         // eslint-disable-next-line
         console.log(chalk.green(`${pkg}安装成功\n`));
         cb && cb();
+
+    },
+    isAlias(name){
+        return !/^(\.|\/)/.test(name);
+    },
+    getAlias(){
+        let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
+        let aliasConfig = {};
+        for (let key in aliasField) {
+            aliasConfig[key] = path.resolve(cwd, aliasField[key]);
+        }
+        //npm依赖中存在react引用时，也需要配置alias;
+        aliasConfig = Object.assign(aliasConfig, {'react': aliasConfig['@react']});
+        return aliasConfig;
+    },
+    resolveNpmAlias(id, depFile){
+        let distJs = id.replace(/\/src\//, '/dist/');
+        let distNpm = depFile.replace(/\/node_modules\//, '/dist/npm/');
+
+
+        //根据被依赖文件和依赖文件，求相对路径
+        let aliasPath = path.relative( path.dirname(distJs),  distNpm);
+        return aliasPath;
+    },
+    resolveCustomAlias(id, depFile){
+        let aliasPath = path.relative( path.dirname(id),  depFile);
+        return aliasPath;
+    },
+    resolveAlias(id, deps){
+        
+         let resolvedAlias = {};
+         
+
+           
+
+         Object.keys(deps).forEach((aliasName)=>{
+
+            /**
+             * 自定义别名与npm模块路径处理本质上都可以作为alias配置处理, 例如:
+             * @components/xx         //自定义别名
+             * @react                 //自定义别名
+             * react-redux            //npm模块
+             * @rematch/core          //npm模块
+             */
+            if(!this.isAlias(aliasName)) return false;
+
+
+            //to do: windows路径处理
+            let dep = deps[aliasName];
+            let resolvedPath = '';
+            
+            /**
+             * 处理别名分两种情况
+             * 1: 处理自定理的alias路径配置
+             * 2: 处理依赖node_modules的相对路径
+             */
+
+
+            if(/\/node_modules\//.test(dep)){
+                resolvedPath = this.resolveNpmAlias(id, dep);
+            }else{
+                resolvedPath = this.resolveCustomAlias(id, dep);
+            }
+           
+            resolvedAlias[aliasName] = resolvedPath;
+
+
+
+         });
+
+         return resolvedAlias;
 
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep

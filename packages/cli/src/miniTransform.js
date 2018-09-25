@@ -1,15 +1,16 @@
 let syntaxClassProperties = require('babel-plugin-syntax-class-properties');
 let babel = require('babel-core');
 let queue = require('./queue');
+let utils = require('./utils');
 let path = require('path');
-let config = require('./config');
 let visitor = require('./miniappPlugin');
 let cwd = process.cwd();
-let helpers = require('./helpers');
+const config = require('./config');
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */
 function miniappPlugin() {
+   
     return {
         inherits: syntaxClassProperties,
         visitor: visitor,
@@ -20,10 +21,11 @@ function miniappPlugin() {
                 staticMethods: [],
                 thisProperties: [],
                 importComponents: {}, //import xxx form path进来的组件
-                usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
-                customComponents: [] //定义在page.json中usingComponents对象的自定义组件
+                usedComponents: {},   //在<wxml/>中使用<import src="path">的组件
+                customComponents: []  //定义在page.json中usingComponents对象的自定义组件
             });
             modules.sourcePath = opts.filename;
+            
             modules.current = opts.filename.replace(process.cwd(), '');
             if (/\/components\//.test(opts.filename)) {
                 modules.componentType = 'Component';
@@ -45,9 +47,14 @@ function getDistPath(filePath){
     return distFilePath;
 }
 
-function transform(sourcePath) {
-    
-    let result = babel.transformFileSync(sourcePath, {
+//var resolveP  = require('babel-plugin-module-resolver');
+
+function transform(sourcePath, code, resolvedIds) {
+
+   
+
+
+   let result = babel.transform(code, {
         babelrc: false,
         plugins: [
             'syntax-jsx',
@@ -55,18 +62,41 @@ function transform(sourcePath) {
             'transform-object-rest-spread',
             'transform-async-to-generator',
             'transform-es2015-template-literals',
-            miniappPlugin
+            miniappPlugin,
+            'transform-es2015-modules-commonjs', 
+            ['module-resolver', {
+                'root':  './',  //从项目根路径搜索
+                "alias": {
+                    '@react' : './src/ReactWX.js',
+                    '@components': './src/components',
+                    
+                },
+                resolvePath(s, current){
+                   // console.log(1);
+                    // // console.log(sourcePath);
+                    // // console.log(current, '---cur');
+                    // // console.log();
+                    // // // if(/@react/.test(current)){
+                    // // //     return 'sdfsdfsdf'
+                    // // // }
+                    // console.log(s);
+                    
+                    // console.log(current);
+                    // console.log();
+                    // console.log();
+
+                    //return './sdfdsf'
+                }
+            }],
         ]
     });
 
-  
     queue.push({
-        code: helpers.moduleToCjs.byCode(result.code).code,
+        code: result.code,
         type: 'js',
         path: getDistPath(sourcePath)
         
     });
-    //return helpers.moduleToCjs.byCode(result.code).code;
 }
 
 module.exports = {
