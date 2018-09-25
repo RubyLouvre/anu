@@ -1,7 +1,7 @@
 function _uuid(){
     return (Math.random()+'').slice(-4);
 }
-
+export var  delayMounts = [];
 export function getUUID(){
     return _uuid()+_uuid();
 }

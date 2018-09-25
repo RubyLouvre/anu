@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-20
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-25
  * IE9+
  */
 
@@ -659,6 +659,7 @@ function createContext(defaultValue, calculateChangedBits) {
 function _uuid() {
     return (Math.random() + '').slice(-4);
 }
+var delayMounts = [];
 function getUUID() {
     return _uuid() + _uuid();
 }
@@ -859,142 +860,146 @@ var otherApis = {
 };
 
 function initPxTransform() {
-  var wxConfig = this.api;
-  var windowWidth = 375;
-  wxConfig.designWidth = windowWidth;
-  wxConfig.deviceRatio = 750 / windowWidth / 2;
-  if (wxConfig.getSystemInfo) {
-    wxConfig.getSystemInfo({
-      success: function success(res) {
-        windowWidth = res.windowWidth;
-        wxConfig.designWidth = windowWidth;
-        wxConfig.deviceRatio = 750 / windowWidth / 2;
-      }
-    });
-  }
+    var wxConfig = this.api;
+    var windowWidth = 375;
+    wxConfig.designWidth = windowWidth;
+    wxConfig.deviceRatio = 750 / windowWidth / 2;
+    if (wxConfig.getSystemInfo) {
+        wxConfig.getSystemInfo({
+            success: function success(res) {
+                windowWidth = res.windowWidth;
+                wxConfig.designWidth = windowWidth;
+                wxConfig.deviceRatio = 750 / windowWidth / 2;
+            }
+        });
+    }
 }
 var RequestQueue = {
-  MAX_REQUEST: 5,
-  queue: [],
-  request: function request(options) {
-    this.push(options);
-    this.run();
-  },
-  push: function push(options) {
-    this.queue.push(options);
-  },
-  run: function run() {
-    var _arguments = arguments,
-        _this = this;
-    if (!this.queue.length) {
-      return;
+    MAX_REQUEST: 5,
+    queue: [],
+    request: function request(options) {
+        this.push(options);
+        this.run();
+    },
+    push: function push(options) {
+        this.queue.push(options);
+    },
+    run: function run() {
+        var _arguments = arguments,
+            _this = this;
+        if (!this.queue.length) {
+            return;
+        }
+        if (this.queue.length <= this.MAX_REQUEST) {
+            var options = this.queue.shift();
+            var completeFn = options.complete;
+            options.complete = function () {
+                completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
+                _this.run();
+            };
+            if (this.facade.httpRequest) {
+                this.facade.httpRequest(options);
+            } else if (this.facade.request) {
+                this.facade.request(options);
+            }
+        }
     }
-    if (this.queue.length <= this.MAX_REQUEST) {
-      var options = this.queue.shift();
-      var completeFn = options.complete;
-      options.complete = function () {
-        completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
-        _this.run();
-      };
-      if (this.facade.httpRequest) {
-        this.facade.httpRequest(options);
-      } else if (this.facade.request) {
-        this.facade.request(options);
-      }
-    }
-  }
 };
 function request(options) {
-  options = options || {};
-  if (typeof options === 'string') {
-    options = {
-      url: options
-    };
-  }
-  var originSuccess = options['success'];
-  var originFail = options['fail'];
-  var originComplete = options['complete'];
-  var p = new Promise(function (resolve, reject) {
-    options['success'] = function (res) {
-      originSuccess && originSuccess(res);
-      resolve(res);
-    };
-    options['fail'] = function (res) {
-      originFail && originFail(res);
-      reject(res);
-    };
-    options['complete'] = function (res) {
-      originComplete && originComplete(res);
-    };
-    RequestQueue.request(options);
-  });
-  return p;
+    options = options || {};
+    if (typeof options === 'string') {
+        options = {
+            url: options
+        };
+    }
+    var originSuccess = options['success'];
+    var originFail = options['fail'];
+    var originComplete = options['complete'];
+    var p = new Promise(function (resolve, reject) {
+        options['success'] = function (res) {
+            originSuccess && originSuccess(res);
+            resolve(res);
+        };
+        options['fail'] = function (res) {
+            originFail && originFail(res);
+            reject(res);
+        };
+        options['complete'] = function (res) {
+            originComplete && originComplete(res);
+        };
+        RequestQueue.request(options);
+    });
+    return p;
 }
 function processApis(ReactWX, facade) {
-  var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
-  Object.keys(weApis).forEach(function (key) {
-    if (!onAndSyncApis[key] && !noPromiseApis[key]) {
-      ReactWX.api[key] = function (options) {
-        options = options || {};
-        var task = null;
-        var obj = Object.assign({}, options);
-        if (typeof options === 'string') {
-          return facade[key](options);
-        }
-        var p = new Promise(function (resolve, reject) {
-          ['fail', 'success', 'complete'].forEach(function (k) {
-            obj[k] = function (res) {
-              options[k] && options[k](res);
-              if (k === 'success') {
-                if (key === 'connectSocket') {
-                  resolve(task);
-                } else {
-                  resolve(res);
+    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
+    Object.keys(weApis).forEach(function (key) {
+        if (!onAndSyncApis[key] && !noPromiseApis[key]) {
+            ReactWX.api[key] = function (options) {
+                options = options || {};
+                var task = null;
+                var obj = Object.assign({}, options);
+                if (typeof options === 'string') {
+                    return facade[key](options);
                 }
-              } else if (k === 'fail') {
-                reject(res);
-              }
+                var p = new Promise(function (resolve, reject) {
+                    ['fail', 'success', 'complete'].forEach(function (k) {
+                        obj[k] = function (res) {
+                            options[k] && options[k](res);
+                            if (k === 'success') {
+                                if (key === 'connectSocket') {
+                                    resolve(task);
+                                } else {
+                                    resolve(res);
+                                }
+                            } else if (k === 'fail') {
+                                reject(res);
+                            }
+                        };
+                    });
+                    task = facade[key](obj);
+                });
+                if (key === 'uploadFile' || key === 'downloadFile') {
+                    p.progress = function (cb) {
+                        task.onProgressUpdate(cb);
+                        return p;
+                    };
+                    p.abort = function (cb) {
+                        cb && cb();
+                        task.abort();
+                        return p;
+                    };
+                }
+                return p;
             };
-          });
-          task = facade[key](obj);
-        });
-        if (key === 'uploadFile' || key === 'downloadFile') {
-          p.progress = function (cb) {
-            task.onProgressUpdate(cb);
-            return p;
-          };
-          p.abort = function (cb) {
-            cb && cb();
-            task.abort();
-            return p;
-          };
+        } else {
+            ReactWX.api[key] = function () {
+                return facade[key].apply(facade, arguments);
+            };
         }
-        return p;
-      };
-    } else {
-      ReactWX.api[key] = function () {
-        return facade[key].apply(facade, arguments);
-      };
-    }
-  });
+    });
 }
 function pxTransform(size) {
-  var deviceRatio = this.api.deviceRatio;
-  return parseInt(size, 10) / deviceRatio + 'rpx';
+    var deviceRatio = this.api.deviceRatio;
+    return parseInt(size, 10) / deviceRatio + 'rpx';
 }
-function injectAPIs(ReactWX, facade) {
-  ReactWX.api = {};
-  processApis(ReactWX, facade);
-  ReactWX.api.request = request;
-  if (typeof getCurrentPages == 'function') {
-    ReactWX.getCurrentPages = getCurrentPages;
-  }
-  if (typeof getApp == 'function') {
-    ReactWX.getApp = getApp;
-  }
-  RequestQueue.facade = facade;
-  ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
-  ReactWX.pxTransform = pxTransform.bind(ReactWX);
+function injectAPIs(ReactWX, facade, override) {
+    ReactWX.api = {};
+    processApis(ReactWX, facade);
+    ReactWX.api.request = request;
+    if (typeof getCurrentPages == 'function') {
+        ReactWX.getCurrentPages = getCurrentPages;
+    }
+    if (typeof getApp == 'function') {
+        ReactWX.getApp = getApp;
+    }
+    if (override) {
+        var obj = override(facade);
+        Object.assign(ReactWX.api, obj);
+    }
+    RequestQueue.facade = facade;
+    ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
+    ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
 
 var eventSystem = {
@@ -2441,6 +2446,13 @@ function toPage(PageClass, path, testObject) {
             updatePage(pageInstance);
         }
     };
+    config.onReady = function () {
+        var el;
+        while (el = delayMounts.shift()) {
+            el.fn.call(el.instance);
+            el.instance.componentDidMount = el.fn;
+        }
+    };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
         config[hook] = function () {
             var name = HookMap[hook] || hook;
@@ -2504,6 +2516,15 @@ var Renderer$1 = createRenderer({
         fiber.stateNode.props = fiber.props;
     },
     onUpdate: function onUpdate(fiber) {
+        var noMount = !fiber.hasMounted;
+        var instance = fiber.stateNode;
+        if (noMount && instance.componentDidMount) {
+            delayMounts.push({
+                instance: instance,
+                fn: instance.componentDidMount
+            });
+            instance.componentDidMount = noop;
+        }
         if (fiber.props.isPageComponent && currentPage.value.props.path != fiber.props.path) {
             currentPage.value = fiber.stateNode;
             onPageUpdate(fiber);
@@ -2638,7 +2659,8 @@ React = win.React = {
     toRenderProps: toRenderProps,
     toComponent: toComponent,
     toPage: toPage,
-    toStyle: toStyle
+    toStyle: toStyle,
+    appType: 'wx'
 };
 var apiContainer = {};
 if (typeof wx != 'undefined') {

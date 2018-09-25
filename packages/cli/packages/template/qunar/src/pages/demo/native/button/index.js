@@ -73,11 +73,11 @@ class P extends React.Component {
                     {' '}
                     warn{' '}
                 </button>
-                <button onTap={this.setDisabled}>
+                <button onTap={this.setDisabled.bind(this)}>
                     点击设置以上按钮disabled属性
                 </button>
-                <button onTap={this.setPlain}>点击设置以上按钮plain属性</button>
-                <button onTap={this.setLoading}>
+                <button onTap={this.setPlain.bind(this)}>点击设置以上按钮plain属性</button>
+                <button onTap={this.setLoading.bind(this)}>
                     点击设置以上按钮loading属性
                 </button>
                 <button open-type="contact">进入客服会话</button>
