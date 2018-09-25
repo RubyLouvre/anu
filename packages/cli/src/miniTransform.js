@@ -54,7 +54,7 @@ function transform(sourcePath, code, resolvedIds) {
    
 
 
-   let result = babel.transform(code, {
+    let result = babel.transform(code, {
         babelrc: false,
         plugins: [
             'syntax-jsx',
@@ -66,13 +66,13 @@ function transform(sourcePath, code, resolvedIds) {
             'transform-es2015-modules-commonjs', 
             ['module-resolver', {
                 'root':  './',  //从项目根路径搜索
-                "alias": {
+                'alias': {
                     '@react' : './src/ReactWX.js',
                     '@components': './src/components',
                     
                 },
                 resolvePath(s, current){
-                   // console.log(1);
+                    // console.log(1);
                     // // console.log(sourcePath);
                     // // console.log(current, '---cur');
                     // // console.log();

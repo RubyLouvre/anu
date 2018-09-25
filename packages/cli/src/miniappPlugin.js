@@ -132,7 +132,7 @@ module.exports = {
             modules.importComponents[item.local.name] = source;
 
             //process alias for package.json alias field;
-           // helpers.resolveAlias(astPath, modules, item.local.name);
+            // helpers.resolveAlias(astPath, modules, item.local.name);
         });
         // helpers.copyNpmModules(modules.current, source, node);
     },

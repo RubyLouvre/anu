@@ -245,7 +245,7 @@ class Parser {
         //console.log(queue.length);
         //console.log('before');
         await this.transform();
-       // console.log('after');
+        // console.log('after');
         //console.log(queue.length);
         generate();
         

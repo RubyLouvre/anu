@@ -183,12 +183,12 @@ let utils = {
     },
     resolveAlias(id, deps){
         
-         let resolvedAlias = {};
+        let resolvedAlias = {};
          
 
            
 
-         Object.keys(deps).forEach((aliasName)=>{
+        Object.keys(deps).forEach((aliasName)=>{
 
             /**
              * 自定义别名与npm模块路径处理本质上都可以作为alias配置处理, 例如:
@@ -197,7 +197,7 @@ let utils = {
              * react-redux            //npm模块
              * @rematch/core          //npm模块
              */
-            if(!this.isAlias(aliasName)) return false;
+            if (!this.isAlias(aliasName)) return false;
 
 
             //to do: windows路径处理
@@ -211,9 +211,9 @@ let utils = {
              */
 
 
-            if(/\/node_modules\//.test(dep)){
+            if (/\/node_modules\//.test(dep)){
                 resolvedPath = this.resolveNpmAlias(id, dep);
-            }else{
+            } else {
                 resolvedPath = this.resolveCustomAlias(id, dep);
             }
            
@@ -221,9 +221,9 @@ let utils = {
 
 
 
-         });
+        });
 
-         return resolvedAlias;
+        return resolvedAlias;
 
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
