@@ -1,9 +1,9 @@
-import { isFn } from 'react-core/util';
+import { isFn, noop } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
 import { onComponentDispose, onComponentUpdate } from './toComponent';
 import { onPageUpdate } from './toPage';
-import { classCached, currentPage } from './utils';
+import { classCached, currentPage, delayMounts } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
@@ -50,6 +50,15 @@ export let Renderer = createRenderer({
         fiber.stateNode.props = fiber.props;
     },
     onUpdate(fiber) {
+        var noMount = !fiber.hasMounted;
+        var instance = fiber.stateNode;
+        if(noMount && instance.componentDidMount){
+            delayMounts.push({
+                instance: instance,
+                fn: instance.componentDidMount
+            })
+            instance.componentDidMount = noop
+        }
         if (fiber.props.isPageComponent && currentPage.value.props.path != fiber.props.path){
             currentPage.value = fiber.stateNode;
             onPageUpdate(fiber);

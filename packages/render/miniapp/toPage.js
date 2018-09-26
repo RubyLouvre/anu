@@ -3,7 +3,7 @@ import { createElement } from 'react-core/createElement';
 import { Component } from 'react-core/Component';
 import { isFn, noop, get, miniCreateClass } from 'react-core/util';
 import { eventSystem } from './eventSystem';
-import { getUUID, newData } from './utils';
+import { getUUID, newData, delayMounts } from './utils';
 
 export function onPageUpdate(fiber) {
     var instance = fiber.stateNode;
@@ -147,6 +147,13 @@ export function toPage(PageClass, path, testObject) {
                 updatePage(pageInstance);
             }
         };
+        config.onReady = function(){
+            var el;
+            while(el = delayMounts.shift()){
+                el.fn.call(el.instance);
+                el.instance.componentDidMount = el.fn;
+            }
+        }
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh',
         'onShow', 'onHide', 'onUnload').forEach(function(hook){
         config[hook] = function() {

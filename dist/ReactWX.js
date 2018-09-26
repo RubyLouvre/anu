@@ -659,6 +659,7 @@ function createContext(defaultValue, calculateChangedBits) {
 function _uuid() {
     return (Math.random() + '').slice(-4);
 }
+var delayMounts = [];
 function getUUID() {
     return _uuid() + _uuid();
 }
@@ -2445,6 +2446,13 @@ function toPage(PageClass, path, testObject) {
             updatePage(pageInstance);
         }
     };
+    config.onReady = function () {
+        var el;
+        while (el = delayMounts.shift()) {
+            el.fn.call(el.instance);
+            el.instance.componentDidMount = el.fn;
+        }
+    };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
         config[hook] = function () {
             var name = HookMap[hook] || hook;
@@ -2508,6 +2516,15 @@ var Renderer$1 = createRenderer({
         fiber.stateNode.props = fiber.props;
     },
     onUpdate: function onUpdate(fiber) {
+        var noMount = !fiber.hasMounted;
+        var instance = fiber.stateNode;
+        if (noMount && instance.componentDidMount) {
+            delayMounts.push({
+                instance: instance,
+                fn: instance.componentDidMount
+            });
+            instance.componentDidMount = noop;
+        }
         if (fiber.props.isPageComponent && currentPage.value.props.path != fiber.props.path) {
             currentPage.value = fiber.stateNode;
             onPageUpdate(fiber);

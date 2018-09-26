@@ -40,10 +40,8 @@ var visitor = {
     JSXOpeningElement: {
         exit: function(astPath, state) {
             var openTag = astPath.node.name;
-            if (
-                openTag.type === 'JSXMemberExpression' &&
-                openTag.object.name === 'React' ){
-                if ( openTag.property.name === 'toRenderProps'){
+            if (openTag.type === 'JSXMemberExpression' && openTag.object.name === 'React') {
+                if (openTag.property.name === 'toRenderProps') {
                     var attributes = [];
                     //实现render props;
                     var template = utils.createElement('template', attributes, []);
@@ -54,10 +52,9 @@ var visitor = {
                     var children = astPath.parentPath.parentPath.node.children;
                     //去掉后面的{{this.props.render()}}
                     var i = children.indexOf(astPath.parentPath.node);
-                    children.splice(i+1, 1);
+                    children.splice(i + 1, 1);
                     astPath.parentPath.replaceWith(template);
-                    
-                } else if (openTag.property.name === 'toComponent'){
+                } else if (openTag.property.name === 'toComponent') {
                     var modules = utils.getAnu(state);
                     var array,
                         is,
@@ -70,12 +67,7 @@ var visitor = {
                             attrValue = attrValue.slice(2, -2);
                         }
                         if (attrName === 'fragmentUid') {
-                            slotHelper(
-                                astPath.parentPath.node.children,
-                                el.value.value,
-                                modules,
-                                wxml
-                            );
+                            slotHelper(astPath.parentPath.node.children, el.value.value, modules, wxml);
                         } else if (attrName === '$$loop') {
                             array = attrValue;
                         } else if (attrName === 'is') {
@@ -103,10 +95,7 @@ var visitor = {
                     } else {
                         attributes.push(
                             utils.createAttribute('is', is),
-                            utils.createAttribute(
-                                'wx:for',
-                                `{{components['${array}'+${indexArr} ]}}`
-                            ),
+                            utils.createAttribute('wx:for', `{{components['${array}'+${indexArr} ]}}`),
                             utils.createAttribute('wx:for-item', 'data'),
                             utils.createAttribute('data', '{{...data}}'),
                             utils.createAttribute('wx:key', utils.genKey(key))
@@ -114,9 +103,7 @@ var visitor = {
                     }
                     astPath.parentPath.replaceWith(template);
                 }
-
             }
-            
         }
     },
     JSXAttribute(astPath, state) {
@@ -138,6 +125,11 @@ var visitor = {
             astPath.remove();
             return;
         }
+
+        let attrs = astPath.parentPath.node.attributes;
+        if (astPath.parentPath.node.name.name == 'canvas' && astPath.node.name.name === 'id') {
+            attrs.push(utils.createAttribute('canvas-id', astPath.node.value.value));
+        }
         attrNameHelper(astPath);
     },
 
@@ -146,10 +138,7 @@ var visitor = {
             var expr = astPath.node.expression;
             if (t.isJSXAttribute(astPath.parent)) {
                 attrValueHelper(astPath);
-            } else if (
-                expr.type === 'MemberExpression' &&
-                /props\.children/.test(generate(expr).code)
-            ) {
+            } else if (expr.type === 'MemberExpression' && /props\.children/.test(generate(expr).code)) {
                 var attributes = [];
                 var template = utils.createElement('template', attributes, []);
                 attributes.push(

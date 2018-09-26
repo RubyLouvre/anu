@@ -1,9 +1,9 @@
 const init = require('./init');
 const chalk = require('chalk');
 const buildMap = {
-    'wx': './build',
+    'wx': true,
     'baidu': false,
-    'ali': false,
+    'ali': true,
     'quick': false
 };
 const buildErrText = {
@@ -31,13 +31,13 @@ const route = (commond, type)=>{
         console.log();
         process.exit(1);
     }
-    const build = require(buildMap[type]);
+    const build = require('./build');
     switch (commond){
         case 'start':
-            build(commond);
+            build(commond, type);
             break;
         case 'build':
-            build(commond);
+            build(commond, type);
             break;
         default:
             init(commond);
