@@ -2,13 +2,15 @@ const babel = require('babel-core');
 const queue = require('./queue');
 const cwd = process.cwd();
 const path = require('path');
+const utils = require('./utils');
 const nodeResolve = require('resolve');
 
-const log = console.log;
 
 const isNpm = (npmName)=>{
     return !/^(\.|\/)/.test(npmName);
 };
+
+const transformCache = {};
 
 //todo windows路径兼容
 const resolveNpmDepPath = (id, npmPath)=>{
@@ -25,8 +27,11 @@ const getDistPath = (id)=>{
 
 module.exports = (file)=>{
     let {id, originalCode, moduleType} = file;
-   
-    let code = babel.transform(originalCode, {
+    //已处理过的不再处理
+    if(transformCache[id]) return;
+    transformCache[id] = true;
+    let depFile = '';
+    let babelConfig = {
         babelrc: false,
         plugins: [
             {
@@ -37,7 +42,12 @@ module.exports = (file)=>{
                         if (!isNpm(value)) return; //文件中可能存在相对路径模块引用, 不需要更改路径位置
                         if (value !=='react'){
                             //文件中中react需要配置alias路径
-                            let depFile = nodeResolve.sync(value, {basedir: cwd, moduleDirectory: path.join(cwd, 'node_modules')});
+                            depFile = nodeResolve.sync(value, {
+                                basedir: cwd, 
+                                moduleDirectory: path.join(cwd, 'node_modules')
+                                
+                            });
+                            console.log(depFile, '---depFile');
                             node.source.value = resolveNpmDepPath(id, depFile);
                         }
                        
@@ -50,23 +60,35 @@ module.exports = (file)=>{
                         if (!isNpm(value)) return; //文件中可能存在相对路径模块引用, 不需要更改路径位置
                         if (value !=='react'){
                             //react需要配置alias路径
-                            let depFile = nodeResolve.sync(value, {basedir: cwd, moduleDirectory: path.join(cwd, 'node_modules')});
+                            depFile = nodeResolve.sync(value, {basedir: cwd, moduleDirectory: path.join(cwd, 'node_modules')});
                             node.arguments[0].value = resolveNpmDepPath(id, depFile);
                         }
                     }
                 }
             },
+            ['transform-node-env-inline'], //处理环境判断的相关代码
             ['module-resolver', {
-                'root': ['./'],
-                'alias': {
-                    'react': './src/ReactWX.js',
+                resolvePath(moduleName){
+                    if(moduleName === 'react'){
+                        //配置react别名
+                        let distNpmFile = id.replace(/\/node_modules\//, '/dist/npm/');
+                        let distReactFile = path.join(cwd, 'dist', 'ReactWX.js');
+                        return path.relative( path.dirname(distNpmFile),  distReactFile);
+                    }
                 }
-            }],
-            ['transform-node-env-inline'],
-            ...(moduleType === 'es' ? ['transform-es2015-modules-commonjs'] : [])
-            
+            }]
+             
         ]
-    }).code;
+    }
+
+    if(moduleType === 'es'){
+        //{allowTopLevelThis: true}, 防止this被转成undefined
+        //https://github.com/babel/babelify/issues/37#issuecomment-160041164
+        babelConfig.plugins.push(['transform-es2015-modules-commonjs', {'allowTopLevelThis': true}])
+    }
+
+
+    let code = babel.transform(originalCode, babelConfig ).code;
 
     queue.push({
         code: code,

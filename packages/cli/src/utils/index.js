@@ -111,22 +111,11 @@ let utils = {
     },
     isNpm(name){
         if (!name || typeof name !== 'string') return false;
-        return /^\/|\./.test(name);  //require('/name') || require('./name') || require('../name')
+        return !/^\/|\./.test(name);  //require('/name') || require('./name') || require('../name')
     },
     isBuildInLibs(name){
         let libs = new Set(require('repl')._builtinLibs);
         return libs.has(name);
-    },
-    isAlias(name){
-        //require('a/b/c') or require('a');
-        let nameAry = name.split('/');
-        let pkg = require(path.join(cwd, 'package.json'));
-        let alias = pkg.mpreact ? (pkg.mpreact.alias || {}) : {};
-        if (alias[nameAry[0]]){
-            return true;
-        } else {
-            return false;
-        }
     },
     installer(pkg, cb){
         let bin = '';
@@ -154,20 +143,17 @@ let utils = {
         cb && cb();
 
     },
-    isAlias(name){
-        return !/^(\.|\/)/.test(name);
-    },
-    getAlias(){
+    getCustomAliasConfig(){
+        //搜集用户package.json中自定义的alias配置
         let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
         let aliasConfig = {};
         for (let key in aliasField) {
             aliasConfig[key] = path.resolve(cwd, aliasField[key]);
         }
-        //npm依赖中存在react引用时，也需要配置alias;
         aliasConfig = Object.assign(aliasConfig, {'react': aliasConfig['@react']});
         return aliasConfig;
     },
-    resolveNpmAlias(id, depFile){
+    resolveNpmAliasPath(id, depFile){
         let distJs = id.replace(/\/src\//, '/dist/');
         let distNpm = depFile.replace(/\/node_modules\//, '/dist/npm/');
 
@@ -175,42 +161,30 @@ let utils = {
         let aliasPath = path.relative( path.dirname(distJs),  distNpm);
         return aliasPath;
     },
-    resolveCustomAlias(id, depFile){
-        let aliasPath = path.relative( path.dirname(id),  depFile);
+    resolveCustomAliasPath(file, depFile){
+        let aliasPath = path.relative( path.dirname(file),  depFile);
         return aliasPath;
     },
-    colletAlias(id, deps){
-        let resolvedAlias = {};
-        Object.keys(deps).forEach((aliasName)=>{
-
-            /**
-             * 自定义别名与npm模块路径处理本质上都可以作为alias配置处理, 例如:
-             * @components/xx         //自定义别名
-             * @react                 //自定义别名
-             * react-redux            //npm模块
-             * @rematch/core          //npm模块
-             */
-            if (!this.isAlias(aliasName)) return false;
-           
-            //to do: windows路径处理
-            let dep = deps[aliasName];
-            let resolvedPath = '';
-            
-            /**
-             * 处理别名分两种情况
-             * 1: 处理自定理的alias路径配置
-             * 2: 处理依赖node_modules的相对路径
-             */
-
-            if (/\/node_modules\//.test(dep)){
-                resolvedPath = this.resolveNpmAlias(id, dep);
-            } else {
-                resolvedPath = this.resolveCustomAlias(id, dep);
+    updateNpmAlias(id, deps){
+        //依赖的npm模块也当alias处理
+        let result = {};
+        Object.keys(deps).forEach((depKey)=>{
+            if( !this.isBuildInLibs(depKey) && this.isNpm(depKey) && !/^(@react|@components)/.test(depKey) ){
+                result[depKey] = this.resolveNpmAliasPath(id, deps[depKey]);
             }
-            resolvedAlias[aliasName] = resolvedPath;
         });
-        return resolvedAlias;
-
+        return result;
+    },
+    updateCustomAlias(id, deps){
+        //自定义alias是以@react和@components开头
+        let customAliasReg = /^(@react|@components)/;
+        let result = {};
+        Object.keys(deps).forEach((depKey)=>{
+            if(customAliasReg.test(depKey)){
+                result[depKey] = this.resolveCustomAliasPath(id, deps[depKey]);
+            }
+        })
+        return result;
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };

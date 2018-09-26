@@ -46,7 +46,7 @@ const isCss = ext => {
     return defileStyle.includes(ext);
 };
 
-const isNpmModules = (path)=>{
+const isNpm = (path)=>{
     return /\/node_modules\//.test(path);
 };
 const isStyle = (path)=>{
@@ -57,15 +57,6 @@ const isJs = (path)=>{
     return /\.js$/.test(path);
 };
 
-const getAlias = () => {
-    let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
-    let aliasConfig = {};
-    for (let key in aliasField) {
-        aliasConfig[key] = path.resolve(cwd, aliasField[key]);
-    }
-    aliasConfig = Object.assign(aliasConfig, {'react': aliasConfig['@react']});
-    return aliasConfig;
-};
 function getExecutedOrder(list) {
     let ret = [];
     let loaded = {};
@@ -156,8 +147,11 @@ class Parser {
         this.inputConfig = {
             input: this.entry,
             plugins: [
-                alias(getAlias()),
+                alias( utils.getCustomAliasConfig() ),  //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
+                    main: false,
+                    modules: true,
+                    jsnext: true,
                     //从项目node_modules目录中搜索npm模块, 防止向父级查找
                     jail: path.join(cwd, 'node_modules')
                 }),
@@ -187,14 +181,14 @@ class Parser {
                 })
             ],
             onwarn: (warning)=>{
-                //return false;
+                
                 if (warning.code === 'UNRESOLVED_IMPORT'){
                     
                     console.log( chalk.red(`缺少依赖: ${warning.source}, 正在自动安装中, 请稍候`) );
-                    utils.installer(warning.source, ()=>{
-                        //依赖安装成功
-                        //npmSrc = npmResolve.sync(name, {basedir: path.join(cwd, 'node_modules')} );
-                    });
+                    // utils.installer(warning.source, ()=>{
+                    //     //依赖安装成功
+                    //     //npmSrc = npmResolve.sync(name, {basedir: path.join(cwd, 'node_modules')} );
+                    // });
                 }
             }
         };
@@ -214,7 +208,8 @@ class Parser {
                 return;
             }
 
-            if (isNpmModules(id)){
+            if (isNpm(id)){
+                console.log(id);
                 self.npmFiles.push({
                     id: id,
                     originalCode: item.originalCode
@@ -228,10 +223,13 @@ class Parser {
             }
 
             if (isJs(id)){
-               
+                // delete item.ast;
+                // delete item.code;
+                // delete item.originalCode;
+                // console.log(item);
                 self.jsFiles.push({
                     id: id,
-                    resolvedIds: item.resolvedIds
+                    resolvedIds: item.resolvedIds || {} //依赖
                 });
             }
 
@@ -243,19 +241,18 @@ class Parser {
       
        
         //let sorted = getExecutedOrder(files);
-        // let sorted = files;
+       
 
-        //console.log(queue.length);
         await this.transform();
-        //console.log(queue.length);
         generate();
         
        
     }
-    transform(){
-        this.updateStyleQueue(this.styleFiles);
+    async transform(){
+        
         this.updateJsQueue(this.jsFiles);
         this.updateNpmQueue(this.npmFiles);
+        await this.updateStyleQueue(this.styleFiles);
     }
     updateJsQueue(jsFiles){
         jsFiles.forEach((file)=>{
@@ -263,25 +260,24 @@ class Parser {
         });
     }
     updateStyleQueue(styleFiles){
-        styleFiles.forEach((filePath)=>{
-            styleTransform(filePath, styleFiles);
-        });
-        // for(let i = 0; i < styleFiles.length; i++){
-        //     styleTransform(styleFiles[i], styleFiles);
-        // }
+        styleFiles.forEach((file)=>{
+            styleTransform(file);
+        })
+       
     }
     updateNpmQueue(npmFiles){
         npmFiles.forEach((item)=>{
             //rollup处理commonjs模块时候，会在id加上commonjs-proxy:前缀
-            if (/commonjs-proxy\:/.test(item.id)){
+            if (/commonjs-proxy:/.test(item.id)){
                 item.id = item.id.split(':')[1];
                 item.moduleType = 'cjs';
             } else {
                 item.moduleType = 'es';
             }
+            //处理所有npm模块中其他依赖
             resolveNpm(item);
-           
         });
+        
     }
     needBuild(dist, code){
         if (!this.isWatching) return true;

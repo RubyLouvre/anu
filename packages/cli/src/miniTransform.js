@@ -47,10 +47,9 @@ function getDistPath(filePath){
     return distFilePath;
 }
 
-//var resolveP  = require('babel-plugin-module-resolver');
-var log = console.log;
 function transform(sourcePath, resolvedIds) {
-    
+    let customAliasMap =  utils.updateCustomAlias(sourcePath, resolvedIds);
+    let npmAliasMap = utils.updateNpmAlias(sourcePath, resolvedIds);
     let result = babel.transformFileSync(sourcePath, {
         babelrc: false,
         plugins: [
@@ -61,37 +60,25 @@ function transform(sourcePath, resolvedIds) {
             'transform-es2015-template-literals',
             miniappPlugin,
             ['module-resolver', {
-                'root':  './',  //从项目根路径搜索
-                // 'alias': {
-                //     '@react' : './src/ReactWX.js',
-                //     '@components': './src/components',
-                //     ...d
-                    
-                    
-                // },
                 resolvePath(moduleName){
-                    var aliasMap = utils.colletAlias(sourcePath, resolvedIds);
-                    //某些模块中不存在任何依赖
-                    if(aliasMap[moduleName]){
-                        return aliasMap[moduleName];
+                    
+                    if(customAliasMap[moduleName]){
+                        return customAliasMap[moduleName];
+                    }else if(npmAliasMap[moduleName]){
+                        //某些模块中可能不存在任何配置依赖, 搜集的alias则为空object.
+                        return npmAliasMap[moduleName];
+                    }else{
+                        
                     }
                 }
             }],
-            // [
-            //     'transform-es2015-modules-commonjs',
-            //     {
-            //        // loose: true
-            //     }
-            // ]
-           // 'transform-es2015-modules-commonjs'
         ]
     });
 
-
-    // result = babel.transform(result.code, {
-    //     babelrc: false,
-    //     plugins: ['transform-es2015-modules-commonjs']
-    // });
+    result = babel.transform(result.code, {
+        babelrc: false,
+        plugins: ['transform-es2015-modules-commonjs']
+    });
     queue.push({
         code: result.code,
         type: 'js',

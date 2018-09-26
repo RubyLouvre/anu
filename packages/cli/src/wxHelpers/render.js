@@ -64,10 +64,11 @@ exports.exit = function(astPath, type, componentName, modules) {
             //如果这个JSX的主体是一个组件，那么它肯定在deps里面
             var dep = deps[componentName];
             //添加import语句产生的显式依赖
+           
             for (var i in modules.importComponents) {
                 if (modules.usedComponents[i]) {
                     wxml = `<import src="${
-                        modules.importComponents[i]
+                        modules.importComponents[i].replace(/\.js$/, '')
                     }.wxml" />\n${wxml}`;
                 }
             }

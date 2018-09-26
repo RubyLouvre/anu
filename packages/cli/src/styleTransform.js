@@ -19,38 +19,40 @@ const getDist = (filePath) =>{
     let distDir = path.join(cwd, 'dist', relativePath);
     let styleExt = config[config['buildType']].styleExt; //获取构建的样式文件后缀名
     let distFilePath = path.join(distDir, `${name}.${styleExt}` );
+
+    if(/app.less/.test(filePath)){
+        console.log(distFilePath, '------');
+    }
     return distFilePath;
 };
 
-const compileLess = (filePath, styleFiles)=>{
+const compileLess = (filePath)=>{
+    
     
     var less = require('less');
-    return new Promise((resolve, reject)=>{
-        less.render(
-            fs.readFileSync(filePath).toString(),
-            {
-                paths: [path.join(cwd, 'src')] // Specify search paths for @import directives
-            }
-        )
-            .then(res => {
-                let code = res.css.toString();
-            
-                //如果less有@import依赖, 不断的添加到styleFiles中
-                if (res.imports.length){
-                    res.imports.forEach((item)=>{
-                        if (!styleFiles.includes(item)){
-                            styleFiles.push(item);
-                        }
-                    });
-                }
-                resolve(code);
-            })
-            .catch(err => {
-                if (err){
-                // eslint-disable-next-line
-                console.log(err);
-                }
-            });
+    var content = fs.readFileSync(filePath).toString();
+    less.render(
+        content,
+        {
+            filename: path.resolve(filePath)
+        }
+    )
+    .then(res => {
+        let code = res.css;
+        //为什么app.wxss丢失？
+        queue.push({
+            code: code,
+            type: 'css',
+            path: getDist(filePath)
+        });
+       
+
+    })
+    .catch(err => {
+        if (err){
+            // eslint-disable-next-line
+            console.log(err);
+        }
     });
     
 };
@@ -75,27 +77,30 @@ const compileSass = (filePath)=>{
 };
 
 
-module.exports = async (currentFilePath, styleFiles)=>{
-
-    // for(let i = 0; i < styleFiles.length; i++){
-        
-    // }
+module.exports = (filePath)=>{
 
     
-
-    let filePath = currentFilePath;
-    let distPath = getDist(filePath);
-    let code = '';
+    
+    
     if (isLess(filePath)){
-        code = await compileLess(filePath, styleFiles);
+        compileLess(filePath);
     } else if (isSass(filePath)){
 
     }
-    queue.push({
-        code: code,
-        type: 'css',
-        path: distPath
-    });
+
+    // if(/app/.test(filePath)){
+    //    // console.log(code);
+    //     console.log(getDist(filePath));
+    // }
+    
+    // queue.push({
+    //     code: code,
+    //     type: 'css',
+    //     path: getDist(filePath)
+    // });
+    
+    //console.log(queue)
+   
 
     
 };
