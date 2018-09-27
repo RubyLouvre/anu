@@ -8,8 +8,16 @@ const chalk = require('chalk');
 const spawn = require('cross-spawn');
 const nodeResolve = require('resolve');
 const config = require('../config');
+const EventEmitter = require('events').EventEmitter; 
+const Event = new EventEmitter(); 
 
 let utils = {
+    on(){
+        Event.on.apply(this, arguments);
+    },
+    emit(){
+        Event.emit.apply(this, arguments);
+    },
     getNodeVersion(){
         return Number(process.version.match(/v(\d+)/)[1]);
     },
@@ -112,7 +120,7 @@ let utils = {
     },
     isNpm(name){
         if (!name || typeof name !== 'string') return false;
-        return !/^\/|\./.test(name);  //require('/name') || require('./name') || require('../name')
+        return !/^\/|\./.test(name);
     },
     isBuildInLibs(name){
         let libs = new Set(require('repl')._builtinLibs);
@@ -162,14 +170,21 @@ let utils = {
         })
 
     },
-    installDeps(installNpmAry){
-        return installNpmAry.map( async(npmName)=>{
-            let npmPath = await this.installer(npmName);
-            return {
-                id: npmPath,
-                originalCode: fs.readFileSync(npmPath).toString()
-            }
-        })
+    installDeps(missModules){
+        /**
+         * installMap: { npmName: importerPath }
+         */
+        return Promise.all(
+            missModules.map( async(item)=>{
+                let npmPath = await this.installer(item.resolveName);
+                return {
+                    id: npmPath,                //缺失npm模块绝对路径
+                    npmName: item.resolveName,  //缺失模块名
+                    importerPath: item.id,      //依赖该缺失模块的文件路径
+                    originalCode: fs.readFileSync(npmPath).toString()
+                }
+            })
+        )
     },
     getCustomAliasConfig(){
         //搜集用户package.json中自定义的alias配置

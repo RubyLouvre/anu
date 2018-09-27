@@ -211,6 +211,7 @@ module.exports = {
                         .replace(/\.js$/, '.json'),
                     code: jsonStr
                 });
+                utils.emit('build');
             }
             if (astPath.node.static) {
                 var keyValue = t.ObjectProperty(

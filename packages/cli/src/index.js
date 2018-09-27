@@ -1,6 +1,5 @@
 const chalk = require('chalk');
 const path = require('path');
-const fs = require('fs-extra');
 const rollup = require('rollup');
 const rbabel = require('rollup-plugin-babel');
 const resolve = require('rollup-plugin-node-resolve');
@@ -8,23 +7,28 @@ const commonjs = require('rollup-plugin-commonjs');
 const rollupLess = require('rollup-plugin-less');
 const rollupSass = require('rollup-plugin-sass');
 const alias = require('rollup-plugin-alias');
-const nodeResolve = require('resolve');
 const chokidar = require('chokidar');
-const spawn = require('cross-spawn');
+const fs = require('fs-extra');
 const utils = require('./utils');
 const isComponentOrAppOrPage = new RegExp( utils.sepForRegex  + '(?:pages|app|components)'  );
-const less = require('less');
+const crypto = require('crypto');
 const miniTransform = require('./miniTransform');
 const styleTransform = require('./styleTransform');
 const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
-const queue = require('./queue');
 const config = require('./config');
 let cwd = process.cwd();
 let inputPath = path.join(cwd, 'src');
-let outputPath = path.join(cwd, 'dist');
 let entry = path.join(inputPath, 'app.js');
+let cache = {};
+
 const log = console.log;
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.log('Unhandled Rejection at:', reason.stack || reason)
+    // Recommended: send the information to sentry.io
+    // or whatever crash reporting service you use
+  })
 
 let libNames = (()=>{
     var list = [];
@@ -36,6 +40,21 @@ let libNames = (()=>{
     });
     return list;
 })();
+
+
+let needUpdate = (id, code)=>{
+    let sha1 = crypto.createHash('sha1').update(code).digest('hex');
+    return new Promise((resolve, reject)=>{
+        if(!cache[id] || cache[id] != sha1){
+            cache[id] = sha1;
+            resolve(1);
+        }else{
+            reject(0);
+        }
+        
+    });
+    
+}
 
 
 const isLib = filePath => {
@@ -140,27 +159,21 @@ function getExecutedOrder(list) {
 }
 
 class Parser {
-    
     constructor(entry) {
         this.entry = entry;
         this.isWatching = false;
         this.jsFiles = [];
         this.styleFiles = [];
         this.npmFiles = [];
-        this.libFiles = [];
         this.inputConfig = {
             input: this.entry,
             plugins: [
                 alias( utils.getCustomAliasConfig() ),  //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
-                    module: true,
-                    jail: path.join(cwd),
-                    customResolveOptions: {
-                        moduleDirectory: path.join(cwd, 'node_modules')
-                    }
-                   // modulesOnly: true
-                    //从项目node_modules目录中搜索npm模块, 防止向父级查找
-                    
+                    jail: path.join(cwd), //从项目根目录中搜索npm模块, 防止向父级查找
+                    // customResolveOptions: {
+                    //     moduleDirectory: path.join(cwd, 'node_modules')
+                    // }
                 }),
                 commonjs({
                     include: 'node_modules/**'
@@ -188,46 +201,52 @@ class Parser {
                 })
             ],
             onwarn: (warning)=>{
+                
+                //warning.importer 缺失依赖文件路径
+                //warning.source   依赖的模块名
                 if (warning.code === 'UNRESOLVED_IMPORT'){
-                    if(!missNpmModule.includes(warning.source)){
-                        missNpmModule.push(warning.source);
-                    }
+                    let len = missNpmModule.filter((item)=>{
+                                  return item.resolveName == warning.source;
+                              }).length
+                    
+                    if(len > 0) return; //防重复
+                    missNpmModule.push({
+                        id: path.resolve(warning.importer), //处理成绝对路径
+                        resolveName: warning.source 
+                    })
+
+
                 }
             }
         };
     }
     async parse() {
         const bundle = await rollup.rollup(this.inputConfig);
-        const self = this;
-        bundle.modules.forEach(function(item) {
+        bundle.modules.forEach((item)=> {
             const id = item.id;
-            
             if (/commonjsHelpers/.test(id)){
                 return;
             } 
-
-            if (isLib(id)){
-                this.libFiles.push(id);
-                return;
-            }
-
             if (isNpm(id)){
-                self.npmFiles.push({
+                this.npmFiles.push({
                     id: id,
                     originalCode: item.originalCode
                 });
                 return;
             }
             if (isStyle(id)){
-                
-                self.styleFiles.push(id);
+                this.styleFiles.push({
+                    id: id,
+                    originalCode: item.originalCode
+                });
                 return;
             }
 
             if (isJs(id)){
-                self.jsFiles.push({
+                this.jsFiles.push({
                     id: id,
-                    resolvedIds: item.resolvedIds || {} //依赖
+                    originalCode: item.originalCode,
+                    resolvedIds: this.filterNpmModule(item.resolvedIds) //处理路径alias配置
                 });
             }
 
@@ -238,48 +257,99 @@ class Parser {
         });
       
         //let sorted = getExecutedOrder(files);
-       
-        await this.transform();
+        
+        
+        this.installMissDeps()
+        this.transform();
+        this.copyAssets();
         generate();
-       
     }
-    async transform(){
-        this.updateStyleQueue(this.styleFiles);
+    filterNpmModule(resolvedIds){
+        let result = {};
+        Object.keys(resolvedIds).forEach((key)=>{
+            if(utils.isNpm(key)){
+                result[key] = resolvedIds[key];
+            }
+        });
+        return result;
+    }
+    async installMissDeps(){
+        if(!missNpmModule.length) return; //没有缺失依赖
+        await utils.installDeps(missNpmModule); 
+        console.log(chalk.green('\n缺失依赖安装完毕，开始你的旅行吧\n'));
+        process.exit(1);
+        
+    }
+    transform(){
         this.updateJsQueue(this.jsFiles);
+        this.updateStyleQueue(this.styleFiles);
         this.updateNpmQueue(this.npmFiles);
     }
     updateJsQueue(jsFiles){
-        jsFiles.forEach((file)=>{
-            miniTransform.transform(file.id, file.resolvedIds);
-        });
+        while(jsFiles.length){
+            let {id, originalCode, resolvedIds} = jsFiles.shift();
+            
+            needUpdate(id, originalCode)
+            .then(()=>{
+                miniTransform.transform(id, resolvedIds);
+            })
+            .catch(()=>{
+                
+            })
+        }
     }
     updateStyleQueue(styleFiles){
-        styleFiles.forEach((file)=>{
-            styleTransform(file);
-        })
+        while(styleFiles.length){
+            let {id, originalCode} = styleFiles.shift();
+            needUpdate(id, originalCode)
+            .then(()=>{
+                styleTransform(id);
+            })
+            .catch(()=>{
+
+            })
+        }
+      
     }
-    async updateNpmQueue(npmFiles){
-
-        //let missNpmFiles = await utils.installDeps(missNpmModule);
-        
-
-        npmFiles.forEach((item)=>{
-            //rollup处理commonjs模块时候，会在id加上commonjs-proxy:前缀
-            if (/commonjs-proxy:/.test(item.id)){
+    updateNpmQueue(npmFiles){
+        while(npmFiles.length){
+            let item = npmFiles.shift();
+             //rollup处理commonjs模块时候，会在id加上commonjs-proxy:前缀
+             if (/commonjs-proxy:/.test(item.id)){
                 item.id = item.id.split(':')[1];
                 item.moduleType = 'cjs';
             } else {
                 item.moduleType = 'es';
             }
             //处理所有npm模块中其他依赖
-            resolveNpm(item);
-        });
-        
+            needUpdate(item.id, item.originalCode)
+            .then(()=>{
+                resolveNpm(item);
+            })
+            .catch(()=>{
+                
+            })
+            
+        }
+       
     }
-    needBuild(dist, code){
-        if (!this.isWatching) return true;
-        //https://github.com/rollup/rollup-watch/blob/80c921eb8e4854622b31c6ba81c88281897f92d1/src/index.js#L19
-        return fs.readFileSync(dist, 'utf-8') != code;
+    copyAssets(){
+        //to do 差异化copy
+        const dir = 'assets';
+        const inputDir = path.join(inputPath, dir);
+        const distDir = path.join(path.join(cwd, 'dist'), dir);
+        if (!fs.pathExistsSync(inputDir)) return;
+        fs.ensureDirSync(distDir);
+        fs.copy(
+            inputDir,
+            distDir,
+            (err)=>{
+                if (err){
+                    // eslint-disable-next-line
+                    console.error(err);
+                } 
+            }
+        );
     }
     watching() {
         let watchDir = path.dirname(this.entry);
@@ -301,7 +371,6 @@ class Parser {
                     );
                     this.inputConfig.input = file;
                     this.parse();
-                    
 
                 }
             });

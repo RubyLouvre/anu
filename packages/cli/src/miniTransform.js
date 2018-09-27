@@ -6,6 +6,7 @@ let path = require('path');
 let visitor = require('./miniappPlugin');
 let cwd = process.cwd();
 const config = require('./config');
+
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */
@@ -50,7 +51,7 @@ function getDistPath(filePath){
 function transform(sourcePath, resolvedIds) {
     let customAliasMap =  utils.updateCustomAlias(sourcePath, resolvedIds);
     let npmAliasMap = utils.updateNpmAlias(sourcePath, resolvedIds);
-    let result = babel.transformFileSync(sourcePath, {
+    babel.transformFile(sourcePath, {
         babelrc: false,
         plugins: [
             'syntax-jsx',
@@ -72,18 +73,29 @@ function transform(sourcePath, resolvedIds) {
                 }
             }],
         ]
-    });
+    }, (err, result)=>{
+        if(err) throw err;
 
-    result = babel.transform(result.code, {
-        babelrc: false,
-        plugins: ['transform-es2015-modules-commonjs']
-    });
-    queue.push({
-        code: result.code,
-        type: 'js',
-        path: getDistPath(sourcePath)
+        setTimeout(()=>{
+            //babel6无transform异步方法, 模拟异步, 防阻塞
+            result = babel.transform(result.code, {
+                babelrc: false,
+                plugins: ['transform-es2015-modules-commonjs']
+            });
+            queue.push({
+                code: result.code,
+                type: 'js',
+                path: getDistPath(sourcePath)
+            });
+            utils.emit('build');
+        }, 4)
+        
+        
     });
 }
+
+
+
 
 module.exports = {
     transform,

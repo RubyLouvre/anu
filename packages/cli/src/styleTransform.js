@@ -3,13 +3,8 @@ const cwd = process.cwd();
 const queue = require('./queue');
 const fs = require('fs-extra');
 const config = require('./config');
+const utils = require('./utils')
 const nodeResolve = require('resolve');
-
-
-process.on('unhandledRejection', (reason, p) => {
-    console.log('Unhandled Rejection at:', p, 'reason:', reason);
-    // application specific logging, throwing an error, or other logic here
-  });
 
 const isLess = (filePath)=>{
     return /\.less$/.test(filePath);
@@ -41,15 +36,12 @@ const compileLess = (filePath)=>{
     )
     .then(res => {
         let code = res.css;
-        // if(/app/.test(filePath)){
-        //     console.log(code);
-        // }
-
         queue.push({
             code: code,
             path: getDist(filePath),
             type: 'css'
         });
+        utils.emit('build');
        
 
     })
@@ -63,49 +55,47 @@ const compileLess = (filePath)=>{
 };
 
 const compileSass = (filePath)=>{
-    //nodeResolve()
+    
+    //installedSass = nodeResolve('node-sass');
+    if(!require( path.join(cwd, 'node_modules', 'node-sass', 'package.json'))){
+        utils.installer('node-sass')
+    }
+
+
+    utils.installer('node-sass')
+    .then(()=>{
+        log();
+    })
     let sass = require('node-sass');
-    return new Promise((resolve, reject)=>{
-        sass.render(
-            {
-                file: file
-            },
-            (err, res) => {
-                if (err) throw err;
-                let code = res.css.toString();
-                resolve(code);
-            }
-        );
-    });
+    // return new Promise((resolve, reject)=>{
+    //     sass.render(
+    //         {
+    //             file: file
+    //         },
+    //         (err, res) => {
+    //             if (err) throw err;
+    //             let code = res.css.toString();
+    //             resolve(code);
+
+    //             queue.push({
+    //                 code: code,
+    //                 path: getDist(filePath),
+    //                 type: 'css'
+    //             });
+    //             utils.emit('build');
+    //         }
+    //     );
+    // });
     
 
 };
 
 
 module.exports = (filePath)=>{
-
-    
-    
-    
     if (isLess(filePath)){
         compileLess(filePath);
     } else if (isSass(filePath)){
 
     }
 
-    // if(/app/.test(filePath)){
-    //    // console.log(code);
-    //     console.log(getDist(filePath));
-    // }
-    
-    // queue.push({
-    //     code: code,
-    //     type: 'css',
-    //     path: getDist(filePath)
-    // });
-    
-    //console.log(queue)
-   
-
-    
 };

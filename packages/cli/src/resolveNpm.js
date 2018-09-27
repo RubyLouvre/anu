@@ -110,5 +110,6 @@ module.exports = (file)=>{
         path: getDistPath(id),
         type: 'npm'
     });
+    utils.emit('build');
 
 };
