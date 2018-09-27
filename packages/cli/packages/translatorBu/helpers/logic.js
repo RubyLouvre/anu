@@ -53,7 +53,7 @@ function logic(expr, modules) {
 function condition(test, consequent, alternate, modules) {
     var ifNode = createElement(
         'block',
-        [createAttribute('s-if', parseExpr(test))],
+        [createAttribute('s-if', parseExpr(test).slice(2,-2))],
         [logic(consequent, modules) || wrapText(consequent)]
     );
     var ret = ifNode;
@@ -85,7 +85,7 @@ function loop(callee, fn, modules) {
 
         modules.key = null;
     } else {
-        attrs.push(createAttribute('wx:key', '*this'));
+        // attrs.push(createAttribute('wx:key', '*this'));
         // console.log( fn.params[1].name);
     }
 

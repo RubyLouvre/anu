@@ -53,7 +53,7 @@ function logic(expr, modules) {
 function condition(test, consequent, alternate, modules) {
     var ifNode = createElement(
         'block',
-        [createAttribute('wx:if', parseExpr(test))],
+        [createAttribute('if', parseExpr(test))],
         [logic(consequent, modules) || wrapText(consequent)]
     );
     var ret = ifNode;
@@ -65,7 +65,7 @@ function condition(test, consequent, alternate, modules) {
 
         var elseNode = createElement(
             'block',
-            [createAttribute('wx:else', 'true')],
+            [createAttribute('else', 'true')],
             [logic(alternate, modules) || wrapText(alternate)]
         );
         ret.children.push(elseNode);
@@ -77,15 +77,15 @@ function condition(test, consequent, alternate, modules) {
 function loop(callee, fn, modules) {
     const attrs = [];
 
-    attrs.push(createAttribute('wx:for', parseExpr(callee.object)));
-    attrs.push(createAttribute('wx:for-item', fn.params[0].name));
-    attrs.push(createAttribute('wx:for-index', fn.params[1].name));
+    var expr = '{{'+ fn.params[1].name+',' +fn.params[0].name + 
+         parseExpr(callee.object).slice(2);
+    attrs.push(createAttribute('for',expr));
     if (modules.key) {
-        attrs.push(createAttribute('wx:key', jsx.genKey(modules.key)));
+        attrs.push(createAttribute('tid', jsx.genKey(modules.key)));
 
         modules.key = null;
     } else {
-        attrs.push(createAttribute('wx:key', '*this'));
+        // attrs.push(createAttribute('wx:key', '*this'));
         // console.log( fn.params[1].name);
     }
 

@@ -150,12 +150,10 @@ var visitor = {
                 expr.type === 'MemberExpression' &&
                 /props\.children/.test(generate(expr).code)
             ) {
+                //{{this.props.children}}直接变成<slot></slot>
                 var attributes = [];
-                var template = utils.createElement('template', attributes, []);
-                attributes.push(
-                    utils.createAttribute('is', '{{props.fragmentUid}}'),
-                    utils.createAttribute('data', '{{...props.fragmentData}}')
-                );
+                var template = utils.createElement('slot', attributes, []);
+              
                 astPath.replaceWith(template);
                 //  console.warn("小程序暂时不支持{this.props.children}");
             } else {

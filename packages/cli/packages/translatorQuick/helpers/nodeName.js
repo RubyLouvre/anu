@@ -26,6 +26,13 @@ let map = Object.assign({}, builtIn);
 
 module.exports = function mapTagName(path, modules) {
     var orig = path.node.name.name;
+    delete map.span;
+    delete map.a;
     addCustomComponents(modules.customComponents);
     path.node.name.name = map[orig] || 'view';
 };
+/*
+快应用 text里面只能包含span, a或放文本
+span只能放文本，不能放其他span
+a只能放span,或放文本
+*/
