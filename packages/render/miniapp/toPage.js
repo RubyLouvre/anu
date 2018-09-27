@@ -34,9 +34,9 @@ function safeClone(originVal) {
     return temp;
 }
 const HookMap = {
-    'onShow': 'componentDidShow',
-    'onHide': 'componentDidHide',
-    'onUnload':'componentWillUnmount'
+    onShow: 'componentDidShow',
+    onHide: 'componentDidHide',
+    onUnload: 'componentWillUnmount'
 };
 function isReferenceType(val) {
     return (
@@ -69,7 +69,7 @@ export function toPage(PageClass, path, testObject) {
             setData: noop
         },
         pageInstance, //页面实例
-        pageViewInstance,//页面视图实例
+        pageViewInstance, //页面视图实例
         config = {
             data: newData(),
             dispatchEvent: eventSystem.dispatchEvent,
@@ -115,9 +115,7 @@ export function toPage(PageClass, path, testObject) {
                     data.state = pageViewInstance.state;
                     data.context = pageViewInstance.context;
                     data.props = pageViewInstance.props;
-                    $wxPage.setData(safeClone(data), function() {
-                        console.log('setData complete', data);
-                    });
+                    $wxPage.setData(safeClone(data), function() {});
                 }
                 pageInstance.forceUpdate = pageInstance.setState = function(a) {
                     var updateMethod = anuSetState;
@@ -147,15 +145,22 @@ export function toPage(PageClass, path, testObject) {
                 updatePage(pageInstance);
             }
         };
-        config.onReady = function(){
-            var el;
-            while(el = delayMounts.shift()){
-                el.fn.call(el.instance);
-                el.instance.componentDidMount = el.fn;
-            }
+    config.onReady = function() {
+        var el;
+        while ((el = delayMounts.shift())) {
+            el.fn.call(el.instance);
+            el.instance.componentDidMount = el.fn;
         }
-    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh',
-        'onShow', 'onHide', 'onUnload').forEach(function(hook){
+    };
+    Array(
+        'onPageScroll',
+        'onShareAppMessage',
+        'onReachBottom',
+        'onPullDownRefresh',
+        'onShow',
+        'onHide',
+        'onUnload'
+    ).forEach(function(hook) {
         config[hook] = function() {
             var name = HookMap[hook] || hook;
             var fn = pageViewInstance[name];
@@ -163,7 +168,6 @@ export function toPage(PageClass, path, testObject) {
                 fn.apply(pageViewInstance, arguments);
             }
         };
-
     });
 
     if (testObject) {

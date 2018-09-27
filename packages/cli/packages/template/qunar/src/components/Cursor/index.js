@@ -7,9 +7,9 @@ class Cursor extends React.Component {
                 src="https://www.baidu.com/img/baidu_jgylogo3.gif"
                 style={{
                     position: 'absolute',
-                    color: "red",
-                    left: this.props.mouse.x +"rpx",
-                    top:  this.props.mouse.y  +"rpx"
+                    color: 'red',
+                    left: this.props.mouse.x +'rpx',
+                    top:  this.props.mouse.y  +'rpx'
                 }}
             >cursor</div>
         );
