@@ -44,10 +44,15 @@ module.exports = (file)=>{
                             //文件中中react需要配置alias路径
                             depFile = nodeResolve.sync(value, {
                                 basedir: cwd, 
-                                moduleDirectory: path.join(cwd, 'node_modules')
+                                moduleDirectory: path.join(cwd, 'node_modules'),
+                                packageFilter: (pkg)=>{
+                                    if(pkg.module){
+                                        pkg.main = pkg.module;
+                                    }
+                                    return pkg;
+                                }
                                 
                             });
-                            console.log(depFile, '---depFile');
                             node.source.value = resolveNpmDepPath(id, depFile);
                         }
                        
@@ -60,7 +65,17 @@ module.exports = (file)=>{
                         if (!isNpm(value)) return; //文件中可能存在相对路径模块引用, 不需要更改路径位置
                         if (value !=='react'){
                             //react需要配置alias路径
-                            depFile = nodeResolve.sync(value, {basedir: cwd, moduleDirectory: path.join(cwd, 'node_modules')});
+                            depFile = nodeResolve.sync(value, {
+                                basedir: cwd, 
+                                moduleDirectory: path.join(cwd, 'node_modules'),
+                                packageFilter: (pkg)=>{
+                                    if(pkg.module){
+                                        pkg.main = pkg.module;
+                                    }
+                                    return pkg;
+                                }
+                                
+                            });
                             node.arguments[0].value = resolveNpmDepPath(id, depFile);
                         }
                     }

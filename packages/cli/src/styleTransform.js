@@ -4,6 +4,13 @@ const queue = require('./queue');
 const fs = require('fs-extra');
 const config = require('./config');
 const nodeResolve = require('resolve');
+
+
+process.on('unhandledRejection', (reason, p) => {
+    console.log('Unhandled Rejection at:', p, 'reason:', reason);
+    // application specific logging, throwing an error, or other logic here
+  });
+
 const isLess = (filePath)=>{
     return /\.less$/.test(filePath);
 };
@@ -19,31 +26,29 @@ const getDist = (filePath) =>{
     let distDir = path.join(cwd, 'dist', relativePath);
     let styleExt = config[config['buildType']].styleExt; //获取构建的样式文件后缀名
     let distFilePath = path.join(distDir, `${name}.${styleExt}` );
-
-    if(/app.less/.test(filePath)){
-        console.log(distFilePath, '------');
-    }
     return distFilePath;
 };
 
+var less = require('less');
 const compileLess = (filePath)=>{
-    
-    
-    var less = require('less');
-    var content = fs.readFileSync(filePath).toString();
+    var content = fs.readFileSync(filePath, 'utf-8').toString();
     less.render(
         content,
         {
-            filename: path.resolve(filePath)
+           filename: filePath,
+           compress: true
         }
     )
     .then(res => {
         let code = res.css;
-        //为什么app.wxss丢失？
+        // if(/app/.test(filePath)){
+        //     console.log(code);
+        // }
+
         queue.push({
             code: code,
-            type: 'css',
-            path: getDist(filePath)
+            path: getDist(filePath),
+            type: 'css'
         });
        
 

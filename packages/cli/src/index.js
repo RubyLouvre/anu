@@ -8,6 +8,7 @@ const commonjs = require('rollup-plugin-commonjs');
 const rollupLess = require('rollup-plugin-less');
 const rollupSass = require('rollup-plugin-sass');
 const alias = require('rollup-plugin-alias');
+const nodeResolve = require('resolve');
 const chokidar = require('chokidar');
 const spawn = require('cross-spawn');
 const utils = require('./utils');
@@ -56,6 +57,8 @@ const isStyle = (path)=>{
 const isJs = (path)=>{
     return /\.js$/.test(path);
 };
+
+const missNpmModule = [];
 
 function getExecutedOrder(list) {
     let ret = [];
@@ -137,6 +140,7 @@ function getExecutedOrder(list) {
 }
 
 class Parser {
+    
     constructor(entry) {
         this.entry = entry;
         this.isWatching = false;
@@ -149,11 +153,14 @@ class Parser {
             plugins: [
                 alias( utils.getCustomAliasConfig() ),  //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
-                    main: false,
-                    modules: true,
-                    jsnext: true,
+                    module: true,
+                    jail: path.join(cwd),
+                    customResolveOptions: {
+                        moduleDirectory: path.join(cwd, 'node_modules')
+                    }
+                   // modulesOnly: true
                     //从项目node_modules目录中搜索npm模块, 防止向父级查找
-                    jail: path.join(cwd, 'node_modules')
+                    
                 }),
                 commonjs({
                     include: 'node_modules/**'
@@ -181,14 +188,10 @@ class Parser {
                 })
             ],
             onwarn: (warning)=>{
-                
                 if (warning.code === 'UNRESOLVED_IMPORT'){
-                    
-                    console.log( chalk.red(`缺少依赖: ${warning.source}, 正在自动安装中, 请稍候`) );
-                    // utils.installer(warning.source, ()=>{
-                    //     //依赖安装成功
-                    //     //npmSrc = npmResolve.sync(name, {basedir: path.join(cwd, 'node_modules')} );
-                    // });
+                    if(!missNpmModule.includes(warning.source)){
+                        missNpmModule.push(warning.source);
+                    }
                 }
             }
         };
@@ -209,24 +212,19 @@ class Parser {
             }
 
             if (isNpm(id)){
-                console.log(id);
                 self.npmFiles.push({
                     id: id,
                     originalCode: item.originalCode
                 });
                 return;
             }
-           
             if (isStyle(id)){
+                
                 self.styleFiles.push(id);
                 return;
             }
 
             if (isJs(id)){
-                // delete item.ast;
-                // delete item.code;
-                // delete item.originalCode;
-                // console.log(item);
                 self.jsFiles.push({
                     id: id,
                     resolvedIds: item.resolvedIds || {} //依赖
@@ -239,20 +237,16 @@ class Parser {
             // });
         });
       
-       
         //let sorted = getExecutedOrder(files);
        
-
         await this.transform();
         generate();
-        
        
     }
     async transform(){
-        
+        this.updateStyleQueue(this.styleFiles);
         this.updateJsQueue(this.jsFiles);
         this.updateNpmQueue(this.npmFiles);
-        await this.updateStyleQueue(this.styleFiles);
     }
     updateJsQueue(jsFiles){
         jsFiles.forEach((file)=>{
@@ -263,9 +257,12 @@ class Parser {
         styleFiles.forEach((file)=>{
             styleTransform(file);
         })
-       
     }
-    updateNpmQueue(npmFiles){
+    async updateNpmQueue(npmFiles){
+
+        //let missNpmFiles = await utils.installDeps(missNpmModule);
+        
+
         npmFiles.forEach((item)=>{
             //rollup处理commonjs模块时候，会在id加上commonjs-proxy:前缀
             if (/commonjs-proxy:/.test(item.id)){

@@ -61,7 +61,6 @@ function transform(sourcePath, resolvedIds) {
             miniappPlugin,
             ['module-resolver', {
                 resolvePath(moduleName){
-                    
                     if(customAliasMap[moduleName]){
                         return customAliasMap[moduleName];
                     }else if(npmAliasMap[moduleName]){
@@ -83,7 +82,6 @@ function transform(sourcePath, resolvedIds) {
         code: result.code,
         type: 'js',
         path: getDistPath(sourcePath)
-        
     });
 }
 

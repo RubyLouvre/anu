@@ -6,6 +6,7 @@ const path = require('path');
 const cwd = process.cwd();
 const chalk = require('chalk');
 const spawn = require('cross-spawn');
+const nodeResolve = require('resolve');
 const config = require('../config');
 
 let utils = {
@@ -117,31 +118,58 @@ let utils = {
         let libs = new Set(require('repl')._builtinLibs);
         return libs.has(name);
     },
-    installer(pkg, cb){
-        let bin = '';
-        let options = [];
-        if (this.useYarn()){
-            bin = 'yarn';
-            options.push('add', '--exact', pkg, '--save');
-            
-        } else if (this.useCnpm()){
-            bin = 'cnpm';
-            options.push('install', pkg, '--save');
-        } else {
-            bin = 'npm';
-            options.push('install', pkg, '--save');
-        }
+    installer(npmName){
+        return new Promise((resolve)=>{
+            console.log( chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`) );
+            let bin = '';
+            let options = [];
+            if (this.useYarn()){
+                bin = 'yarn';
+                options.push('add', '--exact', npmName, '--save');
+                
+            } else if (this.useCnpm()){
+                bin = 'cnpm';
+                options.push('install', npmName, '--save');
+            } else {
+                bin = 'npm';
+                options.push('install', npmName, '--save');
+            }
 
-        let result = spawn.sync(bin, options, { stdio: 'inherit' });
-        if (result.error) {
+            let result = spawn.sync(bin, options, { stdio: 'inherit' });
+            if (result.error) {
+                // eslint-disable-next-line
+                console.log(result.error);
+                process.exit(1);
+            }
             // eslint-disable-next-line
-            console.log(result.error);
-            process.exit(1);
-        }
-        // eslint-disable-next-line
-        console.log(chalk.green(`${pkg}安装成功\n`));
-        cb && cb();
+            console.log(chalk.green(`${npmName}安装成功\n`));
+            
+            //获得自动安装的npm依赖模块路径
+            let npmPath = nodeResolve.sync(
+                    npmName, 
+                    {
+                        basedir: cwd, 
+                        moduleDirectory: path.join(cwd, 'node_modules'),
+                        packageFilter: (pkg)=>{
+                            if(pkg.module){
+                                pkg.main = pkg.module;
+                            }
+                            return pkg;
+                        }
+                    }
+            );
+            resolve(npmPath);
+        })
 
+    },
+    installDeps(installNpmAry){
+        return installNpmAry.map( async(npmName)=>{
+            let npmPath = await this.installer(npmName);
+            return {
+                id: npmPath,
+                originalCode: fs.readFileSync(npmPath).toString()
+            }
+        })
     },
     getCustomAliasConfig(){
         //搜集用户package.json中自定义的alias配置
