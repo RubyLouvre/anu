@@ -43,5 +43,7 @@ export var aliApis = function(api) {
         arguments[0].reset = null;
         return api.setNavigationBar.apply(api, arguments);
     }
+
+
   };
 };
