@@ -201,6 +201,10 @@ const resolveNpmPath = (sourcePath, npmName)=>{
     relativePath = path.relative(from,to);
 
     relativePath = process.platform === 'win32' ? relativePath.replace(/\\/g,'/') : relativePath;
+    
+    if (/^\w/.test(relativePath)){
+        relativePath = `./${relativePath}`;
+    }
     return relativePath;
     
 };
