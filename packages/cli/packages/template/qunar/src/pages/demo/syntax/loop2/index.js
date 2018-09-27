@@ -39,7 +39,7 @@ class P extends React.Component {
                                 {item.map(function(el) {
                                     return (
                                         <div class="grid" onClick={this.getData.bind(this, el)}>
-                                        <Fish content={el.title} />
+                                            <Fish content={el.title} />
                                         </div>
                                     );
                                 })}
