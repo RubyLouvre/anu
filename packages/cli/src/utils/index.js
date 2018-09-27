@@ -128,6 +128,7 @@ let utils = {
     },
     installer(npmName){
         return new Promise((resolve)=>{
+            // eslint-disable-next-line
             console.log( chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`) );
             let bin = '';
             let options = [];
@@ -154,20 +155,20 @@ let utils = {
             
             //获得自动安装的npm依赖模块路径
             let npmPath = nodeResolve.sync(
-                    npmName, 
-                    {
-                        basedir: cwd, 
-                        moduleDirectory: path.join(cwd, 'node_modules'),
-                        packageFilter: (pkg)=>{
-                            if(pkg.module){
-                                pkg.main = pkg.module;
-                            }
-                            return pkg;
+                npmName, 
+                {
+                    basedir: cwd, 
+                    moduleDirectory: path.join(cwd, 'node_modules'),
+                    packageFilter: (pkg)=>{
+                        if (pkg.module){
+                            pkg.main = pkg.module;
                         }
+                        return pkg;
                     }
+                }
             );
             resolve(npmPath);
-        })
+        });
 
     },
     installDeps(missModules){
@@ -182,9 +183,9 @@ let utils = {
                     npmName: item.resolveName,  //缺失模块名
                     importerPath: item.id,      //依赖该缺失模块的文件路径
                     originalCode: fs.readFileSync(npmPath).toString()
-                }
+                };
             })
-        )
+        );
     },
     getCustomAliasConfig(){
         //搜集用户package.json中自定义的alias配置
@@ -212,7 +213,7 @@ let utils = {
         //依赖的npm模块也当alias处理
         let result = {};
         Object.keys(deps).forEach((depKey)=>{
-            if( !this.isBuildInLibs(depKey) && this.isNpm(depKey) && !/^(@react|@components)/.test(depKey) ){
+            if ( !this.isBuildInLibs(depKey) && this.isNpm(depKey) && !/^(@react|@components)/.test(depKey) ){
                 result[depKey] = this.resolveNpmAliasPath(id, deps[depKey]);
             }
         });
@@ -223,11 +224,17 @@ let utils = {
         let customAliasReg = /^(@react|@components)/;
         let result = {};
         Object.keys(deps).forEach((depKey)=>{
-            if(customAliasReg.test(depKey)){
+            if (customAliasReg.test(depKey)){
                 result[depKey] = this.resolveCustomAliasPath(id, deps[depKey]);
             }
-        })
+        });
         return result;
+    },
+    shortNameAlias: {
+        h: {
+            variableDeclarator: 'h',
+            init: 'var h = React.createElement;'
+        }
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };

@@ -3,8 +3,7 @@ const cwd = process.cwd();
 const queue = require('./queue');
 const fs = require('fs-extra');
 const config = require('./config');
-const utils = require('./utils')
-const nodeResolve = require('resolve');
+const utils = require('./utils');
 
 const isLess = (filePath)=>{
     return /\.less$/.test(filePath);
@@ -13,7 +12,7 @@ const isCss = (filePath)=>{
     return /\.css$/.test(filePath);
 };
 const isSass = (filePath)=>{
-    return /\.(scss|sass))$/.test(filePath);
+    return /\.(scss|sass)$/.test(filePath);
 };
 const getDist = (filePath) =>{
     let { name, dir } = path.parse(filePath);
@@ -30,72 +29,66 @@ const compileLess = (filePath)=>{
     less.render(
         content,
         {
-           filename: filePath,
-           compress: true
+            filename: filePath,
+            compress: true
         }
     )
-    .then(res => {
-        let code = res.css;
-        queue.push({
-            code: code,
-            path: getDist(filePath),
-            type: 'css'
-        });
-        utils.emit('build');
+        .then(res => {
+            let code = res.css;
+            queue.push({
+                code: code,
+                path: getDist(filePath),
+                type: 'css'
+            });
+            utils.emit('build');
        
 
-    })
-    .catch(err => {
-        if (err){
+        })
+        .catch(err => {
+            if (err){
             // eslint-disable-next-line
             console.log(err);
-        }
-    });
+            }
+        });
     
 };
 
+const renderSass = (filePath)=>{
+    let sass = require(path.join(cwd, 'node_modules', 'node-sass'));
+    sass.render(
+        {
+            file: filePath
+        },
+        (err, res) => {
+            if (err) throw err;
+            let code = res.css.toString();
+            queue.push({
+                code: code,
+                path: getDist(filePath),
+                type: 'css'
+            });
+            utils.emit('build');
+        }
+    );
+};
 const compileSass = (filePath)=>{
-    
-    //installedSass = nodeResolve('node-sass');
-    if(!require( path.join(cwd, 'node_modules', 'node-sass', 'package.json'))){
+    try {
+        require( path.join(cwd, 'node_modules', 'node-sass', 'package.json') );
+        renderSass(filePath);
+    } catch (err){
         utils.installer('node-sass')
+            .then(()=>{
+                renderSass(filePath);
+            });
     }
-
-
-    utils.installer('node-sass')
-    .then(()=>{
-        log();
-    })
-    let sass = require('node-sass');
-    // return new Promise((resolve, reject)=>{
-    //     sass.render(
-    //         {
-    //             file: file
-    //         },
-    //         (err, res) => {
-    //             if (err) throw err;
-    //             let code = res.css.toString();
-    //             resolve(code);
-
-    //             queue.push({
-    //                 code: code,
-    //                 path: getDist(filePath),
-    //                 type: 'css'
-    //             });
-    //             utils.emit('build');
-    //         }
-    //     );
-    // });
-    
-
 };
 
 
 module.exports = (filePath)=>{
-    if (isLess(filePath)){
+    if (isLess(filePath) || isCss(filePath)){
         compileLess(filePath);
     } else if (isSass(filePath)){
-
+        compileSass(filePath);
     }
 
 };

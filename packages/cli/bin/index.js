@@ -7,26 +7,6 @@ if ( Number(process.version.match(/v(\d+)/)[1]) < 8) {
     process.exit(1);
 }
 const config = require('../src/config');
-//const commonds = ['mpreact', 'nanachi'];
-
-const supportBuildConfig = {
-    'wx': {
-        support: true,
-        text: ''
-    },
-    'baidu': {
-        support: false,
-        text: '百度小程序正在努力支持中, 请静候佳音'
-    },
-    'ali': {
-        support: true,
-        text: '支付宝小程序正在努力支持中, 请静候佳音'
-    },
-    'quick': {
-        support: false,
-        text: '快应用正在努力支持中, 请静候佳音'
-    }
-};
 
 const program = require('commander');
 const VERSION = require('../package').version;

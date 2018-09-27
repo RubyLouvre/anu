@@ -33,6 +33,7 @@ const pkgJsonTemplate = {
         'babel-plugin-transform-object-rest-spread': '^6.26.0',
         'babel-plugin-transform-es2015-template-literals': '^6.22.0',
         'babel-plugin-transform-node-env-inline': '^0.4.3',
+        'babel-plugin-module-resolver': '^3.1.1',
         'babel-plugin-transform-react-jsx': '^6.24.1',
         'babel-preset-react': '^6.24.1'
     },
@@ -145,7 +146,7 @@ const writeDir = appName => {
     );
     templates.forEach(item => {
         if (ignore.has(item) || item !=  TEMPLATE) return;
-        let src = path.join(ownRoot, 'packages', 'template', item, 'src');
+        let src = path.join(ownRoot, 'templates', item, 'src');
         let dest = path.join(appName, 'src');
         fs.copySync(src, dest);
     });

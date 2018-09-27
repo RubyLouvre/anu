@@ -9,6 +9,5 @@ module.exports = {
     classDeclaration: require('./classDeclaration'),
     exportExpr: require('./exportExpr'),
     wxml: require('./wxml'),
-    moduleToCjs: require('./moduleToCjs'),
     functionNameAliasConfig: require('./functionNameAliasConfig')
 };
