@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-09-25
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-09-27
  * IE9+
  */
 
@@ -2630,42 +2630,49 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 var aliApis = function aliApis(api) {
   var _ref;
   return _ref = {
-    showModal: function showModal() {
-      var _arguments$ = arguments[0],
-          cancelText = _arguments$.cancelText,
-          confirmText = _arguments$.confirmText;
-      arguments[0].cancelButtonText = cancelText;
-      arguments[0].confirmButtonText = confirmText;
+    showModal: function showModal(a) {
+      a.cancelButtonText = a.cancelText;
+      a.confirmButtonText = a.confirmText;
       return api.confirm.apply(api, arguments);
     },
-    showActionSheet: function showActionSheet() {
-      var itemList = arguments[0].itemList;
-      arguments[0].items = itemList;
+    showActionSheet: function showActionSheet(a) {
+      a.items = a.itemList;
       return api.showActionSheet.apply(api, arguments);
     }
-  }, _defineProperty(_ref, "showActionSheet", function showActionSheet() {
-    var _arguments$2 = arguments[0],
-        title = _arguments$2.title,
-        icon = _arguments$2.icon;
-    arguments[0].content = title;
-    arguments[0].type = icon;
+  }, _defineProperty(_ref, "showActionSheet", function showActionSheet(a) {
+    a.content = a.title;
+    a.type = a.icon;
     return api.showActionSheet.apply(api, arguments);
   }), _defineProperty(_ref, "showLoading", function showLoading() {
-    var title = arguments[0].title;
-    arguments[0].content = title;
+    a.content = a.title;
     return api.showLoading.apply(api, arguments);
-  }), _defineProperty(_ref, "setNavigationBarTitle", function setNavigationBarTitle() {
-    arguments[0].image = null;
-    arguments[0].backgroundColor = null;
-    arguments[0].borderBottomColor = null;
-    arguments[0].reset = null;
+  }), _defineProperty(_ref, "setNavigationBarTitle", function setNavigationBarTitle(a) {
+    a.image = null;
+    a.backgroundColor = null;
+    a.borderBottomColor = null;
+    a.reset = null;
     return api.setNavigationBar.apply(api, arguments);
-  }), _defineProperty(_ref, "setNavigationBarColor", function setNavigationBarColor() {
-    arguments[0].image = null;
-    arguments[0].title = null;
-    arguments[0].borderBottomColor = null;
-    arguments[0].reset = null;
+  }), _defineProperty(_ref, "setNavigationBarColor", function setNavigationBarColor(a) {
+    a.image = null;
+    a.title = null;
+    a.borderBottomColor = null;
+    a.reset = null;
     return api.setNavigationBar.apply(api, arguments);
+  }), _defineProperty(_ref, "saveImageToPhotosAlbum", function saveImageToPhotosAlbum(a) {
+    a.url = a.filePath;
+    return api.saveImage.apply(api, arguments);
+  }), _defineProperty(_ref, "getFileInfo", function getFileInfo(a) {
+    a.apFilePath = a.filePath;
+    return api.getFileInfo.apply(api, arguments);
+  }), _defineProperty(_ref, "getSavedFileInfo", function getSavedFileInfo(a) {
+    a.apFilePath = a.filePath;
+    return api.getSavedFileInfo.apply(api, arguments);
+  }), _defineProperty(_ref, "removeSavedFile", function removeSavedFile(a) {
+    a.apFilePath = a.filePath;
+    return api.removeSavedFile.apply(api, arguments);
+  }), _defineProperty(_ref, "saveFile", function saveFile(a) {
+    a.apFilePath = a.filePath;
+    return api.saveFile.apply(api, arguments);
   }), _ref;
 };
 
