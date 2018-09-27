@@ -2,7 +2,7 @@ const translatorKey = {
     wx: 'translator',
     ali: 'translatorAli',
     baidu: 'translatorBu',
-    quick: 'translatorQuick',
+    quick: 'translatorQuick'
 };
 const build = (arg, type) => {
     let path = `./${translatorKey[type]}/index`;

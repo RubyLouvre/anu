@@ -331,6 +331,7 @@ module.exports = {
         enter: function(astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
+            var attributes = astPath.node.attributes;
             if (modules.importComponents[nodeName]) {
                 let dep =
                     deps[nodeName] ||
@@ -352,8 +353,6 @@ module.exports = {
                         break;
                     }
                 }
-
-                var attributes = astPath.node.attributes;
                 modules.is && modules.is.push(nodeName);
                 attributes.push(
                     utils.createAttribute(

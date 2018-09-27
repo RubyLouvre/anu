@@ -1,5 +1,7 @@
 export var aliApis = function(api) {
   return {
+
+    // 交互
     showModal: function() {
       const { cancelText, confirmText } = arguments[0];
       arguments[0].cancelButtonText = cancelText;
@@ -23,6 +25,25 @@ export var aliApis = function(api) {
       const { title } = arguments[0];
       arguments[0].content = title;
       return api.showLoading.apply(api, arguments);
+    },
+
+    // 导航类
+    setNavigationBarTitle: function() {
+        arguments[0].image = null;
+        arguments[0].backgroundColor = null;
+        arguments[0].borderBottomColor = null;
+        arguments[0].reset = null;
+        return api.setNavigationBar.apply(api, arguments);
+    },
+
+    setNavigationBarColor: function() {
+        arguments[0].image = null;
+        arguments[0].title = null;
+        arguments[0].borderBottomColor = null;
+        arguments[0].reset = null;
+        return api.setNavigationBar.apply(api, arguments);
     }
+
+
   };
 };
