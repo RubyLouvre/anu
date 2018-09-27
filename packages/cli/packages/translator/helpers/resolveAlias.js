@@ -46,6 +46,10 @@ module.exports = (astPath, modules, name) => {
     val = process.platform === 'win32' ? val.replace(/\\/g,'/') : val;
     astPath.node.source.value = val;
 
+    if (/^\w/.test(val)){
+        val = `./${val}`;
+    }
+
     //重点，保持所有引入的组件名及它们的路径，用于<import />
     modules.importComponents[name] = val;
 };

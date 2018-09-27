@@ -11,6 +11,7 @@ const buildErrText = {
     'ali': '支付宝小程序正在努力支持中, 请静候佳音',
     'quick': '快应用正在努力支持中, 请静候佳音'
 };
+
 const LetUsRoll = (args)=>{
     let argList = args[0].split(':');
     let commond = argList[0];
