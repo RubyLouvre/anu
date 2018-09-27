@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-27
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-09-27
  * IE9+
  */
 
@@ -2626,6 +2626,8 @@ function toRenderProps(props) {
     return null;
 }
 
+var buApis = function buApis(api) {};
+
 var win = getWindow();
 var React = void 0;
 var render$1 = Renderer$1.render;
@@ -2660,7 +2662,7 @@ React = win.React = {
     toComponent: toComponent,
     toPage: toPage,
     toStyle: toStyle,
-    appType: 'wx'
+    appType: 'bu'
 };
 var apiContainer = {};
 if (typeof wx != 'undefined') {
@@ -2670,7 +2672,7 @@ if (typeof wx != 'undefined') {
 } else if (typeof swan !== 'undefined') {
     apiContainer = swan;
 }
-injectAPIs(React, apiContainer);
+injectAPIs(React, apiContainer, buApis);
 var React$1 = React;
 
 export default React$1;

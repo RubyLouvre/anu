@@ -1,49 +1,71 @@
 export var aliApis = function(api) {
   return {
-
     // 交互
-    showModal: function() {
-      const { cancelText, confirmText } = arguments[0];
-      arguments[0].cancelButtonText = cancelText;
-      arguments[0].confirmButtonText = confirmText;
+    showModal: function(a) {
+      a.cancelButtonText = a.cancelText;
+      a.confirmButtonText = a.confirmText;
       return api.confirm.apply(api, arguments);
     },
 
-    showActionSheet: function() {
-      const { itemList } = arguments[0];
-      arguments[0].items = itemList;
+    showActionSheet: function(a) {
+      a.items = a.itemList;
       return api.showActionSheet.apply(api, arguments);
     },
-    showActionSheet: function() {
-      const { title, icon } = arguments[0];
-      arguments[0].content = title;
-      arguments[0].type = icon;
+    showActionSheet: function(a) {
+      a.content = a.title;
+      a.type = a.icon;
       return api.showActionSheet.apply(api, arguments);
     },
 
     showLoading: function() {
-      const { title } = arguments[0];
-      arguments[0].content = title;
+      a.content = a.title;
       return api.showLoading.apply(api, arguments);
     },
 
     // 导航类
-    setNavigationBarTitle: function() {
-        arguments[0].image = null;
-        arguments[0].backgroundColor = null;
-        arguments[0].borderBottomColor = null;
-        arguments[0].reset = null;
-        return api.setNavigationBar.apply(api, arguments);
+    setNavigationBarTitle: function(a) {
+      a.image = null;
+      a.backgroundColor = null;
+      a.borderBottomColor = null;
+      a.reset = null;
+      return api.setNavigationBar.apply(api, arguments);
     },
 
-    setNavigationBarColor: function() {
-        arguments[0].image = null;
-        arguments[0].title = null;
-        arguments[0].borderBottomColor = null;
-        arguments[0].reset = null;
-        return api.setNavigationBar.apply(api, arguments);
+    setNavigationBarColor: function(a) {
+      a.image = null;
+      a.title = null;
+      a.borderBottomColor = null;
+      a.reset = null;
+      return api.setNavigationBar.apply(api, arguments);
+    },
+
+    // 图片保存到本地
+    saveImageToPhotosAlbum: function(a) {
+      a.url = a.filePath;
+
+      return api.saveImage.apply(api, arguments);
+    },
+
+    // 文件
+
+    getFileInfo: function(a) {
+      a.apFilePath = a.filePath;
+      return api.getFileInfo.apply(api, arguments);
+    },
+
+    getSavedFileInfo: function(a) {
+      a.apFilePath = a.filePath;
+      return api.getSavedFileInfo.apply(api, arguments);
+    },
+
+    removeSavedFile: function(a) {
+      a.apFilePath = a.filePath;
+      return api.removeSavedFile.apply(api, arguments);
+    },
+
+    saveFile: function(a) {
+      a.apFilePath = a.filePath;
+      return api.saveFile.apply(api, arguments);
     }
-
-
   };
 };
