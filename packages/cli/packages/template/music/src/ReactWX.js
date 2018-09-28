@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-27
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-28
  * IE9+
  */
 
@@ -917,6 +917,8 @@ function request(options) {
     var originComplete = options['complete'];
     var p = new Promise(function (resolve, reject) {
         options['success'] = function (res) {
+            res.statusCode = res.status || res.statusCode;
+            res.header = res.headers || res.header;
             originSuccess && originSuccess(res);
             resolve(res);
         };
@@ -2350,9 +2352,9 @@ function safeClone(originVal) {
     return temp;
 }
 var HookMap = {
-    'onShow': 'componentDidShow',
-    'onHide': 'componentDidHide',
-    'onUnload': 'componentWillUnmount'
+    onShow: 'componentDidShow',
+    onHide: 'componentDidHide',
+    onUnload: 'componentWillUnmount'
 };
 function isReferenceType(val) {
     return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
@@ -2416,9 +2418,7 @@ function toPage(PageClass, path, testObject) {
                 data.state = pageViewInstance.state;
                 data.context = pageViewInstance.context;
                 data.props = pageViewInstance.props;
-                $wxPage.setData(safeClone(data), function () {
-                    console.log('setData complete', data);
-                });
+                $wxPage.setData(safeClone(data), function () {});
             }
             pageInstance.forceUpdate = pageInstance.setState = function (a) {
                 var updateMethod = anuSetState;

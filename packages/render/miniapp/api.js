@@ -60,6 +60,9 @@ function request(options) {
     const originComplete = options['complete'];
     const p = new Promise((resolve, reject) => {
         options['success'] = res => {
+            //  支付宝返回字段不相同
+            res.statusCode = res.status || res.statusCode;
+            res.header = res.headers || res.header;
             originSuccess && originSuccess(res);
             resolve(res);
         };
