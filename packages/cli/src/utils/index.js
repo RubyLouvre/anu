@@ -18,10 +18,11 @@ let utils = {
     emit() {
         Event.emit.apply(this, arguments);
     },
-    createChineseHack: require('./chinese');
+    createChineseHack: require('./chinese'),
     getNodeVersion() {
         return Number(process.version.match(/v(\d+)/)[1]);
     },
+    getStyleValue: require('./getStyleValue'),
     useYarn() {
         if (config['useYarn'] != undefined) {
             return config['useYarn'];

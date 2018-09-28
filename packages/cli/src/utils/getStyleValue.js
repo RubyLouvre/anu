@@ -10,7 +10,7 @@ function hyphen(target) {
     return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
 
-function style(expr) {
+function getStyleString(expr) {
     var styleValue = expr.properties
         .map(function(node) {
             // const key = node.key.name;
@@ -28,4 +28,4 @@ function style(expr) {
     return styleValue;
 }
 
-module.exports = style;
+module.exports = getStyleString;

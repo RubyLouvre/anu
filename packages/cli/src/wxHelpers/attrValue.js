@@ -2,7 +2,7 @@
 
 const t = require('babel-types');
 const generate = require('babel-generator').default;
-const styleHelper = require('./inlineStyle');
+const getStyleValue = require('../utils/getStyleValue');
 
 function bindEvent(astPath) {
     replaceWithExpr(astPath, 'dispatchEvent', true);
@@ -72,7 +72,7 @@ module.exports = function(astPath) {
             break;
         case 'ObjectExpression':
             if (attrName === 'style') {
-                let styleValue = styleHelper(expr);
+                let styleValue = getStyleValue(expr);
                 replaceWithExpr(astPath, styleValue, true);
             } else if (isEvent) {
                 throwEventValue(attrName, attrValue);
