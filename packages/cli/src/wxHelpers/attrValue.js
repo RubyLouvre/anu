@@ -3,6 +3,7 @@
 const t = require('babel-types');
 const generate = require('babel-generator').default;
 const getStyleValue = require('../utils/getStyleValue');
+const buildType = require('../config').buildType;
 
 function bindEvent(astPath) {
     replaceWithExpr(astPath, 'dispatchEvent', true);
@@ -17,7 +18,8 @@ function bindEvent(astPath) {
 module.exports = function(astPath) {
     var expr = astPath.node.expression;
     var attrName = astPath.parent.name.name;
-    var isEvent = /^(bind|catch)/.test(attrName);
+    var isEventRegex = buildType == 'ali' ?  /^(on|catch)/:  /^(bind|catch)/;
+    var isEvent = isEventRegex.test(attrName);
     var attrValue = generate(expr).code;
     switch (astPath.node.expression.type) {
         case 'NumericLiteral': //11
