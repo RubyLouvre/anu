@@ -66,6 +66,13 @@ export var aliApis = function(api) {
     saveFile: function(a) {
       a.apFilePath = a.filePath;
       return api.saveFile.apply(api, arguments);
+    },
+
+    // 位置
+    openLocation: function(a) {
+        a.latitude = a.latitude +'';
+        a.longitude = a.longitude+ '';
+        return api.openLocation.apply(api, arguments);
     }
   };
 };
