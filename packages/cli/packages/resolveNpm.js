@@ -85,7 +85,12 @@ module.exports = (file)=>{
                         //配置react别名
                         let distNpmFile = id.replace(/\/node_modules\//, '/dist/npm/');
                         let distReactFile = path.join(cwd, 'dist', 'ReactWX.js');
-                        return path.relative( path.dirname(distNpmFile),  distReactFile);
+                        let value =  path.relative( path.dirname(distNpmFile),  distReactFile);
+                        //require('xxx.js') => require('./xxx.js');
+                        if (/^\w/.test(value)){
+                            value = `./${value}`;
+                        }
+                        return value;
                     }
                 }
             }]
