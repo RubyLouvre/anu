@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-09-27
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-09-28
  * IE9+
  */
 
@@ -917,6 +917,8 @@ function request(options) {
     var originComplete = options['complete'];
     var p = new Promise(function (resolve, reject) {
         options['success'] = function (res) {
+            res.statusCode = res.status || res.statusCode;
+            res.header = res.headers || res.header;
             originSuccess && originSuccess(res);
             resolve(res);
         };
@@ -2350,9 +2352,9 @@ function safeClone(originVal) {
     return temp;
 }
 var HookMap = {
-    'onShow': 'componentDidShow',
-    'onHide': 'componentDidHide',
-    'onUnload': 'componentWillUnmount'
+    onShow: 'componentDidShow',
+    onHide: 'componentDidHide',
+    onUnload: 'componentWillUnmount'
 };
 function isReferenceType(val) {
     return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
@@ -2416,9 +2418,7 @@ function toPage(PageClass, path, testObject) {
                 data.state = pageViewInstance.state;
                 data.context = pageViewInstance.context;
                 data.props = pageViewInstance.props;
-                $wxPage.setData(safeClone(data), function () {
-                    console.log('setData complete', data);
-                });
+                $wxPage.setData(safeClone(data), function () {});
             }
             pageInstance.forceUpdate = pageInstance.setState = function (a) {
                 var updateMethod = anuSetState;
@@ -2639,40 +2639,77 @@ var aliApis = function aliApis(api) {
       a.items = a.itemList;
       return api.showActionSheet.apply(api, arguments);
     }
-  }, _defineProperty(_ref, "showActionSheet", function showActionSheet(a) {
+  }, _defineProperty(_ref, 'showActionSheet', function showActionSheet(a) {
     a.content = a.title;
     a.type = a.icon;
     return api.showActionSheet.apply(api, arguments);
-  }), _defineProperty(_ref, "showLoading", function showLoading() {
+  }), _defineProperty(_ref, 'showLoading', function showLoading(a) {
     a.content = a.title;
     return api.showLoading.apply(api, arguments);
-  }), _defineProperty(_ref, "setNavigationBarTitle", function setNavigationBarTitle(a) {
+  }), _defineProperty(_ref, 'setNavigationBarTitle', function setNavigationBarTitle(a) {
     a.image = null;
     a.backgroundColor = null;
     a.borderBottomColor = null;
     a.reset = null;
     return api.setNavigationBar.apply(api, arguments);
-  }), _defineProperty(_ref, "setNavigationBarColor", function setNavigationBarColor(a) {
+  }), _defineProperty(_ref, 'setNavigationBarColor', function setNavigationBarColor(a) {
     a.image = null;
     a.title = null;
     a.borderBottomColor = null;
     a.reset = null;
     return api.setNavigationBar.apply(api, arguments);
-  }), _defineProperty(_ref, "saveImageToPhotosAlbum", function saveImageToPhotosAlbum(a) {
+  }), _defineProperty(_ref, 'saveImageToPhotosAlbum', function saveImageToPhotosAlbum(a) {
     a.url = a.filePath;
     return api.saveImage.apply(api, arguments);
-  }), _defineProperty(_ref, "getFileInfo", function getFileInfo(a) {
+  }), _defineProperty(_ref, 'getFileInfo', function getFileInfo(a) {
     a.apFilePath = a.filePath;
     return api.getFileInfo.apply(api, arguments);
-  }), _defineProperty(_ref, "getSavedFileInfo", function getSavedFileInfo(a) {
+  }), _defineProperty(_ref, 'getSavedFileInfo', function getSavedFileInfo(a) {
     a.apFilePath = a.filePath;
     return api.getSavedFileInfo.apply(api, arguments);
-  }), _defineProperty(_ref, "removeSavedFile", function removeSavedFile(a) {
+  }), _defineProperty(_ref, 'removeSavedFile', function removeSavedFile(a) {
     a.apFilePath = a.filePath;
     return api.removeSavedFile.apply(api, arguments);
-  }), _defineProperty(_ref, "saveFile", function saveFile(a) {
+  }), _defineProperty(_ref, 'saveFile', function saveFile(a) {
     a.apFilePath = a.filePath;
     return api.saveFile.apply(api, arguments);
+  }), _defineProperty(_ref, 'openLocation', function openLocation(a) {
+    a.latitude = a.latitude + '';
+    a.longitude = a.longitude + '';
+    return api.openLocation.apply(api, arguments);
+  }), _defineProperty(_ref, 'uploadFile', function uploadFile(a) {
+    a.fileName = a.name;
+    return api.uploadFile.apply(api, arguments);
+  }), _defineProperty(_ref, 'downloadFile', function downloadFile(a) {
+    var fn = a['success'];
+    a['success'] = function (res) {
+      res.tempFilePath = res.apFilePath;
+      fn && fn(res);
+    };
+    return api.downloadFile.apply(api, arguments);
+  }), _defineProperty(_ref, 'chooseImage', function chooseImage(a) {
+    var fn = a['success'];
+    a['success'] = function (res) {
+      res.tempFilePaths = res.apFilePaths;
+      fn && fn(res);
+    };
+    return api.chooseImage.apply(api, arguments);
+  }), _defineProperty(_ref, 'getClipboardData', function getClipboardData(a) {
+    var fn = a['success'];
+    a['success'] = function (res) {
+      res.data = res.text;
+      fn && fn(res);
+    };
+    return api.getClipboard.apply(api, arguments);
+  }), _defineProperty(_ref, 'setClipboardData', function setClipboardData(a) {
+    a.text = a.data;
+    return api.setClipboard.apply(api, arguments);
+  }), _defineProperty(_ref, 'makePhoneCall', function makePhoneCall(a) {
+    a.number = a.phoneNumber;
+    return api.makePhoneCall.apply(api, arguments);
+  }), _defineProperty(_ref, 'setScreenBrightness', function setScreenBrightness(a) {
+    a.brightness = a.value;
+    return api.setScreenBrightness.apply(api, arguments);
   }), _ref;
 };
 

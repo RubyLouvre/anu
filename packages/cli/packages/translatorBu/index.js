@@ -387,7 +387,7 @@ class Parser {
             let { name, ext } = path.parse(file);
             let distDir = file.replace('src', 'dist');
             if (!isCss(ext)) return;
-            let dist = path.join(path.dirname(distDir), `${name}.wxss`);
+            let dist = path.join(path.dirname(distDir), `${name}.css`);
             let lessContent = fs.readFileSync(file).toString();
             fs.ensureFileSync(dist);
             if (ext === '.less' || ext === '.css') {
