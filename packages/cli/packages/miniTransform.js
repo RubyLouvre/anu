@@ -62,12 +62,22 @@ function transform(sourcePath, resolvedIds) {
             miniappPlugin,
             ['module-resolver', {
                 resolvePath(moduleName){
+                    let value = '';
                     if (customAliasMap[moduleName]){
-                        return customAliasMap[moduleName];
+                        value = customAliasMap[moduleName];
+                        
+                        //return customAliasMap[moduleName];
                     } else if (npmAliasMap[moduleName]){
                         //某些模块中可能不存在任何配置依赖, 搜集的alias则为空object.
-                        return npmAliasMap[moduleName];
+                        value =  npmAliasMap[moduleName];
                     }
+
+                    //require('xxx.js') => require('./xxx.js');
+                    if (/^\w/.test(value)){
+                        value = `./${value}`;
+                    }
+                    return value;
+
                 }
             }],
         ]
