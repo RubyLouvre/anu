@@ -6,10 +6,6 @@ const utils = require('./utils');
 const nodeResolve = require('resolve');
 
 
-const isNpm = (npmName)=>{
-    return !/^(\.|\/)/.test(npmName);
-};
-
 const transformCache = {};
 
 //todo windows路径兼容
@@ -25,10 +21,11 @@ const getDistPath = (id)=>{
     return id.replace(/\/node_modules\//, '/dist/npm/');
 };
 
+
 module.exports = (file)=>{
     let {id, originalCode, moduleType} = file;
     //已处理过的不再处理
-    if(transformCache[id]) return;
+    if (transformCache[id]) return;
     transformCache[id] = true;
     let depFile = '';
     let babelConfig = {
@@ -39,14 +36,14 @@ module.exports = (file)=>{
                     ImportDeclaration(astPath){
                         let node = astPath.node;
                         let value = node.source.value;
-                        if (!isNpm(value)) return; //文件中可能存在相对路径模块引用, 不需要更改路径位置
+                        if (!utils.isNpm(value)) return; //文件中可能存在相对路径模块引用, 不需要更改路径位置
                         if (value !=='react'){
                             //文件中中react需要配置alias路径
                             depFile = nodeResolve.sync(value, {
                                 basedir: cwd, 
                                 moduleDirectory: path.join(cwd, 'node_modules'),
                                 packageFilter: (pkg)=>{
-                                    if(pkg.module){
+                                    if (pkg.module){
                                         pkg.main = pkg.module;
                                     }
                                     return pkg;
@@ -62,14 +59,14 @@ module.exports = (file)=>{
                         let callName = node.callee.name;
                         if (callName != 'require') return;
                         let value = node.arguments[0].value;
-                        if (!isNpm(value)) return; //文件中可能存在相对路径模块引用, 不需要更改路径位置
+                        if (!utils.isNpm(value)) return; //文件中可能存在相对路径模块引用, 不需要更改路径位置
                         if (value !=='react'){
                             //react需要配置alias路径
                             depFile = nodeResolve.sync(value, {
                                 basedir: cwd, 
                                 moduleDirectory: path.join(cwd, 'node_modules'),
                                 packageFilter: (pkg)=>{
-                                    if(pkg.module){
+                                    if (pkg.module){
                                         pkg.main = pkg.module;
                                     }
                                     return pkg;
@@ -84,7 +81,7 @@ module.exports = (file)=>{
             ['transform-node-env-inline'], //处理环境判断的相关代码
             ['module-resolver', {
                 resolvePath(moduleName){
-                    if(moduleName === 'react'){
+                    if (moduleName === 'react'){
                         //配置react别名
                         let distNpmFile = id.replace(/\/node_modules\//, '/dist/npm/');
                         let distReactFile = path.join(cwd, 'dist', 'ReactWX.js');
@@ -94,22 +91,25 @@ module.exports = (file)=>{
             }]
              
         ]
-    }
+    };
 
-    if(moduleType === 'es'){
+    if (moduleType === 'es'){
         //{allowTopLevelThis: true}, 防止this被转成undefined
         //https://github.com/babel/babelify/issues/37#issuecomment-160041164
-        babelConfig.plugins.push(['transform-es2015-modules-commonjs', {'allowTopLevelThis': true}])
+        babelConfig.plugins.push(['transform-es2015-modules-commonjs', {'allowTopLevelThis': true}]);
     }
 
 
-    let code = babel.transform(originalCode, babelConfig ).code;
+    setTimeout(()=>{
+        let code = babel.transform(originalCode, babelConfig ).code;
+        queue.push({
+            code: code,
+            path: getDistPath(id),
+            type: 'npm'
+        });
+        utils.emit('build');
+    }, 4);
 
-    queue.push({
-        code: code,
-        path: getDistPath(id),
-        type: 'npm'
-    });
-    utils.emit('build');
+    
 
 };

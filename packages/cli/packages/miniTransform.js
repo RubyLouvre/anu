@@ -62,19 +62,17 @@ function transform(sourcePath, resolvedIds) {
             miniappPlugin,
             ['module-resolver', {
                 resolvePath(moduleName){
-                    if(customAliasMap[moduleName]){
+                    if (customAliasMap[moduleName]){
                         return customAliasMap[moduleName];
-                    }else if(npmAliasMap[moduleName]){
+                    } else if (npmAliasMap[moduleName]){
                         //某些模块中可能不存在任何配置依赖, 搜集的alias则为空object.
                         return npmAliasMap[moduleName];
-                    }else{
-                        
                     }
                 }
             }],
         ]
     }, (err, result)=>{
-        if(err) throw err;
+        if (err) throw err;
 
         setTimeout(()=>{
             //babel6无transform异步方法, 模拟异步, 防阻塞
@@ -88,7 +86,7 @@ function transform(sourcePath, resolvedIds) {
                 path: getDistPath(sourcePath)
             });
             utils.emit('build');
-        }, 4)
+        }, 4);
         
         
     });
