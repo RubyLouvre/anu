@@ -223,7 +223,8 @@ let utils = {
         let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
         let aliasConfig = {};
         for (let key in aliasField) {
-            aliasConfig[key] = path.resolve(cwd, aliasField[key]);
+            let value = path.resolve(cwd, aliasField[key]);
+            aliasConfig[key] = value;
         }
         aliasConfig = Object.assign(aliasConfig, {
             react: aliasConfig['@react']
@@ -236,6 +237,7 @@ let utils = {
 
         //根据被依赖文件和依赖文件，求相对路径
         let aliasPath = path.relative(path.dirname(distJs), distNpm);
+        
         return aliasPath;
     },
     resolveCustomAliasPath(file, depFile) {

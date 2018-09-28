@@ -25,7 +25,7 @@ module.exports = function slotHelper(
     if (!modules.fragmentPath) {
         modules.fragmentPath = path.join(process.cwd(), 'dist', 'components', 'Fragments');
     }
-    queue.wxml.push({
+    queue.push({
         type: 'wxml',
         path: path.join(modules.fragmentPath,  fragmentUid + templateExt),
         code: wxml

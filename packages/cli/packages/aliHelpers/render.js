@@ -4,7 +4,7 @@ const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const queue = require('../queue');
 const path = require('path');
-const functionAliasConfig = require('./functionNameAliasConfig');
+const utils = require('../utils');
 const templateExt = '.axml';
 
 /**
@@ -39,7 +39,7 @@ exports.exit = function(astPath, type, componentName, modules) {
                 plugins: [
                     [
                         'transform-react-jsx',
-                        { pragma: functionAliasConfig.h.variableDeclarator }
+                        { pragma: 'h' }
                     ]
                 ]
             });
@@ -89,7 +89,8 @@ exports.exit = function(astPath, type, componentName, modules) {
                     dep.addImportTag(fragmentUid);
                 });
             }
-            queue.wxml.push(enqueueData);
+            queue.push(enqueueData);
+            utils.emit('build');
             break;
         default:
             break;

@@ -130,6 +130,9 @@ module.exports = {
 
         specifiers.forEach(item => {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
+            if (/\.js$/.test(source)){
+                source = source.replace(/\.js$/, '');
+            }
             modules.importComponents[item.local.name] = source;
         });
     },
