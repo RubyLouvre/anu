@@ -6,7 +6,8 @@ const queue = require('./queue');
 const utils = require('./utils');
 const deps = require('./deps');
 const config = require('./config');
-const helpers = require(`./${config[config['buildType']]['helpers']}`);
+const buildType = config['buildType'];
+const helpers = require(`./${config[buildType].helpers}`);
 const inlineElement = {
     text: 1,
     span: 1,
@@ -35,7 +36,7 @@ module.exports = {
             var methodName = astPath.node.key.name;
             modules.walkingMethod = methodName;
             if (methodName !== 'constructor') {
-                var fn = helpers.method(astPath, methodName);
+                var fn = utils.createMethod(astPath, methodName);
                 modules.thisMethods.push(fn);
             } else {
                 var node = astPath.node;
@@ -93,7 +94,7 @@ module.exports = {
                 modules.componentType === 'Component'
             ) {
                 astPath.node.body.body.unshift(
-                    template(helpers.functionNameAliasConfig.h.init)()
+                    utils.shortcutOfCreateElement()
                 );
             }
 
@@ -152,24 +153,24 @@ module.exports = {
             let declaration = astPath.node.declaration;
             if (!declaration) {
                 var map = astPath.node.specifiers.map(function(el) {
-                    return helpers.exportExpr(el.local.name);
+                    return utils.exportExpr(el.local.name);
                 });
                 astPath.replaceWithMultiple(map);
             } else if (declaration.type === 'Identifier') {
                 astPath.replaceWith(
-                    helpers.exportExpr(declaration.name, declaration.name)
+                    utils.exportExpr(declaration.name, declaration.name)
                 );
             } else if (declaration.type === 'VariableDeclaration') {
                 var id = declaration.declarations[0].id.name;
                 declaration.kind = 'var'; //转换const,let为var
                 astPath.replaceWithMultiple([
                     declaration,
-                    helpers.exportExpr(id)
+                    utils.exportExpr(id)
                 ]);
             } else if (declaration.type === 'FunctionDeclaration') {
                 astPath.replaceWithMultiple([
                     declaration,
-                    helpers.exportExpr(id)
+                    utils.exportExpr(id)
                 ]);
             }
         }
@@ -236,9 +237,7 @@ module.exports = {
         }
     },
     MemberExpression() {},
-    AssignmentExpression() {
-        
-    },
+    AssignmentExpression() {},
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
@@ -252,28 +251,40 @@ module.exports = {
                     return;
                 }
             }
-          
-            if (callee.property && callee.property.name == 'render'){
-                var p = astPath, checkIndex =4, d;
-                while (p.type != 'JSXElement'){
-                    if (p.type === 'JSXExpressionContainer'){
+
+            if (callee.property && callee.property.name == 'render') {
+                var p = astPath,
+                    checkIndex = 4,
+                    d;
+                while (p.type != 'JSXElement') {
+                    if (p.type === 'JSXExpressionContainer') {
                         d = p;
                     }
                     p = p.parentPath;
-                    
-                    if (checkIndex-- == 0){
+
+                    if (checkIndex-- == 0) {
                         break;
                     }
                 }
-                if (p.type === 'JSXElement' && d){
+                if (p.type === 'JSXElement' && d) {
                     //<React.renderProps renderUid={this.props.renderUid} data={[this.state]} />
-                    var renderProps =  utils.createElement('React.toRenderProps',[
-                        utils.createAttribute('instanceUid',t.jSXExpressionContainer(t.identifier('this.props.instanceUid'))),
-                        utils.createAttribute('classUid', modules.classUid),
-                    ],[]);   
+                    var renderProps = utils.createElement(
+                        'React.toRenderProps',
+                        [
+                            utils.createAttribute(
+                                'instanceUid',
+                                t.jSXExpressionContainer(
+                                    t.identifier('this.props.instanceUid')
+                                )
+                            ),
+                            utils.createAttribute('classUid', modules.classUid)
+                        ],
+                        []
+                    );
                     var arr = p.node.children;
                     var index = arr.indexOf(d.node);
-                    if (index !== -1){ //插入React.toRenderProps标签
+                    if (index !== -1) {
+                        //插入React.toRenderProps标签
                         arr.splice(index, 0, renderProps);
                     }
                 }
@@ -300,7 +311,7 @@ module.exports = {
                 }
                 modules.indexName = indexName;
             }
-           
+
             //如果是页面是var a = require("react")
             if (callee.name === 'require') {
                 // helpers.copyNpmModules(
@@ -407,24 +418,28 @@ module.exports = {
     },
     JSXAttribute: {
         enter: function(astPath, state) {
-           
             let attrName = astPath.node.name.name;
             let attrValue = astPath.node.value;
-          
+            let parentPath = astPath.parentPath;
             if (t.isJSXExpressionContainer(attrValue)) {
                 let modules = utils.getAnu(state);
-                let attrs = astPath.parentPath.node.attributes;
-                var expr = attrValue.expression;
+                let attrs = parentPath.node.attributes;
+                let expr = attrValue.expression;
+                let nodeName = parentPath.node.name.name;
                 if (/^(?:on|catch)[A-Z]/.test(attrName)) {
-                    var n = attrName.charAt(0) == 'o' ? 2 : 5;
-                    var eventName = attrName.slice(n).toLowerCase();
-                    if (eventName == 'click') {
-                        //onClick映射为onTap, catchClick映射为catchTap
-                        astPath.node.name.name = n == 2 ? 'onTap' : 'catchTap';
-                        eventName = 'tap';
+                    var prefix = attrName.charAt(0) == 'o' ? 'on' : 'catch';
+                    var eventName = attrName.replace(prefix, '');
+                    var otherEventName = utils.getEventName(
+                        eventName,
+                        nodeName,
+                        buildType
+                    );
+                    if (otherEventName !== eventName) {
+                        astPath.node.name.name = prefix + otherEventName;
                     }
+
                     //事件存在的标签，必须添加上data-eventName-uid, data-class-uid, data-instance-uid
-                    var name = `data-${eventName}-uid`;
+                    var name = `data-${eventName.toLowerCase()}-uid`;
                     attrs.push(
                         utils.createAttribute(
                             name,
@@ -464,9 +479,12 @@ module.exports = {
                     var styleType = expr.type;
                     var isIdentifier = styleType === 'Identifier';
                     if (isIdentifier || styleType === 'ObjectExpression') {
-                        var ii = modules.indexArr ?  modules.indexArr.join('+\'-\'+') : '';
+                        var ii = modules.indexArr
+                            ? modules.indexArr.join('+\'-\'+')
+                            : '';
                         var styleRandName =
-                            `'style${utils.createUUID(astPath)}'` + (ii ? ' +' +ii : '');
+                            `'style${utils.createUUID(astPath)}'` +
+                            (ii ? ' +' + ii : '');
                         //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
                         //ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
                         var styleName = isIdentifier
@@ -490,18 +508,18 @@ module.exports = {
                         type === 'FunctionExpression' ||
                         type == 'ArrowFunctionExpression'
                     ) {
-                        var uuid = 'render'+utils.createUUID(astPath);
-                        attrs.push(utils.createAttribute('renderUid',uuid));
-                        astPath.parentPath.renderProps = attrValue;
-                        astPath.parentPath.renderUid = uuid;
-                        // astPath.parentPath.host = 
+                        var uuid = 'render' + utils.createUUID(astPath);
+                        attrs.push(utils.createAttribute('renderUid', uuid));
+                        parentPath.renderProps = attrValue;
+                        parentPath.renderUid = uuid;
+                        // astPath.parentPath.host =
                         modules.is = [];
                         // console.log(generate(attrValue).code);
                     }
                 }
             }
         },
-        exit(astPath,state) {
+        exit(astPath, state) {
             let attrName = astPath.node.name.name;
             // let attrValue = astPath.node.value;
             if (attrName == 'render' && astPath.parentPath.renderProps) {
@@ -510,34 +528,38 @@ module.exports = {
                 delete astPath.parentPath.renderProps;
                 let modules = utils.getAnu(state);
                 let subComponents = {};
-                modules.is.forEach(function(a){
+                modules.is.forEach(function(a) {
                     subComponents[a] = path.join('..', a, 'index');
                 });
                 var componentName = astPath.parentPath.componentName;
                 var dep = deps[componentName];
-              
+
                 if (dep.addImportTag) {
                     dep.addImportTag(fragmentUid);
                 } else {
                     dep.set.add(fragmentUid);
                 }
-                 
+
                 // console.log(subComponents, modules.usedComponents);
                 helpers.render.exit(
-                    { 
+                    {
                         node: attrValue.expression
                     },
                     'renderProps',
                     fragmentUid,
                     {
-                        sourcePath:  path.join(process.cwd(), 'src', 'components',
-                            'Fragments', fragmentUid+'.js'),
+                        sourcePath: path.join(
+                            process.cwd(),
+                            'src',
+                            'components',
+                            'Fragments',
+                            fragmentUid + '.js'
+                        ),
                         componentType: 'Component',
                         importComponents: subComponents,
                         usedComponents: modules.usedComponents
                     }
                 );
-              
             }
         }
     },

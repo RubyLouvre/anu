@@ -4,7 +4,7 @@
 
 const generate = require('babel-generator').default;
 
-var rhyphen = /([a-z\d])([A-Z]+)/g;
+const rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
     //转换为连字符风格
     return target.replace(rhyphen, '$1-$2').toLowerCase();

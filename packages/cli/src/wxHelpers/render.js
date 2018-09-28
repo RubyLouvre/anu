@@ -5,7 +5,6 @@ const babel = require('babel-core');
 const queue = require('../queue');
 const path = require('path');
 const utils = require('../utils');
-const functionAliasConfig = require('./functionNameAliasConfig');
 
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -39,7 +38,7 @@ exports.exit = function(astPath, type, componentName, modules) {
                 plugins: [
                     [
                         'transform-react-jsx',
-                        { pragma: functionAliasConfig.h.variableDeclarator }
+                        { pragma: 'h' }
                     ]
                 ]
             });

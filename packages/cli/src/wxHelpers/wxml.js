@@ -6,10 +6,10 @@ const attrValueHelper = require('./attrValue');
 const attrNameHelper = require('./attrName');
 const logicHelper = require('./logic');
 const utils = require('../utils');
-const chineseHelper = require('./chinese');
+//const chineseHelper = require('./chinese');
 const slotHelper = require('./slot');
 
-var chineseHack = chineseHelper();
+var chineseHack = utils.createChineseHack();
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */

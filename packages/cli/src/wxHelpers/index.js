@@ -5,9 +5,6 @@ module.exports = {
     attrValue: require('./attrValue'),
     logic: require('./logic'),
     render: require('./render'),
-    method: require('./method'),
     classDeclaration: require('./classDeclaration'),
-    exportExpr: require('./exportExpr'),
-    wxml: require('./wxml'),
-    functionNameAliasConfig: require('./functionNameAliasConfig')
+    wxml: require('./wxml')
 };

@@ -1,4 +1,4 @@
-var path = require('path');
+const path = require('path');
 const jsx = require('../utils');
 const generate = require('babel-generator').default;
 const queue = require('../queue');
