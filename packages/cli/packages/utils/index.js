@@ -48,7 +48,7 @@ let utils = {
         return config['useCnpm'];
     },
     shortcutOfCreateElement(){
-        return template('var h = React.createElement;');
+        return 'var h = React.createElement;';
     },
     getEventName(eventName, nodeName, buildType) {
         if (eventName == 'Click' || eventName == 'Tap'){

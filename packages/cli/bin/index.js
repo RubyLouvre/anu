@@ -6,7 +6,7 @@ if ( Number(process.version.match(/v(\d+)/)[1]) < 8) {
     console.log( `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold(7)}`);
     process.exit(1);
 }
-const config = require('../src/config');
+const config = require('../packages/config');
 
 const program = require('commander');
 const VERSION = require('../package').version;
@@ -38,27 +38,35 @@ if (typeof args[0] === 'undefined') {
 }
 
 
+let buildType = getBuildType(args);
 
-let buildType =  getBuildType(args);
+if(!config[buildType]){
+    let type = args[0].split(':');
+    console.log(
+        chalk.red('请检查命令是否正确')
+    )
+    console.log(chalk.green(`1.微信小程序:        mpreact ${type[0]}`))
+    console.log(chalk.green(`2.百度智能小程序:    mpreact ${type[0]}:bu`));
+    console.log(chalk.green(`3.支付宝小程序:      mpreact ${type[0]}:ali`));
+    console.log(chalk.green(`4.快应用:            mpreact ${type[0]}:quick`));
+    process.exit(1);
+}
 if(!config[buildType].support ){
     console.log(
-        chalk.red(config[buildType].text)
+        chalk.red(config[buildType].notSopportResText)
     )
     process.exit(1);
 }
 config['buildType'] = buildType;
 
-switch(args[0]){
+
+switch(args[0].split(':')[0]){
     case 'start':
-        require('../src/index')('start', buildType);
+        require('../packages/index')('start', buildType);
         break;
     case 'build':
-        require('../src/index')('build', buildType);
+        require('../packages/index')('build', buildType);
         break;
     default:
-        require('../src/init')(args[0]);
+        require('../packages/init')(args[0]);
 }
-
-
-
-

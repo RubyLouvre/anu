@@ -69,7 +69,7 @@ module.exports = {
                     modules
                 );
                 astPath.node.body.body.unshift(
-                    template(helpers.functionNameAliasConfig.h.init)()
+                    template(utils.shortcutOfCreateElement())()
                 );
             }
         }
@@ -94,7 +94,7 @@ module.exports = {
                 modules.componentType === 'Component'
             ) {
                 astPath.node.body.body.unshift(
-                    utils.shortcutOfCreateElement()
+                    template(utils.shortcutOfCreateElement())()
                 );
             }
 
@@ -124,18 +124,14 @@ module.exports = {
             }
         }
 
-        if (/\.(less|scss)$/.test(path.extname(source))) {
+        if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
             astPath.remove();
         }
 
         specifiers.forEach(item => {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
             modules.importComponents[item.local.name] = source;
-
-            //process alias for package.json alias field;
-            // helpers.resolveAlias(astPath, modules, item.local.name);
         });
-        // helpers.copyNpmModules(modules.current, source, node);
     },
     ExportDefaultDeclaration: {
         exit(astPath, state) {
@@ -310,15 +306,6 @@ module.exports = {
                     modules.indexArr = [indexName];
                 }
                 modules.indexName = indexName;
-            }
-
-            //如果是页面是var a = require("react")
-            if (callee.name === 'require') {
-                // helpers.copyNpmModules(
-                //     modules.current,
-                //     node.arguments[0].value,
-                //     node
-                // );
             }
         },
         exit(astPath, state) {
