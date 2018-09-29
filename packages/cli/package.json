@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "cli tool for mpreact",
   "bin": {
-    "mpreact": "./bin/index.js"
+    "mpreact": "./bin/index.js",
+    "nanachi": "./bin/nanachi.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
