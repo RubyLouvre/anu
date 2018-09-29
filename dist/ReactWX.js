@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-28
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-29
  * IE9+
  */
 
@@ -2458,7 +2458,7 @@ function toPage(PageClass, path, testObject) {
             var name = HookMap[hook] || hook;
             var fn = pageViewInstance[name];
             if (isFn(fn)) {
-                fn.apply(pageViewInstance, arguments);
+                return fn.apply(pageViewInstance, arguments);
             }
         };
     });

@@ -1,33 +1,33 @@
 export var aliApis = function(api) {
   return {
     // 交互
-    showModal: function(a) {
+    showModal: function _(a) {
       a.cancelButtonText = a.cancelText;
       a.confirmButtonText = a.confirmText;
       return api.confirm.apply(api, arguments);
     },
-    showActionSheet: function(a) {
+    showActionSheet: function _(a) {
       a.items = a.itemList;
       return api.showActionSheet.apply(api, arguments);
     },
-    showActionSheet: function(a) {
+    showToast: function _(a) {
       a.content = a.title;
       a.type = a.icon;
-      return api.showActionSheet.apply(api, arguments);
+      return api.showToast.apply(api, arguments);
     },
-    showLoading: function(a) {
+    showLoading: function _(a) {
       a.content = a.title;
       return api.showLoading.apply(api, arguments);
     },
     // 导航类
-    setNavigationBarTitle: function(a) {
+    setNavigationBarTitle: function _(a) {
       a.image = null;
       a.backgroundColor = null;
       a.borderBottomColor = null;
       a.reset = null;
       return api.setNavigationBar.apply(api, arguments);
     },
-    setNavigationBarColor: function(a) {
+    setNavigationBarColor: function _(a) {
       a.image = null;
       a.title = null;
       a.borderBottomColor = null;
@@ -35,25 +35,25 @@ export var aliApis = function(api) {
       return api.setNavigationBar.apply(api, arguments);
     },
     // 图片保存到本地
-    saveImageToPhotosAlbum: function(a) {
+    saveImageToPhotosAlbum: function _(a) {
       a.url = a.filePath;
       return api.saveImage.apply(api, arguments);
     },
 
     // 文件
-    getFileInfo: function(a) {
+    getFileInfo: function _(a) {
       a.apFilePath = a.filePath;
       return api.getFileInfo.apply(api, arguments);
     },
-    getSavedFileInfo: function(a) {
+    getSavedFileInfo: function _(a) {
       a.apFilePath = a.filePath;
       return api.getSavedFileInfo.apply(api, arguments);
     },
-    removeSavedFile: function(a) {
+    removeSavedFile: function _(a) {
       a.apFilePath = a.filePath;
       return api.removeSavedFile.apply(api, arguments);
     },
-    saveFile: function(a) {
+    saveFile: function _(a) {
       a.apFilePath = a.tempFilePath;
       let fn = a['success'];
       a['success'] = res => {
@@ -63,18 +63,18 @@ export var aliApis = function(api) {
       return api.saveFile.apply(api, arguments);
     },
     // 位置
-    openLocation: function(a) {
+    openLocation: function _(a) {
       a.latitude = a.latitude + '';
       a.longitude = a.longitude + '';
       return api.openLocation.apply(api, arguments);
     },
     // 上传
-    uploadFile: function(a) {
+    uploadFile: function _(a) {
       a.fileName = a.name;
       return api.uploadFile.apply(api, arguments);
     },
     // 下载
-    downloadFile: function(a) {
+    downloadFile: function _(a) {
       let fn = a['success'];
       a['success'] = res => {
         res.tempFilePath = res.apFilePath;
@@ -83,7 +83,7 @@ export var aliApis = function(api) {
       return api.downloadFile.apply(api, arguments);
     },
     // 图片
-    chooseImage: function(a) {
+    chooseImage: function _(a) {
       let fn = a['success'];
       a['success'] = res => {
         res.tempFilePaths = res.apFilePaths;
@@ -92,7 +92,7 @@ export var aliApis = function(api) {
       return api.chooseImage.apply(api, arguments);
     },
     // 剪切板
-    getClipboardData: function(a) {
+    getClipboardData: function _(a) {
       let fn = a['success'];
       a['success'] = res => {
         res.data = res.text;
@@ -100,18 +100,18 @@ export var aliApis = function(api) {
       };
       return api.getClipboard.apply(api, arguments);
     },
-    setClipboardData: function(a) {
+    setClipboardData: function _(a) {
       a.text = a.data;
       return api.setClipboard.apply(api, arguments);
     },
     // 打电话
-    makePhoneCall: function(a) {
+    makePhoneCall: function _(a) {
       a.number = a.phoneNumber;
       return api.makePhoneCall.apply(api, arguments);
     },
 
     // 屏幕亮度
-    setScreenBrightness: function(a) {
+    setScreenBrightness: function _(a) {
       a.brightness = a.value;
       return api.setScreenBrightness.apply(api, arguments);
     }
