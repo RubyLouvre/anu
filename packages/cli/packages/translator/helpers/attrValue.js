@@ -2,24 +2,16 @@
 
 const t = require('babel-types');
 const generate = require('babel-generator').default;
-const getStyleValue = require('../utils/getStyleValue');
-const buildType = require('../config').buildType;
+const styleHelper = require('./inlineStyle');
 
 function bindEvent(astPath) {
     replaceWithExpr(astPath, 'dispatchEvent', true);
 }
-// 形如 React.toStyle({ width: index + 'px' }, this.props, "style2313" + index)
-// 输出  "style2313" + index)
-// function handlePropsStyleName(str) {
-//     let strArr = str.split(',');
-//     return strArr[strArr.length - 1].trim();
-// }
 
 module.exports = function(astPath) {
     var expr = astPath.node.expression;
     var attrName = astPath.parent.name.name;
-    var isEventRegex = buildType == 'ali' ?  /^(on|catch)/:  /^(bind|catch)/;
-    var isEvent = isEventRegex.test(attrName);
+    var isEvent = /^(bind|catch)/.test(attrName);
     var attrValue = generate(expr).code;
     switch (astPath.node.expression.type) {
         case 'NumericLiteral': //11
@@ -39,15 +31,21 @@ module.exports = function(astPath) {
             astPath.traverse({
                 ThisExpression(nodePath) {
                     if (t.isMemberExpression(nodePath.parentPath)) {
-                        nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
+                        nodePath.parentPath.replaceWith(
+                            t.identifier(nodePath.parent.property.name)
+                        );
                     }
-                },
+                }
             });
             replaceWithExpr(astPath, generate(astPath.node.expression).code);
             break;
         case 'MemberExpression':
             if (isEvent) {
-                bindEvent(astPath, attrName, attrValue.replace(/^\s*this\./, ''));
+                bindEvent(
+                    astPath,
+                    attrName,
+                    attrValue.replace(/^\s*this\./, '')
+                );
             } else {
                 replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
             }
@@ -61,7 +59,10 @@ module.exports = function(astPath) {
                     throwEventValue(attrName, attrValue);
                 }
             } else {
-                if (attrName === 'style' && attrValue.indexOf('React.toStyle') === 0) {
+                if (
+                    attrName === 'style' &&
+                    attrValue.indexOf('React.toStyle') === 0
+                ) {
                     // style={{}} 类型解析
                     let start = attrValue.indexOf('\'style');
                     let end = attrValue.lastIndexOf(')');
@@ -74,7 +75,7 @@ module.exports = function(astPath) {
             break;
         case 'ObjectExpression':
             if (attrName === 'style') {
-                let styleValue = getStyleValue(expr);
+                let styleValue = styleHelper(expr);
                 replaceWithExpr(astPath, styleValue, true);
             } else if (isEvent) {
                 throwEventValue(attrName, attrValue);
@@ -84,9 +85,11 @@ module.exports = function(astPath) {
             astPath.traverse({
                 ThisExpression(nodePath) {
                     if (t.isMemberExpression(nodePath.parentPath)) {
-                        nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
+                        nodePath.parentPath.replaceWith(
+                            t.identifier(nodePath.parent.property.name)
+                        );
                     }
-                },
+                }
             });
             replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
             break;
