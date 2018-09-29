@@ -6,8 +6,9 @@
 
 1. `git clone git@github.com:RubyLouvre/anu.git` 或`git clone https://github.com/RubyLouvre/anu.git`<br />
 2. 命令行定位到`packages/cli`目录下，执行`npm link` 如果之前装过要先npm unlink<br />
-3. 使用mpreact `<project-name>` 创建工程<br />
-4. 定位到  `<project-name>` 目录下 `mpreact start` 开始监听文件变化，<br />
+3. 使用mpreact init `<project-name> ` 创建工程<br />
+4. `cd <project-name> && npm i ` 安装依赖 <br />
+5. `mpreact watch` 实时监听文件 也可以用`mpreact watch:ali`，`mpreact watch:bu`构建其他小程序<br />
 5. 用微信开发工具打开当中的dist目录，自己在src目录中进行开发<br />
 
 详见 https://rubylouvre.github.io/nanachi/index.html 或  https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
