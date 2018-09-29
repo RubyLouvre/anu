@@ -165,7 +165,7 @@ export function toPage(PageClass, path, testObject) {
             var name = HookMap[hook] || hook;
             var fn = pageViewInstance[name];
             if (isFn(fn)) {
-                fn.apply(pageViewInstance, arguments);
+                return fn.apply(pageViewInstance, arguments);
             }
         };
     });
