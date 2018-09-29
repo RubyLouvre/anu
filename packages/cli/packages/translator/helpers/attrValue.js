@@ -64,9 +64,9 @@ module.exports = function(astPath) {
                     attrValue.indexOf('React.toStyle') === 0
                 ) {
                     // style={{}} 类型解析
-                    let start = attrValue.indexOf('style');
+                    let start = attrValue.indexOf('\'style');
                     let end = attrValue.lastIndexOf(')');
-                    let styleID = attrValue.slice(start, end);
+                    let styleID = attrValue.slice(start-1, end);
                     replaceWithExpr(astPath, `props[${styleID}] `);
                 } else {
                     replaceWithExpr(astPath, attrValue);
