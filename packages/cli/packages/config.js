@@ -18,7 +18,7 @@ module.exports = Object.assign(module.exports, {
         helpers: 'aliHelpers'
     },
     bu: {
-        support: false,
+        support: true,
         jsExt: 'js',
         notSopportResText: '百度小程序正在努力支持中, 请静候佳音',
         helpers: 'buHelpers'
@@ -29,5 +29,5 @@ module.exports = Object.assign(module.exports, {
         notSopportResText: '快应用正在努力支持中, 请静候佳音',
         buHelpers: 'quickHelpers'
     },
-    buildType: 'wx'
+    buildType: 'wx'   //构建类型默认微信小程序
 });

@@ -63,7 +63,7 @@ const isJs = (path)=>{
     return /\.js$/.test(path);
 };
 
-const missNpmModule = [];
+//const missNpmModule = [];
 
 // function getExecutedOrder(list) {
 //     let ret = [];
@@ -191,15 +191,17 @@ class Parser {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
                 if (warning.code === 'UNRESOLVED_IMPORT'){
-                    let len = missNpmModule.filter((item)=>{
-                        return item.resolveName == warning.source;
-                    }).length;
+                    // let len = missNpmModule.filter((item)=>{
+                    //     return item.resolveName == warning.source;
+                    // }).length;
                     
-                    if (len > 0) return; //防重复
-                    missNpmModule.push({
-                        id: path.resolve(warning.importer), //处理成绝对路径
-                        resolveName: warning.source 
-                    });
+                    // if (len > 0) return; //防重复
+                    // missNpmModule.push({
+                    //     id: path.resolve(warning.importer), //处理成绝对路径
+                    //     resolveName: warning.source 
+                    // });
+                    // eslint-disable-next-line
+                    console.log(chalk.red(`缺少${warning.source}, 请检查`));
 
 
                 }
@@ -236,16 +238,9 @@ class Parser {
                 });
             }
 
-            // files.push({
-            //     id: id,
-            //     deps: item.dependencies
-            // });
+           
         });
       
-        //let sorted = getExecutedOrder(files);
-        
-        
-        this.installMissDeps();
         this.transform();
         this.copyAssets();
         generate();
@@ -258,14 +253,6 @@ class Parser {
             }
         });
         return result;
-    }
-    async installMissDeps(){
-        if (!missNpmModule.length) return; //没有缺失依赖
-        await utils.installDeps(missNpmModule); 
-        // eslint-disable-next-line
-        console.log(chalk.green('\n缺失依赖安装完毕，开始你的旅行吧\n'));
-        process.exit(1);
-        
     }
     transform(){
         this.updateJsQueue(this.jsFiles);
@@ -371,7 +358,7 @@ class Parser {
 
 // eslint-disable-next-line
 async function build(arg, buildType) {
-    if (arg === 'start'){
+    if (arg === 'watch'){
         // eslint-disable-next-line
         console.log(chalk.green('watching files...'));
     } else if (arg === 'build'){
@@ -383,7 +370,7 @@ async function build(arg, buildType) {
     
     const parser = new Parser(entry);
     await parser.parse();
-    if (arg === 'start') {
+    if (arg === 'watch') {
         parser.watching();
     }
 }

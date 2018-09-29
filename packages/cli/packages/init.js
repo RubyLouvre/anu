@@ -1,9 +1,7 @@
-const utils = require('./utils/index');
 const validateProjectName = require('validate-npm-package-name');
 const chalk = require('chalk');
 const fs = require('fs-extra');
 const path = require('path');
-const spawn = require('cross-spawn');
 const Handlebars = require('handlebars');
 const inquirer = require('inquirer');
 const ownRoot = path.join(__dirname, '..');
@@ -11,8 +9,6 @@ const exists = fs.existsSync;
 
 const ignore = new Set(['.DS_Store', '.git', '.gitignore']);
 
-const useYarn = utils.useYarn();
-const useCnpm = utils.useCnpm();
 
 const pkgJsonTemplate = {
     license: 'MIT',
@@ -111,16 +107,17 @@ const askTemplate = ()=>{
     return inquirer.prompt(q);
 };
 
+// eslint-disable-next-line
 const writePkgJson = appName => {
     let template = Handlebars.compile(JSON.stringify(pkgJsonTemplate));
     let data = {
         appName: path.basename(appName)
     };
     let result = JSON.parse(template(data));
-    if (useYarn){
-        //yarn add pkg@version --dev
-        delete result.devDependencies;
-    }
+    // if (useYarn){
+    //     //yarn add pkg@version --dev
+    //     delete result.devDependencies;
+    // }
     
     fs.writeFileSync(
         path.join(appName, 'package.json'),
@@ -147,8 +144,11 @@ const writeDir = appName => {
     templates.forEach(item => {
         if (ignore.has(item) || item !=  TEMPLATE) return;
         let src = path.join(ownRoot, 'templates', item, 'src');
-        let dest = path.join(appName, 'src');
-        fs.copySync(src, dest);
+        let pkg = path.join(ownRoot, 'templates', item, 'package.json');
+        let dist = path.join(appName, 'src');
+        let distPkg = path.join(appName, 'package.json');
+        fs.copySync(src, dist);
+        fs.copySync(pkg, distPkg);
     });
 
     // eslint-disable-next-line
@@ -158,85 +158,23 @@ const writeDir = appName => {
         )}\n`
     );
 
-    //写入package.json
-    writePkgJson(appName);
-    // console.log();
+    /* eslint-disable */
+    console.log();
+    console.log(chalk.green('mpreact watch'));
+    console.log('  启动服务');
+    console.log();
+    console.log(chalk.green('mpreact build'));
+    console.log('  构建服务');
+    console.log();
+    console.log(chalk.magenta('请敲入下面两行命令，享受您的开发之旅!'));
+    console.log();
+    console.log(`  cd ${appName} && npm install`);
+    console.log('  mpreact watch');
+    console.log();
     
 
-    // eslint-disable-next-line
-    console.log(chalk.green('\n开始安装依赖,请稍候...\n'));
-    // console.log();
-    //安装依赖
-    install(appName);
+   
 };
 
 
-const getDevDeps = ()=>{
-    let deps = pkgJsonTemplate.devDependencies;
-    let result = [];
-    Object.keys(deps).forEach((name)=>{
-        result.push(
-            `${name}@${deps[name]}`
-        );
-    });
-    return result;
-};
-
-
-const removeLockFile = (dir)=>{
-    let lockFile = [
-        'package-lock.json',
-        'yarn.lock'
-    ];
-    lockFile.forEach((file)=>{
-        fs.remove( path.join(dir, file), (err)=>{
-            if (err){
-                // eslint-disable-next-line
-                console.log(err);
-            }
-        } );
-    });
-};
-
-const install = projectRoot => {
-    let bin = '';
-    let option = [];
-    process.chdir(projectRoot);
-    if (useYarn) {
-        bin = 'yarnpkg';
-        option.push('add', '--exact');
-        option = option.concat(getDevDeps());
-        option.push('--dev');
-    } else if (useCnpm) {
-        bin = 'cnpm';
-        option.push('install');
-    } else {
-        bin = 'npm';
-        option.push('install');
-    }
-
-    
-    var result = spawn.sync(bin, option, { stdio: 'inherit' });
-    if (!result.error) {
-        removeLockFile(process.cwd());
-        /* eslint-disable */
-        console.log(chalk.green('依赖安装完毕!🍺'));
-        console.log();
-        console.log(chalk.green('mpreact start'));
-        console.log('  启动服务');
-        console.log();
-        console.log(chalk.green('mpreact build'));
-        console.log('  构建服务');
-        console.log();
-        console.log(chalk.magenta('请敲入下面两行命令，享受您的开发之旅!'));
-        console.log();
-        console.log(`  cd ${projectRoot}`);
-        console.log('  mpreact start');
-        console.log();
-    } else {
-        console.log(chalk.red('依赖安装出错，请自行安装!'));
-        console.log();
-    }
-    /* eslint-enable */
-};
 module.exports = init;
