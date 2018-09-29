@@ -467,8 +467,9 @@ module.exports = {
                 } else if (attrName === 'style') {
                     //将动态样式封装到React.toStyle中
                     var styleType = expr.type;
+                    var MemberExpression = styleType === 'MemberExpression';
                     var isIdentifier = styleType === 'Identifier';
-                    if (isIdentifier || styleType === 'ObjectExpression') {
+                    if (isIdentifier || MemberExpression || styleType === 'ObjectExpression') {
                         var ii = modules.indexArr
                             ? modules.indexArr.join('+\'-\'+')
                             : '';
@@ -476,6 +477,7 @@ module.exports = {
                             `'style${utils.createUUID(astPath)}'` +
                             (ii ? ' +' + ii : '');
                         //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
+                        //MemberExpression 处理形如 <div style={this.state.styles.a}></div> 的style结构
                         //ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
                         var styleName = isIdentifier
                             ? expr.name

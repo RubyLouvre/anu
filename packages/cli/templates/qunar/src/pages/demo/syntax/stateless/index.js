@@ -6,6 +6,11 @@ class P extends React.Component {
         this.state = {
             a: 111,
             b: 222,
+            styles: {
+                a: {
+                    border:'1px solid red'
+                }
+            }
         };
     }
     changeA(e) {
@@ -21,7 +26,7 @@ class P extends React.Component {
     render() {
         return (
             <div>
-                <div>无狀态组件</div>
+                <div style={this.state.styles.a}>无狀态组件</div>
                 <p>
 					输入a(绑定onInput事件)
                     <input
