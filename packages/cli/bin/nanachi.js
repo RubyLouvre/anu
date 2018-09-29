@@ -16,7 +16,7 @@ function getBuildType(args){
     return type;
 }
 program
-    .name('mpreact')
+    .name('nanachi')
     .version(require('../package.json').version, '-v, --version')
     .parse(process.argv);
 let args = program.args;
@@ -30,7 +30,7 @@ if (args[0] === 'init' && typeof args[1] === 'undefined') {
     );
     console.log('例如:\n');
     console.log(
-        `  ${chalk.cyan(program.name())} ${chalk.green('mpreact-app')}`
+        `  ${chalk.cyan(program.name())} ${chalk.green('nanachi-app')}`
     );
     process.exit(1);
 }
@@ -43,10 +43,10 @@ if(!config[buildType]){
     console.log(
         chalk.red('请检查命令是否正确')
     )
-    console.log(chalk.green(`1.微信小程序:        mpreact ${type[0]}`))
-    console.log(chalk.green(`2.百度智能小程序:    mpreact ${type[0]}:bu`));
-    console.log(chalk.green(`3.支付宝小程序:      mpreact ${type[0]}:ali`));
-    console.log(chalk.green(`4.快应用:            mpreact ${type[0]}:quick`));
+    console.log(chalk.green(`1.微信小程序:        nanachi ${type[0]}`))
+    console.log(chalk.green(`2.百度智能小程序:    nanachi ${type[0]}:bu`));
+    console.log(chalk.green(`3.支付宝小程序:      nanachi ${type[0]}:ali`));
+    console.log(chalk.green(`4.快应用:            nanachi ${type[0]}:quick`));
     process.exit(1);
 }
 if(!config[buildType].support ){
@@ -64,6 +64,7 @@ if(/\:/.test(commond)){
     //<watch|build>:
     commond = commond.split(':')[0];
 }
+    
 switch(commond){
     case 'watch':
         require('../packages/index')('watch', buildType);
@@ -75,5 +76,5 @@ switch(commond){
         require('../packages/init')(args[1]);
         break;  
     default:
-        console.log(chalk.green('初始化项目: mpreact init <project-name>'));      
+        console.log(chalk.green('初始化项目: nanachi init <project-name>'));      
 }
