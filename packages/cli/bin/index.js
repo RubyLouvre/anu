@@ -38,6 +38,8 @@ if (args[0] === 'init' && typeof args[1] === 'undefined') {
 
 let buildType = getBuildType(args);
 
+process.env.ANU_ENV = buildType;
+
 if(!config[buildType]){
     let type = args[0].split(':');
     console.log(

@@ -20,6 +20,7 @@ module.exports = Object.assign(module.exports, {
     bu: {
         support: true,
         jsExt: 'js',
+        styleExt: 'css',
         notSopportResText: '百度小程序正在努力支持中, 请静候佳音',
         helpers: 'buHelpers'
     },
