@@ -64,19 +64,18 @@ exports.exit = function(astPath, type, componentName, modules) {
             //如果这个JSX的主体是一个组件，那么它肯定在deps里面
             var dep = deps[componentName];
             //添加import语句产生的显式依赖
-           
             for (var i in modules.importComponents) {
                 if (modules.usedComponents[i]) {
                     wxml = `<import src="${
-                        modules.importComponents[i].replace(/\.js$/, '')
-                    }.wxml" />\n${wxml}`;
+                        modules.importComponents[i]
+                    }.swan" />\n${wxml}`;
                 }
             }
             var enqueueData = {
                 type: 'wxml',
                 path: modules.sourcePath
                     .replace(/\/src\//, '/dist/')
-                    .replace(/\.js$/, '.wxml'),
+                    .replace(/\.js$/, '.swan'),
                 code: wxml //prettifyXml(wxml, { indent: 2 })
             };
             //添加组件标签包含其他标签时（如<Dialog><p>xxx</p></Dialog>）产生的隐式依赖
@@ -105,7 +104,7 @@ function addImportTag(fragmentUid) {
             'src',
             'components',
             'Fragments',
-            fragmentUid + '.wxml'
+            fragmentUid + '.swan'
         )
     );
     src = process.platform === 'win32' ? src.replace(/\\/g, '/') : src;

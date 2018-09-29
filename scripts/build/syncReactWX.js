@@ -6,7 +6,7 @@ const src = path.join(cwd, 'dist/ReactWX.js');
 const template = ['qunar', 'pdd', 'music'];
 
 template.forEach((item)=>{
-    const dist = path.join(cwd, `packages/cli/packages/template/${item}/src/ReactWX.js`);
+    const dist = path.join(cwd, `packages/cli/templates/${item}/src/ReactWX.js`);
     fs.ensureFileSync(dist);
     fs.copyFile(src, dist, (err)=>{
         if(err){
