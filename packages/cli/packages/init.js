@@ -85,16 +85,17 @@ const askTemplate = ()=>{
     const q = [];
     const list = [
         {
-            name: '拼XX',
-            value: 'pdd'
-        },
-        {
-            name: '网X云音乐',
-            value: 'music'
-        },
-        {
             name: '去哪儿',
             value: 'qunar'
+        },
+        {
+            name: '网易云音乐',
+            value: 'music'
+        },
+       
+        {
+            name: '拼多多',
+            value: 'pdd'
         }
         
     ];
@@ -159,16 +160,19 @@ const writeDir = appName => {
     );
 
     /* eslint-disable */
-    console.log();
     console.log(chalk.green('mpreact watch'));
-    console.log('  启动服务');
+    console.log(`  实时构建项目, \n
+                   \t或使用mpreact watch:ali 构建支付宝小程序\n
+                   \t或使用mpreact watch:bu 构建百度智能小程序`)
     console.log();
     console.log(chalk.green('mpreact build'));
-    console.log('  构建服务');
+    console.log(`  构建项目(有漏构建的情况下，需要强制全量构建), \n
+                   \t或使用mpreact build:ali 构建支付宝小程序\n
+                   \t或使用mpreact build:bu 构建百度智能小程序`)
     console.log();
-    console.log(chalk.magenta('请敲入下面两行命令，享受您的开发之旅!'));
+    console.log(chalk.magenta('请敲入下面两行命令，享受您的开发之旅(npm i或改成yarn)'));
     console.log();
-    console.log(`  cd ${appName} && npm install`);
+    console.log(`  cd ${appName} && npm i `);
     console.log('  mpreact watch');
     console.log();
     

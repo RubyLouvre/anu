@@ -49,7 +49,7 @@ var visitor = {
                     var template = utils.createElement('template', attributes, []);
                     attributes.push(
                         utils.createAttribute('is', '{{props.renderUid}}'),
-                        utils.createAttribute('data', '{{...renderData}}')
+                        utils.createAttribute('data', '{{{...renderData}}}')
                     );
                     var children = astPath.parentPath.parentPath.node.children;
                     //去掉后面的{{this.props.render()}}
@@ -94,7 +94,7 @@ var visitor = {
                     if (!indexArr) {
                         attributes.push(
                             utils.createAttribute('is', is),
-                            utils.createAttribute('data', '{{...data}}'),
+                            utils.createAttribute('data', '{{{...data}}}'),
                             utils.createAttribute('s-for', `{{components.${array}}}`),
                             utils.createAttribute('s-for-item', 'data'),
                             utils.createAttribute('s-for-index', 'index'),
@@ -108,7 +108,7 @@ var visitor = {
                                 `{{components['${array}'+${indexArr} ]}}`
                             ),
                             utils.createAttribute('s-for-item', 'data'),
-                            utils.createAttribute('data', '{{...data}}'),
+                            utils.createAttribute('data', '{{{...data}}}'),
                             utils.createAttribute('s-key', utils.genKey(key))
                         );
                     }
@@ -154,7 +154,7 @@ var visitor = {
                 var template = utils.createElement('template', attributes, []);
                 attributes.push(
                     utils.createAttribute('is', '{{props.fragmentUid}}'),
-                    utils.createAttribute('data', '{{...props.fragmentData}}')
+                    utils.createAttribute('data', '{{{...props.fragmentData}}}')
                 );
                 astPath.replaceWith(template);
                 //  console.warn("小程序暂时不支持{this.props.children}");
