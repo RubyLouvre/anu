@@ -26,11 +26,11 @@ let args = program.args;
 if (args[0] === 'init' && typeof args[1] === 'undefined') {
     console.error('请指定项目名称');
     console.log(
-        `  ${chalk.cyan(program.name())} ${chalk.green('<project-name>')}\n`
+        `  ${chalk.cyan(program.name())} init ${chalk.green('<project-name>')}\n`
     );
     console.log('例如:\n');
     console.log(
-        `  ${chalk.cyan(program.name())} ${chalk.green('mpreact-app')}`
+        `  ${chalk.cyan(program.name())} init ${chalk.green('mpreact-app')}`
     );
     process.exit(1);
 }
