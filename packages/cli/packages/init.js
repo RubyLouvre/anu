@@ -170,7 +170,7 @@ const writeDir = appName => {
                    \t或使用mpreact build:ali 构建支付宝小程序\n
                    \t或使用mpreact build:bu 构建百度智能小程序`)
     console.log();
-    console.log(chalk.magenta('请敲入下面两行命令，享受您的开发之旅'+ chalk.magenta.bold('(npm i可改成yarn)'));
+    console.log(chalk.magenta('请敲入下面两行命令，享受您的开发之旅'+ chalk.magenta.bold('(npm i可改成yarn)')));
     console.log();
     console.log(`  cd ${appName} && npm i `);
     console.log('  mpreact watch');

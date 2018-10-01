@@ -218,18 +218,54 @@ let utils = {
             })
         );
     },
+    asyncReact(){
+        let React = this.getReactLib();
+        let dist = path.join(cwd, 'src', React);
+        fs.ensureFileSync( dist );
+        fs.copyFileSync(
+            path.join(__dirname, '../lib', React),
+            dist
+        );
+        
+        let map = this.getReactMap();
+        Object.keys(map).forEach((key)=>{
+            let ReactName = map[key];
+            if (ReactName != React){
+                fs.remove( path.join(cwd, 'src', ReactName), (err)=>{
+                    if (err){
+                        console.log(err);
+                    }
+                } );
+                fs.remove( path.join(cwd, 'dist', ReactName), (err)=>{
+                    if (err){
+                        console.log(err);
+                    }
+                });
+            }
+        });  
+        
+
+    },
+    getReactMap(){
+        return {
+            wx: 'ReactWX.js',
+            ali: 'ReactAli.js',
+            bu: 'ReactBu.js'
+        };
+    },
+    getReactLib(){
+        let buildType = config.buildType;
+        return this.getReactMap()[buildType];
+    },
     getCustomAliasConfig() {
-        //搜集用户package.json中自定义的alias配置
-        let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
-        let aliasConfig = {};
-        for (let key in aliasField) {
-            let value = path.resolve(cwd, aliasField[key]);
-            aliasConfig[key] = value;
-        }
-        aliasConfig = Object.assign(aliasConfig, {
-            react: aliasConfig['@react']
-        });
-        return aliasConfig;
+        let React = this.getReactLib();
+        let defaultAlias = {
+            '@react':  path.resolve(cwd, `src/${React}`),
+            'react': path.resolve(cwd, `src/${React}`),
+            '@components': path.resolve(cwd, 'src/components')
+        };
+        //let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
+        return defaultAlias;
     },
     resolveNpmAliasPath(id, depFile) {
         let distJs = id.replace(/\/src\//, '/dist/');
