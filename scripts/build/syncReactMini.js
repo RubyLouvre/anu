@@ -1,12 +1,16 @@
 const fs = require('fs-extra');
 const path = require('path');
 const cwd = process.cwd();
-const src = path.join(cwd, 'dist/ReactWX.js');
 
-const template = ['qunar', 'pdd', 'music'];
+const sources = [
+    'ReactWX.js',
+    'ReactAli.js',
+    'ReactBu.js'
+]
 
-template.forEach((item)=>{
-    const dist = path.join(cwd, `packages/cli/templates/${item}/src/ReactWX.js`);
+sources.forEach((item)=>{
+    const src = path.join(cwd, `dist/${item}`);
+    const dist = path.join(cwd, `packages/cli/packages/lib/${item}`);
     fs.ensureFileSync(dist);
     fs.copyFile(src, dist, (err)=>{
         if(err){

@@ -143,7 +143,7 @@ const isJs = (path)=>{
 //     }
 //     return ret;
 // }
-
+utils.asyncReact();
 class Parser {
     constructor(entry) {
         this.entry = entry;
@@ -151,10 +151,11 @@ class Parser {
         this.jsFiles = [];
         this.styleFiles = [];
         this.npmFiles = [];
+        this.customAliasConfig = utils.getCustomAliasConfig();
         this.inputConfig = {
             input: this.entry,
             plugins: [
-                alias( utils.getCustomAliasConfig() ),  //搜集依赖时候，能找到对应的alias配置路径
+                alias( this.customAliasConfig ),  //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
                     jail: path.join(cwd), //从项目根目录中搜索npm模块, 防止向父级查找
                     customResolveOptions: {
@@ -191,19 +192,9 @@ class Parser {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
                 if (warning.code === 'UNRESOLVED_IMPORT'){
-                    // let len = missNpmModule.filter((item)=>{
-                    //     return item.resolveName == warning.source;
-                    // }).length;
-                    
-                    // if (len > 0) return; //防重复
-                    // missNpmModule.push({
-                    //     id: path.resolve(warning.importer), //处理成绝对路径
-                    //     resolveName: warning.source 
-                    // });
+                    if (this.customAliasConfig[warning.source.split('/')[0]]) return;
                     // eslint-disable-next-line
                     console.log(chalk.red(`缺少${warning.source}, 请检查`));
-
-
                 }
             }
         };

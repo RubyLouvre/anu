@@ -3,6 +3,7 @@ const queue = require('./queue');
 const cwd = process.cwd();
 const path = require('path');
 const utils = require('./utils');
+const config = require('./config');
 const nodeResolve = require('resolve');
 
 
@@ -21,6 +22,7 @@ const getDistPath = (id)=>{
     return id.replace(/\/node_modules\//, '/dist/npm/');
 };
 
+let ReactMap = utils.getReactMap();
 
 module.exports = (file)=>{
     let {id, originalCode, moduleType} = file;
@@ -84,7 +86,7 @@ module.exports = (file)=>{
                     if (moduleName === 'react'){
                         //配置react别名
                         let distNpmFile = id.replace(/\/node_modules\//, '/dist/npm/');
-                        let distReactFile = path.join(cwd, 'dist', 'ReactWX.js');
+                        let distReactFile = path.join(cwd, 'dist', ReactMap[config['buildType']] );
                         let value =  path.relative( path.dirname(distNpmFile),  distReactFile);
                         //require('xxx.js') => require('./xxx.js');
                         if (/^\w/.test(value)){
