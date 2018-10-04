@@ -13,7 +13,7 @@ function getLocation(source) {
         key: (source.history.state && source.history.state.key) || "initial"
     };
     for (const key in source.location) {
-        if (!Object.hasOwnProperty.call(source.location, key)) {
+        if (Object.prototype.hasOwnProperty.call(source.location, key)) {
             location[key] = source.location[key];
         }
     }
