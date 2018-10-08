@@ -5,7 +5,7 @@ let utils = require('./utils');
 let path = require('path');
 let visitor = require('./miniappPlugin');
 let cwd = process.cwd();
-const config = require('./config');
+let config = require('./config');
 
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
@@ -65,8 +65,6 @@ function transform(sourcePath, resolvedIds) {
                     let value = '';
                     if (customAliasMap[moduleName]){
                         value = customAliasMap[moduleName];
-                        
-                        //return customAliasMap[moduleName];
                     } else if (npmAliasMap[moduleName]){
                         //某些模块中可能不存在任何配置依赖, 搜集的alias则为空object.
                         value =  npmAliasMap[moduleName];
@@ -85,10 +83,22 @@ function transform(sourcePath, resolvedIds) {
         if (err) throw err;
 
         setTimeout(()=>{
-            //babel6无transform异步方法, 模拟异步, 防阻塞
+            //babel6无transform异步方法
             result = babel.transform(result.code, {
                 babelrc: false,
-                plugins: ['transform-es2015-modules-commonjs']
+                plugins: [
+                    'transform-es2015-modules-commonjs',
+                    [
+                        //process.env.ANU_ENV
+                        'transform-inline-environment-variables',
+                        {
+                            env: {
+                                ANU_ENV: config['buildType']
+                            }
+                        }
+                    ],
+                    'minify-dead-code-elimination'
+                ]
             });
             queue.push({
                 code: result.code,

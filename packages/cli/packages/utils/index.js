@@ -170,7 +170,7 @@ let utils = {
             let options = [];
             if (this.useYarn()) {
                 bin = 'yarn';
-                options.push('add', '--exact', npmName, '--save');
+                options.push('add', npmName, '--save');
             } else if (this.useCnpm()) {
                 bin = 'cnpm';
                 options.push('install', npmName, '--save');
