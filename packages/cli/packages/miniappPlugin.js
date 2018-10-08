@@ -78,16 +78,14 @@ module.exports = {
 				astPath.node.body.body.unshift(template(utils.shortcutOfCreateElement())());
 			}
 
-			//需要引入weapp-async-await
 			if (name === '_asyncToGenerator') {
 				astPath.insertBefore(
-					template(
-						`var weAsync = require('weapp-async-await');
-                         var Promise = weAsync.Promise;
-                         var regeneratorRuntime = weAsync.regeneratorRuntime;
-                        `
-					)()
+					t.importDeclaration(
+						[t.importDefaultSpecifier(t.identifier('regeneratorRuntime'))],
+						t.stringLiteral('regenerator-runtime/runtime')
+					)
 				);
+				
 			}
 		},
 	},
