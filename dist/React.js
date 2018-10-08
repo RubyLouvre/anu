@@ -683,9 +683,6 @@
     		},
     		componentDidMount: function componentDidMount() {
     			connect(this).on(this.onUpdate);
-    			if (this.context[contextProp]) {
-    				this.context[contextProp].on(this.onUpdate);
-    			}
     			var observedBits = this.props.observedBits;
     			this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
     		},

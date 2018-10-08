@@ -113,9 +113,6 @@ export function createContext(defaultValue, calculateChangedBits) {
 			},
 			componentDidMount() {
 				connect(this).on(this.onUpdate);
-				if (this.context[contextProp]) {
-					this.context[contextProp].on(this.onUpdate);
-				}
 				let { observedBits } = this.props;
 				// Subscribe to all changes by default
 				this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
