@@ -101,23 +101,29 @@ function transform(sourcePath, resolvedIds) {
     }, (err, result)=>{
         if (err) throw err;
 
+        //babel6无transform异步方法
         setTimeout(()=>{
-            //babel6无transform异步方法
+            let babelPlugins = [
+                [
+                    //process.env.ANU_ENV
+                    'transform-inline-environment-variables',
+                    {
+                        env: {
+                            ANU_ENV: config['buildType']
+                        }
+                    }
+                ],
+                'minify-dead-code-elimination'
+            ];
+
+            if(config.buildType === 'wx'){
+                //支付宝小程序默认支持es6 module
+                babelPlugins.push('transform-es2015-modules-commonjs');
+            }
+
             result = babel.transform(result.code, {
                 babelrc: false,
-                plugins: [
-                    'transform-es2015-modules-commonjs',
-                    [
-                        //process.env.ANU_ENV
-                        'transform-inline-environment-variables',
-                        {
-                            env: {
-                                ANU_ENV: config['buildType']
-                            }
-                        }
-                    ],
-                    'minify-dead-code-elimination'
-                ]
+                plugins: babelPlugins
             });
             queue.push({
                 code: result.code,

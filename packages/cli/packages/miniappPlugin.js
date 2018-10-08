@@ -78,13 +78,29 @@ module.exports = {
 				astPath.node.body.body.unshift(template(utils.shortcutOfCreateElement())());
 			}
 
-			if (name === '_asyncToGenerator') {
+			if (name === '_asyncToGenerator' && config.buildType == 'wx' ) {
+				// astPath.insertBefore(
+				// 	t.importDeclaration(
+				// 		[t.importDefaultSpecifier(t.identifier('regeneratorRuntime'))],
+				// 		t.stringLiteral('regenerator-runtime/runtime')
+				// 	)
+				// );
 				astPath.insertBefore(
-					t.importDeclaration(
-						[t.importDefaultSpecifier(t.identifier('regeneratorRuntime'))],
-						t.stringLiteral('regenerator-runtime/runtime')
+					t.variableDeclaration(
+						'var',
+						[
+							t.variableDeclarator(
+								t.identifier('regeneratorRuntime'),
+								t.callExpression(
+									t.identifier('require'),
+									[
+										t.stringLiteral('regenerator-runtime/runtime')
+									]
+								)
+							)
+						]
 					)
-				);
+				)
 				
 			}
 		},
