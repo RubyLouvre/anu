@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-09-29
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-08
  * IE9+
  */
 
@@ -546,114 +546,118 @@ function createPortal(children, parent) {
 
 var uuid = 1;
 function gud() {
-    return uuid++;
+	return uuid++;
 }
 var MAX_NUMBER = 1073741823;
 function createEventEmitter(value) {
-    var handlers = [];
-    return {
-        on: function on(handler) {
-            handlers.push(handler);
-        },
-        off: function off(handler) {
-            handlers = handlers.filter(function (h) {
-                return h !== handler;
-            });
-        },
-        get: function get$$1() {
-            return value;
-        },
-        set: function set(newValue, changedBits) {
-            value = newValue;
-            handlers.forEach(function (handler) {
-                return handler(value, changedBits);
-            });
-        }
-    };
+	var handlers = [];
+	return {
+		on: function on(handler) {
+			handlers.push(handler);
+		},
+		off: function off(handler) {
+			handlers = handlers.filter(function (h) {
+				return h !== handler;
+			});
+		},
+		get: function get$$1() {
+			return value;
+		},
+		set: function set(newValue, changedBits) {
+			value = newValue;
+			handlers.forEach(function (handler) {
+				return handler(value, changedBits);
+			});
+		}
+	};
 }
 function createContext(defaultValue, calculateChangedBits) {
-    var contextProp = "__create-react-context-" + gud() + "__";
-    function create(obj, value) {
-        obj[contextProp] = value;
-        return obj;
-    }
-    var Provider = miniCreateClass(function Provider(props) {
-        this.emitter = createEventEmitter(props.value);
-    }, Component, {
-        getChildContext: function getChildContext() {
-            return create({}, this.emitter);
-        },
-        UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
-            if (this.props.value !== nextProps.value) {
-                var oldValue = this.props.value;
-                var newValue = nextProps.value;
-                var changedBits = void 0;
-                if (Object.is(oldValue, newValue)) {
-                    changedBits = 0;
-                } else {
-                    changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
-                    changedBits |= 0;
-                    if (changedBits !== 0) {
-                        this.emitter.set(nextProps.value, changedBits);
-                    }
-                }
-            }
-        },
-        render: function render() {
-            return this.props.children;
-        }
-    }, {
-        childContextTypes: create({}, PropTypes.object.isRequired)
-    });
-    var Consumer = miniCreateClass(function Consumer(props, context) {
-        var _this = this;
-        this.observedBits = 0;
-        this.state = {
-            value: this.getValue()
-        };
-        this.emitter = context[contextProp];
-        this.onUpdate = function (newValue, changedBits) {
-            var observedBits = _this.observedBits | 0;
-            if ((observedBits & changedBits) !== 0) {
-                _this.setState({
-                    value: _this.getValue()
-                });
-            }
-        };
-    }, Component, {
-        UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
-            var observedBits = nextProps.observedBits;
-            this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
-        },
-        getValue: function getValue() {
-            if (this.emitter) {
-                return this.emitter.get();
-            } else {
-                return defaultValue;
-            }
-        },
-        componentDidMount: function componentDidMount() {
-            if (this.emitter) {
-                this.emitter.on(this.onUpdate);
-            }
-            var observedBits = this.props.observedBits;
-            this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
-        },
-        componentWillUnmount: function componentWillUnmount() {
-            if (this.emitter) {
-                this.emitter.off(this.onUpdate);
-            }
-        },
-        render: function render() {
-            return this.props.children(this.state.value);
-        }
-    }, {
-        contextTypes: create({}, PropTypes.object)
-    });
-    return {
-        Provider: Provider,
-        Consumer: Consumer
-    };
+	var contextProp = '__create-react-context-' + gud() + '__';
+	function create(obj, value) {
+		obj[contextProp] = value;
+		return obj;
+	}
+	var backup = {
+		get: function get$$1() {
+			return defaultValue;
+		},
+		on: noop,
+		off: noop
+	};
+	var Provider = miniCreateClass(function Provider(props) {
+		this.emitter = createEventEmitter(props.value);
+	}, Component, {
+		getChildContext: function getChildContext() {
+			return create({}, this.emitter);
+		},
+		UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
+			if (this.props.value !== nextProps.value) {
+				var oldValue = this.props.value;
+				var newValue = nextProps.value;
+				var changedBits = void 0;
+				if (Object.is(oldValue, newValue)) {
+					changedBits = 0;
+				} else {
+					changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
+					changedBits |= 0;
+					if (changedBits !== 0) {
+						this.emitter.set(nextProps.value, changedBits);
+					}
+				}
+			}
+		},
+		render: function render() {
+			return this.props.children;
+		}
+	}, {
+		childContextTypes: create({}, PropTypes.object.isRequired)
+	});
+	function connect(instance) {
+		return instance.context[contextProp] || backup;
+	}
+	var Consumer = miniCreateClass(function Consumer(props, context) {
+		var _this = this;
+		this.observedBits = 0;
+		this.state = {
+			value: this.getValue()
+		};
+		this.onUpdate = function (newValue, changedBits) {
+			var observedBits = _this.observedBits | 0;
+			if ((observedBits & changedBits) !== 0) {
+				_this.setState({
+					value: _this.getValue()
+				});
+			}
+		};
+	}, Component, {
+		UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
+			var observedBits = nextProps.observedBits;
+			this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
+		},
+		getValue: function getValue() {
+			return connect(this).get();
+		},
+		componentDidMount: function componentDidMount() {
+			connect(this).on(this.onUpdate);
+			if (this.context[contextProp]) {
+				this.context[contextProp].on(this.onUpdate);
+			}
+			var observedBits = this.props.observedBits;
+			this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
+		},
+		componentWillUnmount: function componentWillUnmount() {
+			connect(this).off(this.onUpdate);
+		},
+		render: function render() {
+			return this.props.children(this.state.value);
+		}
+	}, {
+		contextTypes: create({}, PropTypes.object)
+	});
+	return {
+		Provider: Provider,
+		Consumer: Consumer
+	};
 }
 
 function _uuid() {
@@ -1014,7 +1018,7 @@ var eventSystem = {
         var instanceUid = dataset.instanceUid;
         var instance = componentClass[instanceUid];
         var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber) {
+        if (e.type == 'change' && fiber && fiber.type === 'input') {
             if (fiber.props.value + '' == e.detail.value) {
                 return;
             }
