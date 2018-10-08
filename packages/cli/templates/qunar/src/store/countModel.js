@@ -1,4 +1,3 @@
-import 'weapp-async-await';
 var count = {
     state: 0, // initial state
     reducers: {

@@ -2,6 +2,8 @@ let syntaxClassProperties = require('babel-plugin-syntax-class-properties');
 let babel = require('babel-core');
 let queue = require('./queue');
 let utils = require('./utils');
+let fs = require('fs');
+let nodeResolve = require('resolve');
 let path = require('path');
 let visitor = require('./miniappPlugin');
 let cwd = process.cwd();
@@ -62,6 +64,23 @@ function transform(sourcePath, resolvedIds) {
             miniappPlugin,
             ['module-resolver', {
                 resolvePath(moduleName){
+                    //针对async/await语法做特殊处理
+                    if (/regenerator-runtime\/runtime/.test(moduleName)){
+                        let npmFile = nodeResolve.sync(moduleName, {
+                            basedir: cwd, 
+                            moduleDirectory: path.join(cwd, 'node_modules'),
+                        });
+                        Object.assign(npmAliasMap, utils.updateNpmAlias(sourcePath, {
+                            'regenerator-runtime/runtime': npmFile
+                        }));
+                        queue.push({
+                            code: fs.readFileSync(npmFile, 'utf-8'),
+                            path: npmFile.replace(/\/node_modules\//, '/dist/npm/'),
+                            type: 'npm'
+                        });
+                        utils.emit('build');
+                    }
+
                     let value = '';
                     if (customAliasMap[moduleName]){
                         value = customAliasMap[moduleName];
@@ -77,7 +96,7 @@ function transform(sourcePath, resolvedIds) {
                     return value;
 
                 }
-            }],
+            }]
         ]
     }, (err, result)=>{
         if (err) throw err;

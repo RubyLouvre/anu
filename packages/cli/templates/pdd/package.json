@@ -8,6 +8,9 @@
             "@components": "src/components"
         }
     },
+    "dependencies": {
+        "regenerator-runtime": "^0.12.1"
+    },
     "devDependencies": {
         "babel-plugin-module-resolver": "^3.1.1",
         "babel-plugin-transform-async-to-generator": "^6.24.1",
