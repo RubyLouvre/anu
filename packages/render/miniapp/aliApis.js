@@ -40,6 +40,13 @@ export var aliApis = function(api) {
       return api.saveImage.apply(api, arguments);
     },
 
+    // 图片预览
+    previewImage: function _(a) {
+      let index = a.urls.indexOf(a.current || a.urls[0]);
+      a.current = index;
+      return api.previewImage.apply(api, arguments);
+    },
+
     // 文件
     getFileInfo: function _(a) {
       a.apFilePath = a.filePath;
