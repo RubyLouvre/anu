@@ -3,7 +3,7 @@
 const chalk = require('chalk');
 if ( Number(process.version.match(/v(\d+)/)[1]) < 8) {
     // eslint-disable-next-line
-    console.log( `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold(7)}`);
+    console.log( `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold(8)}`);
     process.exit(1);
 }
 const config = require('../packages/config');
