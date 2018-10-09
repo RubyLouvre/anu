@@ -107,7 +107,7 @@ let utils = {
         if (/\{\{/.test(key)) {
             key = key.slice(2, -2);
         }
-        return key.indexOf('.') > 0 ? key.split('.').pop() : '*this';
+        return key.indexOf('.') > 0 ? key.split('.').pop() : '{{index}}';
     },
     getAnu(state) {
         return state.file.opts.anu;
@@ -227,7 +227,7 @@ let utils = {
         let reactPath = '';
         let React = this.getReactLibName();
         let srcPath = path.join(cwd, 'src', React);
-        try{
+        try {
             reactPath = nodeResolve.sync(srcPath, {
                 basedir: cwd,
                 moduleDirectory: path.join(
@@ -235,7 +235,7 @@ let utils = {
                     'src'
                 )
             });
-        }catch(err){
+        } catch (err){
             let spinner = this.spinner(`正在下载最新的${React}`);
             spinner.start();
             let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/master/dist/${React}`;
@@ -244,7 +244,7 @@ let utils = {
             fs.writeFileSync(
                 srcPath,
                 ReactLib.data
-            )
+            );
             spinner.succeed(`下载${React}成功`);
             reactPath = path.join(cwd, 'src', React);
         }
@@ -261,11 +261,13 @@ let utils = {
             if (ReactName != ReactLibName){
                 fs.remove( path.join(cwd, 'src', ReactName), (err)=>{
                     if (err){
+                        // eslint-disable-next-line
                         console.log(err);
                     }
                 } );
                 fs.remove( path.join(cwd, 'dist', ReactName), (err)=>{
                     if (err){
+                        // eslint-disable-next-line
                         console.log(err);
                     }
                 });
