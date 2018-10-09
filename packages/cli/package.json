@@ -13,6 +13,7 @@
   "license": "MIT",
   "devDependencies": {},
   "dependencies": {
+    "axios": "^0.18.0",
     "babel": "^6.23.0",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
@@ -36,6 +37,7 @@
     "handlebars": "^4.0.11",
     "inquirer": "^6.0.0",
     "less": "^3.8.1",
+    "ora": "^3.0.0",
     "prettify-xml": "^1.2.0",
     "resolve": "^1.8.1",
     "rollup": "^0.63.5",
