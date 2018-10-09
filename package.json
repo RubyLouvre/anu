@@ -4,11 +4,10 @@
   "description": "a React16-compact mini framework",
   "main": "dist/React.js",
   "scripts": {
-    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js &&rollup -c ./scripts/build/rollup.ali.js  &&rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.wx.js && npm run syncReactMini",
+    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.ali.js  &&rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.wx.js",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
     "sync": "node ./scripts/build/syncAntd.js",
-    "syncReactMini": "node ./scripts/build/syncReactMini.js",
     "buildIE": "webpack --config ./scripts/build/buildIE.js",
     "precommit": "lint-staged"
   },
