@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-09-29
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-09
  * IE9+
  */
 
@@ -226,15 +226,15 @@ function createElement(type, config) {
         argsLen = children.length;
     if (type && type.call) {
         tag = type.prototype && type.prototype.render ? 2 : 1;
-    } else if (type + "" !== type) {
-        toWarnDev("React.createElement: type is invalid.");
+    } else if (type + '' !== type) {
+        toWarnDev('React.createElement: type is invalid.');
     }
     if (config != null) {
         if (hasValidRef(config)) {
             ref = config.ref;
         }
         if (hasValidKey(config)) {
-            key = "" + config.key;
+            key = '' + config.key;
         }
     }
     props = makeProps(type, config || {}, props, children, argsLen);
@@ -257,7 +257,7 @@ function cloneElement(element, config) {
             owner = Renderer.currentOwner;
         }
         if (hasValidKey(config)) {
-            key = "" + config.key;
+            key = '' + config.key;
         }
     }
     props = makeProps(type, config || {}, props, children, argsLen);
@@ -280,7 +280,7 @@ function ReactElement(type, tag, props, key, ref, owner) {
         var refType = typeNumber(ref);
         if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
             if (refType < 4) {
-                ref += "";
+                ref += '';
             }
             ret.ref = ref;
         } else {
@@ -294,7 +294,7 @@ function isValidElement(vnode) {
     return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
 }
 function createVText(text) {
-    return ReactElement("#text", 6, text + "");
+    return ReactElement('#text', 6, text + '');
 }
 function escape(key) {
     var escapeRegex = /[=:]/g;
@@ -327,7 +327,7 @@ function flattenCb(context, child, key, childType) {
     if (!flattenObject[key]) {
         flattenObject[key] = child;
     } else {
-        key = "." + flattenIndex;
+        key = '.' + flattenIndex;
         flattenObject[key] = child;
     }
     flattenIndex++;
@@ -337,18 +337,18 @@ function fiberizeChildren(children, fiber) {
     flattenIndex = 0;
     if (children !== void 666) {
         lastText = null;
-        traverseAllChildren(children, "", flattenCb);
+        traverseAllChildren(children, '', flattenCb);
     }
     flattenIndex = 0;
     return fiber.children = flattenObject;
 }
 function getComponentKey(component, index) {
-    if ((typeof component === "undefined" ? "undefined" : _typeof(component)) === 'object' && component !== null && component.key != null) {
+    if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
         return escape(component.key);
     }
     return index.toString(36);
 }
-var SEPARATOR = ".";
+var SEPARATOR = '.';
 var SUBSEPARATOR = ':';
 function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
     var childType = typeNumber(children);
@@ -369,8 +369,8 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
         case 8:
             if (children.$$typeof || children instanceof Component) {
                 invokeCallback = true;
-            } else if (children.hasOwnProperty("toString")) {
-                children = children + "";
+            } else if (children.hasOwnProperty('toString')) {
+                children = children + '';
                 invokeCallback = true;
                 childType = 3;
             }
@@ -392,9 +392,11 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
     }
     var iteratorFn = getIteractor(children);
     if (iteratorFn) {
-        iterator = iteratorFn.call(children);
-        var ii = 0,
-            step;
+        var iterator = iteratorFn.call(children),
+            child = void 0,
+            ii = 0,
+            step = void 0,
+            nextName = void 0;
         while (!(step = iterator.next()).done) {
             child = step.value;
             nextName = nextNamePrefix + getComponentKey(child, ii++);
@@ -402,10 +404,10 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
         }
         return subtreeCount;
     }
-    throw "children: type is invalid.";
+    throw 'children: type is invalid.';
 }
 var REAL_SYMBOL = hasSymbol && Symbol.iterator;
-var FAKE_SYMBOL = "@@iterator";
+var FAKE_SYMBOL = '@@iterator';
 function getIteractor(a) {
     var iteratorFn = REAL_SYMBOL && a[REAL_SYMBOL] || a[FAKE_SYMBOL];
     if (iteratorFn && iteratorFn.call) {
@@ -572,11 +574,18 @@ function createEventEmitter(value) {
     };
 }
 function createContext(defaultValue, calculateChangedBits) {
-    var contextProp = "__create-react-context-" + gud() + "__";
+    var contextProp = '__create-react-context-' + gud() + '__';
     function create(obj, value) {
         obj[contextProp] = value;
         return obj;
     }
+    var backup = {
+        get: function get$$1() {
+            return defaultValue;
+        },
+        on: noop,
+        off: noop
+    };
     var Provider = miniCreateClass(function Provider(props) {
         this.emitter = createEventEmitter(props.value);
     }, Component, {
@@ -605,13 +614,15 @@ function createContext(defaultValue, calculateChangedBits) {
     }, {
         childContextTypes: create({}, PropTypes.object.isRequired)
     });
-    var Consumer = miniCreateClass(function Consumer(props, context) {
+    function connect(instance) {
+        return instance.context[contextProp] || backup;
+    }
+    var Consumer = miniCreateClass(function Consumer() {
         var _this = this;
         this.observedBits = 0;
         this.state = {
             value: this.getValue()
         };
-        this.emitter = context[contextProp];
         this.onUpdate = function (newValue, changedBits) {
             var observedBits = _this.observedBits | 0;
             if ((observedBits & changedBits) !== 0) {
@@ -626,23 +637,15 @@ function createContext(defaultValue, calculateChangedBits) {
             this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
         },
         getValue: function getValue() {
-            if (this.emitter) {
-                return this.emitter.get();
-            } else {
-                return defaultValue;
-            }
+            return connect(this).get();
         },
         componentDidMount: function componentDidMount() {
-            if (this.emitter) {
-                this.emitter.on(this.onUpdate);
-            }
+            connect(this).on(this.onUpdate);
             var observedBits = this.props.observedBits;
             this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
         },
         componentWillUnmount: function componentWillUnmount() {
-            if (this.emitter) {
-                this.emitter.off(this.onUpdate);
-            }
+            connect(this).off(this.onUpdate);
         },
         render: function render() {
             return this.props.children(this.state.value);
@@ -1014,7 +1017,7 @@ var eventSystem = {
         var instanceUid = dataset.instanceUid;
         var instance = componentClass[instanceUid];
         var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber) {
+        if (e.type == 'change' && fiber && fiber.type === 'input') {
             if (fiber.props.value + '' == e.detail.value) {
                 return;
             }
@@ -2626,7 +2629,23 @@ function toRenderProps(props) {
     return null;
 }
 
-var buApis = function buApis(api) {};
+var buApis = function buApis(api) {
+    return {
+        showActionSheet: function showActionSheet(a) {
+            var success = a && a.success,
+                complete = a && a.complete;
+            success && (a.success = function () {
+                var res = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+                success.call(api, { index: res.tapIndex });
+            });
+            complete && (a.complete = function () {
+                var res = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+                complete.call(api, { index: res.tapIndex });
+            });
+            return api.showActionSheet.apply(api, arguments);
+        }
+    };
+};
 
 var win = getWindow();
 var React = void 0;

@@ -50,11 +50,13 @@ export function getWindow() {
         if (window){
             return window;
         }
+    /* istanbul ignore next  */
     } catch (e) {/*kill*/}
     try {
         if (global){
             return global;
         }
+    /* istanbul ignore next  */
     } catch (e) {/*kill*/}
     return fakeWindow;
 }
@@ -93,6 +95,7 @@ export function inherit(SubClass, SupClass) {
 try {
     //微信小程序不支持Function
     var supportEval = Function('a', 'return a + 1')(2) == 3;
+    /* istanbul ignore next  */
 } catch (e) {}
 export function miniCreateClass(ctor, superClass, methods, statics) {
     let className = ctor.name || 'IEComponent';

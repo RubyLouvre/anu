@@ -1,5 +1,4 @@
 import React from '@react';
-import 'weapp-async-await';
 const style = {
     'textAlign': 'center'
 };

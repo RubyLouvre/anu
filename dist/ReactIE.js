@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-09-29
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-10-09
  */
 
 (function (global, factory) {
@@ -260,15 +260,15 @@
             argsLen = children.length;
         if (type && type.call) {
             tag = type.prototype && type.prototype.render ? 2 : 1;
-        } else if (type + "" !== type) {
-            toWarnDev("React.createElement: type is invalid.");
+        } else if (type + '' !== type) {
+            toWarnDev('React.createElement: type is invalid.');
         }
         if (config != null) {
             if (hasValidRef(config)) {
                 ref = config.ref;
             }
             if (hasValidKey(config)) {
-                key = "" + config.key;
+                key = '' + config.key;
             }
         }
         props = makeProps(type, config || {}, props, children, argsLen);
@@ -291,7 +291,7 @@
                 owner = Renderer.currentOwner;
             }
             if (hasValidKey(config)) {
-                key = "" + config.key;
+                key = '' + config.key;
             }
         }
         props = makeProps(type, config || {}, props, children, argsLen);
@@ -314,7 +314,7 @@
             var refType = typeNumber(ref);
             if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
                 if (refType < 4) {
-                    ref += "";
+                    ref += '';
                 }
                 ret.ref = ref;
             } else {
@@ -328,7 +328,7 @@
         return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
     }
     function createVText(text) {
-        return ReactElement("#text", 6, text + "");
+        return ReactElement('#text', 6, text + '');
     }
     function escape(key) {
         var escapeRegex = /[=:]/g;
@@ -361,7 +361,7 @@
         if (!flattenObject[key]) {
             flattenObject[key] = child;
         } else {
-            key = "." + flattenIndex;
+            key = '.' + flattenIndex;
             flattenObject[key] = child;
         }
         flattenIndex++;
@@ -371,18 +371,18 @@
         flattenIndex = 0;
         if (children !== void 666) {
             lastText = null;
-            traverseAllChildren(children, "", flattenCb);
+            traverseAllChildren(children, '', flattenCb);
         }
         flattenIndex = 0;
         return fiber.children = flattenObject;
     }
     function getComponentKey(component, index) {
-        if ((typeof component === "undefined" ? "undefined" : _typeof(component)) === 'object' && component !== null && component.key != null) {
+        if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
             return escape(component.key);
         }
         return index.toString(36);
     }
-    var SEPARATOR = ".";
+    var SEPARATOR = '.';
     var SUBSEPARATOR = ':';
     function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
         var childType = typeNumber(children);
@@ -403,8 +403,8 @@
             case 8:
                 if (children.$$typeof || children instanceof Component) {
                     invokeCallback = true;
-                } else if (children.hasOwnProperty("toString")) {
-                    children = children + "";
+                } else if (children.hasOwnProperty('toString')) {
+                    children = children + '';
                     invokeCallback = true;
                     childType = 3;
                 }
@@ -426,9 +426,11 @@
         }
         var iteratorFn = getIteractor(children);
         if (iteratorFn) {
-            iterator = iteratorFn.call(children);
-            var ii = 0,
-                step;
+            var iterator = iteratorFn.call(children),
+                child = void 0,
+                ii = 0,
+                step = void 0,
+                nextName = void 0;
             while (!(step = iterator.next()).done) {
                 child = step.value;
                 nextName = nextNamePrefix + getComponentKey(child, ii++);
@@ -436,10 +438,10 @@
             }
             return subtreeCount;
         }
-        throw "children: type is invalid.";
+        throw 'children: type is invalid.';
     }
     var REAL_SYMBOL = hasSymbol && Symbol.iterator;
-    var FAKE_SYMBOL = "@@iterator";
+    var FAKE_SYMBOL = '@@iterator';
     function getIteractor(a) {
         var iteratorFn = REAL_SYMBOL && a[REAL_SYMBOL] || a[FAKE_SYMBOL];
         if (iteratorFn && iteratorFn.call) {
@@ -616,11 +618,18 @@
         };
     }
     function createContext(defaultValue, calculateChangedBits) {
-        var contextProp = "__create-react-context-" + gud() + "__";
+        var contextProp = '__create-react-context-' + gud() + '__';
         function create(obj, value) {
             obj[contextProp] = value;
             return obj;
         }
+        var backup = {
+            get: function get$$1() {
+                return defaultValue;
+            },
+            on: noop,
+            off: noop
+        };
         var Provider = miniCreateClass(function Provider(props) {
             this.emitter = createEventEmitter(props.value);
         }, Component, {
@@ -649,13 +658,15 @@
         }, {
             childContextTypes: create({}, PropTypes.object.isRequired)
         });
-        var Consumer = miniCreateClass(function Consumer(props, context) {
+        function connect(instance) {
+            return instance.context[contextProp] || backup;
+        }
+        var Consumer = miniCreateClass(function Consumer() {
             var _this = this;
             this.observedBits = 0;
             this.state = {
                 value: this.getValue()
             };
-            this.emitter = context[contextProp];
             this.onUpdate = function (newValue, changedBits) {
                 var observedBits = _this.observedBits | 0;
                 if ((observedBits & changedBits) !== 0) {
@@ -670,23 +681,15 @@
                 this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
             },
             getValue: function getValue() {
-                if (this.emitter) {
-                    return this.emitter.get();
-                } else {
-                    return defaultValue;
-                }
+                return connect(this).get();
             },
             componentDidMount: function componentDidMount() {
-                if (this.emitter) {
-                    this.emitter.on(this.onUpdate);
-                }
+                connect(this).on(this.onUpdate);
                 var observedBits = this.props.observedBits;
                 this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
             },
             componentWillUnmount: function componentWillUnmount() {
-                if (this.emitter) {
-                    this.emitter.off(this.onUpdate);
-                }
+                connect(this).off(this.onUpdate);
             },
             render: function render() {
                 return this.props.children(this.state.value);
@@ -743,16 +746,16 @@
         this.children = [];
     }
     var NAMESPACE = {
-        svg: "http://www.w3.org/2000/svg",
-        xmlns: "http://www.w3.org/2000/xmlns/",
-        xlink: "http://www.w3.org/1999/xlink",
-        xhtml: "http://www.w3.org/1999/xhtml",
-        math: "http://www.w3.org/1998/Math/MathML"
+        svg: 'http://www.w3.org/2000/svg',
+        xmlns: 'http://www.w3.org/2000/xmlns/',
+        xlink: 'http://www.w3.org/1999/xlink',
+        xhtml: 'http://www.w3.org/1999/xhtml',
+        math: 'http://www.w3.org/1998/Math/MathML'
     };
     var fn = DOMElement.prototype = {
         contains: Boolean
     };
-    String("replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute" + ",getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent" + ",detachEvent").replace(/\w+/g, function (name) {
+    String('replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute' + ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' + ',detachEvent').replace(/\w+/g, function (name) {
         fn[name] = noop;
     });
     var fakeDoc = new DOMElement();
@@ -760,10 +763,10 @@
         return new DOMElement(type);
     };
     fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
-    fakeDoc.documentElement = new DOMElement("html");
-    fakeDoc.body = new DOMElement("body");
-    fakeDoc.nodeName = "#document";
-    fakeDoc.textContent = "";
+    fakeDoc.documentElement = new DOMElement('html');
+    fakeDoc.body = new DOMElement('body');
+    fakeDoc.nodeName = '#document';
+    fakeDoc.textContent = '';
     var win = getWindow();
     var inBrowser = !!win.alert;
     if (!inBrowser) {
@@ -773,10 +776,10 @@
     var versions = {
         88: 7,
         80: 6,
-        "00": NaN,
-        "08": NaN
+        '00': NaN,
+        '08': NaN
     };
-    var msie = document.documentMode || versions[typeNumber(document.all) + "" + typeNumber(win.XMLHttpRequest)];
+    var msie = document.documentMode || versions[typeNumber(document.all) + '' + typeNumber(win.XMLHttpRequest)];
     var modern = /NaN|undefined/.test(msie) || msie > 8;
     function contains(a, b) {
         if (b) {
@@ -2864,28 +2867,28 @@
             props = vnode.props,
             ns = vnode.ns;
         switch (type) {
-            case "#text":
+            case '#text':
                 var node = reuseTextNodes.pop();
                 if (node) {
                     node.nodeValue = props;
                     return node;
                 }
                 return document.createTextNode(props);
-            case "#comment":
+            case '#comment':
                 return document.createComment(props);
-            case "svg":
+            case 'svg':
                 ns = NAMESPACE.svg;
                 break;
-            case "math":
+            case 'math':
                 ns = NAMESPACE.math;
                 break;
             default:
                 do {
-                    var s = p.name == "AnuPortal" ? p.props.parent : p.tag === 5 ? p.stateNode : null;
+                    var s = p.name == 'AnuPortal' ? p.props.parent : p.tag === 5 ? p.stateNode : null;
                     if (s) {
                         ns = s.namespaceURI;
-                        if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
-                            ns = "";
+                        if (p.type === 'foreignObject' || ns === NAMESPACE.xhtml) {
+                            ns = '';
                         }
                         break;
                     }
@@ -2903,13 +2906,13 @@
         var inputType = props && props.type;
         if (inputType && elem.uniqueID) {
             try {
-                elem = document.createElement("<" + type + " type='" + inputType + "'/>");
+                elem = document.createElement('<' + type + ' type=\'' + inputType + '\'/>');
             } catch (e2) {
             }
         }
         return elem;
     }
-    var hyperspace = document.createElement("div");
+    var hyperspace = document.createElement('div');
     function _emptyElement(node) {
         while (node.firstChild) {
             node.removeChild(node.firstChild);

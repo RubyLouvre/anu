@@ -1,5 +1,5 @@
-import { diffProps } from "./props";
-import { document, NAMESPACE } from "./browser";
+import { diffProps } from './props';
+import { document, NAMESPACE } from './browser';
 import {
     get,
     noop,
@@ -7,17 +7,17 @@ import {
     emptyObject,
     topNodes,
     topFibers
-} from "react-core/util";
-import { Renderer, createRenderer } from "react-core/createRenderer";
-import { render, createContainer } from "react-fiber/scheduleWork";
-import { duplexAction, fireDuplex } from "./duplex";
+} from 'react-core/util';
+import { Renderer, createRenderer } from 'react-core/createRenderer';
+import { render, createContainer } from 'react-fiber/scheduleWork';
+import { duplexAction, fireDuplex } from './duplex';
 
 const reuseTextNodes = []; //文本节点不能加属性，样式与事件，重用没有副作用
 export function createElement(vnode) {
     let p = vnode.return;
     let { type, props, ns } = vnode;
     switch (type) {
-        case "#text":
+        case '#text':
             //只重复利用文本节点
             var node = reuseTextNodes.pop();
             if (node) {
@@ -25,28 +25,28 @@ export function createElement(vnode) {
                 return node;
             }
             return document.createTextNode(props);
-        case "#comment":
+        case '#comment':
             return document.createComment(props);
 
-        case "svg":
+        case 'svg':
             ns = NAMESPACE.svg;
             break;
-        case "math":
+        case 'math':
             ns = NAMESPACE.math;
             break;
 
         default:
             do {
                 var s =
-                    p.name == "AnuPortal"
+                    p.name == 'AnuPortal'
                         ? p.props.parent
                         : p.tag === 5
                             ? p.stateNode
                             : null;
                 if (s) {
                     ns = s.namespaceURI;
-                    if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
-                        ns = "";
+                    if (p.type === 'foreignObject' || ns === NAMESPACE.xhtml) {
+                        ns = '';
                     }
                     break;
                 }
@@ -68,7 +68,7 @@ export function createElement(vnode) {
     if (inputType && elem.uniqueID) {
         try {
             elem = document.createElement(
-                "<" + type + " type='" + inputType + "'/>"
+                '<' + type + ' type=\'' + inputType + '\'/>'
             );
         } catch (e2) {
             /*skip*/
@@ -77,7 +77,7 @@ export function createElement(vnode) {
     return elem;
 }
 
-let hyperspace = document.createElement("div");
+let hyperspace = document.createElement('div');
 
 function emptyElement(node) {
     while (node.firstChild) {

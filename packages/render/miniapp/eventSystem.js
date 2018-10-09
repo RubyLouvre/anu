@@ -12,7 +12,7 @@ export var eventSystem = {
         var instanceUid = dataset.instanceUid; //实例ID
         var instance = componentClass[instanceUid];
         var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber) {
+        if (e.type == 'change' && fiber && fiber.type === 'input') {
             //微信的change会误触发
             if (fiber.props.value + '' == e.detail.value) {
                 return;
