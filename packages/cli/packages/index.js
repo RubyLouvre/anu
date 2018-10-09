@@ -143,7 +143,7 @@ const isJs = (path)=>{
 //     }
 //     return ret;
 // }
-utils.asyncReact();
+
 class Parser {
     constructor(entry) {
         this.entry = entry;
@@ -200,7 +200,10 @@ class Parser {
         };
     }
     async parse() {
+        let spinner = utils.spinner('正在分析依赖...');
+        spinner.start();
         const bundle = await rollup.rollup(this.inputConfig);
+        spinner.succeed('依赖分析成功');
         bundle.modules.forEach((item)=> {
             const id = item.id;
             if (/commonjsHelpers/.test(id)){
@@ -348,7 +351,8 @@ class Parser {
 }
 
 // eslint-disable-next-line
-async function build(arg, buildType) {
+async function build(arg) {
+    await utils.asyncReact();
     if (arg === 'watch'){
         // eslint-disable-next-line
         console.log(chalk.green('watching files...'));

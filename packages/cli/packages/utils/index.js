@@ -8,6 +8,8 @@ const spawn = require('cross-spawn');
 const nodeResolve = require('resolve');
 const config = require('../config');
 const template = require('babel-template');
+const axios = require('axios');
+const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
 const Event = new EventEmitter();
 
@@ -21,6 +23,9 @@ let utils = {
     createChineseHack: require('./chinese'),
     getNodeVersion() {
         return Number(process.version.match(/v(\d+)/)[1]);
+    },
+    spinner(text){
+        return ora(text);
     },
     getStyleValue: require('./getStyleValue'),
     useYarn() {
@@ -218,20 +223,42 @@ let utils = {
             })
         );
     },
-    asyncReact(){
-        let React = this.getReactLib();
-        let dist = path.join(cwd, 'src', React);
-        fs.ensureFileSync( dist );
-        fs.writeFileSync(
-            dist,
-            fs.readFileSync(path.join(__dirname, '../lib', React), 'utf-8'),
-            'utf-8'
-        );
+    async getReactLibPath(){
+        let reactPath = '';
+        let React = this.getReactLibName();
+        let srcPath = path.join(cwd, 'src', React);
+        try {
+            reactPath = nodeResolve.sync(srcPath, {
+                basedir: cwd,
+                moduleDirectory: path.join(
+                    cwd,
+                    'src'
+                )
+            });
+        } catch (err){
+            let spinner = this.spinner(`正在下载最新的${React}`);
+            spinner.start();
+            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/master/dist/${React}`;
+            let ReactLib = await axios.get(remoteUrl);
+            fs.ensureFileSync(srcPath);
+            fs.writeFileSync(
+                srcPath,
+                ReactLib.data
+            );
+            spinner.succeed(`下载${React}成功`);
+            reactPath = path.join(cwd, 'src', React);
+        }
+        return reactPath;
+    },
+   
+    async asyncReact(){
+        await this.getReactLibPath();
         
+        let ReactLibName = this.getReactLibName();
         let map = this.getReactMap();
         Object.keys(map).forEach((key)=>{
             let ReactName = map[key];
-            if (ReactName != React){
+            if (ReactName != ReactLibName){
                 fs.remove( path.join(cwd, 'src', ReactName), (err)=>{
                     if (err){
                         // eslint-disable-next-line
@@ -245,8 +272,7 @@ let utils = {
                     }
                 });
             }
-        });  
-        
+        });         
 
     },
     getReactMap(){
@@ -256,12 +282,12 @@ let utils = {
             bu: 'ReactBu.js'
         };
     },
-    getReactLib(){
+    getReactLibName(){
         let buildType = config.buildType;
         return this.getReactMap()[buildType];
     },
     getCustomAliasConfig() {
-        let React = this.getReactLib();
+        let React = this.getReactLibName();
         let defaultAlias = {
             '@react':  path.resolve(cwd, `src/${React}`),
             'react': path.resolve(cwd, `src/${React}`),
