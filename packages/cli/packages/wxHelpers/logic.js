@@ -85,8 +85,7 @@ function loop(callee, fn, modules) {
 
         modules.key = null;
     } else {
-        attrs.push(createAttribute('wx:key', '*this'));
-        // console.log( fn.params[1].name);
+        attrs.push(createAttribute('wx:key', t.stringLiteral(`{{${fn.params[1].name}}}`)));
     }
 
     const body = t.isBlockStatement(fn.body)

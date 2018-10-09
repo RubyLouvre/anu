@@ -102,7 +102,7 @@ let utils = {
         if (/\{\{/.test(key)) {
             key = key.slice(2, -2);
         }
-        return key.indexOf('.') > 0 ? key.split('.').pop() : '*this';
+        return key.indexOf('.') > 0 ? key.split('.').pop() : '{{index}}';
     },
     getAnu(state) {
         return state.file.opts.anu;
@@ -222,16 +222,11 @@ let utils = {
         let React = this.getReactLib();
         let dist = path.join(cwd, 'src', React);
         fs.ensureFileSync( dist );
-        //node >= 8.5
-        // fs.copyFileSync(
-        //     fs.readFileSync(path.join(__dirname, '../lib', React), 'utf-8'),
-        //     dist
-        // );
         fs.writeFileSync(
             dist,
             fs.readFileSync(path.join(__dirname, '../lib', React), 'utf-8'),
             'utf-8'
-        )
+        );
         
         let map = this.getReactMap();
         Object.keys(map).forEach((key)=>{
@@ -239,11 +234,13 @@ let utils = {
             if (ReactName != React){
                 fs.remove( path.join(cwd, 'src', ReactName), (err)=>{
                     if (err){
+                        // eslint-disable-next-line
                         console.log(err);
                     }
                 } );
                 fs.remove( path.join(cwd, 'dist', ReactName), (err)=>{
                     if (err){
+                        // eslint-disable-next-line
                         console.log(err);
                     }
                 });
