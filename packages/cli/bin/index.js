@@ -18,8 +18,13 @@ function getBuildType(args){
 program
     .name('mpreact')
     .version(require('../package.json').version, '-v, --version')
+    .command('init <project-name>', '初始化项目')
+    .command('watch:[wx|ali|bu|quick]', '监听[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用]')
+    .command('build:[wx|ali|bu|quick]', '构建[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用]')
     .parse(process.argv);
 let args = program.args;
+
+
 
 
 /* eslint-disable */
@@ -58,7 +63,6 @@ if(!config[buildType].support ){
     process.exit(1);
 }
 config['buildType'] = buildType;
-
 
 
 let commond = args[0];
