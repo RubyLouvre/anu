@@ -222,10 +222,16 @@ let utils = {
         let React = this.getReactLib();
         let dist = path.join(cwd, 'src', React);
         fs.ensureFileSync( dist );
-        fs.copyFileSync(
-            path.join(__dirname, '../lib', React),
-            dist
-        );
+        //node >= 8.5
+        // fs.copyFileSync(
+        //     fs.readFileSync(path.join(__dirname, '../lib', React), 'utf-8'),
+        //     dist
+        // );
+        fs.writeFileSync(
+            dist,
+            fs.readFileSync(path.join(__dirname, '../lib', React), 'utf-8'),
+            'utf-8'
+        )
         
         let map = this.getReactMap();
         Object.keys(map).forEach((key)=>{
