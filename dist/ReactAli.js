@@ -2667,6 +2667,11 @@ var aliApis = function aliApis(api) {
       a.url = a.filePath;
       return api.saveImage.apply(api, arguments);
     },
+    previewImage: function _(a) {
+      var index = a.urls.indexOf(a.current || a.urls[0]);
+      a.current = index;
+      return api.previewImage.apply(api, arguments);
+    },
     getFileInfo: function _(a) {
       a.apFilePath = a.filePath;
       return api.getFileInfo.apply(api, arguments);
@@ -2728,6 +2733,16 @@ var aliApis = function aliApis(api) {
     makePhoneCall: function _(a) {
       a.number = a.phoneNumber;
       return api.makePhoneCall.apply(api, arguments);
+    },
+    scanCode: function _(a) {
+      a.hideAlbum = a.onlyFromCamera;
+      a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
+      var fn = a['success'];
+      a['success'] = function (res) {
+        res.result = res.code;
+        fn && fn(res);
+      };
+      return api.scan.apply(api, arguments);
     },
     setScreenBrightness: function _(a) {
       a.brightness = a.value;

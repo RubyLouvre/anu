@@ -120,7 +120,7 @@ export var aliApis = function(api) {
     // 扫码
     scanCode: function _(a) {
       a.hideAlbum = a.onlyFromCamera;
-      a.type = a.scanType[0].slice(0, -4) || 'qr';
+      a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
       let fn = a['success'];
       a['success'] = res => {
         res.result = res.code;
