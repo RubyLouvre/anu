@@ -161,13 +161,13 @@ export function toPage(PageClass, path, testObject) {
         'onHide',
         'onUnload'
     ).forEach(function(hook) {
-        config[hook] = function() {
-            var name = HookMap[hook] || hook;
-            var fn = pageViewInstance[name];
-            if (isFn(fn)) {
+        var name = HookMap[hook] || hook;
+        var fn = pageViewInstance[name];
+        if (isFn(fn)) {
+            config[hook] = function() {
                 return fn.apply(pageViewInstance, arguments);
-            }
-        };
+            };
+        }
     });
 
     if (testObject) {

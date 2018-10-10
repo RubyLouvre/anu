@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-09
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-10
  * IE9+
  */
 
@@ -2457,13 +2457,13 @@ function toPage(PageClass, path, testObject) {
         }
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
-        config[hook] = function () {
-            var name = HookMap[hook] || hook;
-            var fn = pageViewInstance[name];
-            if (isFn(fn)) {
+        var name = HookMap[hook] || hook;
+        var fn = pageViewInstance[name];
+        if (isFn(fn)) {
+            config[hook] = function () {
                 return fn.apply(pageViewInstance, arguments);
-            }
-        };
+            };
+        }
     });
     if (testObject) {
         config.setData = function (obj) {
