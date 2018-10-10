@@ -231,6 +231,15 @@ module.exports = {
                 modules.staticMethods.push(keyValue);
             } else {
                 if (key == 'globalData' && modules.componentType === 'App') {
+
+                    //globalData中插入平台buildType
+                    astPath.node.value.properties.push(
+                        t.objectProperty(
+                            t.identifier('buildType'),
+                            t.stringLiteral(config.buildType)
+                        )
+                    );
+
                     var thisMember = t.assignmentExpression(
                         '=',
                         t.memberExpression(
@@ -240,6 +249,8 @@ module.exports = {
                         astPath.node.value
                     );
                     modules.thisProperties.push(thisMember);
+
+
                 }
             }
             astPath.remove();
