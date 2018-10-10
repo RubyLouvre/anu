@@ -309,6 +309,39 @@ let utils = {
         let aliasPath = path.relative(path.dirname(file), depFile);
         return aliasPath;
     },
+    resolveComponentStyle(styleFiles){
+        let result = [];
+        let componentsStyle = [];
+        let appStyleId= ''; //app全局样式只有一个
+        styleFiles.forEach((item)=>{
+            let {id, originalCode} = item;
+            if (/components/.test(id)) {
+                id = path.relative(path.join(cwd, 'src'), id);
+                if (/^\w/.test(id)){
+                    //'components/x/y' => './components/x/y';
+                    id = `./${id}`; 
+                }
+                let importKey = `@import '${id}';`;
+                componentsStyle.push(importKey);
+            } else if (/app/.test(id)){
+                appStyleId = id;
+            } else {
+                result.push({
+                    id: item.id,
+                    originalCode: originalCode
+                });
+            }
+        });
+        
+        let appStyleContent = fs.readFileSync(appStyleId);
+        appStyleContent =   componentsStyle.join('\n') + '\n' +  appStyleContent;
+        result.push({
+            id: appStyleId,
+            originalCode: appStyleContent
+        });
+        
+        return result;
+    },
     updateNpmAlias(id, deps) {
         //依赖的npm模块也当alias处理
         let result = {};

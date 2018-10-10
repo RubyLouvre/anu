@@ -1,7 +1,6 @@
 const path = require('path');
 const cwd = process.cwd();
 const queue = require('./queue');
-const fs = require('fs-extra');
 const config = require('./config');
 const utils = require('./utils');
 
@@ -24,40 +23,37 @@ const getDist = (filePath) =>{
 };
 
 var less = require('less');
-const compileLess = (filePath)=>{
-    var content = fs.readFileSync(filePath, 'utf-8').toString();
+/* eslint-disable */
+const compileLess = (filePath, originalCode)=>{
     less.render(
-        content,
+        originalCode,
         {
-            filename: filePath,
-            compress: true
+            filename: filePath
         }
     )
-        .then(res => {
-            let code = res.css;
-            queue.push({
-                code: code,
-                path: getDist(filePath),
-                type: 'css'
-            });
-            utils.emit('build');
-       
-
-        })
-        .catch(err => {
-            if (err){
-            // eslint-disable-next-line
-            console.log(err);
-            }
+    .then(res => {
+        let code = res.css;
+        queue.push({
+            code: code,
+            path: getDist(filePath),
+            type: 'css'
         });
+        utils.emit('build');
+    })
+    .catch(err => {
+        if (err){
+        // eslint-disable-next-line
+        console.log(err);
+        }
+    });
     
 };
 
-const renderSass = (filePath)=>{
+const renderSass = (filePath, originalCode)=>{
     let sass = require(path.join(cwd, 'node_modules', 'node-sass'));
     sass.render(
         {
-            file: filePath
+            file: originalCode
         },
         (err, res) => {
             if (err) throw err;
@@ -71,24 +67,25 @@ const renderSass = (filePath)=>{
         }
     );
 };
-const compileSass = (filePath)=>{
+const compileSass = (filePath, originalCode)=>{
     try {
         require( path.join(cwd, 'node_modules', 'node-sass', 'package.json') );
-        renderSass(filePath);
+        renderSass(filePath, originalCode);
     } catch (err){
         utils.installer('node-sass')
             .then(()=>{
-                renderSass(filePath);
+                renderSass(filePath, originalCode);
             });
     }
 };
 
 
-module.exports = (filePath)=>{
-    if (isLess(filePath) || isCss(filePath)){
-        compileLess(filePath);
-    } else if (isSass(filePath)){
-        compileSass(filePath);
+module.exports = (data)=>{
+    const {id, originalCode} = data;
+    if (isLess(id) || isCss(id)){
+        compileLess(id, originalCode);
+    } else if (isSass(id)){
+        compileSass(id, originalCode);
     }
 
 };

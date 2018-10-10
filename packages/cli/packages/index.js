@@ -155,7 +155,7 @@ class Parser {
         
         this.inputConfig = {
             input: this.entry,
-            external: require('repl')._builtinLibs, 
+            external: require('repl')._builtinLibs,
             plugins: [
                 alias( this.customAliasConfig ),  //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
@@ -268,11 +268,13 @@ class Parser {
         }
     }
     updateStyleQueue(styleFiles){
-        while (styleFiles.length){
-            let {id, originalCode} = styleFiles.shift();
+        let result =  utils.resolveComponentStyle(styleFiles);
+        while (result.length){
+            let data = result.shift();
+            let {id, originalCode} = data;
             needUpdate(id, originalCode)
                 .then(()=>{
-                    styleTransform(id);
+                    styleTransform(data);
                 })
                 .catch(()=>{
 
