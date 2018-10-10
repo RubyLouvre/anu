@@ -1,14 +1,13 @@
-
 const navNames = {
-	navigationBarBackgroundColor: 'titleBarColor',
-	navigationBarTitleText: 'defaultTitle'
+    navigationBarBackgroundColor: 'titleBarColor',
+    navigationBarTitleText: 'defaultTitle'
 };
 const barNames = {
-	color: 'textColor',
-	list: 'items'
+    color: 'textColor',
+    list: 'items'
 };
 const tabNames = {
-	text: 'name',
+    text: 'name',
     iconPath: 'icon',
     selectedIconPath: 'activeIcon'
 };
@@ -35,9 +34,9 @@ tab的配置
 pagePath	String	是	页面路径，必须在 pages 中先定义
 text	String	是	tab 上按钮文字
 iconPath	String	否	图片路径，icon 大小限制为40kb，建议尺寸为 81px * 81px，不支持网络图片。
-当 postion 为 top 时，不显示 icon。
+当 position 为 top 时，不显示 icon。
 selectedIconPath	String	否	选中时的图片路径，icon 大小限制为40kb，建议尺寸为 81px * 81px，不支持网络图片。
-当 postion 为 top 时，不显示 icon。
+当 position 为 top 时，不显示 icon。
 阿里
 pagePath	String	是	设置页面路径
 name	String	是	名称
@@ -45,21 +44,20 @@ icon	String	否	平常图标路径
 activeIcon	String	否	高亮图标路径
 */
 
-module.exports = function mapConfigName(config, componentType) {
+module.exports = function mapConfigName(config) {
     swapProperty(config, navNames);
     var tabBar = config.tabBar;
-    if(tabBar){
-        var tabBar = config.tabBar;
+    if (tabBar) {
+        tabBar = config.tabBar;
         swapProperty(tabBar, barNames);
-        if(Array.isArray(tabBar.items)){
-            tabBar.items.forEach(function(tab){
+        if (Array.isArray(tabBar.items)) {
+            tabBar.items.forEach(function(tab) {
                 swapProperty(tab, tabNames);
-            })
+            });
         }
-      
     }
 };
-function swapProperty(object, patch){
+function swapProperty(object, patch) {
     for (var option in object) {
         if (patch[option]) {
             var value = object[option];
@@ -68,5 +66,3 @@ function swapProperty(object, patch){
         }
     }
 }
-
-

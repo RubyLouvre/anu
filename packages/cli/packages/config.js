@@ -5,7 +5,7 @@ module.exports = Object.assign(module.exports, {
         styleExt: 'wxss',
         jsExt: 'js',
         xmlExt: 'wxml',
-        notSopportResText: '',
+        notSupportResText: '',
         helpers: 'wxHelpers'
     },
     ali: {
@@ -14,20 +14,20 @@ module.exports = Object.assign(module.exports, {
         styleExt: 'acss',
         jsExt: 'js',
         xmlExt: 'axml',
-        notSopportResText: '支付宝小程序正在努力支持中, 请静候佳音',
+        notSupportResText: '支付宝小程序正在努力支持中, 请静候佳音',
         helpers: 'aliHelpers'
     },
     bu: {
         support: true,
         jsExt: 'js',
         styleExt: 'css',
-        notSopportResText: '百度小程序正在努力支持中, 请静候佳音',
+        notSupportResText: '百度小程序正在努力支持中, 请静候佳音',
         helpers: 'buHelpers'
     },
     quick: {
         support: false,
         jsExt: 'ux',
-        notSopportResText: '快应用正在努力支持中, 请静候佳音',
+        notSupportResText: '快应用正在努力支持中, 请静候佳音',
         buHelpers: 'quickHelpers'
     },
     buildType: 'wx'   //构建类型默认微信小程序
