@@ -161,6 +161,7 @@ export function toPage(PageClass, path, testObject) {
         'onHide',
         'onUnload'
     ).forEach(function(hook) {
+        //pageViewInstance,这时为undefined
         config[hook] = function() {
             var name = HookMap[hook] || hook;
             var fn = pageViewInstance[name];
