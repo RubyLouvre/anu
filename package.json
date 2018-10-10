@@ -9,20 +9,21 @@
     "start": "serve .",
     "sync": "node ./scripts/build/syncAntd.js",
     "buildIE": "webpack --config ./scripts/build/buildIE.js",
-    "precommit": "lint-staged"
+    "precommit": "eslint packages/cli/"
   },
   "lint-staged": {
     "linters": {
-      "packages/cli/packages/**/*.js": [
+      "packages/cli/**/*.js": [
         "eslint --fix",
         "git add"
       ]
     },
     "ignore": [
-      "**/dist/*.js",
+      "__tests1__/**/*",
       "**/node_modules/**/*",
       "**/ReactWX.js",
-      "**/__tests__/**/*"
+      "**/__tests__/**/*",
+      "**/lib/**/*"
     ]
   },
   "repository": {
@@ -101,7 +102,8 @@
     "wt": "^1.2.0"
   },
   "dependencies": {
-    "@rematch/core": "^1.0.0-alpha.9"
+    "@rematch/core": "^1.0.0-alpha.9",
+    "semver": "^5.5.1"
   },
   "mpreact": {
     "alias": {

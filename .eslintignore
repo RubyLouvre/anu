@@ -1,2 +1,4 @@
 ReactWX.js
 node_modules/
+packages/cli/packages/lib/
+__tests1__/
