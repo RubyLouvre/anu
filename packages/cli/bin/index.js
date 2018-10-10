@@ -4,7 +4,7 @@ const chalk = require('chalk');
 const semver = require('semver');
 const program = require('commander');
 
-if (semver.lt(process.version, '8')) {
+if (semver.lt(process.version, '8.0.0')) {
     // eslint-disable-next-line
     console.log(
         chalk`mpreact only support {green.bold v8.0.0} or later (current v{green.bold ${
