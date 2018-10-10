@@ -2457,13 +2457,13 @@ function toPage(PageClass, path, testObject) {
         }
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
-        var name = HookMap[hook] || hook;
-        var fn = pageViewInstance[name];
-        if (isFn(fn)) {
-            config[hook] = function () {
+        config[hook] = function () {
+            var name = HookMap[hook] || hook;
+            var fn = pageViewInstance[name];
+            if (isFn(fn)) {
                 return fn.apply(pageViewInstance, arguments);
-            };
-        }
+            }
+        };
     });
     if (testObject) {
         config.setData = function (obj) {

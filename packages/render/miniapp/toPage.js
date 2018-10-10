@@ -161,13 +161,14 @@ export function toPage(PageClass, path, testObject) {
         'onHide',
         'onUnload'
     ).forEach(function(hook) {
-        var name = HookMap[hook] || hook;
-        var fn = pageViewInstance[name];
-        if (isFn(fn)) {
-            config[hook] = function() {
+        //pageViewInstance,这时为undefined
+        config[hook] = function() {
+            var name = HookMap[hook] || hook;
+            var fn = pageViewInstance[name];
+            if (isFn(fn)) {
                 return fn.apply(pageViewInstance, arguments);
-            };
-        }
+            }
+        };
     });
 
     if (testObject) {
