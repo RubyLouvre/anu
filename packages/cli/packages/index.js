@@ -152,8 +152,10 @@ class Parser {
         this.styleFiles = [];
         this.npmFiles = [];
         this.customAliasConfig = utils.getCustomAliasConfig();
+        
         this.inputConfig = {
             input: this.entry,
+            external: require('repl')._builtinLibs, 
             plugins: [
                 alias( this.customAliasConfig ),  //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
