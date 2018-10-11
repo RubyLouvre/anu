@@ -15,10 +15,10 @@ const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
 const Event = new EventEmitter();
 process.on('unhandledRejection', error => {
+    // eslint-disable-next-line
     console.error('unhandledRejection', error);
     process.exit(1); // To exit with a 'failure' code
 });
-
 let utils = {
     on() {
         Event.on.apply(this, arguments);

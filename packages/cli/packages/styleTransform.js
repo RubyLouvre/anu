@@ -51,7 +51,8 @@ const renderSass = (filePath, originalCode) => {
     let sass = require(path.join(cwd, 'node_modules', 'node-sass'));
     sass.render(
         {
-            file: originalCode
+            data: originalCode,
+            includePaths: [ path.join(cwd, 'src') ]
         },
         (err, res) => {
             if (err) throw err;
@@ -67,13 +68,11 @@ const renderSass = (filePath, originalCode) => {
 };
 const compileSass = (filePath, originalCode) => {
     try {
-        require(path.join(cwd, 'node_modules', 'node-sass', 'package.json'));
-        renderSass(filePath, originalCode);
+        require( path.join(cwd, 'node_modules', 'node-sass', 'package.json') );
     } catch (err) {
-        utils.installer('node-sass').then(() => {
-            renderSass(filePath, originalCode);
-        });
+        utils.installer('node-sass')
     }
+    renderSass(filePath, originalCode);
 };
 
 module.exports = data => {
