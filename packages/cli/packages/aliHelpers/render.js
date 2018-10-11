@@ -14,7 +14,7 @@ const templateExt = '.axml';
  * @param {String} type 有状态组件｜无状态组件
  * @param {String} componentName 组件名
  */
-const deps = require('../deps');
+const deps = [];
 exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
     let expr;
@@ -26,9 +26,6 @@ exports.exit = function(astPath, type, componentName, modules) {
             break;
         }
     }
-
-    //  const expr = body[0];
-    //  console.log(body);
 
     switch (true) {
         case t.isReturnStatement(expr):
