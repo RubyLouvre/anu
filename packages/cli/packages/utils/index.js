@@ -12,6 +12,10 @@ const axios = require('axios');
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
 const Event = new EventEmitter();
+process.on('unhandledRejection', error => {
+    console.error('unhandledRejection', error);
+    process.exit(1) // To exit with a 'failure' code
+  });
 
 let utils = {
     on() {
@@ -333,7 +337,14 @@ let utils = {
             }
         });
         
-        let appStyleContent = fs.readFileSync(appStyleId);
+        let appStyleContent = '';
+        try{
+            appStyleContent = fs.readFileSync(appStyleId);
+        }catch(err){
+            console.log(chalk.red('需配置全局app样式, 请检查...'));
+            process.exit(1);
+        }
+        
         appStyleContent =   componentsStyle.join('\n') + '\n' +  appStyleContent;
         result.push({
             id: appStyleId,
