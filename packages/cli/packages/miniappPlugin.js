@@ -182,6 +182,7 @@ module.exports = {
             }
         }
     },
+  
     ClassProperty: {
         exit(astPath, state) {
             let key = astPath.node.key.name;
@@ -350,6 +351,7 @@ module.exports = {
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
+    
     JSXOpeningElement: {
         enter: function(astPath, state) {
             let modules = utils.getAnu(state);
@@ -587,6 +589,14 @@ module.exports = {
             var open = astPath.parentPath.node.openingElement;
             if (inlineElement[open.name.name]) {
                 astPath.node.value = astPath.node.value.replace(/\r?\n/g, '');
+            }
+        }
+    },
+    JSXExpressionContainer(astPath){
+        var expr = astPath.node.expression;//充许在JSX这样使用注释 ｛/** comment **/｝
+        if (expr && expr.type == 'JSXEmptyExpression'){
+            if (expr.innerComments && expr.innerComments.length){
+                astPath.remove();
             }
         }
     },
