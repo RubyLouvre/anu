@@ -38,6 +38,7 @@
     "less": "^3.8.1",
     "ora": "^3.0.0",
     "prettify-xml": "^1.2.0",
+    "ramda": "^0.25.0",
     "resolve": "^1.8.1",
     "rollup": "^0.63.5",
     "rollup-plugin-alias": "^1.4.0",
