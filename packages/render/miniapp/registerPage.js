@@ -11,9 +11,8 @@ const HookMap = {
 	onHide: 'componentDidHide',
 	onUnload: 'componentWillUnmount',
 };
-function isReferenceType(val) {
-	return val && (typeof val === 'object' || Object.prototype.toString.call(val) === '[object Array]');
-}
+
+
 var appStore;
 var Provider = miniCreateClass(
 	function Provider(props) {

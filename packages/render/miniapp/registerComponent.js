@@ -1,14 +1,4 @@
-import { setState, forceUpdate } from './utils';
-export function onComponentUpdate(fiber) {
-	var instance = fiber.stateNode;
-	if (!instance.__isStateless) {
-		if (instance.setState !== setState) {
-			instance.setState = setState;
-			instance.forceUpdate = forceUpdate;
-		}
-	}
-}
-export function onComponentDispose() {}
+
 
 var registerComponents = {};
 export function useComponent(props) {
