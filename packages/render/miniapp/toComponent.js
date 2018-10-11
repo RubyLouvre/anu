@@ -1,124 +1,62 @@
-import { createElement } from 'react-core/createElement';
-import { getUUID, newData, classCached, currentPage } from './utils';
-const ignoreObject = {
-    is: 1,
-    $$loop: 1,
-    $$index: 1,
-    classUid: 1,
-    instanceUid: 1
-};
+import { currentPage } from './utils';
 export function onComponentUpdate(fiber) {
-    var instance = fiber.stateNode;
-    var type = fiber.type;
-    
-    instance.$pageInst = currentPage.value;
-    var parentInst = null;
-   
-    var setState = type.prototype.setState;
-    if (setState && !setState.fromPage) {
-        var forceUpdate = type.prototype.forceUpdate;
-        var fn = type.prototype.setState = function () {
-            var pageInst = this.$pageInst;
-            if (pageInst) {
-                pageInst.setState.apply(this, arguments);
-            } else {
-                setState.apply(this, arguments);
-            }
-        };
-        fn.fromPage = true;
-        type.prototype.forceUpdate = function () {
-            var pageInst = this.$pageInst;
-            if (pageInst) {
-                pageInst.forceUpdate.apply(this, arguments);
-            } else {
-                forceUpdate.apply(this, arguments);
-            }
-        };
-    }
-    
-    var instanceUid = instance.instanceUid;
-    if (!instanceUid) {
-        instanceUid = instance.instanceUid = getUUID();
-        type[instanceUid] = instance;
-        var p = fiber.return;
-        while (p) {//找到离它最近的父组件
-            if (p.name !== 'toComponent' && p.tag < 4) {
-                var stateNode = p.stateNode;
-                if (!parentInst) {
-                    parentInst = instance.$parentInst = stateNode;
-                    if (!parentInst.wxData){
-                        parentInst.wxData = newData();
-                    }
-                    break;
-                }
-            }
-            p = p.return;
-        }
-    }
-    parentInst = instance.$parentInst;
-    if (parentInst) {
-        var inputProps = Object(fiber._owner).props || {};
-        var uuid = inputProps.$$loop,
-            data;
-        var index = inputProps.$$index;
-        if (index != null) {
-            uuid += index;
-        }
-        if (!uuid) {
-            data = instance.wxData = currentPage.value.wxData;
-        } else {
-            data = instance.wxData || (instance.wxData = newData());
-        }
-        data.props = instance.props;
-        data.props.instanceUid = instance.instanceUid;
-        data.state = instance.state;
-        data.context = instance.context;
-        if (uuid) {
-            getData(parentInst)[uuid] = [data];
-        }
-    }
+	var instance = fiber.stateNode;
+	var type = fiber.type;
+	instance.$pageInst = currentPage.value;
+	if (!instance.__isStateless && instance.setState !== eventSystem.setState) {
+		instance.setState = eventSystem.setState;
+		instance.forceUpdate = eventSystem.forceUpdate;
+	}
 }
-
 export function onComponentDispose(fiber) {
-    var instance = fiber.stateNode;
-    var type = fiber.type;
-    var parentInst = instance.$parentInst;
-    if (parentInst) {
-        delete type[instance.instanceUid];
-        var inputProps = fiber._owner.props;
-        var uuid = inputProps.$$loop;
-        var index = inputProps.$$index;
-        if (index != null) {
-            uuid += index;
-        }
-        delete getData(parentInst)[uuid];
-    }
+	var instance = fiber.stateNode;
+	var type = fiber.type;
+	var parentInst = instance.$parentInst;
+	if (parentInst) {
+		delete type[instance.instanceUid];
+	}
 }
 
-export function toComponent(props) {
-    //这是一个无状态组件，负责劫持用户传导下来的类，修改它的原型
-    var clazz = props.is;
-    var componentProps = {}; //必须将is移除，防止在setData中被序列化
-    for (var i in props) {
-        if (ignoreObject[i] !== 1) {
-            componentProps[i] = props[i];
-        }
-    }
-    if (props.fragmentUid && props.classUid) {
-        var parentClass = classCached[props.classUid];
-        if (parentClass) {
-            var parentInstance = parentClass[props.instanceUid];
-            componentProps.fragmentData = {
-                state: parentInstance.state,
-                props: parentInstance.props,
-                context: parentInstance.context
-            };
-        }
-    }
-    componentProps.wxComponentFlag = true;
-    return createElement(clazz, componentProps);
+var registerComponents = {};
+export function useComponent(props, children) {
+	var is = props.is;
+	var clazz = registerComponents[is];
+	delete props.is;
+	var args = [].slice.call(arguments, 2);
+	args.unshift(clazz, props);
+	console.log('使用组件', is);
+	return createElement.apply(null, args);
 }
+export function registerComponent(userComponent, path) {
+	registerComponents[path] = userComponent;
+	userComponent.instances = [];
+	console.log('注册组件', path);
+	return {
+		properties: {
+			$$list: String,
+		},
+		data: {
+			props: {},
+			state: {},
+			context: {},
+		},
+		methods: {
+			dispatchEvent: eventSystem.dispatchEvent,
+		},
 
-function getData(instance) {
-    return instance.wxData.components;
+		lifetimes: {
+			created: function() {
+				console.log('add ');
+				userComponent.instances.push(this);
+			},
+			// 生命周期函数，可以为函数，或一个在methods段中定义的方法名
+			attached: function() {
+				console.log('attached');
+			},
+
+			detached: function() {
+				console.log('detached');
+			},
+		},
+	};
 }

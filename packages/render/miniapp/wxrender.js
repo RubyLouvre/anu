@@ -17,53 +17,72 @@ export let Renderer = createRenderer({
     updateAttribute(fiber) {
         let { props, lastProps } = fiber;
         let classId = props['data-class-uid'];
-        var instanceId = props['data-instance-uid'];
-        if (classId) {
-            var clazz = classCached[classId];
-            if (clazz && clazz) {
-                var instance = clazz[instanceId];
-                if (instance) {
-                    //保存用户创建的事件在实例上
-                    var cached = instance.$$eventCached || (instance.$$eventCached = {});
-                    for (let name in props) {
-                        if (onEvent.test(name) && isFn(props[name])) {
-                            var code = getEventHashCode(name, props, props['data-key']);
-                            cached[code] = props[name];
-                            cached[code+'Fiber'] = fiber;
-                        }
-                    }
-                    if (lastProps) {
-                        for (let name in lastProps) {
-                            if (onEvent.test(name) && !props[name]) {
-                                code = getEventHashCode(name, lastProps, lastProps['data-key']);
-                                delete cached[code];
-                                delete cached[code+'Fiber'];
-                            }
-                        }
+        let instance = fiber._owner; //clazz[instanceId];
+        if (instance && !instance.classUid) {
+            instance = get(instance)._owner;
+        }
+      
+        if (instance && classId) {
+            //保存用户创建的事件在实例上
+            var cached = instance.$$eventCached || (instance.$$eventCached = {});
+            for (let name in props) {
+                if (onEvent.test(name) && isFn(props[name])) {
+                    var code = getEventHashCode(name, props, props['data-key']);
+                    cached[code] = props[name];
+                    cached[code+'Fiber'] = fiber;
+                }
+            }
+            if (lastProps) {
+                for (let name in lastProps) {
+                    if (onEvent.test(name) && !props[name]) {
+                        code = getEventHashCode(name, lastProps, lastProps['data-key']);
+                        delete cached[code];
+                        delete cached[code+'Fiber'];
                     }
                 }
             }
+            
         }
     },
 
     updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
     },
-    onUpdate(fiber) {
-        var noMount = !fiber.hasMounted;
-        var instance = fiber.stateNode;
-        if(noMount && instance.componentDidMount){
-            delayMounts.push({
-                instance: instance,
-                fn: instance.componentDidMount
-            })
-            instance.componentDidMount = noop
-        }
-        if (fiber.props.isPageComponent && currentPage.value.props.path != fiber.props.path){
-            currentPage.value = fiber.stateNode;
-            onPageUpdate(fiber);
-        } else if (fiber.props.wxComponentFlag){
-            onComponentUpdate(fiber);
+    onUpdate: function(fiber) {
+		var noMount = !fiber.hasMounted;
+		var instance = fiber.stateNode;
+		var type = fiber.type;
+		if (!instance.instanceUid) {
+			var uuid = 'i' + getUUID();
+			instance.instanceUid = uuid;
+			type[uuid] = instance;
+		}
+		instance.props.instanceUid = instance.instanceUid;
+		if (type.instances) {
+			onComponentUpdate(fiber);
+			if (!instance.wx) {
+				var wx = type.instances.shift();
+				if (wx) {
+					instance.wx = wx;
+					wx.reactInstance = instance;
+					wx.setData({
+						props: instance.props,
+                        state: instance.state,
+                        context: instance.context
+					});
+				}
+			}
+		}
+		if (noMount && instance.componentDidMount) {
+			delayMounts.push({
+				instance: instance,
+				fn: instance.componentDidMount,
+			});
+			instance.componentDidMount = noop;
+		}
+		if (fiber.props.isPageComponent && currentPage.value.props.path != fiber.props.path) {
+			currentPage.value = fiber.stateNode;
+			//onPageUpdate(fiber);
         }
     },
     onDispose(fiber) {

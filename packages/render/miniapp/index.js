@@ -16,7 +16,7 @@ import { injectAPIs } from './api';
 import { eventSystem } from './eventSystem';
 import { Renderer } from './wxrender';
 
-import { toComponent } from './toComponent';
+import { useComponent, registerComponent } from './toComponent';
 import { toStyle } from './toStyle';
 import { toRenderProps } from './toRenderProps';
 import { toPage, applyAppStore } from './toPage';
@@ -60,7 +60,8 @@ React = win.React =  {
     },
     applyAppStore,
     toRenderProps,
-    toComponent,
+    useComponent,
+    registerComponent,
     toPage,
     toStyle,
     appType: 'wx'
