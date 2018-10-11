@@ -52,6 +52,8 @@ function getDistPath(filePath) {
 function transform(sourcePath, resolvedIds) {
     let customAliasMap = utils.updateCustomAlias(sourcePath, resolvedIds);
     let npmAliasMap = utils.updateNpmAlias(sourcePath, resolvedIds);
+    //pages|app|components需经过miniappPlugin处理
+    let miniAppPluginsInjectConfig = utils.getComponentOrAppOrPageReg().test(sourcePath) ? [miniappPlugin] : [];
     babel.transformFile(
         sourcePath,
         {
@@ -62,7 +64,7 @@ function transform(sourcePath, resolvedIds) {
                 'transform-object-rest-spread',
                 'transform-async-to-generator',
                 'transform-es2015-template-literals',
-                miniappPlugin,
+                ...miniAppPluginsInjectConfig,
                 [
                     'module-resolver',
                     {
