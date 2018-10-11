@@ -376,6 +376,9 @@ let utils = {
             init: 'var h = React.createElement;'
         }
     },
+    getComponentOrAppOrPageReg(){
+        return new RegExp( this.sepForRegex  + '(?:pages|app|components)'  );
+    },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
 
