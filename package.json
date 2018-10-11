@@ -103,6 +103,7 @@
   },
   "dependencies": {
     "@rematch/core": "^1.0.0-alpha.9",
+    "css": "^2.2.4",
     "semver": "^5.5.1"
   },
   "mpreact": {

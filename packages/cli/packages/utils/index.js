@@ -1,3 +1,5 @@
+/* eslint no-console: 0 */
+
 const execSync = require('child_process').execSync;
 const t = require('babel-types');
 const fs = require('fs-extra');
@@ -14,8 +16,8 @@ const EventEmitter = require('events').EventEmitter;
 const Event = new EventEmitter();
 process.on('unhandledRejection', error => {
     console.error('unhandledRejection', error);
-    process.exit(1) // To exit with a 'failure' code
-  });
+    process.exit(1); // To exit with a 'failure' code
+});
 
 let utils = {
     on() {
@@ -28,7 +30,7 @@ let utils = {
     getNodeVersion() {
         return Number(process.version.match(/v(\d+)/)[1]);
     },
-    spinner(text){
+    spinner(text) {
         return ora(text);
     },
     getStyleValue: require('./getStyleValue'),
@@ -56,27 +58,31 @@ let utils = {
         }
         return config['useCnpm'];
     },
-    shortcutOfCreateElement(){
+    shortcutOfCreateElement() {
         return 'var h = React.createElement;';
     },
     getEventName(eventName, nodeName, buildType) {
-        if (eventName == 'Click' || eventName == 'Tap'){
-            if (buildType === 'ali' || buildType === 'wx' || buildType === 'bu'){
+        if (eventName == 'Click' || eventName == 'Tap') {
+            if (
+                buildType === 'ali' ||
+                buildType === 'wx' ||
+                buildType === 'bu'
+            ) {
                 return 'Tap';
             } else {
                 return 'Click';
             }
         }
-        if (nodeName == 'input' && eventName == 'Change'){
-            if (buildType === 'ali'){
+        if (nodeName == 'input' && eventName == 'Change') {
+            if (buildType === 'ali') {
                 return 'Input';
-            } else if (buildType === 'wx'){
+            } else if (buildType === 'wx') {
                 return 'Change';
             }
         }
         return eventName;
     },
-    
+
     createElement(nodeName, attrs, children) {
         return t.JSXElement(
             t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, false),
@@ -142,7 +148,7 @@ let utils = {
             )
         );
     },
-    exportExpr (name, isDefault) {
+    exportExpr(name, isDefault) {
         if (isDefault == true) {
             return template(`module.exports.default = ${name};`)();
         } else {
@@ -171,7 +177,6 @@ let utils = {
     },
     installer(npmName) {
         return new Promise(resolve => {
-            // eslint-disable-next-line
             console.log(
                 chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`)
             );
@@ -190,11 +195,9 @@ let utils = {
 
             let result = spawn.sync(bin, options, { stdio: 'inherit' });
             if (result.error) {
-                // eslint-disable-next-line
                 console.log(result.error);
                 process.exit(1);
             }
-            // eslint-disable-next-line
             console.log(chalk.green(`${npmName}安装成功\n`));
 
             //获得自动安装的npm依赖模块路径
@@ -227,77 +230,67 @@ let utils = {
             })
         );
     },
-    async getReactLibPath(){
+    async getReactLibPath() {
         let reactPath = '';
         let React = this.getReactLibName();
         let srcPath = path.join(cwd, 'src', React);
         try {
             reactPath = nodeResolve.sync(srcPath, {
                 basedir: cwd,
-                moduleDirectory: path.join(
-                    cwd,
-                    'src'
-                )
+                moduleDirectory: path.join(cwd, 'src')
             });
-        } catch (err){
+        } catch (err) {
             let spinner = this.spinner(`正在下载最新的${React}`);
             spinner.start();
             let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/master/dist/${React}`;
             let ReactLib = await axios.get(remoteUrl);
             fs.ensureFileSync(srcPath);
-            fs.writeFileSync(
-                srcPath,
-                ReactLib.data
-            );
+            fs.writeFileSync(srcPath, ReactLib.data);
             spinner.succeed(`下载${React}成功`);
             reactPath = path.join(cwd, 'src', React);
         }
         return reactPath;
     },
-   
-    async asyncReact(){
+
+    async asyncReact() {
         await this.getReactLibPath();
-        
+
         let ReactLibName = this.getReactLibName();
         let map = this.getReactMap();
-        Object.keys(map).forEach((key)=>{
+        Object.keys(map).forEach(key => {
             let ReactName = map[key];
-            if (ReactName != ReactLibName){
-                fs.remove( path.join(cwd, 'src', ReactName), (err)=>{
-                    if (err){
-                        // eslint-disable-next-line
+            if (ReactName != ReactLibName) {
+                fs.remove(path.join(cwd, 'src', ReactName), err => {
+                    if (err) {
                         console.log(err);
                     }
-                } );
-                fs.remove( path.join(cwd, 'dist', ReactName), (err)=>{
-                    if (err){
-                        // eslint-disable-next-line
+                });
+                fs.remove(path.join(cwd, 'dist', ReactName), err => {
+                    if (err) {
                         console.log(err);
                     }
                 });
             }
-        });         
-
+        });
     },
-    getReactMap(){
+    getReactMap() {
         return {
             wx: 'ReactWX.js',
             ali: 'ReactAli.js',
             bu: 'ReactBu.js'
         };
     },
-    getReactLibName(){
+    getReactLibName() {
         let buildType = config.buildType;
         return this.getReactMap()[buildType];
     },
     getCustomAliasConfig() {
         let React = this.getReactLibName();
         let defaultAlias = {
-            '@react':  path.resolve(cwd, `src/${React}`),
-            'react': path.resolve(cwd, `src/${React}`),
+            '@react': path.resolve(cwd, `src/${React}`),
+            react: path.resolve(cwd, `src/${React}`),
             '@components': path.resolve(cwd, 'src/components')
         };
-        //let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
         return defaultAlias;
     },
     resolveNpmAliasPath(id, depFile) {
@@ -306,28 +299,27 @@ let utils = {
 
         //根据被依赖文件和依赖文件，求相对路径
         let aliasPath = path.relative(path.dirname(distJs), distNpm);
-        
+
         return aliasPath;
     },
     resolveCustomAliasPath(file, depFile) {
         let aliasPath = path.relative(path.dirname(file), depFile);
         return aliasPath;
     },
-    resolveComponentStyle(styleFiles){
+    resolveComponentStyle(styleFiles) {
         let result = [];
         let componentsStyle = [];
-        let appStyleId= ''; //app全局样式只有一个
-        styleFiles.forEach((item)=>{
-            let {id, originalCode} = item;
+        let appStyleId = ''; //app全局样式只有一个
+        styleFiles.forEach(item => {
+            let { id, originalCode } = item;
             if (/components/.test(id)) {
                 id = path.relative(path.join(cwd, 'src'), id);
-                if (/^\w/.test(id)){
-                    //'components/x/y' => './components/x/y';
-                    id = `./${id}`; 
+                if (/^\w/.test(id)) {
+                    id = `./${id}`;
                 }
                 let importKey = `@import '${id}';`;
                 componentsStyle.push(importKey);
-            } else if (/app/.test(id)){
+            } else if (/app/.test(id)) {
                 appStyleId = id;
             } else {
                 result.push({
@@ -336,21 +328,21 @@ let utils = {
                 });
             }
         });
-        
+
         let appStyleContent = '';
-        try{
+        try {
             appStyleContent = fs.readFileSync(appStyleId);
-        }catch(err){
+        } catch (err) {
             console.log(chalk.red('需配置全局app样式, 请检查...'));
             process.exit(1);
         }
-        
-        appStyleContent =   componentsStyle.join('\n') + '\n' +  appStyleContent;
+
+        appStyleContent = componentsStyle.join('\n') + '\n' + appStyleContent;
         result.push({
             id: appStyleId,
             originalCode: appStyleContent
         });
-        
+
         return result;
     },
     updateNpmAlias(id, deps) {
