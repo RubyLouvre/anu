@@ -1,24 +1,17 @@
-import { currentPage } from './utils';
+import { setState, forceUpdate } from './utils';
 export function onComponentUpdate(fiber) {
 	var instance = fiber.stateNode;
-	var type = fiber.type;
-	instance.$pageInst = currentPage.value;
-	if (!instance.__isStateless && instance.setState !== eventSystem.setState) {
-		instance.setState = eventSystem.setState;
-		instance.forceUpdate = eventSystem.forceUpdate;
+	if (!instance.__isStateless) {
+		if (instance.setState !== setState) {
+			instance.setState = setState;
+			instance.forceUpdate = forceUpdate;
+		}
 	}
 }
-export function onComponentDispose(fiber) {
-	var instance = fiber.stateNode;
-	var type = fiber.type;
-	var parentInst = instance.$parentInst;
-	if (parentInst) {
-		delete type[instance.instanceUid];
-	}
-}
+export function onComponentDispose() {}
 
 var registerComponents = {};
-export function useComponent(props, children) {
+export function useComponent(props) {
 	var is = props.is;
 	var clazz = registerComponents[is];
 	delete props.is;
@@ -32,9 +25,6 @@ export function registerComponent(userComponent, path) {
 	userComponent.instances = [];
 	console.log('注册组件', path);
 	return {
-		properties: {
-			$$list: String,
-		},
 		data: {
 			props: {},
 			state: {},
@@ -43,17 +33,14 @@ export function registerComponent(userComponent, path) {
 		methods: {
 			dispatchEvent: eventSystem.dispatchEvent,
 		},
-
 		lifetimes: {
 			created: function() {
-				console.log('add ');
 				userComponent.instances.push(this);
 			},
 			// 生命周期函数，可以为函数，或一个在methods段中定义的方法名
 			attached: function() {
 				console.log('attached');
 			},
-
 			detached: function() {
 				console.log('detached');
 			},

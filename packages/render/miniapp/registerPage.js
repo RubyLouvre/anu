@@ -1,27 +1,11 @@
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
 import { Component } from 'react-core/Component';
-import { isFn, noop, get, miniCreateClass, hasOwnProperty } from 'react-core/util';
+import { isFn, noop, get, miniCreateClass } from 'react-core/util';
 import { eventSystem } from './eventSystem';
-import { newData, delayMounts } from './utils';
+import { newData, delayMounts, setState, forceUpdate, updateView } from './utils';
 
-function safeClone(originVal) {
-	let temp = originVal instanceof Array ? [] : {};
-	for (let item in originVal) {
-		if (hasOwnProperty.call(originVal, item)) {
-			let value = originVal[item];
-			if (isReferenceType(value)) {
-				if (value.$$typeof) {
-					continue;
-				}
-				temp[item] = safeClone(value);
-			} else {
-				temp[item] = value;
-			}
-		}
-	}
-	return temp;
-}
+
 const HookMap = {
 	onShow: 'componentDidShow',
 	onHide: 'componentDidHide',
@@ -48,7 +32,7 @@ var Provider = miniCreateClass(
 export function applyAppStore(store) {
 	appStore = store;
 }
-function toPage(PageClass, path, testObject) {
+export function registerPage(PageClass, path, testObject) {
 	console.log(path, '注册页面');
 	var pageInstance,
 		pageViewInstance,
@@ -56,7 +40,7 @@ function toPage(PageClass, path, testObject) {
 			data: newData(),
 			dispatchEvent: eventSystem.dispatchEvent,
 			onLoad(query) {
-				console.log('页面onLoad');
+				console.log('开始载入页面',path);
 				var topComponent = createElement(PageClass, {
 					path: path,
 					query: query,
@@ -88,18 +72,15 @@ function toPage(PageClass, path, testObject) {
 					}
 				}
 				this.reactInstance = pageViewInstance;
+				pageViewInstance.wx = this;
 
-				pageViewInstance.setState = eventSystem.setState;
-				pageViewInstance.forceUpdate = eventSystem.forceUpdate;
-				this.setData(
-					safeClone({
-						props: pageViewInstance.props,
-						state: pageViewInstance.state,
-						context: pageViewInstance.context,
-					})
-				);
+				pageViewInstance.setState = setState;
+				pageViewInstance.forceUpdate = forceUpdate;
+				updateView(pageViewInstance)
+			
 			},
 			onReady() {
+				console.log('页面布局完成',path);
 				var el;
 				while ((el = delayMounts.shift())) {
 					el.fn.call(el.instance);
@@ -131,5 +112,5 @@ function toPage(PageClass, path, testObject) {
 		config.onLoad();
 		return config;
 	}
-	return safeClone(config);
+	return config;
 }
