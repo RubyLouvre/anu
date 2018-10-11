@@ -13,10 +13,10 @@ const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
 const Event = new EventEmitter();
 process.on('unhandledRejection', error => {
+    // eslint-disable-next-line
     console.error('unhandledRejection', error);
-    process.exit(1) // To exit with a 'failure' code
-  });
-
+    process.exit(1); // To exit with a 'failure' code
+});
 let utils = {
     on() {
         Event.on.apply(this, arguments);
@@ -338,9 +338,10 @@ let utils = {
         });
         
         let appStyleContent = '';
-        try{
+        try {
             appStyleContent = fs.readFileSync(appStyleId);
-        }catch(err){
+        } catch (err) {
+            // eslint-disable-next-line
             console.log(chalk.red('需配置全局app样式, 请检查...'));
             process.exit(1);
         }
