@@ -13,7 +13,7 @@ const utils = require('../utils');
  * @param {String} type 有状态组件｜无状态组件
  * @param {String} componentName 组件名
  */
-const deps = require('../deps');
+const deps = [];
 exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
     let expr;
