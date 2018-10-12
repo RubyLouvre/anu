@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-11
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-12
  * IE9+
  */
 
@@ -2699,6 +2699,13 @@ var aliApis = function aliApis(api) {
       a.latitude = a.latitude + '';
       a.longitude = a.longitude + '';
       return api.openLocation.apply(api, arguments);
+    },
+    getStorageSync: function _(a) {
+      var k = {};
+      k.key = a;
+      arguments[0] = k;
+      var res = api.getStorageSync.apply(api, arguments);
+      return res.data || '';
     },
     uploadFile: function _(a) {
       a.fileName = a.name;

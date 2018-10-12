@@ -75,6 +75,15 @@ export var aliApis = function(api) {
       a.longitude = a.longitude + '';
       return api.openLocation.apply(api, arguments);
     },
+
+    // 数据缓存
+    getStorageSync: function _(a) {
+      var k = {};
+      k.key = a;
+      arguments[0] = k;
+      let res = api.getStorageSync.apply(api, arguments);
+      return res.data || ''
+    },
     // 上传
     uploadFile: function _(a) {
       a.fileName = a.name;
