@@ -170,6 +170,15 @@ let utils = {
         if (!name || typeof name !== 'string') return false;
         return !/^\/|\./.test(name);
     },
+    createRegisterStatement(className, path, isPage) {
+        var templateString = isPage
+            ? 'Page(React.registerPage(className,astPath))'
+            : 'Component(React.registerComponent(className,astPath))';
+        return template(templateString)({
+            className: t.identifier(className),
+            astPath: t.stringLiteral(path)
+        });
+    },
     isBuildInLibs(name) {
         let libs = new Set(require('repl')._builtinLibs);
         return libs.has(name);
@@ -340,7 +349,7 @@ let utils = {
             appStyleContent = fs.readFileSync(appStyleId);
         } catch (err) {
             // eslint-disable-next-line
-            console.log(chalk.red('需配置全局app样式, 请检查...'));
+            console.log(chalk.red("需配置全局app样式, 请检查..."));
             process.exit(1);
         }
 

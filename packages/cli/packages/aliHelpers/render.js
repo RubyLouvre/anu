@@ -68,7 +68,7 @@ exports.exit = function(astPath, type, componentName, modules) {
             for (var i in modules.importComponents) {
                 if (modules.usedComponents[i]) {
                     wxml = `<import src="${
-                        modules.importComponents[i]
+                        modules.importComponents[i].source
                     }.axml" />\n${wxml}`;
                 }
             }

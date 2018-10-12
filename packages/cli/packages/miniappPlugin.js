@@ -87,6 +87,7 @@ module.exports = {
             ) {
                 //需要想办法处理无状态组件
                 helpers.render.exit(astPath, '无状态组件', name, modules);
+                modules.createPage = utils.createRegisterStatement(name, name);
             }
 
             if (
@@ -96,6 +97,7 @@ module.exports = {
                 astPath.node.body.body.unshift(
                     template(utils.shortcutOfCreateElement())()
                 );
+
             }
 
             if (name === '_asyncToGenerator' && config.buildType == 'wx') {
@@ -135,10 +137,10 @@ module.exports = {
                 source = source.replace(/\.js$/, '');
                 
             }
-            modules.importComponents[item.local.name] = source;
-            if (/\/components/.test(source)){
-                astPath.remove();
-            }
+            modules.importComponents[item.local.name] = {
+                astPath: astPath,
+                source: source
+            }; 
            
         });
     },
@@ -360,14 +362,20 @@ module.exports = {
         enter: function(astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
-            if (modules.importComponents[nodeName]) {
+            let bag = modules.importComponents[nodeName];
+            if (bag) {
               
                 deps[nodeName] ||
                     (deps[nodeName] = {
                         set: new Set()
                     });
                 astPath.componentName = nodeName;
-                modules.usedComponents['anu-'+ nodeName.toLowerCase()] = modules.importComponents[nodeName].replace(/(.*)components/, '/components');
+             
+                if (bag.astPath){
+                    bag.astPath.remove();
+                    bag.astPath = null;
+                }
+                modules.usedComponents['anu-'+ nodeName.toLowerCase()] =  '/components/' + nodeName +'/index';
                 astPath.node.name.name = 'React.useComponent';
               
                 // eslint-disable-next-line

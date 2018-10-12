@@ -1,4 +1,4 @@
-import { isFn, noop } from 'react-core/util';
+import { isFn, noop, toLowerCase, get } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
 import { setState, getUUID, forceUpdate, delayMounts, updateView } from './utils';
@@ -6,7 +6,7 @@ import { setState, getUUID, forceUpdate, delayMounts, updateView } from './utils
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
     var n = name.charAt(0) == 'o' ? 2 : 5;
-    var type = name.slice(n).toLowerCase();
+    var type = toLowerCase(name.slice(n));
     var eventCode = props['data-' + type + '-uid'];
     return eventCode + (key != null ? '-' + key : '');
 }
@@ -56,20 +56,16 @@ export let Renderer = createRenderer({
         }
         instance.props.instanceUid = instance.instanceUid;
         if (type.instances) {
-            if (!instance.wx) {
-                var wx = type.instances.shift();
-                if (wx) {
-                    instance.wx = wx;
-                    wx.reactInstance = instance;
-                }
+            if (!instance.wx){
+                type.instances.push(instance);
             }
-            if (instance.__isStateless) {
-                updateView(instance);
+            if (instance.__isStateless ) {
+                instance.wx && updateView(instance);
             } else {
                 if (instance.setState !== setState) {
                     instance.setState = setState;
                     instance.forceUpdate = forceUpdate;
-                    updateView(instance);
+                    // updateView(instance);
                 }
             }
         }

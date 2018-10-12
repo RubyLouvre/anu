@@ -1,7 +1,6 @@
-
 import { eventSystem } from './eventSystem';
 import { createElement } from 'react-core/createElement';
-
+import { updateView } from './utils';
 var registerComponents = {};
 export function useComponent(props) {
     var is = props.is;
@@ -12,30 +11,34 @@ export function useComponent(props) {
     console.log('使用组件', is);
     return createElement.apply(null, args);
 }
-export function registerComponent(userComponent, path) {
-    registerComponents[path] = userComponent;
-    userComponent.instances = [];
-    console.log('注册组件', path);
+export function registerComponent(type, name) {
+    registerComponents[name] = type;
+    var instances = (type.instances = []);
+    console.log('注册组件', name);
     return {
         data: {
             props: {},
             state: {},
-            context: {},
+            context: {}
         },
         methods: {
-            dispatchEvent: eventSystem.dispatchEvent,
+            dispatchEvent: eventSystem.dispatchEvent
         },
         lifetimes: {
-            created: function() {
-                userComponent.instances.push(this);
+            created() {
+                var instance = instances.shift();
+                if (instance) {
+                    instance.wx = this;
+                    this.reactInstance = instance;
+                }
             },
-            // 生命周期函数，可以为函数，或一个在methods段中定义的方法名
-            attached: function() {
+            attached() {
+                updateView(this.reactInstance, 'attached');
                 console.log('attached');
             },
-            detached: function() {
+            detached() {
                 console.log('detached');
-            },
-        },
+            }
+        }
     };
 }

@@ -19,9 +19,9 @@ exports.exit = function(astPath, type, componentName, modules) {
     let expr;
 
     if (!body.length) return;
-    for (let i  = 0, n = body.length; i < n; i++){
+    for (let i = 0, n = body.length; i < n; i++) {
         expr = body[i];
-        if (t.isReturnStatement(expr)){
+        if (t.isReturnStatement(expr)) {
             break;
         }
     }
@@ -35,12 +35,7 @@ exports.exit = function(astPath, type, componentName, modules) {
             var jsx = generate(expr.argument).code;
             var jsxAst = babel.transform(jsx, {
                 babelrc: false,
-                plugins: [
-                    [
-                        'transform-react-jsx',
-                        { pragma: 'h' }
-                    ]
-                ]
+                plugins: [['transform-react-jsx', { pragma: 'h' }]]
             });
 
             expr.argument = jsxAst.ast.program.body[0];
@@ -64,11 +59,11 @@ exports.exit = function(astPath, type, componentName, modules) {
             //如果这个JSX的主体是一个组件，那么它肯定在deps里面
             var dep = deps[componentName];
             //添加import语句产生的显式依赖
-           
+
             for (var i in modules.importComponents) {
                 if (modules.usedComponents[i]) {
                     wxml = `<import src="${
-                        modules.importComponents[i]
+                        modules.importComponents[i].source
                     }.wxml" />\n${wxml}`;
                 }
             }

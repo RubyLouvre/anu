@@ -50,29 +50,19 @@ module.exports = {
         }
         if (modules.componentType === 'Page') {
             // 动态生成Page组件的Page(React.toPage(className,astPath))调用
-            // Page(React.toPage(PPP, "pages/demo/stateless/aaa"));
-            var createPage = template('Page(React.registerPage(className,astPath))')(
-                {
-                    className: t.identifier(modules.className),
-                    astPath: t.stringLiteral(
-                        modules.current
-                            .replace(/.+pages/, 'pages')
-                            .replace(/\.js$/, '')
-                    )
-                }
+            // Page(React.toPage(P, "pages/demo/stateless/aaa"));
+            modules.createPage = utils.createRegisterStatement(
+                modules.className,
+                modules.current
+                    .replace(/.+pages/, 'pages')
+                    .replace(/\.js$/, ''),
+                true
             );
-            modules.createPage = createPage;
         }
         if (modules.componentType === 'Component') {
-            // 动态生成Page组件的Page(React.toPage(className,astPath))调用
-            // Page(React.toPage(PPP, "pages/demo/stateless/aaa"));
-            createPage = template('Component(React.registerComponent(className,astPath))')(
-                {
-                    className: t.identifier(modules.className),
-                    astPath: t.stringLiteral(modules.className)
-                }
+            modules.createPage = utils.createRegisterStatement(
+                modules.className
             );
-            modules.createPage = createPage;
         }
     }
 };
