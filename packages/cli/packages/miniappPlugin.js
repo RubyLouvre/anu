@@ -18,8 +18,7 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-
-function addCreatePage(name, path, modules) {
+function registerPageOrComponent(name, path, modules) {
     if (name == modules.className) {
         path.insertBefore(modules.createPage);
     }
@@ -100,12 +99,6 @@ module.exports = {
             }
 
             if (name === '_asyncToGenerator' && config.buildType == 'wx') {
-                // astPath.insertBefore(
-                // 	t.importDeclaration(
-                // 		[t.importDefaultSpecifier(t.identifier('regeneratorRuntime'))],
-                // 		t.stringLiteral('regenerator-runtime/runtime')
-                // 	)
-                // );
                 astPath.insertBefore(
                     t.variableDeclaration('var', [
                         t.variableDeclarator(
@@ -140,46 +133,95 @@ module.exports = {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
             if (/\.js$/.test(source)) {
                 source = source.replace(/\.js$/, '');
+                
             }
             modules.importComponents[item.local.name] = source;
+            if (/\/components/.test(source)){
+                astPath.remove();
+            }
+           
         });
     },
     ExportDefaultDeclaration: {
         exit(astPath, state) {
             var modules = utils.getAnu(state);
-            if (modules.componentType == 'Page') {
+            if (/Page|Component/.test(modules.componentType )) {
                 let declaration = astPath.node.declaration;
                 //延后插入createPage语句在其同名的export语句前
-                addCreatePage(declaration.name, astPath, modules);
+                registerPageOrComponent(declaration.name, astPath, modules);
             }
+            //将配置对象生成JSON文件
+            if (!/App|Page|Component/.test(modules.componentType)){
+                return;
+            }
+            var code = modules.configString || '{}';
+            var json = eval('(' + code + ')');
+            //将app.js中的import语句变成pages数组
+            if (modules.componentType === 'App') {
+                json.pages = modules['appRoute']; 
+                delete modules['appRoute'];
+            }
+            if (modules.componentType === 'Component') {
+                json.component = true;
+            }
+            if (buildType == 'ali') {
+                helpers.configName(json, modules.componentType);
+            }
+            
+            var keys = Object.keys( modules.usedComponents), usings;
+            if (keys.length){
+                usings = json.usingComponents ||  (json.usingComponents = {}); 
+                keys.forEach(function(name){
+                    usings[name] = modules.usedComponents[name];
+                });
+            }
+            
+            if (usings) {
+                //将页面配置对象中的usingComponents对象中的组件名放进modules.customComponents
+                //数组中，并将对应的文件复制到dist目录中
+                utils.copyCustomComponents(usings, modules);
+            }
+            queue.push({
+                type: 'json',
+                path: modules.sourcePath
+                    .replace(/\/src\//, '/dist/')
+                    .replace(/\.js$/, '.json'),
+                code:  JSON.stringify(json, null, 4)
+            });
+            utils.emit('build');
         }
     },
 
     ExportNamedDeclaration: {
-        exit(astPath) {
-            let declaration = astPath.node.declaration;
-            if (!declaration) {
-                var map = astPath.node.specifiers.map(function(el) {
-                    return utils.exportExpr(el.local.name);
-                });
-                astPath.replaceWithMultiple(map);
-            } else if (declaration.type === 'Identifier') {
-                astPath.replaceWith(
-                    utils.exportExpr(declaration.name, declaration.name)
-                );
-            } else if (declaration.type === 'VariableDeclaration') {
-                var id = declaration.declarations[0].id.name;
-                declaration.kind = 'var'; //转换const,let为var
-                astPath.replaceWithMultiple([
-                    declaration,
-                    utils.exportExpr(id)
-                ]);
-            } else if (declaration.type === 'FunctionDeclaration') {
-                astPath.replaceWithMultiple([
-                    declaration,
-                    utils.exportExpr(id)
-                ]);
+        exit(astPath) {//生成 module.exports.default = ${name};
+            let declaration = astPath.node.declaration || {type: '{}'};
+            switch (declaration.type){
+                case 'Identifier':
+                    astPath.replaceWith(
+                        utils.exportExpr(declaration.name)
+                    );
+                    break;
+                case 'VariableDeclaration':
+                    var id = declaration.declarations[0].id.name;
+                    declaration.kind = 'var'; //转换const,let为var
+                    astPath.replaceWithMultiple([
+                        declaration,
+                        utils.exportExpr(id)
+                    ]);
+                    break;
+                case 'FunctionDeclaration':
+                    astPath.replaceWithMultiple([
+                        declaration,
+                        utils.exportExpr(declaration.id.name)
+                    ]);
+                    break;
+                case '{}':
+                    astPath.replaceWithMultiple(astPath.node.specifiers.map(function(el) {
+                        return utils.exportExpr(el.local.name);
+                    }));
+                    break;
             }
+            
         }
     },
   
@@ -189,42 +231,8 @@ module.exports = {
             let modules = utils.getAnu(state);
             if (key === 'config') {
                 //format json
-                let code = generate(astPath.node.value).code;
-                let config = null;
-                let jsonStr = '';
-                try {
-                    config = JSON.parse(code);
-                } catch (err) {
-                    config = eval('(' + code + ')');
-                }
-
-                //assign the page routes in app.js
-                if (modules.componentType === 'App') {
-                    config = Object.assign(config, {
-                        pages: modules['appRoute']
-                    });
-                    delete modules['appRoute'];
-                }
-                if (buildType == 'ali') {
-                    helpers.configName(config, modules.componentType);
-                }
-                if (config.usingComponents) {
-                    //将页面配置对象中的usingComponents对象中的组件名放进modules.customComponents
-                    //数组中，并将对应的文件复制到dist目录中
-                    utils.copyCustomComponents(config.usingComponents, modules);
-                }
-                jsonStr = JSON.stringify(config, null, 4);
-
-                queue.push({
-                    type: 'json',
-                    path: modules.sourcePath
-                        .replace(/\/src\//, '/dist/')
-                        .replace(/\.js$/, '.json'),
-                    code: jsonStr
-                });
-                utils.emit('build');
-            }
-            if (astPath.node.static) {
+                modules.configString = generate(astPath.node.value).code;
+            } else if (astPath.node.static) {
                 var keyValue = t.ObjectProperty(
                     t.identifier(key),
                     astPath.node.value
@@ -232,7 +240,6 @@ module.exports = {
                 modules.staticMethods.push(keyValue);
             } else {
                 if (key == 'globalData' && modules.componentType === 'App') {
-
                     //globalData中插入平台buildType
                     astPath.node.value.properties.push(
                         t.objectProperty(
@@ -240,7 +247,6 @@ module.exports = {
                             t.stringLiteral(config.buildType)
                         )
                     );
-
                     var thisMember = t.assignmentExpression(
                         '=',
                         t.memberExpression(
@@ -250,8 +256,6 @@ module.exports = {
                         astPath.node.value
                     );
                     modules.thisProperties.push(thisMember);
-
-
                 }
             }
             astPath.remove();
@@ -357,37 +361,24 @@ module.exports = {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
             if (modules.importComponents[nodeName]) {
-                let dep =
-                    deps[nodeName] ||
+              
+                deps[nodeName] ||
                     (deps[nodeName] = {
                         set: new Set()
                     });
                 astPath.componentName = nodeName;
-                modules.usedComponents[nodeName] = true;
-                astPath.node.name.name = 'React.toComponent';
-                let children = astPath.parentPath.node.children;
-                let isEmpty = true;
+                modules.usedComponents['anu-'+ nodeName.toLowerCase()] = modules.importComponents[nodeName].replace(/(.*)components/, '/components');
+                astPath.node.name.name = 'React.useComponent';
+              
                 // eslint-disable-next-line
-                for (var i = 0, el; (el = children[i++]); ) {
-                    if (el.type === 'JSXText' && !el.value.trim().length) {
-                        isEmpty = false;
-                        break;
-                    } else {
-                        isEmpty = false;
-                        break;
-                    }
-                }
-
+           
                 var attributes = astPath.node.attributes;
                 modules.is && modules.is.push(nodeName);
                 attributes.push(
-                    utils.createAttribute(
-                        '$$loop',
-                        'data' + utils.createUUID(astPath)
-                    ),
+                 
                     t.JSXAttribute(
                         t.JSXIdentifier('is'),
-                        t.jSXExpressionContainer(t.identifier(nodeName))
+                        t.jSXExpressionContainer(t.stringLiteral(nodeName))
                     )
                 );
 
@@ -402,9 +393,8 @@ module.exports = {
                         )
                     );
                 }
-
-                if (!isEmpty) {
-                    //处理slot
+                //处理组件标签的内部，现在支持slot
+                /* if (!isEmpty) { 
                     var fragmentUid = 'f' + utils.createUUID(astPath);
                     if (dep.addImportTag) {
                         dep.addImportTag(fragmentUid);
@@ -422,8 +412,9 @@ module.exports = {
                         utils.createAttribute('fragmentUid', fragmentUid)
                     );
                 }
+                */
             } else {
-                if (nodeName != 'React.toComponent') {
+                if (nodeName != 'React.useComponent') {
                     helpers.nodeName(astPath, modules);
                 }
             }
@@ -466,13 +457,14 @@ module.exports = {
                                 'data-class-uid',
                                 modules.classUid
                             ),
-                            utils.createAttribute(
+                            /* utils.createAttribute(
                                 'data-instance-uid',
                                 t.jSXExpressionContainer(
                                     t.identifier('this.props.instanceUid')
                                 )
-                            )
+                            )*/
                         );
+                        
                         //如果是位于循环里，还必须加上data-key，防止事件回调乱窜
                         if (modules.indexArr) {
                             attrs.push(
@@ -540,7 +532,6 @@ module.exports = {
         },
         exit(astPath, state) {
             let attrName = astPath.node.name.name;
-            // let attrValue = astPath.node.value;
             if (attrName == 'render' && astPath.parentPath.renderProps) {
                 let attrValue = astPath.parentPath.renderProps;
                 let fragmentUid = astPath.parentPath.renderUid;
@@ -606,11 +597,11 @@ module.exports = {
         //将组件标签转换成React.toComponent标签，html标签转换成view/text标签
         if (
             !modules.importComponents[nodeName] &&
-            nodeName !== 'React.toComponent'
+            nodeName !== 'React.useComponent'
         ) {
             helpers.nodeName(astPath, modules);
         } else {
-            astPath.node.name.name = 'React.toComponent';
+            astPath.node.name.name = 'React.useComponent';
         }
     }
 };

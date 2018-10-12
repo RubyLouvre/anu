@@ -51,7 +51,7 @@ module.exports = {
         if (modules.componentType === 'Page') {
             // 动态生成Page组件的Page(React.toPage(className,astPath))调用
             // Page(React.toPage(PPP, "pages/demo/stateless/aaa"));
-            var createPage = template('Page(React.toPage(className,astPath))')(
+            var createPage = template('Page(React.registerPage(className,astPath))')(
                 {
                     className: t.identifier(modules.className),
                     astPath: t.stringLiteral(
@@ -62,13 +62,17 @@ module.exports = {
                 }
             );
             modules.createPage = createPage;
-            /*  var p = astPath;
-            //好像不能上升到根节点Program，只能上升到VariableDeclaration
-            while (p.type != 'VariableDeclaration') {
-                p = p.parentPath;
-            }
-            p.insertAfter(createPage);
-            */
+        }
+        if (modules.componentType === 'Component') {
+            // 动态生成Page组件的Page(React.toPage(className,astPath))调用
+            // Page(React.toPage(PPP, "pages/demo/stateless/aaa"));
+            createPage = template('Component(React.registerComponent(className,astPath))')(
+                {
+                    className: t.identifier(modules.className),
+                    astPath: t.stringLiteral(modules.className)
+                }
+            );
+            modules.createPage = createPage;
         }
     }
 };

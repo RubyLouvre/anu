@@ -5,6 +5,6 @@
     "backgroundColor": "#eeeeee",
     "backgroundTextStyle": "light",
     "usingComponents": {
-      "anu-animal":"/components/Animal/index"
+        "anu-animal": "/components/Animal/index"
     }
 }

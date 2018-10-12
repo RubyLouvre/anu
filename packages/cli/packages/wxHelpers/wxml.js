@@ -57,12 +57,10 @@ var visitor = {
                     children.splice(i+1, 1);
                     astPath.parentPath.replaceWith(template);
                     
-                } else if (openTag.property.name === 'toComponent'){
+                } else if (openTag.property.name === 'useComponent'){
                     var modules = utils.getAnu(state);
-                    var array,
-                        is,
-                        key = '',
-                        indexArr;
+                    var  is;
+                       
                     astPath.node.attributes.forEach(function(el) {
                         var attrName = el.name.name;
                         var attrValue = el.value.value;
@@ -76,42 +74,14 @@ var visitor = {
                                 modules,
                                 wxml
                             );
-                        } else if (attrName === '$$loop') {
-                            array = attrValue;
-                        } else if (attrName === 'is') {
-                            is = attrValue;
-                        } else if (attrName === 'wx:key') {
-                            key = attrValue;
-                        } else if (attrName === 'key') {
-                            key = attrValue;
-                        } else if (attrName == '$$index') {
-                            indexArr = attrValue;
-                        }
+                        } if (attrName === 'is') {
+                            is = 'anu-'+attrValue.slice(1,-1).toLowerCase();
+                        } 
                     });
                     attributes = [];
-                    template = utils.createElement('template', attributes, []);
+                    template = utils.createElement(is, attributes, []);
                     //将组件变成template标签
-                    if (!indexArr) {
-                        attributes.push(
-                            utils.createAttribute('is', is),
-                            utils.createAttribute('data', '{{...data}}'),
-                            utils.createAttribute('wx:for', `{{components.${array}}}`),
-                            utils.createAttribute('wx:for-item', 'data'),
-                            utils.createAttribute('wx:for-index', 'index'),
-                            utils.createAttribute('wx:key', utils.genKey(key))
-                        );
-                    } else {
-                        attributes.push(
-                            utils.createAttribute('is', is),
-                            utils.createAttribute(
-                                'wx:for',
-                                `{{components['${array}'+${indexArr} ]}}`
-                            ),
-                            utils.createAttribute('wx:for-item', 'data'),
-                            utils.createAttribute('data', '{{...data}}'),
-                            utils.createAttribute('wx:key', utils.genKey(key))
-                        );
-                    }
+                 
                     astPath.parentPath.replaceWith(template);
                 }
 
@@ -151,11 +121,12 @@ var visitor = {
                 /props\.children/.test(generate(expr).code)
             ) {
                 var attributes = [];
-                var template = utils.createElement('template', attributes, []);
-                attributes.push(
+                var template = utils.createElement('slot', attributes, []);
+                /*  attributes.push(
                     utils.createAttribute('is', '{{props.fragmentUid}}'),
                     utils.createAttribute('data', '{{...props.fragmentData}}')
                 );
+                */
                 astPath.replaceWith(template);
                 //  console.warn("小程序暂时不支持{this.props.children}");
             } else {

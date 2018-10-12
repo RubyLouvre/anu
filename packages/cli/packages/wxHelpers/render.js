@@ -55,7 +55,7 @@ exports.exit = function(astPath, type, componentName, modules) {
             }
 
             if (modules.componentType === 'Component') {
-                wxml = `<template name="${componentName}">${wxml}</template>`;
+                //  wxml = `<template name="${componentName}">${wxml}</template>`;
                 deps[componentName] = deps[componentName] || {
                     set: new Set()
                 };

@@ -7,6 +7,7 @@ import {
     createElement,
     cloneElement,
     isValidElement,
+    createFactory
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 import { injectAPIs } from './api';
@@ -48,7 +49,7 @@ React = win.React =  {
     createFactory,
     toClass: function() {
         //保存所有class到classCache中，方便在事件回调中找到对应实例
-       return  miniCreateClass.apply(null, arguments);
+        return  miniCreateClass.apply(null, arguments);
     },
     applyAppStore,
     toRenderProps,

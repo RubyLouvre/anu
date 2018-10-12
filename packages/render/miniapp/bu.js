@@ -17,7 +17,7 @@ import { toStyle } from './toStyle';
 import { useComponent, registerComponent } from './registerComponent';
 
 import { toRenderProps } from './toRenderProps';
-import { registerPage, applyAppStore } from './toPage';
+import { registerPage, applyAppStore } from './registerPage';
 import { buApis } from './buApis';
 
 
@@ -42,13 +42,11 @@ React = win.React =  {
     PropTypes,
     Children,
     createPortal,
-    createContext,
     Component,
     createElement,
     cloneElement,
     PureComponent,
     isValidElement,
-    createFactory,
     toClass: function() {
         //保存所有class到classCache中，方便在事件回调中找到对应实例
         var clazz = miniCreateClass.apply(null, arguments);
@@ -79,3 +77,4 @@ export {
     createElement,
     Component
 };
+

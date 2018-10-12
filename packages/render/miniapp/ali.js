@@ -19,7 +19,7 @@ import { toStyle } from './toStyle';
 import { useComponent, registerComponent } from './registerComponent';
 
 import { toRenderProps } from './toRenderProps';
-import { registerPage, applyAppStore } from './toPage';
+import { registerPage, applyAppStore } from './registerPage';
 import { aliApis } from './aliApis';
 
 
