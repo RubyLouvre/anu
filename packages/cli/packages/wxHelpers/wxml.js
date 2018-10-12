@@ -79,7 +79,8 @@ var visitor = {
                         } 
                     });
                     attributes = [];
-                    template = utils.createElement(is, attributes, []);
+                   // console.log( astPath.parentPath.node.children, "children")
+                    template = utils.createElement(is, attributes, astPath.parentPath.node.children);
                     //将组件变成template标签
                  
                     astPath.parentPath.replaceWith(template);

@@ -38,29 +38,12 @@ function safeClone(originVal) {
     return temp;
 }
 export function updateView(instance) {
+    if (!instance || !instance.wx) {
+		return;
+	}
     instance.wx.setData(safeClone({
         props: instance.props,
         state: instance.state || null,
         context: instance.context,
     }));
-}
-
-export function setState(state, cb) {
-    hackSetState(this);
-    this.updater.enqueueSetState(this, state, cb);
-}
-export function forceUpdate(cb) {
-    hackSetState(this);
-    this.updater.enqueueSetState(this, true, cb);
-}
-
-export function hackSetState(instance) {
-    var fiber = get(instance);
-    var queue = fiber.updateQueue;
-    if (!queue.pendingStates.length) {
-        var cbs = queue.pendingCbs;
-        cbs.push(function() {
-            updateView(instance);
-        });
-    }
 }

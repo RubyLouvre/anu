@@ -13,32 +13,41 @@ export function useComponent(props) {
 }
 export function registerComponent(type, name) {
     registerComponents[name] = type;
-    var instances = (type.instances = []);
-    console.log('注册组件', name);
-    return {
-        data: {
-            props: {},
-            state: {},
-            context: {}
-        },
-        methods: {
-            dispatchEvent: eventSystem.dispatchEvent
-        },
-        lifetimes: {
-            created() {
-                var instance = instances.shift();
-                if (instance) {
-                    instance.wx = this;
-                    this.reactInstance = instance;
-                }
-            },
-            attached() {
-                updateView(this.reactInstance, 'attached');
-                console.log('attached');
-            },
-            detached() {
-                console.log('detached');
-            }
-        }
-    };
+	var reactInstances = (type.reactInstances = []);
+	var wxInstances = (type.wxInstances = []);
+	console.log('注册', name, '组件');
+	return {
+		data: {
+			props: {},
+			state: {},
+			context: {},
+		},
+		methods: {
+			dispatchEvent: eventSystem.dispatchEvent,
+		},
+		lifetimes: {
+			created: function created() {
+				var instance = reactInstances.shift();
+				if (instance) {
+					console.log('created时为', name, '添加wx');
+					instance.wx = this;
+					this.reactInstance = instance;
+				} else {
+					console.log('created时为', name, '没有对应react实例');
+					wxInstances.push(this);
+				}
+			},
+			attached: function attached() {
+				if (this.reactInstance) {
+					updateView(this.reactInstance);
+					console.log('attached时更新', name);
+				} else {
+					console.log('attached时无法更新', name);
+				}
+			},
+			detached: function detached() {
+				this.reactInstance = null;
+			},
+		},
+	};
 }
