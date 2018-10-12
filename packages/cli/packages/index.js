@@ -59,11 +59,11 @@ class Parser {
 
         this.inputConfig = {
             input: this.entry,
-            external: require('repl')._builtinLibs,
             plugins: [
                 alias(this.customAliasConfig), //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
                     jail: path.join(cwd), //从项目根目录中搜索npm模块, 防止向父级查找
+                    preferBuiltins: false,
                     customResolveOptions: {
                         moduleDirectory: path.join(cwd, 'node_modules')
                     }
