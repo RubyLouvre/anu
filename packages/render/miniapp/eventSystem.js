@@ -1,12 +1,12 @@
 import { returnFalse } from 'react-core/util';
-import { classCached } from './utils';
+import { classCached, toLowerCase } from './utils';
 import { Renderer } from 'react-core/createRenderer';
 
 export var eventSystem = {
     dispatchEvent: function(e) {
         var target = e.currentTarget;
         var dataset = target.dataset || {};
-        var eventUid = dataset[e.type.toLowerCase() + 'Uid']; //函数名
+        var eventUid = dataset[toLowerCase(e.type) + 'Uid']; //函数名
         var classUid = dataset.classUid; //类ID
         var componentClass = classCached[classUid]; //类
         var instanceUid = dataset.instanceUid; //实例ID
