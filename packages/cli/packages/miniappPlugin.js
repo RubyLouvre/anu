@@ -156,33 +156,37 @@ module.exports = {
     },
 
     ExportNamedDeclaration: {
-        exit(astPath) {
-            let declaration = astPath.node.declaration;
-            if (!declaration) {
-                var map = astPath.node.specifiers.map(function(el) {
-                    return utils.exportExpr(el.local.name);
-                });
-                astPath.replaceWithMultiple(map);
-            } else if (declaration.type === 'Identifier') {
-                astPath.replaceWith(
-                    utils.exportExpr(declaration.name, declaration.name)
-                );
-            } else if (declaration.type === 'VariableDeclaration') {
-                var id = declaration.declarations[0].id.name;
-                declaration.kind = 'var'; //转换const,let为var
-                astPath.replaceWithMultiple([
-                    declaration,
-                    utils.exportExpr(id)
-                ]);
-            } else if (declaration.type === 'FunctionDeclaration') {
-                astPath.replaceWithMultiple([
-                    declaration,
-                    utils.exportExpr(id)
-                ]);
+        exit(astPath) {//生成 module.exports.default = ${name};
+            let declaration = astPath.node.declaration || {type: '{}'};
+            switch (declaration.type){
+                case 'Identifier':
+                    astPath.replaceWith(
+                        utils.exportExpr(declaration.name)
+                    );
+                    break;
+                case 'VariableDeclaration':
+                    var id = declaration.declarations[0].id.name;
+                    declaration.kind = 'var'; //转换const,let为var
+                    astPath.replaceWithMultiple([
+                        declaration,
+                        utils.exportExpr(id)
+                    ]);
+                    break;
+                case 'FunctionDeclaration':
+                    astPath.replaceWithMultiple([
+                        declaration,
+                        utils.exportExpr(declaration.id.name)
+                    ]);
+                    break;
+                case '{}':
+                    astPath.replaceWithMultiple(astPath.node.specifiers.map(function(el) {
+                        return utils.exportExpr(el.local.name);
+                    }));
+                    break;
             }
+            
         }
     },
-  
     ClassProperty: {
         exit(astPath, state) {
             let key = astPath.node.key.name;
