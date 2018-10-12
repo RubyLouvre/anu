@@ -61,6 +61,7 @@ module.exports = {
         }
         if (modules.componentType === 'Component') {
             modules.createPage = utils.createRegisterStatement(
+                modules.className,
                 modules.className
             );
         }
