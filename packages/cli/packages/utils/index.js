@@ -173,7 +173,15 @@ let utils = {
     },
     isBuildInLibs(name) {
         let libs = new Set(require('repl')._builtinLibs);
-        return libs.has(name);
+        if (libs.has(name)){
+            //如果是内置模块，先查找本地node_modules是否有对应重名模块
+            let isLocalBuildInLib = /\/node_modules\//.test(nodeResolve.sync(name, {basedir: cwd}));
+            if (isLocalBuildInLib){
+                return false;
+            } else {
+                return true;
+            }
+        }
     },
     installer(npmName) {
         return new Promise(resolve => {

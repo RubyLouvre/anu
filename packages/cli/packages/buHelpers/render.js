@@ -139,7 +139,7 @@ function transformConsequent(node) {
 }
 
 function transformAlternate(node) {
-    if (node == null) return t.returnStatement(t.nullLiteral());
+    if (node == null) return t.nullLiteral();
     if (t.isReturnStatement(node)) return node.argument;
     return transformNonNullConsequentOrAlternate(node);
 }
