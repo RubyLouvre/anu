@@ -50,12 +50,11 @@ const compileLess = (filePath, originalCode)=>{
     
 };
 
-const renderSass = (filePath, originalCode)=>{
+const renderSass = (filePath)=>{
     let sass = require(path.join(cwd, 'node_modules', 'node-sass'));
     sass.render(
         {
-            data: originalCode,
-            includePaths: [ path.join(cwd, 'src') ]
+            file: filePath,
         },
         (err, res) => {
             if (err) throw err;
@@ -69,13 +68,13 @@ const renderSass = (filePath, originalCode)=>{
         }
     );
 };
-const compileSass = (filePath, originalCode)=>{
+const compileSass = (filePath)=>{
     try {
         require( path.join(cwd, 'node_modules', 'node-sass', 'package.json') );
     } catch (err) {
         utils.installer('node-sass')
     }
-    renderSass(filePath, originalCode);
+    renderSass(filePath);
 };
 
 
@@ -84,7 +83,7 @@ module.exports = (data)=>{
     if (isLess(id) || isCss(id)){
         compileLess(id, originalCode);
     } else if (isSass(id)){
-        compileSass(id, originalCode);
+        compileSass(id);
     }
 
 };
