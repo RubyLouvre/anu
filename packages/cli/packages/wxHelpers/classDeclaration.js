@@ -49,8 +49,6 @@ module.exports = {
             }
         }
         if (modules.componentType === 'Page') {
-            // 动态生成Page组件的Page(React.toPage(className,astPath))调用
-            // Page(React.toPage(P, "pages/demo/stateless/aaa"));
             modules.createPage = utils.createRegisterStatement(
                 modules.className,
                 modules.current
@@ -58,8 +56,7 @@ module.exports = {
                     .replace(/\.js$/, ''),
                 true
             );
-        }
-        if (modules.componentType === 'Component') {
+        }else if (modules.componentType === 'Component') {
             modules.createPage = utils.createRegisterStatement(
                 modules.className,
                 modules.className

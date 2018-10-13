@@ -1,6 +1,6 @@
 import { eventSystem } from './eventSystem';
 import { createElement } from 'react-core/createElement';
-import { updateView } from './utils';
+import { updateMiniApp } from './utils';
 var registerComponents = {};
 export function useComponent(props) {
     var is = props.is;
@@ -39,7 +39,7 @@ export function registerComponent(type, name) {
 			},
 			attached: function attached() {
 				if (this.reactInstance) {
-					updateView(this.reactInstance);
+					updateMiniApp(this.reactInstance);
 					console.log('attached时更新', name);
 				} else {
 					console.log('attached时无法更新', name);

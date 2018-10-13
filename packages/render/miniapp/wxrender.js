@@ -1,7 +1,7 @@
 import { isFn, noop, toLowerCase, get } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
-import { getUUID, delayMounts, updateView } from './utils';
+import { getUUID, delayMounts, updateMiniApp } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
@@ -63,7 +63,7 @@ export let Renderer = createRenderer({
 					var wx = instance.wx = type.wxInstances.shift();
 					wx.reactInstance = instance;
 					console.log('onBeforeRender时更新', name, instance.props);
-				//	updateView(instance);
+				//	updateMiniApp(instance);
 				}
 				if (!instance.wx) {
 					console.log('onBeforeRender时更新', name, '没有wx');
@@ -82,7 +82,7 @@ export let Renderer = createRenderer({
 	onAfterRender: function (fiber) {
 		var instance = fiber.stateNode;
 		if (instance.wx) {
-			updateView(instance);
+			updateMiniApp(instance);
 		}
 	},
 	onDispose(fiber) {

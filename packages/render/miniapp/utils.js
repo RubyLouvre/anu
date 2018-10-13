@@ -15,7 +15,16 @@ export function newData() {
         components: {},
     };
 }
-
+export function updateMiniApp(instance) {
+    if (!instance || !instance.wx) {
+		return;
+	}
+    instance.wx.setData(safeClone({
+        props: instance.props,
+        state: instance.state || null,
+        context: instance.context,
+    }));
+}
 function isReferenceType(val) {
     return val && (typeof val === 'object' || Object.prototype.toString.call(val) === '[object Array]');
 }
@@ -37,13 +46,4 @@ function safeClone(originVal) {
     }
     return temp;
 }
-export function updateView(instance) {
-    if (!instance || !instance.wx) {
-		return;
-	}
-    instance.wx.setData(safeClone({
-        props: instance.props,
-        state: instance.state || null,
-        context: instance.context,
-    }));
-}
+

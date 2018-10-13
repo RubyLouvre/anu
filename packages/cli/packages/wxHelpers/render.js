@@ -41,19 +41,26 @@ exports.exit = function(astPath, type, componentName, modules) {
             expr.argument = jsxAst.ast.program.body[0];
             jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
 
+
             var wxml = wxmlHelper(jsx, modules);
+            
 
             if (needWrap) {
                 wxml = wxml.slice(7, -9); //去掉<block> </block>;
             } else {
                 wxml = wxml.slice(0, -1); //去掉最后的;
             }
-
             if (modules.componentType === 'Component') {
                 //  wxml = `<template name="${componentName}">${wxml}</template>`;
                 deps[componentName] = deps[componentName] || {
                     set: new Set()
                 };
+                if(type == "renderProps"){
+                    wxml = `<block wx:if="{{renderUid === '${componentName}'}}">
+                            ${wxml}
+                           </block>`
+                }
+    
             }
 
             //如果这个JSX的主体是一个组件，那么它肯定在deps里面

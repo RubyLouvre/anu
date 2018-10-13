@@ -46,10 +46,9 @@ var visitor = {
                 if ( openTag.property.name === 'toRenderProps'){
                     var attributes = [];
                     //实现render props;
-                    var template = utils.createElement('template', attributes, []);
+                    var template = utils.createElement('anu-render', attributes, []);
                     attributes.push(
-                        utils.createAttribute('is', '{{props.renderUid}}'),
-                        utils.createAttribute('data', '{{...renderData}}')
+                        utils.createAttribute('renderUid', '{{props.renderUid}}'),
                     );
                     var children = astPath.parentPath.parentPath.node.children;
                     //去掉后面的{{this.props.render()}}

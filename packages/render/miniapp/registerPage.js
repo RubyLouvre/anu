@@ -2,7 +2,7 @@ import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
 import { isFn, noop } from 'react-core/util';
 import { eventSystem } from './eventSystem';
-import { newData, delayMounts, updateView } from './utils';
+import { newData, delayMounts, updateMiniApp } from './utils';
 
 const HookMap = {
 	onShow: 'componentDidShow',
@@ -42,7 +42,7 @@ export function registerPage(PageClass, path, testObject) {
 				//	pageViewInstance.setState = setState;
 				//	pageViewInstance.forceUpdate = forceUpdate;
 				console.log('更新页面数据', path);
-				updateView(pageViewInstance);
+				updateMiniApp(pageViewInstance);
 			},
 			onReady: function onReady() {
 				console.log('页面布局完成', path);
