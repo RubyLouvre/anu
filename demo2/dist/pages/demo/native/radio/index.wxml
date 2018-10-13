@@ -1,0 +1,8 @@
+<view class="container">
+                <radio-group class="radio-group" bindchange="dispatchEvent" data-change-uid="e1443" data-class-uid="c1295">
+                    <block wx:for="{{state.items}}" wx:for-item="item" wx:for-index="i758" wx:key="{{i758}}"><label class="radio">
+                                <radio value="{{item.name}}" checked="{{item.checked}}" />
+                                {{item.value}}
+                            </label></block>
+                </radio-group>
+            </view>

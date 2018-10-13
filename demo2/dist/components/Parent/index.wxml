@@ -1,0 +1,4 @@
+<view class="parent" style="width:200rpx;height: 200rpx;border:1rpx solid #615f5f;">
+				<view class="title">第二层组件</view>
+				<anu-son></anu-son>
+			</view>

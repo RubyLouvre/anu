@@ -1,0 +1,14 @@
+<view class="cardList">
+                <view class="wrapper">
+                    <block wx:for="{{state.data}}" wx:for-item="item" wx:for-index="index" wx:key="{{index}}"><block wx:if="{{index % 2 === 0}}"><view class="item">
+                                    <image src="{{item.image}}" />
+                                    <text>{{item.text}}</text>
+                                </view></block></block>
+                </view>
+                <view class="wrapper">
+                    <block wx:for="{{state.data}}" wx:for-item="item" wx:for-index="index" wx:key="{{index}}"><block wx:if="{{index % 2 !== 0}}"><view class="item">
+                                    <image src="{{item.image}}" />
+                                    <text>{{item.text}}</text>
+                                </view></block></block>
+                </view>
+            </view>

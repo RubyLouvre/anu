@@ -1,0 +1,4 @@
+<view>
+            <view>查看store里面的数据</view>
+            <view>{{props.count}}</view>
+        </view>

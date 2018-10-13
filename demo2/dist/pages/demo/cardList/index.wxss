@@ -1,0 +1,30 @@
+page {
+  background: #fff;
+}
+.cardList {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+.cardList .wrapper {
+  width: 48%;
+  margin: 0 1%;
+  display: flex;
+  flex-direction: column;
+}
+.cardList .wrapper .item {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20rpx 10rpx;
+  border: 1px solid #e0dfdf;
+  border-radius: 5rpx;
+  box-shadow: 2px 2px 3px #f1f1f1, -2px -2px 3px #f1f1f1;
+  margin-bottom: 10rpx;
+}
+.cardList .wrapper .item image {
+  width: 100%;
+}
+.cardList .wrapper .item text {
+  font-size: 25rpx;
+  line-height: 30rpx;
+}

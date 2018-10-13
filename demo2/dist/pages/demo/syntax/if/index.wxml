@@ -1,0 +1,37 @@
+<block><block wx:if="{{state.condition1}}"><block><block wx:if="{{state.condition2}}"><view>
+                        <view>Condition1 active</view>
+                        <button bindtap="dispatchEvent" data-tap-uid="e1358" data-class-uid="c2757">
+                            Inactive Condition1
+                        </button>
+                        <view>Condition2 active</view>
+                        <button bindtap="dispatchEvent" data-tap-uid="e1776" data-class-uid="c2757">
+                            Inactive Condition2
+                        </button>
+                    </view></block><block wx:else="true"><view>
+                        <view>Condition1 active</view>
+                        <button bindtap="dispatchEvent" data-tap-uid="e2430" data-class-uid="c2757">
+                            Inactive Condition1
+                        </button>
+                        <view>Condition2 inactive</view>
+                        <button bindtap="dispatchEvent" data-tap-uid="e2852" data-class-uid="c2757">
+                            Active Condition2
+                        </button>
+                    </view></block></block></block><block wx:else="true"><block><block wx:if="{{state.condition2}}"><view>
+                        <view>Condition1 inactive</view>
+                        <button bindtap="dispatchEvent" data-tap-uid="e3608" data-class-uid="c2757">
+                            Active Condition1
+                        </button>
+                        <view>Condition2 active</view>
+                        <button bindtap="dispatchEvent" data-tap-uid="e4022" data-class-uid="c2757">
+                            Inactive Condition2
+                        </button>
+                    </view></block><block wx:else="true"><view>
+                        <view>Condition1 inactive</view>
+                        <button bindtap="dispatchEvent" data-tap-uid="e4680" data-class-uid="c2757">
+                            Active Condition1
+                        </button>
+                        <view>Condition2 inactive</view>
+                        <button bindtap="dispatchEvent" data-tap-uid="e5098" data-class-uid="c2757">
+                            Active Condition2
+                        </button>
+                    </view></block></block></block></block>

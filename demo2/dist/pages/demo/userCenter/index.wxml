@@ -1,0 +1,17 @@
+<view class="user-center">
+                <view class="user-information">
+                    <image src="https://s.qunarzz.com/wechatapp/common/images/my/unLogin.png" class="user-image" />
+                    <text class="user-name">授权登录</text>
+                </view>
+                <view bindtap="dispatchEvent" class="qunar-information" data-tap-uid="e4787" data-class-uid="c3493">
+                    <text>关注公众号</text>
+                    <view class="right-content">
+                        <text class="right-message">去关注</text>
+                        <image src="../../../assets/image/arrow.png" />
+                    </view>
+                </view>
+                <block wx:for="{{state.menu}}" wx:for-item="item" wx:for-index="index" wx:key="{{index}}"><view bindtap="dispatchEvent" class="menu-item" data-tap-uid="e5755" data-class-uid="c3493" data-key="{{index}}">
+                                <view class="{{'menu-item-title ' + (item.isArrow ? '' : 'high-light')}}">{{item.title}}</view>
+                                <block><block wx:if="{{item.isArrow}}"><image src="../../../assets/image/arrow.png" /></block><block wx:else="true">{{''}}</block></block>
+                            </view></block>
+            </view>

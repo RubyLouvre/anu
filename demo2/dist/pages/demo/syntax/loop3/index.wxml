@@ -1,0 +1,16 @@
+<view bindtap="dispatchEvent" class="loop3-container" data-tap-uid="e3689" data-class-uid="c4080">
+                <block wx:for="{{state.array1}}" wx:for-item="el" wx:for-index="i1906" wx:key="{{i1906}}"><view>
+                            <view class="index-item-1" style="{{props['style4185' + i1906] }}">
+                                {{el.name}}
+                            </view>
+                            <block wx:for="{{state.array2}}" wx:for-item="item" wx:for-index="i2223" wx:key="{{i2223}}"><view>
+                                        <view class="index-item-2" style="{{props['style4899' + i1906 + '-' + i2223] }}">
+                                            {{item.name}}
+                      =======
+                                        </view>
+                                        <block wx:for="{{state.array3}}" wx:for-item="key" wx:for-index="i2648" wx:key="name"><view class="index-item-3" style="{{props['style6013' + i1906 + '-' + i2223 + '-' + i2648] }}">
+                                                    {{key.name}}
+                                                </view></block>
+                                    </view></block>
+                        </view></block>
+            </view>

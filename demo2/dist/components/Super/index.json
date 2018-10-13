@@ -1,0 +1,6 @@
+{
+    "component": true,
+    "usingComponents": {
+        "anu-parent": "/components/Parent/index"
+    }
+}

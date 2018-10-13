@@ -1,0 +1,5 @@
+<view>
+            <view>请先安装@rematch/core redux react-redux</view>
+            <view>{{props.count}}</view>
+            <button bindtap="dispatchEvent" data-click-uid="e1396" data-class-uid="c1079">+1</button>
+        </view>

@@ -1,0 +1,6 @@
+{
+    "usingComponents": {
+        "anu-mousetracker": "/components/MouseTracker/index",
+        "anu-cursor": "/components/Cursor/index"
+    }
+}

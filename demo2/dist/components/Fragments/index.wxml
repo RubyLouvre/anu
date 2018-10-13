@@ -1,0 +1,7 @@
+<block>
+  <block wx:if="{{ renderUid == 'render888'  }}">
+    <view>
+		render props <anu-cursor></anu-cursor>
+    </view>
+  </block>
+</block>

@@ -1,0 +1,16 @@
+<view>
+                <view>测试循环中的事件，点击下方格子</view>
+                <view>
+					title:
+                    {{state.title}}
+                    {{'  key '}}
+                    {{state.key}}
+                </view>
+                <view class="grid-wrap">
+                    <block wx:for="{{state.trs}}" wx:for-item="item" wx:for-index="i954" wx:key="{{i954}}"><view>
+                                <block wx:for="{{item}}" wx:for-item="el" wx:for-index="i1090" wx:key="{{i1090}}"><view class="grid" bindtap="dispatchEvent" data-click-uid="e2471" data-class-uid="c1691" data-key="{{i954 + '-' + i1090}}">
+                                            <anu-fish></anu-fish>
+                                        </view></block>
+                            </view></block>
+                </view>
+            </view>

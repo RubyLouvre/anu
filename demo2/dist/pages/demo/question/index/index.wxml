@@ -1,0 +1,42 @@
+<view class="question">
+                <view class="nav-wrapper">
+                    <view bindtap="dispatchEvent" class="{{'nav-btn ' + (state.navBtnActiveIndex === 0 ? 'active' : '')}}" data-tap-uid="e3446" data-class-uid="c5996">我的问答</view>
+                    <view bindtap="dispatchEvent" class="{{'nav-btn ' + (state.navBtnActiveIndex === 1 ? 'active' : '')}}" data-tap-uid="e3742" data-class-uid="c5996">推荐</view>
+                    <view class="{{'nav-btn ' + (state.navBtnActiveIndex === 2 ? 'active' : '')}}">
+                        <text bindtap="dispatchEvent" data-tap-uid="e4242" data-class-uid="c5996">{{state.city}}</text>
+                        <image bindtap="dispatchEvent" class="open-icon" src="{{'../../../../assets/image/' + (state.navBtnActiveIndex === 2 ? 'open_select.png' : 'open.png')}}" data-tap-uid="e4430" data-class-uid="c5996" />
+                    </view>
+                    <view class="{{'switch-bar ' + (state.navBtnActiveIndex === 1 ? '' : state.navBtnActiveIndex === 0 ? 'first-choose' : 'third-choose')}}"></view>
+                </view>
+                <view class="content">
+                    <block><block wx:if="{{state.navBtnActiveIndex === 0}}"><view class="my-question-answer">
+                                    <view class="tool">
+                                        <text><block><block wx:if="{{state.isQuestion}}">{{'共有0个提问'}}</block><block wx:else="true">{{'共有0个回答'}}</block></block></text>
+                                        <view bindtap="dispatchEvent" class="switch-wrapper" data-tap-uid="e6025" data-class-uid="c5996">
+                                            <text><block><block wx:if="{{state.isQuestion}}">{{'切换至回答'}}</block><block wx:else="true">{{'切换至提问'}}</block></block></text>
+                                        </view>
+                                    </view>
+                                    <view class="no-data-prompt">
+                                        <image src="../../../../assets/image/order_none.png" />
+                                        <view class="message"><block><block wx:if="{{state.isQuestion}}">{{'您还没有发布过问题，去提问吧~'}}</block><block wx:else="true">{{'您还没有发布过回答，去回答吧~'}}</block></block></view>
+                                    </view>
+                                </view></block><block wx:else="true">{{''}}</block></block>
+                    <block><block wx:if="{{state.navBtnActiveIndex === 1 || state.navBtnActiveIndex === 2}}"><view class="all-question">
+                                    <block wx:for="{{state.data}}" wx:for-item="item" wx:for-index="index" wx:key="{{index}}"><view bindtap="dispatchEvent" class="question-item" data-tap-uid="e8320" data-class-uid="c5996" data-key="{{index}}">
+                                                    <block><block wx:if="{{item.isRemark}}"><view class="{{'remark ' + (item.remark === '最新' ? 'new' : item.remark === '置顶' ? 'stick' : 'hot')}}">{{item.remark}}</view></block><block wx:else="true">{{''}}</block></block>
+                                                    <view class="title">{{item.title}}</view>
+                                                    <view class="desc hide-text">{{item.desc}}</view>
+                                                    <view class="other-message">
+                                                        <view class="other-message-item">
+                                                            <image class="eye" src="../../../../assets/image/eye.png" />
+                                                            <text class="eye-text">{{item.seeNum}}</text>
+                                                        </view>
+                                                        <view class="other-message-item">
+                                                            <image src="../../../../assets/image/message.png" />
+                                                            <text>{{item.commentNum}}</text>
+                                                        </view>
+                                                    </view>
+                                                </view></block>
+                                </view></block><block wx:else="true">{{''}}</block></block>
+                </view>
+            </view>

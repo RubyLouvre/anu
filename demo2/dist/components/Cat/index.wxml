@@ -1,0 +1,1 @@
+<view>Cat[{{props.id}}]:{{props.content}}</view>

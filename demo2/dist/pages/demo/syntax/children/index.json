@@ -1,0 +1,5 @@
+{
+    "usingComponents": {
+        "anu-dialog": "/components/Dialog/index"
+    }
+}

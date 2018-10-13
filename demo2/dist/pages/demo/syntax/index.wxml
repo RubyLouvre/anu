@@ -1,0 +1,8 @@
+<view class="container">
+                <view class="page_hd">{{state.title}}</view>
+                <view class="page_bd">
+                    <view class="navigation">
+                        <block wx:for="{{state.pages}}" wx:for-item="page" wx:for-index="i3075" wx:key="{{i3075}}"><navigator open-type="navigate" class="item" hover-class="navigator-hover" url="{{page.url}}">{{page.title}}</navigator></block>
+                    </view>
+                </view>
+            </view>

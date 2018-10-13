@@ -8,7 +8,8 @@ export const Renderer = {
     mountOrder: 1,
     macrotasks: [],
     boundaries: [],
-    onUpdate: noop,
+    onBeforeRender: noop,
+    onAfterRender: noop,
     onDispose: noop,
     middleware(obj) {
         if (obj.begin && obj.end) {

@@ -1,0 +1,14 @@
+<view>
+                <view bindtap="dispatchEvent" data-tap-uid="e1895" data-class-uid="c1698">
+                    演示单重循环，点这里改变数组的个数
+                </view>
+                <view>
+                    <block wx:for="{{state.array}}" wx:for-item="el" wx:for-index="i1072" wx:key="name"><anu-dog></anu-dog></block>
+                </view>
+                <view>
+                    <block wx:for="{{state.array}}" wx:for-item="el" wx:for-index="i1250" wx:key="name"><anu-dog></anu-dog></block>
+                </view>
+                <view>
+                    <block wx:for="{{state.array}}" wx:for-item="el" wx:for-index="i1438" wx:key="name"><anu-dog></anu-dog></block>
+                </view>
+            </view>

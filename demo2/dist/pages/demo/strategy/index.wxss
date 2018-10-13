@@ -1,0 +1,65 @@
+page {
+  background-color: #fff;
+}
+.strategy {
+  padding: 25rpx;
+}
+.strategy .strategy-item {
+  position: relative;
+  margin-bottom: 30rpx;
+}
+.strategy .strategy-item:last-child {
+  margin-bottom: 0;
+}
+.strategy .strategy-item .big-image {
+  display: block;
+  width: 700rpx;
+  height: 350rpx;
+  border-radius: 5rpx;
+}
+.strategy .strategy-item .strategy-item-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 660rpx;
+  height: 290rpx;
+  padding: 30rpx 20rpx;
+  color: #fff;
+}
+.strategy .strategy-item .strategy-item-content .desc {
+  font-size: 26rpx;
+  letter-spacing: 1rpx;
+  margin-bottom: 10rpx;
+}
+.strategy .strategy-item .strategy-item-content .date {
+  font-size: 22rpx;
+}
+.strategy .strategy-item .strategy-item-content .user-wrapper {
+  position: absolute;
+  bottom: 40rpx;
+  left: 20rpx;
+  font-size: 0;
+}
+.strategy .strategy-item .strategy-item-content .user-wrapper .user-image {
+  display: inline-block;
+  margin-right: 15rpx;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 30rpx;
+  background-color: #fff;
+  vertical-align: top;
+}
+.strategy .strategy-item .strategy-item-content .user-wrapper .user-image image {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50rpx;
+  height: 50rpx;
+  border-radius: 25rpx;
+}
+.strategy .strategy-item .strategy-item-content .user-wrapper .user-name {
+  display: inline-block;
+  line-height: 60rpx;
+  font-size: 26rpx;
+}

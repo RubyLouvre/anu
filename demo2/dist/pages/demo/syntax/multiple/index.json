@@ -1,0 +1,5 @@
+{
+    "usingComponents": {
+        "anu-super": "/components/Super/index"
+    }
+}

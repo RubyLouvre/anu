@@ -1,0 +1,4 @@
+<view class="super" style="width: 280rpx;height: 280rpx;border: 1rpx solid rgb(97, 95, 95);">
+	<view class="title">最外层组件</view>
+	<anu-parent></anu-parent>
+</view>

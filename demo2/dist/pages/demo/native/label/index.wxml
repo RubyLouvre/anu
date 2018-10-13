@@ -1,0 +1,32 @@
+<view class="container">
+                {{a}}
+                <view class="section section_gap">
+                    <view class="section__title">表单组件在label内</view>
+                    <checkbox-group class="group" bindchange="dispatchEvent" data-change-uid="e4444" data-class-uid="c5384">
+                        <block wx:for="{{state.checkboxItems}}" wx:for-item="item" wx:for-index="i2285" wx:key="{{i2285}}"><view class="label-1">
+                                    <label>
+                                        <checkbox hidden value="{{item.name}}" checked="{{item.checked}}" />
+                                        <view class="label-1__icon">
+                                            <view class="label-1__icon-checked" style="{{props['style6223' + i2285] }}" />
+                                        </view>
+                                        <text class="label-1__text">                                            {{item.value}}                                        </text>
+                                    </label>
+                                </view></block>
+                    </checkbox-group>
+                </view>
+
+                <view class="section section_gap">
+                    <view class="section__title">label用for标识表单组件</view>
+                    <radio-group class="group" bindchange="dispatchEvent" data-change-uid="e7797" data-class-uid="c5384">
+                        <block wx:for="{{state.radioItems}}" wx:for-item="item" wx:for-index="i3939" wx:key="{{i3939}}"><view class="label-2">
+                                    <radio id="{{item.name}}" hidden value="{{item.name}}" checked="{{item.checked}}" />
+                                    <view class="label-2__icon">
+                                        <view class="label-2__icon-checked" style="{{props['style9349' + i3939] }}" />
+                                    </view>
+                                    <label class="label-2__text" for="{{item.name}}">
+                                        <text>{{item.name}}</text>
+                                    </label>
+                                </view></block>
+                    </radio-group>
+                </view>
+            </view>

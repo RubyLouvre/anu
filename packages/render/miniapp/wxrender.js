@@ -45,12 +45,12 @@ export let Renderer = createRenderer({
 	updateContent(fiber) {
 		fiber.stateNode.props = fiber.props;
 	},
-	onUpdate: function onBeforeRender(fiber) {
+	onBeforeRender: function (fiber) {
 		var type = fiber.type;
 		if (type.reactInstances) {
-            var name = fiber.name;
-            var instance = fiber.stateNode;
-            var noMount = !fiber.hasMounted;
+			var name = fiber.name;
+			var noMount = !fiber.hasMounted;
+			var instance = fiber.stateNode;
 			if (!instance.instanceUid) {
 				var uuid = 'i' + getUUID();
 				instance.instanceUid = uuid;
@@ -60,28 +60,30 @@ export let Renderer = createRenderer({
 			if (type.wxInstances) {
 				//只处理通用组件
 				if (type.wxInstances.length && !instance.wx) {
-					var wx = (instance.wx = type.wxInstances.shift());
+					var wx = instance.wx = type.wxInstances.shift();
 					wx.reactInstance = instance;
-					console.log('onBeforeRender时更新', name);
-					updateView(instance);
+					console.log('onBeforeRender时更新', name, instance.props);
+				//	updateView(instance);
 				}
 				if (!instance.wx) {
 					console.log('onBeforeRender时更新', name, '没有wx');
 					type.reactInstances.push(instance);
 				}
 			}
-			if (instance.wx) {
-				updateView(instance);
-            }
-            if (noMount && instance.componentDidMount) {
-                delayMounts.push({
-                    instance: instance,
-                    fn: instance.componentDidMount,
-                });
-                instance.componentDidMount = noop;
-            }
 		}
-	
+		if (noMount && instance.componentDidMount) {
+			delayMounts.push({
+				instance: instance,
+				fn: instance.componentDidMount
+			});
+			instance.componentDidMount = noop;
+		}
+	},
+	onAfterRender: function (fiber) {
+		var instance = fiber.stateNode;
+		if (instance.wx) {
+			updateView(instance);
+		}
 	},
 	onDispose(fiber) {
 		var instance = fiber.stateNode;
