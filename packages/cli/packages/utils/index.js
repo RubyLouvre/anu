@@ -109,6 +109,7 @@ let utils = {
         }
         return false;
     },
+    
     createUUID(astPath) {
         return astPath.node.start + astPath.node.end;
     },
@@ -170,6 +171,15 @@ let utils = {
     isNpm(name) {
         if (!name || typeof name !== 'string') return false;
         return !/^\/|\./.test(name);
+    },
+    createRegisterStatement(className, path, isPage) {
+        var templateString = isPage
+            ? 'Page(React.registerPage(className,astPath))'
+            : 'Component(React.registerComponent(className,astPath))';
+        return template(templateString)({
+            className: t.identifier(className),
+            astPath: t.stringLiteral(path)
+        });
     },
     isBuildInLibs(name) {
         let libs = new Set(require('repl')._builtinLibs);
