@@ -49,26 +49,18 @@ module.exports = {
             }
         }
         if (modules.componentType === 'Page') {
-            // 动态生成Page组件的Page(React.toPage(className,astPath))调用
-            // Page(React.toPage(PPP, "pages/demo/stateless/aaa"));
-            var createPage = template('Page(React.toPage(className,astPath))')(
-                {
-                    className: t.identifier(modules.className),
-                    astPath: t.stringLiteral(
-                        modules.current
-                            .replace(/.+pages/, 'pages')
-                            .replace(/\.js$/, '')
-                    )
-                }
+            modules.createPage = utils.createRegisterStatement(
+                modules.className,
+                modules.current
+                    .replace(/.+pages/, 'pages')
+                    .replace(/\.js$/, ''),
+                true
             );
-            modules.createPage = createPage;
-            /*  var p = astPath;
-            //好像不能上升到根节点Program，只能上升到VariableDeclaration
-            while (p.type != 'VariableDeclaration') {
-                p = p.parentPath;
-            }
-            p.insertAfter(createPage);
-            */
+        }else if (modules.componentType === 'Component') {
+            modules.createPage = utils.createRegisterStatement(
+                modules.className,
+                modules.className
+            );
         }
     }
 };
