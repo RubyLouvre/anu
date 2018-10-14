@@ -6,6 +6,7 @@ const attrValueHelper = require('./attrValue');
 const attrNameHelper = require('./attrName');
 const logicHelper = require('./logic');
 const utils = require('../utils');
+
 //const chineseHelper = require('./chinese');
 const slotHelper = require('./slot');
 
@@ -118,15 +119,10 @@ var visitor = {
                 attrValueHelper(astPath);
             } else if (
                 expr.type === 'MemberExpression' &&
-                /props\.children/.test(generate(expr).code)
+                /props\.children\s*$/.test(generate(expr).code)
             ) {
                 var attributes = [];
                 var template = utils.createElement('slot', attributes, []);
-                /*  attributes.push(
-                    utils.createAttribute('is', '{{props.fragmentUid}}'),
-                    utils.createAttribute('data', '{{...props.fragmentData}}')
-                );
-                */
                 astPath.replaceWith(template);
                 //  console.warn("小程序暂时不支持{this.props.children}");
             } else {
