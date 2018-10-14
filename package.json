@@ -103,6 +103,7 @@
   },
   "dependencies": {
     "@rematch/core": "^1.0.0-alpha.9",
+    "html-minifier": "^3.5.20",
     "semver": "^5.5.1"
   },
   "mpreact": {
