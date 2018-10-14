@@ -155,7 +155,7 @@ export let DOMRenderer = createRenderer({
             backup;
         do {
             var inst = fiber.stateNode;
-            if (inst.getChildContext) {
+            if (inst && inst.getChildContext) {
                 backup = mergeContext(container, inst.getChildContext());
                 break;
             } else {
