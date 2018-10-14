@@ -42,33 +42,79 @@ exports.exit = function(astPath, type, componentName, modules) {
 			jsx = needWrap ? `<block>{${jsx}}</block>` : jsx;
 
 			var wxml = wxmlHelper(jsx, modules);
-
 			if (needWrap) {
 				wxml = wxml.slice(7, -9); //去掉<block> </block>;
 			} else {
 				wxml = wxml.slice(0, -1); //去掉最后的;
 			}
-			if (modules.componentType === 'Component') {
-				//  wxml = `<template name="${componentName}">${wxml}</template>`;
-				deps[componentName] = deps[componentName] || {
-					set: new Set(),
-				};
-				if (type == 'renderProps') {
-					wxml = `<block wx:if="{{renderUid === '${componentName}'}}">\n${minify(wxml, {
-                        collapseWhitespace: true
-                    })}\n</block>`;
-				}
-			}
-
-			//如果这个JSX的主体是一个组件，那么它肯定在deps里面
-			var dep = deps[componentName];
 			//添加import语句产生的显式依赖
-
 			for (var i in modules.importComponents) {
 				if (modules.usedComponents[i]) {
 					wxml = `<import src="${modules.importComponents[i].source}.wxml" />\n${wxml}`;
 				}
 			}
+			if (type == 'RenderProps') {
+				var dep =
+					deps['renderProps'] ||
+					(deps['renderProps'] = {
+						json: {
+							component: true,
+							usingComponents: {},
+						},
+						wxml: '',
+					});
+				var jsText = `
+                Component({
+                    properties: {
+                        renderUid: String,
+                        props: Object,
+                        state: Object,
+                        context: Object
+                    },
+                    data: {},
+                    lifetimes: {
+                        // 生命周期函数，可以为函数，或一个在methods段中定义的方法名
+                        attached: function (e) { 
+                        },
+                        moved: function () { },
+                        detached: function () { },
+                      },
+                    
+                })`
+                console.log(modules.sourcePath, "!!!")
+				queue.push({
+					type: 'js',
+					path: modules.sourcePath.replace(/\/src\//, '/dist/').replace(/\.js$/, '.js'),
+					code: jsText.trim(),
+				});
+				utils.emit('build');
+				//生成render props的模板
+				wxml =
+					dep.wxml +
+					`<block wx:if="{{renderUid === '${componentName}'}}">\n${minify(wxml, {
+						collapseWhitespace: true,
+					})}\n</block>`;
+				dep.wxml = wxml;
+				//生成render props的json
+				for (var i in modules.importComponents) {
+					dep.json.usingComponents['anu-' + i.toLowerCase()] = '/components/' + i + '/index';
+				}
+				queue.push({
+					type: 'json',
+					path: modules.sourcePath.replace(/\/src\//, '/dist/').replace(/\.js$/, '.json'),
+					code: JSON.stringify(dep.json, null, 4), //prettifyXml(wxml, { indent: 2 })
+				});
+				utils.emit('build');
+			} else if (modules.componentType === 'Component') {
+				//  wxml = `<template name="${componentName}">${wxml}</template>`;
+				deps[componentName] = deps[componentName] || {
+					set: new Set(),
+				};
+			}
+
+			//如果这个JSX的主体是一个组件，那么它肯定在deps里面
+			dep = deps[componentName];
+
 			var enqueueData = {
 				type: 'wxml',
 				path: modules.sourcePath.replace(/\/src\//, '/dist/').replace(/\.js$/, '.wxml'),

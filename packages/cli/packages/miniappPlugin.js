@@ -263,10 +263,10 @@ module.exports = {
 					var json = modules.config;
 					if (!json.usingComponents) {
 						json.usingComponents = {
-							'anu-render': '/components/Fragments/index',
+							'anu-render': '/components/RenderProps/index',
 						};
 					} else {
-						json.usingComponents['anu-render'] = '/components/Fragments/index';
+						json.usingComponents['anu-render'] = '/components/RenderProps/index';
 					}
 					var index = arr.indexOf(d.node);
 					if (index !== -1) {
@@ -469,7 +469,7 @@ module.exports = {
 				let subComponents = {};
 				modules.is.forEach(function(a) {
 					subComponents[a] = path.join('..', a, 'index');
-				});
+                });
                 /*
                 var componentName = astPath.parentPath.componentName;
 				var dep = deps[componentName];
@@ -484,11 +484,12 @@ module.exports = {
 				helpers.render.exit(
 					{
 						node: attrValue.expression,
-					},
-					'renderProps',
-					fragmentUid,
+                    },
+                    
+                    'RenderProps',
+                    fragmentUid,
 					{
-						sourcePath: path.join(process.cwd(), 'src', 'components', 'Fragments', 'index.js'),
+						sourcePath: path.join(process.cwd(), 'src', 'components', 'RenderProps', 'index.js'),
 						componentType: 'Component',
 						importComponents: subComponents,
 						usedComponents: modules.usedComponents,

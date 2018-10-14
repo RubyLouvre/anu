@@ -1,5 +1,4 @@
-
-                Component({
+Component({
                     properties: {
                         renderUid: String,
                         props: Object,
@@ -16,4 +15,3 @@
                       },
                     
                 })
-                

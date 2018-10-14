@@ -1,6 +1,6 @@
 {
     "component": true,
     "usingComponents": {
-        "anu-cursor": "/component/Cursor/index"
+        "anu-cursor": "/components/Cursor/index"
     }
 }

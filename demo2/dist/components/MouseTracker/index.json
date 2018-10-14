@@ -1,6 +1,6 @@
 {
     "usingComponents": {
-        "anu-render": "/components/Fragments/index"
+        "anu-render": "/components/RenderProps/index"
     },
     "component": true
 }
