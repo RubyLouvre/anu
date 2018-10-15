@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-12
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-15
  * IE9+
  */
 
@@ -93,6 +93,10 @@ function miniCreateClass(ctor, superClass, methods, statics) {
         extend(Ctor, statics);
     }
     return Ctor;
+}
+var lowerCache = {};
+function toLowerCase(s) {
+    return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
 function isFn(obj) {
     return __type.call(obj) === '[object Function]';
@@ -1011,7 +1015,7 @@ var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
         var target = e.currentTarget;
         var dataset = target.dataset || {};
-        var eventUid = dataset[e.type + 'Uid'];
+        var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
         var classUid = dataset.classUid;
         var componentClass = classCached[classUid];
         var instanceUid = dataset.instanceUid;
@@ -2417,7 +2421,6 @@ function toPage(PageClass, path, testObject) {
       }
       var anuSetState = pageInstance.setState;
       var anuForceUpdate = pageInstance.forceUpdate;
-      var canSetData = false;
       function updatePage(pageInst) {
         var data = pageInst.wxData;
         data.state = pageViewInstance.state;
@@ -2433,17 +2436,11 @@ function toPage(PageClass, path, testObject) {
           cbIndex = 0;
         }
         var pageInst = this.$pageInst || this;
-        if (canSetData === false) {
-          canSetData = true;
-        }
         var cb = arguments[cbIndex];
         var args = Array.prototype.slice.call(arguments);
         args[cbIndex] = function () {
           cb && cb.call(this);
-          if (canSetData) {
-            canSetData = false;
-            updatePage(pageInst);
-          }
+          updatePage(pageInst);
         };
         updateMethod.apply(this, args);
       };
