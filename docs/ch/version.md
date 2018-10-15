@@ -1,3 +1,13 @@
+## 1.4.5(2018.10.15)
+
+1. React.createContext 无法通过 Provider 传入数据
+2. 修复ReactIE unstable_renderSubtreeIntoContainer BUG
+
+## 1.4.4(2018.10.1)
+
+1. 修改 getWinodw BUG
+
+
 ## 1.4.3(2018.06.14)
 1. miniCreateClass在老式IE下取不到名字默认使用IEComponent, 
 2. 修复createClass没有继续mixin的BUG 
