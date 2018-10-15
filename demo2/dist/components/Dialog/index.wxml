@@ -1,4 +1,0 @@
-<view style="background:#f3f3f3;border:2px solid #dadada;margin:3px;">
-            <view><slot></slot></view>
-            <anu-count></anu-count>
-        </view>

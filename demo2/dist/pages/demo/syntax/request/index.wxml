@@ -1,9 +1,0 @@
-<view class="city-select">
-                <view>就是使用React.api.request,对wx .request做了并发处理</view>
-                <view>https://developers.weixin.qq.com/miniprogram/dev/api/network/request/wx.request.html</view>
-                <block wx:for="{{state.data}}" wx:for-item="el" wx:for-index="i1201" wx:key="{{i1201}}"><view>{{el.title}}-------
-                        <view>
-                            <block wx:for="{{el.data}}" wx:for-item="elem" wx:for-index="i1341" wx:key="{{i1341}}"><view>{{elem}}</view></block>
-                        </view>
-                    </view></block>
-            </view>

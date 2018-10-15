@@ -1,1 +1,0 @@
-<view>Fish[{{props.id}}]:{{props.content}}</view>

@@ -7,8 +7,7 @@ const path = require('path');
 const utils = require('../utils');
 const minify = require('html-minifier').minify;
 const config = require('../config');
-console.log(config)
-var xmlExt = config[config.buildType].xmlExt;
+const xmlExt = config[config.buildType].xmlExt;
 /**
  * 将return后面的内容进行转换，再变成wxml
  *

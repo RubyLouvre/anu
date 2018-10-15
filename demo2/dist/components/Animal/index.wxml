@@ -1,4 +1,0 @@
-<view style="{{props['style1362'] }}">
-                名字：{{state.name}} 年龄：{{state.age}} 岁
-                <button catchtap="dispatchEvent" data-tap-uid="e1602" data-class-uid="c901">换一个年龄</button>
-            </view>
