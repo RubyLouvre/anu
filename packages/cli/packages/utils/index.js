@@ -21,10 +21,10 @@ process.on('unhandledRejection', error => {
 });
 let utils = {
     on() {
-        Event.on.apply(this, arguments);
+        Event.on.apply(global, arguments);
     },
     emit() {
-        Event.emit.apply(this, arguments);
+        Event.emit.apply(global, arguments);
     },
     createChineseHack: require('./chinese'),
     getNodeVersion() {
@@ -336,7 +336,9 @@ let utils = {
                     id = `./${id}`;
                 }
                 let importKey = `@import '${id}';`;
-                componentsStyle.push(importKey);
+                if (!componentsStyle.includes(importKey)) {
+                    componentsStyle.push(importKey);
+                }
             } else if (/app/.test(id)) {
                 appStyleId = id;
             } else {

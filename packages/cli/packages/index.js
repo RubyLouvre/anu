@@ -72,15 +72,11 @@ class Parser {
                     include: 'node_modules/**'
                 }),
                 rollupLess({
-                    output: function(code) {
-                        return code;
+                    output: function() {
+                        return '';
                     }
                 }),
-                rollupSass({
-                    output: function(code) {
-                        return code;
-                    }
-                }),
+                rollupSass(),
                 rbabel({
                     babelrc: false,
                     runtimeHelpers: true,
