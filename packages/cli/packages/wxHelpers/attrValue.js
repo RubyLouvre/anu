@@ -88,7 +88,7 @@ module.exports = function(astPath) {
                     }
                 },
             });
-            replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
+            replaceWithExpr(astPath, attrValue.replace(/\s*this\./, ''));
             break;
         default:
             break;
