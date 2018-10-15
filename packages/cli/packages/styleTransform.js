@@ -5,6 +5,7 @@ const config = require('./config');
 const utils = require('./utils');
 const validateStyle = require('./validateStyle');
 
+
 const isLess = (filePath)=>{
     return /\.less$/.test(filePath);
 };
@@ -50,11 +51,12 @@ const compileLess = (filePath, originalCode)=>{
     
 };
 
-const renderSass = (filePath)=>{
+const renderSass = (filePath, originalCode)=>{
     let sass = require(path.join(cwd, 'node_modules', 'node-sass'));
     sass.render(
         {
-            file: filePath,
+            data: originalCode,
+            includePaths: [ path.join(cwd, 'src') ]
         },
         (err, res) => {
             if (err) throw err;
@@ -68,13 +70,13 @@ const renderSass = (filePath)=>{
         }
     );
 };
-const compileSass = (filePath)=>{
+const compileSass = (filePath, originalCode)=>{
     try {
         require( path.join(cwd, 'node_modules', 'node-sass', 'package.json') );
     } catch (err) {
         utils.installer('node-sass')
     }
-    renderSass(filePath);
+    renderSass(filePath, originalCode);
 };
 
 
@@ -83,7 +85,7 @@ module.exports = (data)=>{
     if (isLess(id) || isCss(id)){
         compileLess(id, originalCode);
     } else if (isSass(id)){
-        compileSass(id);
+        compileSass(id, originalCode);
     }
 
 };
