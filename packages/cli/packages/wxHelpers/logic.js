@@ -48,7 +48,6 @@ function logic(expr, modules) {
         return wrapText(expr);
     }
 }
-
 // 处理 test ? consequent: alternate 或 test && consequent
 function condition(test, consequent, alternate, modules) {
     var ifNode = createElement(
