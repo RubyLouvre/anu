@@ -56,7 +56,7 @@ module.exports = {
                     .replace(/\.js$/, ''),
                 true
             );
-        }else if (modules.componentType === 'Component') {
+        } else if (modules.componentType === 'Component') {
             modules.createPage = utils.createRegisterStatement(
                 modules.className,
                 modules.className
