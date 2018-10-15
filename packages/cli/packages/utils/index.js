@@ -21,10 +21,10 @@ process.on('unhandledRejection', error => {
 });
 let utils = {
     on() {
-        Event.on.apply(this, arguments);
+        Event.on.apply(global, arguments);
     },
     emit() {
-        Event.emit.apply(this, arguments);
+        Event.emit.apply(global, arguments);
     },
     createChineseHack: require('./chinese'),
     getNodeVersion() {
