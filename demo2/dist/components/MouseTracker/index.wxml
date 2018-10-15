@@ -1,5 +1,0 @@
-<view bindtap="dispatchEvent" style="{{props['style807'] }}" data-click-uid="e868" data-class-uid="c691">
-                <view>随机点击页面!</view>
-                <view>The current mouse position is ({{state.x}}, {{state.y}})</view>
-                <view><anu-render renderUid="{{props.renderUid}}"></anu-render></view>
-            </view>

@@ -1,6 +1,0 @@
-{
-    "usingComponents": {
-        "anu-render": "/components/RenderProps/index"
-    },
-    "component": true
-}

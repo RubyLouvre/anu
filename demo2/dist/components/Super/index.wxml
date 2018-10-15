@@ -1,4 +1,0 @@
-<view class="super">
-				<view class="title">最外层组件</view>
-				<anu-parent></anu-parent>
-			</view>

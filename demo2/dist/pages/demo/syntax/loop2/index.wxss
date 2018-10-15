@@ -1,6 +1,0 @@
-.grid {
-  display: inline-block;
-  width: 230rpx;
-  height: 150rpx;
-  border: 1rpx solid grey;
-}
