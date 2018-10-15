@@ -4,7 +4,9 @@ const t = require('babel-types');
 const generate = require('babel-generator').default;
 const attrValueHelper = require('./attrValue');
 const attrNameHelper = require('./attrName');
-const logicHelper = require('./logic');
+const config = require('../config');
+const logicSrc = '../'+config.buildType +'Helpers/logic';
+const logicHelper = require(logicSrc);
 const utils = require('../utils');
 
 //const chineseHelper = require('./chinese');
@@ -43,24 +45,31 @@ var visitor = {
             var openTag = astPath.node.name;
             if (
                 openTag.type === 'JSXMemberExpression' &&
-                openTag.object.name === 'React' ){
-                if ( openTag.property.name === 'toRenderProps'){
+                openTag.object.name === 'React'
+            ) {
+                if (openTag.property.name === 'toRenderProps') {
                     var attributes = [];
                     //实现render props;
-                    var template = utils.createElement('anu-render', attributes, []);
+                    var template = utils.createElement(
+                        'anu-render',
+                        attributes,
+                        []
+                    );
                     attributes.push(
-                        utils.createAttribute('renderUid', '{{props.renderUid}}'),
+                        utils.createAttribute(
+                            'renderUid',
+                            '{{props.renderUid}}'
+                        )
                     );
                     var children = astPath.parentPath.parentPath.node.children;
                     //去掉后面的{{this.props.render()}}
                     var i = children.indexOf(astPath.parentPath.node);
-                    children.splice(i+1, 1);
+                    children.splice(i + 1, 1);
                     astPath.parentPath.replaceWith(template);
-                    
-                } else if (openTag.property.name === 'useComponent'){
+                } else if (openTag.property.name === 'useComponent') {
                     var modules = utils.getAnu(state);
-                    var  is;
-                       
+                    var is;
+
                     astPath.node.attributes.forEach(function(el) {
                         var attrName = el.name.name;
                         var attrValue = el.value.value;
@@ -74,20 +83,23 @@ var visitor = {
                                 modules,
                                 wxml
                             );
-                        } if (attrName === 'is') {
-                            is = 'anu-'+attrValue.slice(1,-1).toLowerCase();
-                        } 
+                        }
+                        if (attrName === 'is') {
+                            is = 'anu-' + attrValue.slice(1, -1).toLowerCase();
+                        }
                     });
                     attributes = [];
-                   // console.log( astPath.parentPath.node.children, "children")
-                    template = utils.createElement(is, attributes, astPath.parentPath.node.children);
+                    // console.log( astPath.parentPath.node.children, "children")
+                    template = utils.createElement(
+                        is,
+                        attributes,
+                        astPath.parentPath.node.children
+                    );
                     //将组件变成template标签
-                 
+
                     astPath.parentPath.replaceWith(template);
                 }
-
             }
-            
         }
     },
     JSXAttribute(astPath, state) {

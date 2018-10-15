@@ -1,1 +1,1 @@
-module.exports = require('../wxHelpers/render');
+module.exports = require('../wxHelpers/render');

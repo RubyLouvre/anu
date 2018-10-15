@@ -174,6 +174,7 @@ let utils = {
         var templateString = isPage
             ? 'Page(React.registerPage(className,astPath))'
             : 'Component(React.registerComponent(className,astPath))';
+ 
         return template(templateString)({
             className: t.identifier(className),
             astPath: t.stringLiteral(path)

@@ -10,16 +10,11 @@ module.exports = function createChineseHack() {
             let valueNode = astPath.node.value;
             let target;
             if (valueNode) {
-                if (valueNode.type === 'StringLiteral') {
-                    // placeholder="中文"
-                    target = valueNode;
-                } else if (
-                    valueNode.type === 'JSXExpressionContainer' &&
-                    valueNode.expression.type === 'StringLiteral'
-                ) {
-                    // placeholder={"中文"}
-                    target = valueNode.expression;
-                }
+                 astPath.traverse({
+                    StringLiteral(astPath) {
+                        target = astPath.node;
+                    }
+                });
                 if (target) {
                     //如果本来就是汉字
                     if (rcn.test(target.value)) {
