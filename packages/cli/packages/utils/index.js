@@ -336,7 +336,9 @@ let utils = {
                     id = `./${id}`;
                 }
                 let importKey = `@import '${id}';`;
-                componentsStyle.push(importKey);
+                if (!componentsStyle.includes(importKey)) {
+                    componentsStyle.push(importKey);
+                }
             } else if (/app/.test(id)) {
                 appStyleId = id;
             } else {
