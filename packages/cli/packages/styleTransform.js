@@ -55,8 +55,7 @@ const renderSass = (filePath, originalCode)=>{
     let sass = require(path.join(cwd, 'node_modules', 'node-sass'));
     sass.render(
         {
-            data: originalCode,
-            includePaths: [ path.join(cwd, 'src') ]
+            file: filePath
         },
         (err, res) => {
             if (err) throw err;
