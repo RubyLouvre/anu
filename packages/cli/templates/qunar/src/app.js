@@ -54,7 +54,7 @@ import './pages/demo/cardList/index';
 import './pages/demo/citySelect/index';
 
 import './app.less';
-import store from './store/index';
+//import store from './store/index';
 
 class Demo extends React.Component {
     config = {
@@ -106,6 +106,6 @@ class Demo extends React.Component {
 }
 //这样写相当于为每一个页面组件的外面都加上一个<Provider />，如果你想在页面上用到store里的数据，
 //需要用react-redux的connect方法包一下，详见pages/demo/syntax/redux
-React.applyAppStore(store);
+//React.applyAppStore(store);
 // eslint-disable-next-line
-App(new Demo());
+export default App(new Demo());
