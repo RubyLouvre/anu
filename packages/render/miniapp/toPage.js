@@ -132,10 +132,11 @@ export function toPage(PageClass, path, testObject) {
           var args = Array.prototype.slice.call(arguments);
           args[cbIndex] = function() {
             cb && cb.call(this);
-            if (canSetData) {
+            // setState 异步不执行
+            // if (canSetData) {
               canSetData = false;
               updatePage(pageInst);
-            }
+            // }
           };
           updateMethod.apply(this, args);
         };
