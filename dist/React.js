@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-10-12
+ * by 司徒正美 Copyright 2018-10-15
  * IE9+
  */
 
@@ -2982,7 +2982,7 @@
                 backup = void 0;
             do {
                 var inst = fiber.stateNode;
-                if (inst.getChildContext) {
+                if (inst && inst.getChildContext) {
                     backup = mergeContext(container, inst.getChildContext());
                     break;
                 } else {

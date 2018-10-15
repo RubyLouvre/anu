@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-10-12
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-10-15
  */
 
 (function (global, factory) {
@@ -2982,7 +2982,7 @@
                 backup = void 0;
             do {
                 var inst = fiber.stateNode;
-                if (inst.getChildContext) {
+                if (inst && inst.getChildContext) {
                     backup = mergeContext(container, inst.getChildContext());
                     break;
                 } else {

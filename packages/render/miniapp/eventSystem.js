@@ -1,5 +1,5 @@
-import { returnFalse } from 'react-core/util';
-import { classCached, toLowerCase } from './utils';
+import { returnFalse , toLowerCase} from 'react-core/util';
+import { classCached } from './utils';
 import { Renderer } from 'react-core/createRenderer';
 
 export var eventSystem = {
