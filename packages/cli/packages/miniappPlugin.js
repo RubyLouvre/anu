@@ -438,6 +438,20 @@ module.exports = {
             let attrName = astPath.node.name.name;
             let attrValue = astPath.node.value;
             let parentPath = astPath.parentPath;
+            let modules = utils.getAnu(state);
+
+            let srcValue = attrValue && attrValue.value;
+            //处理静态资源@assets/xxx.png别名
+            if (attrName === 'src' && srcValue && /^(@assets)/.test(srcValue) ) {
+                let realAssetsPath = path.join(process.cwd(), srcValue.replace(/@/, ''));
+                let relativePath = path.relative(
+                    path.dirname(modules.sourcePath),
+                    realAssetsPath
+                );
+                astPath.node.value.value = relativePath;
+            }
+
+
             if (t.isJSXExpressionContainer(attrValue)) {
                 let modules = utils.getAnu(state);
                 let attrs = parentPath.node.attributes;
