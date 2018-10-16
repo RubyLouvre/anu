@@ -220,9 +220,9 @@ module.exports = {
                     );
                     break;
             }
+            
         }
     },
-
     ClassProperty: {
         exit(astPath, state) {
             let key = astPath.node.key.name;

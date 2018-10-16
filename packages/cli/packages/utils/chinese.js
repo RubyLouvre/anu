@@ -36,14 +36,11 @@ module.exports = function createChineseHack() {
                 }
             }
         },
-        createUnicode(){
+        createUnicode() {
             this.unicodeNumber = Math.random()
                 .toString()
                 .slice(-10);
-            this.unicodeMather = RegExp(
-                this.unicodeNumber,
-                'g'
-            );
+            this.unicodeMather = RegExp(this.unicodeNumber, 'g');
         },
         unicodeNumber: 0,
         unicodeArray: [],

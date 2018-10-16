@@ -13,7 +13,7 @@ import {
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 import { classCached } from './utils';
 import { injectAPIs } from './api';
-import { eventSystem } from './eventSystem';
+import { eventSystem, webview } from './eventSystem';
 import { Renderer } from './wxrender';
 import { toStyle } from './toStyle';
 import { useComponent, registerComponent } from './registerComponent';
@@ -31,7 +31,7 @@ let { render } = Renderer;
 React = win.React =  {
     //平台相关API
     eventSystem,
-
+    webview,
     findDOMNode: function() {
         console.log('小程序不支持findDOMNode');
     },

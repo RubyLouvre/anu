@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-10-13
+ * by 司徒正美 Copyright 2018-10-16
  * IE9+
  */
 
@@ -2984,7 +2984,7 @@
                 backup = void 0;
             do {
                 var inst = fiber.stateNode;
-                if (inst.getChildContext) {
+                if (inst && inst.getChildContext) {
                     backup = mergeContext(container, inst.getChildContext());
                     break;
                 } else {
@@ -3044,7 +3044,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: "1.4.7",
+            version: "1.4.8",
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,

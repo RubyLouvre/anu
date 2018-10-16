@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-13
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-16
  * IE9+
  */
 
@@ -1039,6 +1039,12 @@ function injectAPIs(ReactWX, facade, override) {
 
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
+        if (e.type == 'message') {
+            if (webview.instance && webview.cb) {
+                webview.cb.call(webview.instance, e);
+            }
+            return;
+        }
         var target = e.currentTarget;
         var dataset = target.dataset || {};
         var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
@@ -1069,6 +1075,7 @@ var eventSystem = {
         }
     }
 };
+var webview = {};
 function createEvent(e, target) {
     var event = {};
     if (e.detail) {
@@ -2410,53 +2417,68 @@ function toStyle(obj, props, key) {
 
 var registerComponents = {};
 function useComponent(props) {
-	var is = props.is;
-	var clazz = registerComponents[is];
-	delete props.is;
-	var args = [].slice.call(arguments, 2);
-	args.unshift(clazz, props);
-	console.log('使用组件', is);
-	return createElement.apply(null, args);
+    var is = props.is;
+    var clazz = registerComponents[is];
+    delete props.is;
+    var args = [].slice.call(arguments, 2);
+    args.unshift(clazz, props);
+    console.log('使用组件', is);
+    return createElement.apply(null, args);
 }
 function registerComponent(type, name) {
-	registerComponents[name] = type;
-	var reactInstances = type.reactInstances = [];
-	var wxInstances = type.wxInstances = [];
-	console.log('注册', name, '组件');
-	return {
-		data: {
-			props: {},
-			state: {},
-			context: {}
-		},
-		methods: {
-			dispatchEvent: eventSystem.dispatchEvent
-		},
-		lifetimes: {
-			created: function created() {
-				var instance = reactInstances.shift();
-				if (instance) {
-					console.log('created时为', name, '添加wx');
-					instance.wx = this;
-					this.reactInstance = instance;
-				} else {
-					console.log('created时为', name, '没有对应react实例');
-					wxInstances.push(this);
-				}
-			},
-			attached: function attached() {
-				if (this.reactInstance) {
-					updateMiniApp(this.reactInstance);
-					console.log('attached时更新', name);
-				} else {
-					console.log('attached时无法更新', name);
-				}
-			},
-			detached: function detached() {
-				this.reactInstance = null;
-			}
-		}
-	};
+    registerComponents[name] = type;
+    var reactInstances = type.reactInstances = [];
+    var wxInstances = type.wxInstances = [];
+    console.log('注册', name, '组件');
+    return {
+        data: {
+            props: {},
+            state: {},
+            context: {}
+        },
+        methods: {
+            dispatchEvent: eventSystem.dispatchEvent
+        },
+        didMount: function didMount() {
+            var instance = reactInstances.shift();
+            if (instance) {
+                console.log('created时为', name, '添加wx');
+                instance.wx = this;
+                this.reactInstance = instance;
+            } else {
+                console.log('created时为', name, '没有对应react实例');
+                wxInstances.push(this);
+            }
+            if (this.reactInstance) {
+                updateMiniApp(this.reactInstance);
+                console.log('attached时更新', name);
+            }
+        },
+        lifetimes: {
+            created: function created() {
+                var instance = reactInstances.shift();
+                if (instance) {
+                    console.log('created时为', name, '添加wx');
+                    instance.wx = this;
+                    this.reactInstance = instance;
+                } else {
+                    console.log('created时为', name, '没有对应react实例');
+                    wxInstances.push(this);
+                }
+            },
+            attached: function attached() {
+                if (this.reactInstance) {
+                    updateMiniApp(this.reactInstance);
+                    console.log('attached时更新', name);
+                } else {
+                    console.log('attached时无法更新', name);
+                }
+            },
+            detached: function detached() {
+                this.reactInstance = null;
+            }
+        }
+    };
 }
 
 function toRenderProps(props) {
@@ -2593,6 +2615,20 @@ var aliApis = function aliApis(api) {
       a.longitude = a.longitude + '';
       return api.openLocation.apply(api, arguments);
     },
+    getStorageSync: function _(a) {
+      var k = {};
+      k.key = a;
+      arguments[0] = k;
+      var res = api.getStorageSync.apply(api, arguments);
+      return res.data || '';
+    },
+    setStorageSync: function _(a1, a2) {
+      var k = {};
+      k.key = a1;
+      k.data = a2;
+      arguments[0] = k;
+      api.setStorageSync.apply(api, arguments);
+    },
     uploadFile: function _(a) {
       a.fileName = a.name;
       return api.uploadFile.apply(api, arguments);
@@ -2651,10 +2687,11 @@ var React = void 0;
 var render$1 = Renderer$1.render;
 React = win.React = {
     eventSystem: eventSystem,
+    webview: webview,
     findDOMNode: function findDOMNode() {
         console.log('小程序不支持findDOMNode');
     },
-    version: '1.4.7',
+    version: '1.4.8',
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,

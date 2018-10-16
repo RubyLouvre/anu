@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-10-13
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-10-16
  */
 
 (function (global, factory) {
@@ -2984,7 +2984,7 @@
                 backup = void 0;
             do {
                 var inst = fiber.stateNode;
-                if (inst.getChildContext) {
+                if (inst && inst.getChildContext) {
                     backup = mergeContext(container, inst.getChildContext());
                     break;
                 } else {
@@ -3168,7 +3168,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: "1.4.7",
+            version: "1.4.8",
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,

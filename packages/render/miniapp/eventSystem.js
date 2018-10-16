@@ -4,6 +4,12 @@ import { Renderer } from 'react-core/createRenderer';
 export var eventSystem = { //hijack
    
     dispatchEvent: function(e) {
+      if (e.type == 'message') {
+        if (webview.instance && webview.cb) {
+          webview.cb.call(webview.instance, e);
+        }
+        return;
+      }
         var target = e.currentTarget;
         var dataset = target.dataset || {};
         var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
@@ -34,6 +40,8 @@ export var eventSystem = { //hijack
         }
     },
 };
+
+export const webview = {};
 //创建事件对象
 function createEvent(e, target) {
     var event = {};

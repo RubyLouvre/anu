@@ -15,7 +15,7 @@ const xmlExt = config[config.buildType].xmlExt;
  * @param {String} type 有状态组件｜无状态组件
  * @param {String} componentName 组件名
  */
-const deps = require('../deps');
+const deps = [];
 exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
     let expr;
@@ -191,7 +191,7 @@ function transformConsequent(node) {
 }
 
 function transformAlternate(node) {
-    if (node == null) return t.returnStatement(t.nullLiteral());
+    if (node == null) return t.nullLiteral();
     if (t.isReturnStatement(node)) return node.argument;
     return transformNonNullConsequentOrAlternate(node);
 }
