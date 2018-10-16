@@ -35,18 +35,14 @@ export function onComponentUpdate(fiber) {
             }
         };
     }
-    
-    var instanceUid = instance.instanceUid;
-    if (!instanceUid) {
-        instanceUid = instance.instanceUid = getUUID();
-        type[instanceUid] = instance;
+    if (!instance.$parentInst){
         var p = fiber.return;
-        while (p) {//找到离它最近的父组件
+        while (p) {
             if (p.name !== 'toComponent' && p.tag < 4) {
                 var stateNode = p.stateNode;
                 if (!parentInst) {
                     parentInst = instance.$parentInst = stateNode;
-                    if (!parentInst.wxData){
+                    if (!parentInst.wxData) {
                         parentInst.wxData = newData();
                     }
                     break;
@@ -55,6 +51,7 @@ export function onComponentUpdate(fiber) {
             p = p.return;
         }
     }
+
     parentInst = instance.$parentInst;
     if (parentInst) {
         var inputProps = Object(fiber._owner).props || {};

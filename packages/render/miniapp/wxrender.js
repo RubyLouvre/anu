@@ -2,8 +2,7 @@ import { isFn, noop } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
 import { onComponentDispose, onComponentUpdate } from './toComponent';
-import { onPageUpdate } from './toPage';
-import { classCached, currentPage, delayMounts } from './utils';
+import { classCached, currentPage, delayMounts ,newData, getUUID} from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
@@ -52,16 +51,23 @@ export let Renderer = createRenderer({
     onUpdate(fiber) {
         var noMount = !fiber.hasMounted;
         var instance = fiber.stateNode;
-        if(noMount && instance.componentDidMount){
+        var type = fiber.type;
+        if (!instance.instanceUid) {
+            var uuid = 'i' + getUUID();
+            instance.instanceUid = uuid;
+            type[uuid] = instance;
+            console.log('设置页面UUID', uuid);
+        }
+        if (noMount && instance.componentDidMount){
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount
-            })
-            instance.componentDidMount = noop
+            });
+            instance.componentDidMount = noop;
         }
-        if (fiber.props.isPageComponent && currentPage.value.props.path != fiber.props.path){
+        if (fiber.props.isPageComponent ){
             currentPage.value = fiber.stateNode;
-            onPageUpdate(fiber);
+            instance.wxData = newData();
         } else if (fiber.props.wxComponentFlag){
             onComponentUpdate(fiber);
         }
