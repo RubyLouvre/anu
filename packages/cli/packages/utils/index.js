@@ -1,3 +1,5 @@
+/* eslint no-console: 0 */
+
 const execSync = require('child_process').execSync;
 const t = require('babel-types');
 const fs = require('fs-extra');
@@ -14,16 +16,15 @@ const EventEmitter = require('events').EventEmitter;
 const Event = new EventEmitter();
 process.on('unhandledRejection', error => {
     // eslint-disable-next-line
-    console.error("unhandledRejection", error);
+    console.error('unhandledRejection', error);
     process.exit(1); // To exit with a 'failure' code
 });
-
 let utils = {
     on() {
-        Event.on.apply(this, arguments);
+        Event.on.apply(global, arguments);
     },
     emit() {
-        Event.emit.apply(this, arguments);
+        Event.emit.apply(global, arguments);
     },
     createChineseHack: require('./chinese'),
     getNodeVersion() {
@@ -108,6 +109,7 @@ let utils = {
         }
         return false;
     },
+    
     createUUID(astPath) {
         return astPath.node.start + astPath.node.end;
     },
@@ -174,7 +176,6 @@ let utils = {
         var templateString = isPage
             ? 'Page(React.registerPage(className,astPath))'
             : 'Component(React.registerComponent(className,astPath))';
- 
         return template(templateString)({
             className: t.identifier(className),
             astPath: t.stringLiteral(path)
@@ -182,11 +183,18 @@ let utils = {
     },
     isBuildInLibs(name) {
         let libs = new Set(require('repl')._builtinLibs);
-        return libs.has(name);
+        if (libs.has(name)){
+            //如果是内置模块，先查找本地node_modules是否有对应重名模块
+            let isLocalBuildInLib = /\/node_modules\//.test(nodeResolve.sync(name, {basedir: cwd}));
+            if (isLocalBuildInLib){
+                return false;
+            } else {
+                return true;
+            }
+        }
     },
     installer(npmName) {
         return new Promise(resolve => {
-            // eslint-disable-next-line
             console.log(
                 chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`)
             );
@@ -205,11 +213,9 @@ let utils = {
 
             let result = spawn.sync(bin, options, { stdio: 'inherit' });
             if (result.error) {
-                // eslint-disable-next-line
                 console.log(result.error);
                 process.exit(1);
             }
-            // eslint-disable-next-line
             console.log(chalk.green(`${npmName}安装成功\n`));
 
             //获得自动安装的npm依赖模块路径
@@ -254,7 +260,7 @@ let utils = {
         } catch (err) {
             let spinner = this.spinner(`正在下载最新的${React}`);
             spinner.start();
-            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/master/dist/${React}`;
+            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/branch2/dist/${React}`;
             let ReactLib = await axios.get(remoteUrl);
             fs.ensureFileSync(srcPath);
             fs.writeFileSync(srcPath, ReactLib.data);
@@ -274,13 +280,11 @@ let utils = {
             if (ReactName != ReactLibName) {
                 fs.remove(path.join(cwd, 'src', ReactName), err => {
                     if (err) {
-                        // eslint-disable-next-line
                         console.log(err);
                     }
                 });
                 fs.remove(path.join(cwd, 'dist', ReactName), err => {
                     if (err) {
-                        // eslint-disable-next-line
                         console.log(err);
                     }
                 });
@@ -305,7 +309,6 @@ let utils = {
             react: path.resolve(cwd, `src/${React}`),
             '@components': path.resolve(cwd, 'src/components')
         };
-        //let aliasField = require(path.join(cwd, 'package.json')).mpreact.alias;
         return defaultAlias;
     },
     resolveNpmAliasPath(id, depFile) {
@@ -330,11 +333,12 @@ let utils = {
             if (/components/.test(id)) {
                 id = path.relative(path.join(cwd, 'src'), id);
                 if (/^\w/.test(id)) {
-                    //'components/x/y' => './components/x/y';
                     id = `./${id}`;
                 }
                 let importKey = `@import '${id}';`;
-                componentsStyle.push(importKey);
+                if (!componentsStyle.includes(importKey)) {
+                    componentsStyle.push(importKey);
+                }
             } else if (/app/.test(id)) {
                 appStyleId = id;
             } else {
@@ -349,8 +353,7 @@ let utils = {
         try {
             appStyleContent = fs.readFileSync(appStyleId);
         } catch (err) {
-            // eslint-disable-next-line
-            console.log(chalk.red("需配置全局app样式, 请检查..."));
+            console.log(chalk.red('需配置全局app样式, 请检查...'));
             process.exit(1);
         }
 
@@ -392,6 +395,9 @@ let utils = {
             variableDeclarator: 'h',
             init: 'var h = React.createElement;'
         }
+    },
+    getComponentOrAppOrPageReg(){
+        return new RegExp( this.sepForRegex  + '(?:pages|app|components)'  );
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };

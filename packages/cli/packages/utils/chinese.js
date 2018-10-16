@@ -10,7 +10,7 @@ module.exports = function createChineseHack() {
             let valueNode = astPath.node.value;
             let target;
             if (valueNode) {
-                 astPath.traverse({
+                astPath.traverse({
                     StringLiteral(astPath) {
                         target = astPath.node;
                     }
