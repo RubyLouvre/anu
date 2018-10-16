@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-15
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-16
  * IE9+
  */
 
@@ -1013,6 +1013,9 @@ function injectAPIs(ReactWX, facade, override) {
 
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
+        if (e.type == 'message') {
+            return;
+        }
         var target = e.currentTarget;
         var dataset = target.dataset || {};
         var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
