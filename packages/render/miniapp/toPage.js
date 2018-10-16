@@ -1,7 +1,7 @@
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
 import { Component } from 'react-core/Component';
-import { isFn, noop, get, miniCreateClass } from 'react-core/util';
+import { isFn, noop, get, miniCreateClass, hasOwnProperty } from 'react-core/util';
 import { eventSystem } from './eventSystem';
 import { getUUID, newData, delayMounts } from './utils';
 
@@ -20,7 +20,7 @@ function safeClone(originVal) {
     try {
         var temp = originVal instanceof Array ? [] : {};
         for (var item in originVal) {
-            if (Object.prototype.hasOwnProperty.call(originVal, item)) {
+            if (hasOwnProperty.call(originVal, item)) {
                 var value = originVal[item];
                 if (isReferenceType(value)) {
                     if (value.$$typeof) {

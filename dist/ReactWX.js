@@ -2495,7 +2495,7 @@ function safeClone(originVal) {
     try {
         var temp = originVal instanceof Array ? [] : {};
         for (var item in originVal) {
-            if (Object.prototype.hasOwnProperty.call(originVal, item)) {
+            if (hasOwnProperty.call(originVal, item)) {
                 var value = originVal[item];
                 if (isReferenceType(value)) {
                     if (value.$$typeof) {
