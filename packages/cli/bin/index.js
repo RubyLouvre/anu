@@ -29,8 +29,6 @@ program
     .command('build:[wx|ali|bu|quick]')
     .description('构建[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用]');
 
-program.command('update').description('update cli');
-
 program.parse(process.argv);
 if (program.args.length === 0) program.help();
 
@@ -91,9 +89,6 @@ switch (command) {
         break;
     case 'init':
         require('../packages/init')(args[1]);
-        break;
-    case 'update':
-        require('../packages/updateCli')();
         break;
     default:
         console.log(chalk.green('初始化项目: mpreact init <project-name>'));

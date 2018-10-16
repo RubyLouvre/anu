@@ -14,7 +14,7 @@ class P extends React.Component {
             isStartCity: true
         };
     }
-    componentDidMount() {
+    componentWillMount() {
         React.getApp().globalData.dateSelect = new Date();
     }
     componentDidShow() {
