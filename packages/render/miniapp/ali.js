@@ -11,15 +11,15 @@ import {
     createFactory
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
-import { classCached,currentPage } from './utils';
+import { classCached } from './utils';
 import { injectAPIs } from './api';
 import { eventSystem, webview } from './eventSystem';
 import { Renderer } from './wxrender';
-
-import { toComponent } from './toComponent';
 import { toStyle } from './toStyle';
+import { useComponent, registerComponent } from './registerComponent';
+
 import { toRenderProps } from './toRenderProps';
-import { toPage, applyAppStore } from './toPage';
+import { registerPage, applyAppStore } from './registerPage';
 import { aliApis } from './aliApis';
 
 
@@ -51,7 +51,6 @@ React = win.React =  {
     PureComponent,
     isValidElement,
     createFactory,
-    currentPage,
     toClass: function() {
         //保存所有class到classCache中，方便在事件回调中找到对应实例
         var clazz = miniCreateClass.apply(null, arguments);
@@ -61,8 +60,9 @@ React = win.React =  {
     },
     applyAppStore,
     toRenderProps,
-    toComponent,
-    toPage,
+    useComponent, 
+    registerPage,
+    registerComponent ,
     toStyle,
     appType: 'ali'
 };

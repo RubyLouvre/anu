@@ -3,23 +3,21 @@ import { PropTypes } from 'react-core/PropTypes';
 import { Component } from 'react-core/Component';
 import { PureComponent } from 'react-core/PureComponent';
 import { createPortal } from 'react-core/createPortal';
-import { createContext } from 'react-core/createContext';
 import {
     createElement,
     cloneElement,
     isValidElement,
-    createFactory
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
-import { classCached,currentPage } from './utils';
+import { classCached } from './utils';
 import { injectAPIs } from './api';
 import { eventSystem } from './eventSystem';
 import { Renderer } from './wxrender';
-
-import { toComponent } from './toComponent';
 import { toStyle } from './toStyle';
+import { useComponent, registerComponent } from './registerComponent';
+
 import { toRenderProps } from './toRenderProps';
-import { toPage, applyAppStore } from './toPage';
+import { registerPage, applyAppStore } from './registerPage';
 import { buApis } from './buApis';
 
 
@@ -44,14 +42,11 @@ React = win.React =  {
     PropTypes,
     Children,
     createPortal,
-    createContext,
     Component,
     createElement,
     cloneElement,
     PureComponent,
     isValidElement,
-    createFactory,
-    currentPage,
     toClass: function() {
         //保存所有class到classCache中，方便在事件回调中找到对应实例
         var clazz = miniCreateClass.apply(null, arguments);
@@ -61,8 +56,9 @@ React = win.React =  {
     },
     applyAppStore,
     toRenderProps,
-    toComponent,
-    toPage,
+    useComponent,
+    registerComponent,
+    registerPage,
     toStyle,
     appType: 'bu'
 };
@@ -81,3 +77,4 @@ export {
     createElement,
     Component
 };
+

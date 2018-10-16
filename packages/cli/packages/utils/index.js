@@ -174,8 +174,8 @@ let utils = {
     },
     createRegisterStatement(className, path, isPage) {
         var templateString = isPage
-            ? 'Page(React.toPage(className,astPath))'
-            : 'Number(className,astPath)';
+            ? 'Page(React.registerPage(className,astPath))'
+            : 'Component(React.registerComponent(className,astPath))';
         return template(templateString)({
             className: t.identifier(className),
             astPath: t.stringLiteral(path)
@@ -260,7 +260,7 @@ let utils = {
         } catch (err) {
             let spinner = this.spinner(`正在下载最新的${React}`);
             spinner.start();
-            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/master/dist/${React}`;
+            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/branch2/dist/${React}`;
             let ReactLib = await axios.get(remoteUrl);
             fs.ensureFileSync(srcPath);
             fs.writeFileSync(srcPath, ReactLib.data);
