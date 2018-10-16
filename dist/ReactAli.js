@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-15
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-16
  * IE9+
  */
 
@@ -1011,8 +1011,15 @@ function injectAPIs(ReactWX, facade, override) {
     ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
 
+var webview = {};
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
+        if (e.type == 'message') {
+            if (webview.instance && webview.cb) {
+                webview.cb.call(webview.instance, e);
+            }
+            return;
+        }
         var target = e.currentTarget;
         var dataset = target.dataset || {};
         var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
@@ -2769,6 +2776,7 @@ var React = void 0;
 var render$1 = Renderer$1.render;
 React = win.React = {
     eventSystem: eventSystem,
+    webview: webview,
     findDOMNode: function findDOMNode() {
         console.log('小程序不支持findDOMNode');
     },

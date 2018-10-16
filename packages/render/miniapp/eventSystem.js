@@ -1,9 +1,15 @@
 import { returnFalse , toLowerCase} from 'react-core/util';
 import { classCached } from './utils';
 import { Renderer } from 'react-core/createRenderer';
-
+export var webview = {};
 export var eventSystem = {
     dispatchEvent: function(e) {
+      if (e.type == 'message') {
+        if (webview.instance && webview.cb) {
+          webview.cb.call(webview.instance, e);
+        }
+        return;
+      }
         var target = e.currentTarget;
         var dataset = target.dataset || {};
         var eventUid = dataset[toLowerCase(e.type) + 'Uid']; //函数名
@@ -33,6 +39,8 @@ export var eventSystem = {
         }
     }
 };
+
+
 //创建事件对象
 function createEvent(e, target) {
     var event = {};
@@ -52,3 +60,5 @@ function createEvent(e, target) {
     event.timeStamp = new Date() - 0;
     return event;
 }
+
+
