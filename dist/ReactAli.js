@@ -666,47 +666,48 @@ function createContext(defaultValue, calculateChangedBits) {
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function _uuid() {
-    return (Math.random() + '').slice(-4);
+	return (Math.random() + '').slice(-4);
 }
 var delayMounts = [];
 function getUUID() {
-    return _uuid() + _uuid();
+	return _uuid() + _uuid();
 }
 function newData() {
-    return {
-        components: {}
-    };
+	return {
+		components: {}
+	};
 }
 function updateMiniApp(instance) {
-    if (!instance || !instance.wx) {
-        return;
-    }
-    instance.wx.setData(safeClone({
-        props: instance.props,
-        state: instance.state || null,
-        context: instance.context
-    }));
+	if (!instance || !instance.wx) {
+		return;
+	}
+	instance.wx.setData(safeClone({
+		props: instance.props,
+		state: instance.state || null,
+		context: instance.context
+	}));
 }
 function isReferenceType(val) {
-    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+	return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
 }
 function safeClone(originVal) {
-    var temp = originVal instanceof Array ? [] : {};
-    for (var item in originVal) {
-        if (hasOwnProperty.call(originVal, item)) {
-            var value = originVal[item];
-            if (isReferenceType(value)) {
-                if (value.$$typeof) {
-                    continue;
-                }
-                temp[item] = safeClone(value);
-            } else {
-                temp[item] = value;
-            }
-        }
-    }
-    return temp;
+	var temp = originVal instanceof Array ? [] : {};
+	for (var item in originVal) {
+		if (hasOwnProperty.call(originVal, item)) {
+			var value = originVal[item];
+			if (isReferenceType(value)) {
+				if (value.$$typeof) {
+					continue;
+				}
+				temp[item] = safeClone(value);
+			} else {
+				temp[item] = value;
+			}
+		}
+	}
+	return temp;
 }
+var appType = (typeof wx === 'undefined' ? 'undefined' : _typeof$1(wx)) == 'object' ? 'wx' : (typeof swan === 'undefined' ? 'undefined' : _typeof$1(swan)) == 'object' ? 'bu' : (typeof my === 'undefined' ? 'undefined' : _typeof$1(my)) == 'object' ? 'ali' : 'quick';
 
 var onAndSyncApis = {
   onSocketOpen: true,
@@ -2417,68 +2418,64 @@ function toStyle(obj, props, key) {
 
 var registerComponents = {};
 function useComponent(props) {
-    var is = props.is;
-    var clazz = registerComponents[is];
-    delete props.is;
-    var args = [].slice.call(arguments, 2);
-    args.unshift(clazz, props);
-    console.log('使用组件', is);
-    return createElement.apply(null, args);
+	var is = props.is;
+	var clazz = registerComponents[is];
+	delete props.is;
+	var args = [].slice.call(arguments, 2);
+	args.unshift(clazz, props);
+	console.log('使用组件', is);
+	return createElement.apply(null, args);
 }
+var hooksName = {
+	wx: ['created', 'attached', 'detached'],
+	bu: ['created', 'attached', 'detached'],
+	ali: ['didMount', 'didMount', 'didUnmount'],
+	quick: ['onInit', 'onReady', 'onDestroy']
+};
 function registerComponent(type, name) {
-    registerComponents[name] = type;
-    var reactInstances = type.reactInstances = [];
-    var wxInstances = type.wxInstances = [];
-    console.log('注册', name, '组件');
-    return {
-        data: {
-            props: {},
-            state: {},
-            context: {}
-        },
-        methods: {
-            dispatchEvent: eventSystem.dispatchEvent
-        },
-        didMount: function didMount() {
-            var instance = reactInstances.shift();
-            if (instance) {
-                console.log('created时为', name, '添加wx');
-                instance.wx = this;
-                this.reactInstance = instance;
-            } else {
-                console.log('created时为', name, '没有对应react实例');
-                wxInstances.push(this);
-            }
-            if (this.reactInstance) {
-                updateMiniApp(this.reactInstance);
-                console.log('attached时更新', name);
-            }
-        },
-        lifetimes: {
-            created: function created() {
-                var instance = reactInstances.shift();
-                if (instance) {
-                    console.log('created时为', name, '添加wx');
-                    instance.wx = this;
-                    this.reactInstance = instance;
-                } else {
-                    console.log('created时为', name, '没有对应react实例');
-                    wxInstances.push(this);
-                }
-            },
-            attached: function attached() {
-                if (this.reactInstance) {
-                    updateMiniApp(this.reactInstance);
-                    console.log('attached时更新', name);
-                } else {
-                    console.log('attached时无法更新', name);
-                }
-            },
-            detached: function detached() {
-                this.reactInstance = null;
-            }
-        }
-    };
+	registerComponents[name] = type;
+	var reactInstances = type.reactInstances = [];
+	var wxInstances = type.wxInstances = [];
+	var hooks = [function created() {
+		var instance = reactInstances.shift();
+		if (instance) {
+			console.log('created时为', name, '添加wx');
+			instance.wx = this;
+			this.reactInstance = instance;
+		} else {
+			console.log('created时为', name, '没有对应react实例');
+			wxInstances.push(this);
+		}
+	}, function attached() {
+		if (appType == "ali") {
+			created.call(this);
+		}
+		if (this.reactInstance) {
+			updateMiniApp(this.reactInstance);
+			console.log('attached时更新', name);
+		} else {
+			console.log('attached时无法更新', name);
+		}
+	}, function detached() {
+		this.reactInstance = null;
+	}];
+	var data = {
+		props: {},
+		state: {},
+		context: {}
+	};
+	var config = {
+		data: data,
+		public: data,
+		dispatchEvent: eventSystem.dispatchEvent,
+		methods: {
+			dispatchEvent: eventSystem.dispatchEvent
+		}
+	};
+	hooksName[appType].forEach(function (name, index) {
+		config[name] = hooks[index];
+	});
+	return config;
 }
 
 function toRenderProps(props) {
