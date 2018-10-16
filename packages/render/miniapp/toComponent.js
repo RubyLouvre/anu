@@ -67,7 +67,7 @@ export function onComponentUpdate(fiber) {
             data = instance.wxData || (instance.wxData = newData());
         }
         data.props = instance.props;
-        data.props.instanceUid = instance.instanceUid;
+       
         data.state = instance.state;
         data.context = instance.context;
         if (uuid) {

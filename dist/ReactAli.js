@@ -2284,7 +2284,6 @@ function onComponentUpdate(fiber) {
             data = instance.wxData || (instance.wxData = newData());
         }
         data.props = instance.props;
-        data.props.instanceUid = instance.instanceUid;
         data.state = instance.state;
         data.context = instance.context;
         if (uuid) {
@@ -2384,8 +2383,8 @@ var Renderer$1 = createRenderer({
             var uuid = 'i' + getUUID();
             instance.instanceUid = uuid;
             type[uuid] = instance;
-            console.log('设置页面UUID', uuid);
         }
+        instance.props.instanceUid = instance.instanceUid;
         if (noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,

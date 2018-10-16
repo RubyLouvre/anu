@@ -56,8 +56,8 @@ export let Renderer = createRenderer({
             var uuid = 'i' + getUUID();
             instance.instanceUid = uuid;
             type[uuid] = instance;
-            console.log('设置页面UUID', uuid);
         }
+        instance.props.instanceUid = instance.instanceUid;
         if (noMount && instance.componentDidMount){
             delayMounts.push({
                 instance: instance,

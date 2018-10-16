@@ -3,19 +3,8 @@ import { createElement } from 'react-core/createElement';
 import { Component } from 'react-core/Component';
 import { isFn, noop, get, miniCreateClass, hasOwnProperty } from 'react-core/util';
 import { eventSystem } from './eventSystem';
-import { getUUID, newData, delayMounts } from './utils';
+import { newData, delayMounts } from './utils';
 
-export function onPageUpdate(fiber) {
-    var instance = fiber.stateNode;
-    var type = fiber.type;
-    if (!instance.instanceUid) {
-        var uuid = 'i' + getUUID();
-        instance.instanceUid = uuid;
-        type[uuid] = instance;
-    }
-    instance.wxData = newData();
-    instance.props.instanceUid = instance.instanceUid;
-}
 function safeClone(originVal) {
     try {
         var temp = originVal instanceof Array ? [] : {};
