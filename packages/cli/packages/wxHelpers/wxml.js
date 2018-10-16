@@ -5,7 +5,7 @@ const generate = require('babel-generator').default;
 const attrValueHelper = require('./attrValue');
 const attrNameHelper = require('./attrName');
 const config = require('../config');
-const logicSrc = '../'+config.buildType +'Helpers/logic';
+const logicSrc = '../' + config.buildType + 'Helpers/logic';
 const logicHelper = require(logicSrc);
 const utils = require('../utils');
 

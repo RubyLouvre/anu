@@ -149,6 +149,44 @@ module.exports = {
                 //延后插入createPage语句在其同名的export语句前
                 registerPageOrComponent(declaration.name, astPath, modules);
             }
+
+            //将配置对象生成JSON文件
+            if (!/App|Page|Component/.test(modules.componentType)) {
+                return;
+            }
+            var json = modules.config;
+            //将app.js中的import语句变成pages数组
+            if (modules.componentType === 'App') {
+                json.pages = modules['appRoute'];
+                delete modules['appRoute'];
+            }
+            if (modules.componentType === 'Component') {
+                json.component = true;
+            }
+            if (buildType == 'ali') {
+                helpers.configName(json, modules.componentType);
+            }
+            var keys = Object.keys(modules.usedComponents),
+                usings;
+            if (keys.length) {
+                usings = json.usingComponents || (json.usingComponents = {});
+                keys.forEach(function(name) {
+                    usings[name] = modules.usedComponents[name];
+                });
+            }
+            if (usings) {
+                //将页面配置对象中的usingComponents对象中的组件名放进modules.customComponents
+                //数组中，并将对应的文件复制到dist目录中
+                utils.copyCustomComponents(usings, modules);
+            }
+            queue.push({
+                type: 'json',
+                path: modules.sourcePath
+                    .replace(/\/src\//, '/dist/')
+                    .replace(/\.js$/, '.json'),
+                code: JSON.stringify(json, null, 4)
+            });
+            utils.emit('build');
         }
     },
 
@@ -190,54 +228,14 @@ module.exports = {
             let key = astPath.node.key.name;
             let modules = utils.getAnu(state);
             if (key === 'config') {
-                
                 //将配置对象生成JSON文件
-                if (!/App|Page|Component/.test(modules.componentType)){
+                if (!/App|Page|Component/.test(modules.componentType)) {
                     return;
                 }
-                var json = generate(astPath.node.value).code || '{}';
-               
                 try {
-                    json = eval('0,' + json);
-                } catch (e) {
-                    // eslint-disable-next-line
-                    console.log('生成json有问题', json);
-                }
-
-                //挂在pages路由
-                if (modules.componentType === 'App') {
-                    json.pages = modules['appRoute']; 
-                    delete modules['appRoute'];
-                }
-                if (modules.componentType === 'Component') {
-                    json.component = true;
-                }
-                if (buildType == 'ali') {
-                    helpers.configName(json, modules.componentType);
-                }
-                
-                var keys = Object.keys( modules.usedComponents), usings;
-                if (keys.length){
-                    usings = json.usingComponents ||  (json.usingComponents = {}); 
-                    keys.forEach(function(name){
-                        usings[name] = modules.usedComponents[name];
-                    });
-                }
-                
-                if (usings) {
-                    //将页面配置对象中的usingComponents对象中的组件名放进modules.customComponents
-                    //数组中，并将对应的文件复制到dist目录中
-                    utils.copyCustomComponents(usings, modules);
-                }
-                queue.push({
-                    type: 'json',
-                    path: modules.sourcePath
-                        .replace(/\/src\//, '/dist/')
-                        .replace(/\.js$/, '.json'),
-                    code:  JSON.stringify(json, null, 4)
-                });
-                utils.emit('build');
-
+                    var json = eval('0,' + generate(astPath.node.value).code);
+                    Object.assign(modules.config, json);
+                } catch (e) { /**/ }
             } else if (astPath.node.static) {
                 var keyValue = t.ObjectProperty(
                     t.identifier(key),
