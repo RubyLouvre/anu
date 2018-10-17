@@ -28,7 +28,7 @@ class P extends React.Component {
             <div>
                 <div style={this.state.styles.a}>无狀态组件</div>
                 <p>
-					<p>输入a(绑定onInput事件)</p>
+                    <p>输入a(绑定onInput事件)</p>
                     <input
                         type="number"
                         style="border: 1px solid gray;width:50%"
@@ -37,7 +37,7 @@ class P extends React.Component {
                     />
                 </p>
                 <p>
-					<p>输入b(绑定onChange事件)</p>
+                    <p>输入b(绑定onChange事件)</p>
                     <input
                         type="number"
                         style="border: 1px solid gray;width:50%"
