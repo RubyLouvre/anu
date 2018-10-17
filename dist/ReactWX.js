@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-10-16
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-10-17
  * IE9+
  */
 
@@ -2091,188 +2091,190 @@ function getContainer(p) {
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function _uuid() {
-	return (Math.random() + '').slice(-4);
+    return (Math.random() + '').slice(-4);
 }
 var delayMounts = [];
 function getUUID() {
-	return _uuid() + _uuid();
+    return _uuid() + _uuid();
 }
 function newData() {
-	return {
-		components: {}
-	};
+    return {
+        components: {}
+    };
 }
 function updateMiniApp(instance) {
-	if (!instance || !instance.wx) {
-		return;
-	}
-	instance.wx.setData(safeClone({
-		props: instance.props,
-		state: instance.state || null,
-		context: instance.context
-	}));
+    if (!instance || !instance.wx) {
+        return;
+    }
+    instance.wx.setData(safeClone({
+        props: instance.props,
+        state: instance.state || null,
+        context: instance.context
+    }));
 }
 function isReferenceType(val) {
-	return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
 }
 function safeClone(originVal) {
-	var temp = originVal instanceof Array ? [] : {};
-	for (var item in originVal) {
-		if (hasOwnProperty.call(originVal, item)) {
-			var value = originVal[item];
-			if (isReferenceType(value)) {
-				if (value.$$typeof) {
-					continue;
-				}
-				temp[item] = safeClone(value);
-			} else {
-				temp[item] = value;
-			}
-		}
-	}
-	return temp;
+    var temp = originVal instanceof Array ? [] : {};
+    for (var item in originVal) {
+        if (hasOwnProperty.call(originVal, item)) {
+            var value = originVal[item];
+            if (isReferenceType(value)) {
+                if (value.$$typeof) {
+                    continue;
+                }
+                temp[item] = safeClone(value);
+            } else {
+                temp[item] = value;
+            }
+        }
+    }
+    return temp;
 }
-var appType = (typeof wx === 'undefined' ? 'undefined' : _typeof$1(wx)) == 'object' ? 'wx' : (typeof swan === 'undefined' ? 'undefined' : _typeof$1(swan)) == 'object' ? 'bu' : (typeof my === 'undefined' ? 'undefined' : _typeof$1(my)) == 'object' ? 'ali' : 'quick';
+function toRenderProps(props) {
+    return null;
+}
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
-	var n = name.charAt(0) == 'o' ? 2 : 5;
-	var type = toLowerCase(name.slice(n));
-	var eventCode = props['data-' + type + '-uid'];
-	return eventCode + (key != null ? '-' + key : '');
+    var n = name.charAt(0) == 'o' ? 2 : 5;
+    var type = toLowerCase(name.slice(n));
+    var eventCode = props['data-' + type + '-uid'];
+    return eventCode + (key != null ? '-' + key : '');
 }
 var Renderer$1 = createRenderer({
-	render: render,
-	updateAttribute: function updateAttribute(fiber) {
-		var props = fiber.props,
-		    lastProps = fiber.lastProps;
-		var classId = props['data-class-uid'];
-		var instance = fiber._owner;
-		if (instance && !instance.classUid) {
-			instance = get(instance)._owner;
-		}
-		if (instance && classId) {
-			var cached = instance.$$eventCached || (instance.$$eventCached = {});
-			for (var name in props) {
-				if (onEvent.test(name) && isFn(props[name])) {
-					var code = getEventHashCode(name, props, props['data-key']);
-					cached[code] = props[name];
-					cached[code + 'Fiber'] = fiber;
-				}
-			}
-			if (lastProps) {
-				for (var _name in lastProps) {
-					if (onEvent.test(_name) && !props[_name]) {
-						code = getEventHashCode(_name, lastProps, lastProps['data-key']);
-						delete cached[code];
-						delete cached[code + 'Fiber'];
-					}
-				}
-			}
-		}
-	},
-	updateContent: function updateContent(fiber) {
-		fiber.stateNode.props = fiber.props;
-	},
-	onBeforeRender: function onBeforeRender(fiber) {
-		var type = fiber.type;
-		if (type.reactInstances) {
-			var name = fiber.name;
-			var noMount = !fiber.hasMounted;
-			var instance = fiber.stateNode;
-			if (!instance.instanceUid) {
-				var uuid = 'i' + getUUID();
-				instance.instanceUid = uuid;
-				type[uuid] = instance;
-			}
-			instance.props.instanceUid = instance.instanceUid;
-			if (type.wxInstances) {
-				if (type.wxInstances.length && !instance.wx) {
-					var wx = instance.wx = type.wxInstances.shift();
-					wx.reactInstance = instance;
-					console.log('onBeforeRender时更新', name, instance.props);
-				}
-				if (!instance.wx) {
-					console.log('onBeforeRender时更新', name, '没有wx');
-					type.reactInstances.push(instance);
-				}
-			}
-		}
-		if (noMount && instance.componentDidMount) {
-			delayMounts.push({
-				instance: instance,
-				fn: instance.componentDidMount
-			});
-			instance.componentDidMount = noop;
-		}
-	},
-	onAfterRender: function onAfterRender(fiber) {
-		var instance = fiber.stateNode;
-		if (instance.wx) {
-			updateMiniApp(instance);
-		}
-	},
-	onDispose: function onDispose(fiber) {
-		var instance = fiber.stateNode;
-		var wx = instance.wx;
-		if (wx) {
-			wx.reactInstance = null;
-			instance.wx = null;
-		}
-	},
-	createElement: function createElement(fiber) {
-		return fiber.tag === 5 ? {
-			type: fiber.type,
-			props: fiber.props || {},
-			children: []
-		} : {
-			type: fiber.type,
-			props: fiber.props
-		};
-	},
-	insertElement: function insertElement(fiber) {
-		var dom = fiber.stateNode,
-		    parentNode = fiber.parent,
-		    forwardFiber = fiber.forwardFiber,
-		    before = forwardFiber ? forwardFiber.stateNode : null,
-		    children = parentNode.children;
-		try {
-			if (before == null) {
-				if (dom !== children[0]) {
-					remove(children, dom);
-					children.unshift(dom);
-				}
-			} else {
-				if (dom !== children[children.length - 1]) {
-					remove(children, dom);
-					var i = children.indexOf(before);
-					children.splice(i + 1, 0, dom);
-				}
-			}
-		} catch (e) {
-			throw e;
-		}
-	},
-	emptyElement: function emptyElement(fiber) {
-		var dom = fiber.stateNode;
-		var children = dom && dom.children;
-		if (dom && Array.isArray(children)) {
-			children.forEach(Renderer$1.removeElement);
-		}
-	},
-	removeElement: function removeElement(fiber) {
-		if (fiber.parent) {
-			var parent = fiber.parent;
-			var node = fiber.stateNode;
-			remove(parent.children, node);
-		}
-	}
+    render: render,
+    updateAttribute: function updateAttribute(fiber) {
+        var props = fiber.props,
+            lastProps = fiber.lastProps;
+        var classId = props['data-class-uid'];
+        var instance = fiber._owner;
+        if (instance && !instance.classUid) {
+            instance = get(instance)._owner;
+        }
+        if (instance && classId) {
+            var cached = instance.$$eventCached || (instance.$$eventCached = {});
+            for (var name in props) {
+                if (onEvent.test(name) && isFn(props[name])) {
+                    var code = getEventHashCode(name, props, props['data-key']);
+                    cached[code] = props[name];
+                    cached[code + 'Fiber'] = fiber;
+                }
+            }
+            if (lastProps) {
+                for (var _name in lastProps) {
+                    if (onEvent.test(_name) && !props[_name]) {
+                        code = getEventHashCode(_name, lastProps, lastProps['data-key']);
+                        delete cached[code];
+                        delete cached[code + 'Fiber'];
+                    }
+                }
+            }
+        }
+    },
+    updateContent: function updateContent(fiber) {
+        fiber.stateNode.props = fiber.props;
+    },
+    onBeforeRender: function onBeforeRender(fiber) {
+        var type = fiber.type;
+        if (type.reactInstances) {
+            var name = fiber.name;
+            var noMount = !fiber.hasMounted;
+            var instance = fiber.stateNode;
+            if (!instance.instanceUid) {
+                var uuid = 'i' + getUUID();
+                instance.instanceUid = uuid;
+                type[uuid] = instance;
+            }
+            instance.props.instanceUid = instance.instanceUid;
+            if (type.wxInstances) {
+                if (type.wxInstances.length && !instance.wx) {
+                    var wx = instance.wx = type.wxInstances.shift();
+                    wx.reactInstance = instance;
+                    console.log('onBeforeRender时更新', name, instance.props);
+                }
+                if (!instance.wx) {
+                    console.log('onBeforeRender时更新', name, '没有wx');
+                    type.reactInstances.push(instance);
+                }
+            }
+        }
+        if (noMount && instance.componentDidMount) {
+            delayMounts.push({
+                instance: instance,
+                fn: instance.componentDidMount
+            });
+            instance.componentDidMount = noop;
+        }
+    },
+    onAfterRender: function onAfterRender(fiber) {
+        var instance = fiber.stateNode;
+        if (instance.wx) {
+            updateMiniApp(instance);
+        }
+    },
+    onDispose: function onDispose(fiber) {
+        var instance = fiber.stateNode;
+        var wx = instance.wx;
+        if (wx) {
+            wx.reactInstance = null;
+            instance.wx = null;
+        }
+    },
+    createElement: function createElement(fiber) {
+        return fiber.tag === 5 ? {
+            type: fiber.type,
+            props: fiber.props || {},
+            children: []
+        } : {
+            type: fiber.type,
+            props: fiber.props
+        };
+    },
+    insertElement: function insertElement(fiber) {
+        var dom = fiber.stateNode,
+            parentNode = fiber.parent,
+            forwardFiber = fiber.forwardFiber,
+            before = forwardFiber ? forwardFiber.stateNode : null,
+            children = parentNode.children;
+        try {
+            if (before == null) {
+                if (dom !== children[0]) {
+                    remove(children, dom);
+                    children.unshift(dom);
+                }
+            } else {
+                if (dom !== children[children.length - 1]) {
+                    remove(children, dom);
+                    var i = children.indexOf(before);
+                    children.splice(i + 1, 0, dom);
+                }
+            }
+        } catch (e) {
+            throw e;
+        }
+    },
+    emptyElement: function emptyElement(fiber) {
+        var dom = fiber.stateNode;
+        var children = dom && dom.children;
+        if (dom && Array.isArray(children)) {
+            children.forEach(Renderer$1.removeElement);
+        }
+    },
+    removeElement: function removeElement(fiber) {
+        if (fiber.parent) {
+            var parent = fiber.parent;
+            var node = fiber.stateNode;
+            remove(parent.children, node);
+        }
+    }
 });
 function remove(children, node) {
-	var index = children.indexOf(node);
-	if (index !== -1) {
-		children.splice(index, 1);
-	}
+    var index = children.indexOf(node);
+    if (index !== -1) {
+        children.splice(index, 1);
+    }
 }
 
 var rhyphen = /([a-z\d])([A-Z]+)/g;
@@ -2299,70 +2301,15 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
-var registerComponents = {};
+var registeredComponents = {};
 function useComponent(props) {
-	var is = props.is;
-	var clazz = registerComponents[is];
-	delete props.is;
-	var args = [].slice.call(arguments, 2);
-	args.unshift(clazz, props);
-	console.log('使用组件', is);
-	return createElement.apply(null, args);
-}
-var hooksName = {
-	wx: ['created', 'attached', 'detached'],
-	bu: ['created', 'attached', 'detached'],
-	ali: ['didMount', 'didMount', 'didUnmount'],
-	quick: ['onInit', 'onReady', 'onDestroy']
-};
-function registerComponent(type, name) {
-	registerComponents[name] = type;
-	var reactInstances = type.reactInstances = [];
-	var wxInstances = type.wxInstances = [];
-	var hooks = [function created() {
-		var instance = reactInstances.shift();
-		if (instance) {
-			console.log('created时为', name, '添加wx');
-			instance.wx = this;
-			this.reactInstance = instance;
-		} else {
-			console.log('created时为', name, '没有对应react实例');
-			wxInstances.push(this);
-		}
-	}, function attached() {
-		if (appType == "ali") {
-			created.call(this);
-		}
-		if (this.reactInstance) {
-			updateMiniApp(this.reactInstance);
-			console.log('attached时更新', name);
-		} else {
-			console.log('attached时无法更新', name);
-		}
-	}, function detached() {
-		this.reactInstance = null;
-	}];
-	var data = {
-		props: {},
-		state: {},
-		context: {}
-	};
-	var config = {
-		data: data,
-		public: data,
-		dispatchEvent: eventSystem.dispatchEvent,
-		methods: {
-			dispatchEvent: eventSystem.dispatchEvent
-		}
-	};
-	hooksName[appType].forEach(function (name, index) {
-		config[name] = hooks[index];
-	});
-	return config;
-}
-
-function toRenderProps(props) {
-    return null;
+    var is = props.is;
+    var clazz = registeredComponents[is];
+    delete props.is;
+    var args = [].slice.call(arguments, 2);
+    args.unshift(clazz, props);
+    console.log('使用组件', is);
+    return createElement.apply(null, args);
 }
 
 var HookMap = {
@@ -2429,6 +2376,45 @@ function registerPage(PageClass, path, testObject) {
 var win = getWindow();
 var React = void 0;
 var render$1 = Renderer$1.render;
+function registerComponent(type, name) {
+    registeredComponents[name] = type;
+    var reactInstances = type.reactInstances = [];
+    var wxInstances = type.wxInstances = [];
+    return {
+        data: {
+            props: {},
+            state: {},
+            context: {}
+        },
+        lifetimes: {
+            created: function created() {
+                var instance = reactInstances.shift();
+                if (instance) {
+                    console.log('created时为', name, '添加wx');
+                    instance.wx = this;
+                    this.reactInstance = instance;
+                } else {
+                    console.log('created时为', name, '没有对应react实例');
+                    wxInstances.push(this);
+                }
+            },
+            attached: function attached() {
+                if (this.reactInstance) {
+                    updateMiniApp(this.reactInstance);
+                    console.log('attached时更新', name);
+                } else {
+                    console.log('attached时无法更新', name);
+                }
+            },
+            detached: function detached() {
+                this.reactInstance = null;
+            }
+        },
+        methods: {
+            dispatchEvent: eventSystem.dispatchEvent
+        }
+    };
+}
 React = win.React = {
     eventSystem: eventSystem,
     findDOMNode: function findDOMNode() {
@@ -2461,13 +2447,9 @@ React = win.React = {
 var apiContainer = {};
 if (typeof wx != 'undefined') {
     apiContainer = wx;
-} else if (typeof my !== 'undefined') {
-    apiContainer = my;
-} else if (typeof swan !== 'undefined') {
-    apiContainer = swan;
 }
 injectAPIs(React, apiContainer);
 var React$1 = React;
 
 export default React$1;
-export { Children, createElement, Component };
+export { registerComponent, Children, createElement, Component };
