@@ -3,7 +3,6 @@ const t = require('babel-types');
 const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const queue = require('../queue');
-const path = require('path');
 const utils = require('../utils');
 const minify = require('html-minifier').minify;
 const config = require('../config');
@@ -16,7 +15,7 @@ const xmlExt = config[config.buildType].xmlExt;
  * @param {String} componentName 组件名
  */
 const deps = [];
-exports.exit = function(astPath, type, componentName, modules) {
+exports.exit = function (astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
     let expr;
 
@@ -28,14 +27,13 @@ exports.exit = function(astPath, type, componentName, modules) {
         }
     }
 
-
     switch (true) {
         case t.isReturnStatement(expr):
             var needWrap = expr.argument.type !== 'JSXElement';
             var jsx = generate(expr.argument).code;
             var jsxAst = babel.transform(jsx, {
                 babelrc: false,
-                plugins: [['transform-react-jsx', { pragma: 'h' }]]
+                plugins: [['transform-react-jsx', { pragma: 'h' }]],
             });
 
             expr.argument = jsxAst.ast.program.body[0];
@@ -50,9 +48,7 @@ exports.exit = function(astPath, type, componentName, modules) {
             //添加import语句产生的显式依赖
             for (var i in modules.importComponents) {
                 if (modules.usedComponents[i]) {
-                    wxml = `<import src="${
-                        modules.importComponents[i].source
-                    }.wxml" />\n${wxml}`;
+                    wxml = `<import src="${modules.importComponents[i].source}.wxml" />\n${wxml}`;
                 }
             }
             if (type == 'RenderProps') {
@@ -61,9 +57,9 @@ exports.exit = function(astPath, type, componentName, modules) {
                     (deps['renderProps'] = {
                         json: {
                             component: true,
-                            usingComponents: {}
+                            usingComponents: {},
                         },
-                        wxml: ''
+                        wxml: '',
                     });
                 var jsText = `
                 Component({
@@ -84,102 +80,63 @@ exports.exit = function(astPath, type, componentName, modules) {
                 })`;
                 queue.push({
                     type: 'js',
-                    path: modules.sourcePath
-                        .replace(/\/src\//, '/dist/')
-                        .replace(/\.js$/, '.js'),
-                    code: jsText.trim()
+                    path: modules.sourcePath.replace(/\/src\//, '/dist/').replace(/\.js$/, '.js'),
+                    code: jsText.trim(),
                 });
                 utils.emit('build');
                 //生成render props的模板
                 wxml =
                     dep.wxml +
-                    `<block wx:if="{{renderUid === '${componentName}'}}">\n${minify(
-                        wxml,
-                        {
-                            collapseWhitespace: true
-                        }
-                    )}\n</block>`;
+                    `<block wx:if="{{renderUid === '${componentName}'}}">\n${minify(wxml, {
+                        collapseWhitespace: true,
+                    })}\n</block>`;
                 dep.wxml = wxml;
                 //生成render props的json
                 for (let i in modules.importComponents) {
-                    dep.json.usingComponents['anu-' + i.toLowerCase()] =
-                        '/components/' + i + '/index';
+                    dep.json.usingComponents['anu-' + i.toLowerCase()] = '/components/' + i + '/index';
                 }
                 queue.push({
                     type: 'json',
-                    path: modules.sourcePath
-                        .replace(/\/src\//, '/dist/')
-                        .replace(/\.js$/, '.json'),
-                    code: JSON.stringify(dep.json, null, 4) //prettifyXml(wxml, { indent: 2 })
+                    path: modules.sourcePath.replace(/\/src\//, '/dist/').replace(/\.js$/, '.json'),
+                    code: JSON.stringify(dep.json, null, 4), //prettifyXml(wxml, { indent: 2 })
                 });
                 utils.emit('build');
             } else if (modules.componentType === 'Component') {
                 //  wxml = `<template name="${componentName}">${wxml}</template>`;
                 deps[componentName] = deps[componentName] || {
-                    set: new Set()
+                    set: new Set(),
                 };
             }
 
             //如果这个JSX的主体是一个组件，那么它肯定在deps里面
-            dep = deps[componentName];
 
             var enqueueData = {
                 type: 'wxml',
-                path: modules.sourcePath
-                    .replace(/\/src\//, '/dist/')
-                    .replace(/js$/, xmlExt),
-                code: wxml //prettifyXml(wxml, { indent: 2 })
+                path: modules.sourcePath.replace(/\/src\//, '/dist/').replace(/js$/, xmlExt),
+                code: wxml, //prettifyXml(wxml, { indent: 2 })
             };
             //添加组件标签包含其他标签时（如<Dialog><p>xxx</p></Dialog>）产生的隐式依赖
-            if (dep && !dep.addImportTag) {
-                dep.data = enqueueData; //表明它已经放入列队，不要重复添加
-                dep.addImportTag = addImportTag;
-                dep.dirPath = path.dirname(modules.sourcePath);
-                dep.set.forEach(function(fragmentUid) {
-                    dep.set.delete(fragmentUid);
-                    dep.addImportTag(fragmentUid);
-                });
-            }
+
             queue.push(enqueueData);
             utils.emit('build');
+
             break;
         default:
             break;
     }
 };
 
-function addImportTag(fragmentUid) {
-    var src = path.relative(
-        this.dirPath,
-        path.join(
-            process.cwd(),
-            'src',
-            'components',
-            'Fragments',
-            fragmentUid + '.wxml'
-        )
-    );
-    src = process.platform === 'win32' ? src.replace(/\\/g, '/') : src;
-    var wxml = `<import src="${src}" />\n${this.data.code}`;
-    return (this.data.code = wxml);
-}
 function transformIfStatementToConditionalExpression(node) {
     const { test, consequent, alternate } = node;
-    return t.conditionalExpression(
-        test,
-        transformConsequent(consequent),
-        transformAlternate(alternate)
-    );
+    return t.conditionalExpression(test, transformConsequent(consequent), transformAlternate(alternate));
 }
 
 function transformNonNullConsequentOrAlternate(node) {
-    if (t.isIfStatement(node))
-        return transformIfStatementToConditionalExpression(node);
+    if (t.isIfStatement(node)) return transformIfStatementToConditionalExpression(node);
     if (t.isBlockStatement(node)) {
         const item = node.body[0];
         if (t.isReturnStatement(item)) return item.argument;
-        if (t.isIfStatement(item))
-            return transformIfStatementToConditionalExpression(item);
+        if (t.isIfStatement(item)) return transformIfStatementToConditionalExpression(item);
         throw new Error('Invalid consequent or alternate node');
     }
     return t.nullLiteral();
@@ -196,7 +153,7 @@ function transformAlternate(node) {
     return transformNonNullConsequentOrAlternate(node);
 }
 
-exports.enter = function(astPath) {
+exports.enter = function (astPath) {
     if (astPath.node.key.name === 'render') {
         astPath.traverse({
             IfStatement: {
@@ -212,15 +169,9 @@ exports.enter = function(astPath) {
                             );
                         }
                     }
-                    path.replaceWith(
-                        t.returnStatement(
-                            transformIfStatementToConditionalExpression(
-                                path.node
-                            )
-                        )
-                    );
-                }
-            }
+                    path.replaceWith(t.returnStatement(transformIfStatementToConditionalExpression(path.node)));
+                },
+            },
         });
     }
 };

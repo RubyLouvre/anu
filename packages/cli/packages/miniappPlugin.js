@@ -170,7 +170,7 @@ module.exports = {
                 usings;
             if (keys.length) {
                 usings = json.usingComponents || (json.usingComponents = {});
-                keys.forEach(function(name) {
+                keys.forEach(function (name) {
                     usings[name] = modules.usedComponents[name];
                 });
             }
@@ -214,13 +214,13 @@ module.exports = {
                     break;
                 case '{}':
                     astPath.replaceWithMultiple(
-                        astPath.node.specifiers.map(function(el) {
+                        astPath.node.specifiers.map(function (el) {
                             return utils.exportExpr(el.local.name);
                         })
                     );
                     break;
             }
-            
+
         }
     },
     ClassProperty: {
@@ -265,8 +265,8 @@ module.exports = {
             astPath.remove();
         }
     },
-    MemberExpression() {},
-    AssignmentExpression() {},
+    MemberExpression() { },
+    AssignmentExpression() { },
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
@@ -362,7 +362,7 @@ module.exports = {
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 
     JSXOpeningElement: {
-        enter: function(astPath, state) {
+        enter: function (astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
             let bag = modules.importComponents[nodeName];
@@ -402,26 +402,6 @@ module.exports = {
                         )
                     );
                 }
-                //处理组件标签的内部，现在支持slot
-                /* if (!isEmpty) { 
-                    var fragmentUid = 'f' + utils.createUUID(astPath);
-                    if (dep.addImportTag) {
-                        dep.addImportTag(fragmentUid);
-                    } else {
-                        dep.set.add(fragmentUid);
-                    }
-                    attributes.push(
-                        utils.createAttribute('classUid', modules.classUid),
-                        utils.createAttribute(
-                            'instanceUid',
-                            t.jSXExpressionContainer(
-                                t.identifier('this.props.instanceUid')
-                            )
-                        ),
-                        utils.createAttribute('fragmentUid', fragmentUid)
-                    );
-                }
-                */
             } else {
                 if (nodeName != 'React.useComponent') {
                     helpers.nodeName(astPath, modules);
@@ -430,7 +410,7 @@ module.exports = {
         }
     },
     JSXAttribute: {
-        enter: function(astPath, state) {
+        enter: function (astPath, state) {
             let attrName = astPath.node.name.name;
             let attrValue = astPath.node.value;
             let parentPath = astPath.parentPath;
@@ -438,7 +418,7 @@ module.exports = {
 
             let srcValue = attrValue && attrValue.value;
             //处理静态资源@assets/xxx.png别名
-            if (attrName === 'src' && srcValue && /^(@assets)/.test(srcValue) ) {
+            if (attrName === 'src' && srcValue && /^(@assets)/.test(srcValue)) {
                 let realAssetsPath = path.join(process.cwd(), srcValue.replace(/@/, ''));
                 let relativePath = path.relative(
                     path.dirname(modules.sourcePath),
@@ -480,12 +460,6 @@ module.exports = {
                                 'data-class-uid',
                                 modules.classUid
                             )
-                            /* utils.createAttribute(
-                                'data-instance-uid',
-                                t.jSXExpressionContainer(
-                                    t.identifier('this.props.instanceUid')
-                                )
-                            )*/
                         );
 
                         //如果是位于循环里，还必须加上data-key，防止事件回调乱窜
@@ -561,18 +535,9 @@ module.exports = {
                 delete astPath.parentPath.renderProps;
                 let modules = utils.getAnu(state);
                 let subComponents = {};
-                modules.is.forEach(function(a) {
+                modules.is.forEach(function (a) {
                     subComponents[a] = path.join('..', a, 'index');
                 });
-                /*
-                var componentName = astPath.parentPath.componentName;
-				var dep = deps[componentName];
-
-				if (dep.addImportTag) {
-					dep.addImportTag(fragmentUid);
-				} else {
-					dep.set.add(fragmentUid);
-				}*/
 
                 // console.log(subComponents, modules.usedComponents);
                 helpers.render.exit(
@@ -616,7 +581,7 @@ module.exports = {
             }
         }
     },
-    JSXClosingElement: function(astPath, state) {
+    JSXClosingElement: function (astPath, state) {
         let modules = utils.getAnu(state);
         let nodeName = astPath.node.name.name;
         //将组件标签转换成React.toComponent标签，html标签转换成view/text标签

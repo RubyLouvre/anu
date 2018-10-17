@@ -260,7 +260,7 @@ let utils = {
         } catch (err) {
             let spinner = this.spinner(`正在下载最新的${React}`);
             spinner.start();
-            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/branch2/dist/${React}`;
+            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/branch3/dist/${React}`;
             let ReactLib = await axios.get(remoteUrl);
             fs.ensureFileSync(srcPath);
             fs.writeFileSync(srcPath, ReactLib.data);
@@ -295,7 +295,8 @@ let utils = {
         return {
             wx: 'ReactWX.js',
             ali: 'ReactAli.js',
-            bu: 'ReactBu.js'
+            bu: 'ReactBu.js',
+            quick: 'ReactQuick.js'
         };
     },
     getReactLibName() {
