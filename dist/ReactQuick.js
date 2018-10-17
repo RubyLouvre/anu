@@ -1,5 +1,6 @@
+
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-09-15
+ * 运行于快应用的React by 司徒正美 Copyright 2018-10-17
  * IE9+
  */
 
@@ -38,17 +39,16 @@ var __type = Object.prototype.toString;
 var fakeWindow = {};
 function getWindow() {
     try {
-        if (!window) {
-            throw 'no window';
+        if (window) {
+            return window;
         }
-        return window;
-    } catch (e) {
-        try {
+    } catch (e) {        }
+    try {
+        if (global) {
             return global;
-        } catch (e) {
-            return fakeWindow;
         }
-    }
+    } catch (e) {        }
+    return fakeWindow;
 }
 function isMounted(instance) {
     var fiber = get(instance);
@@ -95,6 +95,10 @@ function miniCreateClass(ctor, superClass, methods, statics) {
     }
     return Ctor;
 }
+var lowerCache = {};
+function toLowerCase(s) {
+    return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
+}
 function isFn(obj) {
     return __type.call(obj) === '[object Function]';
 }
@@ -126,7 +130,8 @@ var Renderer = {
     mountOrder: 1,
     macrotasks: [],
     boundaries: [],
-    onUpdate: noop,
+    onBeforeRender: noop,
+    onAfterRender: noop,
     onDispose: noop,
     middleware: function middleware(obj) {
         if (obj.begin && obj.end) {
@@ -227,15 +232,15 @@ function createElement(type, config) {
         argsLen = children.length;
     if (type && type.call) {
         tag = type.prototype && type.prototype.render ? 2 : 1;
-    } else if (type + "" !== type) {
-        toWarnDev("React.createElement: type is invalid.");
+    } else if (type + '' !== type) {
+        toWarnDev('React.createElement: type is invalid.');
     }
     if (config != null) {
         if (hasValidRef(config)) {
             ref = config.ref;
         }
         if (hasValidKey(config)) {
-            key = "" + config.key;
+            key = '' + config.key;
         }
     }
     props = makeProps(type, config || {}, props, children, argsLen);
@@ -258,7 +263,7 @@ function cloneElement(element, config) {
             owner = Renderer.currentOwner;
         }
         if (hasValidKey(config)) {
-            key = "" + config.key;
+            key = '' + config.key;
         }
     }
     props = makeProps(type, config || {}, props, children, argsLen);
@@ -281,7 +286,7 @@ function ReactElement(type, tag, props, key, ref, owner) {
         var refType = typeNumber(ref);
         if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
             if (refType < 4) {
-                ref += "";
+                ref += '';
             }
             ret.ref = ref;
         } else {
@@ -295,7 +300,7 @@ function isValidElement(vnode) {
     return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
 }
 function createVText(text) {
-    return ReactElement("#text", 6, text + "");
+    return ReactElement('#text', 6, text + '');
 }
 function escape(key) {
     var escapeRegex = /[=:]/g;
@@ -328,7 +333,7 @@ function flattenCb(context, child, key, childType) {
     if (!flattenObject[key]) {
         flattenObject[key] = child;
     } else {
-        key = "." + flattenIndex;
+        key = '.' + flattenIndex;
         flattenObject[key] = child;
     }
     flattenIndex++;
@@ -338,18 +343,18 @@ function fiberizeChildren(children, fiber) {
     flattenIndex = 0;
     if (children !== void 666) {
         lastText = null;
-        traverseAllChildren(children, "", flattenCb);
+        traverseAllChildren(children, '', flattenCb);
     }
     flattenIndex = 0;
     return fiber.children = flattenObject;
 }
 function getComponentKey(component, index) {
-    if ((typeof component === "undefined" ? "undefined" : _typeof(component)) === 'object' && component !== null && component.key != null) {
+    if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
         return escape(component.key);
     }
     return index.toString(36);
 }
-var SEPARATOR = ".";
+var SEPARATOR = '.';
 var SUBSEPARATOR = ':';
 function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
     var childType = typeNumber(children);
@@ -370,8 +375,8 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
         case 8:
             if (children.$$typeof || children instanceof Component) {
                 invokeCallback = true;
-            } else if (children.hasOwnProperty("toString")) {
-                children = children + "";
+            } else if (children.hasOwnProperty('toString')) {
+                children = children + '';
                 invokeCallback = true;
                 childType = 3;
             }
@@ -393,9 +398,11 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
     }
     var iteratorFn = getIteractor(children);
     if (iteratorFn) {
-        iterator = iteratorFn.call(children);
-        var ii = 0,
-            step;
+        var iterator = iteratorFn.call(children),
+            child = void 0,
+            ii = 0,
+            step = void 0,
+            nextName = void 0;
         while (!(step = iterator.next()).done) {
             child = step.value;
             nextName = nextNamePrefix + getComponentKey(child, ii++);
@@ -403,10 +410,10 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
         }
         return subtreeCount;
     }
-    throw "children: type is invalid.";
+    throw 'children: type is invalid.';
 }
 var REAL_SYMBOL = hasSymbol && Symbol.iterator;
-var FAKE_SYMBOL = "@@iterator";
+var FAKE_SYMBOL = '@@iterator';
 function getIteractor(a) {
     var iteratorFn = REAL_SYMBOL && a[REAL_SYMBOL] || a[FAKE_SYMBOL];
     if (iteratorFn && iteratorFn.call) {
@@ -535,140 +542,6 @@ var PureComponent = miniCreateClass(function PureComponent() {
         return !a || !b;
     }
 });
-
-function AnuPortal(props) {
-    return props.children;
-}
-function createPortal(children, parent) {
-    var child = createElement(AnuPortal, { children: children, parent: parent });
-    child.isPortal = true;
-    return child;
-}
-
-var uuid = 1;
-function gud() {
-    return uuid++;
-}
-var MAX_NUMBER = 1073741823;
-function createEventEmitter(value) {
-    var handlers = [];
-    return {
-        on: function on(handler) {
-            handlers.push(handler);
-        },
-        off: function off(handler) {
-            handlers = handlers.filter(function (h) {
-                return h !== handler;
-            });
-        },
-        get: function get$$1() {
-            return value;
-        },
-        set: function set(newValue, changedBits) {
-            value = newValue;
-            handlers.forEach(function (handler) {
-                return handler(value, changedBits);
-            });
-        }
-    };
-}
-function createContext(defaultValue, calculateChangedBits) {
-    var contextProp = "__create-react-context-" + gud() + "__";
-    function create(obj, value) {
-        obj[contextProp] = value;
-        return obj;
-    }
-    var Provider = miniCreateClass(function Provider(props) {
-        this.emitter = createEventEmitter(props.value);
-    }, Component, {
-        getChildContext: function getChildContext() {
-            return create({}, this.emitter);
-        },
-        UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
-            if (this.props.value !== nextProps.value) {
-                var oldValue = this.props.value;
-                var newValue = nextProps.value;
-                var changedBits = void 0;
-                if (Object.is(oldValue, newValue)) {
-                    changedBits = 0;
-                } else {
-                    changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
-                    changedBits |= 0;
-                    if (changedBits !== 0) {
-                        this.emitter.set(nextProps.value, changedBits);
-                    }
-                }
-            }
-        },
-        render: function render() {
-            return this.props.children;
-        }
-    }, {
-        childContextTypes: create({}, PropTypes.object.isRequired)
-    });
-    var Consumer = miniCreateClass(function Consumer(props, context) {
-        var _this = this;
-        this.observedBits = 0;
-        this.state = {
-            value: this.getValue()
-        };
-        this.emitter = context[contextProp];
-        this.onUpdate = function (newValue, changedBits) {
-            var observedBits = _this.observedBits | 0;
-            if ((observedBits & changedBits) !== 0) {
-                _this.setState({
-                    value: _this.getValue()
-                });
-            }
-        };
-    }, Component, {
-        UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
-            var observedBits = nextProps.observedBits;
-            this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
-        },
-        getValue: function getValue() {
-            if (this.emitter) {
-                return this.emitter.get();
-            } else {
-                return defaultValue;
-            }
-        },
-        componentDidMount: function componentDidMount() {
-            if (this.emitter) {
-                this.emitter.on(this.onUpdate);
-            }
-            var observedBits = this.props.observedBits;
-            this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
-        },
-        componentWillUnmount: function componentWillUnmount() {
-            if (this.emitter) {
-                this.emitter.off(this.onUpdate);
-            }
-        },
-        render: function render() {
-            return this.props.children(this.state.value);
-        }
-    }, {
-        contextTypes: create({}, PropTypes.object)
-    });
-    return {
-        Provider: Provider,
-        Consumer: Consumer
-    };
-}
-
-function _uuid() {
-    return (Math.random() + '').slice(-4);
-}
-function getUUID() {
-    return _uuid() + _uuid();
-}
-var classCached = {};
-function newData() {
-    return {
-        components: {}
-    };
-}
 
 var onAndSyncApis = {
   onSocketOpen: true,
@@ -855,12 +728,12 @@ var otherApis = {
 };
 
 function initPxTransform() {
-    var wxConfig = this.wxConfig = this.wxConfig || {};
+    var wxConfig = this.api;
     var windowWidth = 375;
     wxConfig.designWidth = windowWidth;
     wxConfig.deviceRatio = 750 / windowWidth / 2;
-    if (typeof wx !== 'undefined') {
-        wx.getSystemInfo({
+    if (wxConfig.getSystemInfo) {
+        wxConfig.getSystemInfo({
             success: function success(res) {
                 windowWidth = res.windowWidth;
                 wxConfig.designWidth = windowWidth;
@@ -892,7 +765,11 @@ var RequestQueue = {
                 completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
                 _this.run();
             };
-            wx.request(options);
+            if (this.facade.httpRequest) {
+                this.facade.httpRequest(options);
+            } else if (this.facade.request) {
+                this.facade.request(options);
+            }
         }
     }
 };
@@ -908,6 +785,8 @@ function request(options) {
     var originComplete = options['complete'];
     var p = new Promise(function (resolve, reject) {
         options['success'] = function (res) {
+            res.statusCode = res.status || res.statusCode;
+            res.header = res.headers || res.header;
             originSuccess && originSuccess(res);
             resolve(res);
         };
@@ -922,16 +801,16 @@ function request(options) {
     });
     return p;
 }
-function processApis(ReactWX) {
+function processApis(ReactWX, facade) {
     var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
     Object.keys(weApis).forEach(function (key) {
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
-            ReactWX.wx[key] = function (options) {
+            ReactWX.api[key] = function (options) {
                 options = options || {};
                 var task = null;
                 var obj = Object.assign({}, options);
                 if (typeof options === 'string') {
-                    return wx[key](options);
+                    return facade[key](options);
                 }
                 var p = new Promise(function (resolve, reject) {
                     ['fail', 'success', 'complete'].forEach(function (k) {
@@ -948,7 +827,7 @@ function processApis(ReactWX) {
                             }
                         };
                     });
-                    task = wx[key](obj);
+                    task = facade[key](obj);
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
                     p.progress = function (cb) {
@@ -964,39 +843,56 @@ function processApis(ReactWX) {
                 return p;
             };
         } else {
-            ReactWX.wx[key] = function () {
-                return wx[key].apply(wx, arguments);
+            ReactWX.api[key] = function () {
+                return facade[key].apply(facade, arguments);
             };
         }
     });
 }
 function pxTransform(size) {
-    var deviceRatio = this.wxConfig.deviceRatio;
+    var deviceRatio = this.api.deviceRatio;
     return parseInt(size, 10) / deviceRatio + 'rpx';
 }
-function initNativeApi(ReactWX) {
-    ReactWX.wx = {};
-    processApis(ReactWX);
-    ReactWX.wx.request = request;
+function injectAPIs(ReactWX, facade, override) {
+    ReactWX.api = {};
+    processApis(ReactWX, facade);
+    ReactWX.api.request = request;
     if (typeof getCurrentPages == 'function') {
         ReactWX.getCurrentPages = getCurrentPages;
     }
     if (typeof getApp == 'function') {
         ReactWX.getApp = getApp;
     }
+    if (override) {
+        var obj = override(facade);
+        Object.assign(ReactWX.api, obj);
+    }
+    RequestQueue.facade = facade;
     ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
     ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
 
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
+        if (e.type == 'message') {
+            return;
+        }
         var target = e.currentTarget;
         var dataset = target.dataset || {};
-        var eventUid = dataset[e.type + 'Uid'];
-        var classUid = dataset.classUid;
-        var componentClass = classCached[classUid];
-        var instanceUid = dataset.instanceUid;
-        var instance = componentClass.instances[instanceUid];
+        var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+        var instance = this.reactInstance;
+        if (!instance) {
+            return;
+        }
+        if (!instance.$$eventCached) {
+            return;
+        }
+        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
+        if (e.type == 'change' && fiber) {
+            if (fiber.props.value + '' == e.detail.value) {
+                return;
+            }
+        }
         var key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
         if (instance) {
@@ -1019,7 +915,7 @@ function createEvent(e, target) {
         Object.assign(target, e.detail);
     }
     event.stopPropagation = function () {
-        console.warn('小程序不支持这方法，请使用catchXXX');
+        console.warn("小程序不支持这方法，请使用catchXXX");
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
@@ -1027,6 +923,10 @@ function createEvent(e, target) {
     event.touches = e.touches;
     event.timeStamp = new Date() - 0;
     return event;
+}
+
+function AnuPortal(props) {
+    return props.children;
 }
 
 function UpdateQueue() {
@@ -1513,11 +1413,12 @@ function updateClassComponent(fiber, info) {
     if (fiber.catchError) {
         return;
     }
-    Renderer.onUpdate(fiber);
+    Renderer.onBeforeRender(fiber);
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     var rendered = applyCallback(instance, "render", []);
     diffChildren(fiber, rendered);
+    Renderer.onAfterRender(fiber);
 }
 function applybeforeMountHooks(fiber, instance, newProps) {
     fiber.setout = true;
@@ -2184,144 +2085,31 @@ function getContainer(p) {
     }
 }
 
-var ignoreObject = {
-    is: 1,
-    $$loop: 1,
-    $$index: 1,
-    classUid: 1,
-    instanceUid: 1
-};
-function onComponentUpdate(fiber) {
-    var instance = fiber.stateNode;
-    var type = fiber.type;
-    var instances = type.instances;
-    var instanceUid = instance.instanceUid;
-    var parentInst = null;
-    if (!instanceUid) {
-        instanceUid = instance.instanceUid = getUUID();
-        instances[instanceUid] = instance;
-        var p = fiber.return;
-        while (p) {
-            if (p.name !== 'toComponent' && p.tag < 4) {
-                var stateNode = p.stateNode;
-                if (!parentInst) {
-                    parentInst = instance.$parentInst = stateNode;
-                }
-                if (p.props.isPageComponent) {
-                    if (!stateNode.wxData) {
-                        stateNode.wxData = newData();
-                    }
-                    instance.$pageInst = stateNode;
-                    break;
-                }
-                if (stateNode.$pageInst) {
-                    instance.$pageInst = stateNode.$pageInst;
-                    break;
-                }
-            }
-            p = p.return;
-        }
-    }
-    parentInst = instance.$parentInst;
-    if (parentInst) {
-        var inputProps = fiber._owner.props;
-        var uuid = inputProps.$$loop;
-        var index = inputProps.$$index;
-        if (index != null) {
-            uuid += index;
-        }
-        var data = instance.wxData || (instance.wxData = newData());
-        data.props = instance.props;
-        data.props.instanceUid = instance.instanceUid;
-        data.state = instance.state;
-        data.context = instance.context;
-        getData(parentInst)[uuid] = [data];
-    }
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+function _uuid() {
+    return (Math.random() + '').slice(-4);
 }
-function onComponentDispose(fiber) {
-    var instance = fiber.stateNode;
-    var type = fiber.type;
-    var instances = type.instances;
-    if (!instances) {
+var delayMounts = [];
+function getUUID() {
+    return _uuid() + _uuid();
+}
+function updateMiniApp(instance) {
+    if (!instance || !instance.wx) {
         return;
     }
-    var parentInst = instance.$parentInst;
-    if (parentInst) {
-        delete instances[instance.instanceUid];
-        var inputProps = fiber._owner.props;
-        var uuid = inputProps.$$loop;
-        var index = inputProps.$$index;
-        if (index != null) {
-            uuid += index;
-        }
-        delete getData(parentInst)[uuid];
-    }
+    instance.wx.setData(safeClone({
+        props: instance.props,
+        state: instance.state || null,
+        context: instance.context
+    }));
 }
-function toComponent(props) {
-    var clazz = props.is;
-    var componentProps = {};
-    for (var i in props) {
-        if (ignoreObject[i] !== 1) {
-            componentProps[i] = props[i];
-        }
-    }
-    if (props.fragmentUid && props.classUid) {
-        var parentClass = classCached[props.classUid];
-        if (parentClass && parentClass.instances) {
-            var parentInstance = parentClass.instances[props.instanceUid];
-            componentProps.fragmentData = {
-                state: parentInstance.state,
-                props: parentInstance.props,
-                context: parentInstance.context
-            };
-        }
-    }
-    if (!clazz.hackByMiniApp) {
-        clazz.hackByMiniApp = true;
-        clazz.instances = clazz.instances || {};
-        var setState = clazz.prototype.setState;
-        var forceUpdate = clazz.prototype.forceUpdate;
-        if (setState && !setState.fromPage) {
-            var fn = clazz.prototype.setState = function () {
-                var pageInst = this.$pageInst;
-                if (pageInst) {
-                    pageInst.setState.apply(this, arguments);
-                } else {
-                    setState.apply(this, arguments);
-                }
-            };
-            fn.fromPage = true;
-            clazz.prototype.forceUpdate = function () {
-                var pageInst = this.$pageInst;
-                if (pageInst) {
-                    pageInst.forceUpdate.apply(this, arguments);
-                } else {
-                    forceUpdate.apply(this, arguments);
-                }
-            };
-        }
-    }
-    return createElement(clazz, componentProps);
-}
-function getData(instance) {
-    return instance.wxData.components;
-}
-
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-function onPageUpdate(fiber) {
-    var instance = fiber.stateNode;
-    var type = fiber.type;
-    if (!instance.instanceUid) {
-        var uuid = 'i' + getUUID();
-        instance.instanceUid = uuid;
-        type.instances[uuid] = instance;
-    }
-    instance.props.instanceUid = instance.instanceUid;
+function isReferenceType(val) {
+    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
 }
 function safeClone(originVal) {
     var temp = originVal instanceof Array ? [] : {};
     for (var item in originVal) {
-        if (originVal.hasOwnProperty(item)) {
+        if (hasOwnProperty.call(originVal, item)) {
             var value = originVal[item];
             if (isReferenceType(value)) {
                 if (value.$$typeof) {
@@ -2335,247 +2123,149 @@ function safeClone(originVal) {
     }
     return temp;
 }
-function isReferenceType(val) {
-    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
-}
-function toPage(PageClass, path, testObject) {
-    PageClass.prototype.dispatchEvent = eventSystem.dispatchEvent;
-    PageClass.instances = PageClass.instances || {};
-    var $wxPage = {
-        setData: noop
-    },
-        instance,
-        config = {
-        data: newData(),
-        dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function onLoad(query) {
-            $wxPage = this;
-            console.log('onLoad', path);
-            instance = render(createElement(PageClass, {
-                path: path,
-                query: query,
-                isPageComponent: true
-            }), {
-                type: 'page',
-                props: {},
-                children: [],
-                root: true,
-                appendChild: noop
-            });
-            var anuSetState = instance.setState;
-            var anuForceUpdate = instance.forceUpdate;
-            var updating = false;
-            var canSetData = false;
-            function updatePage(pageInst) {
-                var data = pageInst.wxData;
-                extend(data, {
-                    state: pageInst.state,
-                    props: pageInst.props,
-                    context: pageInst.context
-                });
-                $wxPage.setData(safeClone(data), function () {
-                });
-            }
-            instance.forceUpdate = instance.setState = function (a) {
-                var updateMethod = anuSetState;
-                var cbIndex = 1;
-                if (isFn(a) || a == null) {
-                    updateMethod = anuForceUpdate;
-                    cbIndex = 0;
-                }
-                var pageInst = this.$pageInst || this;
-                if (updating === false) {
-                    if (pageInst == this) {
-                        pageInst.wxData = newData();
-                    }
-                    canSetData = true;
-                    updating = true;
-                }
-                var cb = arguments[cbIndex];
-                var args = Array.prototype.slice.call(arguments);
-                args[cbIndex] = function () {
-                    cb && cb.call(this);
-                    if (canSetData) {
-                        canSetData = false;
-                        updating = false;
-                        updatePage(pageInst);
-                    }
-                };
-                updateMethod.apply(this, args);
-            };
-            instance.wxData = instance.wxData || newData();
-            updatePage(instance);
-        },
-        onShow: function onShow() {
-            PageClass.instances[instance.instanceUid] = instance;
-            var fn = instance.componentDidShow;
-            if (isFn(fn)) {
-                fn.call(instance);
-            }
-        },
-        onHide: function onHide() {
-            delete PageClass.instances[instance.instanceUid];
-            var fn = instance.componentDidHide;
-            if (isFn(fn)) {
-                fn.call(instance);
-            }
-        },
-        onUnload: function onUnload() {
-            var fn = instance.componentWillUnmount;
-            if (isFn(fn)) {
-                fn.call(instance);
-            }
-            instance = {};
-        }
-    };
-    if (testObject) {
-        config.setData = function (obj) {
-            config.data = obj;
-        };
-        config.onLoad();
-        return config;
-    }
-    return safeClone(config);
+function toRenderProps(props) {
+    return null;
 }
 
-function cleanChildren(array) {
-	if (!Array.isArray(array)) {
-		return array;
-	}
-	return array.map(function (el) {
-		if (el.type == '#text') {
-			return el.props;
-		} else {
-			return {
-				type: el.type,
-				props: el.props,
-				children: cleanChildren(el.children)
-			};
-		}
-	});
-}
-var autoContainer = {
-	type: 'root',
-	appendChild: noop,
-	props: null,
-	children: []
-};
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
-	var n = name.charAt(0) == 'o' ? 2 : 5;
-	var type = name.slice(n).toLowerCase();
-	var eventCode = props['data-' + type + '-uid'];
-	return eventCode + (key != null ? '-' + key : '');
+    var n = name.charAt(0) == 'o' ? 2 : 5;
+    var type = toLowerCase(name.slice(n));
+    var eventCode = props['data-' + type + '-uid'];
+    return eventCode + (key != null ? '-' + key : '');
 }
 var Renderer$1 = createRenderer({
-	render: render,
-	updateAttribute: function updateAttribute(fiber) {
-		var props = fiber.props,
-		    lastProps = fiber.lastProps;
-		var classId = props['data-class-uid'];
-		var instanceId = props['data-instance-uid'];
-		if (classId) {
-			var clazz = classCached[classId];
-			if (clazz && clazz.instances) {
-				var instance = clazz.instances[instanceId];
-				if (instance) {
-					var cached = instance.$$eventCached || (instance.$$eventCached = {});
-					for (var name in props) {
-						if (onEvent.test(name) && isFn(props[name])) {
-							var code = getEventHashCode(name, props, props['data-key']);
-							cached[code] = props[name];
-						}
-					}
-					if (lastProps) {
-						for (var _name in lastProps) {
-							if (onEvent.test(_name) && !props[_name]) {
-								code = getEventHashCode(_name, lastProps, lastProps['data-key']);
-								delete cached[code];
-							}
-						}
-					}
-				}
-			}
-		}
-	},
-	updateContent: function updateContent(fiber) {
-		fiber.stateNode.props = fiber.props;
-	},
-	onUpdate: function onUpdate(fiber) {
-		if (fiber.type.instances) {
-			if (fiber.props.isPageComponent) {
-				onPageUpdate(fiber);
-			} else {
-				onComponentUpdate(fiber);
-			}
-		}
-	},
-	onDispose: function onDispose(fiber) {
-		if (fiber.type.instances) {
-			if (!fiber.props.isPageComponent) {
-				onComponentDispose(fiber);
-			}
-		}
-	},
-	getRoot: function getRoot() {
-		return autoContainer;
-	},
-	getChildren: function getChildren() {
-		return cleanChildren(autoContainer.children || []);
-	},
-	createElement: function createElement(fiber) {
-		return fiber.tag === 5 ? {
-			type: fiber.type,
-			props: fiber.props || {},
-			children: []
-		} : {
-			type: fiber.type,
-			props: fiber.props
-		};
-	},
-	insertElement: function insertElement(fiber) {
-		var dom = fiber.stateNode,
-		    parentNode = fiber.parent,
-		    forwardFiber = fiber.forwardFiber,
-		    before = forwardFiber ? forwardFiber.stateNode : null,
-		    children = parentNode.children;
-		try {
-			if (before == null) {
-				if (dom !== children[0]) {
-					remove(children, dom);
-					children.unshift(dom);
-				}
-			} else {
-				if (dom !== children[children.length - 1]) {
-					remove(children, dom);
-					var i = children.indexOf(before);
-					children.splice(i + 1, 0, dom);
-				}
-			}
-		} catch (e) {
-			throw e;
-		}
-	},
-	emptyElement: function emptyElement(fiber) {
-		var dom = fiber.stateNode;
-		var children = dom && dom.children;
-		if (dom && Array.isArray(children)) {
-			children.forEach(Renderer$1.removeElement);
-		}
-	},
-	removeElement: function removeElement(fiber) {
-		if (fiber.parent) {
-			var parent = fiber.parent;
-			var node = fiber.stateNode;
-			remove(parent.children, node);
-		}
-	}
+    render: render,
+    updateAttribute: function updateAttribute(fiber) {
+        var props = fiber.props,
+            lastProps = fiber.lastProps;
+        var classId = props['data-class-uid'];
+        var instance = fiber._owner;
+        if (instance && !instance.classUid) {
+            instance = get(instance)._owner;
+        }
+        if (instance && classId) {
+            var cached = instance.$$eventCached || (instance.$$eventCached = {});
+            for (var name in props) {
+                if (onEvent.test(name) && isFn(props[name])) {
+                    var code = getEventHashCode(name, props, props['data-key']);
+                    cached[code] = props[name];
+                    cached[code + 'Fiber'] = fiber;
+                }
+            }
+            if (lastProps) {
+                for (var _name in lastProps) {
+                    if (onEvent.test(_name) && !props[_name]) {
+                        code = getEventHashCode(_name, lastProps, lastProps['data-key']);
+                        delete cached[code];
+                        delete cached[code + 'Fiber'];
+                    }
+                }
+            }
+        }
+    },
+    updateContent: function updateContent(fiber) {
+        fiber.stateNode.props = fiber.props;
+    },
+    onBeforeRender: function onBeforeRender(fiber) {
+        var type = fiber.type;
+        if (type.reactInstances) {
+            var name = fiber.name;
+            var noMount = !fiber.hasMounted;
+            var instance = fiber.stateNode;
+            if (!instance.instanceUid) {
+                var uuid = 'i' + getUUID();
+                instance.instanceUid = uuid;
+                type[uuid] = instance;
+            }
+            instance.props.instanceUid = instance.instanceUid;
+            if (type.wxInstances) {
+                if (type.wxInstances.length && !instance.wx) {
+                    var wx = instance.wx = type.wxInstances.shift();
+                    wx.reactInstance = instance;
+                    console.log('onBeforeRender时更新', name, instance.props);
+                }
+                if (!instance.wx) {
+                    console.log('onBeforeRender时更新', name, '没有wx');
+                    type.reactInstances.push(instance);
+                }
+            }
+        }
+        if (noMount && instance.componentDidMount) {
+            delayMounts.push({
+                instance: instance,
+                fn: instance.componentDidMount
+            });
+            instance.componentDidMount = noop;
+        }
+    },
+    onAfterRender: function onAfterRender(fiber) {
+        var instance = fiber.stateNode;
+        if (instance.wx) {
+            updateMiniApp(instance);
+        }
+    },
+    onDispose: function onDispose(fiber) {
+        var instance = fiber.stateNode;
+        var wx = instance.wx;
+        if (wx) {
+            wx.reactInstance = null;
+            instance.wx = null;
+        }
+    },
+    createElement: function createElement(fiber) {
+        return fiber.tag === 5 ? {
+            type: fiber.type,
+            props: fiber.props || {},
+            children: []
+        } : {
+            type: fiber.type,
+            props: fiber.props
+        };
+    },
+    insertElement: function insertElement(fiber) {
+        var dom = fiber.stateNode,
+            parentNode = fiber.parent,
+            forwardFiber = fiber.forwardFiber,
+            before = forwardFiber ? forwardFiber.stateNode : null,
+            children = parentNode.children;
+        try {
+            if (before == null) {
+                if (dom !== children[0]) {
+                    remove(children, dom);
+                    children.unshift(dom);
+                }
+            } else {
+                if (dom !== children[children.length - 1]) {
+                    remove(children, dom);
+                    var i = children.indexOf(before);
+                    children.splice(i + 1, 0, dom);
+                }
+            }
+        } catch (e) {
+            throw e;
+        }
+    },
+    emptyElement: function emptyElement(fiber) {
+        var dom = fiber.stateNode;
+        var children = dom && dom.children;
+        if (dom && Array.isArray(children)) {
+            children.forEach(Renderer$1.removeElement);
+        }
+    },
+    removeElement: function removeElement(fiber) {
+        if (fiber.parent) {
+            var parent = fiber.parent;
+            var node = fiber.stateNode;
+            remove(parent.children, node);
+        }
+    }
 });
 function remove(children, node) {
-	var index = children.indexOf(node);
-	if (index !== -1) {
-		children.splice(index, 1);
-	}
+    var index = children.indexOf(node);
+    if (index !== -1) {
+        children.splice(index, 1);
+    }
 }
 
 var rhyphen = /([a-z\d])([A-Z]+)/g;
@@ -2602,49 +2292,149 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
-function toRenderProps(props) {
-    var parentClass = classCached[props.classUid];
-    if (parentClass && parentClass.instances) {
-        var instance = parentClass.instances[props.instanceUid];
-        var wxData = instance.wxData;
-        instance.wxData.renderData = Object.assign({}, wxData);
+var registeredComponents = {};
+function useComponent(props) {
+    var is = props.is;
+    var clazz = registeredComponents[is];
+    delete props.is;
+    var args = [].slice.call(arguments, 2);
+    args.unshift(clazz, props);
+    console.log('使用组件', is);
+    return createElement.apply(null, args);
+}
+
+var HookMap = {
+    onShow: 'componentDidShow',
+    onHide: 'componentDidHide',
+    onUnload: 'componentWillUnmount'
+};
+function applyAppStore() {
+    console.log('此方法已废弃');
+}
+function registerPage(PageClass, path, testObject) {
+    PageClass.reactInstances = [];
+    console.log(path, '注册页面');
+    var pageViewInstance,
+        config = {
+        data: {},
+        dispatchEvent: eventSystem.dispatchEvent,
+        onLoad: function onLoad(query) {
+            console.log('开始载入页面', path);
+            pageViewInstance = render(createElement(PageClass, {
+                path: path,
+                query: query,
+                isPageComponent: true
+            }), {
+                type: 'page',
+                props: {},
+                children: [],
+                root: true,
+                appendChild: noop
+            });
+            this.reactInstance = pageViewInstance;
+            pageViewInstance.wx = this;
+            console.log('更新页面数据', path);
+            updateMiniApp(pageViewInstance);
+        },
+        onReady: function onReady() {
+            console.log('页面布局完成', path);
+            var el;
+            while (el = delayMounts.pop()) {
+                el.fn.call(el.instance);
+                el.instance.componentDidMount = el.fn;
+            }
+        }
+    };
+    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
+        config[hook] = function () {
+            var name = HookMap[hook] || hook;
+            var fn = pageViewInstance[name];
+            if (isFn(fn)) {
+                return fn.apply(pageViewInstance, arguments);
+            }
+        };
+    });
+    if (testObject) {
+        config.setData = function (obj) {
+            config.data = obj;
+        };
+        config.onLoad();
+        return config;
     }
-    return null;
+    return config;
 }
 
 var win = getWindow();
 var React = void 0;
 var render$1 = Renderer$1.render;
-React = win.React = win.ReactDOM = {
+function registerComponent(type, name) {
+    registeredComponents[name] = type;
+    var reactInstances = type.reactInstances = [];
+    var wxInstances = type.wxInstances = [];
+    return {
+        private: {
+            props: {},
+            state: {},
+            context: {}
+        },
+        onInit: function onInit() {
+            var instance = reactInstances.shift();
+            if (instance) {
+                console.log("created时为", name, "添加wx");
+                instance.wx = this;
+                this.reactInstance = instance;
+            } else {
+                console.log("created时为", name, "没有对应react实例");
+                wxInstances.push(this);
+            }
+        },
+        onReady: function onReady() {
+            if (this.reactInstance) {
+                updateMiniApp(this.reactInstance);
+                console.log("attached时更新", name);
+            } else {
+                console.log("attached时无法更新", name);
+            }
+        },
+        onDestroy: function onDestroy() {
+            this.reactInstance = null;
+        },
+        methods: {
+            dispatchEvent: eventSystem.dispatchEvent
+        }
+    };
+}
+React = win.React = {
     eventSystem: eventSystem,
     findDOMNode: function findDOMNode() {
-        console.log('小程序不支持findDOMNode');
+        console.log("小程序不支持findDOMNode");
     },
-    version: '1.4.6',
+    version: '1.4.8',
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,
     PropTypes: PropTypes,
     Children: Children,
-    createPortal: createPortal,
-    createContext: createContext,
     Component: Component,
     createElement: createElement,
     cloneElement: cloneElement,
     PureComponent: PureComponent,
     isValidElement: isValidElement,
     createFactory: createFactory,
-    toClass: function toClass(a, b, c, d) {
-        var clazz = miniCreateClass.apply(null, arguments);
-        var uuid = clazz.prototype.classUid;
-        classCached[uuid] = clazz;
-        return clazz;
+    toClass: function toClass() {
+        return miniCreateClass.apply(null, arguments);
     },
+    applyAppStore: applyAppStore,
     toRenderProps: toRenderProps,
-    toComponent: toComponent,
-    toPage: toPage,
-    toStyle: toStyle
+    useComponent: useComponent,
+    registerComponent: registerComponent,
+    registerPage: registerPage,
+    toStyle: toStyle,
+    appType: 'quick'
 };
-initNativeApi(React);
-module.exports = React;
+var apiContainer = {};
+injectAPIs(React, apiContainer);
+var React$1 = React;
 
+export default React$1;
+export { registerComponent, Children, createElement, Component };
