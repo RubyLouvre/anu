@@ -148,7 +148,7 @@ class Parser {
 
         this.transform();
         this.copyAssets();
-        generate();
+        
     }
     filterNpmModule(resolvedIds) {
         //判定路径是否以字母开头
@@ -241,6 +241,10 @@ class Parser {
         });
     }
 }
+
+utils.on('build', ()=>{
+    generate();
+});
 
 async function build(arg) {
     await utils.asyncReact();
