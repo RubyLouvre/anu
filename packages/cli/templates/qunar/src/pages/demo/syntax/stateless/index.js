@@ -8,19 +8,19 @@ class P extends React.Component {
             b: 222,
             styles: {
                 a: {
-                    border: '1px solid red'
+                    border:'1px solid red'
                 }
             }
         };
     }
     changeA(e) {
         this.setState({
-            a: ~~e.target.value
+            a: ~~e.target.value,
         });
     }
     changeB(e) {
         this.setState({
-            b: ~~e.target.value
+            b: ~~e.target.value,
         });
     }
     render() {

@@ -1,5 +1,5 @@
 import React from '@react';
-import './index.less';
+import './index.scss';
 
 const WEEK = ['周日','周一','周二','周三','周四','周五','周六'];
 class P extends React.Component {
