@@ -78,6 +78,14 @@ if (/\:/.test(command)) {
     //<watch|build>:
     command = command.split(':')[0];
 }
+
+if(
+    program.rawArgs[program.rawArgs.length-1] == '-c' ||
+    program.rawArgs[program.rawArgs.length-1] == '--compress'
+){
+    config['compress'] = true;
+}
+
 switch (command) {
     case 'watch':
         require('../packages/index')('watch', buildType);
