@@ -2522,25 +2522,23 @@ function registerComponent(type, name) {
             state: {},
             context: {}
         },
-        lifetimes: {
-            didMount: function didMount() {
-                var instance = reactInstances.shift();
-                if (instance) {
-                    console.log('didMount时', name, '添加wx');
-                    instance.wx = this;
-                    this.reactInstance = instance;
-                } else {
-                    console.log('didMount时', name, '没有对应react实例');
-                    wxInstances.push(this);
-                }
-                if (this.reactInstance) {
-                    updateMiniApp(this.reactInstance);
-                    console.log('didMount时 更新', name);
-                }
-            },
-            didUnmount: function didUnmount() {
-                this.reactInstance = null;
+        didMount: function didMount() {
+            var instance = reactInstances.shift();
+            if (instance) {
+                console.log("didMount时", name, "添加wx");
+                instance.wx = this;
+                this.reactInstance = instance;
+            } else {
+                console.log("didMount时", name, "没有对应react实例");
+                wxInstances.push(this);
             }
+            if (this.reactInstance) {
+                updateMiniApp(this.reactInstance);
+                console.log("didMount时 更新", name);
+            }
+        },
+        didUnmount: function didUnmount() {
+            this.reactInstance = null;
         },
         methods: {
             dispatchEvent: eventSystem.dispatchEvent
@@ -2550,7 +2548,7 @@ function registerComponent(type, name) {
 React = win.React = {
     eventSystem: eventSystem,
     findDOMNode: function findDOMNode() {
-        console.log('小程序不支持findDOMNode');
+        console.log("小程序不支持findDOMNode");
     },
     version: '1.4.8',
     render: render$1,

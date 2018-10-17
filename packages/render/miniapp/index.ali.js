@@ -33,44 +33,43 @@ export function registerComponent(type, name) {
         data: {
             props: {},
             state: {},
-            context: {},
+            context: {}
         },
-        lifetimes: {
-            didMount() {
-                var instance = reactInstances.shift();
-                if (instance) {
-                    /* eslint-disable-next-line */
-                    console.log('didMount时', name, '添加wx');
-                    instance.wx = this;
-                    this.reactInstance = instance;
-                } else {
-                    /* eslint-disable-next-line */
-                    console.log('didMount时', name, '没有对应react实例');
-                    wxInstances.push(this);
-                }
-                if (this.reactInstance) {
-                    updateMiniApp(this.reactInstance);
-                    /* eslint-disable-next-line */
-                    console.log('didMount时 更新', name);
-                }
-            },
-            didUnmount() {
-                this.reactInstance = null;
-            },
+
+        didMount() {
+            var instance = reactInstances.shift();
+            if (instance) {
+                /* eslint-disable-next-line */
+                console.log("didMount时", name, "添加wx");
+                instance.wx = this;
+                this.reactInstance = instance;
+            } else {
+                /* eslint-disable-next-line */
+                console.log("didMount时", name, "没有对应react实例");
+                wxInstances.push(this);
+            }
+            if (this.reactInstance) {
+                updateMiniApp(this.reactInstance);
+                /* eslint-disable-next-line */
+                console.log("didMount时 更新", name);
+            }
         },
+        didUnmount() {
+            this.reactInstance = null;
+        },
+
         methods: {
-            dispatchEvent: eventSystem.dispatchEvent,
-        },
+            dispatchEvent: eventSystem.dispatchEvent
+        }
     };
-    
 }
 
-React = win.React =  {
+React = win.React = {
     //平台相关API
     eventSystem,
 
     findDOMNode: function() {
-        console.log('小程序不支持findDOMNode'); /* eslint-disable-line */
+        console.log("小程序不支持findDOMNode"); /* eslint-disable-line */
     },
     //fiber底层API
     version: 'VERSION',
@@ -89,7 +88,7 @@ React = win.React =  {
     createFactory,
     toClass: function() {
         //保存所有class到classCache中，方便在事件回调中找到对应实例
-        return  miniCreateClass.apply(null, arguments);
+        return miniCreateClass.apply(null, arguments);
     },
     applyAppStore,
     toRenderProps,
@@ -100,13 +99,9 @@ React = win.React =  {
     appType: 'ali'
 };
 var apiContainer = {};
-if (typeof my != 'undefined'){
+if (typeof my != 'undefined') {
     apiContainer = my;
-} 
+}
 injectAPIs(React, apiContainer, aliApis);
 export default React;
-export {
-    Children,
-    createElement,
-    Component
-};
+export { Children, createElement, Component };
