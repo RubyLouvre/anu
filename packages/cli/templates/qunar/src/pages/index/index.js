@@ -1,5 +1,5 @@
 import React from '@react';
-import './index.less';
+import './index.scss';
 // eslint-disable-next-line
 class P extends React.Component {
     constructor() {
@@ -163,7 +163,7 @@ class P extends React.Component {
                   class="top-image"
                   src="https://s.qunarzz.com/wechatapp/home/banner0510-002.png"
               />
-              <div class="nav-wrapper">
+              <div class="nav-wrapper c-flex">
                   {this.state.indexPageIcons.map(function(item, index) {
                       return (
                           <div
