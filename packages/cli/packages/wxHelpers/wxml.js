@@ -3,9 +3,11 @@ const babel = require('babel-core');
 const t = require('babel-types');
 const generate = require('babel-generator').default;
 const attrValueHelper = require('./attrValue');
-const attrNameHelper = require('./attrName');
 const config = require('../config');
 const logicSrc = '../' + config.buildType + 'Helpers/logic';
+const attrNameSrc = '../' + config.buildType + 'Helpers/attrName';
+const attrNameHelper = require(attrNameSrc);
+
 const logicHelper = require(logicSrc);
 const utils = require('../utils');
 
