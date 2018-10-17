@@ -542,15 +542,6 @@ var PureComponent = miniCreateClass(function PureComponent() {
     }
 });
 
-function AnuPortal(props) {
-    return props.children;
-}
-function createPortal(children, parent) {
-    var child = createElement(AnuPortal, { children: children, parent: parent });
-    child.isPortal = true;
-    return child;
-}
-
 var onAndSyncApis = {
   onSocketOpen: true,
   onSocketError: true,
@@ -931,6 +922,10 @@ function createEvent(e, target) {
     event.touches = e.touches;
     event.timeStamp = new Date() - 0;
     return event;
+}
+
+function AnuPortal(props) {
+    return props.children;
 }
 
 function UpdateQueue() {
@@ -2368,142 +2363,6 @@ function registerPage(PageClass, path, testObject) {
     return config;
 }
 
-var aliApis = function aliApis(api) {
-  return {
-    showModal: function _(a) {
-      a.cancelButtonText = a.cancelText;
-      a.confirmButtonText = a.confirmText;
-      return api.confirm.apply(api, arguments);
-    },
-    showActionSheet: function _(a) {
-      a.items = a.itemList;
-      return api.showActionSheet.apply(api, arguments);
-    },
-    showToast: function _(a) {
-      a.content = a.title;
-      a.type = a.icon;
-      return api.showToast.apply(api, arguments);
-    },
-    showLoading: function _(a) {
-      a.content = a.title;
-      return api.showLoading.apply(api, arguments);
-    },
-    setNavigationBarTitle: function _(a) {
-      a.image = null;
-      a.backgroundColor = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
-    },
-    setNavigationBarColor: function _(a) {
-      a.image = null;
-      a.title = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
-    },
-    saveImageToPhotosAlbum: function _(a) {
-      a.url = a.filePath;
-      return api.saveImage.apply(api, arguments);
-    },
-    previewImage: function _(a) {
-      var index = a.urls.indexOf(a.current || a.urls[0]);
-      a.current = index;
-      return api.previewImage.apply(api, arguments);
-    },
-    getFileInfo: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.getFileInfo.apply(api, arguments);
-    },
-    getSavedFileInfo: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.getSavedFileInfo.apply(api, arguments);
-    },
-    removeSavedFile: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.removeSavedFile.apply(api, arguments);
-    },
-    saveFile: function _(a) {
-      a.apFilePath = a.tempFilePath;
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.savedFilePath = res.apFilePath;
-        fn && fn(res);
-      };
-      return api.saveFile.apply(api, arguments);
-    },
-    openLocation: function _(a) {
-      a.latitude = a.latitude + '';
-      a.longitude = a.longitude + '';
-      return api.openLocation.apply(api, arguments);
-    },
-    getStorageSync: function _(a) {
-      var k = {};
-      k.key = a;
-      arguments[0] = k;
-      var res = api.getStorageSync.apply(api, arguments);
-      return res.data || '';
-    },
-    setStorageSync: function _(a1, a2) {
-      var k = {};
-      k.key = a1;
-      k.data = a2;
-      arguments[0] = k;
-      api.setStorageSync.apply(api, arguments);
-    },
-    uploadFile: function _(a) {
-      a.fileName = a.name;
-      return api.uploadFile.apply(api, arguments);
-    },
-    downloadFile: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.tempFilePath = res.apFilePath;
-        fn && fn(res);
-      };
-      return api.downloadFile.apply(api, arguments);
-    },
-    chooseImage: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.tempFilePaths = res.apFilePaths;
-        fn && fn(res);
-      };
-      return api.chooseImage.apply(api, arguments);
-    },
-    getClipboardData: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.data = res.text;
-        fn && fn(res);
-      };
-      return api.getClipboard.apply(api, arguments);
-    },
-    setClipboardData: function _(a) {
-      a.text = a.data;
-      return api.setClipboard.apply(api, arguments);
-    },
-    makePhoneCall: function _(a) {
-      a.number = a.phoneNumber;
-      return api.makePhoneCall.apply(api, arguments);
-    },
-    scanCode: function _(a) {
-      a.hideAlbum = a.onlyFromCamera;
-      a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.result = res.code;
-        fn && fn(res);
-      };
-      return api.scan.apply(api, arguments);
-    },
-    setScreenBrightness: function _(a) {
-      a.brightness = a.value;
-      return api.setScreenBrightness.apply(api, arguments);
-    }
-  };
-};
-
 var win = getWindow();
 var React = void 0;
 var render$1 = Renderer$1.render;
@@ -2512,27 +2371,31 @@ function registerComponent(type, name) {
     var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
     return {
-        data: {
+        private: {
             props: {},
             state: {},
             context: {}
         },
-        didMount: function didMount() {
+        onInit: function onInit() {
             var instance = reactInstances.shift();
             if (instance) {
-                console.log("didMount时", name, "添加wx");
+                console.log("created时为", name, "添加wx");
                 instance.wx = this;
                 this.reactInstance = instance;
             } else {
-                console.log("didMount时", name, "没有对应react实例");
+                console.log("created时为", name, "没有对应react实例");
                 wxInstances.push(this);
             }
+        },
+        onReady: function onReady() {
             if (this.reactInstance) {
                 updateMiniApp(this.reactInstance);
-                console.log("didMount时 更新", name);
+                console.log("attached时更新", name);
+            } else {
+                console.log("attached时无法更新", name);
             }
         },
-        didUnmount: function didUnmount() {
+        onDestroy: function onDestroy() {
             this.reactInstance = null;
         },
         methods: {
@@ -2551,7 +2414,6 @@ React = win.React = {
     Fragment: Fragment,
     PropTypes: PropTypes,
     Children: Children,
-    createPortal: createPortal,
     Component: Component,
     createElement: createElement,
     cloneElement: cloneElement,
@@ -2567,13 +2429,10 @@ React = win.React = {
     registerComponent: registerComponent,
     registerPage: registerPage,
     toStyle: toStyle,
-    appType: 'ali'
+    appType: 'quick'
 };
 var apiContainer = {};
-if (typeof my != 'undefined') {
-    apiContainer = my;
-}
-injectAPIs(React, apiContainer, aliApis);
+injectAPIs(React, apiContainer);
 var React$1 = React;
 
 export default React$1;

@@ -8,12 +8,12 @@ const json = require('../../package.json');
 //const importAlias = require('rollup-plugin-import-alias');
 
 export default {
-    input: './packages/render/miniapp/index.wx.js',
+    input: './packages/render/miniapp/index.quick.js',
     output: {
         strict: false,
         format: 'es',
         // exports: 'default',
-        file: './dist/ReactWX.js',
+        file: './dist/ReactQuick.js',
         name: 'React'
     },
     plugins: [
@@ -40,7 +40,7 @@ export default {
         }),
 
         license({
-            banner: `运行于微信小程序的React by 司徒正美 Copyright ${JSON.stringify(
+            banner: `运行于支付宝小程序的React by 司徒正美 Copyright ${JSON.stringify(
                 new Date()
             ).replace(/T.*|"/g, '')}
       IE9+

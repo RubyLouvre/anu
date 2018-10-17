@@ -26,10 +26,11 @@ module.exports = Object.assign(module.exports, {
         helpers: 'buHelpers'
     },
     quick: {
-        support: false,
+        support: true,
+        libName: 'ReactQuick',
         jsExt: 'ux',
         notSupportResText: '快应用正在努力支持中, 请静候佳音',
-        buHelpers: 'quickHelpers'
+        helpers: 'quickHelpers'
     },
     buildType: 'wx'   //构建类型默认微信小程序
 });
