@@ -788,6 +788,7 @@ function request(options) {
             url: options
         };
     }
+    options.headers = options.headers || options.header;
     var originSuccess = options['success'];
     var originFail = options['fail'];
     var originComplete = options['complete'];
