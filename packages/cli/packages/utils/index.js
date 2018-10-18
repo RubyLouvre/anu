@@ -330,11 +330,10 @@ let utils = {
         let result = [];
         let componentsStyle = [];
         let appStyleId = ''; //app全局样式只有一个
-        while (styleFiles.length) {
-            let { id, originalCode } = styleFiles.shift();
+        styleFiles.forEach(item => {
+            let { id, originalCode } = item;
             if (/components/.test(id)) {
                 id = path.relative(path.join(cwd, 'src'), id);
-                //@import 'name.less' => @import './name.less';
                 if (/^\w/.test(id)) {
                     id = `./${id}`;
                 }
@@ -346,12 +345,12 @@ let utils = {
                 appStyleId = id;
             } else {
                 result.push({
-                    id: id,
+                    id: item.id,
                     originalCode: originalCode
                 });
             }
-        }
-        
+        });
+
         let appStyleContent = '';
         try {
             appStyleContent = fs.readFileSync(appStyleId);
@@ -360,12 +359,12 @@ let utils = {
             process.exit(1);
         }
 
-        //将@import component语句拼接到app样式中
         appStyleContent = componentsStyle.join('\n') + '\n' + appStyleContent;
         result.push({
             id: appStyleId,
             originalCode: appStyleContent
         });
+
         return result;
     },
     updateNpmAlias(id, deps) {
