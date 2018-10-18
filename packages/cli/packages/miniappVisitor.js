@@ -22,6 +22,17 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
+if (config.buildType == 'quick'){
+    utils.createRegisterStatement = function(className, path, isPage) {
+        var templateString = isPage
+            ? 'className = React.registerPage(className,astPath)'
+            : 'className = React.registerComponent(className,astPath)';
+        return template(templateString)({
+            className: t.identifier(className),
+            astPath: t.stringLiteral(path)
+        });
+    };
+}
 function registerPageOrComponent(name, path, modules) {
     if (name == modules.className) {
         path.insertBefore(modules.createPage);
