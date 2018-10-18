@@ -18,6 +18,7 @@ program
     .name('mpreact')
     .usage('<command>')
     .version(require('../package.json').version, '-v, --version');
+    
 
 program.command('init <project-name>').description('初始化项目');
 
@@ -28,6 +29,7 @@ program
 program
     .command('build:[wx|ali|bu|quick]')
     .description('构建[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用]');
+    
 
 program.parse(process.argv);
 if (program.args.length === 0) program.help();
@@ -80,6 +82,14 @@ if (/\:/.test(command)) {
     //<watch|build>:
     command = command.split(':')[0];
 }
+
+if(
+    program.rawArgs[program.rawArgs.length-1] == '-c' ||
+    program.rawArgs[program.rawArgs.length-1] == '--compress'
+){
+    config['compress'] = true;
+}
+
 switch (command) {
     case 'watch':
         require('../packages/index')('watch', buildType);

@@ -7,12 +7,14 @@ const path = require('path');
 const cwd = process.cwd();
 const chalk = require('chalk');
 const spawn = require('cross-spawn');
+const uglifyJS = require('uglify-es');
+const cleanCSS = require('clean-css');
 const nodeResolve = require('resolve');
-const config = require('../config');
 const template = require('babel-template');
 const axios = require('axios');
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
+const config = require('../config');
 const Event = new EventEmitter();
 process.on('unhandledRejection', error => {
     // eslint-disable-next-line
@@ -395,6 +397,33 @@ let utils = {
             variableDeclarator: 'h',
             init: 'var h = React.createElement;'
         }
+    },
+    compress: function(){
+        return {
+            js: function(code){
+                let result =  uglifyJS.minify(code);
+                if (result.error) {
+                    throw result.error;
+                }
+                return result.code;
+            },
+            npm: function(code){
+                return this.js.call(this, code);
+            },
+            css: function(code){
+                let result = new cleanCSS().minify(code);
+                if (result.errors.length) {
+                    throw result.errors;
+                }
+                return result.styles;
+            },
+            wxml: function(){
+        
+            },
+            json: function(code){
+                return JSON.stringify(JSON.parse(code));
+            }
+        };
     },
     getComponentOrAppOrPageReg(){
         return new RegExp( this.sepForRegex  + '(?:pages|app|components)'  );

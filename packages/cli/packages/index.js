@@ -136,7 +136,7 @@ class Parser {
 
         this.transform();
         this.copyAssets();
-        generate();
+        
     }
     filterNpmModule(resolvedIds) {
         let result = {};
@@ -233,6 +233,10 @@ class Parser {
         });
     }
 }
+
+utils.on('build', ()=>{
+    generate();
+});
 
 async function build(arg) {
     await utils.asyncReact();
