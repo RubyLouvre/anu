@@ -1,8 +1,8 @@
-import { returnFalse , toLowerCase} from 'react-core/util';
-import { classCached } from './utils';
+import { returnFalse, toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
-export var webview = {};
-export var eventSystem = {
+
+export var eventSystem = { //hijack
+   
     dispatchEvent: function(e) {
       if (e.type == 'message') {
         if (webview.instance && webview.cb) {
@@ -12,14 +12,16 @@ export var eventSystem = {
       }
         var target = e.currentTarget;
         var dataset = target.dataset || {};
-        var eventUid = dataset[toLowerCase(e.type) + 'Uid']; //函数名
-        var classUid = dataset.classUid; //类ID
-        var componentClass = classCached[classUid]; //类
-        var instanceUid = dataset.instanceUid; //实例ID
-        var instance = componentClass[instanceUid];
+        var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+        var instance = this.reactInstance;
+        if (!instance) {
+            return;
+        }
+        if (!instance.$$eventCached) {
+            return;
+        }
         var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber && fiber.type === 'input') {
-            //微信的change会误触发
+        if (e.type == 'change' && fiber) {
             if (fiber.props.value + '' == e.detail.value) {
                 return;
             }
@@ -32,15 +34,14 @@ export var eventSystem = {
                     var fn = instance.$$eventCached[eventUid];
                     fn && fn.call(instance, createEvent(e, target));
                 } catch (err) {
-                    // eslint-disable-next-line
                     console.log(err.stack);
                 }
             }, e);
         }
-    }
+    },
 };
 
-
+export const webview = {};
 //创建事件对象
 function createEvent(e, target) {
     var event = {};
@@ -60,5 +61,4 @@ function createEvent(e, target) {
     event.timeStamp = new Date() - 0;
     return event;
 }
-
 

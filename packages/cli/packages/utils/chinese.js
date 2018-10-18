@@ -13,7 +13,6 @@ module.exports = function createChineseHack() {
                 astPath.traverse({
                     StringLiteral(astPath) {
                         target = astPath.node;
-                        // console.log(target)
                     }
                 });
                 if (target) {

@@ -1,13 +1,12 @@
-import { isFn, noop } from 'react-core/util';
+import { isFn, noop, toLowerCase, get } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
-import { onComponentDispose, onComponentUpdate } from './toComponent';
-import { classCached, currentPage, delayMounts ,newData, getUUID} from './utils';
+import { getUUID, delayMounts, updateMiniApp } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
     var n = name.charAt(0) == 'o' ? 2 : 5;
-    var type = name.slice(n).toLowerCase();
+    var type = toLowerCase(name.slice(n));
     var eventCode = props['data-' + type + '-uid'];
     return eventCode + (key != null ? '-' + key : '');
 }
@@ -16,29 +15,27 @@ export let Renderer = createRenderer({
     updateAttribute(fiber) {
         let { props, lastProps } = fiber;
         let classId = props['data-class-uid'];
-        var instanceId = props['data-instance-uid'];
-        if (classId) {
-            var clazz = classCached[classId];
-            if (clazz && clazz) {
-                var instance = clazz[instanceId];
-                if (instance) {
-                    //保存用户创建的事件在实例上
-                    var cached = instance.$$eventCached || (instance.$$eventCached = {});
-                    for (let name in props) {
-                        if (onEvent.test(name) && isFn(props[name])) {
-                            var code = getEventHashCode(name, props, props['data-key']);
-                            cached[code] = props[name];
-                            cached[code+'Fiber'] = fiber;
-                        }
-                    }
-                    if (lastProps) {
-                        for (let name in lastProps) {
-                            if (onEvent.test(name) && !props[name]) {
-                                code = getEventHashCode(name, lastProps, lastProps['data-key']);
-                                delete cached[code];
-                                delete cached[code+'Fiber'];
-                            }
-                        }
+        let instance = fiber._owner; //clazz[instanceId];
+        if (instance && !instance.classUid) {
+            instance = get(instance)._owner;
+        }
+
+        if (instance && classId) {
+            //保存用户创建的事件在实例上
+            var cached = instance.$$eventCached || (instance.$$eventCached = {});
+            for (let name in props) {
+                if (onEvent.test(name) && isFn(props[name])) {
+                    var code = getEventHashCode(name, props, props['data-key']);
+                    cached[code] = props[name];
+                    cached[code + 'Fiber'] = fiber;
+                }
+            }
+            if (lastProps) {
+                for (let name in lastProps) {
+                    if (onEvent.test(name) && !props[name]) {
+                        code = getEventHashCode(name, lastProps, lastProps['data-key']);
+                        delete cached[code];
+                        delete cached[code + 'Fiber'];
                     }
                 }
             }
@@ -48,33 +45,51 @@ export let Renderer = createRenderer({
     updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
     },
-    onUpdate(fiber) {
-        var noMount = !fiber.hasMounted;
-        var instance = fiber.stateNode;
+    onBeforeRender: function (fiber) {
         var type = fiber.type;
-        if (!instance.instanceUid) {
-            var uuid = 'i' + getUUID();
-            instance.instanceUid = uuid;
-            type[uuid] = instance;
+        if (type.reactInstances) {
+            var name = fiber.name;
+            var noMount = !fiber.hasMounted;
+            var instance = fiber.stateNode;
+            if (!instance.instanceUid) {
+                var uuid = 'i' + getUUID();
+                instance.instanceUid = uuid;
+                type[uuid] = instance;
+            }
+            instance.props.instanceUid = instance.instanceUid;
+            if (type.wxInstances) {
+                //只处理通用组件
+                if (type.wxInstances.length && !instance.wx) {
+                    var wx = instance.wx = type.wxInstances.shift();
+                    wx.reactInstance = instance;
+                    console.log('onBeforeRender时更新', name, instance.props);
+                }
+                if (!instance.wx) {
+                    console.log('onBeforeRender时更新', name, '没有wx');
+                    type.reactInstances.push(instance);
+                }
+            }
         }
-        instance.props.instanceUid = instance.instanceUid;
-        if (noMount && instance.componentDidMount){
+        if (noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount
             });
             instance.componentDidMount = noop;
         }
-        if (fiber.props.isPageComponent ){
-            currentPage.value = fiber.stateNode;
-            instance.wxData = newData();
-        } else if (fiber.props.wxComponentFlag){
-            onComponentUpdate(fiber);
+    },
+    onAfterRender: function (fiber) {
+        var instance = fiber.stateNode;
+        if (instance.wx) {
+            updateMiniApp(instance);
         }
     },
     onDispose(fiber) {
-        if (fiber.props.wxComponentFlag) {
-            onComponentDispose(fiber);
+        var instance = fiber.stateNode;
+        var wx = instance.wx;
+        if (wx) {
+            wx.reactInstance = null;
+            instance.wx = null;
         }
     },
     createElement(fiber) {

@@ -35,6 +35,7 @@
     "fs-extra": "^4.0.3",
     "glob": "^7.1.2",
     "handlebars": "^4.0.11",
+    "html-minifier": "^3.5.20",
     "inquirer": "^6.0.0",
     "less": "^3.8.1",
     "ora": "^3.0.0",

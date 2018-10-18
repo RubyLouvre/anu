@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-10-16
+ * by 司徒正美 Copyright 2018-10-17
  * IE9+
  */
 
@@ -159,7 +159,8 @@
         mountOrder: 1,
         macrotasks: [],
         boundaries: [],
-        onUpdate: noop,
+        onBeforeRender: noop,
+        onAfterRender: noop,
         onDispose: noop,
         middleware: function middleware(obj) {
             if (obj.begin && obj.end) {
@@ -2189,11 +2190,12 @@
         if (fiber.catchError) {
             return;
         }
-        Renderer.onUpdate(fiber);
+        Renderer.onBeforeRender(fiber);
         fiber._hydrating = true;
         Renderer.currentOwner = instance;
         var rendered = applyCallback(instance, "render", []);
         diffChildren(fiber, rendered);
+        Renderer.onAfterRender(fiber);
     }
     function applybeforeMountHooks(fiber, instance, newProps) {
         fiber.setout = true;

@@ -21,6 +21,7 @@ module.exports = Object.assign(module.exports, {
         support: true,
         jsExt: 'js',
         styleExt: 'css',
+        xmlExt: 'swan',
         notSupportResText: '百度小程序正在努力支持中, 请静候佳音',
         helpers: 'buHelpers'
     },

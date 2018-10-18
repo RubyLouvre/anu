@@ -22,6 +22,7 @@ function miniappPlugin() {
                 thisMethods: [],
                 staticMethods: [],
                 thisProperties: [],
+                config: {}, //用于生成对象
                 importComponents: {}, //import xxx form path进来的组件
                 usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
                 customComponents: [] //定义在page.json中usingComponents对象的自定义组件
@@ -162,3 +163,4 @@ module.exports = {
 // https://blog.csdn.net/liangklfang/article/details/54879672
 // https://github.com/PepperYan/react-miniapp/blob/master/scripts/transform.js
 // https://github.com/jamiebuilds/babel-handbook/blob/master/translations/zh-Hans/README.md
+

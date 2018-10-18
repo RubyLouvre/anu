@@ -18,8 +18,7 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-
-function addCreatePage(name, path, modules) {
+function registerPageOrComponent(name, path, modules) {
     if (name == modules.className) {
         path.insertBefore(modules.createPage);
     }
@@ -88,6 +87,7 @@ module.exports = {
             ) {
                 //需要想办法处理无状态组件
                 helpers.render.exit(astPath, '无状态组件', name, modules);
+                modules.createPage = utils.createRegisterStatement(name, name);
             }
 
             if (
@@ -100,12 +100,6 @@ module.exports = {
             }
 
             if (name === '_asyncToGenerator' && config.buildType == 'wx') {
-                // astPath.insertBefore(
-                // 	t.importDeclaration(
-                // 		[t.importDefaultSpecifier(t.identifier('regeneratorRuntime'))],
-                // 		t.stringLiteral('regenerator-runtime/runtime')
-                // 	)
-                // );
                 astPath.insertBefore(
                     t.variableDeclaration('var', [
                         t.variableDeclarator(
@@ -141,28 +135,68 @@ module.exports = {
             if (/\.js$/.test(source)) {
                 source = source.replace(/\.js$/, '');
             }
-            modules.importComponents[item.local.name] = source;
+            modules.importComponents[item.local.name] = {
+                astPath: astPath,
+                source: source
+            };
         });
     },
     ExportDefaultDeclaration: {
         exit(astPath, state) {
             var modules = utils.getAnu(state);
-            if (modules.componentType == 'Page') {
+            if (/Page|Component/.test(modules.componentType)) {
                 let declaration = astPath.node.declaration;
                 //延后插入createPage语句在其同名的export语句前
-                addCreatePage(declaration.name, astPath, modules);
+                registerPageOrComponent(declaration.name, astPath, modules);
             }
+
+            //将配置对象生成JSON文件
+            if (!/App|Page|Component/.test(modules.componentType)) {
+                return;
+            }
+            var json = modules.config;
+            //将app.js中的import语句变成pages数组
+            if (modules.componentType === 'App') {
+                json.pages = modules['appRoute'];
+                delete modules['appRoute'];
+            }
+            if (modules.componentType === 'Component') {
+                json.component = true;
+            }
+            if (buildType == 'ali') {
+                helpers.configName(json, modules.componentType);
+            }
+            var keys = Object.keys(modules.usedComponents),
+                usings;
+            if (keys.length) {
+                usings = json.usingComponents || (json.usingComponents = {});
+                keys.forEach(function(name) {
+                    usings[name] = modules.usedComponents[name];
+                });
+            }
+            if (usings) {
+                //将页面配置对象中的usingComponents对象中的组件名放进modules.customComponents
+                //数组中，并将对应的文件复制到dist目录中
+                utils.copyCustomComponents(usings, modules);
+            }
+            queue.push({
+                type: 'json',
+                path: modules.sourcePath
+                    .replace(/\/src\//, '/dist/')
+                    .replace(/\.js$/, '.json'),
+                code: JSON.stringify(json, null, 4)
+            });
+            utils.emit('build');
         }
     },
 
     ExportNamedDeclaration: {
-        exit(astPath) {//生成 module.exports.default = ${name};
-            let declaration = astPath.node.declaration || {type: '{}'};
-            switch (declaration.type){
+        exit(astPath) {
+            //生成 module.exports.default = ${name};
+            let declaration = astPath.node.declaration || { type: '{}' };
+            switch (declaration.type) {
                 case 'Identifier':
-                    astPath.replaceWith(
-                        utils.exportExpr(declaration.name)
-                    );
+                    astPath.replaceWith(utils.exportExpr(declaration.name));
                     break;
                 case 'VariableDeclaration':
                     var id = declaration.declarations[0].id.name;
@@ -179,9 +213,11 @@ module.exports = {
                     ]);
                     break;
                 case '{}':
-                    astPath.replaceWithMultiple(astPath.node.specifiers.map(function(el) {
-                        return utils.exportExpr(el.local.name);
-                    }));
+                    astPath.replaceWithMultiple(
+                        astPath.node.specifiers.map(function(el) {
+                            return utils.exportExpr(el.local.name);
+                        })
+                    );
                     break;
             }
             
@@ -192,43 +228,15 @@ module.exports = {
             let key = astPath.node.key.name;
             let modules = utils.getAnu(state);
             if (key === 'config') {
-                //format json
-                let code = generate(astPath.node.value).code;
-                let config = null;
-                let jsonStr = '';
+                //将配置对象生成JSON文件
+                if (!/App|Page|Component/.test(modules.componentType)) {
+                    return;
+                }
                 try {
-                    config = JSON.parse(code);
-                } catch (err) {
-                    config = eval('(' + code + ')');
-                }
-
-                //assign the page routes in app.js
-                if (modules.componentType === 'App') {
-                    config = Object.assign(config, {
-                        pages: modules['appRoute']
-                    });
-                    delete modules['appRoute'];
-                }
-                if (buildType == 'ali') {
-                    helpers.configName(config, modules.componentType);
-                }
-                if (config.usingComponents) {
-                    //将页面配置对象中的usingComponents对象中的组件名放进modules.customComponents
-                    //数组中，并将对应的文件复制到dist目录中
-                    utils.copyCustomComponents(config.usingComponents, modules);
-                }
-                jsonStr = JSON.stringify(config, null, 4);
-
-                queue.push({
-                    type: 'json',
-                    path: modules.sourcePath
-                        .replace(/\/src\//, '/dist/')
-                        .replace(/\.js$/, '.json'),
-                    code: jsonStr
-                });
-                utils.emit('build');
-            }
-            if (astPath.node.static) {
+                    var json = eval('0,' + generate(astPath.node.value).code);
+                    Object.assign(modules.config, json);
+                } catch (e) { /**/ }
+            } else if (astPath.node.static) {
                 var keyValue = t.ObjectProperty(
                     t.identifier(key),
                     astPath.node.value
@@ -236,7 +244,6 @@ module.exports = {
                 modules.staticMethods.push(keyValue);
             } else {
                 if (key == 'globalData' && modules.componentType === 'App') {
-
                     //globalData中插入平台buildType
                     astPath.node.value.properties.push(
                         t.objectProperty(
@@ -244,7 +251,6 @@ module.exports = {
                             t.stringLiteral(config.buildType)
                         )
                     );
-
                     var thisMember = t.assignmentExpression(
                         '=',
                         t.memberExpression(
@@ -254,8 +260,6 @@ module.exports = {
                         astPath.node.value
                     );
                     modules.thisProperties.push(thisMember);
-
-
                 }
             }
             astPath.remove();
@@ -292,21 +296,22 @@ module.exports = {
                     }
                 }
                 if (p.type === 'JSXElement' && d) {
-                    //<React.renderProps renderUid={this.props.renderUid} data={[this.state]} />
+                    //<React.renderProps />
                     var renderProps = utils.createElement(
                         'React.toRenderProps',
-                        [
-                            utils.createAttribute(
-                                'instanceUid',
-                                t.jSXExpressionContainer(
-                                    t.identifier('this.props.instanceUid')
-                                )
-                            ),
-                            utils.createAttribute('classUid', modules.classUid)
-                        ],
+                        [],
                         []
                     );
                     var arr = p.node.children;
+                    var json = modules.config;
+                    if (!json.usingComponents) {
+                        json.usingComponents = {
+                            'anu-render': '/components/RenderProps/index'
+                        };
+                    } else {
+                        json.usingComponents['anu-render'] =
+                            '/components/RenderProps/index';
+                    }
                     var index = arr.indexOf(d.node);
                     if (index !== -1) {
                         //插入React.toRenderProps标签
@@ -355,43 +360,34 @@ module.exports = {
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-    
+
     JSXOpeningElement: {
         enter: function(astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
-            if (modules.importComponents[nodeName]) {
-                let dep =
-                    deps[nodeName] ||
+            let bag = modules.importComponents[nodeName];
+            if (bag) {
+                deps[nodeName] ||
                     (deps[nodeName] = {
                         set: new Set()
                     });
                 astPath.componentName = nodeName;
-                modules.usedComponents[nodeName] = true;
-                astPath.node.name.name = 'React.toComponent';
-                let children = astPath.parentPath.node.children;
-                let isEmpty = true;
-                // eslint-disable-next-line
-                for (var i = 0, el; (el = children[i++]); ) {
-                    if (el.type === 'JSXText' && !el.value.trim().length) {
-                        isEmpty = false;
-                        break;
-                    } else {
-                        isEmpty = false;
-                        break;
-                    }
-                }
 
+                if (bag.astPath) {
+                    bag.astPath.remove();
+                    bag.astPath = null;
+                }
+                modules.usedComponents['anu-' + nodeName.toLowerCase()] =
+                    '/components/' + nodeName + '/index';
+                astPath.node.name.name = 'React.useComponent';
+
+                // eslint-disable-next-line
                 var attributes = astPath.node.attributes;
                 modules.is && modules.is.push(nodeName);
                 attributes.push(
-                    utils.createAttribute(
-                        '$$loop',
-                        'data' + utils.createUUID(astPath)
-                    ),
                     t.JSXAttribute(
                         t.JSXIdentifier('is'),
-                        t.jSXExpressionContainer(t.identifier(nodeName))
+                        t.jSXExpressionContainer(t.stringLiteral(nodeName))
                     )
                 );
 
@@ -406,9 +402,8 @@ module.exports = {
                         )
                     );
                 }
-
-                if (!isEmpty) {
-                    //处理slot
+                //处理组件标签的内部，现在支持slot
+                /* if (!isEmpty) { 
                     var fragmentUid = 'f' + utils.createUUID(astPath);
                     if (dep.addImportTag) {
                         dep.addImportTag(fragmentUid);
@@ -426,8 +421,9 @@ module.exports = {
                         utils.createAttribute('fragmentUid', fragmentUid)
                     );
                 }
+                */
             } else {
-                if (nodeName != 'React.toComponent') {
+                if (nodeName != 'React.useComponent') {
                     helpers.nodeName(astPath, modules);
                 }
             }
@@ -483,14 +479,15 @@ module.exports = {
                             utils.createAttribute(
                                 'data-class-uid',
                                 modules.classUid
-                            ),
-                            utils.createAttribute(
+                            )
+                            /* utils.createAttribute(
                                 'data-instance-uid',
                                 t.jSXExpressionContainer(
                                     t.identifier('this.props.instanceUid')
                                 )
-                            )
+                            )*/
                         );
+
                         //如果是位于循环里，还必须加上data-key，防止事件回调乱窜
                         if (modules.indexArr) {
                             attrs.push(
@@ -558,7 +555,6 @@ module.exports = {
         },
         exit(astPath, state) {
             let attrName = astPath.node.name.name;
-            // let attrValue = astPath.node.value;
             if (attrName == 'render' && astPath.parentPath.renderProps) {
                 let attrValue = astPath.parentPath.renderProps;
                 let fragmentUid = astPath.parentPath.renderUid;
@@ -568,29 +564,31 @@ module.exports = {
                 modules.is.forEach(function(a) {
                     subComponents[a] = path.join('..', a, 'index');
                 });
+                /*
                 var componentName = astPath.parentPath.componentName;
-                var dep = deps[componentName];
+				var dep = deps[componentName];
 
-                if (dep.addImportTag) {
-                    dep.addImportTag(fragmentUid);
-                } else {
-                    dep.set.add(fragmentUid);
-                }
+				if (dep.addImportTag) {
+					dep.addImportTag(fragmentUid);
+				} else {
+					dep.set.add(fragmentUid);
+				}*/
 
                 // console.log(subComponents, modules.usedComponents);
                 helpers.render.exit(
                     {
                         node: attrValue.expression
                     },
-                    'renderProps',
+
+                    'RenderProps',
                     fragmentUid,
                     {
                         sourcePath: path.join(
                             process.cwd(),
                             'src',
                             'components',
-                            'Fragments',
-                            fragmentUid + '.js'
+                            'RenderProps',
+                            'index.js'
                         ),
                         componentType: 'Component',
                         importComponents: subComponents,
@@ -610,10 +608,10 @@ module.exports = {
             }
         }
     },
-    JSXExpressionContainer(astPath){
-        var expr = astPath.node.expression;//充许在JSX这样使用注释 ｛/** comment **/｝
-        if (expr && expr.type == 'JSXEmptyExpression'){
-            if (expr.innerComments && expr.innerComments.length){
+    JSXExpressionContainer(astPath) {
+        var expr = astPath.node.expression; //充许在JSX这样使用注释 ｛/** comment **/｝
+        if (expr && expr.type == 'JSXEmptyExpression') {
+            if (expr.innerComments && expr.innerComments.length) {
                 astPath.remove();
             }
         }
@@ -624,11 +622,11 @@ module.exports = {
         //将组件标签转换成React.toComponent标签，html标签转换成view/text标签
         if (
             !modules.importComponents[nodeName] &&
-            nodeName !== 'React.toComponent'
+            nodeName !== 'React.useComponent'
         ) {
             helpers.nodeName(astPath, modules);
         } else {
-            astPath.node.name.name = 'React.toComponent';
+            astPath.node.name.name = 'React.useComponent';
         }
     }
 };
