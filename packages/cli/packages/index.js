@@ -24,7 +24,6 @@ let cwd = process.cwd();
 let inputPath = path.join(cwd, 'src');
 let entry = path.join(inputPath, 'app.js');
 let cache = {};
-console.log(config);
 let needUpdate = (id, code, fn) => {
     let sha1 = crypto
         .createHash('sha1')
@@ -36,7 +35,7 @@ let needUpdate = (id, code, fn) => {
     }
 };
 
-const isNpm = path => {
+const isInNodeModules = path => {
     return /\/node_modules\//.test(path);
 };
 const isStyle = path => {
@@ -109,7 +108,7 @@ class Parser {
             if (/commonjsHelpers/.test(id)) {
                 return;
             }
-            if (isNpm(id)) {
+            if (isInNodeModules(id)) {
                 this.npmFiles.push({
                     id: id,
                     originalCode: item.originalCode
@@ -167,7 +166,7 @@ class Parser {
         while (jsFiles.length) {
             let { id, originalCode, resolvedIds } = jsFiles.shift();
             needUpdate(id, originalCode, function(){
-                miniTransform.transform(id, resolvedIds);
+                miniTransform(id, resolvedIds);
             });
         }
     }

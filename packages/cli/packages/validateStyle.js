@@ -1,3 +1,8 @@
+/*!
+ * 
+ * 这是用检测用户写的样式表是否符合快应用的要求
+ */
+
 /* eslint no-console: 0 */
 const css = require('css');
 const R = require('ramda');

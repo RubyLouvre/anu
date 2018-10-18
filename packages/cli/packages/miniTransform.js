@@ -1,53 +1,17 @@
-let syntaxClassProperties = require('babel-plugin-syntax-class-properties');
+/*!
+ * 生成js文件, ux文件
+ */
 let babel = require('babel-core');
 let queue = require('./queue');
 let utils = require('./utils');
 let fs = require('fs');
 let nodeResolve = require('resolve');
 let path = require('path');
-let visitor = require('./miniappPlugin');
 let cwd = process.cwd();
 let config = require('./config');
 let quickFiles = require('./quickFiles');
-/**
- * 生成js文件, ux文件
- */
-function miniappPlugin() {
-    return {
-        inherits: syntaxClassProperties,
-        visitor: visitor,
-        manipulateOptions(opts) {
-            //解析每个文件前执行一次
-            var modules = (opts.anu = {
-                thisMethods: [],
-                staticMethods: [],
-                thisProperties: [],
-                config: {}, //用于生成对象
-                importComponents: {}, //import xxx form path进来的组件
-                usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
-                customComponents: [] //定义在page.json中usingComponents对象的自定义组件
-            });
-            modules.sourcePath = opts.filename;
+let miniappPlugin = require('./miniappPlugin');
 
-            modules.current = opts.filename.replace(process.cwd(), '');
-            if (/\/components\//.test(opts.filename)) {
-                modules.componentType = 'Component';
-            } else if (/\/pages\//.test(opts.filename)) {
-                modules.componentType = 'Page';
-            } else if (/app\.js$/.test(opts.filename)) {
-                modules.componentType = 'App';
-            }
-            //如果是快应用
-            if (modules.componentType) {
-                var obj = quickFiles[opts.filename];
-                if (!obj) {
-                    obj = quickFiles[opts.filename] = {};
-                }
-                obj.type = modules.componentType;
-            }
-        }
-    };
-}
 function getDistPath(filePath) {
     let { name, dir } = path.parse(filePath);
     let relativePath = path.relative(path.join(cwd, 'src'), dir);
@@ -127,7 +91,7 @@ function transform(sourcePath, resolvedIds) {
                 ]
             ]
         },
-        (err, result) => {
+        function(err, result) {
             if (err) throw err;
 
             //babel6无transform异步方法
@@ -190,10 +154,7 @@ ${uxFile.cssCode}
     );
 }
 
-module.exports = {
-    transform,
-    miniappPlugin
-};
+module.exports = transform;
 
 // https://github.com/NervJS/taro/tree/master/packages/taro-cli
 // https://blog.csdn.net/liangklfang/article/details/54879672
