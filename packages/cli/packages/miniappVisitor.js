@@ -7,6 +7,9 @@ const utils = require('./utils');
 const deps = [];
 const config = require('./config');
 const buildType = config['buildType'];
+const quickFiles = require('./quickFiles');
+const quickConfig = require('./quickHelpers/config');
+
 const helpers = require(`./${config[buildType].helpers}`);
 //微信的文本节点，需要处理换行符
 const inlineElement = {
@@ -161,9 +164,7 @@ module.exports = {
                 json.pages = modules['appRoute'];
                 delete modules['appRoute'];
             }
-            if (modules.componentType === 'Component') {
-                json.component = true;
-            }
+           
             if (buildType == 'ali') {
                 helpers.configName(json, modules.componentType);
             }
@@ -180,8 +181,19 @@ module.exports = {
                 //数组中，并将对应的文件复制到dist目录中
                 utils.copyCustomComponents(usings, modules);
             }
+            if (config.buildType == 'quick'){
+                var obj = quickFiles[modules.sourcePath];
+                if (obj){
+                    obj.config = json;
+                    quickConfig(astPath, json, modules, queue, utils );
+                }
+                return;
+            } else {
+                if (modules.componentType === 'Component') {
+                    json.component = true;
+                }
+            }
             queue.push({
-                type: 'json',
                 path: modules.sourcePath
                     .replace(/\/src\//, '/dist/')
                     .replace(/\.js$/, '.json'),

@@ -127,13 +127,19 @@ ${uxFile.template || ''}
 ${result.code}
 </script>
 `;
+                    var using = uxFile.config && uxFile.config.usingComponents;
+                    if (using){
+                        var importTag = '';
+                        for (var i in using){
+                            importTag += `<import name="${i}" src="${using[i].slice(0,-6)}"></import>\n`;
+                        }
+                        ux = importTag+ux.trim();
+                    }
                     if (uxFile.cssType) {
-                        var uxCss = `
+                        ux += `
 <style type="${uxFile.cssType}">
 ${uxFile.cssCode}
-</style>
-                        `;
-                        ux += uxCss;
+</style>`;
                     }
                     queue.push({
                         code: ux,
