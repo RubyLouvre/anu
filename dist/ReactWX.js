@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-10-16
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-10-18
  * IE9+
  */
 
@@ -919,6 +919,7 @@ function request(options) {
             url: options
         };
     }
+    options.headers = options.headers || options.header;
     var originSuccess = options['success'];
     var originFail = options['fail'];
     var originComplete = options['complete'];
