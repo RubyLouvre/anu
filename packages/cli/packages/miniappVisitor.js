@@ -294,6 +294,13 @@ module.exports = {
                     return;
                 }
             }
+            //app.js export default App(new Demo())改成
+            //     export default React.App(new Demo())       
+            if (modules.componentType == 'App' && 
+             callee.type === 'Identifier' && callee.name === 'App' ){
+                callee.name = 'React.App';
+                return;
+            }
 
             if (callee.property && callee.property.name == 'render') {
                 var p = astPath,
