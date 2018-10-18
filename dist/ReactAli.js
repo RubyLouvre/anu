@@ -2633,34 +2633,26 @@ var aliApis = function aliApis(api) {
     showModal: function _(a) {
       a.cancelButtonText = a.cancelText;
       a.confirmButtonText = a.confirmText;
-      return api.confirm.apply(api, arguments);
+      return api.confirm(a);
     },
     showActionSheet: function _(a) {
       a.items = a.itemList;
-      return api.showActionSheet.apply(api, arguments);
+      return api.showActionSheet(a);
     },
     showToast: function _(a) {
       a.content = a.title;
       a.type = a.icon;
-      return api.showToast.apply(api, arguments);
+      return api.showToast(a);
     },
     showLoading: function _(a) {
       a.content = a.title;
-      return api.showLoading.apply(api, arguments);
+      return api.showLoading(a);
     },
     setNavigationBarTitle: function _(a) {
-      a.image = null;
-      a.backgroundColor = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
+      return api.setNavigationBar(a);
     },
     setNavigationBarColor: function _(a) {
-      a.image = null;
-      a.title = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
+      return api.setNavigationBar(a);
     },
     saveImageToPhotosAlbum: function _(a) {
       a.url = a.filePath;

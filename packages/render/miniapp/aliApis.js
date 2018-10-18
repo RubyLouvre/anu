@@ -4,35 +4,27 @@ export var aliApis = function(api) {
     showModal: function _(a) {
       a.cancelButtonText = a.cancelText;
       a.confirmButtonText = a.confirmText;
-      return api.confirm.apply(api, arguments);
+      return api.confirm(a);
     },
     showActionSheet: function _(a) {
       a.items = a.itemList;
-      return api.showActionSheet.apply(api, arguments);
+      return api.showActionSheet(a);
     },
     showToast: function _(a) {
       a.content = a.title;
       a.type = a.icon;
-      return api.showToast.apply(api, arguments);
+      return api.showToast(a);
     },
     showLoading: function _(a) {
       a.content = a.title;
-      return api.showLoading.apply(api, arguments);
+      return api.showLoading(a);
     },
     // 导航类
     setNavigationBarTitle: function _(a) {
-      a.image = null;
-      a.backgroundColor = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
+      return api.setNavigationBar(a);
     },
     setNavigationBarColor: function _(a) {
-      a.image = null;
-      a.title = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
+      return api.setNavigationBar(a);
     },
     // 图片保存到本地
     saveImageToPhotosAlbum: function _(a) {
@@ -82,7 +74,7 @@ export var aliApis = function(api) {
       k.key = a;
       arguments[0] = k;
       let res = api.getStorageSync.apply(api, arguments);
-      return res.data || ''
+      return res.data || '';
     },
     setStorageSync: function _(a1, a2) {
       var k = {};
@@ -90,7 +82,6 @@ export var aliApis = function(api) {
       k.data = a2;
       arguments[0] = k;
       api.setStorageSync.apply(api, arguments);
-
     },
     // 上传
     uploadFile: function _(a) {
@@ -137,15 +128,14 @@ export var aliApis = function(api) {
     // 扫码
     scanCode: function _(a) {
       a.hideAlbum = a.onlyFromCamera;
-      a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
+      a.type = (a.scanType && a.scanType[0].slice(0, -4)) || 'qr';
       let fn = a['success'];
       a['success'] = res => {
         res.result = res.code;
         fn && fn(res);
       };
 
-      return api.scan.apply(api, arguments)
-
+      return api.scan.apply(api, arguments);
     },
 
     // 屏幕亮度
