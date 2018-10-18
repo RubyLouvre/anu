@@ -7,12 +7,14 @@ const path = require('path');
 const cwd = process.cwd();
 const chalk = require('chalk');
 const spawn = require('cross-spawn');
+const uglifyJS = require('uglify-es');
+const cleanCSS = require('clean-css');
 const nodeResolve = require('resolve');
-const config = require('../config');
 const template = require('babel-template');
 const axios = require('axios');
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
+const config = require('../config');
 const Event = new EventEmitter();
 process.on('unhandledRejection', error => {
     // eslint-disable-next-line
@@ -328,10 +330,11 @@ let utils = {
         let result = [];
         let componentsStyle = [];
         let appStyleId = ''; //app全局样式只有一个
-        styleFiles.forEach(item => {
-            let { id, originalCode } = item;
+        while (styleFiles.length) {
+            let { id, originalCode } = styleFiles.shift();
             if (/components/.test(id)) {
                 id = path.relative(path.join(cwd, 'src'), id);
+                //@import 'name.less' => @import './name.less';
                 if (/^\w/.test(id)) {
                     id = `./${id}`;
                 }
@@ -343,12 +346,12 @@ let utils = {
                 appStyleId = id;
             } else {
                 result.push({
-                    id: item.id,
+                    id: id,
                     originalCode: originalCode
                 });
             }
-        });
-
+        }
+        
         let appStyleContent = '';
         try {
             appStyleContent = fs.readFileSync(appStyleId);
@@ -357,12 +360,12 @@ let utils = {
             process.exit(1);
         }
 
+        //将@import component语句拼接到app样式中
         appStyleContent = componentsStyle.join('\n') + '\n' + appStyleContent;
         result.push({
             id: appStyleId,
             originalCode: appStyleContent
         });
-
         return result;
     },
     updateNpmAlias(id, deps) {
@@ -395,6 +398,33 @@ let utils = {
             variableDeclarator: 'h',
             init: 'var h = React.createElement;'
         }
+    },
+    compress: function(){
+        return {
+            js: function(code){
+                let result =  uglifyJS.minify(code);
+                if (result.error) {
+                    throw result.error;
+                }
+                return result.code;
+            },
+            npm: function(code){
+                return this.js.call(this, code);
+            },
+            css: function(code){
+                let result = new cleanCSS().minify(code);
+                if (result.errors.length) {
+                    throw result.errors;
+                }
+                return result.styles;
+            },
+            wxml: function(){
+        
+            },
+            json: function(code){
+                return JSON.stringify(JSON.parse(code));
+            }
+        };
     },
     getComponentOrAppOrPageReg(){
         return new RegExp( this.sepForRegex  + '(?:pages|app|components)'  );
