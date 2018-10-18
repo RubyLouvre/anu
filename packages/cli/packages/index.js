@@ -13,6 +13,9 @@ const chokidar = require('chokidar');
 const fs = require('fs-extra');
 const utils = require('./utils');
 const crypto = require('crypto');
+const config = require('./config');
+const quickFiles = require('./quickFiles');
+
 const miniTransform = require('./miniTransform');
 const styleTransform = require('./styleTransform');
 const resolveNpm = require('./resolveNpm');
@@ -21,20 +24,16 @@ let cwd = process.cwd();
 let inputPath = path.join(cwd, 'src');
 let entry = path.join(inputPath, 'app.js');
 let cache = {};
-
-let needUpdate = (id, code) => {
+console.log(config);
+let needUpdate = (id, code, fn) => {
     let sha1 = crypto
         .createHash('sha1')
         .update(code)
         .digest('hex');
-    return new Promise((resolve, reject) => {
-        if (!cache[id] || cache[id] != sha1) {
-            cache[id] = sha1;
-            resolve(1);
-        } else {
-            reject(0);
-        }
-    });
+    if (!cache[id] || cache[id] != sha1) {
+        cache[id] = sha1;
+        fn();
+    }
 };
 
 const isNpm = path => {
@@ -118,13 +117,24 @@ class Parser {
                 return;
             }
             if (isStyle(id)) {
+                if (config.buildType == 'quick'){
+                    //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
+                    var jsName = id.replace(/\.\w+$/, '.js');
+                    if (fs.pathExistsSync(jsName)){
+                        quickFiles[jsName] = {
+                            cssCode: item.originalCode,
+                            cssType: path.extname(id).slice(1)
+                        };
+                        return;
+                    }
+                }
+               
                 this.styleFiles.push({
                     id: id,
                     originalCode: item.originalCode
                 });
                 return;
             }
-
             if (isJs(id)) {
                 this.jsFiles.push({
                     id: id,
@@ -139,6 +149,7 @@ class Parser {
         generate();
     }
     filterNpmModule(resolvedIds) {
+        //判定路径是否以字母开头
         let result = {};
         Object.keys(resolvedIds).forEach(key => {
             if (utils.isNpm(key)) {
@@ -155,23 +166,20 @@ class Parser {
     updateJsQueue(jsFiles) {
         while (jsFiles.length) {
             let { id, originalCode, resolvedIds } = jsFiles.shift();
-            needUpdate(id, originalCode)
-                .then(() => {
-                    miniTransform.transform(id, resolvedIds);
-                })
-                .catch(() => {});
+            needUpdate(id, originalCode, function(){
+                miniTransform.transform(id, resolvedIds);
+            });
         }
     }
     updateStyleQueue(styleFiles) {
         let result = utils.resolveComponentStyle(styleFiles);
         while (result.length) {
             let data = result.shift();
-            let { id, originalCode } = data;
-            needUpdate(id, originalCode)
-                .then(() => {
-                    styleTransform(data);
-                })
-                .catch(() => {});
+            let { id, originalCode } = data;           
+            needUpdate(id, originalCode, function(){
+                styleTransform(data);
+            });
+               
         }
     }
     updateNpmQueue(npmFiles) {
@@ -185,11 +193,9 @@ class Parser {
                 item.moduleType = 'es';
             }
             // 处理所有 npm 模块中其他依赖
-            needUpdate(item.id, item.originalCode)
-                .then(() => {
-                    resolveNpm(item);
-                })
-                .catch(() => {});
+            needUpdate(item.id, item.originalCode, function(){
+                resolveNpm(item);
+            });
         }
     }
     copyAssets() {

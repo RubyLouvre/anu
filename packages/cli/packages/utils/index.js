@@ -355,7 +355,8 @@ let utils = {
             appStyleContent = fs.readFileSync(appStyleId);
         } catch (err) {
             console.log(chalk.red('需配置全局app样式, 请检查...'));
-            process.exit(1);
+            return [];
+            //process.exit(1);
         }
 
         appStyleContent = componentsStyle.join('\n') + '\n' + appStyleContent;
