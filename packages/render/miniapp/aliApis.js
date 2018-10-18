@@ -4,61 +4,53 @@ export var aliApis = function(api) {
     showModal: function _(a) {
       a.cancelButtonText = a.cancelText;
       a.confirmButtonText = a.confirmText;
-      return api.confirm.apply(api, arguments);
+      return api.confirm(a);
     },
     showActionSheet: function _(a) {
       a.items = a.itemList;
-      return api.showActionSheet.apply(api, arguments);
+      return api.showActionSheet(a);
     },
     showToast: function _(a) {
       a.content = a.title;
       a.type = a.icon;
-      return api.showToast.apply(api, arguments);
+      return api.showToast(a);
     },
     showLoading: function _(a) {
       a.content = a.title;
-      return api.showLoading.apply(api, arguments);
+      return api.showLoading(a);
     },
     // 导航类
     setNavigationBarTitle: function _(a) {
-      a.image = null;
-      a.backgroundColor = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
+      return api.setNavigationBar(a);
     },
     setNavigationBarColor: function _(a) {
-      a.image = null;
-      a.title = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
+      return api.setNavigationBar(a);
     },
     // 图片保存到本地
     saveImageToPhotosAlbum: function _(a) {
       a.url = a.filePath;
-      return api.saveImage.apply(api, arguments);
+      return api.saveImage(a);
     },
 
     // 图片预览
     previewImage: function _(a) {
       let index = a.urls.indexOf(a.current || a.urls[0]);
       a.current = index;
-      return api.previewImage.apply(api, arguments);
+      return api.previewImage(a);
     },
 
     // 文件
     getFileInfo: function _(a) {
       a.apFilePath = a.filePath;
-      return api.getFileInfo.apply(api, arguments);
+      return api.getFileInfo(a);
     },
     getSavedFileInfo: function _(a) {
       a.apFilePath = a.filePath;
-      return api.getSavedFileInfo.apply(api, arguments);
+      return api.getSavedFileInfo(a);
     },
     removeSavedFile: function _(a) {
       a.apFilePath = a.filePath;
-      return api.removeSavedFile.apply(api, arguments);
+      return api.removeSavedFile(a);
     },
     saveFile: function _(a) {
       a.apFilePath = a.tempFilePath;
@@ -67,35 +59,32 @@ export var aliApis = function(api) {
         res.savedFilePath = res.apFilePath;
         fn && fn(res);
       };
-      return api.saveFile.apply(api, arguments);
+      return api.saveFile(a);
     },
     // 位置
     openLocation: function _(a) {
       a.latitude = a.latitude + '';
       a.longitude = a.longitude + '';
-      return api.openLocation.apply(api, arguments);
+      return api.openLocation(a);
     },
 
     // 数据缓存
     getStorageSync: function _(a) {
       var k = {};
       k.key = a;
-      arguments[0] = k;
-      let res = api.getStorageSync.apply(api, arguments);
-      return res.data || ''
+      var res = api.getStorageSync(k);
+      return res.data || '';
     },
     setStorageSync: function _(a1, a2) {
       var k = {};
       k.key = a1;
       k.data = a2;
-      arguments[0] = k;
-      api.setStorageSync.apply(api, arguments);
-
+      return api.setStorageSync(k);
     },
     // 上传
     uploadFile: function _(a) {
       a.fileName = a.name;
-      return api.uploadFile.apply(api, arguments);
+      return api.uploadFile(a);
     },
     // 下载
     downloadFile: function _(a) {
@@ -104,7 +93,7 @@ export var aliApis = function(api) {
         res.tempFilePath = res.apFilePath;
         fn && fn(res);
       };
-      return api.downloadFile.apply(api, arguments);
+      return api.downloadFile(a);
     },
     // 图片
     chooseImage: function _(a) {
@@ -113,7 +102,7 @@ export var aliApis = function(api) {
         res.tempFilePaths = res.apFilePaths;
         fn && fn(res);
       };
-      return api.chooseImage.apply(api, arguments);
+      return api.chooseImage(a);
     },
     // 剪切板
     getClipboardData: function _(a) {
@@ -122,36 +111,35 @@ export var aliApis = function(api) {
         res.data = res.text;
         fn && fn(res);
       };
-      return api.getClipboard.apply(api, arguments);
+      return api.getClipboard(a);
     },
     setClipboardData: function _(a) {
       a.text = a.data;
-      return api.setClipboard.apply(api, arguments);
+      return api.setClipboard(a);
     },
     // 打电话
     makePhoneCall: function _(a) {
       a.number = a.phoneNumber;
-      return api.makePhoneCall.apply(api, arguments);
+      return api.makePhoneCall(a);
     },
 
     // 扫码
     scanCode: function _(a) {
       a.hideAlbum = a.onlyFromCamera;
-      a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
+      a.type = (a.scanType && a.scanType[0].slice(0, -4)) || 'qr';
       let fn = a['success'];
       a['success'] = res => {
         res.result = res.code;
         fn && fn(res);
       };
 
-      return api.scan.apply(api, arguments)
-
+      return api.scan(a);
     },
 
     // 屏幕亮度
     setScreenBrightness: function _(a) {
       a.brightness = a.value;
-      return api.setScreenBrightness.apply(api, arguments);
+      return api.setScreenBrightness(a);
     }
   };
 };
