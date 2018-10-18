@@ -36,14 +36,20 @@ module.exports = {
     ClassExpression: helpers.classDeclaration,
     ClassMethod: {
         enter(astPath, state) {
-            var modules = utils.getAnu(state);
-            var methodName = astPath.node.key.name;
+            let modules = utils.getAnu(state);
+            let methodName = astPath.node.key.name;
             modules.walkingMethod = methodName;
             if (methodName !== 'constructor') {
-                var fn = utils.createMethod(astPath, methodName);
+                //快应用要转换onLaunch为onCreate
+                if (config.buildType == 'quick' && modules.componentType === 'App' ){
+                    if (methodName === 'onLaunch'){
+                        methodName = 'onCreate';
+                    }
+                }
+                let fn = utils.createMethod(astPath, methodName);
                 modules.thisMethods.push(fn);
             } else {
-                var node = astPath.node;
+                let node = astPath.node;
                 modules.ctorFn = t.functionDeclaration(
                     t.identifier(modules.className),
                     node.params,
@@ -52,7 +58,7 @@ module.exports = {
                     false
                 );
             }
-
+        
             helpers.render.enter(
                 astPath,
                 '有状态组件',
