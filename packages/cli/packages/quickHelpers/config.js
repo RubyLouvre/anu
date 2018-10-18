@@ -3,12 +3,10 @@
 并且针对app要做一些转换
 
 */
-const template = require('babel-template');
 const path = require('path');
 
-module.exports = function quickConfig(astPath, json, modules, queue, utils){
-    var config = Object.assign({}, json);
-    delete config.usingComponents;
+module.exports = function quickConfig(config, modules, queue, utils){
+  
     if (modules.componentType === 'App'){
         var manifest = {
             package: 'org.hapjs.demo.sample',
@@ -128,12 +126,9 @@ module.exports = function quickConfig(astPath, json, modules, queue, utils){
             code: JSON.stringify(manifest, null, 4)
         });
         utils.emit('build');
+        delete config.window;
+        delete config.pages;
+        Object.assign(config, win);
         return;
     }
-
-    var configStr =  modules.className + '.config = ' + JSON.stringify(config, null, 4);
-    
-
-
-    astPath.insertBefore(template(configStr)());
 };

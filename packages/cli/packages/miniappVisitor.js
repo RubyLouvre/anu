@@ -190,9 +190,16 @@ module.exports = {
             if (config.buildType == 'quick'){
                 var obj = quickFiles[modules.sourcePath];
                 if (obj){
-                    obj.config = json;
-                    quickConfig(astPath, json, modules, queue, utils );
+                    obj.config = Object.assign({},json);
+                    quickConfig(modules,config, queue, utils );
                 }
+                var a = template('0,'+JSON.stringify(json, null, 4))();
+                var keyValue = t.ObjectProperty(
+                    t.identifier('config'),
+                    a.expression.expressions[1]
+                );
+                modules.thisMethods.push(keyValue);
+
                 return;
             } else {
                 if (modules.componentType === 'Component') {
@@ -256,12 +263,15 @@ module.exports = {
                 } catch (e) {
                     /**/
                 }
+               
+
             } else if (astPath.node.static) {
                 var keyValue = t.ObjectProperty(
                     t.identifier(key),
                     astPath.node.value
                 );
                 modules.staticMethods.push(keyValue);
+              
             } else {
                 if (key == 'globalData' && modules.componentType === 'App') {
                     //globalData中插入平台buildType
