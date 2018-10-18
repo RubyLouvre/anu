@@ -2656,24 +2656,24 @@ var aliApis = function aliApis(api) {
     },
     saveImageToPhotosAlbum: function _(a) {
       a.url = a.filePath;
-      return api.saveImage.apply(api, arguments);
+      return api.saveImage(a);
     },
     previewImage: function _(a) {
       var index = a.urls.indexOf(a.current || a.urls[0]);
       a.current = index;
-      return api.previewImage.apply(api, arguments);
+      return api.previewImage(a);
     },
     getFileInfo: function _(a) {
       a.apFilePath = a.filePath;
-      return api.getFileInfo.apply(api, arguments);
+      return api.getFileInfo(a);
     },
     getSavedFileInfo: function _(a) {
       a.apFilePath = a.filePath;
-      return api.getSavedFileInfo.apply(api, arguments);
+      return api.getSavedFileInfo(a);
     },
     removeSavedFile: function _(a) {
       a.apFilePath = a.filePath;
-      return api.removeSavedFile.apply(api, arguments);
+      return api.removeSavedFile(a);
     },
     saveFile: function _(a) {
       a.apFilePath = a.tempFilePath;
@@ -2682,30 +2682,28 @@ var aliApis = function aliApis(api) {
         res.savedFilePath = res.apFilePath;
         fn && fn(res);
       };
-      return api.saveFile.apply(api, arguments);
+      return api.saveFile(a);
     },
     openLocation: function _(a) {
       a.latitude = a.latitude + '';
       a.longitude = a.longitude + '';
-      return api.openLocation.apply(api, arguments);
+      return api.openLocation(a);
     },
     getStorageSync: function _(a) {
       var k = {};
       k.key = a;
-      arguments[0] = k;
-      var res = api.getStorageSync.apply(api, arguments);
+      var res = api.getStorageSync(k);
       return res.data || '';
     },
     setStorageSync: function _(a1, a2) {
       var k = {};
       k.key = a1;
       k.data = a2;
-      arguments[0] = k;
-      api.setStorageSync.apply(api, arguments);
+      return api.setStorageSync(k);
     },
     uploadFile: function _(a) {
       a.fileName = a.name;
-      return api.uploadFile.apply(api, arguments);
+      return api.uploadFile(a);
     },
     downloadFile: function _(a) {
       var fn = a['success'];
@@ -2713,7 +2711,7 @@ var aliApis = function aliApis(api) {
         res.tempFilePath = res.apFilePath;
         fn && fn(res);
       };
-      return api.downloadFile.apply(api, arguments);
+      return api.downloadFile(a);
     },
     chooseImage: function _(a) {
       var fn = a['success'];
@@ -2721,7 +2719,7 @@ var aliApis = function aliApis(api) {
         res.tempFilePaths = res.apFilePaths;
         fn && fn(res);
       };
-      return api.chooseImage.apply(api, arguments);
+      return api.chooseImage(a);
     },
     getClipboardData: function _(a) {
       var fn = a['success'];
@@ -2729,15 +2727,15 @@ var aliApis = function aliApis(api) {
         res.data = res.text;
         fn && fn(res);
       };
-      return api.getClipboard.apply(api, arguments);
+      return api.getClipboard(a);
     },
     setClipboardData: function _(a) {
       a.text = a.data;
-      return api.setClipboard.apply(api, arguments);
+      return api.setClipboard(a);
     },
     makePhoneCall: function _(a) {
       a.number = a.phoneNumber;
-      return api.makePhoneCall.apply(api, arguments);
+      return api.makePhoneCall(a);
     },
     scanCode: function _(a) {
       a.hideAlbum = a.onlyFromCamera;
@@ -2747,11 +2745,11 @@ var aliApis = function aliApis(api) {
         res.result = res.code;
         fn && fn(res);
       };
-      return api.scan.apply(api, arguments);
+      return api.scan(a);
     },
     setScreenBrightness: function _(a) {
       a.brightness = a.value;
-      return api.setScreenBrightness.apply(api, arguments);
+      return api.setScreenBrightness(a);
     }
   };
 };
