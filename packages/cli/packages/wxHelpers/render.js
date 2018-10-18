@@ -62,22 +62,22 @@ exports.exit = function (astPath, type, componentName, modules) {
                         wxml: '',
                     });
                 var jsText = `
-                Component({
-                    properties: {
-                        renderUid: String,
-                        props: Object,
-                        state: Object,
-                        context: Object
-                    },
-                    data: {},
-                    lifetimes: {
-                        // 生命周期函数，可以为函数，或一个在methods段中定义的方法名
-                        attached: function (e) { 
-                        },
-                        detached: function () { },
-                      },
-                    
-                })`;
+Component({
+    properties: {
+        renderUid: String,
+        props: Object,
+        state: Object,
+        context: Object
+    },
+    data: {},
+    lifetimes: {
+        // 生命周期函数，可以为函数，或一个在methods段中定义的方法名
+        attached: function (e) { 
+        },
+        detached: function () { },
+        },
+    
+})`;
                 queue.push({
                     type: 'js',
                     path: modules.sourcePath.replace(/\/src\//, '/dist/').replace(/\.js$/, '.js'),
@@ -87,9 +87,10 @@ exports.exit = function (astPath, type, componentName, modules) {
                 //生成render props的模板
                 wxml =
                     dep.wxml +
-                    `<block wx:if="{{renderUid === '${componentName}'}}">\n${minify(wxml, {
-                        collapseWhitespace: true,
-                    })}\n</block>`;
+                    `
+<block wx:if="{{renderUid === '${componentName}'}}">\n${minify(wxml, {
+    collapseWhitespace: true,
+})}\n</block>`;
                 dep.wxml = wxml;
                 //生成render props的json
                 for (let i in modules.importComponents) {

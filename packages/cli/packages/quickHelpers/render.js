@@ -4,7 +4,7 @@ const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const path = require('path');
 const quickFiles = require('../quickFiles');
-var wrapperPath = process.cwd() + "/src/components/PageWrapper/index.ux";
+var wrapperPath = path.join( process.cwd(), 'src', 'components' ,'PageWrapper',  'index.ux');
 /**
  * 将return后面的内容进行转换，再变成wxml
  *
@@ -13,7 +13,7 @@ var wrapperPath = process.cwd() + "/src/components/PageWrapper/index.ux";
  * @param {String} componentName 组件名
  */
 
-exports.exit = function (astPath, type, componentName, modules) {
+exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
     let expr;
 
@@ -31,7 +31,7 @@ exports.exit = function (astPath, type, componentName, modules) {
             var jsx = generate(expr.argument).code;
             var jsxAst = babel.transform(jsx, {
                 babelrc: false,
-                plugins: [['transform-react-jsx', { pragma: 'h' }]],
+                plugins: [['transform-react-jsx', { pragma: 'h' }]]
             });
 
             expr.argument = jsxAst.ast.program.body[0];
@@ -49,12 +49,14 @@ exports.exit = function (astPath, type, componentName, modules) {
             //添加import语句产生的显式依赖
             for (var i in modules.importComponents) {
                 if (modules.usedComponents[i]) {
-                    wxml = `<import src="${modules.importComponents[i]}.ux" />\n${wxml}`;
+                    wxml = `<import src="${
+                        modules.importComponents[i]
+                    }.ux" />\n${wxml}`;
                 }
             }
 
             if (quickFiles[modules.sourcePath]) {
-                if (modules.componentType === "Page") {
+                if (modules.componentType === 'Page') {
                     quickFiles[modules.sourcePath].template = `
 <import src="${path.relative(modules.sourcePath, wrapperPath)}"></import>
 <template>
@@ -69,7 +71,6 @@ ${wxml}
 </template>`;
                 }
             }
-            //	console.log(modules.sourcePath, wxml);
             break;
         default:
             break;
@@ -78,15 +79,21 @@ ${wxml}
 
 function transformIfStatementToConditionalExpression(node) {
     const { test, consequent, alternate } = node;
-    return t.conditionalExpression(test, transformConsequent(consequent), transformAlternate(alternate));
+    return t.conditionalExpression(
+        test,
+        transformConsequent(consequent),
+        transformAlternate(alternate)
+    );
 }
 
 function transformNonNullConsequentOrAlternate(node) {
-    if (t.isIfStatement(node)) return transformIfStatementToConditionalExpression(node);
+    if (t.isIfStatement(node))
+        return transformIfStatementToConditionalExpression(node);
     if (t.isBlockStatement(node)) {
         const item = node.body[0];
         if (t.isReturnStatement(item)) return item.argument;
-        if (t.isIfStatement(item)) return transformIfStatementToConditionalExpression(item);
+        if (t.isIfStatement(item))
+            return transformIfStatementToConditionalExpression(item);
         throw new Error('Invalid consequent or alternate node');
     }
     return t.nullLiteral();
@@ -103,7 +110,7 @@ function transformAlternate(node) {
     return transformNonNullConsequentOrAlternate(node);
 }
 
-exports.enter = function (astPath) {
+exports.enter = function(astPath) {
     if (astPath.node.key.name === 'render') {
         astPath.traverse({
             IfStatement: {
@@ -119,9 +126,15 @@ exports.enter = function (astPath) {
                             );
                         }
                     }
-                    path.replaceWith(t.returnStatement(transformIfStatementToConditionalExpression(path.node)));
-                },
-            },
+                    path.replaceWith(
+                        t.returnStatement(
+                            transformIfStatementToConditionalExpression(
+                                path.node
+                            )
+                        )
+                    );
+                }
+            }
         });
     }
 };
