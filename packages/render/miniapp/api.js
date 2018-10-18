@@ -55,6 +55,7 @@ function request(options) {
             url: options
         };
     }
+    options.headers = options.headers || options.header;
     const originSuccess = options['success'];
     const originFail = options['fail'];
     const originComplete = options['complete'];

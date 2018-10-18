@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-10-16
+ * by 司徒正美 Copyright 2018-10-18
  * IE9+
  */
 
@@ -1671,7 +1671,7 @@
                 var prefix = nameRes.name.split(":")[0];
                 dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
             } else {
-                dom[method](nameRes, val || "");
+                dom[method](nameRes, typeNumber(val) !== 3 && !val ? "" : val);
             }
         },
         booleanAttr: function booleanAttr(dom, name, val) {
