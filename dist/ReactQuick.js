@@ -1979,24 +1979,19 @@ function useComponent(props) {
     return createElement.apply(null, args);
 }
 
-var HookMap = {
-    onShow: 'componentDidShow',
-    onHide: 'componentDidHide',
-    onUnload: 'componentWillUnmount'
-};
-function applyAppStore() {
-    console.log('此方法已废弃');
-}
-function registerPage(PageClass, path, testObject) {
+var shareObject = {};
+function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
-    console.log(path, '注册页面');
-    var pageViewInstance,
-        config = {
-        data: {},
-        dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function onLoad(query) {
-            console.log('开始载入页面', path);
-            pageViewInstance = render(createElement(PageClass, {
+    var instance;
+    var config = {
+        private: {
+            props: Object,
+            context: Object,
+            state: Object
+        },
+        eventSystem: eventSystem.dispatchEvent,
+        onInit: function onInit(query) {
+            instance = render(createElement(PageClass, {
                 path: path,
                 query: query,
                 isPageComponent: true
@@ -2007,10 +2002,12 @@ function registerPage(PageClass, path, testObject) {
                 root: true,
                 appendChild: noop
             });
-            this.reactInstance = pageViewInstance;
-            pageViewInstance.wx = this;
-            console.log('更新页面数据', path);
-            updateMiniApp(pageViewInstance);
+            transmitData(PageClass, path, instance, this);
+        },
+        onShow: function onShow() {
+            transmitData(PageClass, path, instance, this);
+            var fn = this.reactInstance.componentDidShow;
+            fn.call(this.reactInstance);
         },
         onReady: function onReady() {
             console.log('页面布局完成', path);
@@ -2019,25 +2016,22 @@ function registerPage(PageClass, path, testObject) {
                 el.fn.call(el.instance);
                 el.instance.componentDidMount = el.fn;
             }
+        },
+        onMenuPress: function onMenuPress(a) {
+            instance.onMenuPress && instance.onMenuPress(a);
         }
     };
-    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
-        config[hook] = function () {
-            var name = HookMap[hook] || hook;
-            var fn = pageViewInstance[name];
-            if (isFn(fn)) {
-                return fn.apply(pageViewInstance, arguments);
-            }
-        };
-    });
-    if (testObject) {
-        config.setData = function (obj) {
-            config.data = obj;
-        };
-        config.onLoad();
-        return config;
-    }
     return config;
+}
+function transmitData(pageClass, pagePath, reactInstance, quickInstance) {
+    reactInstance.wx = quickInstance;
+    quickInstance.reactInstance = reactInstance;
+    updateMiniApp(reactInstance);
+    var cc = reactInstance.config || pageClass.config;
+    shareObject.pageConfig = cc;
+    shareObject.pagePath = pagePath;
+    shareObject.page = reactInstance;
+    shareObject.app = quickInstance.$app.$def;
 }
 
 var win = getWindow();
@@ -2100,7 +2094,6 @@ React = win.React = {
     toClass: function toClass() {
         return miniCreateClass.apply(null, arguments);
     },
-    applyAppStore: applyAppStore,
     toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,

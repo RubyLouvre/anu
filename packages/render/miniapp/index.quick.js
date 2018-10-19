@@ -16,7 +16,7 @@ import { Renderer } from './wxrender';
 import { toStyle } from './toStyle';
 import { useComponent, registeredComponents } from './registerComponent';
 
-import { registerPage, applyAppStore } from './registerPage';
+import { registerPage } from './registerPageQuick';
 import { updateMiniApp, toRenderProps } from './utils';
 
 let win = getWindow();
@@ -94,7 +94,6 @@ React = win.React = {
         //保存所有class到classCache中，方便在事件回调中找到对应实例
         return miniCreateClass.apply(null, arguments);
     },
-    applyAppStore,
     toRenderProps,
     useComponent,
     registerComponent,
