@@ -14,7 +14,6 @@ const utils = require('../utils');
 //const chineseHelper = require('./chinese');
 const slotHelper = require('./slot');
 
-var chineseHack = utils.createChineseHack();
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */
@@ -34,11 +33,7 @@ function wxml(code, modules) {
             }
         ]
     });
-    var html = result.code;
-    if (chineseHack.unicodeNumber) {
-        return chineseHack.recovery(html);
-    }
-    return html;
+    return  result.code.replace(/(?:\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`))
 }
 
 var visitor = {
@@ -105,7 +100,6 @@ var visitor = {
         }
     },
     JSXAttribute(astPath, state) {
-        chineseHack.collect(astPath);
         if (astPath.node.name.name === 'key') {
             let node = astPath.node.value;
             let value;
