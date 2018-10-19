@@ -32,7 +32,7 @@ function wxml(code, modules) {
             }
         ]
     });
-    return result.code.replace(/(?:\\u)([\da-f]{4})/ig, function (a, b) {
+    return result.code.replace(/\\?(?:\\u)([\da-f]{4})/ig, function (a, b) {
         return unescape(`%u${b}`);
     });
 }
