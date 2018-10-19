@@ -173,7 +173,7 @@ module.exports = {
             }
         }
 
-        if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
+        if (/\.(less|scss|sass|css|json)$/.test(path.extname(source))) {
             astPath.remove();
         }
 
