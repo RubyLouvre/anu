@@ -59,9 +59,8 @@ exports.exit = function(astPath, type, componentName, modules) {
 
             if (quickFiles[modules.sourcePath]) {
                 if (modules.componentType === 'Page') {
-                    console.log(modules.sourcePath,'\n', wrapperPath);
                     quickFiles[modules.sourcePath].template = `
-<import name="PageWrapper" src="${path.relative(modules.sourcePath, wrapperPath)}"></import>
+<import name="PageWrapper" src="${path.relative(modules.sourcePath.replace('/index.js', ''), wrapperPath)}"></import>
 <template>
    <PageWrapper>
      ${wxml}

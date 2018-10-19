@@ -76,7 +76,7 @@ function condition(test, consequent, alternate, modules) {
 // 处理 callee.map(fn)
 function loop(callee, fn, modules) {
     const attrs = [];
-    var forExpr = '{{('+fn.params[1].name+','+fn.params[0].name+')' + parseExpr(callee.object).slice(2);
+    var forExpr = '{{('+fn.params[1].name+','+fn.params[0].name+') in ' + parseExpr(callee.object).slice(2);
   
     attrs.push(createAttribute('for', forExpr));
     if (modules.key) {

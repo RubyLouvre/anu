@@ -454,7 +454,7 @@ module.exports = {
                 );
 
                 if (modules.indexArr) {
-                    //  console.log(nodeName, modules.indexArr+'' );
+
                     attributes.push(
                         utils.createAttribute(
                             '$$index',
@@ -584,9 +584,7 @@ module.exports = {
                         attrs.push(utils.createAttribute('renderUid', uuid));
                         parentPath.renderProps = attrValue;
                         parentPath.renderUid = uuid;
-                        // astPath.parentPath.host =
                         modules.is = [];
-                        // console.log(generate(attrValue).code);
                     }
                 }
             }
@@ -603,7 +601,7 @@ module.exports = {
                     subComponents[a] = path.join('..', a, 'index');
                 });
 
-                // console.log(subComponents, modules.usedComponents);
+
                 helpers.render.exit(
                     {
                         node: attrValue.expression

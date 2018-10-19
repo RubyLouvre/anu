@@ -10,6 +10,7 @@ let path = require('path');
 let cwd = process.cwd();
 let config = require('./config');
 let quickFiles = require('./quickFiles');
+let prettifyXml = require('prettify-xml');
 let miniappPlugin = require('./miniappPlugin');
 
 
@@ -112,7 +113,7 @@ function transform(sourcePath, resolvedIds) {
                     plugins: babelPlugins
                 });
                 //处理中文转义问题
-                result.code = result.code.replace(/(?:\\\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`));
+                result.code = result.code.replace(/(?:\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`));
                 //生成JS文件
                 var uxFile = quickFiles[sourcePath];
                 if (config.buildType == 'quick' && uxFile) {
@@ -130,11 +131,13 @@ ${result.code}
                             let importSrc = path.relative(sourcePath, cwd +path.sep+ using[i]);
                             importTag += `<import name="${i}" src="${importSrc}"></import>\n`;
                         }
-                        ux = importTag + ux.trim();
+                        ux =  prettifyXml(importTag + ux,{
+                            indent: 4
+                        });
                     }
                     if (uxFile.cssType) {
                         ux += `
-<style type="${uxFile.cssType}">
+<style lang="${uxFile.cssType}">
 ${uxFile.cssCode}
 </style>`;
                     }

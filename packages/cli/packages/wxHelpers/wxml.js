@@ -33,7 +33,9 @@ function wxml(code, modules) {
             }
         ]
     });
-    return result.code.replace(/(?:\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`));
+    return result.code.replace(/(?:\\u)([\da-f]{4})/ig, function (a, b) {
+        return unescape(`%u${b}`);
+    });
 }
 
 var visitor = {
@@ -93,7 +95,6 @@ var visitor = {
                         astPath.parentPath.node.children
                     );
                     //将组件变成template标签
-
                     astPath.parentPath.replaceWith(template);
                 }
             }
