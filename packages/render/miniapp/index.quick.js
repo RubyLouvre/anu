@@ -10,7 +10,7 @@ import {
     createFactory
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
-import { injectAPIs } from './api';
+
 import { eventSystem } from './eventSystem';
 import { Renderer } from './wxrender';
 import { toStyle } from './toStyle';
@@ -100,10 +100,17 @@ React = win.React = {
     registerComponent,
     registerPage,
     toStyle,
-    appType: 'quick'
+    appType: 'quick',
+    App(demo){
+        var app = {};
+        Object.assign(app, demo);
+        delete app.constructor;//有这属性会报错
+        return app;
+    },
+    api: {}
+   
 };
-var apiContainer = {};
 
-injectAPIs(React, apiContainer);
+
 export default React;
 export { Children, createElement, Component };

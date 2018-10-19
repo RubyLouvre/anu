@@ -4,11 +4,13 @@ const template = require('babel-template');
 const path = require('path');
 const queue = require('./queue');
 const utils = require('./utils');
+const fs = require('fs');
 const deps = [];
 const config = require('./config');
 const buildType = config['buildType'];
 const quickFiles = require('./quickFiles');
 const quickConfig = require('./quickHelpers/config');
+//const PageWrapperUx = require('./quickHelpers/PageWrapp
 
 const helpers = require(`./${config[buildType].helpers}`);
 //微信的文本节点，需要处理换行符
@@ -56,6 +58,11 @@ module.exports = {
                     if (methodName === 'onLaunch'){
                         methodName = 'onCreate';
                     }
+                    queue.push({
+                        code:fs.readFileSync(path.resolve(__dirname, './quickHelpers/PageWrapper.ux')),
+                        path: path.join(process.cwd(), 'dist', 'components', 'PageWrapper','index.ux')
+                    });
+                    utils.emit('build');
                 }
                 let fn = utils.createMethod(astPath, methodName);
                 modules.thisMethods.push(fn);

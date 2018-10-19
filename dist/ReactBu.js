@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-17
+ * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-10-19
  * IE9+
  */
 
@@ -2101,11 +2101,20 @@ function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
         return;
     }
-    instance.wx.setData(safeClone({
-        props: instance.props,
-        state: instance.state || null,
-        context: instance.context
-    }));
+    if (instance.wx.setData) {
+        instance.wx.setData(safeClone({
+            props: instance.props,
+            state: instance.state || null,
+            context: instance.context
+        }));
+    } else {
+        updateQuickApp(instance.wx, instance);
+    }
+}
+function updateQuickApp(quick, instance) {
+    quick.props = instance.props;
+    quick.state = instance.state || null;
+    quick.context = instance.context;
 }
 function isReferenceType(val) {
     return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
@@ -2204,10 +2213,7 @@ var Renderer$1 = createRenderer({
         }
     },
     onAfterRender: function onAfterRender(fiber) {
-        var instance = fiber.stateNode;
-        if (instance.wx) {
-            updateMiniApp(instance);
-        }
+        updateMiniApp(fiber.stateNode);
     },
     onDispose: function onDispose(fiber) {
         var instance = fiber.stateNode;

@@ -4,7 +4,7 @@ const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const path = require('path');
 const quickFiles = require('../quickFiles');
-var wrapperPath = path.join( process.cwd(), 'src', 'components' ,'PageWrapper',  'index.ux');
+var wrapperPath = path.join( process.cwd(),'src', 'components' ,'PageWrapper',  'index.ux');
 /**
  * 将return后面的内容进行转换，再变成wxml
  *
@@ -57,6 +57,7 @@ exports.exit = function(astPath, type, componentName, modules) {
 
             if (quickFiles[modules.sourcePath]) {
                 if (modules.componentType === 'Page') {
+                    console.log(modules.sourcePath,'\n', wrapperPath);
                     quickFiles[modules.sourcePath].template = `
 <import name="PageWrapper" src="${path.relative(modules.sourcePath, wrapperPath)}"></import>
 <template>

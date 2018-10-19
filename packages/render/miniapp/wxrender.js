@@ -22,7 +22,8 @@ export let Renderer = createRenderer({
 
         if (instance && classId) {
             //保存用户创建的事件在实例上
-            var cached = instance.$$eventCached || (instance.$$eventCached = {});
+            var cached =
+                instance.$$eventCached || (instance.$$eventCached = {});
             for (let name in props) {
                 if (onEvent.test(name) && isFn(props[name])) {
                     var code = getEventHashCode(name, props, props['data-key']);
@@ -33,7 +34,11 @@ export let Renderer = createRenderer({
             if (lastProps) {
                 for (let name in lastProps) {
                     if (onEvent.test(name) && !props[name]) {
-                        code = getEventHashCode(name, lastProps, lastProps['data-key']);
+                        code = getEventHashCode(
+                            name,
+                            lastProps,
+                            lastProps['data-key']
+                        );
                         delete cached[code];
                         delete cached[code + 'Fiber'];
                     }
@@ -45,7 +50,7 @@ export let Renderer = createRenderer({
     updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
     },
-    onBeforeRender: function (fiber) {
+    onBeforeRender: function(fiber) {
         var type = fiber.type;
         if (type.reactInstances) {
             var name = fiber.name;
@@ -60,7 +65,7 @@ export let Renderer = createRenderer({
             if (type.wxInstances) {
                 //只处理通用组件
                 if (type.wxInstances.length && !instance.wx) {
-                    var wx = instance.wx = type.wxInstances.shift();
+                    var wx = (instance.wx = type.wxInstances.shift());
                     wx.reactInstance = instance;
                     console.log('onBeforeRender时更新', name, instance.props);
                 }
@@ -78,11 +83,8 @@ export let Renderer = createRenderer({
             instance.componentDidMount = noop;
         }
     },
-    onAfterRender: function (fiber) {
-        var instance = fiber.stateNode;
-        if (instance.wx) {
-            updateMiniApp(instance);
-        }
+    onAfterRender(fiber) {
+        updateMiniApp(fiber.stateNode);
     },
     onDispose(fiber) {
         var instance = fiber.stateNode;
@@ -97,12 +99,12 @@ export let Renderer = createRenderer({
             ? {
                 type: fiber.type,
                 props: fiber.props || {},
-                children: [],
-			  }
+                children: []
+            }
             : {
                 type: fiber.type,
-                props: fiber.props,
-			  };
+                props: fiber.props
+            };
     },
     insertElement(fiber) {
         let dom = fiber.stateNode,
@@ -142,7 +144,7 @@ export let Renderer = createRenderer({
             var node = fiber.stateNode;
             remove(parent.children, node);
         }
-    },
+    }
 });
 
 function remove(children, node) {

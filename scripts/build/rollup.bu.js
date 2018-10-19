@@ -43,7 +43,7 @@ export default {
         }),
 
         license({
-            banner: `运行于支付宝小程序的React by 司徒正美 Copyright ${JSON.stringify(
+            banner: `运行于百度智能小程序的React by 司徒正美 Copyright ${JSON.stringify(
                 new Date()
             ).replace(/T.*|"/g, '')}
       IE9+
