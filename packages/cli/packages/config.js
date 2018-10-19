@@ -1,4 +1,4 @@
-module.exports = Object.assign(module.exports, {
+module.exports = {
     wx: {
         support: true,
         libName: 'ReactWX',
@@ -6,7 +6,7 @@ module.exports = Object.assign(module.exports, {
         jsExt: 'js',
         xmlExt: 'wxml',
         notSupportResText: '',
-        helpers: 'wxHelpers'
+        helpers: 'wxHelpers',
     },
     ali: {
         support: true,
@@ -15,20 +15,20 @@ module.exports = Object.assign(module.exports, {
         jsExt: 'js',
         xmlExt: 'axml',
         notSupportResText: '支付宝小程序正在努力支持中, 请静候佳音',
-        helpers: 'aliHelpers'
+        helpers: 'aliHelpers',
     },
     bu: {
         support: true,
         jsExt: 'js',
         styleExt: 'css',
         notSupportResText: '百度小程序正在努力支持中, 请静候佳音',
-        helpers: 'buHelpers'
+        helpers: 'buHelpers',
     },
     quick: {
         support: false,
         jsExt: 'ux',
         notSupportResText: '快应用正在努力支持中, 请静候佳音',
-        buHelpers: 'quickHelpers'
+        buHelpers: 'quickHelpers',
     },
     buildType: 'wx'   //构建类型默认微信小程序
-});
+};

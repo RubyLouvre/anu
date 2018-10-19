@@ -7,11 +7,13 @@ const rbabel = require('rollup-plugin-babel');
 const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const rollupLess = require('rollup-plugin-less');
+const rollupJson = require('rollup-plugin-json');
 const rollupSass = require('rollup-plugin-sass');
 const alias = require('rollup-plugin-alias');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
 const utils = require('./utils');
+const queue = require('./queue');
 const crypto = require('crypto');
 const miniTransform = require('./miniTransform');
 const styleTransform = require('./styleTransform');
@@ -22,6 +24,7 @@ let inputPath = path.join(cwd, 'src');
 let entry = path.join(inputPath, 'app.js');
 let cache = {};
 
+//缓存
 let needUpdate = (id, code) => {
     let sha1 = crypto
         .createHash('sha1')
@@ -51,10 +54,10 @@ const isJs = path => {
 class Parser {
     constructor(entry) {
         this.entry = entry;
-        this.isWatching = false;
         this.jsFiles = [];
         this.styleFiles = [];
         this.npmFiles = [];
+        this.jsonFiles = [];
         this.customAliasConfig = utils.getCustomAliasConfig();
 
         this.inputConfig = {
@@ -76,6 +79,7 @@ class Parser {
                         return '';
                     }
                 }),
+                rollupJson(),
                 rollupSass(),
                 rbabel({
                     babelrc: false,
@@ -99,6 +103,9 @@ class Parser {
                 }
             }
         };
+
+        
+        
     }
     async parse() {
         let spinner = utils.spinner('正在分析依赖...');
@@ -125,15 +132,24 @@ class Parser {
                 return;
             }
 
+            if (/\.json$/.test(id)) {
+                this.jsonFiles.push({
+                    id: id,
+                    originalCode: item.originalCode
+                });
+                return;
+            }
+
             if (isJs(id)) {
                 this.jsFiles.push({
                     id: id,
                     originalCode: item.originalCode,
                     resolvedIds: this.filterNpmModule(item.resolvedIds) //处理路径alias配置
                 });
+                return;
             }
-        });
 
+        });
         this.transform();
         this.copyAssets();
         
@@ -151,6 +167,7 @@ class Parser {
         this.updateJsQueue(this.jsFiles);
         this.updateStyleQueue(this.styleFiles);
         this.updateNpmQueue(this.npmFiles);
+        this.updateJsonQueue(this.jsonFiles);
     }
     updateJsQueue(jsFiles) {
         while (jsFiles.length) {
@@ -192,18 +209,33 @@ class Parser {
                 .catch(() => {});
         }
     }
+    updateJsonQueue(jsonFiles) {
+        while (jsonFiles.length){
+            let item = jsonFiles.shift();
+            needUpdate(item.id, item.originalCode)
+                .then(() => {
+                    queue.push({
+                        path: item.id.replace(/\/src\//, '/dist/'),
+                        code: item.originalCode,
+                        type: 'json'
+                    });
+                    utils.emit('build');
+                })
+                .catch(() => {});
+        }
+    }
     copyAssets() {
         //to do 差异化copy
         const dir = 'assets';
         const inputDir = path.join(inputPath, dir);
         const distDir = path.join(path.join(cwd, 'dist'), dir);
-        if (!fs.pathExistsSync(inputDir)) return;
         fs.ensureDirSync(distDir);
         fs.copy(inputDir, distDir, err => {
             if (err) {
                 console.error(err);
             }
         });
+        
     }
     watching() {
         let watchDir = path.dirname(this.entry);
@@ -214,19 +246,17 @@ class Parser {
                 pollInterval: 100
             }
         };
-        this.isWatching = true;
         const watcher = chokidar
             .watch(watchDir, watchConfig)
-            .on('all', (event, file) => {
-                if (event === 'change') {
-                    console.log(
-                        `\nupdated: ${chalk.yellow(path.relative(cwd, file))}\n`
-                    );
-                    this.inputConfig.input = file;
-                    this.parse();
-                }
-            });
+            .on('change', (file)=>{
 
+                console.log(
+                    `\nupdated: ${chalk.yellow(path.relative(cwd, file))}\n`
+                );
+                this.inputConfig.input = file;
+                this.parse();
+                
+            });
         watcher.on('error', error => {
             console.error('Watcher failure', error);
             process.exit(1);
@@ -238,7 +268,11 @@ utils.on('build', ()=>{
     generate();
 });
 
+
+
 async function build(arg) {
+  
+    //同步react
     await utils.asyncReact();
     if (arg === 'watch') {
         console.log(chalk.green('watching files...'));
@@ -250,6 +284,7 @@ async function build(arg) {
     if (arg === 'watch') {
         parser.watching();
     }
+    
 }
 
 module.exports = build;
