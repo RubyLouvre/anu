@@ -104,11 +104,6 @@ function transform(sourcePath, resolvedIds) {
                     'minify-dead-code-elimination'
                 ];
 
-                if (config.buildType === 'wx') {
-                    //支付宝小程序默认支持es6 module
-                    //  babelPlugins.push('transform-es2015-modules-commonjs');
-                }
-
                 result = babel.transform(result.code, {
                     babelrc: false,
                     plugins: babelPlugins
@@ -144,15 +139,15 @@ function transform(sourcePath, resolvedIds) {
                     });
                     //假设存在<script>
                     ux += `
-<script>
-${beautify.js(result.code)}
-</script>`;
+                        <script>
+                        ${beautify.js(result.code)}
+                        </script>`;
                     if (uxFile.cssType) {
                         //假设存在<style>
                         ux += `
-<style lang="${uxFile.cssType}">
-${beautify.css(uxFile.cssCode)}
-</style>`;
+                            <style lang="${uxFile.cssType}">
+                            ${beautify.css(uxFile.cssCode)}
+                            </style>`;
                     }
                     queue.push({
                         code: ux,
@@ -161,11 +156,10 @@ ${beautify.css(uxFile.cssCode)}
                 } else {
                     queue.push({
                         code: result.code,
+                        type: 'js',
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist')
                     });
                 }
-
-                utils.emit('build');
             }, 4);
         }
     );
