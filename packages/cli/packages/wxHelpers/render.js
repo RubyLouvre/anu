@@ -1,3 +1,5 @@
+/* eslint no-console: 0 */
+
 const generate = require('babel-generator').default;
 const t = require('babel-types');
 const wxmlHelper = require('./wxml');

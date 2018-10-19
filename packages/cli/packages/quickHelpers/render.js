@@ -1,12 +1,11 @@
-const generate = require('babel-generator').default;
+/* eslint no-console: 0 */
 const t = require('babel-types');
 const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const path = require('path');
-/* eslint no-console: 0 */
-
+const generate = require('babel-generator').default;
 const quickFiles = require('../quickFiles');
-var wrapperPath = path.join( process.cwd(),'src', 'components' ,'PageWrapper',  'index.ux');
+var wrapperPath = path.join(process.cwd(), 'src', 'components', 'PageWrapper', 'index.ux');
 /**
  * 将return后面的内容进行转换，再变成wxml
  *
@@ -15,7 +14,7 @@ var wrapperPath = path.join( process.cwd(),'src', 'components' ,'PageWrapper',  
  * @param {String} componentName 组件名
  */
 
-exports.exit = function(astPath, type, componentName, modules) {
+exports.exit = function (astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
     let expr;
 
@@ -49,17 +48,18 @@ exports.exit = function(astPath, type, componentName, modules) {
 
             //如果这个JSX的主体是一个组件，那么它肯定在deps里面
             //添加import语句产生的显式依赖
-            for (var i in modules.importComponents) {
+            for (let i in modules.importComponents) {
                 if (modules.usedComponents[i]) {
-                    wxml = `<import src="${
-                        modules.importComponents[i]
-                    }.ux" />\n${wxml}`;
+                    wxml = `<import src="${ modules.importComponents[i]}.ux" />\n${wxml}`;
                 }
             }
-
-            if (quickFiles[modules.sourcePath]) {
+            var quickFile = quickFiles[modules.sourcePath];
+            if (quickFile) {
+                if (quickFile.template) {
+                    return;
+                }
                 if (modules.componentType === 'Page') {
-                    quickFiles[modules.sourcePath].template = `
+                    quickFile.template = `
 <import name="PageWrapper" src="${path.relative(modules.sourcePath.replace('/index.js', ''), wrapperPath)}"></import>
 <template>
    <PageWrapper>
@@ -67,7 +67,7 @@ exports.exit = function(astPath, type, componentName, modules) {
    </PageWrapper>
 </template>`;
                 } else {
-                    quickFiles[modules.sourcePath].template = `
+                    quickFile.template = `
 <template>
 ${wxml}
 </template>`;
@@ -112,7 +112,7 @@ function transformAlternate(node) {
     return transformNonNullConsequentOrAlternate(node);
 }
 
-exports.enter = function(astPath) {
+exports.enter = function (astPath) {
     if (astPath.node.key.name === 'render') {
         astPath.traverse({
             IfStatement: {

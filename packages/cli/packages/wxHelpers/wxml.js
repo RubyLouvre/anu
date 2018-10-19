@@ -1,3 +1,4 @@
+/* eslint no-console: 0 */
 const syntaxJSX = require('babel-plugin-syntax-jsx');
 const babel = require('babel-core');
 const t = require('babel-types');
@@ -7,12 +8,10 @@ const config = require('../config');
 const logicSrc = '../' + config.buildType + 'Helpers/logic';
 const attrNameSrc = '../' + config.buildType + 'Helpers/attrName';
 const attrNameHelper = require(attrNameSrc);
-
 const logicHelper = require(logicSrc);
 const utils = require('../utils');
 
 //const chineseHelper = require('./chinese');
-const slotHelper = require('./slot');
 
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
@@ -40,7 +39,7 @@ function wxml(code, modules) {
 
 var visitor = {
     JSXOpeningElement: {
-        exit: function (astPath, state) {
+        exit: function (astPath) {
             var openTag = astPath.node.name;
             if (
                 openTag.type === 'JSXMemberExpression' &&
@@ -66,29 +65,19 @@ var visitor = {
                     children.splice(i + 1, 1);
                     astPath.parentPath.replaceWith(template);
                 } else if (openTag.property.name === 'useComponent') {
-                    var modules = utils.getAnu(state);
                     var is;
-
                     astPath.node.attributes.forEach(function (el) {
                         var attrName = el.name.name;
                         var attrValue = el.value.value;
                         if (/^\{\{.+\}\}/.test(attrValue)) {
                             attrValue = attrValue.slice(2, -2);
                         }
-                        if (attrName === 'fragmentUid') {
-                            slotHelper(
-                                astPath.parentPath.node.children,
-                                el.value.value,
-                                modules,
-                                wxml
-                            );
-                        }
+
                         if (attrName === 'is') {
                             is = 'anu-' + attrValue.slice(1, -1).toLowerCase();
                         }
                     });
                     attributes = [];
-                    // console.log( astPath.parentPath.node.children, "children")
                     template = utils.createElement(
                         is,
                         attributes,

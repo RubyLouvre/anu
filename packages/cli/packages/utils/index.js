@@ -175,7 +175,7 @@ let utils = {
      */
     updatePath(spath, segement, newSegement, newExt, ext) {
         var lastSegement = '', replaced = false;
-        var arr = spath.split(path.sep).map(function(el) {
+        var arr = spath.split(path.sep).map(function (el) {
             lastSegement = el;
             if (segement === el && !replaced) {
                 replaced = true;

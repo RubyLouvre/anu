@@ -10,7 +10,7 @@ const config = require('./config');
 const buildType = config['buildType'];
 const quickFiles = require('./quickFiles');
 const quickConfig = require('./quickHelpers/config');
-//const PageWrapperUx = require('./quickHelpers/PageWrapp
+/* eslint no-console: 0 */
 
 const helpers = require(`./${config[buildType].helpers}`);
 //微信的文本节点，需要处理换行符
