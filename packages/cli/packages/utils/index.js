@@ -16,7 +16,7 @@ const EventEmitter = require('events').EventEmitter;
 const Event = new EventEmitter();
 process.on('unhandledRejection', error => {
     // eslint-disable-next-line
-    console.error('unhandledRejection', error);
+    console.error("unhandledRejection", error);
     process.exit(1); // To exit with a 'failure' code
 });
 let utils = {
@@ -109,7 +109,7 @@ let utils = {
         }
         return false;
     },
-    
+
     createUUID(astPath) {
         return astPath.node.start + astPath.node.end;
     },
@@ -181,12 +181,36 @@ let utils = {
             astPath: t.stringLiteral(path)
         });
     },
+    /**
+     *
+     * @param {String} 要修改的路径（存在平台差异性）
+     * @param {String} segement
+     * @param {String} newSegement
+     * @param {String?} ext 新的后缀名
+     */
+    updatePath(spath, segement, newSegement, newExt, ext) {
+        var lastSegement = '';
+        var arr = spath.split(path.sep).map(function(el) {
+            lastSegement = el;
+            if (segement === el) {
+                return newSegement;
+            }
+            return segement;
+        });
+        if (newExt) {
+            ext = ext || 'js';
+            arr[arr.length - 1] = lastSegement.replace('.' + ext, '.' + newExt);
+        }
+        return path.join.apply(path, arr);
+    },
     isBuildInLibs(name) {
         let libs = new Set(require('repl')._builtinLibs);
-        if (libs.has(name)){
+        if (libs.has(name)) {
             //如果是内置模块，先查找本地node_modules是否有对应重名模块
-            let isLocalBuildInLib = /\/node_modules\//.test(nodeResolve.sync(name, {basedir: cwd}));
-            if (isLocalBuildInLib){
+            let isLocalBuildInLib = /\/node_modules\//.test(
+                nodeResolve.sync(name, { basedir: cwd })
+            );
+            if (isLocalBuildInLib) {
                 return false;
             } else {
                 return true;
@@ -398,8 +422,8 @@ let utils = {
             init: 'var h = React.createElement;'
         }
     },
-    getComponentOrAppOrPageReg(){
-        return new RegExp( this.sepForRegex  + '(?:pages|app|components)'  );
+    getComponentOrAppOrPageReg() {
+        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };

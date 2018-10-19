@@ -80,7 +80,7 @@ Component({
 })`;
                 queue.push({
                     type: 'js',
-                    path: modules.sourcePath.replace(/\/src\//, '/dist/').replace(/\.js$/, '.js'),
+                    path:utils.updatePath( modules.sourcePath, 'src', 'dist'),
                     code: jsText.trim(),
                 });
                 utils.emit('build');
@@ -97,8 +97,7 @@ Component({
                     dep.json.usingComponents['anu-' + i.toLowerCase()] = '/components/' + i + '/index';
                 }
                 queue.push({
-                    type: 'json',
-                    path: modules.sourcePath.replace(/\/src\//, '/dist/').replace(/\.js$/, '.json'),
+                    path: utils.updatePath( modules.sourcePath, 'src', 'dist', 'json'),
                     code: JSON.stringify(dep.json, null, 4), //prettifyXml(wxml, { indent: 2 })
                 });
                 utils.emit('build');
@@ -112,8 +111,7 @@ Component({
             //如果这个JSX的主体是一个组件，那么它肯定在deps里面
 
             var enqueueData = {
-                type: 'wxml',
-                path: modules.sourcePath.replace(/\/src\//, '/dist/').replace(/js$/, xmlExt),
+                path: utils.updatePath( modules.sourcePath, 'src', 'dist', xmlExt),
                 code: wxml, //prettifyXml(wxml, { indent: 2 })
             };
             //添加组件标签包含其他标签时（如<Dialog><p>xxx</p></Dialog>）产生的隐式依赖

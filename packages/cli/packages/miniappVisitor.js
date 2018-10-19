@@ -218,9 +218,7 @@ module.exports = {
                 }
             }
             queue.push({
-                path: modules.sourcePath
-                    .replace(/\/src\//, '/dist/')
-                    .replace(/\.js$/, '.json'),
+                path: utils.updatePath( modules.sourcePath,'src', 'dist', 'json'),
                 code: JSON.stringify(json, null, 4)
             });
             utils.emit('build');

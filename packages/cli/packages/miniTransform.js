@@ -64,9 +64,10 @@ function transform(sourcePath, resolvedIds) {
                                 );
                                 queue.push({
                                     code: fs.readFileSync(npmFile, 'utf-8'),
-                                    path: npmFile.replace(
-                                        /\/node_modules\//,
-                                        '/dist/npm/'
+                                    path: utils.updatePath(
+                                        npmFile,
+                                        'node_modules',
+                                        'dist' + path.sep + 'npm'
                                     ),
                                     type: 'npm'
                                 });
@@ -128,12 +129,14 @@ ${result.code}
 </script>
 `;
                     var using = uxFile.config && uxFile.config.usingComponents;
-                    if (using){
+                    if (using) {
                         var importTag = '';
-                        for (var i in using){
-                            importTag += `<import name="${i}" src="${using[i].slice(0,-6)}"></import>\n`;
+                        for (var i in using) {
+                            importTag += `<import name="${i}" src="${using[
+                                i
+                            ].slice(0, -6)}"></import>\n`;
                         }
-                        ux = importTag+ux.trim();
+                        ux = importTag + ux.trim();
                     }
                     if (uxFile.cssType) {
                         ux += `
