@@ -16,14 +16,16 @@ const crypto = require('crypto');
 const config = require('./config');
 const quickFiles = require('./quickFiles');
 
-const miniTransform = require('./miniTransform');
+const miniTransform = require('./miniappTransform');
 const styleTransform = require('./styleTransform');
 const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
+
 let cwd = process.cwd();
 let inputPath = path.join(cwd, 'src');
 let entry = path.join(inputPath, 'app.js');
 let cache = {};
+
 let needUpdate = (id, code, fn) => {
     let sha1 = crypto
         .createHash('sha1')

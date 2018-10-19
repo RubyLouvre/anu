@@ -6,8 +6,8 @@ const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const queue = require('../queue');
 const utils = require('../utils');
-const minify = require('html-minifier').minify;
 const config = require('../config');
+const beautify = require('js-beautify');
 const xmlExt = config[config.buildType].xmlExt;
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -90,9 +90,7 @@ Component({
                 wxml =
                     dep.wxml +
                     `
-<block wx:if="{{renderUid === '${componentName}'}}">\n${minify(wxml, {
-    collapseWhitespace: true,
-})}\n</block>`;
+<block wx:if="{{renderUid === '${componentName}'}}">\n${wxml}\n</block>`;
                 dep.wxml = wxml;
                 //生成render props的json
                 for (let i in modules.importComponents) {
@@ -114,7 +112,7 @@ Component({
 
             var enqueueData = {
                 path: utils.updatePath( modules.sourcePath, 'src', 'dist', xmlExt),
-                code: wxml, //prettifyXml(wxml, { indent: 2 })
+                code: beautify.html(wxml)
             };
             //添加组件标签包含其他标签时（如<Dialog><p>xxx</p></Dialog>）产生的隐式依赖
 

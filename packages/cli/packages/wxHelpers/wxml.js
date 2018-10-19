@@ -127,7 +127,7 @@ var visitor = {
                 var modules = utils.getAnu(state);
                 //返回block元素或template元素
                 var block = logicHelper(expr, modules);
-                astPath.replaceWith(block);
+                astPath.replaceWithMultiple(block);
             }
         }
     }

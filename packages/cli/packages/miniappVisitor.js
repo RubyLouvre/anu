@@ -207,11 +207,7 @@ module.exports = {
                     usings[name] = modules.usedComponents[name];
                 });
             }
-            if (usings) {
-                //将页面配置对象中的usingComponents对象中的组件名放进modules.customComponents
-                //数组中，并将对应的文件复制到dist目录中
-                utils.copyCustomComponents(usings, modules);
-            }
+            
             if (config.buildType == 'quick'){
                 var obj = quickFiles[modules.sourcePath];
                 if (obj){
@@ -232,6 +228,11 @@ module.exports = {
                 if (modules.componentType === 'Component') {
                     json.component = true;
                 }
+            }
+            if (usings) {
+                //将页面配置对象中的usingComponents对象中的组件名放进modules.customComponents
+                //数组中，并将对应的文件复制到dist目录中
+                utils.copyCustomComponents(usings, modules);
             }
             queue.push({
                 path: utils.updatePath( modules.sourcePath,'src', 'dist', 'json'),

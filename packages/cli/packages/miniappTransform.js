@@ -2,17 +2,17 @@
  * 生成js文件, ux文件
  */
 let babel = require('babel-core');
-let queue = require('./queue');
-let utils = require('./utils');
 let fs = require('fs');
 let nodeResolve = require('resolve');
 let path = require('path');
-let cwd = process.cwd();
+let beautify = require('js-beautify');
+let miniappPlugin = require('./miniappPlugin');
 let config = require('./config');
 let quickFiles = require('./quickFiles');
-let prettifyXml = require('prettify-xml');
-let miniappPlugin = require('./miniappPlugin');
+let queue = require('./queue');
+let utils = require('./utils');
 
+let cwd = process.cwd();
 
 function transform(sourcePath, resolvedIds) {
     let customAliasMap = utils.updateCustomAlias(sourcePath, resolvedIds);
@@ -86,7 +86,7 @@ function transform(sourcePath, resolvedIds) {
                 ]
             ]
         },
-        function(err, result) {
+        function (err, result) {
             if (err) throw err;
 
             //babel6无transform异步方法
@@ -118,39 +118,42 @@ function transform(sourcePath, resolvedIds) {
                 //生成JS文件
                 var uxFile = quickFiles[sourcePath];
                 if (config.buildType == 'quick' && uxFile) {
-                    var ux = `
-${uxFile.template || ''}
-<script>
-${result.code}
-</script>
-`;
+                    //假设假设存在<template>
+                    var ux = `${uxFile.template || ''}`;
                     let using = uxFile.config && uxFile.config.usingComponents;
                     if (using) {
+                        //假设存在<import>
                         let importTag = '';
                         for (let i in using) {
-                            
-                            let importSrc = path.relative(sourcePath, cwd +path.sep+ using[i]);
-                            importTag += `<import name="${i}" src="${importSrc}"></import>\n`;
+                            let importSrc = path.relative(sourcePath, cwd + path.sep + using[i]);
+                            importTag += `<import name="${i}" src="${importSrc}"></import>`;
                         }
-                        ux =  prettifyXml(importTag + ux,{
+                        ux = importTag + ux;
+                        ux = beautify.html(ux, {
                             indent: 4
                         });
                     }
+                    //假设存在<script>
+                    ux += `
+<script>
+${beautify.js(result.code)}
+</script>`;
                     if (uxFile.cssType) {
+                        //假设存在<style>
                         ux += `
 <style lang="${uxFile.cssType}">
-${uxFile.cssCode}
+${beautify.css(uxFile.cssCode)}
 </style>`;
                     }
                     queue.push({
                         code: ux,
                         type: 'ux',
-                        path:  utils.updatePath(sourcePath, 'src', 'dist', 'ux') 
+                        path: utils.updatePath(sourcePath, 'src', 'dist', 'ux')
                     });
                 } else {
                     queue.push({
-                        code: result.code,
-                        path:  utils.updatePath(sourcePath, 'src', 'dist')
+                        code: beautify.js(result.code),
+                        path: utils.updatePath(sourcePath, 'src', 'dist')
                     });
                 }
 

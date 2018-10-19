@@ -42,10 +42,10 @@ function logic(expr, modules) {
             return loop(expr.callee, expr.arguments[0], modules);
         } else {
             throw generate(expr.callee.object).code +
-                '.map 后面的必须跟匿名函数或一个函数调用';
+            '.map 后面的必须跟匿名函数或一个函数调用';
         }
     } else {
-        return wrapText(expr);
+        return [wrapText(expr)];
     }
 }
 
@@ -54,34 +54,30 @@ function condition(test, consequent, alternate, modules) {
     var ifNode = createElement(
         'block',
         [createAttribute('if', parseExpr(test))],
-        [logic(consequent, modules) || wrapText(consequent)]
+        logic(consequent, modules)
     );
-    var ret = ifNode;
     // null就不用创建一个<block>元素了，&&表达式也不需要创建<block>元素
     if (alternate && alternate.type !== 'NullLiteral') {
         // 如果存在if分支，那么就再包一层，一共三个block,
         // <block><block a:if /><block a:else /></block>
-        ret = createElement('block', [], [ifNode]);
-
         var elseNode = createElement(
             'block',
             [createAttribute('elif', 'true')],
-            [logic(alternate, modules) || wrapText(alternate)]
+            logic(alternate, modules)
         );
-        ret.children.push(elseNode);
+        return [ifNode, elseNode];
     }
-    return ret;
+    return [ifNode];
 }
 
 // 处理 callee.map(fn)
 function loop(callee, fn, modules) {
     const attrs = [];
-    var forExpr = '{{('+fn.params[1].name+','+fn.params[0].name+') in ' + parseExpr(callee.object).slice(2);
-  
+    var forExpr = '{{(' + fn.params[1].name + ',' + fn.params[0].name + ') in ' + parseExpr(callee.object).slice(2);
+
     attrs.push(createAttribute('for', forExpr));
     if (modules.key) {
         attrs.push(createAttribute('tid', utils.genKey(modules.key)));
-
         modules.key = null;
     } else {
         // attrs.push(createAttribute('a:key', '*this'));
@@ -94,21 +90,17 @@ function loop(callee, fn, modules) {
 
     if (body) {
         // 循环内部存在循环或条件
-        var child = logic(
+        var children = logic(
             t.isBlockStatement(fn.body) ? body.argument : body,
             modules
         );
 
-        var blockElement = createElement('block', attrs, [child]);
-        modules.insideTheLoopIsComponent =
-            child.openingElement.name.name === 'template';
-        return blockElement;
+        return [createElement('block', attrs, children)];
     } else {
         // eslint-disable-next-line
         console.log(
             chalk`{cyan .map(fn)} 的函数中需要有 {cyan ReturnStatement}，在 ${
-                generate(fn).code
-            } 中未找到 {cyan ReturnStatement}`
+                generate(fn).code} 中未找到 {cyan ReturnStatement}`
         );
         throw new Error('Parse error');
     }
