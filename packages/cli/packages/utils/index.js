@@ -189,13 +189,14 @@ let utils = {
      * @param {String?} ext 新的后缀名
      */
     updatePath(spath, segement, newSegement, newExt, ext) {
-        var lastSegement = '';
+        var lastSegement = '', replaced = false;
         var arr = spath.split(path.sep).map(function(el) {
             lastSegement = el;
-            if (segement === el) {
+            if (segement === el && !replaced) {
+                replaced = true;
                 return newSegement;
             }
-            return segement;
+            return el;
         });
         if (newExt) {
             ext = ext || 'js';

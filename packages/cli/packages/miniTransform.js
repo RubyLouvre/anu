@@ -12,14 +12,6 @@ let config = require('./config');
 let quickFiles = require('./quickFiles');
 let miniappPlugin = require('./miniappPlugin');
 
-function getDistPath(filePath) {
-    let { name, dir } = path.parse(filePath);
-    let relativePath = path.relative(path.join(cwd, 'src'), dir);
-    let distDir = path.join(cwd, 'dist', relativePath);
-    let ext = config[config['buildType']].jsExt; //获取构建的文件后缀名
-    let distFilePath = path.join(distDir, `${name}.${ext}`);
-    return distFilePath;
-}
 
 function transform(sourcePath, resolvedIds) {
     let customAliasMap = utils.updateCustomAlias(sourcePath, resolvedIds);
@@ -128,13 +120,12 @@ ${uxFile.template || ''}
 ${result.code}
 </script>
 `;
-                    var using = uxFile.config && uxFile.config.usingComponents;
+                    let using = uxFile.config && uxFile.config.usingComponents;
                     if (using) {
-                        var importTag = '';
-                        for (var i in using) {
-                            importTag += `<import name="${i}" src="${using[
-                                i
-                            ].slice(0, -6)}"></import>\n`;
+                        let importTag = '';
+                        for (let i in using) {
+                            let importSrc = path.relative(sourcePath, cwd +path.sep+ using[i]);
+                            importTag += `<import name="${i}" src="${importSrc}"></import>\n`;
                         }
                         ux = importTag + ux.trim();
                     }
@@ -147,13 +138,13 @@ ${uxFile.cssCode}
                     queue.push({
                         code: ux,
                         type: 'ux',
-                        path: getDistPath(sourcePath)
+                        path:  utils.updatePath(sourcePath, 'src', 'dist', 'ux') 
                     });
                 } else {
                     queue.push({
                         code: result.code,
                         type: 'js',
-                        path: getDistPath(sourcePath)
+                        path:  utils.updatePath(sourcePath, 'src', 'dist')
                     });
                 }
 

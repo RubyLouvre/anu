@@ -204,13 +204,15 @@ module.exports = {
                     obj.config = Object.assign({},json);
                     quickConfig(modules,config, queue, utils );
                 }
-                var a = template('0,'+JSON.stringify(json, null, 4))();
-                var keyValue = t.ObjectProperty(
-                    t.identifier('config'),
-                    a.expression.expressions[1]
-                );
-                modules.thisMethods.push(keyValue);
-
+                delete json.usingComponents;
+                if (Object.keys(json).length){
+                    var a = template('0,'+JSON.stringify(json, null, 4))();
+                    var keyValue = t.ObjectProperty(
+                        t.identifier('config'),
+                        a.expression.expressions[1]
+                    );
+                    modules.thisMethods.push(keyValue);
+                }
                 return;
             } else {
                 if (modules.componentType === 'Component') {
