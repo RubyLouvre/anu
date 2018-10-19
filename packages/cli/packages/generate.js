@@ -14,6 +14,9 @@ module.exports = ()=>{
     utils.on('build', ()=>{
         while (queue.length){
             let {code, path } = queue.shift();
+            if (path[0] != '/'){
+                path = '/'+ path;
+            }
             fs.ensureFileSync(path);
             fs.writeFile(path, code, err => {
                 if (err){
