@@ -100,12 +100,6 @@ module.exports = {
             }
 
             if (name === '_asyncToGenerator' && config.buildType == 'wx') {
-                // astPath.insertBefore(
-                // 	t.importDeclaration(
-                // 		[t.importDefaultSpecifier(t.identifier('regeneratorRuntime'))],
-                // 		t.stringLiteral('regenerator-runtime/runtime')
-                // 	)
-                // );
                 astPath.insertBefore(
                     t.variableDeclaration('var', [
                         t.variableDeclarator(
@@ -132,7 +126,7 @@ module.exports = {
             }
         }
 
-        if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
+        if (/\.(less|scss|sass|css|json)$/.test(path.extname(source))) {
             astPath.remove();
         }
 
