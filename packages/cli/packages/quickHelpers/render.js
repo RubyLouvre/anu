@@ -3,6 +3,8 @@ const t = require('babel-types');
 const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const path = require('path');
+/* eslint no-console: 0 */
+
 const quickFiles = require('../quickFiles');
 var wrapperPath = path.join( process.cwd(),'src', 'components' ,'PageWrapper',  'index.ux');
 /**
