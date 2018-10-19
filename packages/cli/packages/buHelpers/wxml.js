@@ -29,11 +29,12 @@ function wxml(code, modules) {
             }
         ]
     });
-    var html = result.code;
-    if (chineseHack.unicodeNumber) {
-        return chineseHack.recovery(html);
-    }
-    return html;
+    // var html = result.code;
+    // if (chineseHack.unicodeNumber) {
+    //     return chineseHack.recovery(html);
+    // }
+    // return html;
+    return result.code.replace(/(?:\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`))
 }
 
 var visitor = {
@@ -120,7 +121,7 @@ var visitor = {
         }
     },
     JSXAttribute(astPath, state) {
-        chineseHack.collect(astPath);
+        // chineseHack.collect(astPath);
         if (astPath.node.name.name === 'key') {
             let node = astPath.node.value;
             let value;
