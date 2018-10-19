@@ -135,6 +135,7 @@ ${result.code}
 ${uxFile.cssCode}
 </style>`;
                     }
+                    //  console.log(utils.updatePath(sourcePath, 'src', 'dist', 'ux') );
                     queue.push({
                         code: ux,
                         type: 'ux',

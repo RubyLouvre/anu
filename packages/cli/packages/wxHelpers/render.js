@@ -80,7 +80,7 @@ Component({
 })`;
                 queue.push({
                     type: 'js',
-                    path:utils.updatePath( modules.sourcePath, 'src', 'dist'),
+                    path: utils.updatePath( modules.sourcePath, 'src', 'dist'),
                     code: jsText.trim(),
                 });
                 utils.emit('build');
