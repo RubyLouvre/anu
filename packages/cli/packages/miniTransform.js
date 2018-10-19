@@ -111,6 +111,8 @@ function transform(sourcePath, resolvedIds) {
                     babelrc: false,
                     plugins: babelPlugins
                 });
+                //处理中文转义问题
+                result.code = result.code.replace(/(?:\\\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`));
                 //生成JS文件
                 var uxFile = quickFiles[sourcePath];
                 if (config.buildType == 'quick' && uxFile) {

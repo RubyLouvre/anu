@@ -33,12 +33,12 @@ function wxml(code, modules) {
             }
         ]
     });
-    return  result.code.replace(/(?:\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`))
+    return result.code.replace(/(?:\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`));
 }
 
 var visitor = {
     JSXOpeningElement: {
-        exit: function(astPath, state) {
+        exit: function (astPath, state) {
             var openTag = astPath.node.name;
             if (
                 openTag.type === 'JSXMemberExpression' &&
@@ -67,7 +67,7 @@ var visitor = {
                     var modules = utils.getAnu(state);
                     var is;
 
-                    astPath.node.attributes.forEach(function(el) {
+                    astPath.node.attributes.forEach(function (el) {
                         var attrName = el.name.name;
                         var attrValue = el.value.value;
                         if (/^\{\{.+\}\}/.test(attrValue)) {
