@@ -30,7 +30,7 @@ function logic(expr, modules) {
         return condition(expr.left, expr.right, null, modules);
     } else if (
         t.isCallExpression(expr) &&
-        expr.callee.property.name === 'map'
+        expr.callee.property && expr.callee.property.name === 'map'
     ) {
         // 处理列表指令
         if (expr.arguments[0].type === 'ArrowFunctionExpression') {

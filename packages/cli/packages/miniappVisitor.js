@@ -168,6 +168,11 @@ module.exports = {
             if (/Page|Component/.test(modules.componentType)) {
                 let declaration = astPath.node.declaration;
                 //延后插入createPage语句在其同名的export语句前
+                if (declaration.type == 'FunctionDeclaration'){
+                    var fn = template(generate(declaration).code)();
+                    astPath.insertBefore(fn);
+                    astPath.node.declaration =declaration.id;
+                }              
                 registerPageOrComponent(declaration.name, astPath, modules);
             }
 
