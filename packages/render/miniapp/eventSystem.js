@@ -2,14 +2,14 @@ import { returnFalse, toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
 
 export var eventSystem = { //hijack
-   
-    dispatchEvent: function(e) {
-      if (e.type == 'message') {
-        if (webview.instance && webview.cb) {
-          webview.cb.call(webview.instance, e);
+
+    dispatchEvent: function (e) {
+        if (e.type == 'message') {
+            if (webview.instance && webview.cb) {
+                webview.cb.call(webview.instance, e);
+            }
+            return;
         }
-        return;
-      }
         var target = e.currentTarget;
         var dataset = target.dataset || {};
         var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
@@ -29,7 +29,7 @@ export var eventSystem = { //hijack
         var key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
         if (instance) {
-            Renderer.batchedUpdates(function() {
+            Renderer.batchedUpdates(function () {
                 try {
                     var fn = instance.$$eventCached[eventUid];
                     fn && fn.call(instance, createEvent(e, target));
@@ -48,16 +48,21 @@ function createEvent(e, target) {
     if (e.detail) {
         event.detail = e.detail;
         Object.assign(event, e.detail);
-        Object.assign(target, e.detail);
+        target.value = e.detail.value; //input.value
     }
-    event.stopPropagation = function() {
+    event.stopPropagation = function () {
         // eslint-disable-next-line
         console.warn("小程序不支持这方法，请使用catchXXX");
     };
     event.preventDefault = returnFalse;
     event.type = e.type;
     event.currentTarget = event.target = target;
-    event.touches = e.touches;
+    var t = event.touches;
+    event.touches = t;
+    if (!("x" in event) && t) {
+        event.x = t[0].pageX;
+        event.y = t[0].pageY;
+    }
     event.timeStamp = new Date() - 0;
     return event;
 }

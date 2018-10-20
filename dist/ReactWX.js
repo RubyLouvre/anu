@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-10-19
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-10-20
  * IE9+
  */
 
@@ -920,7 +920,7 @@ function createEvent(e, target) {
     if (e.detail) {
         event.detail = e.detail;
         Object.assign(event, e.detail);
-        Object.assign(target, e.detail);
+        target.value = e.detail.value;
     }
     event.stopPropagation = function () {
         console.warn("小程序不支持这方法，请使用catchXXX");
@@ -928,7 +928,12 @@ function createEvent(e, target) {
     event.preventDefault = returnFalse;
     event.type = e.type;
     event.currentTarget = event.target = target;
-    event.touches = e.touches;
+    var t = event.touches;
+    event.touches = t;
+    if (!("x" in event) && t) {
+        event.x = t[0].pageX;
+        event.y = t[0].pageY;
+    }
     event.timeStamp = new Date() - 0;
     return event;
 }
