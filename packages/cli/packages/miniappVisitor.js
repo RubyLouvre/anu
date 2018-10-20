@@ -37,7 +37,7 @@ if (config.buildType == 'quick'){
 }
 function registerPageOrComponent(name, path, modules) {
     if (name == modules.className) {
-        path.insertBefore(modules.createPage);
+        path.insertBefore(modules.registerStatement);
     }
 }
 /**
@@ -109,13 +109,14 @@ module.exports = {
             let modules = utils.getAnu(state);
             let name = astPath.node.id.name;
             if (
-                /^[A-Z]/.test(name) &&
+                /^[A-Z]/.test(name) && //组件肯定是大写开头
                 modules.componentType === 'Component' &&
-                !modules.parentName
+                !modules.parentName &&
+                !modules.registerStatement //防止重复进入
             ) {
                 //需要想办法处理无状态组件
                 helpers.render.exit(astPath, '无状态组件', name, modules);
-                modules.createPage = utils.createRegisterStatement(name, name);
+                modules.registerStatement = utils.createRegisterStatement(name, name);
             }
 
             if (
@@ -338,7 +339,7 @@ module.exports = {
             }
             //app.js export default App(new Demo())改成
             //     export default React.App(new Demo())       
-            if (modules.componentType == 'App' && 
+            if (modules.componentType == 'App' && config.buildType == "quick" &&
              callee.type === 'Identifier' && callee.name === 'App' ){
                 callee.name = 'React.App';
                 return;
