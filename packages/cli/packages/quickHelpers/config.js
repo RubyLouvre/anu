@@ -45,7 +45,7 @@ module.exports = function quickConfig(config, modules, queue, utils){
                 { name: 'system.wifi' },
                 { name: 'service.stats' },
                 { name: 'service.account' },
-                {name: 'system.contact'},
+                { name: 'system.contact'},
                 { name: 'service.app' },
                 { name: 'service.share', 'params': {'appSign': '', 'wxKey': ''} },
                 { name: 'service.pay' },

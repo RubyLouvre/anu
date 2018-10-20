@@ -134,7 +134,8 @@ function transform(sourcePath, resolvedIds) {
 
                     }
                     ux = beautify.html(ux, {
-                        indent: 4
+                        indent: 4,
+                        'wrap-line-length': 100
                     });
                     //假设存在<script>
                     ux += `

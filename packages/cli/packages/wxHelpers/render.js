@@ -90,7 +90,10 @@ exports.exit = function (astPath, type, componentName, modules) {
         }
         queue.push({
             path: utils.updatePath(modules.sourcePath, 'src', 'dist', xmlExt),
-            code: beautify.html(wxml)
+            code: beautify.html(wxml,{
+                indent: 4,
+                'wrap-line-length': 100
+            })
         });
         utils.emit('build');
     }
