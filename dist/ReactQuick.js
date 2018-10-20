@@ -547,16 +547,13 @@ var eventSystem = {
         if (e.type == 'message') {
             return;
         }
+        var instance = this.reactInstance;
+        if (!instance || !instance.$$eventCached) {
+            return;
+        }
         var target = e.currentTarget;
         var dataset = target.dataset || {};
         var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
-        var instance = this.reactInstance;
-        if (!instance) {
-            return;
-        }
-        if (!instance.$$eventCached) {
-            return;
-        }
         var fiber = instance.$$eventCached[eventUid + 'Fiber'];
         if (e.type == 'change' && fiber) {
             if (fiber.props.value + '' == e.detail.value) {
@@ -578,9 +575,8 @@ var eventSystem = {
     }
 };
 function createEvent(e, target) {
-    var event = {};
+    var event = Object.assign({}, e);
     if (e.detail) {
-        event.detail = e.detail;
         Object.assign(event, e.detail);
         target.value = e.detail.value;
     }
@@ -588,15 +584,12 @@ function createEvent(e, target) {
         console.warn("小程序不支持这方法，请使用catchXXX");
     };
     event.preventDefault = returnFalse;
-    event.type = e.type;
-    event.currentTarget = event.target = target;
-    var t = event.touches;
-    event.touches = t;
-    if (!("x" in event) && t) {
-        event.x = t[0].pageX;
-        event.y = t[0].pageY;
-    }
+    event.target = target;
     event.timeStamp = new Date() - 0;
+    if (!("x" in event)) {
+        event.x = event.pageX;
+        event.y = event.pageY;
+    }
     return event;
 }
 

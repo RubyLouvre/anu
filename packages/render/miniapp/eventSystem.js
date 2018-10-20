@@ -4,29 +4,26 @@ import { Renderer } from 'react-core/createRenderer';
 export var eventSystem = { //hijack
 
     dispatchEvent: function (e) {
-        if (e.type == 'message') {
+        if (e.type == 'message') {//处理支付宝web-view组件的dataset为空的BUG
             if (webview.instance && webview.cb) {
                 webview.cb.call(webview.instance, e);
             }
             return;
         }
-        var target = e.currentTarget;
-        var dataset = target.dataset || {};
-        var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
-        var instance = this.reactInstance;
-        if (!instance) {
+        const instance = this.reactInstance;
+        if (!instance || !instance.$$eventCached) {
             return;
         }
-        if (!instance.$$eventCached) {
-            return;
-        }
-        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
+        const target = e.currentTarget;
+        const dataset = target.dataset || {};
+        let eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+        const fiber = instance.$$eventCached[eventUid + 'Fiber'];
         if (e.type == 'change' && fiber) {
             if (fiber.props.value + '' == e.detail.value) {
                 return;
             }
         }
-        var key = dataset['key'];
+        const key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
         if (instance) {
             Renderer.batchedUpdates(function () {
@@ -34,7 +31,7 @@ export var eventSystem = { //hijack
                     var fn = instance.$$eventCached[eventUid];
                     fn && fn.call(instance, createEvent(e, target));
                 } catch (err) {
-                    console.log(err.stack);
+                    console.log(err.stack);  // eslint-disable-line
                 }
             }, e);
         }
@@ -44,26 +41,23 @@ export var eventSystem = { //hijack
 export const webview = {};
 //创建事件对象
 function createEvent(e, target) {
-    var event = {};
+    var event = Object.assign({}, e);
     if (e.detail) {
-        event.detail = e.detail;
         Object.assign(event, e.detail);
         target.value = e.detail.value; //input.value
     }
+    //需要重写的属性或方法
     event.stopPropagation = function () {
         // eslint-disable-next-line
         console.warn("小程序不支持这方法，请使用catchXXX");
     };
     event.preventDefault = returnFalse;
-    event.type = e.type;
-    event.currentTarget = event.target = target;
-    var t = event.touches;
-    event.touches = t;
-    if (!("x" in event) && t) {
-        event.x = t[0].pageX;
-        event.y = t[0].pageY;
-    }
+    event.target = target;
     event.timeStamp = new Date() - 0;
+    if (!("x" in event)) { //支付宝没有x, y
+        event.x = event.pageX;
+        event.y = event.pageY;
+    }
     return event;
 }
 
