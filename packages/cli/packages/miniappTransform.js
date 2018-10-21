@@ -5,6 +5,7 @@ let babel = require('babel-core');
 let fs = require('fs');
 let nodeResolve = require('resolve');
 let path = require('path');
+let chalk = require('chalk');
 let beautify = require('js-beautify');
 let miniappPlugin = require('./miniappPlugin');
 let config = require('./config');
@@ -38,34 +39,40 @@ function transform(sourcePath, resolvedIds) {
                     'module-resolver',
                     {
                         resolvePath(moduleName) {
+                            
                             //针对async/await语法做特殊处理
                             if (
                                 /regenerator-runtime\/runtime/.test(moduleName)
                             ) {
-                                let npmFile = nodeResolve.sync(moduleName, {
-                                    basedir: cwd,
-                                    moduleDirectory: path.join(
-                                        cwd,
-                                        'node_modules'
-                                    )
-                                });
-                                Object.assign(
-                                    npmAliasMap,
-                                    utils.updateNpmAlias(sourcePath, {
-                                        'regenerator-runtime/runtime': npmFile
-                                    })
-                                );
-
+                                let regeneratorRuntimePath = '';
+                                try {
+                                    regeneratorRuntimePath = nodeResolve.sync('regenerator-runtime/runtime', {basedir: process.cwd()});
+                                } catch (err) {
+                                    // eslint-disable-next-line
+                                    console.log(
+                                        'Error: ' + sourcePath + '\n' +
+                                        'Msg: ' + chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
+                                    );
+                                    process.exit(1);
+                                }
+                                
                                 queue.push({
-                                    code: fs.readFileSync(npmFile, 'utf-8'),
+                                    code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
                                     path: utils.updatePath(
-                                        npmFile,
+                                        regeneratorRuntimePath,
                                         'node_modules',
                                         'dist' + path.sep + 'npm'
                                     ),
                                     type: 'npm'
                                 });
-                                utils.emit('build');
+
+                                //获取依赖的相对路径
+                                Object.assign(
+                                    npmAliasMap,
+                                    utils.updateNpmAlias(sourcePath, {
+                                        'regenerator-runtime/runtime': regeneratorRuntimePath
+                                    })
+                                );
                             }
 
                             let value = '';
@@ -90,7 +97,7 @@ function transform(sourcePath, resolvedIds) {
             if (err) throw err;
 
             //babel6无transform异步方法
-            setTimeout(() => {
+            setImmediate(() => {
                 let babelPlugins = [
                     [
                         //process.env.ANU_ENV
@@ -151,6 +158,7 @@ function transform(sourcePath, resolvedIds) {
                     }
                     queue.push({
                         code: ux,
+                        type: 'ux',
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux') 
                     });
                 } else {
@@ -160,7 +168,7 @@ function transform(sourcePath, resolvedIds) {
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist')
                     });
                 }
-            }, 4);
+            });
         }
     );
 }

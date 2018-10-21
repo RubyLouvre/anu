@@ -50,7 +50,6 @@ const compileLess = (filePath, originalCode) => {
                 console.log(err);
             }
         });
-
 };
 
 const renderSass = (filePath, originalCode) => {
@@ -86,8 +85,7 @@ const renderSass = (filePath, originalCode) => {
                 path: getDist(filePath),
                 type: 'css'
             });
-            utils.emit('build');
-
+            
 
             if (appSassStyleFileNameReg.test(filePath)) {
                 fs.remove(hideAppStylePath, (err) => {

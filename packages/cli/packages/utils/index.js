@@ -189,7 +189,11 @@ let utils = {
             ext = ext || 'js';
             arr[arr.length - 1] = lastSegement.replace('.' + ext, '.' + newExt);
         }
-        return path.join.apply(path, arr);
+        let resolvedPath = path.join.apply(path, arr);
+        if (resolvedPath[0] != '/'){
+            resolvedPath = '/'+ resolvedPath;
+        }
+        return resolvedPath;
     },
     isBuildInLibs(name) {
         let libs = new Set(require('repl')._builtinLibs);
@@ -475,8 +479,12 @@ let utils = {
                 }
                 return result.styles;
             },
-            wxml: function(){
-        
+            ux: function(code){
+                return code;
+            },
+            wxml: function(code){
+                //TODO: comporess xml file;
+                return code;
             },
             json: function(code){
                 return JSON.stringify(JSON.parse(code));

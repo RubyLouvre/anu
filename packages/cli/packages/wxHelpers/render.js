@@ -9,6 +9,7 @@ const utils = require('../utils');
 const config = require('../config');
 const beautify = require('js-beautify');
 const xmlExt = config[config.buildType].xmlExt;
+
 /**
  * 将return后面的内容进行转换，再变成wxml
  *
@@ -109,7 +110,6 @@ exports.exit = function(astPath, type, componentName, modules) {
                 'wrap-line-length': 100
             })
         });
-        utils.emit('build');
     }
 };
 
