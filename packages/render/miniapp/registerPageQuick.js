@@ -137,11 +137,11 @@ export function registerPage(PageClass, path) {
         onShow() {
             transmitData(PageClass, path, instance, this);
             var fn = this.reactInstance.componentDidShow;
-            fn.call(this.reactInstance);
+            fn && fn.call(instance);
         },
         onHide() {
             var fn = this.reactInstance.componentDidHide;
-            fn.call(this.reactInstance);
+            fn && fn.call(instance);
         },
         onReady() {
             console.log('页面布局完成', path);

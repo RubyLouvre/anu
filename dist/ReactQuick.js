@@ -2008,11 +2008,11 @@ function registerPage(PageClass, path) {
         onShow: function onShow() {
             transmitData(PageClass, path, instance, this);
             var fn = this.reactInstance.componentDidShow;
-            fn.call(this.reactInstance);
+            fn && fn.call(instance);
         },
         onHide: function onHide() {
             var fn = this.reactInstance.componentDidHide;
-            fn.call(this.reactInstance);
+            fn && fn.call(instance);
         },
         onReady: function onReady() {
             console.log('页面布局完成', path);
@@ -2038,6 +2038,26 @@ function transmitData(pageClass, pagePath, reactInstance, quickInstance) {
     shareObject.page = reactInstance;
     shareObject.app = quickInstance.$app.$def;
 }
+
+var api = {
+    showModal: function showModal(obj) {
+        var buttons = [{
+            text: obj.confirmText,
+            color: obj.confirmColor
+        }];
+        if (obj.showCancel) {
+            buttons.push({
+                text: obj.cancelText,
+                color: obj.cancelColor
+            });
+        }
+        obj.buttons = obj.confirmText ? buttons : [];
+        obj.message = obj.content;
+        delete obj.content;
+        var prompt = require('@system.prompt');
+        prompt.showDialog(obj);
+    }
+};
 
 var win = getWindow();
 var React = void 0;
@@ -2112,7 +2132,7 @@ React = win.React = {
         delete app.constructor;
         return app;
     },
-    api: {}
+    api: api
 };
 var React$1 = React;
 

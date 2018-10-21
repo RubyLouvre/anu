@@ -18,6 +18,7 @@ import { useComponent, registeredComponents } from './registerComponent';
 
 import { registerPage, getApp } from './registerPageQuick';
 import { updateMiniApp, toRenderProps } from './utils';
+import { api } from './quickApis';
 
 let win = getWindow();
 let React;
@@ -107,7 +108,7 @@ React = win.React = {
         delete app.constructor;//有这属性会报错
         return app;
     },
-    api: {}
+    api: api
    
 };
 
