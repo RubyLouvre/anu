@@ -16,7 +16,7 @@ import { Renderer } from './wxrender';
 import { toStyle } from './toStyle';
 import { useComponent, registeredComponents } from './registerComponent';
 
-import { registerPage } from './registerPageQuick';
+import { registerPage, getApp } from './registerPageQuick';
 import { updateMiniApp, toRenderProps } from './utils';
 
 let win = getWindow();
@@ -99,6 +99,7 @@ React = win.React = {
     registerComponent,
     registerPage,
     toStyle,
+    getApp,
     appType: 'quick',
     App(demo){
         var app = {};

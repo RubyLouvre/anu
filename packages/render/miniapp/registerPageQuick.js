@@ -1,6 +1,6 @@
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
-import { isFn, noop } from 'react-core/util';
+import { noop } from 'react-core/util';
 import { eventSystem } from './eventSystem';
 import { delayMounts, updateMiniApp } from './utils';
 var showMenuList = [
@@ -137,6 +137,10 @@ export function registerPage(PageClass, path) {
         onShow() {
             transmitData(PageClass, path, instance, this);
             var fn = this.reactInstance.componentDidShow;
+            fn.call(this.reactInstance);
+        },
+        onHide() {
+            var fn = this.reactInstance.componentDidHide;
             fn.call(this.reactInstance);
         },
         onReady() {

@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-10-20
+ * 运行于快应用的React by 司徒正美 Copyright 2018-10-21
  * IE9+
  */
 
@@ -1978,6 +1978,9 @@ function useComponent(props) {
 }
 
 var shareObject = {};
+function getApp() {
+    return shareObject.app;
+}
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
     var instance;
@@ -2005,6 +2008,10 @@ function registerPage(PageClass, path) {
         onShow: function onShow() {
             transmitData(PageClass, path, instance, this);
             var fn = this.reactInstance.componentDidShow;
+            fn.call(this.reactInstance);
+        },
+        onHide: function onHide() {
+            var fn = this.reactInstance.componentDidHide;
             fn.call(this.reactInstance);
         },
         onReady: function onReady() {
@@ -2097,6 +2104,7 @@ React = win.React = {
     registerComponent: registerComponent,
     registerPage: registerPage,
     toStyle: toStyle,
+    getApp: getApp,
     appType: 'quick',
     App: function App(demo) {
         var app = {};
