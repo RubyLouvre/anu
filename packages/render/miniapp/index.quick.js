@@ -16,7 +16,7 @@ import { Renderer } from './wxrender';
 import { toStyle } from './toStyle';
 import { useComponent, registeredComponents } from './registerComponent';
 
-import { registerPage, getApp } from './registerPageQuick';
+import { registerPage, getApp, shareObject } from './registerPageQuick';
 import { updateMiniApp, toRenderProps } from './utils';
 import { api } from './quickApis';
 
@@ -99,6 +99,7 @@ React = win.React = {
     useComponent,
     registerComponent,
     registerPage,
+    shareObject,
     toStyle,
     getApp,
     appType: 'quick',
