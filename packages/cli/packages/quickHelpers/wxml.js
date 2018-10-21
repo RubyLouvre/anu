@@ -6,10 +6,7 @@ const attrValueHelper = require('./attrValue');
 const attrNameHelper = require('./attrName');
 const logicHelper = require('./logic');
 const utils = require('../utils');
-//const chineseHelper = require('./chinese');
 const slotHelper = require('./slot');
-
-var chineseHack = utils.createChineseHack();
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */
@@ -34,7 +31,7 @@ function wxml(code, modules) {
     //     return chineseHack.recovery(html);
     // }
     // return html;
-    return result.code.replace(/(?:\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`))
+    return result.code.replace(/(?:\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`));
 }
 
 var visitor = {

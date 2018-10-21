@@ -106,16 +106,14 @@ module.exports = (file)=>{
         babelConfig.plugins.push(['transform-es2015-modules-commonjs', {'allowTopLevelThis': true}]);
     }
 
-
-    setTimeout(()=>{
+    setImmediate(()=>{
         let code = babel.transform(originalCode, babelConfig ).code;
         queue.push({
             code: code,
             path: getDistPath(id),
             type: 'npm'
         });
-        utils.emit('build');
-    }, 4);
+    });
 
     
 

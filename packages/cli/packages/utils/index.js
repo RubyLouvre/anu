@@ -417,8 +417,9 @@ let utils = {
                 }
                 return result.styles;
             },
-            wxml: function(){
-        
+            wxml: function(code){
+                //TODO: comporess xml file;
+                return code;
             },
             json: function(code){
                 return JSON.stringify(JSON.parse(code));

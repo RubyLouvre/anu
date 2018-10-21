@@ -249,9 +249,8 @@ class Parser {
         const watcher = chokidar
             .watch(watchDir, watchConfig)
             .on('change', (file)=>{
-
                 console.log(
-                    `\nupdated: ${chalk.yellow(path.relative(cwd, file))}\n`
+                    `\n更新: ${chalk.yellow(path.relative(cwd, file))}\n`
                 );
                 this.inputConfig.input = file;
                 this.parse();
@@ -269,16 +268,9 @@ utils.on('build', ()=>{
 });
 
 
-
 async function build(arg) {
-  
     //同步react
     await utils.asyncReact();
-    if (arg === 'watch') {
-        console.log(chalk.green('watching files...'));
-    } else if (arg === 'build') {
-        console.log(chalk.green('compile files...'));
-    }
     const parser = new Parser(entry);
     await parser.parse();
     if (arg === 'watch') {
