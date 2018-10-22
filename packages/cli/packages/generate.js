@@ -18,6 +18,7 @@ module.exports = ()=>{
         if (config.compress) {
             code = compress[type](code);
         }
+        path = nPath.resolve(path);
         fs.ensureFileSync(path);
         fs.writeFile(path, code, err => {
             if (err){

@@ -36,6 +36,9 @@ let utils = {
         return ora(text);
     },
     getStyleValue: require('./getStyleValue'),
+    isWin() {
+        return process.platform === 'win32';
+    },
     useYarn() {
         if (config['useYarn'] != undefined) {
             return config['useYarn'];
@@ -195,7 +198,7 @@ let utils = {
             }
         }
     },
-    installer(npmName) {
+    installer(npmName, type) {
         return new Promise(resolve => {
             console.log(
                 chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`)
@@ -204,13 +207,13 @@ let utils = {
             let options = [];
             if (this.useYarn()) {
                 bin = 'yarn';
-                options.push('add', npmName, '--save');
+                options.push('add', npmName, type === 'dev' ? '--dev': '--save');
             } else if (this.useCnpm()) {
                 bin = 'cnpm';
-                options.push('install', npmName, '--save');
+                options.push('install', npmName, type === 'dev' ? '--save-dev' : '--save' );
             } else {
                 bin = 'npm';
-                options.push('install', npmName, '--save');
+                options.push('install', npmName, type === 'dev' ? '--save-dev' : '--save' );
             }
 
             let result = spawn.sync(bin, options, { stdio: 'inherit' });
@@ -314,12 +317,10 @@ let utils = {
         return defaultAlias;
     },
     resolveNpmAliasPath(id, depFile) {
-        let distJs = id.replace(/\/src\//, '/dist/');
-        let distNpm = depFile.replace(/\/node_modules\//, '/dist/npm/');
-
+        let distJs =  this.replacePath(id, '/src/', '/dist/');
+        let distNpm = this.replacePath(depFile, '/node_modules/', '/dist/npm/');
         //根据被依赖文件和依赖文件，求相对路径
         let aliasPath = path.relative(path.dirname(distJs), distNpm);
-
         return aliasPath;
     },
     resolveCustomAliasPath(file, depFile) {
@@ -336,6 +337,9 @@ let utils = {
                 id = path.relative(path.join(cwd, 'src'), id);
                 if (/^\w/.test(id)) {
                     id = `./${id}`;
+                }
+                if (this.isWin()) {
+                    id = id.replace(/\\/g, '/');
                 }
                 let importKey = `@import '${id}';`;
                 if (!componentsStyle.includes(importKey)) {
@@ -366,6 +370,14 @@ let utils = {
         });
 
         return result;
+    },
+    replacePath: function(sPath, segement, newSegement){
+        let sep = path.sep;
+        if (process.platform === 'win32') {
+            segement = segement.replace(/\//g, sep); 
+            newSegement = newSegement.replace(/\//g, sep);
+        }
+        return path.resolve(sPath.replace( segement, newSegement ));
     },
     updateNpmAlias(id, deps) {
         //依赖的npm模块也当alias处理
@@ -408,6 +420,7 @@ let utils = {
                 return result.code;
             },
             npm: function(code){
+                console.log(code);
                 return this.js.call(this, code);
             },
             css: function(code){
@@ -418,7 +431,7 @@ let utils = {
                 return result.styles;
             },
             wxml: function(code){
-                //TODO: comporess xml file;
+                //TODO: compress xml file;
                 return code;
             },
             json: function(code){

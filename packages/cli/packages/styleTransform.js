@@ -6,6 +6,7 @@ const utils = require('./utils');
 const fs = require('fs-extra');
 const validateStyle = require('./validateStyle');
 const appSassStyleFileNameReg = /app\.(scss|sass)$/;
+const exitName = config[config['buildType']].styleExt;
 
 
 const isLess = (filePath)=>{
@@ -18,12 +19,9 @@ const isSass = (filePath)=>{
     return /\.(scss|sass)$/.test(filePath);
 };
 const getDist = (filePath) =>{
-    let { name, dir } = path.parse(filePath);
-    let relativePath = path.relative( path.join(cwd, 'src'), dir);
-    let distDir = path.join(cwd, 'dist', relativePath);
-    let styleExt = config[config['buildType']].styleExt; //获取构建的样式文件后缀名
-    let distFilePath = path.join(distDir, `${name}.${styleExt}` );
-    return distFilePath;
+    let dist = utils.replacePath(filePath, '/src/', '/dist/');
+    let { name, dir } =  path.parse(dist);
+    return  path.join(dir, `${name}.${exitName}`);
 };
 
 var less = require('less');
@@ -103,7 +101,7 @@ const compileSass = (filePath, originalCode)=>{
     try {
         require( path.join(cwd, 'node_modules', 'node-sass', 'package.json') );
     } catch (err) {
-        utils.installer('node-sass')
+        utils.installer('node-sass', 'dev')
     }
     renderSass(filePath, originalCode);
 };
