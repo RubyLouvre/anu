@@ -94,7 +94,6 @@ function transform(sourcePath, resolvedIds) {
                                     ),
                                     type: 'npm'
                                 });
-                                utils.emit('build');
                             }
 
                             let value = '';
@@ -119,37 +118,37 @@ function transform(sourcePath, resolvedIds) {
             if (err) throw err;
 
             //babel6无transform异步方法
-            setTimeout(() => {
-                let babelPlugins = [
-                    [
-                        //process.env.ANU_ENV
-                        'transform-inline-environment-variables',
-                        {
-                            env: {
-                                ANU_ENV: config['buildType']
-                            }
+            let babelPlugins = [
+                [
+                    //process.env.ANU_ENV
+                    'transform-inline-environment-variables',
+                    {
+                        env: {
+                            ANU_ENV: config['buildType']
                         }
-                    ],
-                    'minify-dead-code-elimination'
-                ];
+                    }
+                ],
+                'minify-dead-code-elimination'
+            ];
 
-                if (config.buildType === 'wx') {
-                    //支付宝小程序默认支持es6 module
-                    babelPlugins.push('transform-es2015-modules-commonjs');
-                }
-
+            if (config.buildType === 'wx') {
+                //支付宝小程序默认支持es6 module
+                babelPlugins.push('transform-es2015-modules-commonjs');
+            }
+            
+            setImmediate(()=>{
                 result = babel.transform(result.code, {
                     babelrc: false,
                     plugins: babelPlugins
                 });
-                result.code = result.code.replace(/(?:\\\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`))
+                result.code = result.code.replace(/(?:\\\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`));
                 queue.push({
                     code: result.code,
                     type: 'js',
                     path: getDistPath(sourcePath)
                 });
-                utils.emit('build');
-            }, 4);
+            });
+            
         }
     );
 }

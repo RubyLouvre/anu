@@ -2,12 +2,6 @@
     "license": "MIT",
     "version": "1.0.0",
     "name": "music",
-    "mpreact": {
-        "alias": {
-            "@react": "src/ReactWX.js",
-            "@components": "src/components"
-        }
-    },
     "dependencies": {
         "regenerator-runtime": "^0.12.1"
     },

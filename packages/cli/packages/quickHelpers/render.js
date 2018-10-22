@@ -4,7 +4,6 @@ const wxmlHelper = require('./wxml');
 const babel = require('babel-core');
 const queue = require('../queue');
 const path = require('path');
-const utils = require('../utils');
 const templateExt = '.ux';
 
 /**
@@ -90,7 +89,6 @@ exports.exit = function(astPath, type, componentName, modules) {
                 });
             }
             queue.push(enqueueData);
-            utils.emit('build');
             break;
         default:
             break;

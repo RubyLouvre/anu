@@ -2,15 +2,7 @@
     "license": "MIT",
     "version": "1.0.0",
     "name": "qunar",
-    "mpreact": {
-        "alias": {
-            "@react": "src/ReactWX.js",
-            "@components": "src/components"
-        }
-    },
     "dependencies": {
-        "@rematch/core": "0.6.0",
-        "react-redux": "5.0.7",
         "regenerator-runtime": "^0.12.1"
     },
     "devDependencies": {
