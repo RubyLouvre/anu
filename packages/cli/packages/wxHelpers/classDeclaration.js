@@ -49,7 +49,7 @@ module.exports = {
             }
         }
         if (modules.componentType === 'Page') {
-            modules.createPage = utils.createRegisterStatement(
+            modules.registerStatement = utils.createRegisterStatement(
                 modules.className,
                 modules.current
                     .replace(/.+pages/, 'pages')
@@ -57,7 +57,7 @@ module.exports = {
                 true
             );
         } else if (modules.componentType === 'Component') {
-            modules.createPage = utils.createRegisterStatement(
+            modules.registerStatement = utils.createRegisterStatement(
                 modules.className,
                 modules.className
             );

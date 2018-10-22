@@ -10,14 +10,15 @@ import {
     createFactory
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
-import { injectAPIs } from './api';
+
 import { eventSystem } from './eventSystem';
 import { Renderer } from './wxrender';
 import { toStyle } from './toStyle';
 import { useComponent, registeredComponents } from './registerComponent';
 
-import { registerPage, applyAppStore } from './registerPage';
+import { registerPage, getApp, shareObject } from './registerPageQuick';
 import { updateMiniApp, toRenderProps } from './utils';
+import { api } from './quickApis';
 
 let win = getWindow();
 let React;
@@ -94,16 +95,24 @@ React = win.React = {
         //保存所有class到classCache中，方便在事件回调中找到对应实例
         return miniCreateClass.apply(null, arguments);
     },
-    applyAppStore,
     toRenderProps,
     useComponent,
     registerComponent,
     registerPage,
+    shareObject,
     toStyle,
-    appType: 'quick'
+    getApp,
+    appType: 'quick',
+    App(demo){
+        var app = {};
+        Object.assign(app, demo);
+        delete app.constructor;//有这属性会报错
+        return app;
+    },
+    api: api
+   
 };
-var apiContainer = {};
 
-injectAPIs(React, apiContainer);
+
 export default React;
 export { Children, createElement, Component };

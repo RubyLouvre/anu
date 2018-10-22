@@ -19,13 +19,22 @@ export function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
         return;
     }
-    instance.wx.setData(
-        safeClone({
-            props: instance.props,
-            state: instance.state || null,
-            context: instance.context,
-        })
-    );
+    if (instance.wx.setData){
+        instance.wx.setData(
+            safeClone({
+                props: instance.props,
+                state: instance.state || null,
+                context: instance.context,
+            })
+        );
+    } else {
+        updateQuickApp(instance.wx, instance);
+    }
+}
+function updateQuickApp(quick, instance) {
+    quick.props = instance.props;
+    quick.state = instance.state || null;
+    quick.context = instance.context;
 }
 function isReferenceType(val) {
     return val && (typeof val === 'object' || Object.prototype.toString.call(val) === '[object Array]');

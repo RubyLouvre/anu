@@ -37,6 +37,7 @@
     "handlebars": "^4.0.11",
     "html-minifier": "^3.5.20",
     "inquirer": "^6.0.0",
+    "js-beautify": "^1.8.3-rc3",
     "less": "^3.8.1",
     "ora": "^3.0.0",
     "prettify-xml": "^1.2.0",

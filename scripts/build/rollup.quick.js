@@ -8,12 +8,12 @@ const json = require('../../package.json');
 //const importAlias = require('rollup-plugin-import-alias');
 
 export default {
-    input: './packages/render/miniapp/index.bu.js',
+    input: './packages/render/miniapp/index.quick.js',
     output: {
         strict: false,
         format: 'es',
         // exports: 'default',
-        file: './dist/ReactBu.js',
+        file: './dist/ReactQuick.js',
         name: 'React'
     },
     plugins: [
@@ -23,10 +23,7 @@ export default {
             plugins: [
                 'transform-class-properties',
                 [
-                    'transform-es2015-classes',
-                    {
-                        loose: true
-                    }
+                    'transform-es2015-classes'
                 ],
                 [
                     'module-resolver',
@@ -43,7 +40,7 @@ export default {
         }),
 
         license({
-            banner: `运行于百度智能小程序的React by 司徒正美 Copyright ${JSON.stringify(
+            banner: `运行于快应用的React by 司徒正美 Copyright ${JSON.stringify(
                 new Date()
             ).replace(/T.*|"/g, '')}
       IE9+

@@ -69,10 +69,7 @@ if (!config[buildType]) {
 
 process.env.ANU_ENV = buildType;
 
-if (!config[buildType].support) {
-    console.log(chalk.red(config[buildType].notSupportResText));
-    process.exit(1);
-}
+
 config['buildType'] = buildType;
 
 let command = args[0];

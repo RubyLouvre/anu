@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-17
+ * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-10-20
  * IE9+
  */
 
@@ -885,16 +885,13 @@ var eventSystem = {
         if (e.type == 'message') {
             return;
         }
+        var instance = this.reactInstance;
+        if (!instance || !instance.$$eventCached) {
+            return;
+        }
         var target = e.currentTarget;
         var dataset = target.dataset || {};
         var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
-        var instance = this.reactInstance;
-        if (!instance) {
-            return;
-        }
-        if (!instance.$$eventCached) {
-            return;
-        }
         var fiber = instance.$$eventCached[eventUid + 'Fiber'];
         if (e.type == 'change' && fiber) {
             if (fiber.props.value + '' == e.detail.value) {
@@ -916,20 +913,21 @@ var eventSystem = {
     }
 };
 function createEvent(e, target) {
-    var event = {};
+    var event = Object.assign({}, e);
     if (e.detail) {
-        event.detail = e.detail;
         Object.assign(event, e.detail);
-        Object.assign(target, e.detail);
+        target.value = e.detail.value;
     }
     event.stopPropagation = function () {
         console.warn("小程序不支持这方法，请使用catchXXX");
     };
     event.preventDefault = returnFalse;
-    event.type = e.type;
-    event.currentTarget = event.target = target;
-    event.touches = e.touches;
+    event.target = target;
     event.timeStamp = new Date() - 0;
+    if (!("x" in event)) {
+        event.x = event.pageX;
+        event.y = event.pageY;
+    }
     return event;
 }
 
@@ -2097,20 +2095,24 @@ var delayMounts = [];
 function getUUID() {
     return _uuid() + _uuid();
 }
-function newData() {
-    return {
-        components: {}
-    };
-}
 function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
         return;
     }
-    instance.wx.setData(safeClone({
-        props: instance.props,
-        state: instance.state || null,
-        context: instance.context
-    }));
+    if (instance.wx.setData) {
+        instance.wx.setData(safeClone({
+            props: instance.props,
+            state: instance.state || null,
+            context: instance.context
+        }));
+    } else {
+        updateQuickApp(instance.wx, instance);
+    }
+}
+function updateQuickApp(quick, instance) {
+    quick.props = instance.props;
+    quick.state = instance.state || null;
+    quick.context = instance.context;
 }
 function isReferenceType(val) {
     return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
@@ -2209,10 +2211,7 @@ var Renderer$1 = createRenderer({
         }
     },
     onAfterRender: function onAfterRender(fiber) {
-        var instance = fiber.stateNode;
-        if (instance.wx) {
-            updateMiniApp(instance);
-        }
+        updateMiniApp(fiber.stateNode);
     },
     onDispose: function onDispose(fiber) {
         var instance = fiber.stateNode;
@@ -2313,64 +2312,64 @@ function useComponent(props) {
 }
 
 var HookMap = {
-	onShow: 'componentDidShow',
-	onHide: 'componentDidHide',
-	onUnload: 'componentWillUnmount'
+    onShow: 'componentDidShow',
+    onHide: 'componentDidHide',
+    onUnload: 'componentWillUnmount'
 };
 function applyAppStore() {
-	console.log('此方法已废弃');
+    console.log('此方法已废弃');
 }
 function registerPage(PageClass, path, testObject) {
-	PageClass.reactInstances = [];
-	console.log(path, '注册页面');
-	var pageViewInstance,
-	    config = {
-		data: newData(),
-		dispatchEvent: eventSystem.dispatchEvent,
-		onLoad: function onLoad(query) {
-			console.log('开始载入页面', path);
-			pageViewInstance = render(createElement(PageClass, {
-				path: path,
-				query: query,
-				isPageComponent: true
-			}), {
-				type: 'page',
-				props: {},
-				children: [],
-				root: true,
-				appendChild: noop
-			});
-			this.reactInstance = pageViewInstance;
-			pageViewInstance.wx = this;
-			console.log('更新页面数据', path);
-			updateMiniApp(pageViewInstance);
-		},
-		onReady: function onReady() {
-			console.log('页面布局完成', path);
-			var el;
-			while (el = delayMounts.pop()) {
-				el.fn.call(el.instance);
-				el.instance.componentDidMount = el.fn;
-			}
-		}
-	};
-	Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
-		config[hook] = function () {
-			var name = HookMap[hook] || hook;
-			var fn = pageViewInstance[name];
-			if (isFn(fn)) {
-				return fn.apply(pageViewInstance, arguments);
-			}
-		};
-	});
-	if (testObject) {
-		config.setData = function (obj) {
-			config.data = obj;
-		};
-		config.onLoad();
-		return config;
-	}
-	return config;
+    PageClass.reactInstances = [];
+    console.log(path, '注册页面');
+    var pageViewInstance,
+        config = {
+        data: {},
+        dispatchEvent: eventSystem.dispatchEvent,
+        onLoad: function onLoad(query) {
+            console.log('开始载入页面', path);
+            pageViewInstance = render(createElement(PageClass, {
+                path: path,
+                query: query,
+                isPageComponent: true
+            }), {
+                type: 'page',
+                props: {},
+                children: [],
+                root: true,
+                appendChild: noop
+            });
+            this.reactInstance = pageViewInstance;
+            pageViewInstance.wx = this;
+            console.log('更新页面数据', path);
+            updateMiniApp(pageViewInstance);
+        },
+        onReady: function onReady() {
+            console.log('页面布局完成', path);
+            var el;
+            while (el = delayMounts.pop()) {
+                el.fn.call(el.instance);
+                el.instance.componentDidMount = el.fn;
+            }
+        }
+    };
+    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
+        config[hook] = function () {
+            var name = HookMap[hook] || hook;
+            var fn = pageViewInstance[name];
+            if (isFn(fn)) {
+                return fn.apply(pageViewInstance, arguments);
+            }
+        };
+    });
+    if (testObject) {
+        config.setData = function (obj) {
+            config.data = obj;
+        };
+        config.onLoad();
+        return config;
+    }
+    return config;
 }
 
 var buApis = function buApis(api) {

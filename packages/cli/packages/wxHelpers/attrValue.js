@@ -8,18 +8,17 @@ const buildType = require('../config').buildType;
 function bindEvent(astPath) {
     replaceWithExpr(astPath, 'dispatchEvent', true);
 }
-// 形如 React.toStyle({ width: index + 'px' }, this.props, "style2313" + index)
-// 输出  "style2313" + index)
-// function handlePropsStyleName(str) {
-//     let strArr = str.split(',');
-//     return strArr[strArr.length - 1].trim();
-// }
 
 module.exports = function(astPath) {
     var expr = astPath.node.expression;
     var attrName = astPath.parent.name.name;
-    var isEventRegex = buildType == 'ali' ?  /^(on|catch)/:  /^(bind|catch)/;
+    var isEventRegex = buildType == 'ali' ||  buildType == 'quick' ?  /^(on|catch)/:  /^(bind|catch)/;
     var isEvent = isEventRegex.test(attrName);
+    if (isEvent && buildType == 'quick'){
+        var n = attrName.charAt(0) === 'o' ? 2 : 5;
+        astPath.parent.name.name = 'on' + attrName.slice(n).toLowerCase();
+    }
+
     var attrValue = generate(expr).code;
     switch (astPath.node.expression.type) {
         case 'NumericLiteral': //11
@@ -47,6 +46,7 @@ module.exports = function(astPath) {
             break;
         case 'MemberExpression':
             if (isEvent) {
+               
                 bindEvent(astPath, attrName, attrValue.replace(/^\s*this\./, ''));
             } else {
                 replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));

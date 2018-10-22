@@ -25,6 +25,7 @@ let React;
 
 let { render } = Renderer;
 
+
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = (type.reactInstances = []);

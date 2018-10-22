@@ -1,6 +1,6 @@
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
-import { isFn, noop } from 'react-core/util';
+import { noop } from 'react-core/util';
 import { eventSystem } from './eventSystem';
 import { delayMounts, updateMiniApp } from './utils';
 var showMenuList = [
@@ -137,7 +137,11 @@ export function registerPage(PageClass, path) {
         onShow() {
             transmitData(PageClass, path, instance, this);
             var fn = this.reactInstance.componentDidShow;
-            fn.call(this.reactInstance);
+            fn && fn.call(instance);
+        },
+        onHide() {
+            var fn = this.reactInstance.componentDidHide;
+            fn && fn.call(instance);
         },
         onReady() {
             console.log('页面布局完成', path);

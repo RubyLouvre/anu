@@ -1,60 +1,28 @@
-let syntaxClassProperties = require('babel-plugin-syntax-class-properties');
+/*!
+ * 生成js文件, ux文件
+ */
 let babel = require('babel-core');
-let queue = require('./queue');
-let utils = require('./utils');
 let fs = require('fs');
 let nodeResolve = require('resolve');
 let path = require('path');
-let visitor = require('./miniappPlugin');
-let cwd = process.cwd();
+let beautify = require('js-beautify');
+let miniappPlugin = require('./miniappPlugin');
 let config = require('./config');
+let quickFiles = require('./quickFiles');
+let queue = require('./queue');
+let utils = require('./utils');
 
-/**
- * 必须符合babel-transfrom-xxx的格式，使用declare声明
- */
-function miniappPlugin() {
-    return {
-        inherits: syntaxClassProperties,
-        visitor: visitor,
-        manipulateOptions(opts) {
-            //解析每个文件前执行一次
-            var modules = (opts.anu = {
-                thisMethods: [],
-                staticMethods: [],
-                thisProperties: [],
-                config: {}, //用于生成对象
-                importComponents: {}, //import xxx form path进来的组件
-                usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
-                customComponents: [] //定义在page.json中usingComponents对象的自定义组件
-            });
-            modules.sourcePath = opts.filename;
-
-            modules.current = opts.filename.replace(process.cwd(), '');
-            if (/\/components\//.test(opts.filename)) {
-                modules.componentType = 'Component';
-            } else if (/\/pages\//.test(opts.filename)) {
-                modules.componentType = 'Page';
-            } else if (/app\.js$/.test(opts.filename)) {
-                modules.componentType = 'App';
-            }
-        }
-    };
-}
-
-function getDistPath(filePath) {
-    let { name, dir } = path.parse(filePath);
-    let relativePath = path.relative(path.join(cwd, 'src'), dir);
-    let distDir = path.join(cwd, 'dist', relativePath);
-    let ext = config[config['buildType']].jsExt; //获取构建的文件后缀名
-    let distFilePath = path.join(distDir, `${name}.${ext}`);
-    return distFilePath;
-}
+let cwd = process.cwd();
 
 function transform(sourcePath, resolvedIds) {
     let customAliasMap = utils.updateCustomAlias(sourcePath, resolvedIds);
     let npmAliasMap = utils.updateNpmAlias(sourcePath, resolvedIds);
     //pages|app|components需经过miniappPlugin处理
-    let miniAppPluginsInjectConfig = utils.getComponentOrAppOrPageReg().test(sourcePath) ? [miniappPlugin] : [];
+    let miniAppPluginsInjectConfig = utils
+        .getComponentOrAppOrPageReg()
+        .test(sourcePath)
+        ? [miniappPlugin]
+        : [];
     babel.transformFile(
         sourcePath,
         {
@@ -87,11 +55,13 @@ function transform(sourcePath, resolvedIds) {
                                         'regenerator-runtime/runtime': npmFile
                                     })
                                 );
+
                                 queue.push({
                                     code: fs.readFileSync(npmFile, 'utf-8'),
-                                    path: npmFile.replace(
-                                        /\/node_modules\//,
-                                        '/dist/npm/'
+                                    path: utils.updatePath(
+                                        npmFile,
+                                        'node_modules',
+                                        'dist' + path.sep + 'npm'
                                     ),
                                     type: 'npm'
                                 });
@@ -116,7 +86,7 @@ function transform(sourcePath, resolvedIds) {
                 ]
             ]
         },
-        (err, result) => {
+        function (err, result) {
             if (err) throw err;
 
             //babel6无transform异步方法
@@ -143,24 +113,63 @@ function transform(sourcePath, resolvedIds) {
                     babelrc: false,
                     plugins: babelPlugins
                 });
-                queue.push({
-                    code: result.code,
-                    type: 'js',
-                    path: getDistPath(sourcePath)
+                //处理中文转义问题
+                result.code = result.code.replace(/\\?(?:\\u)([\da-f]{4})/ig, function (a, b) {
+                    return unescape(`%u${b}`);
                 });
+                //生成JS文件
+                var uxFile = quickFiles[sourcePath];
+                if (config.buildType == 'quick' && uxFile) {
+                    //假设假设存在<template>
+                    var ux = `${uxFile.template || ''}`;
+                    let using = uxFile.config && uxFile.config.usingComponents;
+                    if (using) {
+                        //假设存在<import>
+                        let importTag = '';
+                        for (let i in using) {
+                            let importSrc = path.relative(sourcePath, path.resolve(cwd + "/src/" + using[i]));
+                            importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
+                        }
+                        ux = importTag + ux;
+
+                    }
+                    ux = beautify.html(ux, {
+                        indent: 4,
+                        'wrap-line-length': 100
+                    });
+                    //假设存在<script>
+                    ux += `
+<script>
+${beautify.js(result.code)}
+</script>`;
+                    if (uxFile.cssType) {
+                        //假设存在<style>
+                        ux += `
+<style lang="${uxFile.cssType}">
+${beautify.css(uxFile.cssCode)}
+</style>`;
+                    }
+                    queue.push({
+                        code: ux,
+                        type: 'ux',
+                        path: utils.updatePath(sourcePath, 'src', 'dist', 'ux')
+                    });
+                } else {
+                    queue.push({
+                        code: beautify.js(result.code),
+                        path: utils.updatePath(sourcePath, 'src', 'dist')
+                    });
+                }
+
                 utils.emit('build');
             }, 4);
         }
     );
 }
 
-module.exports = {
-    transform,
-    miniappPlugin
-};
+module.exports = transform;
 
 // https://github.com/NervJS/taro/tree/master/packages/taro-cli
 // https://blog.csdn.net/liangklfang/article/details/54879672
 // https://github.com/PepperYan/react-miniapp/blob/master/scripts/transform.js
 // https://github.com/jamiebuilds/babel-handbook/blob/master/translations/zh-Hans/README.md
-
