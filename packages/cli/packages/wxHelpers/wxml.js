@@ -27,12 +27,8 @@ function wxml(code, modules) {
             }
         ]
     });
-    // var html = result.code;
-    // if (chineseHack.unicodeNumber) {
-    //     return chineseHack.recovery(html);
-    // }
-    // return html;
-    return result.code.replace(/(?:\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`));
+
+    return result.code.replace(/\\?(?:\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`));
 }
 
 var visitor = {

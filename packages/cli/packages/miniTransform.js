@@ -141,7 +141,7 @@ function transform(sourcePath, resolvedIds) {
                     babelrc: false,
                     plugins: babelPlugins
                 });
-                result.code = result.code.replace(/(?:\\\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`));
+                result.code = result.code.replace(/\\?(?:\\\\u)([\da-f]{4})/ig, (a, b) => unescape(`%u${b}`));
                 queue.push({
                     code: result.code,
                     type: 'js',
