@@ -8,7 +8,7 @@ const json = require('../../package.json');
 //const importAlias = require('rollup-plugin-import-alias');
 
 export default {
-    input: './packages/render/miniapp/index.js',
+    input: './packages/render/miniapp/index.wx.js',
     output: {
         strict: false,
         format: 'es',
@@ -23,10 +23,7 @@ export default {
             plugins: [
                 'transform-class-properties',
                 [
-                    'transform-es2015-classes',
-                    {
-                        loose: true
-                    }
+                    'transform-es2015-classes'
                 ],
                 [
                     'module-resolver',

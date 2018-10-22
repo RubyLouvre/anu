@@ -13,11 +13,20 @@ const print = (prefix, msg) => {
 };
 
 module.exports = ()=>{
-    while (queue.length){
-        let {code, path, type } = queue.shift();
-
-        if (type != 'wxml' && config.compress) {
-            code = compress[type](code);
+    utils.on('build', ()=>{
+        while (queue.length){
+            let {code, path } = queue.shift();
+            if (path[0] != '/'){
+                path = '/'+ path;
+            }
+            fs.ensureFileSync(path);
+            fs.writeFile(path, code, err => {
+                if (err){
+                    print('build fail:', nPath.relative(cwd, path));
+                } else {
+                    print('build success:', nPath.relative(cwd, path));
+                }
+            });
         }
        
         fs.ensureFileSync(path);

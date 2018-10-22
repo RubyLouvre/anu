@@ -1,15 +1,18 @@
+/* eslint no-console: 0 */
 const syntaxJSX = require('babel-plugin-syntax-jsx');
 const babel = require('babel-core');
 const t = require('babel-types');
 const generate = require('babel-generator').default;
 const attrValueHelper = require('./attrValue');
-const attrNameHelper = require('./attrName');
-const logicHelper = require('./logic');
+const config = require('../config');
+const logicSrc = '../' + config.buildType + 'Helpers/logic';
+const attrNameSrc = '../' + config.buildType + 'Helpers/attrName';
+const attrNameHelper = require(attrNameSrc);
+const logicHelper = require(logicSrc);
 const utils = require('../utils');
-//const chineseHelper = require('./chinese');
-const slotHelper = require('./slot');
 
-var chineseHack = utils.createChineseHack();
+//const chineseHelper = require('./chinese');
+
 /**
  * 必须符合babel-transfrom-xxx的格式，使用declare声明
  */
@@ -29,98 +32,64 @@ function wxml(code, modules) {
             }
         ]
     });
-    var html = result.code;
-    if (chineseHack.unicodeNumber) {
-        return chineseHack.recovery(html);
-    }
-    return html;
+    return result.code.replace(/\\?(?:\\u)([\da-f]{4})/ig, function (a, b) {
+        return unescape(`%u${b}`);
+    });
 }
 
 var visitor = {
     JSXOpeningElement: {
-        exit: function(astPath, state) {
+        exit: function (astPath) {
             var openTag = astPath.node.name;
             if (
                 openTag.type === 'JSXMemberExpression' &&
-                openTag.object.name === 'React' ){
-                if ( openTag.property.name === 'toRenderProps'){
+                openTag.object.name === 'React'
+            ) {
+                if (openTag.property.name === 'toRenderProps') {
                     var attributes = [];
                     //实现render props;
-                    var template = utils.createElement('template', attributes, []);
+                    var template = utils.createElement(
+                        'anu-render',
+                        attributes,
+                        []
+                    );
                     attributes.push(
-                        utils.createAttribute('is', '{{props.renderUid}}'),
-                        utils.createAttribute('data', '{{...renderData}}')
+                        utils.createAttribute(
+                            'renderUid',
+                            '{{props.renderUid}}'
+                        )
                     );
                     var children = astPath.parentPath.parentPath.node.children;
                     //去掉后面的{{this.props.render()}}
                     var i = children.indexOf(astPath.parentPath.node);
-                    children.splice(i+1, 1);
+                    children.splice(i + 1, 1);
                     astPath.parentPath.replaceWith(template);
-                    
-                } else if (openTag.property.name === 'toComponent'){
-                    var modules = utils.getAnu(state);
-                    var array,
-                        is,
-                        key = '',
-                        indexArr;
-                    astPath.node.attributes.forEach(function(el) {
+                } else if (openTag.property.name === 'useComponent') {
+                    var is;
+                    astPath.node.attributes.forEach(function (el) {
                         var attrName = el.name.name;
                         var attrValue = el.value.value;
                         if (/^\{\{.+\}\}/.test(attrValue)) {
                             attrValue = attrValue.slice(2, -2);
                         }
-                        if (attrName === 'fragmentUid') {
-                            slotHelper(
-                                astPath.parentPath.node.children,
-                                el.value.value,
-                                modules,
-                                wxml
-                            );
-                        } else if (attrName === '$$loop') {
-                            array = attrValue;
-                        } else if (attrName === 'is') {
-                            is = attrValue;
-                        } else if (attrName === 'wx:key') {
-                            key = attrValue;
-                        } else if (attrName === 'key') {
-                            key = attrValue;
-                        } else if (attrName == '$$index') {
-                            indexArr = attrValue;
+
+                        if (attrName === 'is') {
+                            is = 'anu-' + attrValue.slice(1, -1).toLowerCase();
                         }
                     });
                     attributes = [];
-                    template = utils.createElement('template', attributes, []);
+                    template = utils.createElement(
+                        is,
+                        attributes,
+                        astPath.parentPath.node.children
+                    );
                     //将组件变成template标签
-                    if (!indexArr) {
-                        attributes.push(
-                            utils.createAttribute('is', is),
-                            utils.createAttribute('data', '{{...data}}'),
-                            utils.createAttribute('wx:for', `{{components.${array}}}`),
-                            utils.createAttribute('wx:for-item', 'data'),
-                            utils.createAttribute('wx:for-index', 'index'),
-                            utils.createAttribute('wx:key', utils.genKey(key))
-                        );
-                    } else {
-                        attributes.push(
-                            utils.createAttribute('is', is),
-                            utils.createAttribute(
-                                'wx:for',
-                                `{{components['${array}'+${indexArr} ]}}`
-                            ),
-                            utils.createAttribute('wx:for-item', 'data'),
-                            utils.createAttribute('data', '{{...data}}'),
-                            utils.createAttribute('wx:key', utils.genKey(key))
-                        );
-                    }
                     astPath.parentPath.replaceWith(template);
                 }
-
             }
-            
         }
     },
     JSXAttribute(astPath, state) {
-        chineseHack.collect(astPath);
         if (astPath.node.name.name === 'key') {
             let node = astPath.node.value;
             let value;
@@ -148,21 +117,17 @@ var visitor = {
                 attrValueHelper(astPath);
             } else if (
                 expr.type === 'MemberExpression' &&
-                /props\.children/.test(generate(expr).code)
+                /props\.children\s*$/.test(generate(expr).code)
             ) {
                 var attributes = [];
-                var template = utils.createElement('template', attributes, []);
-                attributes.push(
-                    utils.createAttribute('is', '{{props.fragmentUid}}'),
-                    utils.createAttribute('data', '{{...props.fragmentData}}')
-                );
+                var template = utils.createElement('slot', attributes, []);
                 astPath.replaceWith(template);
                 //  console.warn("小程序暂时不支持{this.props.children}");
             } else {
                 var modules = utils.getAnu(state);
                 //返回block元素或template元素
                 var block = logicHelper(expr, modules);
-                astPath.replaceWith(block);
+                astPath.replaceWithMultiple(block);
             }
         }
     }

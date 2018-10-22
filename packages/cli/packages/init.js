@@ -1,3 +1,7 @@
+/*!
+输出命令行提示与选择模板
+*/
+
 /* eslint no-console: 0 */
 
 const validateProjectName = require('validate-npm-package-name');

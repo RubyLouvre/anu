@@ -18,7 +18,7 @@ const config = require('../config');
 const Event = new EventEmitter();
 process.on('unhandledRejection', error => {
     // eslint-disable-next-line
-    console.error('unhandledRejection', error);
+    console.error("unhandledRejection", error);
     process.exit(1); // To exit with a 'failure' code
 });
 let utils = {
@@ -28,7 +28,6 @@ let utils = {
     emit() {
         Event.emit.apply(global, arguments);
     },
-    createChineseHack: require('./chinese'),
     getNodeVersion() {
         return Number(process.version.match(/v(\d+)/)[1]);
     },
@@ -98,20 +97,6 @@ let utils = {
             typeof value == 'object' ? value : t.stringLiteral(value)
         );
     },
-    isRenderProps(attrValue) {
-        if (
-            attrValue.expression &&
-            attrValue.type == 'JSXExpressionContainer'
-        ) {
-            var type = attrValue.expression.type;
-            return (
-                type == 'FunctionExpression' ||
-                type === 'ArrowFunctionExpression'
-            );
-        }
-        return false;
-    },
-    
     createUUID(astPath) {
         return astPath.node.start + astPath.node.end;
     },
@@ -176,19 +161,44 @@ let utils = {
     },
     createRegisterStatement(className, path, isPage) {
         var templateString = isPage
-            ? 'Page(React.toPage(className,astPath))'
-            : 'Number(className,astPath)';
+            ? 'Page(React.registerPage(className,astPath))'
+            : 'Component(React.registerComponent(className,astPath))';
         return template(templateString)({
             className: t.identifier(className),
             astPath: t.stringLiteral(path)
         });
     },
+    /**
+     *
+     * @param {String} 要修改的路径（存在平台差异性）
+     * @param {String} segement
+     * @param {String} newSegement
+     * @param {String?} ext 新的后缀名
+     */
+    updatePath(spath, segement, newSegement, newExt, ext) {
+        var lastSegement = '', replaced = false;
+        var arr = spath.split(path.sep).map(function (el) {
+            lastSegement = el;
+            if (segement === el && !replaced) {
+                replaced = true;
+                return newSegement;
+            }
+            return el;
+        });
+        if (newExt) {
+            ext = ext || 'js';
+            arr[arr.length - 1] = lastSegement.replace('.' + ext, '.' + newExt);
+        }
+        return path.join.apply(path, arr);
+    },
     isBuildInLibs(name) {
         let libs = new Set(require('repl')._builtinLibs);
-        if (libs.has(name)){
+        if (libs.has(name)) {
             //如果是内置模块，先查找本地node_modules是否有对应重名模块
-            let isLocalBuildInLib = /\/node_modules\//.test(nodeResolve.sync(name, {basedir: cwd}));
-            if (isLocalBuildInLib){
+            let isLocalBuildInLib = /\/node_modules\//.test(
+                nodeResolve.sync(name, { basedir: cwd })
+            );
+            if (isLocalBuildInLib) {
                 return false;
             } else {
                 return true;
@@ -262,7 +272,7 @@ let utils = {
         } catch (err) {
             let spinner = this.spinner(`正在下载最新的${React}`);
             spinner.start();
-            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/master/dist/${React}`;
+            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/branch3/dist/${React}`;
             let ReactLib = await axios.get(remoteUrl);
             fs.ensureFileSync(srcPath);
             fs.writeFileSync(srcPath, ReactLib.data);
@@ -297,7 +307,8 @@ let utils = {
         return {
             wx: 'ReactWX.js',
             ali: 'ReactAli.js',
-            bu: 'ReactBu.js'
+            bu: 'ReactBu.js',
+            quick: 'ReactQuick.js'
         };
     },
     getReactLibName() {
@@ -356,7 +367,8 @@ let utils = {
             appStyleContent = fs.readFileSync(appStyleId);
         } catch (err) {
             console.log(chalk.red('需配置全局app样式, 请检查...'));
-            process.exit(1);
+            return [];
+            //process.exit(1);
         }
 
         appStyleContent = componentsStyle.join('\n') + '\n' + appStyleContent;
@@ -398,35 +410,8 @@ let utils = {
             init: 'var h = React.createElement;'
         }
     },
-    compress: function(){
-        return {
-            js: function(code){
-                let result =  uglifyJS.minify(code);
-                if (result.error) {
-                    throw result.error;
-                }
-                return result.code;
-            },
-            npm: function(code){
-                return this.js.call(this, code);
-            },
-            css: function(code){
-                let result = new cleanCSS().minify(code);
-                if (result.errors.length) {
-                    throw result.errors;
-                }
-                return result.styles;
-            },
-            wxml: function(){
-        
-            },
-            json: function(code){
-                return JSON.stringify(JSON.parse(code));
-            }
-        };
-    },
-    getComponentOrAppOrPageReg(){
-        return new RegExp( this.sepForRegex  + '(?:pages|app|components)'  );
+    getComponentOrAppOrPageReg() {
+        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
