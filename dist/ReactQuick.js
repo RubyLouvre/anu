@@ -2073,6 +2073,13 @@ var api = {
         var prompt = require('@system.prompt');
         prompt.showDialog(obj);
     },
+    showToast: function showToast(obj) {
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = obj.duration / 1000;
+        prompt.showToast(obj);
+    },
+    hideToast: noop,
     navigateTo: createRouter('push'),
     redirectTo: createRouter('replace'),
     navigateBack: createRouter('back')
