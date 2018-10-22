@@ -1,16 +1,39 @@
+import { noop } from 'react-core/util';
+
+function createRouter(name) {
+    return function(obj) {
+        const router = require('@system.router');
+        const params = {};
+        const uri = obj.url
+            .replace(/\?(.*)/, function(a, b) {
+                b.split('=').forEach(function(k, v) {
+                    params[k] = v;
+                });
+                return '';
+            })
+            .replace('/index$', '');
+        router[name]({
+            uri,
+            params
+        });
+    };
+}
+
 export var api = {
     showModal(obj) {
-        var buttons = [{
-            text: obj.confirmText,
-            color: obj.confirmColor
-        }];
+        var buttons = [
+            {
+                text: obj.confirmText,
+                color: obj.confirmColor
+            }
+        ];
         if (obj.showCancel) {
             buttons.push({
                 text: obj.cancelText,
                 color: obj.cancelColor
             });
         }
-        obj.buttons = obj.confirmText ? buttons: [];
+        obj.buttons = obj.confirmText ? buttons : [];
         obj.message = obj.content;
         delete obj.content;
         /*
@@ -23,5 +46,15 @@ export var api = {
         */
         var prompt = require('@system.prompt');
         prompt.showDialog(obj);
-    }
+    },
+    showToast(obj){
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = obj.duration / 1000;
+        prompt.showToast(obj);
+    },
+    hideToast: noop,
+    navigateTo: createRouter('push'),
+    redirectTo: createRouter('replace'),
+    navigateBack: createRouter('back')
 };

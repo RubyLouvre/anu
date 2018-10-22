@@ -86,7 +86,7 @@ function transform(sourcePath, resolvedIds) {
                 ]
             ]
         },
-        function (err, result) {
+        function(err, result) {
             if (err) throw err;
 
             //babel6无transform异步方法
@@ -114,9 +114,12 @@ function transform(sourcePath, resolvedIds) {
                     plugins: babelPlugins
                 });
                 //处理中文转义问题
-                result.code = result.code.replace(/\\?(?:\\u)([\da-f]{4})/ig, function (a, b) {
-                    return unescape(`%u${b}`);
-                });
+                result.code = result.code.replace(
+                    /\\?(?:\\u)([\da-f]{4})/gi,
+                    function(a, b) {
+                        return unescape(`%u${b}`);
+                    }
+                );
                 //生成JS文件
                 var uxFile = quickFiles[sourcePath];
                 if (config.buildType == 'quick' && uxFile) {
@@ -127,11 +130,13 @@ function transform(sourcePath, resolvedIds) {
                         //假设存在<import>
                         let importTag = '';
                         for (let i in using) {
-                            let importSrc = path.relative(sourcePath, path.resolve(cwd + "/src/" + using[i]));
+                            let importSrc = path.relative(
+                                sourcePath,
+                                path.resolve(cwd + '/src/' + using[i])
+                            );
                             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
                         }
                         ux = importTag + ux;
-
                     }
                     ux = beautify.html(ux, {
                         indent: 4,

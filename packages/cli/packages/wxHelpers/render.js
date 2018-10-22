@@ -17,7 +17,7 @@ const xmlExt = config[config.buildType].xmlExt;
  * @param {String} componentName 组件名
  */
 const deps = [];
-exports.enter = function (astPath) {
+exports.enter = function(astPath) {
     if (astPath.node.key.name === 'render') {
         astPath.traverse({
             IfStatement: {
@@ -33,14 +33,20 @@ exports.enter = function (astPath) {
                             );
                         }
                     }
-                    path.replaceWith(t.returnStatement(transformIfStatementToConditionalExpression(path.node)));
-                },
-            },
+                    path.replaceWith(
+                        t.returnStatement(
+                            transformIfStatementToConditionalExpression(
+                                path.node
+                            )
+                        )
+                    );
+                }
+            }
         });
     }
 };
 
-exports.exit = function (astPath, type, componentName, modules) {
+exports.exit = function(astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
     let expr;
 
@@ -58,7 +64,7 @@ exports.exit = function (astPath, type, componentName, modules) {
         var jsx = generate(expr.argument).code;
         var jsxAst = babel.transform(jsx, {
             babelrc: false,
-            plugins: [['transform-react-jsx', { pragma: 'h' }]],
+            plugins: [['transform-react-jsx', { pragma: 'h' }]]
         });
 
         expr.argument = jsxAst.ast.program.body[0];
@@ -67,7 +73,9 @@ exports.exit = function (astPath, type, componentName, modules) {
         //添加import语句产生的显式依赖
         for (var i in modules.importComponents) {
             if (modules.usedComponents[i]) {
-                wxml = `<import src="${modules.importComponents[i].source}.wxml" />\n${wxml}`;
+                wxml = `<import src="${
+                    modules.importComponents[i].source
+                }.wxml" />\n${wxml}`;
             }
         }
         if (type == 'RenderProps') {
@@ -75,7 +83,7 @@ exports.exit = function (astPath, type, componentName, modules) {
         } else if (modules.componentType === 'Component') {
             //  wxml = `<template name="${componentName}">${wxml}</template>`;
             deps[componentName] = deps[componentName] || {
-                set: new Set(),
+                set: new Set()
             };
         }
         //支付宝的自定义组件机制实现有问题，必须要在json.usingComponents引入了这个类
@@ -83,14 +91,20 @@ exports.exit = function (astPath, type, componentName, modules) {
         //一般来说，我们在页面引入了某个组件，它肯定在json.usingComponents中，只有少数间接引入的父类没有引入
         //因此在子类的json.usingComponents添加父类名
         const parentClass = modules.parentName;
-        if (parentClass && parentClass.indexOf(".") == -1 && config.buildType === "ali") {
+        if (
+            parentClass &&
+            parentClass.indexOf('.') == -1 &&
+            config.buildType === 'ali'
+        ) {
             const config = modules.config;
-            const using = config.usingComponents || (config.usingComponents = {});
-            using['anu-' + parentClass.toLowerCase()] = '/components/' + parentClass + "/index";
+            const using =
+                config.usingComponents || (config.usingComponents = {});
+            using['anu-' + parentClass.toLowerCase()] =
+                '/components/' + parentClass + '/index';
         }
         queue.push({
             path: utils.updatePath(modules.sourcePath, 'src', 'dist', xmlExt),
-            code: beautify.html(wxml,{
+            code: beautify.html(wxml, {
                 indent: 4,
                 'wrap-line-length': 100
             })
@@ -110,35 +124,44 @@ function handleRenderProps(wxml, componentName, modules) {
         (deps['renderProps'] = {
             json: {
                 component: true,
-                usingComponents: {},
+                usingComponents: {}
             },
-            wxml: '',
+            wxml: ''
         });
 
     //生成render props的模板
-    dep.wxml = dep.wxml + `<block wx:if="{{renderUid === '${componentName}'}}">${wxml}</block>`;
+    dep.wxml =
+        dep.wxml +
+        `<block wx:if="{{renderUid === '${componentName}'}}">${wxml}</block>`;
     //生成render props的json
     for (let i in modules.importComponents) {
-        dep.json.usingComponents['anu-' + i.toLowerCase()] = '/components/' + i + '/index';
+        dep.json.usingComponents['anu-' + i.toLowerCase()] =
+            '/components/' + i + '/index';
     }
     queue.push({
         path: utils.updatePath(modules.sourcePath, 'src', 'dist', 'json'),
-        code: JSON.stringify(dep.json, null, 4), //prettifyXml(wxml, { indent: 2 })
+        code: JSON.stringify(dep.json, null, 4) //prettifyXml(wxml, { indent: 2 })
     });
     utils.emit('build');
 }
 
 function transformIfStatementToConditionalExpression(node) {
     const { test, consequent, alternate } = node;
-    return t.conditionalExpression(test, transformConsequent(consequent), transformAlternate(alternate));
+    return t.conditionalExpression(
+        test,
+        transformConsequent(consequent),
+        transformAlternate(alternate)
+    );
 }
 
 function transformNonNullConsequentOrAlternate(node) {
-    if (t.isIfStatement(node)) return transformIfStatementToConditionalExpression(node);
+    if (t.isIfStatement(node))
+        return transformIfStatementToConditionalExpression(node);
     if (t.isBlockStatement(node)) {
         const item = node.body[0];
         if (t.isReturnStatement(item)) return item.argument;
-        if (t.isIfStatement(item)) return transformIfStatementToConditionalExpression(item);
+        if (t.isIfStatement(item))
+            return transformIfStatementToConditionalExpression(item);
         throw new Error('Invalid consequent or alternate node');
     }
     return t.nullLiteral();

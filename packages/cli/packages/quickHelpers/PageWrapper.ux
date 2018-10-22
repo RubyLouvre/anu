@@ -1,24 +1,24 @@
 <template>
-  <div class="pagewrap" style="padding-bottom: {{tabBar.list.length?'150px': '0px'}}">
+  <div class="pagewrapper" style="padding-bottom: {{tabBar.list.length?'150px': '0px'}}">
     <refresh refreshing="{{refreshing}}" @refresh="onPullDownRefresh">
       <list @scroll="onPageScroll" @scrollbottom="onReachBottom">
-        <list-item type='a' style="flex-direction: column;">
+        <list-item type='a' >
           <slot></slot>
         </list-item>
       </list>
     </refresh>
     <div class="tabBar" if="{{tabBar.list.length}}" style="background-color:{{tabBar.backgroundColor}}">
-      <div class="tab" for="(index, item) in tabBar.list" onclick="onSelected(item)">
+      <div class="tab" for="(index, item) in tabBar.list" @click="onSelected(item)">
         <image src="{{ currentPath === item.pagePath ? item.selectedIconPath : item.iconPath }}" />
-        <a style="color:{{ currentPath === item.pagePath ? tabBar.selectedColor: tabBar.color }}">
+        <text style="color:{{ currentPath === item.pagePath ? tabBar.selectedColor: tabBar.color }}">
           {{item.text}}
-        </a>
+        </text>
       </div>
     </div>
   </div>
 </template>
 <style lang="sass">
-  .pagewrap {
+  .pagewrapper {
     flex: 1;
     flex-direction: column;
     width: 100%;
@@ -50,10 +50,8 @@
   }
 </style>
 <script>
-  import prompt from '@system.prompt';
-  import router from '@system.router'
-  import React from '../../ReactQuick';
-  var { shareObject, getApp } = React;
+  import React from '../../ReactQuick.js';
+  var { shareObject, getApp } = React
   export default {
     props: {
       tabBar: Object,
@@ -76,7 +74,7 @@
       if (cc.onReachBottom) {
         cc.onReachBottom(e)
       }
-      prompt.showToast({ message: 'reach bottom' });
+      React.api.showToast({ title: 'reach bottom' });
     },
     onPageScroll(e) {
       var cc = shareObject.page;
@@ -85,6 +83,7 @@
       }
     },
     onSelected(item) {
+
       console.log("pageWraper onSelected", item.pagePath)
       this.currentPath = item.pagePath;
       //this.selectedIndex = index;
@@ -92,17 +91,17 @@
       if (page.onTabItemTap) {
         page.onTabItemTap(item)
       }
-      router.push({
-        uri: item.pagePath
+      React.api.navigateTo({
+        url: item.pagePath
       })
     },
     onPullDownRefresh() {
-      var app = React.getApp()
+      var app = getApp()
       var cc = shareObject.pageConfig || app.config
       var page = shareObject.page;
       if (cc.enablePullDownRefresh && page.onPullDownRefresh) {
         page.onPullDownRefresh()
-        prompt.showToast({ message: 'refreshed' });
+        React.api.showToast({ title: 'refreshed' });
       }
       this.refreshing = true
       setTimeout(() => {
@@ -124,10 +123,9 @@
       }
       instance.$page.setTitleBar(cc.titleBar)
       var tabBar = cc.tabBar;
-      var titleBar = cc.titleBar;
       if (tabBar && tabBar.list && tabBar.list.length) {
-        tabBar.backgroundColor = tabBar.backgroundColor || titleBar.backgroundColor;
-        tabBar.color = tabBar.color || titleBar.textColor;
+        tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
+        tabBar.color = tabBar.color || "#000";
         tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
         instance.tabBar = tabBar;
       }
