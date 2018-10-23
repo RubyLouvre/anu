@@ -28,18 +28,19 @@ module.exports = {
                 t.stringLiteral(modules.classUid)
             )
         );
-        const call = t.expressionStatement(
-            t.callExpression(t.identifier('React.toClass'), [
-                t.identifier(modules.className),
-                t.identifier(modules.parentName),
-                t.objectExpression(modules.thisMethods),
-                t.objectExpression(modules.staticMethods)
-            ])
-        );
-        //插入到最前面
-        //  astPath.parentPath.parentPath.insertBefore(onInit);
-        //  可以通过`console.log(generate(call).code)`验证
-        astPath.replaceWith(call);
+        
+        const call = t.callExpression(t.identifier('React.toClass'), [
+            t.identifier(modules.className),
+            t.identifier(modules.parentName),
+            t.objectExpression(modules.thisMethods),
+            t.objectExpression(modules.staticMethods)
+        ]);
+        const assign = template('P = C')({
+            P: t.identifier(modules.className),
+            C: call
+        });
+
+        astPath.replaceWith(assign);
         if (astPath.type == 'CallExpression') {
             if (astPath.parentPath.type === 'VariableDeclarator') {
                 if (parent.type == 'VariableDeclaration') {
