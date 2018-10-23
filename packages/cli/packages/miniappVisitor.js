@@ -227,10 +227,12 @@ module.exports = {
             }
 
             if (config.buildType == 'quick') {
+
                 var obj = quickFiles[modules.sourcePath];
+               
                 if (obj) {
                     obj.config = Object.assign({}, json);
-                    quickConfig(modules, config, queue, utils);
+                    quickConfig(obj.config, modules, queue, utils);
                 }
                 delete json.usingComponents;
                 if (Object.keys(json).length) {

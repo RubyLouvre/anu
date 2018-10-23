@@ -121,6 +121,7 @@ module.exports = function quickConfig(config, modules, queue, utils){
         display.titleBarText = win.navigationBarTitleText || 'nanachi';
         display.titleBarTextColor = win.navigationBarTextStyle || 'black';
         display.backgroundColor = win.navigationBarBackgroundColor || '#000000';
+        //console.log(path.join(process.cwd(), 'dist', 'manifest.json'));
         queue.push({
             path: path.join(process.cwd(), 'dist', 'manifest.json'),
             code: JSON.stringify(manifest, null, 4)

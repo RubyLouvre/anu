@@ -106,7 +106,7 @@ function transform(sourcePath, resolvedIds) {
 
                 if (config.buildType === 'wx') {
                     //支付宝小程序默认支持es6 module
-                    babelPlugins.push('transform-es2015-modules-commonjs');
+                    //  babelPlugins.push('transform-es2015-modules-commonjs');
                 }
 
                 result = babel.transform(result.code, {
