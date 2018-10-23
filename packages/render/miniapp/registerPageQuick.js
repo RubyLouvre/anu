@@ -1,7 +1,7 @@
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
 import { noop } from 'react-core/util';
-import { eventSystem } from './eventSystem';
+import { eventSystem } from './eventSystemQuick';
 import { delayMounts, updateMiniApp } from './utils';
 var showMenuList = [
     {
@@ -116,7 +116,7 @@ export function registerPage(PageClass, path) {
             context: Object,
             state: Object
         },
-        eventSystem: eventSystem.dispatchEvent,
+        dispatchEvent: eventSystem.dispatchEvent,
         onInit(query) {
             instance = render(
                 createElement(PageClass, {

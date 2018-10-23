@@ -11,7 +11,7 @@ import {
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
-import { eventSystem } from './eventSystem';
+import { eventSystem } from './eventSystemQuick';
 import { Renderer } from './wxrender';
 import { toStyle } from './toStyle';
 import { useComponent, registeredComponents } from './registerComponent';
