@@ -157,12 +157,13 @@ ${beautify.css(uxFile.cssCode)}
                     queue.push({
                         code: ux,
                         type: 'ux',
-                        path: utils.updatePath(sourcePath, 'src', 'dist', 'ux')
+                        path:  utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux') 
                     });
                 } else {
                     queue.push({
-                        code: beautify.js(result.code),
-                        path: utils.updatePath(sourcePath, 'src', 'dist')
+                        code: result.code,
+                        type: 'js',
+                        path:  utils.updatePath(sourcePath, config.sourceDir, 'dist')
                     });
                 }
 

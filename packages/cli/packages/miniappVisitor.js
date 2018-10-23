@@ -247,18 +247,8 @@ module.exports = {
                     json.component = true;
                 }
             }
-            if (usings) {
-                //将页面配置对象中的usingComponents对象中的组件名放进modules.customComponents
-                //数组中，并将对应的文件复制到dist目录中
-                utils.copyCustomComponents(usings, modules);
-            }
             queue.push({
-                path: utils.updatePath(
-                    modules.sourcePath,
-                    'src',
-                    'dist',
-                    'json'
-                ),
+                path: utils.updatePath( modules.sourcePath,  config.sourceDir , 'dist', 'json'),
                 code: JSON.stringify(json, null, 4)
             });
             utils.emit('build');
@@ -635,7 +625,7 @@ module.exports = {
                     {
                         sourcePath: path.join(
                             process.cwd(),
-                            'src',
+                            config.sourceDir,
                             'components',
                             'RenderProps',
                             'index.js'
