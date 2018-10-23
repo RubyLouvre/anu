@@ -212,12 +212,9 @@ module.exports = {
                     utils.copyCustomComponents(config.usingComponents, modules);
                 }
                 jsonStr = JSON.stringify(config, null, 4);
-
                 queue.push({
                     type: 'json',
-                    path: modules.sourcePath
-                        .replace(/\/src\//, '/dist/')
-                        .replace(/\.js$/, '.json'),
+                    path: utils.replacePath(modules.sourcePath, '/src/', '/dist/').replace(/\.js$/, '.json'),
                     code: jsonStr
                 });
             }

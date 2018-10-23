@@ -5,8 +5,8 @@ let utils = require('./utils');
 let fs = require('fs');
 let nodeResolve = require('resolve');
 let path = require('path');
+let chalk = require('chalk');
 let visitor = require('./miniappPlugin');
-let cwd = process.cwd();
 let config = require('./config');
 
 /**
@@ -26,8 +26,7 @@ function miniappPlugin() {
                 usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
                 customComponents: [] //定义在page.json中usingComponents对象的自定义组件
             });
-            modules.sourcePath = opts.filename;
-
+            modules.sourcePath =  path.resolve(opts.filename);
             modules.current = opts.filename.replace(process.cwd(), '');
             if (/\/components\//.test(opts.filename)) {
                 modules.componentType = 'Component';
@@ -40,14 +39,8 @@ function miniappPlugin() {
     };
 }
 
-function getDistPath(filePath) {
-    let { name, dir } = path.parse(filePath);
-    let relativePath = path.relative(path.join(cwd, 'src'), dir);
-    let distDir = path.join(cwd, 'dist', relativePath);
-    let ext = config[config['buildType']].jsExt; //获取构建的文件后缀名
-    let distFilePath = path.join(distDir, `${name}.${ext}`);
-    return distFilePath;
-}
+
+
 
 function transform(sourcePath, resolvedIds) {
     let customAliasMap = utils.updateCustomAlias(sourcePath, resolvedIds);
@@ -73,29 +66,33 @@ function transform(sourcePath, resolvedIds) {
                             if (
                                 /regenerator-runtime\/runtime/.test(moduleName)
                             ) {
-                                let npmFile = nodeResolve.sync(moduleName, {
-                                    basedir: cwd,
-                                    moduleDirectory: path.join(
-                                        cwd,
-                                        'node_modules'
-                                    )
+                                let regeneratorRuntimePath = '';
+                                try {
+                                    regeneratorRuntimePath = nodeResolve.sync('regenerator-runtime/runtime', {basedir: process.cwd()});
+                                } catch (err) {
+                                    // eslint-disable-next-line
+                                    console.log(
+                                        'Error: ' + sourcePath + '\n' +
+                                        'Msg: ' + chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
+                                    );
+                                    process.exit(1);
+                                }
+                                
+                                queue.push({
+                                    code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
+                                    path:  utils.replacePath(regeneratorRuntimePath, '/node_modules/', '/dist/npm/'),
+                                    type: 'npm'
                                 });
+
+                                //获取依赖的相对路径
                                 Object.assign(
                                     npmAliasMap,
                                     utils.updateNpmAlias(sourcePath, {
-                                        'regenerator-runtime/runtime': npmFile
+                                        'regenerator-runtime/runtime': regeneratorRuntimePath
                                     })
                                 );
-                                queue.push({
-                                    code: fs.readFileSync(npmFile, 'utf-8'),
-                                    path: npmFile.replace(
-                                        /\/node_modules\//,
-                                        '/dist/npm/'
-                                    ),
-                                    type: 'npm'
-                                });
                             }
-
+                        
                             let value = '';
                             if (customAliasMap[moduleName]) {
                                 value = customAliasMap[moduleName];
@@ -107,6 +104,10 @@ function transform(sourcePath, resolvedIds) {
                             //require('xxx.js') => require('./xxx.js');
                             if (/^\w/.test(value)) {
                                 value = `./${value}`;
+                            }
+                            
+                            if (utils.isWin()) {
+                                value = value.replace(/\\/g, '/');
                             }
                             return value;
                         }
@@ -145,7 +146,7 @@ function transform(sourcePath, resolvedIds) {
                 queue.push({
                     code: result.code,
                     type: 'js',
-                    path: getDistPath(sourcePath)
+                    path: utils.replacePath(sourcePath, '/src/', '/dist/')
                 });
             });
             
