@@ -25,7 +25,7 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-if (config.buildType == 'quick'){
+if (config.buildType == 'quick') {
     utils.createRegisterStatement = function(className, path, isPage) {
         var templateString = isPage
             ? 'CLASS_NAME = React.registerPage(CLASS_NAME,AST_PATH)'
@@ -55,13 +55,27 @@ module.exports = {
             modules.walkingMethod = methodName;
             if (methodName !== 'constructor') {
                 //快应用要转换onLaunch为onCreate
-                if (config.buildType == 'quick' && modules.componentType === 'App' ){
-                    if (methodName === 'onLaunch'){
+                if (
+                    config.buildType == 'quick' &&
+                    modules.componentType === 'App'
+                ) {
+                    if (methodName === 'onLaunch') {
                         methodName = 'onCreate';
                     }
                     queue.push({
-                        code:fs.readFileSync(path.resolve(__dirname, './quickHelpers/PageWrapper.ux')),
-                        path: path.join(process.cwd(), 'dist', 'components', 'PageWrapper','index.ux')
+                        code: fs.readFileSync(
+                            path.resolve(
+                                __dirname,
+                                './quickHelpers/PageWrapper.ux'
+                            )
+                        ),
+                        path: path.join(
+                            process.cwd(),
+                            'dist',
+                            'components',
+                            'PageWrapper',
+                            'index.ux'
+                        )
                     });
                     utils.emit('build');
                 }
@@ -77,7 +91,7 @@ module.exports = {
                     false
                 );
             }
-        
+
             helpers.render.enter(
                 astPath,
                 '有状态组件',
@@ -117,7 +131,10 @@ module.exports = {
             ) {
                 //需要想办法处理无状态组件
                 helpers.render.exit(astPath, '无状态组件', name, modules);
-                modules.registerStatement = utils.createRegisterStatement(name, name);
+                modules.registerStatement = utils.createRegisterStatement(
+                    name,
+                    name
+                );
             }
 
             if (
@@ -176,15 +193,15 @@ module.exports = {
             var modules = utils.getAnu(state);
             if (/Page|Component/.test(modules.componentType)) {
                 let declaration = astPath.node.declaration;
-             
-                if (declaration.type == 'FunctionDeclaration'){
+
+                if (declaration.type == 'FunctionDeclaration') {
                     //将export default function AAA(){}的方法提到前面
                     // var fn = template(generate(declaration).code)();
                     var fn = babylon.parse(generate(declaration).code, {plugins: [[require('babel-plugin-transform-react-jsx'), { pragma: 'h' }]]});
                     astPath.insertBefore(fn);
                     astPath.node.declaration = declaration.id;
-                }     
-                //延后插入createPage语句在其同名的export语句前         
+                }
+                //延后插入createPage语句在其同名的export语句前
                 registerPageOrComponent(declaration.name, astPath, modules);
             }
 
@@ -198,7 +215,7 @@ module.exports = {
                 json.pages = modules['appRoute'];
                 delete modules['appRoute'];
             }
-           
+
             if (buildType == 'ali') {
                 helpers.configName(json, modules.componentType);
             }
@@ -210,16 +227,16 @@ module.exports = {
                     usings[name] = modules.usedComponents[name];
                 });
             }
-            
-            if (config.buildType == 'quick'){
+
+            if (config.buildType == 'quick') {
                 var obj = quickFiles[modules.sourcePath];
-                if (obj){
-                    obj.config = Object.assign({},json);
-                    quickConfig(modules,config, queue, utils );
+                if (obj) {
+                    obj.config = Object.assign({}, json);
+                    quickConfig(modules, config, queue, utils);
                 }
                 delete json.usingComponents;
-                if (Object.keys(json).length){
-                    var a = template('0,'+JSON.stringify(json, null, 4))();
+                if (Object.keys(json).length) {
+                    var a = template('0,' + JSON.stringify(json, null, 4))();
                     var keyValue = t.ObjectProperty(
                         t.identifier('config'),
                         a.expression.expressions[1]
@@ -238,7 +255,12 @@ module.exports = {
                 utils.copyCustomComponents(usings, modules);
             }
             queue.push({
-                path: utils.updatePath( modules.sourcePath,'src', 'dist', 'json'),
+                path: utils.updatePath(
+                    modules.sourcePath,
+                    'src',
+                    'dist',
+                    'json'
+                ),
                 code: JSON.stringify(json, null, 4)
             });
             utils.emit('build');
@@ -292,15 +314,12 @@ module.exports = {
                 } catch (e) {
                     /**/
                 }
-               
-
             } else if (astPath.node.static) {
                 var keyValue = t.ObjectProperty(
                     t.identifier(key),
                     astPath.node.value
                 );
                 modules.staticMethods.push(keyValue);
-              
             } else {
                 if (key == 'globalData' && modules.componentType === 'App') {
                     //globalData中插入平台buildType
@@ -456,7 +475,6 @@ module.exports = {
                 );
 
                 if (modules.indexArr) {
-
                     attributes.push(
                         utils.createAttribute(
                             '$$index',
@@ -602,7 +620,6 @@ module.exports = {
                 modules.is.forEach(function(a) {
                     subComponents[a] = path.join('..', a, 'index');
                 });
-
 
                 helpers.render.exit(
                     {

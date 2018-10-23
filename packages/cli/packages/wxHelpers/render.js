@@ -9,7 +9,7 @@ const queue = require('../queue');
 const utils = require('../utils');
 const config = require('../config');
 const xmlExt = config[config.buildType].xmlExt;
-const prettifyXml = require('prettify-xml');
+const beautify = require('js-beautify');
 /**
  * 将return后面的内容进行转换，再变成wxml
  *
@@ -110,8 +110,9 @@ exports.exit = function(astPath, type, componentName, modules) {
         }
         queue.push({
             path: utils.updatePath(modules.sourcePath, 'src', 'dist', xmlExt),
-            code: prettifyXml(wxml, {
-                indent: 4
+            code: beautify.html(wxml, {
+                indent: 4,
+                'wrap-line-length': 100
             })
         });
         utils.emit('build');

@@ -2039,6 +2039,22 @@ function transmitData(pageClass, pagePath, reactInstance, quickInstance) {
     shareObject.app = quickInstance.$app.$def;
 }
 
+function createRouter(name) {
+    return function (obj) {
+        var router = require('@system.router');
+        var params = {};
+        var uri = obj.url.replace(/\?(.*)/, function (a, b) {
+            b.split('=').forEach(function (k, v) {
+                params[k] = v;
+            });
+            return '';
+        }).replace('/index$', '');
+        router[name]({
+            uri: uri,
+            params: params
+        });
+    };
+}
 var api = {
     showModal: function showModal(obj) {
         var buttons = [{
@@ -2056,7 +2072,17 @@ var api = {
         delete obj.content;
         var prompt = require('@system.prompt');
         prompt.showDialog(obj);
-    }
+    },
+    showToast: function showToast(obj) {
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = obj.duration / 1000;
+        prompt.showToast(obj);
+    },
+    hideToast: noop,
+    navigateTo: createRouter('push'),
+    redirectTo: createRouter('replace'),
+    navigateBack: createRouter('back')
 };
 
 var win = getWindow();
