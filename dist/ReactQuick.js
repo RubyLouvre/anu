@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-10-22
+ * 运行于快应用的React by 司徒正美 Copyright 2018-10-23
  * IE9+
  */
 
@@ -542,24 +542,25 @@ var PureComponent = miniCreateClass(function PureComponent() {
     }
 });
 
+function getDataSet(obj) {
+    var ret = {};
+    for (var name in obj) {
+        name.replace(/data(\w)(\.*)/, function (a, b, c) {
+            return toLowerCase(b) + c;
+        });
+        ret[name] = obj[name];
+    }
+    return;
+}
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
-        if (e.type == 'message') {
-            return;
-        }
         var instance = this.reactInstance;
         if (!instance || !instance.$$eventCached) {
             return;
         }
-        var target = e.currentTarget;
-        var dataset = target.dataset || {};
+        var target = e.target;
+        var dataset = getDataSet(target._attr);
         var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
-        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber) {
-            if (fiber.props.value + '' == e.detail.value) {
-                return;
-            }
-        }
         var key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
         if (instance) {
@@ -580,16 +581,10 @@ function createEvent(e, target) {
         Object.assign(event, e.detail);
         target.value = e.detail.value;
     }
-    event.stopPropagation = function () {
-        console.warn("小程序不支持这方法，请使用catchXXX");
-    };
-    event.preventDefault = returnFalse;
+    event.stopPropagation = e.stopPropagation.bind(e);
+    event.preventDefault = e.preventDefault.bind(e);
     event.target = target;
     event.timeStamp = new Date() - 0;
-    if (!("x" in event)) {
-        event.x = event.pageX;
-        event.y = event.pageY;
-    }
     return event;
 }
 
