@@ -322,10 +322,20 @@ let utils = {
     getCustomAliasConfig() {
         let React = this.getReactLibName();
         let defaultAlias = {
-            '@react': path.resolve(cwd, `${config.sourceDir}/${React}`),
-            react: path.resolve(cwd, `${config.sourceDir}/${React}`),
-            '@components': path.resolve(cwd, `${config.sourceDir}/components`)
+            'react': path.join(cwd, `${config.sourceDir}/${React}`),
+            '@react': path.join(cwd, `${config.sourceDir}/${React}`),
+            '@components': path.join(cwd, `${config.sourceDir}/components`)
         };
+        let pkg =  require( path.join(cwd, 'package.json') );
+        let pkgAlias = pkg.mpreact && pkg.mpreact.alias ? pkg.mpreact.alias : {};
+
+       
+        Object.keys(pkgAlias).forEach((aliasKey)=>{
+            //@components, @react无法自定义配置
+            if ( !defaultAlias[aliasKey] ) {
+                defaultAlias[aliasKey] = path.join(cwd, pkgAlias[aliasKey]);
+            }
+        });
         return defaultAlias;
     },
     resolveNpmAliasPath(id, depFile) {
@@ -383,6 +393,14 @@ let utils = {
 
         return result;
     },
+    replacePath: function(sPath, segement, newSegement){
+        let sep = path.sep;
+        if (process.platform === 'win32') {
+            segement = segement.replace(/\//g, sep); 
+            newSegement = newSegement.replace(/\//g, sep);
+        }
+        return path.resolve(sPath.replace( segement, newSegement ));
+    },
     updateNpmAlias(id, deps) {
         //依赖的npm模块也当alias处理
         let result = {};
@@ -399,10 +417,11 @@ let utils = {
     },
     updateCustomAlias(id, deps) {
         //自定义alias是以@react和@components开头
-        let customAliasReg = /^(@react|@components)/;
+        let aliasConfig = Object.keys(this.getCustomAliasConfig()).join('|');
+        let reg = new RegExp( `^(${aliasConfig})` ); // /^(@react|@components|...)/
         let result = {};
         Object.keys(deps).forEach(depKey => {
-            if (customAliasReg.test(depKey)) {
+            if (reg.test(depKey)) {
                 result[depKey] = this.resolveCustomAliasPath(id, deps[depKey]);
             }
         });
