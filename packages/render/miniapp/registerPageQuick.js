@@ -116,7 +116,7 @@ export function registerPage(PageClass, path) {
             context: Object,
             state: Object
         },
-        eventSystem: eventSystem.dispatchEvent,
+        dispatchEvent: eventSystem.dispatchEvent,
         onInit(query) {
             instance = render(
                 createElement(PageClass, {

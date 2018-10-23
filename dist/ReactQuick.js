@@ -545,12 +545,12 @@ var PureComponent = miniCreateClass(function PureComponent() {
 function getDataSet(obj) {
     var ret = {};
     for (var name in obj) {
-        name.replace(/data(\w)(\.*)/, function (a, b, c) {
+        var key = name.replace(/data(\w)(\.*)/, function (a, b, c) {
             return toLowerCase(b) + c;
         });
-        ret[name] = obj[name];
+        ret[key] = obj[name];
     }
-    return;
+    return ret;
 }
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
@@ -584,6 +584,7 @@ function createEvent(e, target) {
     event.stopPropagation = e.stopPropagation.bind(e);
     event.preventDefault = e.preventDefault.bind(e);
     event.target = target;
+    event.type = e._type;
     event.timeStamp = new Date() - 0;
     return event;
 }
@@ -1985,7 +1986,7 @@ function registerPage(PageClass, path) {
             context: Object,
             state: Object
         },
-        eventSystem: eventSystem.dispatchEvent,
+        dispatchEvent: eventSystem.dispatchEvent,
         onInit: function onInit(query) {
             instance = render(createElement(PageClass, {
                 path: path,
@@ -2043,7 +2044,7 @@ function createRouter(name) {
                 params[k] = v;
             });
             return '';
-        }).replace('/index$', '');
+        }).replace(/\/index$/, '');
         router[name]({
             uri: uri,
             params: params

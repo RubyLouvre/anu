@@ -1,18 +1,18 @@
 import { toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
-function getDataSet(obj){
-    var ret = {};
-    for (var name in obj){
-        name.replace(/data(\w)(\.*)/, function(a, b, c){
+function getDataSet(obj) {
+    let ret = {};
+    for (let name in obj) {
+        let key = name.replace(/data(\w)(\.*)/, function(a, b, c) {
             return toLowerCase(b) + c;
         });
-        ret[name] = obj[name];
+        ret[key] = obj[name];
     }
-    return;
+    return ret;
 }
-export var eventSystem = { //hijack
-
-    dispatchEvent: function (e) {
+export var eventSystem = {
+    //hijack
+    dispatchEvent: function(e) {
         const instance = this.reactInstance;
         if (!instance || !instance.$$eventCached) {
             return;
@@ -23,16 +23,16 @@ export var eventSystem = { //hijack
         const key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
         if (instance) {
-            Renderer.batchedUpdates(function () {
+            Renderer.batchedUpdates(function() {
                 try {
                     var fn = instance.$$eventCached[eventUid];
                     fn && fn.call(instance, createEvent(e, target));
                 } catch (err) {
-                    console.log(err.stack);  // eslint-disable-line
+                    console.log(err.stack); // eslint-disable-line
                 }
             }, e);
         }
-    },
+    }
 };
 
 export const webview = {};
@@ -43,10 +43,10 @@ function createEvent(e, target) {
         Object.assign(event, e.detail);
         target.value = e.detail.value; //input.value
     }
-    event.stopPropagation =  e.stopPropagation.bind(e);
+    event.stopPropagation = e.stopPropagation.bind(e);
     event.preventDefault = e.preventDefault.bind(e);
     event.target = target;
+    event.type = e._type;
     event.timeStamp = new Date() - 0;
     return event;
 }
-
