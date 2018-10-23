@@ -39,9 +39,6 @@ import './pages/demo/syntax/multiple/index';
 import './pages/demo/syntax/renderprops/index';
 import './pages/demo/syntax/request/index';
 
-import './pages/demo/syntax/redux/index';
-import './pages/demo/syntax/redux2/index';
-
 import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';
 import './pages/demo/boat/index';
