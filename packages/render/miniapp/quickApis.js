@@ -11,7 +11,7 @@ function createRouter(name) {
                 });
                 return '';
             })
-            .replace('/index$', '');
+            .replace(/\/index$/, '');
         router[name]({
             uri,
             params
