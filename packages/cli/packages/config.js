@@ -1,4 +1,4 @@
-module.exports = Object.assign(module.exports, {
+module.exports = {
     wx: {
         libName: 'ReactWX',
         styleExt: 'wxss',
@@ -22,5 +22,7 @@ module.exports = Object.assign(module.exports, {
         jsExt: 'ux',
         helpers: 'quickHelpers'
     },
-    buildType: 'wx'   //构建类型默认微信小程序
-});
+    buildType: 'wx',    //构建类型默认微信小程序
+    buildDir: 'dist',   //非快应用项目默认构建目录为dist
+    sourceDir: 'source' //默认生成的源码目录
+};

@@ -22,7 +22,7 @@ const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
 
 let cwd = process.cwd();
-let inputPath = path.join(cwd, 'src');
+let inputPath = path.join(cwd,  config.sourceDir);
 let entry = path.join(inputPath, 'app.js');
 let cache = {};
 

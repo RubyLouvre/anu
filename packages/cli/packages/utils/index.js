@@ -141,11 +141,11 @@ let utils = {
             return template(`module.exports["${name}"] = ${name};`)();
         }
     },
-    copyCustomComponents(config, modules) {
-        Object.keys(config).forEach(componentName => {
+    copyCustomComponents(conf, modules) {
+        Object.keys(conf).forEach(componentName => {
             //对usingComponents直接copy目录
-            let componentDir = path.dirname(config[componentName]);
-            let src = path.join(cwd, 'src', componentDir);
+            let componentDir = path.dirname(conf[componentName]);
+            let src = path.join(cwd, config.sourceDir, componentDir);
             let dest = path.join(cwd, 'dist', componentDir);
             let list = modules.customComponents;
             fs.ensureDirSync(dest);
@@ -261,11 +261,11 @@ let utils = {
     async getReactLibPath() {
         let reactPath = '';
         let React = this.getReactLibName();
-        let srcPath = path.join(cwd, 'src', React);
+        let srcPath = path.join(cwd, config.sourceDir, React);
         try {
             reactPath = nodeResolve.sync(srcPath, {
                 basedir: cwd,
-                moduleDirectory: path.join(cwd, 'src')
+                moduleDirectory: path.join(cwd, config.sourceDir)
             });
         } catch (err) {
             let spinner = this.spinner(`正在下载最新的${React}`);
@@ -275,7 +275,7 @@ let utils = {
             fs.ensureFileSync(srcPath);
             fs.writeFileSync(srcPath, ReactLib.data);
             spinner.succeed(`下载${React}成功`);
-            reactPath = path.join(cwd, 'src', React);
+            reactPath = path.join(cwd, config.sourceDir, React);
         }
         return reactPath;
     },
@@ -288,7 +288,7 @@ let utils = {
         Object.keys(map).forEach(key => {
             let ReactName = map[key];
             if (ReactName != ReactLibName) {
-                fs.remove(path.join(cwd, 'src', ReactName), err => {
+                fs.remove(path.join(cwd, config.sourceDir, ReactName), err => {
                     if (err) {
                         console.log(err);
                     }
@@ -316,14 +316,14 @@ let utils = {
     getCustomAliasConfig() {
         let React = this.getReactLibName();
         let defaultAlias = {
-            '@react': path.resolve(cwd, `src/${React}`),
-            react: path.resolve(cwd, `src/${React}`),
-            '@components': path.resolve(cwd, 'src/components')
+            '@react': path.resolve(cwd, `${config.sourceDir}/${React}`),
+            react: path.resolve(cwd, `${config.sourceDir}/${React}`),
+            '@components': path.resolve(cwd, `${config.sourceDir}/components`)
         };
         return defaultAlias;
     },
     resolveNpmAliasPath(id, depFile) {
-        let distJs = id.replace(/\/src\//, '/dist/');
+        let distJs = id.replace( new RegExp('/'+ config.sourceDir + '/'), '/dist/');
         let distNpm = depFile.replace(/\/node_modules\//, '/dist/npm/');
 
         //根据被依赖文件和依赖文件，求相对路径
@@ -342,7 +342,7 @@ let utils = {
         styleFiles.forEach(item => {
             let { id, originalCode } = item;
             if (/components/.test(id)) {
-                id = path.relative(path.join(cwd, 'src'), id);
+                id = path.relative(path.join(cwd, config.sourceDir ), id);
                 if (/^\w/.test(id)) {
                     id = `./${id}`;
                 }
@@ -407,6 +407,52 @@ let utils = {
             variableDeclarator: 'h',
             init: 'var h = React.createElement;'
         }
+    },
+    getQuickDevPkg: function(){
+        //后期从git拉
+        return  {
+            'scripts': {
+                'server': 'hap server',
+                'postinstall': 'hap postinstall',
+                'debug': 'hap debug',
+                'build': 'hap build',
+                'release': 'hap release',
+                'watch': 'hap watch'
+            },
+            'devDependencies': {
+                'hap-toolkit': '0.0.36',
+                'babel-cli': '^6.10.1',
+                'babel-core': '^6.26.0',
+                'babel-eslint': '^8.2.1',
+                'babel-loader': '^7.1.4',
+                'babel-plugin-syntax-jsx': '^6.18.0',
+                'cross-env': '^5.1.4',
+                'css-what': '^2.1.0',
+                'koa': '^2.3.0',
+                'koa-send': '^4.1.1',
+                'koa-static': '^4.0.1',
+                'koa-body': '^2.5.0',
+                'koa-router': '^7.2.1',
+                'socket.io': '^2.1.0',
+                'webpack': '^3.11.0'
+            }
+        };
+    },
+    mergeQuickJson: function(){
+        let pkg = require(path.join(cwd, 'package.json'));
+        let quickPkg = this.getQuickDevPkg();
+        Object.assign(pkg.devDependencies, quickPkg.devDependencies);
+        Object.assign(pkg.scripts || (pkg.scripts = {}), quickPkg.scripts);
+        fs.writeFile(
+            path.join(cwd, 'package.json'),
+            JSON.stringify(pkg, null, 4),
+            (err)=>{
+                if (err) {
+                    // eslint-disable-next-line
+                    console.log(err);
+                }
+            }
+        );
     },
     getComponentOrAppOrPageReg() {
         return new RegExp(this.sepForRegex + '(?:pages|app|components)');
