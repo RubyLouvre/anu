@@ -18,6 +18,7 @@ const getRelativePath = (from, to)=>{
     if ( utils.isWin() ){
         relativePath = relativePath.replace(/\\/g, '/');
     }
+   
     return relativePath;
 };
 
@@ -35,7 +36,7 @@ const resolveNpmDepPath = (id, value)=>{
         
     });
 
-    let from = utils.replacePath(id, '/node_modules/', '/dist/npm');
+    let from = utils.replacePath(id, '/node_modules/', '/dist/npm/');
     let to = utils.replacePath(depNpmFilePath, '/node_modules/', '/dist/npm/' );
     return getRelativePath(from, to);
 
