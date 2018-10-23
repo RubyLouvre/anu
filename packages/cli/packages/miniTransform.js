@@ -125,7 +125,8 @@ function transform(sourcePath, resolvedIds) {
                     'transform-inline-environment-variables',
                     {
                         env: {
-                            ANU_ENV: config['buildType']
+                            ANU_ENV: config['buildType'],
+                            ANU_PROCESS_ENV: process.env.ANU_PROCESS_ENV
                         }
                     }
                 ],
