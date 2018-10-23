@@ -1,7 +1,7 @@
 /*!
  * 生成js文件, ux文件
  */
-let babel = require('babel-core');
+let babel = require('@babel/core');
 let fs = require('fs');
 let nodeResolve = require('resolve');
 let path = require('path');
@@ -28,14 +28,18 @@ function transform(sourcePath, resolvedIds) {
         {
             babelrc: false,
             plugins: [
-                'syntax-jsx',
-                'transform-decorators-legacy',
-                'transform-object-rest-spread',
-                'transform-async-to-generator',
-                'transform-es2015-template-literals',
+                [require('@babel/plugin-proposal-class-properties'), { 'loose': true }],
+                require('@babel/plugin-syntax-jsx').default,
+                [
+                    require('@babel/plugin-proposal-decorators'),
+                    { decoratorsBeforeExport: true }
+                ],
+                require('@babel/plugin-proposal-object-rest-spread').default,
+                require('babel-plugin-transform-async-to-generator'),
+                require('babel-plugin-transform-es2015-template-literals'),
                 ...miniAppPluginsInjectConfig,
                 [
-                    'module-resolver',
+                    require('babel-plugin-module-resolver'),
                     {
                         resolvePath(moduleName) {
                             //针对async/await语法做特殊处理
@@ -86,7 +90,7 @@ function transform(sourcePath, resolvedIds) {
                 ]
             ]
         },
-        function (err, result) {
+        function(err, result) {
             if (err) throw err;
 
             //babel6无transform异步方法
@@ -94,29 +98,34 @@ function transform(sourcePath, resolvedIds) {
                 let babelPlugins = [
                     [
                         //process.env.ANU_ENV
-                        'transform-inline-environment-variables',
+                        require('babel-plugin-transform-inline-environment-variables'),
                         {
                             env: {
                                 ANU_ENV: config['buildType']
                             }
                         }
                     ],
-                    'minify-dead-code-elimination'
+                    require('babel-plugin-minify-dead-code-elimination')
                 ];
 
-                if (config.buildType === 'wx') {
-                    //支付宝小程序默认支持es6 module
-                    babelPlugins.push('transform-es2015-modules-commonjs');
-                }
+                // if (config.buildType === 'wx') {
+                //     //支付宝小程序默认支持es6 module
+                //     babelPlugins.push(
+                //         require('babel-plugin-transform-es2015-modules-commonjs')
+                //     );
+                // }
 
                 result = babel.transform(result.code, {
                     babelrc: false,
                     plugins: babelPlugins
                 });
                 //处理中文转义问题
-                result.code = result.code.replace(/\\?(?:\\u)([\da-f]{4})/ig, function (a, b) {
-                    return unescape(`%u${b}`);
-                });
+                result.code = result.code.replace(
+                    /\\?(?:\\u)([\da-f]{4})/gi,
+                    function(a, b) {
+                        return unescape(`%u${b}`);
+                    }
+                );
                 //生成JS文件
                 var uxFile = quickFiles[sourcePath];
                 if (config.buildType == 'quick' && uxFile) {
@@ -127,11 +136,13 @@ function transform(sourcePath, resolvedIds) {
                         //假设存在<import>
                         let importTag = '';
                         for (let i in using) {
-                            let importSrc = path.relative(sourcePath, path.resolve(cwd + "/src/" + using[i]));
+                            let importSrc = path.relative(
+                                sourcePath,
+                                path.resolve(cwd + '/src/' + using[i])
+                            );
                             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
                         }
                         ux = importTag + ux;
-
                     }
                     ux = beautify.html(ux, {
                         indent: 4,

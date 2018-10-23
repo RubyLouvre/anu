@@ -1,4 +1,4 @@
-const babel = require('babel-core');
+const babel = require('@babel/core');
 const queue = require('./queue');
 const cwd = process.cwd();
 const path = require('path');
@@ -103,12 +103,13 @@ module.exports = (file)=>{
     if (moduleType === 'es'){
         //{allowTopLevelThis: true}, 防止this被转成undefined
         //https://github.com/babel/babelify/issues/37#issuecomment-160041164
-        babelConfig.plugins.push(['transform-es2015-modules-commonjs', {'allowTopLevelThis': true}]);
+        babelConfig.plugins.push([require('@babel/plugin-proposal-decorators'), {decoratorsBeforeExport: true}]);
+        babelConfig.plugins.push([require('babel-plugin-transform-es2015-modules-commonjs'), {'allowTopLevelThis': true}]);
     }
 
 
     setTimeout(()=>{
-        let code = babel.transform(originalCode, babelConfig ).code;
+        let code = babel.transform(originalCode, {...babelConfig, filename: id} ).code;
         queue.push({
             code: code,
             path: getDistPath(id),

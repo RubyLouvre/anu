@@ -1,16 +1,14 @@
 /* eslint no-console: 0 */
 
 const execSync = require('child_process').execSync;
-const t = require('babel-types');
+const t = require('@babel/types');
 const fs = require('fs-extra');
 const path = require('path');
 const cwd = process.cwd();
 const chalk = require('chalk');
 const spawn = require('cross-spawn');
-const uglifyJS = require('uglify-es');
-const cleanCSS = require('clean-css');
 const nodeResolve = require('resolve');
-const template = require('babel-template');
+const template = require('@babel/template').default;
 const axios = require('axios');
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
@@ -161,11 +159,11 @@ let utils = {
     },
     createRegisterStatement(className, path, isPage) {
         var templateString = isPage
-            ? 'Page(React.registerPage(className,astPath))'
-            : 'Component(React.registerComponent(className,astPath))';
+            ? 'Page(React.registerPage(CLASS_NAME),AST_PATH);'
+            : 'Component(React.registerComponent(CLASS_NAME),AST_PATH);';
         return template(templateString)({
-            className: t.identifier(className),
-            astPath: t.stringLiteral(path)
+            CLASS_NAME: t.identifier(className),
+            AST_PATH: t.stringLiteral(path)
         });
     },
     /**

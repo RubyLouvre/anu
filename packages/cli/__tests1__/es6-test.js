@@ -1,4 +1,4 @@
-const babel = require('babel-core');
+const babel = require('@babel/core');
 const { transform, getTemplate, evalClass } = require('./utils/utils');
 let q = require('../packages/translator/queue');
 const prettifyXml = require('prettify-xml');
@@ -42,7 +42,7 @@ describe('es6 support', ()=>{
             fnString,
             {
                 plugins: [
-                    'transform-object-rest-spread'
+                    require('@babel/plugin-proposal-object-rest-spread').default
                 ]
             }
         )

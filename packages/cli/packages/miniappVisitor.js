@@ -1,6 +1,7 @@
-const t = require('babel-types');
+const t = require('@babel/types');
+const babylon = require('babylon');
 const generate = require('babel-generator').default;
-const template = require('babel-template');
+const template = require('@babel/template').default;
 const path = require('path');
 const queue = require('./queue');
 const utils = require('./utils');
@@ -27,11 +28,11 @@ const inlineElement = {
 if (config.buildType == 'quick'){
     utils.createRegisterStatement = function(className, path, isPage) {
         var templateString = isPage
-            ? 'className = React.registerPage(className,astPath)'
-            : 'className = React.registerComponent(className,astPath)';
+            ? 'CLASS_NAME = React.registerPage(CLASS_NAME,AST_PATH)'
+            : 'CLASS_NAME = React.registerComponent(CLASS_NAME,AST_PATH)';
         return template(templateString)({
-            className: t.identifier(className),
-            astPath: t.stringLiteral(path)
+            CLASS_NAME: t.identifier(className),
+            AST_PATH: t.stringLiteral(path)
         });
     };
 }
@@ -97,7 +98,7 @@ module.exports = {
                     modules
                 );
                 astPath.node.body.body.unshift(
-                    template(utils.shortcutOfCreateElement())()
+                    babylon.parse(utils.shortcutOfCreateElement())
                 );
             }
         }
@@ -124,7 +125,7 @@ module.exports = {
                 modules.componentType === 'Component'
             ) {
                 astPath.node.body.body.unshift(
-                    template(utils.shortcutOfCreateElement())()
+                    babylon.parse(utils.shortcutOfCreateElement(), {plugins: [[require('babel-plugin-transform-react-jsx'), { pragma: 'h' }]]})
                 );
             }
 
@@ -178,7 +179,8 @@ module.exports = {
              
                 if (declaration.type == 'FunctionDeclaration'){
                     //将export default function AAA(){}的方法提到前面
-                    var fn = template(generate(declaration).code)();
+                    // var fn = template(generate(declaration).code)();
+                    var fn = babylon.parse(generate(declaration).code, {plugins: [[require('babel-plugin-transform-react-jsx'), { pragma: 'h' }]]});
                     astPath.insertBefore(fn);
                     astPath.node.declaration = declaration.id;
                 }     
@@ -337,9 +339,7 @@ module.exports = {
                     return;
                 }
             }
-            //app.js export default App(new Demo())改成
-            //     export default React.App(new Demo())       
-            if (modules.componentType == 'App' && config.buildType == "quick" &&
+            if (modules.componentType == 'App' && config.buildType == 'quick' &&
              callee.type === 'Identifier' && callee.name === 'App' ){
                 callee.name = 'React.App';
                 return;

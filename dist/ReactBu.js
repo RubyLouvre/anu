@@ -1,5 +1,5 @@
 /**
- * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-10-20
+ * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-10-23
  * IE9+
  */
 

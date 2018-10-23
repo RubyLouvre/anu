@@ -1,4 +1,4 @@
-let babel = require('babel-core');
+let babel = require('@babel/core');
 const prettifyXml = require('prettify-xml');
 let jsTransform = require('../../packages/translator/jsTransform');
 let helpers = require('../../packages/translator/helpers');
@@ -34,11 +34,11 @@ exports.transform = function(code, state, head, methods) {
     var result = babel.transform(code, {
         babelrc: false,
         plugins: [
-            'syntax-jsx',
-            'transform-decorators-legacy',
-            'transform-object-rest-spread',
-            'transform-async-to-generator',
-            'transform-es2015-template-literals',
+            [require('@babel/plugin-proposal-decorators'), {decoratorsBeforeExport: true}],
+            require('@babel/plugin-syntax-jsx').default,
+            require('@babel/plugin-proposal-object-rest-spread').default,
+            require('@babel/plugin-transform-async-to-generator').default,
+            require('babel-plugin-transform-es2015-template-literals'),
             jsTransform.miniappPlugin
         ]
     });

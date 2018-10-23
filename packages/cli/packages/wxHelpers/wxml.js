@@ -1,7 +1,7 @@
 /* eslint no-console: 0 */
-const syntaxJSX = require('babel-plugin-syntax-jsx');
-const babel = require('babel-core');
-const t = require('babel-types');
+const syntaxJSX = require('@babel/plugin-syntax-jsx').default;
+const babel = require('@babel/core');
+const t = require('@babel/types');
 const generate = require('babel-generator').default;
 const attrValueHelper = require('./attrValue');
 const config = require('../config');
@@ -32,6 +32,7 @@ function wxml(code, modules) {
             }
         ]
     });
+    // return result.code;
     return result.code.replace(/\\?(?:\\u)([\da-f]{4})/ig, function (a, b) {
         return unescape(`%u${b}`);
     });

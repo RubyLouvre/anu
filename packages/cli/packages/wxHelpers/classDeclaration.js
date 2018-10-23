@@ -1,5 +1,5 @@
-const t = require('babel-types');
-const template = require('babel-template');
+const t = require('@babel/types');
+const template = require('@babel/template').default;
 const generate = require('babel-generator').default;
 const utils = require('../utils');
 
@@ -15,13 +15,12 @@ module.exports = {
         // 将类表式变成函数调用
         var modules = utils.getAnu(state);
         if (!modules.ctorFn) {
-            modules.ctorFn = template('function x(){b}')({
-                x: t.identifier(modules.className),
-                b: modules.thisProperties
+            modules.ctorFn = template('function X(){B}')({
+                X: t.identifier(modules.className),
+                B: modules.thisProperties
             });
         }
-        var parent = astPath.parentPath.parentPath;
-        parent.insertBefore(modules.ctorFn);
+        astPath.insertBefore(modules.ctorFn);
         //用于绑定事件
         modules.thisMethods.push(
             t.objectProperty(

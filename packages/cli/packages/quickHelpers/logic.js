@@ -1,4 +1,4 @@
-const t = require('babel-types');
+const t = require('@babel/types');
 const generate = require('babel-generator').default;
 const utils = require('../utils/index');
 const chalk = require('chalk');

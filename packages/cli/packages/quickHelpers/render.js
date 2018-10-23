@@ -1,7 +1,7 @@
 /* eslint no-console: 0 */
-const t = require('babel-types');
+const t = require('@babel/types');
 const wxmlHelper = require('./wxml');
-const babel = require('babel-core');
+const babel = require('@babel/core');
 const path = require('path');
 const generate = require('babel-generator').default;
 const quickFiles = require('../quickFiles');

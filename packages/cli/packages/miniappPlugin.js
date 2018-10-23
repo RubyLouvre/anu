@@ -1,11 +1,10 @@
-let syntaxClassProperties = require('babel-plugin-syntax-class-properties');
 let visitor = require('./miniappVisitor');
 let config = require('./config');
 let quickFiles = require('./quickFiles');
 
 module.exports = function miniappPlugin() {
     return {
-        inherits: syntaxClassProperties,
+        // inherits: syntaxClassProperties,
         visitor: visitor,
         manipulateOptions(opts) {
             //解析每个文件前执行一次

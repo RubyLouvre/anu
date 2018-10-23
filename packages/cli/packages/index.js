@@ -80,12 +80,13 @@ class Parser {
                 rbabel({
                     babelrc: false,
                     runtimeHelpers: true,
-                    presets: ['react'],
+                    presets: [require('@babel/preset-react').default],
                     externalHelpers: false,
                     plugins: [
-                        'transform-class-properties',
-                        'transform-object-rest-spread',
-                        'transform-es2015-template-literals'
+                        require('@babel/plugin-proposal-class-properties'),
+                        require('@babel/plugin-syntax-class-properties'),
+                        require('@babel/plugin-proposal-object-rest-spread'),
+                        require('babel-plugin-transform-es2015-template-literals')
                     ]
                 })
             ],
