@@ -70,12 +70,12 @@ export var aliApis = function(api) {
 
     // 数据缓存
     getStorageSync: function _(a) {
-      var k = {};
-      k.key = a;
-      var res = api.getStorageSync(k);
+      if (a == null) throw new Error('key 不能是 undefined或者是空')
+      var res = api.getStorageSync({key: a});
       return res.data || '';
     },
     setStorageSync: function _(a1, a2) {
+      if (a1 == null) throw new Error('key 不能是 undefined或者是空')
       var k = {};
       k.key = a1;
       k.data = a2;
