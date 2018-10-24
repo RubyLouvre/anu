@@ -156,13 +156,11 @@ ${beautify.css(uxFile.cssCode)}
                     }
                     queue.push({
                         code: ux,
-                        type: 'ux',
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux') 
                     });
                 } else {
                     queue.push({
                         code: result.code,
-                        type: 'js',
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist')
                     });
                 }
