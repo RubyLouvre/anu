@@ -35,6 +35,9 @@ let utils = {
         return ora(text);
     },
     getStyleValue: require('./getStyleValue'),
+    isWin() {
+        return process.platform === 'win32';
+    },
     useYarn() {
         if (config['useYarn'] != undefined) {
             return config['useYarn'];
