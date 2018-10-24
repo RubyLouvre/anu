@@ -9,9 +9,7 @@
         }
     },
     "dependencies": {
-        "@rematch/core": "0.6.0",
-        "react-redux": "5.0.7",
-        "regenerator-runtime": "^0.12.1"
+        "@rematch/core": "0.6.0"
     },
     "devDependencies": {
         "babel-plugin-module-resolver": "^3.1.1",
