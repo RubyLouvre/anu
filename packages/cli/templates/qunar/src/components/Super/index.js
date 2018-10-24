@@ -1,5 +1,6 @@
 import React from '@react';
 import Parent from '../Parent/index';
+import './index.less';
 class Super extends React.Component {
     constructor() {
         super();

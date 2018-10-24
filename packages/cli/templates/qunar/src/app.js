@@ -53,8 +53,8 @@ import './pages/demo/question/detail/index';
 import './pages/demo/cardList/index';
 import './pages/demo/citySelect/index';
 
-import './app.less';
-//import store from './store/index';
+import './app.scss';
+// import store from './store/index';
 
 class Demo extends React.Component {
     config = {

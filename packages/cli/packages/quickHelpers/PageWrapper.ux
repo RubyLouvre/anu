@@ -107,6 +107,38 @@
       setTimeout(() => {
         this.refreshing = false
       })
+    },
+    onMenuPress: function () {
+      React.api.showActionSheet({
+        itemList: [
+          '分享',
+          'item2',
+          'item3',
+          'item4'
+        ],
+        success: function (data) {
+          console.log('handling success', data)
+          if (data.index === 0) {
+            // 分享
+            React.api.share({
+              type: 'text/html',
+              data: '<b>bold</b>',
+              success: function (data) {
+                console.log('handling success')
+              },
+              fail: function (data, code) {
+                console.log(`handling fail, code = ${code}`)
+              }
+            })
+          }
+        },
+        cancel: function () {
+          console.log('handling cancel')
+        },
+        fail: function (data, code) {
+          console.log(`handling fail, code = ${code}`)
+        }
+      })
     }
   };
 

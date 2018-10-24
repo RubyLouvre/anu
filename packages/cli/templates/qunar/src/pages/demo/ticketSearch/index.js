@@ -1,5 +1,5 @@
 import React from '@react';
-import './index.less';
+import './index.scss';
 class P extends React.Component {
     constructor() {
         super();
@@ -106,8 +106,8 @@ class P extends React.Component {
                   </div>
 
                   <div onTap={this.toDateSelect} className="dateSelector">
-                      {this.state.displayDate}
-                      <div className="date-week">{this.state.dateWeek}</div>
+                      <span>{this.state.displayDate}</span>
+                      <div className="date-week"><span>{this.state.dateWeek}</span></div>
                   </div>
 
                   <div className="switch-content">
