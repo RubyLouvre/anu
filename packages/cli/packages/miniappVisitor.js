@@ -230,10 +230,8 @@ module.exports = {
             if (buildType == 'quick') {
 
                 var obj = quickFiles[modules.sourcePath];
-
                 if (obj) {
-                    obj.config = Object.assign({}, json);
-                    quickConfig(obj.config, modules, queue, utils);
+                    quickConfig(json, modules, queue, utils);
                 }
                 delete json.usingComponents;
                 if (Object.keys(json).length) {
@@ -246,6 +244,7 @@ module.exports = {
                 }
                 return;
             } else {
+
                 if (modules.componentType === 'Component') {
                     json.component = true;
                 }
@@ -301,6 +300,7 @@ module.exports = {
                 }
                 try {
                     var json = eval('0,' + generate(astPath.node.value).code);
+                   
                     Object.assign(modules.config, json);
                 } catch (e) {
                     /**/
