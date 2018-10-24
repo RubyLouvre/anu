@@ -169,9 +169,36 @@ class Parser {
         this.updateNpmQueue(this.npmFiles);
         this.updateJsonQueue(this.jsonFiles);
     }
+    checkComponentsInPages(id) {
+        let flag = false;
+        let pathAray = utils.isWin() ? id.split('\\') :  id.split('/'); //分割目录
+        let componentsPos = pathAray.indexOf('components');
+        let pagesPos = pathAray.indexOf('pages');
+        if (componentsPos != -1 && pagesPos!=-1 && componentsPos > pagesPos ) {
+            flag = true;
+        }
+        return flag;
+    }
     updateJsQueue(jsFiles) {
         while (jsFiles.length) {
             let { id, originalCode, resolvedIds } = jsFiles.shift();
+            
+            if (this.checkComponentsInPages(id)) {
+                // eslint-disable-next-line
+                console.log(
+                    chalk.red(
+                        JSON.stringify(
+                            {
+                                path: id,
+                                msg: 'components目录不能存在于pages目录下, 请检查'
+                            },
+                            null,
+                            4
+                        )
+                    )
+                );
+            }
+
             needUpdate(id, originalCode)
                 .then(() => {
                     miniTransform.transform(id, resolvedIds);
