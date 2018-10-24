@@ -108,7 +108,8 @@ exports.exit = function(astPath, type, componentName, modules) {
             code: beautify.html(wxml, {
                 indent: 4,
                 'wrap-line-length': 100
-            })
+            }),
+            type: 'wxml'
         });
     }
 };
@@ -116,9 +117,9 @@ exports.exit = function(astPath, type, componentName, modules) {
 function handleRenderProps(wxml, componentName, modules) {
     queue.push({
         path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist'),
-        code: renderText
+        code: renderText,
+        type: 'wxml'
     });
-    utils.emit('build');
     var dep =
         deps['renderProps'] ||
         (deps['renderProps'] = {
@@ -140,9 +141,9 @@ function handleRenderProps(wxml, componentName, modules) {
     }
     queue.push({
         path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', 'json'),
-        code: JSON.stringify(dep.json, null, 4) //prettifyXml(wxml, { indent: 2 })
+        code: JSON.stringify(dep.json, null, 4), //prettifyXml(wxml, { indent: 2 })
+        type: 'wxml'
     });
-    utils.emit('build');
 }
 
 function transformIfStatementToConditionalExpression(node) {

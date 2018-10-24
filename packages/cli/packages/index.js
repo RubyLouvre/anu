@@ -258,7 +258,8 @@ class Parser {
         //to do 差异化copy
         const dir = 'assets';
         const inputDir = path.join(inputPath, dir);
-        const distDir = path.join(path.join(cwd, 'dist'), dir);
+        //快应用copy到src目录中
+        const distDir =  path.join( cwd, config.buildType === 'quick' ? 'src' : config.buildDir, dir );
         fs.ensureDirSync(distDir);
         fs.copy(inputDir, distDir, err => {
             if (err) {

@@ -75,9 +75,9 @@ module.exports = {
                             'components',
                             'PageWrapper',
                             'index.ux'
-                        )
+                        ),
+                        type: 'ux'
                     });
-                    utils.emit('build');
                 }
                 let fn = utils.createMethod(astPath, methodName);
                 modules.thisMethods.push(fn);
@@ -251,9 +251,9 @@ module.exports = {
             }
             queue.push({
                 path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', 'json'),
-                code: JSON.stringify(json, null, 4)
+                code: JSON.stringify(json, null, 4),
+                type: 'json'
             });
-            utils.emit('build');
         }
     },
 

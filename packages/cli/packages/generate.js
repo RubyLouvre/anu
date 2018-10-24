@@ -13,10 +13,16 @@ let sucSize = 0;
 module.exports = ()=>{
     while (queue.length){
         let {code, path, type } = queue.shift();
+    
         if (config.compress) {
             code = compress[type](code);
         }
-        
+        if (config['buildType'] === 'quick') {
+            //快应用打包到src下
+            path = utils.updatePath( path, 'dist' , 'src');
+        } else {
+            path = utils.updatePath( path, 'dist', config.buildDir);
+        }
         fs.ensureFileSync(path);
         fs.writeFile(path, code, err => {
             if (err){

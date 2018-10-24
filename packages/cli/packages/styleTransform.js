@@ -43,7 +43,6 @@ const compileLess = (filePath, originalCode) => {
                 path: getDist(filePath),
                 type: 'css'
             });
-            utils.emit('build');
         })
         .catch(err => {
             if (err) {
