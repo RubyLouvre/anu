@@ -5,7 +5,9 @@ const babel = require('babel-core');
 const path = require('path');
 const generate = require('babel-generator').default;
 const quickFiles = require('../quickFiles');
-var wrapperPath = path.join(process.cwd(), 'src', 'components', 'PageWrapper', 'index.ux');
+const config = require('../config');
+
+var wrapperPath = path.join(process.cwd(), config.sourceDir, 'components', 'PageWrapper', 'index.ux');
 /**
  * 将return后面的内容进行转换，再变成wxml
  *

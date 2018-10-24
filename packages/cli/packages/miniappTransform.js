@@ -132,7 +132,7 @@ function transform(sourcePath, resolvedIds) {
                         for (let i in using) {
                             let importSrc = path.relative(
                                 sourcePath,
-                                path.resolve(cwd + '/src/' + using[i])
+                                path.resolve(cwd +'/'+ config.sourceDir + using[i])
                             );
                             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
                         }
