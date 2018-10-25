@@ -354,48 +354,6 @@ let utils = {
         let aliasPath = path.relative(path.dirname(file), depFile);
         return aliasPath;
     },
-    resolveComponentStyle(styleFiles) {
-        let result = [];
-        let componentsStyle = [];
-        let appStyleId = ''; //app全局样式只有一个
-        styleFiles.forEach(item => {
-            let { id, originalCode } = item;
-            if (/components/.test(id)) {
-                id = path.relative(path.join(cwd, config.sourceDir ), id);
-                if (/^\w/.test(id)) {
-                    id = `./${id}`;
-                }
-                let importKey = `@import '${id}';`;
-                if (!componentsStyle.includes(importKey)) {
-                    componentsStyle.push(importKey);
-                }
-            } else if (/app/.test(id)) {
-                appStyleId = id;
-            } else {
-                result.push({
-                    id: item.id,
-                    originalCode: originalCode
-                });
-            }
-        });
-
-        let appStyleContent = '';
-        try {
-            appStyleContent = fs.readFileSync(appStyleId);
-        } catch (err) {
-            console.log(chalk.red('需配置全局app样式, 请检查...'));
-            return [];
-            //process.exit(1);
-        }
-
-        appStyleContent = componentsStyle.join('\n') + '\n' + appStyleContent;
-        result.push({
-            id: appStyleId,
-            originalCode: appStyleContent
-        });
-
-        return result;
-    },
     replacePath: function(sPath, segement, newSegement){
         let sep = path.sep;
         if (process.platform === 'win32') {
@@ -429,6 +387,19 @@ let utils = {
             }
         });
         return result;
+    },
+    getRegeneratorRuntimePath: function(sourcePath){
+        //小程序async/await语法依赖regenerator-runtime/runtime
+        try {
+            return nodeResolve.sync('regenerator-runtime/runtime', {basedir: process.cwd()});
+        } catch (err) {
+            // eslint-disable-next-line
+            console.log(
+                'Error: ' + sourcePath + '\n' +
+                'Msg: ' + chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
+            );
+            process.exit(1);
+        }
     },
     shortNameAlias: {
         h: {

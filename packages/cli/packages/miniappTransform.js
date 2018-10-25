@@ -3,9 +3,7 @@
  */
 let babel = require('babel-core');
 let fs = require('fs');
-let nodeResolve = require('resolve');
 let path = require('path');
-let chalk = require('chalk');
 let beautify = require('js-beautify');
 let miniappPlugin = require('./miniappPlugin');
 let config = require('./config');
@@ -16,8 +14,12 @@ let utils = require('./utils');
 let cwd = process.cwd();
 
 function transform(sourcePath, resolvedIds) {
-    let customAliasMap = utils.updateCustomAlias(sourcePath, resolvedIds);
-    let npmAliasMap = utils.updateNpmAlias(sourcePath, resolvedIds);
+    //用户自定义alias与npm相对路径处理都作为alias配置
+    let aliasMap = Object.assign(
+        utils.updateCustomAlias(sourcePath, resolvedIds),
+        utils.updateNpmAlias(sourcePath, resolvedIds)
+    );
+    
     //pages|app|components需经过miniappPlugin处理
     let miniAppPluginsInjectConfig = utils
         .getComponentOrAppOrPageReg()
@@ -39,23 +41,13 @@ function transform(sourcePath, resolvedIds) {
                     'module-resolver',
                     {
                         resolvePath(moduleName) {
-                            
+                            if (!utils.isNpm(moduleName)) return;
+
                             //针对async/await语法做特殊处理
-                            if (
-                                /regenerator-runtime\/runtime/.test(moduleName)
-                            ) {
-                                let regeneratorRuntimePath = '';
-                                try {
-                                    regeneratorRuntimePath = nodeResolve.sync('regenerator-runtime/runtime', {basedir: process.cwd()});
-                                } catch (err) {
-                                    // eslint-disable-next-line
-                                    console.log(
-                                        'Error: ' + sourcePath + '\n' +
-                                        'Msg: ' + chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
-                                    );
-                                    process.exit(1);
-                                }
-                                
+                            if (/regenerator-runtime\/runtime/.test(moduleName)) {
+                                //微信,百度小程序async/await语法依赖regenerator-runtime/runtime
+                                let regeneratorRuntimePath =  utils.getRegeneratorRuntimePath(sourcePath);
+
                                 queue.push({
                                     code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
                                     path: utils.updatePath(
@@ -66,27 +58,14 @@ function transform(sourcePath, resolvedIds) {
                                     type: 'npm'
                                 });
 
-                                //获取依赖的相对路径
                                 Object.assign(
-                                    npmAliasMap,
-                                    utils.updateNpmAlias(sourcePath, {
-                                        'regenerator-runtime/runtime': regeneratorRuntimePath
-                                    })
+                                    aliasMap,
+                                    utils.updateNpmAlias(sourcePath, { 'regenerator-runtime/runtime': regeneratorRuntimePath } )
                                 );
-                            }
 
-                            let value = '';
-                            if (customAliasMap[moduleName]) {
-                                value = customAliasMap[moduleName];
-                            } else if (npmAliasMap[moduleName]) {
-                                //某些模块中可能不存在任何配置依赖, 搜集的alias则为空object.
-                                value = npmAliasMap[moduleName];
                             }
-
-                            //require('xxx.js') => require('./xxx.js');
-                            if (/^\w/.test(value)) {
-                                value = `./${value}`;
-                            }
+                            let value = aliasMap[moduleName] ;
+                            value = /^\w/.test(value) ? `./${value}` : value;
                             return value;
                         }
                     }
