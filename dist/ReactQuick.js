@@ -1,5 +1,6 @@
+
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-10-25
+ * 运行于快应用的React by 司徒正美 Copyright 2018-10-17
  * IE9+
  */
 
@@ -542,25 +543,356 @@ var PureComponent = miniCreateClass(function PureComponent() {
     }
 });
 
-function getDataSet(obj) {
-    var ret = {};
-    for (var name in obj) {
-        var key = name.replace(/data(\w)(\.*)/, function (a, b, c) {
-            return toLowerCase(b) + c;
+var onAndSyncApis = {
+  onSocketOpen: true,
+  onSocketError: true,
+  onSocketMessage: true,
+  onSocketClose: true,
+  onBackgroundAudioPlay: true,
+  onBackgroundAudioPause: true,
+  onBackgroundAudioStop: true,
+  onNetworkStatusChange: true,
+  onAccelerometerChange: true,
+  onCompassChange: true,
+  onBluetoothAdapterStateChange: true,
+  onBluetoothDeviceFound: true,
+  onBLEConnectionStateChange: true,
+  onBLECharacteristicValueChange: true,
+  onBeaconUpdate: true,
+  onBeaconServiceChange: true,
+  onUserCaptureScreen: true,
+  onHCEMessage: true,
+  onGetWifiList: true,
+  onWifiConnected: true,
+  setStorageSync: true,
+  getStorageSync: true,
+  getStorageInfoSync: true,
+  removeStorageSync: true,
+  clearStorageSync: true,
+  getSystemInfoSync: true,
+  getExtConfigSync: true,
+  getLogManager: true
+};
+var noPromiseApis = {
+  stopRecord: true,
+  getRecorderManager: true,
+  pauseVoice: true,
+  stopVoice: true,
+  pauseBackgroundAudio: true,
+  stopBackgroundAudio: true,
+  getBackgroundAudioManager: true,
+  createAudioContext: true,
+  createInnerAudioContext: true,
+  createVideoContext: true,
+  createCameraContext: true,
+  navigateBack: true,
+  createMapContext: true,
+  canIUse: true,
+  startAccelerometer: true,
+  stopAccelerometer: true,
+  startCompass: true,
+  stopCompass: true,
+  hideToast: true,
+  hideLoading: true,
+  showNavigationBarLoading: true,
+  hideNavigationBarLoading: true,
+  createAnimation: true,
+  pageScrollTo: true,
+  createSelectorQuery: true,
+  createCanvasContext: true,
+  createContext: true,
+  drawCanvas: true,
+  hideKeyboard: true,
+  stopPullDownRefresh: true,
+  arrayBufferToBase64: true,
+  base64ToArrayBuffer: true,
+  getUpdateManager: true,
+  createWorker: true
+};
+var otherApis = {
+  uploadFile: true,
+  downloadFile: true,
+  connectSocket: true,
+  sendSocketMessage: true,
+  closeSocket: true,
+  chooseImage: true,
+  previewImage: true,
+  getImageInfo: true,
+  saveImageToPhotosAlbum: true,
+  startRecord: true,
+  playVoice: true,
+  getBackgroundAudioPlayerState: true,
+  playBackgroundAudio: true,
+  seekBackgroundAudio: true,
+  chooseVideo: true,
+  saveVideoToPhotosAlbum: true,
+  loadFontFace: true,
+  saveFile: true,
+  getFileInfo: true,
+  getSavedFileList: true,
+  getSavedFileInfo: true,
+  removeSavedFile: true,
+  openDocument: true,
+  setStorage: true,
+  getStorage: true,
+  getStorageInfo: true,
+  removeStorage: true,
+  clearStorage: true,
+  navigateTo: true,
+  redirectTo: true,
+  switchTab: true,
+  reLaunch: true,
+  getLocation: true,
+  chooseLocation: true,
+  openLocation: true,
+  getSystemInfo: true,
+  getNetworkType: true,
+  makePhoneCall: true,
+  scanCode: true,
+  setClipboardData: true,
+  getClipboardData: true,
+  openBluetoothAdapter: true,
+  closeBluetoothAdapter: true,
+  getBluetoothAdapterState: true,
+  startBluetoothDevicesDiscovery: true,
+  stopBluetoothDevicesDiscovery: true,
+  getBluetoothDevices: true,
+  getConnectedBluetoothDevices: true,
+  createBLEConnection: true,
+  closeBLEConnection: true,
+  getBLEDeviceServices: true,
+  getBLEDeviceCharacteristics: true,
+  readBLECharacteristicValue: true,
+  writeBLECharacteristicValue: true,
+  notifyBLECharacteristicValueChange: true,
+  startBeaconDiscovery: true,
+  stopBeaconDiscovery: true,
+  getBeacons: true,
+  setScreenBrightness: true,
+  getScreenBrightness: true,
+  setKeepScreenOn: true,
+  vibrateLong: true,
+  vibrateShort: true,
+  addPhoneContact: true,
+  getHCEState: true,
+  startHCE: true,
+  stopHCE: true,
+  sendHCEMessage: true,
+  startWifi: true,
+  stopWifi: true,
+  connectWifi: true,
+  getWifiList: true,
+  setWifiList: true,
+  getConnectedWifi: true,
+  showToast: true,
+  showLoading: true,
+  showModal: true,
+  showActionSheet: true,
+  setNavigationBarTitle: true,
+  setNavigationBarColor: true,
+  setTabBarBadge: true,
+  removeTabBarBadge: true,
+  showTabBarRedDot: true,
+  hideTabBarRedDot: true,
+  setTabBarStyle: true,
+  setTabBarItem: true,
+  showTabBar: true,
+  hideTabBar: true,
+  setTopBarText: true,
+  startPullDownRefresh: true,
+  canvasToTempFilePath: true,
+  canvasGetImageData: true,
+  canvasPutImageData: true,
+  getExtConfig: true,
+  login: true,
+  checkSession: true,
+  authorize: true,
+  getUserInfo: true,
+  requestPayment: true,
+  showShareMenu: true,
+  hideShareMenu: true,
+  updateShareMenu: true,
+  getShareInfo: true,
+  chooseAddress: true,
+  addCard: true,
+  openCard: true,
+  openSetting: true,
+  getSetting: true,
+  getWeRunData: true,
+  navigateToMiniProgram: true,
+  navigateBackMiniProgram: true,
+  chooseInvoiceTitle: true,
+  checkIsSupportSoterAuthentication: true,
+  startSoterAuthentication: true,
+  checkIsSoterEnrolledInDevice: true
+};
+
+function initPxTransform() {
+    var wxConfig = this.api;
+    var windowWidth = 375;
+    wxConfig.designWidth = windowWidth;
+    wxConfig.deviceRatio = 750 / windowWidth / 2;
+    if (wxConfig.getSystemInfo) {
+        wxConfig.getSystemInfo({
+            success: function success(res) {
+                windowWidth = res.windowWidth;
+                wxConfig.designWidth = windowWidth;
+                wxConfig.deviceRatio = 750 / windowWidth / 2;
+            }
         });
-        ret[key] = obj[name];
     }
-    return ret;
 }
-var eventSystem = {
-    dispatchEvent: function dispatchEvent(e) {
-        var instance = this.reactInstance;
-        if (!instance || !instance.$$eventCached) {
+var RequestQueue = {
+    MAX_REQUEST: 5,
+    queue: [],
+    request: function request(options) {
+        this.push(options);
+        this.run();
+    },
+    push: function push(options) {
+        this.queue.push(options);
+    },
+    run: function run() {
+        var _arguments = arguments,
+            _this = this;
+        if (!this.queue.length) {
             return;
         }
-        var target = e.target;
-        var dataset = getDataSet(target._attr);
+        if (this.queue.length <= this.MAX_REQUEST) {
+            var options = this.queue.shift();
+            var completeFn = options.complete;
+            options.complete = function () {
+                completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
+                _this.run();
+            };
+            if (this.facade.httpRequest) {
+                this.facade.httpRequest(options);
+            } else if (this.facade.request) {
+                this.facade.request(options);
+            }
+        }
+    }
+};
+function request(options) {
+    options = options || {};
+    if (typeof options === 'string') {
+        options = {
+            url: options
+        };
+    }
+    var originSuccess = options['success'];
+    var originFail = options['fail'];
+    var originComplete = options['complete'];
+    var p = new Promise(function (resolve, reject) {
+        options['success'] = function (res) {
+            res.statusCode = res.status || res.statusCode;
+            res.header = res.headers || res.header;
+            originSuccess && originSuccess(res);
+            resolve(res);
+        };
+        options['fail'] = function (res) {
+            originFail && originFail(res);
+            reject(res);
+        };
+        options['complete'] = function (res) {
+            originComplete && originComplete(res);
+        };
+        RequestQueue.request(options);
+    });
+    return p;
+}
+function processApis(ReactWX, facade) {
+    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
+    Object.keys(weApis).forEach(function (key) {
+        if (!onAndSyncApis[key] && !noPromiseApis[key]) {
+            ReactWX.api[key] = function (options) {
+                options = options || {};
+                var task = null;
+                var obj = Object.assign({}, options);
+                if (typeof options === 'string') {
+                    return facade[key](options);
+                }
+                var p = new Promise(function (resolve, reject) {
+                    ['fail', 'success', 'complete'].forEach(function (k) {
+                        obj[k] = function (res) {
+                            options[k] && options[k](res);
+                            if (k === 'success') {
+                                if (key === 'connectSocket') {
+                                    resolve(task);
+                                } else {
+                                    resolve(res);
+                                }
+                            } else if (k === 'fail') {
+                                reject(res);
+                            }
+                        };
+                    });
+                    task = facade[key](obj);
+                });
+                if (key === 'uploadFile' || key === 'downloadFile') {
+                    p.progress = function (cb) {
+                        task.onProgressUpdate(cb);
+                        return p;
+                    };
+                    p.abort = function (cb) {
+                        cb && cb();
+                        task.abort();
+                        return p;
+                    };
+                }
+                return p;
+            };
+        } else {
+            ReactWX.api[key] = function () {
+                return facade[key].apply(facade, arguments);
+            };
+        }
+    });
+}
+function pxTransform(size) {
+    var deviceRatio = this.api.deviceRatio;
+    return parseInt(size, 10) / deviceRatio + 'rpx';
+}
+function injectAPIs(ReactWX, facade, override) {
+    ReactWX.api = {};
+    processApis(ReactWX, facade);
+    ReactWX.api.request = request;
+    if (typeof getCurrentPages == 'function') {
+        ReactWX.getCurrentPages = getCurrentPages;
+    }
+    if (typeof getApp == 'function') {
+        ReactWX.getApp = getApp;
+    }
+    if (override) {
+        var obj = override(facade);
+        Object.assign(ReactWX.api, obj);
+    }
+    RequestQueue.facade = facade;
+    ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
+    ReactWX.pxTransform = pxTransform.bind(ReactWX);
+}
+
+var eventSystem = {
+    dispatchEvent: function dispatchEvent(e) {
+        if (e.type == 'message') {
+            return;
+        }
+        var target = e.currentTarget;
+        var dataset = target.dataset || {};
         var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+        var instance = this.reactInstance;
+        if (!instance) {
+            return;
+        }
+        if (!instance.$$eventCached) {
+            return;
+        }
+        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
+        if (e.type == 'change' && fiber) {
+            if (fiber.props.value + '' == e.detail.value) {
+                return;
+            }
+        }
         var key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
         if (instance) {
@@ -576,15 +908,19 @@ var eventSystem = {
     }
 };
 function createEvent(e, target) {
-    var event = Object.assign({}, e);
+    var event = {};
     if (e.detail) {
+        event.detail = e.detail;
         Object.assign(event, e.detail);
-        target.value = e.detail.value;
+        Object.assign(target, e.detail);
     }
-    event.stopPropagation = e.stopPropagation.bind(e);
-    event.preventDefault = e.preventDefault.bind(e);
-    event.target = target;
-    event.type = e._type;
+    event.stopPropagation = function () {
+        console.warn("小程序不支持这方法，请使用catchXXX");
+    };
+    event.preventDefault = returnFalse;
+    event.type = e.type;
+    event.currentTarget = event.target = target;
+    event.touches = e.touches;
     event.timeStamp = new Date() - 0;
     return event;
 }
@@ -1761,20 +2097,11 @@ function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
         return;
     }
-    if (instance.wx.setData) {
-        instance.wx.setData(safeClone({
-            props: instance.props,
-            state: instance.state || null,
-            context: instance.context
-        }));
-    } else {
-        updateQuickApp(instance.wx, instance);
-    }
-}
-function updateQuickApp(quick, instance) {
-    quick.props = instance.props;
-    quick.state = instance.state || null;
-    quick.context = instance.context;
+    instance.wx.setData(safeClone({
+        props: instance.props,
+        state: instance.state || null,
+        context: instance.context
+    }));
 }
 function isReferenceType(val) {
     return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
@@ -1873,7 +2200,10 @@ var Renderer$1 = createRenderer({
         }
     },
     onAfterRender: function onAfterRender(fiber) {
-        updateMiniApp(fiber.stateNode);
+        var instance = fiber.stateNode;
+        if (instance.wx) {
+            updateMiniApp(instance);
+        }
     },
     onDispose: function onDispose(fiber) {
         var instance = fiber.stateNode;
@@ -1943,8 +2273,12 @@ function hyphen(target) {
     return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
 function transform(obj) {
+    var _this = this;
     return Object.keys(obj).map(function (item) {
         var value = obj[item].toString();
+        value = value.replace(/(\d+)px/gi, function (str, match) {
+            return _this.pxTransform(match);
+        });
         return hyphen(item) + ': ' + value;
     }).join(';');
 }
@@ -1953,7 +2287,7 @@ function toStyle(obj, props, key) {
         var str = transform.call(this, obj);
         props[key] = str;
     } else {
-        console.warn('toStyle生成样式失败，key为', key);
+        console.warn('props 为空');
     }
     return obj;
 }
@@ -1969,22 +2303,24 @@ function useComponent(props) {
     return createElement.apply(null, args);
 }
 
-var shareObject = {};
-function getApp() {
-    return shareObject.app;
+var HookMap = {
+    onShow: 'componentDidShow',
+    onHide: 'componentDidHide',
+    onUnload: 'componentWillUnmount'
+};
+function applyAppStore() {
+    console.log('此方法已废弃');
 }
-function registerPage(PageClass, path) {
+function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
-    var instance;
-    var config = {
-        private: {
-            props: Object,
-            context: Object,
-            state: Object
-        },
+    console.log(path, '注册页面');
+    var pageViewInstance,
+        config = {
+        data: {},
         dispatchEvent: eventSystem.dispatchEvent,
-        onInit: function onInit(query) {
-            instance = render(createElement(PageClass, {
+        onLoad: function onLoad(query) {
+            console.log('开始载入页面', path);
+            pageViewInstance = render(createElement(PageClass, {
                 path: path,
                 query: query,
                 isPageComponent: true
@@ -1995,16 +2331,10 @@ function registerPage(PageClass, path) {
                 root: true,
                 appendChild: noop
             });
-            transmitData(PageClass, path, instance, this);
-        },
-        onShow: function onShow() {
-            transmitData(PageClass, path, instance, this);
-            var fn = this.reactInstance.componentDidShow;
-            fn && fn.call(instance);
-        },
-        onHide: function onHide() {
-            var fn = this.reactInstance.componentDidHide;
-            fn && fn.call(instance);
+            this.reactInstance = pageViewInstance;
+            pageViewInstance.wx = this;
+            console.log('更新页面数据', path);
+            updateMiniApp(pageViewInstance);
         },
         onReady: function onReady() {
             console.log('页面布局完成', path);
@@ -2013,121 +2343,26 @@ function registerPage(PageClass, path) {
                 el.fn.call(el.instance);
                 el.instance.componentDidMount = el.fn;
             }
-        },
-        onMenuPress: function onMenuPress(a) {
-            instance.onMenuPress && instance.onMenuPress(a);
         }
     };
+    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
+        config[hook] = function () {
+            var name = HookMap[hook] || hook;
+            var fn = pageViewInstance[name];
+            if (isFn(fn)) {
+                return fn.apply(pageViewInstance, arguments);
+            }
+        };
+    });
+    if (testObject) {
+        config.setData = function (obj) {
+            config.data = obj;
+        };
+        config.onLoad();
+        return config;
+    }
     return config;
 }
-function transmitData(pageClass, pagePath, reactInstance, quickInstance) {
-    reactInstance.wx = quickInstance;
-    quickInstance.reactInstance = reactInstance;
-    updateMiniApp(reactInstance);
-    var cc = reactInstance.config || pageClass.config;
-    shareObject.pageConfig = cc;
-    shareObject.pagePath = pagePath;
-    shareObject.page = reactInstance;
-    shareObject.app = quickInstance.$app.$def;
-}
-
-function createRouter(name) {
-    return function (obj) {
-        var router = require('@system.router');
-        var params = {};
-        var uri = obj.url.replace(/\?(.*)/, function (a, b) {
-            b.split('=').forEach(function (k, v) {
-                params[k] = v;
-            });
-            return '';
-        }).replace(/\/index$/, '');
-        router[name]({
-            uri: uri,
-            params: params
-        });
-    };
-}
-var api = {
-    showModal: function showModal(obj) {
-        obj.showCancel = obj.showCancel === false ? false : true;
-        var buttons = [{
-            text: obj.confirmText,
-            color: obj.confirmColor
-        }];
-        if (obj.showCancel) {
-            buttons.push({
-                text: obj.cancelText,
-                color: obj.cancelColor
-            });
-        }
-        obj.buttons = obj.confirmText ? buttons : [];
-        obj.message = obj.content;
-        delete obj.content;
-        var fn = obj['success'];
-        obj['success'] = function (res) {
-            res.confirm = !res.index;
-            fn && fn(res);
-        };
-        var prompt = require('@system.prompt');
-        prompt.showDialog(obj);
-    },
-    showToast: function showToast(obj) {
-        var prompt = require('@system.prompt');
-        obj.message = obj.title;
-        obj.duration = obj.duration / 1000;
-        prompt.showToast(obj);
-    },
-    hideToast: noop,
-    showActionSheet: function showActionSheet(obj) {
-        var prompt = require('@system.prompt');
-        prompt.showContextMenu(obj);
-    },
-    navigateTo: createRouter('push'),
-    redirectTo: createRouter('replace'),
-    navigateBack: createRouter('back'),
-    vibrateLong: function vibrateLong() {
-        var vibrator = require('@system.vibrator');
-        vibrator.vibrate();
-    },
-    vibrateShort: function vibrateShort() {
-        var vibrator = require('@system.vibrator');
-        vibrator.vibrate();
-    },
-    share: function share(obj) {
-        var share = require('@system.share');
-        share.share(obj);
-    },
-    uploadFile: function uploadFile(obj) {
-        var request = require('@system.request');
-        var data = [];
-        Object.keys(obj.formData).map(function (key) {
-            var value = obj.formData[key];
-            var item = {
-                value: value,
-                name: key
-            };
-            data.push(item);
-        });
-        obj.data = data;
-        delete obj.formData;
-        var files = [{
-            uri: obj.filePath,
-            name: obj.name
-        }];
-        obj.files = files;
-        delete obj.filePath;
-        delete obj.name;
-        request.upload(obj);
-    },
-    downloadFile: function downloadFile(obj) {
-        var request = require('@system.request');
-        request.download(obj);
-    },
-    request: function request(obj) {
-        var fetch = require('@system.fetch');
-        fetch.fetch(obj);
-    }
-};
 
 var win = getWindow();
 var React = void 0;
@@ -2137,19 +2372,10 @@ function registerComponent(type, name) {
     var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
     return {
-        props: {
-            props: {
-                type: Object,
-                default: {}
-            },
-            state: {
-                type: Object,
-                default: {}
-            },
-            context: {
-                type: Object,
-                default: {}
-            }
+        private: {
+            props: {},
+            state: {},
+            context: {}
         },
         onInit: function onInit() {
             var instance = reactInstances.shift();
@@ -2198,22 +2424,16 @@ React = win.React = {
     toClass: function toClass() {
         return miniCreateClass.apply(null, arguments);
     },
+    applyAppStore: applyAppStore,
     toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
     registerPage: registerPage,
-    shareObject: shareObject,
     toStyle: toStyle,
-    getApp: getApp,
-    appType: 'quick',
-    App: function App(demo) {
-        var app = {};
-        Object.assign(app, demo);
-        delete app.constructor;
-        return app;
-    },
-    api: api
+    appType: 'quick'
 };
+var apiContainer = {};
+injectAPIs(React, apiContainer);
 var React$1 = React;
 
 export default React$1;

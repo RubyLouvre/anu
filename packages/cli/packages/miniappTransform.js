@@ -5,6 +5,7 @@ let babel = require('babel-core');
 let fs = require('fs');
 let nodeResolve = require('resolve');
 let path = require('path');
+let chalk = require('chalk');
 let beautify = require('js-beautify');
 let miniappPlugin = require('./miniappPlugin');
 let config = require('./config');
@@ -38,34 +39,40 @@ function transform(sourcePath, resolvedIds) {
                     'module-resolver',
                     {
                         resolvePath(moduleName) {
+                            
                             //针对async/await语法做特殊处理
                             if (
                                 /regenerator-runtime\/runtime/.test(moduleName)
                             ) {
-                                let npmFile = nodeResolve.sync(moduleName, {
-                                    basedir: cwd,
-                                    moduleDirectory: path.join(
-                                        cwd,
-                                        'node_modules'
-                                    )
-                                });
-                                Object.assign(
-                                    npmAliasMap,
-                                    utils.updateNpmAlias(sourcePath, {
-                                        'regenerator-runtime/runtime': npmFile
-                                    })
-                                );
-
+                                let regeneratorRuntimePath = '';
+                                try {
+                                    regeneratorRuntimePath = nodeResolve.sync('regenerator-runtime/runtime', {basedir: process.cwd()});
+                                } catch (err) {
+                                    // eslint-disable-next-line
+                                    console.log(
+                                        'Error: ' + sourcePath + '\n' +
+                                        'Msg: ' + chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
+                                    );
+                                    process.exit(1);
+                                }
+                                
                                 queue.push({
-                                    code: fs.readFileSync(npmFile, 'utf-8'),
+                                    code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
                                     path: utils.updatePath(
-                                        npmFile,
+                                        regeneratorRuntimePath,
                                         'node_modules',
                                         'dist' + path.sep + 'npm'
                                     ),
                                     type: 'npm'
                                 });
-                                utils.emit('build');
+
+                                //获取依赖的相对路径
+                                Object.assign(
+                                    npmAliasMap,
+                                    utils.updateNpmAlias(sourcePath, {
+                                        'regenerator-runtime/runtime': regeneratorRuntimePath
+                                    })
+                                );
                             }
 
                             let value = '';
@@ -90,24 +97,20 @@ function transform(sourcePath, resolvedIds) {
             if (err) throw err;
 
             //babel6无transform异步方法
-            setTimeout(() => {
+            setImmediate(() => {
                 let babelPlugins = [
                     [
                         //process.env.ANU_ENV
                         'transform-inline-environment-variables',
                         {
                             env: {
-                                ANU_ENV: config['buildType']
+                                ANU_ENV: config['buildType'],
+                                BUILD_ENV: process.env.BUILD_ENV
                             }
                         }
                     ],
                     'minify-dead-code-elimination'
                 ];
-
-                if (config.buildType === 'wx') {
-                    //支付宝小程序默认支持es6 module
-                    //  babelPlugins.push('transform-es2015-modules-commonjs');
-                }
 
                 result = babel.transform(result.code, {
                     babelrc: false,
@@ -144,29 +147,29 @@ function transform(sourcePath, resolvedIds) {
                     });
                     //假设存在<script>
                     ux += `
-<script>
-${beautify.js(result.code)}
-</script>`;
+                        <script>
+                        ${beautify.js(result.code)}
+                        </script>`;
                     if (uxFile.cssType) {
                         //假设存在<style>
                         ux += `
-<style lang="${uxFile.cssType}">
-${beautify.css(uxFile.cssCode)}
-</style>`;
+                            <style lang="${uxFile.cssType}">
+                            ${beautify.css(uxFile.cssCode)}
+                            </style>`;
                     }
                     queue.push({
                         code: ux,
+                        type: 'ux',
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux') 
                     });
                 } else {
                     queue.push({
                         code: result.code,
+                        type: 'js',
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist')
                     });
                 }
-
-                utils.emit('build');
-            }, 4);
+            });
         }
     );
 }

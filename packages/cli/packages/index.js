@@ -7,11 +7,13 @@ const rbabel = require('rollup-plugin-babel');
 const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const rollupLess = require('rollup-plugin-less');
+const rollupJson = require('rollup-plugin-json');
 const rollupSass = require('rollup-plugin-sass');
 const alias = require('rollup-plugin-alias');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
 const utils = require('./utils');
+const queue = require('./queue');
 const crypto = require('crypto');
 const config = require('./config');
 const quickFiles = require('./quickFiles');
@@ -51,10 +53,10 @@ const isJs = path => {
 class Parser {
     constructor(entry) {
         this.entry = entry;
-        this.isWatching = false;
         this.jsFiles = [];
         this.styleFiles = [];
         this.npmFiles = [];
+        this.jsonFiles = [];
         this.customAliasConfig = utils.getCustomAliasConfig();
 
         this.inputConfig = {
@@ -76,6 +78,7 @@ class Parser {
                         return '';
                     }
                 }),
+                rollupJson(),
                 rollupSass(),
                 rbabel({
                     babelrc: false,
@@ -99,6 +102,9 @@ class Parser {
                 }
             }
         };
+
+        
+        
     }
     async parse() {
         let spinner = utils.spinner('正在分析依赖...');
@@ -137,18 +143,28 @@ class Parser {
                 });
                 return;
             }
+
+            if (/\.json$/.test(id)) {
+                this.jsonFiles.push({
+                    id: id,
+                    originalCode: item.originalCode
+                });
+                return;
+            }
+
             if (isJs(id)) {
                 this.jsFiles.push({
                     id: id,
                     originalCode: item.originalCode,
                     resolvedIds: this.filterNpmModule(item.resolvedIds) //处理路径alias配置
                 });
+                return;
             }
-        });
 
+        });
         this.transform();
         this.copyAssets();
-        generate();
+        
     }
     filterNpmModule(resolvedIds) {
         //判定路径是否以字母开头
@@ -164,10 +180,36 @@ class Parser {
         this.updateJsQueue(this.jsFiles);
         this.updateStyleQueue(this.styleFiles);
         this.updateNpmQueue(this.npmFiles);
+        this.updateJsonQueue(this.jsonFiles);
+    }
+    checkComponentsInPages(id) {
+        let flag = false;
+        let pathAray = utils.isWin() ? id.split('\\') :  id.split('/'); //分割目录
+        let componentsPos = pathAray.indexOf('components');
+        let pagesPos = pathAray.indexOf('pages');
+        if (componentsPos != -1 && pagesPos!=-1 && componentsPos > pagesPos ) {
+            flag = true;
+        }
+        return flag;
     }
     updateJsQueue(jsFiles) {
         while (jsFiles.length) {
             let { id, originalCode, resolvedIds } = jsFiles.shift();
+            if (this.checkComponentsInPages(id)) {
+                // eslint-disable-next-line
+                console.log(
+                    chalk.red(
+                        JSON.stringify(
+                            {
+                                path: id,
+                                msg: 'components目录不能存在于pages目录下, 请检查'
+                            },
+                            null,
+                            4
+                        )
+                    )
+                );
+            }
             needUpdate(id, originalCode, function(){
                 miniTransform(id, resolvedIds);
             });
@@ -200,18 +242,31 @@ class Parser {
             });
         }
     }
+    updateJsonQueue(jsonFiles) {
+        while (jsonFiles.length){
+            let item = jsonFiles.shift();
+            needUpdate(item.id, item.originalCode, function(){
+                queue.push({
+                    path: item.id.replace(/\/src\//, '/dist/'),
+                    code: item.originalCode,
+                    type: 'json'
+                });
+            });
+        }
+    }
     copyAssets() {
         //to do 差异化copy
         const dir = 'assets';
         const inputDir = path.join(inputPath, dir);
-        const distDir = path.join(path.join(cwd, 'dist'), dir);
-        if (!fs.pathExistsSync(inputDir)) return;
+        //快应用copy到src目录中
+        const distDir =  path.join( cwd, config.buildType === 'quick' ? 'src' : config.buildDir, dir );
         fs.ensureDirSync(distDir);
         fs.copy(inputDir, distDir, err => {
             if (err) {
                 console.error(err);
             }
         });
+        
     }
     watching() {
         let watchDir = path.dirname(this.entry);
@@ -222,19 +277,16 @@ class Parser {
                 pollInterval: 100
             }
         };
-        this.isWatching = true;
         const watcher = chokidar
             .watch(watchDir, watchConfig)
-            .on('all', (event, file) => {
-                if (event === 'change') {
-                    console.log(
-                        `\nupdated: ${chalk.yellow(path.relative(cwd, file))}\n`
-                    );
-                    this.inputConfig.input = file;
-                    this.parse();
-                }
+            .on('change', (file)=>{
+                console.log(
+                    `\n更新: ${chalk.yellow(path.relative(cwd, file))}\n`
+                );
+                this.inputConfig.input = file;
+                this.parse();
+                
             });
-
         watcher.on('error', error => {
             console.error('Watcher failure', error);
             process.exit(1);
@@ -242,18 +294,20 @@ class Parser {
     }
 }
 
+utils.on('build', ()=>{
+    generate();
+});
+
+
 async function build(arg) {
+    //同步react
     await utils.asyncReact();
-    if (arg === 'watch') {
-        console.log(chalk.green('watching files...'));
-    } else if (arg === 'build') {
-        console.log(chalk.green('compile files...'));
-    }
     const parser = new Parser(entry);
     await parser.parse();
     if (arg === 'watch') {
         parser.watching();
     }
+    
 }
 
 module.exports = build;

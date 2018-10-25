@@ -1,40 +1,48 @@
 const queue = require('./queue');
 const fs = require('fs-extra');
 const utils = require('./utils');
+const config = require('./config');
 const nPath = require('path');
 const chalk = require('chalk');
-const config = require('./config');
 const cwd = process.cwd();
-
-const print = (prefix, msg) => {
-    // eslint-disable-next-line
-    console.log(chalk.green(`${prefix} ${msg}`));
+const compress = utils.compress();
+const getSize = (code)=>{
+    return (Buffer.byteLength(code, 'utf8')/1000).toFixed(1);
 };
-
-
+let sucSize = 0;
 module.exports = ()=>{
-    utils.on('build', ()=>{
-        while (queue.length){
-            let {code, path } = queue.shift();
-            if (config['buildType'] === 'quick') {
-                //快应用打包到src下
-                path = utils.updatePath( path, 'dist' , 'src');
-            } else {
-                path = utils.updatePath( path, 'dist', config.buildDir);
-            }
-            if (path[0] != '/'){
-                path = '/'+ path;
-            }
-
-            fs.ensureFileSync(path);
-            fs.writeFile(path, code, err => {
-                if (err){
-                    print('build fail:', nPath.relative(cwd, path));
-                } else {
-                    print('build success:', nPath.relative(cwd, path));
-                }
-            });
+    while (queue.length){
+        let {code, path, type } = queue.shift();
+    
+        if (config.compress) {
+            code = compress[type](code);
         }
-    });
-   
+        if (config['buildType'] === 'quick') {
+            //快应用打包到src下
+            path = utils.updatePath( path, 'dist' , 'src');
+        } else {
+            path = utils.updatePath( path, 'dist', config.buildDir);
+        }
+        fs.ensureFileSync(path);
+        fs.writeFile(path, code, err => {
+            if (err){
+                // eslint-disable-next-line
+                console.log(chalk.red(`build fail: ${nPath.relative(cwd, path)} `));
+            } else {
+                sucSize++;
+                // eslint-disable-next-line
+                console.log(
+                    chalk.gray(`[${sucSize}] `) + 
+                    chalk.green(`build success: ${nPath.relative(cwd, path)} `) +
+                    chalk.gray(`[${getSize(code)}KB]`)
+                );
+                if (queue.size === sucSize) {
+                    queue.size = 0;
+                    sucSize = 0;
+                    // eslint-disable-next-line
+                    utils.spinner('').succeed('构建结束\n');
+                }
+            }
+        });
+    }
 };

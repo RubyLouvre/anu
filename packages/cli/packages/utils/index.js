@@ -7,12 +7,14 @@ const path = require('path');
 const cwd = process.cwd();
 const chalk = require('chalk');
 const spawn = require('cross-spawn');
+const uglifyJS = require('uglify-es');
+const cleanCSS = require('clean-css');
 const nodeResolve = require('resolve');
-const config = require('../config');
 const template = require('babel-template');
 const axios = require('axios');
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
+const config = require('../config');
 const Event = new EventEmitter();
 process.on('unhandledRejection', error => {
     // eslint-disable-next-line
@@ -33,6 +35,9 @@ let utils = {
         return ora(text);
     },
     getStyleValue: require('./getStyleValue'),
+    isWin() {
+        return process.platform === 'win32';
+    },
     useYarn() {
         if (config['useYarn'] != undefined) {
             return config['useYarn'];
@@ -187,7 +192,11 @@ let utils = {
             ext = ext || 'js';
             arr[arr.length - 1] = lastSegement.replace('.' + ext, '.' + newExt);
         }
-        return path.join.apply(path, arr);
+        let resolvedPath = path.join.apply(path, arr);
+        if (resolvedPath[0] != '/'){
+            resolvedPath = '/'+ resolvedPath;
+        }
+        return resolvedPath;
     },
     isBuildInLibs(name) {
         let libs = new Set(require('repl')._builtinLibs);
@@ -316,10 +325,20 @@ let utils = {
     getCustomAliasConfig() {
         let React = this.getReactLibName();
         let defaultAlias = {
-            '@react': path.resolve(cwd, `${config.sourceDir}/${React}`),
-            react: path.resolve(cwd, `${config.sourceDir}/${React}`),
-            '@components': path.resolve(cwd, `${config.sourceDir}/components`)
+            'react': path.join(cwd, `${config.sourceDir}/${React}`),
+            '@react': path.join(cwd, `${config.sourceDir}/${React}`),
+            '@components': path.join(cwd, `${config.sourceDir}/components`)
         };
+        let pkg =  require( path.join(cwd, 'package.json') );
+        let pkgAlias = pkg.mpreact && pkg.mpreact.alias ? pkg.mpreact.alias : {};
+
+       
+        Object.keys(pkgAlias).forEach((aliasKey)=>{
+            //@components, @react无法自定义配置
+            if ( !defaultAlias[aliasKey] ) {
+                defaultAlias[aliasKey] = path.join(cwd, pkgAlias[aliasKey]);
+            }
+        });
         return defaultAlias;
     },
     resolveNpmAliasPath(id, depFile) {
@@ -377,6 +396,14 @@ let utils = {
 
         return result;
     },
+    replacePath: function(sPath, segement, newSegement){
+        let sep = path.sep;
+        if (process.platform === 'win32') {
+            segement = segement.replace(/\//g, sep); 
+            newSegement = newSegement.replace(/\//g, sep);
+        }
+        return path.resolve(sPath.replace( segement, newSegement ));
+    },
     updateNpmAlias(id, deps) {
         //依赖的npm模块也当alias处理
         let result = {};
@@ -393,10 +420,11 @@ let utils = {
     },
     updateCustomAlias(id, deps) {
         //自定义alias是以@react和@components开头
-        let customAliasReg = /^(@react|@components)/;
+        let aliasConfig = Object.keys(this.getCustomAliasConfig()).join('|');
+        let reg = new RegExp( `^(${aliasConfig})` ); // /^(@react|@components|...)/
         let result = {};
         Object.keys(deps).forEach(depKey => {
-            if (customAliasReg.test(depKey)) {
+            if (reg.test(depKey)) {
                 result[depKey] = this.resolveCustomAliasPath(id, deps[depKey]);
             }
         });
@@ -454,8 +482,39 @@ let utils = {
             }
         );
     },
-    getComponentOrAppOrPageReg() {
-        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
+    compress: function(){
+        return {
+            js: function(code){
+                let result =  uglifyJS.minify(code);
+                if (result.error) {
+                    throw result.error;
+                }
+                return result.code;
+            },
+            npm: function(code){
+                return this.js.call(this, code);
+            },
+            css: function(code){
+                let result = new cleanCSS().minify(code);
+                if (result.errors.length) {
+                    throw result.errors;
+                }
+                return result.styles;
+            },
+            ux: function(code){
+                return code;
+            },
+            wxml: function(code){
+                //TODO: comporess xml file;
+                return code;
+            },
+            json: function(code){
+                return JSON.stringify(JSON.parse(code));
+            }
+        };
+    },
+    getComponentOrAppOrPageReg(){
+        return new RegExp( this.sepForRegex  + '(?:pages|app|components)'  );
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
