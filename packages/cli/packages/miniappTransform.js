@@ -106,7 +106,7 @@ function transform(sourcePath, resolvedIds) {
 
                 if (config.buildType === 'wx') {
                     //支付宝小程序默认支持es6 module
-                    babelPlugins.push('transform-es2015-modules-commonjs');
+                    //  babelPlugins.push('transform-es2015-modules-commonjs');
                 }
 
                 result = babel.transform(result.code, {
@@ -132,7 +132,7 @@ function transform(sourcePath, resolvedIds) {
                         for (let i in using) {
                             let importSrc = path.relative(
                                 sourcePath,
-                                path.resolve(cwd + '/src/' + using[i])
+                                path.resolve(cwd +'/'+ config.sourceDir + using[i])
                             );
                             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
                         }
@@ -156,13 +156,12 @@ ${beautify.css(uxFile.cssCode)}
                     }
                     queue.push({
                         code: ux,
-                        type: 'ux',
-                        path: utils.updatePath(sourcePath, 'src', 'dist', 'ux')
+                        path:  utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux') 
                     });
                 } else {
                     queue.push({
-                        code: beautify.js(result.code),
-                        path: utils.updatePath(sourcePath, 'src', 'dist')
+                        code: result.code,
+                        path:  utils.updatePath(sourcePath, config.sourceDir, 'dist')
                     });
                 }
 

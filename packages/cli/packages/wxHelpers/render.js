@@ -103,7 +103,7 @@ exports.exit = function(astPath, type, componentName, modules) {
                 '/components/' + parentClass + '/index';
         }
         queue.push({
-            path: utils.updatePath(modules.sourcePath, 'src', 'dist', xmlExt),
+            path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', xmlExt),
             code: beautify.html(wxml, {
                 indent: 4,
                 'wrap-line-length': 100
@@ -115,7 +115,7 @@ exports.exit = function(astPath, type, componentName, modules) {
 
 function handleRenderProps(wxml, componentName, modules) {
     queue.push({
-        path: utils.updatePath(modules.sourcePath, 'src', 'dist'),
+        path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist'),
         code: renderText
     });
     utils.emit('build');
@@ -139,7 +139,7 @@ function handleRenderProps(wxml, componentName, modules) {
             '/components/' + i + '/index';
     }
     queue.push({
-        path: utils.updatePath(modules.sourcePath, 'src', 'dist', 'json'),
+        path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', 'json'),
         code: JSON.stringify(dep.json, null, 4) //prettifyXml(wxml, { indent: 2 })
     });
     utils.emit('build');

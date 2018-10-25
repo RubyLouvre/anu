@@ -20,7 +20,7 @@ const isSass = (filePath) => {
 };
 const getDist = (filePath) => {
     let { name, dir } = path.parse(filePath);
-    let relativePath = path.relative(path.join(cwd, 'src'), dir);
+    let relativePath = path.relative( path.join(cwd, config.sourceDir), dir);
     let distDir = path.join(cwd, 'dist', relativePath);
     let styleExt = config[config['buildType']].styleExt; //获取构建的样式文件后缀名
     let distFilePath = path.join(distDir, `${name}.${styleExt}`);

@@ -20,7 +20,6 @@ function createRouter(name) {
 }
 
 export var api = {
-
   // 交互
   showModal(obj) {
     // showCancel 默认值是 true
@@ -64,7 +63,7 @@ export var api = {
     prompt.showToast(obj);
   },
   hideToast: noop,
-  showActionSheet(obj){
+  showActionSheet(obj) {
     var prompt = require('@system.prompt');
     prompt.showContextMenu(obj);
   },
@@ -73,15 +72,14 @@ export var api = {
   navigateTo: createRouter('push'),
   redirectTo: createRouter('replace'),
   navigateBack: createRouter('back'),
-
   // 震动
   vibrateLong() {
-    var vibrator = require('@system.vibrator')
-    vibrator.vibrate()
+    var vibrator = require('@system.vibrator');
+    vibrator.vibrate();
   },
   vibrateShort() {
-    var vibrator = require('@system.vibrator')
-    vibrator.vibrate()
+    var vibrator = require('@system.vibrator');
+    vibrator.vibrate();
   },
 
   // 分享
@@ -94,27 +92,28 @@ export var api = {
 
   uploadFile(obj) {
     var request = require('@system.request');
-    var data = []
+    var data = [];
     Object.keys(obj.formData).map(key => {
-      
       let value = obj.formData[key];
       let item = {
         value,
         name: key
-      }
+      };
       data.push(item);
-    })
+    });
     obj.data = data;
     delete obj.formData;
 
-    let files = [{
-      uri: obj.filePath,
-      name: obj.name
-    }]
+    let files = [
+      {
+        uri: obj.filePath,
+        name: obj.name
+      }
+    ];
 
     obj.files = files;
     delete obj.filePath;
-    delete obj.name
+    delete obj.name;
     request.upload(obj);
   },
 
@@ -126,7 +125,6 @@ export var api = {
   // 网络请求
   request(obj) {
     const fetch = require('@system.fetch');
-    fetch.fetch(obj)
+    fetch.fetch(obj);
   }
-
 };

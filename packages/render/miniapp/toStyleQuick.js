@@ -10,9 +10,6 @@ function transform(obj) {
     return Object.keys(obj)
         .map(item => {
             let value = obj[item].toString();
-            value = value.replace(/(\d+)px/gi, (str, match) => {
-                return this.pxTransform(match);
-            });
             return hyphen(item) + ': ' + value;
         })
         .join(';');

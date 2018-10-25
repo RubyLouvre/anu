@@ -11,7 +11,6 @@ const buildType = config['buildType'];
 const quickFiles = require('./quickFiles');
 const quickConfig = require('./quickHelpers/config');
 /* eslint no-console: 0 */
-
 const helpers = require(`./${config[buildType].helpers}`);
 //微信的文本节点，需要处理换行符
 const inlineElement = {
@@ -24,8 +23,10 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-if (config.buildType == 'quick') {
-    utils.createRegisterStatement = function(className, path, isPage) {
+
+
+if (buildType == 'quick') {
+    utils.createRegisterStatement = function (className, path, isPage) {
         var templateString = isPage
             ? 'className = React.registerPage(className,astPath)'
             : 'className = React.registerComponent(className,astPath)';
@@ -55,7 +56,7 @@ module.exports = {
             if (methodName !== 'constructor') {
                 //快应用要转换onLaunch为onCreate
                 if (
-                    config.buildType == 'quick' &&
+                    buildType == 'quick' &&
                     modules.componentType === 'App'
                 ) {
                     if (methodName === 'onLaunch') {
@@ -145,7 +146,7 @@ module.exports = {
                 );
             }
 
-            if (name === '_asyncToGenerator' && config.buildType == 'wx') {
+            if (name === '_asyncToGenerator' && buildType == 'wx') {
                 astPath.insertBefore(
                     t.variableDeclaration('var', [
                         t.variableDeclarator(
@@ -221,16 +222,16 @@ module.exports = {
                 usings;
             if (keys.length) {
                 usings = json.usingComponents || (json.usingComponents = {});
-                keys.forEach(function(name) {
+                keys.forEach(function (name) {
                     usings[name] = modules.usedComponents[name];
                 });
             }
 
-            if (config.buildType == 'quick') {
+            if (buildType == 'quick') {
+
                 var obj = quickFiles[modules.sourcePath];
                 if (obj) {
-                    obj.config = Object.assign({}, json);
-                    quickConfig(modules, config, queue, utils);
+                    quickConfig(json, modules, queue, utils);
                 }
                 delete json.usingComponents;
                 if (Object.keys(json).length) {
@@ -243,22 +244,13 @@ module.exports = {
                 }
                 return;
             } else {
+
                 if (modules.componentType === 'Component') {
                     json.component = true;
                 }
             }
-            if (usings) {
-                //将页面配置对象中的usingComponents对象中的组件名放进modules.customComponents
-                //数组中，并将对应的文件复制到dist目录中
-                utils.copyCustomComponents(usings, modules);
-            }
             queue.push({
-                path: utils.updatePath(
-                    modules.sourcePath,
-                    'src',
-                    'dist',
-                    'json'
-                ),
+                path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', 'json'),
                 code: JSON.stringify(json, null, 4)
             });
             utils.emit('build');
@@ -289,7 +281,7 @@ module.exports = {
                     break;
                 case '{}':
                     astPath.replaceWithMultiple(
-                        astPath.node.specifiers.map(function(el) {
+                        astPath.node.specifiers.map(function (el) {
                             return utils.exportExpr(el.local.name);
                         })
                     );
@@ -308,6 +300,7 @@ module.exports = {
                 }
                 try {
                     var json = eval('0,' + generate(astPath.node.value).code);
+                   
                     Object.assign(modules.config, json);
                 } catch (e) {
                     /**/
@@ -341,8 +334,8 @@ module.exports = {
             astPath.remove();
         }
     },
-    MemberExpression() {},
-    AssignmentExpression() {},
+    MemberExpression() { },
+    AssignmentExpression() { },
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
@@ -360,7 +353,7 @@ module.exports = {
             //     export default React.App(new Demo())
             if (
                 modules.componentType == 'App' &&
-                config.buildType == 'quick' &&
+                buildType == 'quick' &&
                 callee.type === 'Identifier' &&
                 callee.name === 'App'
             ) {
@@ -447,12 +440,20 @@ module.exports = {
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-
+    JSXElement(astPath) {
+        let node =  astPath.node;
+        let nodeName = node.openingElement.name.name;
+        if (buildType == 'quick' && !node.closingElement) {
+            node.openingElement.selfClosing = false;
+            node.closingElement = t.JSXClosingElement(t.JSXIdentifier(nodeName));
+        }
+    },
     JSXOpeningElement: {
-        enter: function(astPath, state) {
+        enter: function (astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
             let bag = modules.importComponents[nodeName];
+
             if (bag) {
                 deps[nodeName] ||
                     (deps[nodeName] = {
@@ -496,7 +497,7 @@ module.exports = {
         }
     },
     JSXAttribute: {
-        enter: function(astPath, state) {
+        enter: function (astPath, state) {
             let attrName = astPath.node.name.name;
             let attrValue = astPath.node.value;
             let parentPath = astPath.parentPath;
@@ -621,7 +622,7 @@ module.exports = {
                 delete astPath.parentPath.renderProps;
                 let modules = utils.getAnu(state);
                 let subComponents = {};
-                modules.is.forEach(function(a) {
+                modules.is.forEach(function (a) {
                     subComponents[a] = path.join('..', a, 'index');
                 });
 
@@ -635,7 +636,7 @@ module.exports = {
                     {
                         sourcePath: path.join(
                             process.cwd(),
-                            'src',
+                            config.sourceDir,
                             'components',
                             'RenderProps',
                             'index.js'
@@ -666,7 +667,8 @@ module.exports = {
             }
         }
     },
-    JSXClosingElement: function(astPath, state) {
+    JSXClosingElement: function (astPath, state) {
+
         let modules = utils.getAnu(state);
         let nodeName = astPath.node.name.name;
         //将组件标签转换成React.toComponent标签，html标签转换成view/text标签

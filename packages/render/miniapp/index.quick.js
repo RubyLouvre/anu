@@ -13,7 +13,7 @@ import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { eventSystem } from './eventSystemQuick';
 import { Renderer } from './wxrender';
-import { toStyle } from './toStyle';
+import { toStyle } from './toStyleQuick';
 import { useComponent, registeredComponents } from './registerComponent';
 
 import { registerPage, getApp, shareObject } from './registerPageQuick';
@@ -30,10 +30,19 @@ export function registerComponent(type, name) {
     var reactInstances = (type.reactInstances = []);
     var wxInstances = (type.wxInstances = []);
     return {
-        private: {
-            props: {},
-            state: {},
-            context: {}
+        props: {
+            props: {
+                type: Object,
+                default: {}
+            },
+            state: {
+                type: Object,
+                default: {}
+            },
+            context: {
+                type: Object,
+                default: {}
+            }
         },
 
         onInit() {
@@ -69,10 +78,10 @@ export function registerComponent(type, name) {
     };
 }
 
+
 React = win.React = {
     //平台相关API
     eventSystem,
-
     findDOMNode: function() {
         console.log("小程序不支持findDOMNode"); /* eslint-disable-line */
     },
@@ -112,7 +121,6 @@ React = win.React = {
     api: api
    
 };
-
 
 export default React;
 export { Children, createElement, Component };

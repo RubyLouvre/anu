@@ -22,7 +22,7 @@ const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
 
 let cwd = process.cwd();
-let inputPath = path.join(cwd, 'src');
+let inputPath = path.join(cwd,  config.sourceDir);
 let entry = path.join(inputPath, 'app.js');
 let cache = {};
 
@@ -122,9 +122,10 @@ class Parser {
                     //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
                     var jsName = id.replace(/\.\w+$/, '.js');
                     if (fs.pathExistsSync(jsName)){
+                        var cssExt = path.extname(id).slice(1);
                         quickFiles[jsName] = {
                             cssCode: item.originalCode,
-                            cssType: path.extname(id).slice(1)
+                            cssType: cssExt === 'scss' ?  'sass' : cssExt
                         };
                         return;
                     }
