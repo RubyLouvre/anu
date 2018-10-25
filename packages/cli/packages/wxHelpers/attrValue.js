@@ -8,6 +8,10 @@ const buildType = require('../config').buildType;
 function bindEvent(astPath) {
     replaceWithExpr(astPath, 'dispatchEvent', true);
 }
+function toString(node) {
+    if (t.isStringLiteral(node)) return node.value;
+    if (t.isMemberExpression) return `{{${generate(node).code}}}`;
+}
 
 module.exports = function(astPath) {
     var expr = astPath.node.expression;
@@ -40,9 +44,11 @@ module.exports = function(astPath) {
                     if (t.isMemberExpression(nodePath.parentPath)) {
                         nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
                     }
-                },
+                }
             });
-            replaceWithExpr(astPath, generate(astPath.node.expression).code);
+            astPath.replaceWith(
+                t.stringLiteral(`${toString(astPath.node.expression.left)} ${toString(astPath.node.expression.right)}`)
+            );
             break;
         case 'MemberExpression':
             if (isEvent) {

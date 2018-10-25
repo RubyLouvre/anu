@@ -216,14 +216,12 @@ class Parser {
         }
     }
     updateStyleQueue(styleFiles) {
-        let result = utils.resolveComponentStyle(styleFiles);
-        while (result.length) {
-            let data = result.shift();
+        while (styleFiles.length) {
+            let data = styleFiles.shift();
             let { id, originalCode } = data;           
             needUpdate(id, originalCode, function(){
                 styleTransform(data);
             });
-               
         }
     }
     updateNpmQueue(npmFiles) {
