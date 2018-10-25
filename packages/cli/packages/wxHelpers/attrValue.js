@@ -8,6 +8,10 @@ const buildType = require('../config').buildType;
 function bindEvent(astPath) {
     replaceWithExpr(astPath, 'dispatchEvent', true);
 }
+function toString(node) {
+    if (t.isStringLiteral(node)) return node.value;
+    if (t.isMemberExpression) return `{{${generate(node).code}}}`;
+}
 
 module.exports = function(astPath) {
     var expr = astPath.node.expression;
@@ -42,10 +46,6 @@ module.exports = function(astPath) {
                     }
                 }
             });
-            function toString(node) {
-                if (t.isStringLiteral(node)) return node.value;
-                if (t.isMemberExpression) return `{{${generate(node).code}}}`
-            }
             astPath.replaceWith(
                 t.stringLiteral(`${toString(astPath.node.expression.left)} ${toString(astPath.node.expression.right)}`)
             );

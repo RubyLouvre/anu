@@ -146,7 +146,7 @@ module.exports = {
                 );
             }
 
-            if (name === '_asyncToGenerator' && buildType == 'wx') {
+            if (name === '_asyncToGenerator' && (buildType == 'wx' ||  buildType == 'bu') ) {
                 astPath.insertBefore(
                     t.variableDeclaration('var', [
                         t.variableDeclarator(
