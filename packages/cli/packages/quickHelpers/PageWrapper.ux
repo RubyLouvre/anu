@@ -2,7 +2,7 @@
   <div class="pagewrapper" style="padding-bottom: {{tabBar.list.length?'150px': '0px'}}">
     <refresh refreshing="{{refreshing}}" @refresh="onPullDownRefresh">
       <list @scroll="onPageScroll" @scrollbottom="onReachBottom">
-        <list-item type='a' >
+        <list-item type='a'>
           <slot></slot>
         </list-item>
       </list>
@@ -64,10 +64,10 @@
       this.tabBar = {
         list: []
       }
-      setTitleAndTabs(this);
+      setTitleAndTabs(this, this.$app._def.config);
     },
     onShow() {
-      setTitleAndTabs(this);
+      setTitleAndTabs(this, this.$app._def.config);
     },
     onReachBottom() {
       var cc = shareObject.page;
@@ -82,11 +82,41 @@
         cc.onPageScroll(e)
       }
     },
-    onSelected(item) {
 
-      console.log("pageWraper onSelected", item.pagePath)
+    onMenuPress: function () {
+      React.api.showActionSheet({
+        itemList: [
+          '分享',
+          'item2',
+          'item3',
+          'item4'
+        ],
+        success: function (data) {
+          console.log('handling success', data)
+          if (data.index === 0) {
+            // 分享
+            React.api.share({
+              type: 'text/html',
+              data: '<b>bold</b>',
+              success: function (data) {
+                console.log('handling success')
+              },
+              fail: function (data, code) {
+                console.log(`handling fail, code = ${code}`)
+              }
+            })
+          }
+        },
+        cancel: function () {
+          console.log('handling cancel')
+        },
+        fail: function (data, code) {
+          console.log(`handling fail, code = ${code}`)
+        }
+      })
+    },
+    onSelected(item) {
       this.currentPath = item.pagePath;
-      //this.selectedIndex = index;
       var page = shareObject.page;
       if (page.onTabItemTap) {
         page.onTabItemTap(item)
@@ -96,10 +126,12 @@
       })
     },
     onPullDownRefresh() {
-      var app = getApp()
-      var cc = shareObject.pageConfig || app.config
+      var appConfig = Object(getApp().config);
+      var pageConfig = shareObject.pageConfig;
+      var enable = "enablePullDownRefresh";
+      var isOk = pageConfig && pageConfig[enable] || appConfig[enable];
       var page = shareObject.page;
-      if (cc.enablePullDownRefresh && page.onPullDownRefresh) {
+      if (isOk && page.onPullDownRefresh) {
         page.onPullDownRefresh()
         React.api.showToast({ title: 'refreshed' });
       }
@@ -142,25 +174,26 @@
     }
   };
 
-  function setTitleAndTabs(instance) {
-    var app = getApp()
+  function setTitleAndTabs(instance, appConfig) {
+    var pageConfg = shareObject.pageConfig;
     instance.currentPath = shareObject.pagePath.replace(/\/index$/, "")
-    var cc = shareObject.pageConfig || app.config
-    if (cc) {
-      cc.titleBar = {
-        text: cc.navigationBarTitleText || "",
-        textColor: cc.navigationBarTextStyle || "white",
-        backgroundColor: cc.navigationBarBackgroundColor || "#000",
-        menu: true
-      }
-      instance.$page.setTitleBar(cc.titleBar)
-      var tabBar = cc.tabBar;
-      if (tabBar && tabBar.list && tabBar.list.length) {
-        tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
-        tabBar.color = tabBar.color || "#000";
-        tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
-        instance.tabBar = tabBar;
-      }
+    var mixin = Object.assign({
+      navigationBarTitleText: "",
+      navigationBarTextStyle: "white",
+      navigationBarBackgroundColor: "#000000"
+    }, appConfig, pageConfg)
+    instance.$page.setTitleBar({
+      text: mixin.navigationBarTitleText,
+      textColor: mixin.navigationBarTextStyle,
+      backgroundColor: mixin.navigationBarBackgroundColor,
+      menu: true
+    })
+    var tabBar = mixin.tabBar;
+    if (tabBar && tabBar.list && tabBar.list.length) {
+      tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
+      tabBar.color = tabBar.color || "#000";
+      tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
+      instance.tabBar = tabBar;
     }
   }
 </script>

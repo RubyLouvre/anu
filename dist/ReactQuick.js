@@ -1998,7 +1998,6 @@ function registerPage(PageClass, path) {
             transmitData(PageClass, path, instance, this);
         },
         onShow: function onShow() {
-            transmitData(PageClass, path, instance, this);
             var fn = this.reactInstance.componentDidShow;
             fn && fn.call(instance);
         },
@@ -2024,11 +2023,11 @@ function transmitData(pageClass, pagePath, reactInstance, quickInstance) {
     reactInstance.wx = quickInstance;
     quickInstance.reactInstance = reactInstance;
     updateMiniApp(reactInstance);
-    var cc = reactInstance.config || pageClass.config;
-    shareObject.pageConfig = cc;
+    var pageConfig = reactInstance.config || pageClass.config;
+    shareObject.pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
     shareObject.pagePath = pagePath;
     shareObject.page = reactInstance;
-    shareObject.app = quickInstance.$app.$def;
+    shareObject.app = quickInstance.$app.$def || quickInstance.$app._def;
 }
 
 function createRouter(name) {

@@ -135,7 +135,6 @@ export function registerPage(PageClass, path) {
             transmitData(PageClass, path, instance, this);
         },
         onShow() {
-            transmitData(PageClass, path, instance, this);
             var fn = this.reactInstance.componentDidShow;
             fn && fn.call(instance);
         },
@@ -166,9 +165,9 @@ function transmitData(pageClass, pagePath, reactInstance, quickInstance) {
     //更新视图
     updateMiniApp(reactInstance);
     //关联页面的wrapper的各种事件
-    var cc = reactInstance.config || pageClass.config;
-    shareObject.pageConfig = cc;
+    var pageConfig = reactInstance.config || pageClass.config;
+    shareObject.pageConfig = Object.keys(pageConfig).length ? pageConfig: null;
     shareObject.pagePath = pagePath;
-    shareObject.page = reactInstance; //React实例
-    shareObject.app = quickInstance.$app.$def; //app
+    shareObject.page = reactInstance;
+    shareObject.app = quickInstance.$app.$def || quickInstance.$app._def;
 }
