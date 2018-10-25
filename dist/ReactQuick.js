@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-10-24
+ * 运行于快应用的React by 司徒正美 Copyright 2018-10-25
  * IE9+
  */
 
@@ -2049,6 +2049,7 @@ function createRouter(name) {
 }
 var api = {
     showModal: function showModal(obj) {
+        obj.showCancel = obj.showCancel === false ? false : true;
         var buttons = [{
             text: obj.confirmText,
             color: obj.confirmColor
@@ -2062,6 +2063,11 @@ var api = {
         obj.buttons = obj.confirmText ? buttons : [];
         obj.message = obj.content;
         delete obj.content;
+        var fn = obj['success'];
+        obj['success'] = function (res) {
+            res.confirm = !res.index;
+            fn && fn(res);
+        };
         var prompt = require('@system.prompt');
         prompt.showDialog(obj);
     },
@@ -2072,9 +2078,55 @@ var api = {
         prompt.showToast(obj);
     },
     hideToast: noop,
+    showActionSheet: function showActionSheet(obj) {
+        var prompt = require('@system.prompt');
+        prompt.showContextMenu(obj);
+    },
     navigateTo: createRouter('push'),
     redirectTo: createRouter('replace'),
-    navigateBack: createRouter('back')
+    navigateBack: createRouter('back'),
+    vibrateLong: function vibrateLong() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    vibrateShort: function vibrateShort() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    share: function share(obj) {
+        var share = require('@system.share');
+        share.share(obj);
+    },
+    uploadFile: function uploadFile(obj) {
+        var request = require('@system.request');
+        var data = [];
+        Object.keys(obj.formData).map(function (key) {
+            var value = obj.formData[key];
+            var item = {
+                value: value,
+                name: key
+            };
+            data.push(item);
+        });
+        obj.data = data;
+        delete obj.formData;
+        var files = [{
+            uri: obj.filePath,
+            name: obj.name
+        }];
+        obj.files = files;
+        delete obj.filePath;
+        delete obj.name;
+        request.upload(obj);
+    },
+    downloadFile: function downloadFile(obj) {
+        var request = require('@system.request');
+        request.download(obj);
+    },
+    request: function request(obj) {
+        var fetch = require('@system.fetch');
+        fetch.fetch(obj);
+    }
 };
 
 var win = getWindow();

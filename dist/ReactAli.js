@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-23
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-25
  * IE9+
  */
 
@@ -2295,7 +2295,7 @@ function toStyle(obj, props, key) {
         var str = transform.call(this, obj);
         props[key] = str;
     } else {
-        console.warn('props 为空');
+        console.warn('toStyle生成样式失败，key为', key);
     }
     return obj;
 }
@@ -2373,139 +2373,139 @@ function registerPage(PageClass, path, testObject) {
 }
 
 var aliApis = function aliApis(api) {
-  return {
-    showModal: function _(a) {
-      a.cancelButtonText = a.cancelText;
-      a.confirmButtonText = a.confirmText;
-      return api.confirm.apply(api, arguments);
-    },
-    showActionSheet: function _(a) {
-      a.items = a.itemList;
-      return api.showActionSheet.apply(api, arguments);
-    },
-    showToast: function _(a) {
-      a.content = a.title;
-      a.type = a.icon;
-      return api.showToast.apply(api, arguments);
-    },
-    showLoading: function _(a) {
-      a.content = a.title;
-      return api.showLoading.apply(api, arguments);
-    },
-    setNavigationBarTitle: function _(a) {
-      a.image = null;
-      a.backgroundColor = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
-    },
-    setNavigationBarColor: function _(a) {
-      a.image = null;
-      a.title = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
-    },
-    saveImageToPhotosAlbum: function _(a) {
-      a.url = a.filePath;
-      return api.saveImage.apply(api, arguments);
-    },
-    previewImage: function _(a) {
-      var index = a.urls.indexOf(a.current || a.urls[0]);
-      a.current = index;
-      return api.previewImage.apply(api, arguments);
-    },
-    getFileInfo: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.getFileInfo.apply(api, arguments);
-    },
-    getSavedFileInfo: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.getSavedFileInfo.apply(api, arguments);
-    },
-    removeSavedFile: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.removeSavedFile.apply(api, arguments);
-    },
-    saveFile: function _(a) {
-      a.apFilePath = a.tempFilePath;
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.savedFilePath = res.apFilePath;
-        fn && fn(res);
-      };
-      return api.saveFile.apply(api, arguments);
-    },
-    openLocation: function _(a) {
-      a.latitude = a.latitude + '';
-      a.longitude = a.longitude + '';
-      return api.openLocation.apply(api, arguments);
-    },
-    getStorageSync: function _(a) {
-      var k = {};
-      k.key = a;
-      arguments[0] = k;
-      var res = api.getStorageSync.apply(api, arguments);
-      return res.data || '';
-    },
-    setStorageSync: function _(a1, a2) {
-      var k = {};
-      k.key = a1;
-      k.data = a2;
-      arguments[0] = k;
-      api.setStorageSync.apply(api, arguments);
-    },
-    uploadFile: function _(a) {
-      a.fileName = a.name;
-      return api.uploadFile.apply(api, arguments);
-    },
-    downloadFile: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.tempFilePath = res.apFilePath;
-        fn && fn(res);
-      };
-      return api.downloadFile.apply(api, arguments);
-    },
-    chooseImage: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.tempFilePaths = res.apFilePaths;
-        fn && fn(res);
-      };
-      return api.chooseImage.apply(api, arguments);
-    },
-    getClipboardData: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.data = res.text;
-        fn && fn(res);
-      };
-      return api.getClipboard.apply(api, arguments);
-    },
-    setClipboardData: function _(a) {
-      a.text = a.data;
-      return api.setClipboard.apply(api, arguments);
-    },
-    makePhoneCall: function _(a) {
-      a.number = a.phoneNumber;
-      return api.makePhoneCall.apply(api, arguments);
-    },
-    scanCode: function _(a) {
-      a.hideAlbum = a.onlyFromCamera;
-      a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.result = res.code;
-        fn && fn(res);
-      };
-      return api.scan.apply(api, arguments);
-    },
-    setScreenBrightness: function _(a) {
-      a.brightness = a.value;
-      return api.setScreenBrightness.apply(api, arguments);
-    }
-  };
+    return {
+        showModal: function _(a) {
+            a.cancelButtonText = a.cancelText;
+            a.confirmButtonText = a.confirmText;
+            return api.confirm.apply(api, arguments);
+        },
+        showActionSheet: function _(a) {
+            a.items = a.itemList;
+            return api.showActionSheet.apply(api, arguments);
+        },
+        showToast: function _(a) {
+            a.content = a.title;
+            a.type = a.icon;
+            return api.showToast.apply(api, arguments);
+        },
+        showLoading: function _(a) {
+            a.content = a.title;
+            return api.showLoading.apply(api, arguments);
+        },
+        setNavigationBarTitle: function _(a) {
+            a.image = null;
+            a.backgroundColor = null;
+            a.borderBottomColor = null;
+            a.reset = null;
+            return api.setNavigationBar.apply(api, arguments);
+        },
+        setNavigationBarColor: function _(a) {
+            a.image = null;
+            a.title = null;
+            a.borderBottomColor = null;
+            a.reset = null;
+            return api.setNavigationBar.apply(api, arguments);
+        },
+        saveImageToPhotosAlbum: function _(a) {
+            a.url = a.filePath;
+            return api.saveImage.apply(api, arguments);
+        },
+        previewImage: function _(a) {
+            var index = a.urls.indexOf(a.current || a.urls[0]);
+            a.current = index;
+            return api.previewImage.apply(api, arguments);
+        },
+        getFileInfo: function _(a) {
+            a.apFilePath = a.filePath;
+            return api.getFileInfo.apply(api, arguments);
+        },
+        getSavedFileInfo: function _(a) {
+            a.apFilePath = a.filePath;
+            return api.getSavedFileInfo.apply(api, arguments);
+        },
+        removeSavedFile: function _(a) {
+            a.apFilePath = a.filePath;
+            return api.removeSavedFile.apply(api, arguments);
+        },
+        saveFile: function _(a) {
+            a.apFilePath = a.tempFilePath;
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.savedFilePath = res.apFilePath;
+                fn && fn(res);
+            };
+            return api.saveFile.apply(api, arguments);
+        },
+        openLocation: function _(a) {
+            a.latitude = a.latitude + '';
+            a.longitude = a.longitude + '';
+            return api.openLocation.apply(api, arguments);
+        },
+        getStorageSync: function _(a) {
+            var k = {};
+            k.key = a;
+            arguments[0] = k;
+            var res = api.getStorageSync.apply(api, arguments);
+            return res.data || '';
+        },
+        setStorageSync: function _(a1, a2) {
+            var k = {};
+            k.key = a1;
+            k.data = a2;
+            arguments[0] = k;
+            api.setStorageSync.apply(api, arguments);
+        },
+        uploadFile: function _(a) {
+            a.fileName = a.name;
+            return api.uploadFile.apply(api, arguments);
+        },
+        downloadFile: function _(a) {
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.tempFilePath = res.apFilePath;
+                fn && fn(res);
+            };
+            return api.downloadFile.apply(api, arguments);
+        },
+        chooseImage: function _(a) {
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.tempFilePaths = res.apFilePaths;
+                fn && fn(res);
+            };
+            return api.chooseImage.apply(api, arguments);
+        },
+        getClipboardData: function _(a) {
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.data = res.text;
+                fn && fn(res);
+            };
+            return api.getClipboard.apply(api, arguments);
+        },
+        setClipboardData: function _(a) {
+            a.text = a.data;
+            return api.setClipboard.apply(api, arguments);
+        },
+        makePhoneCall: function _(a) {
+            a.number = a.phoneNumber;
+            return api.makePhoneCall.apply(api, arguments);
+        },
+        scanCode: function _(a) {
+            a.hideAlbum = a.onlyFromCamera;
+            a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.result = res.code;
+                fn && fn(res);
+            };
+            return api.scan.apply(api, arguments);
+        },
+        setScreenBrightness: function _(a) {
+            a.brightness = a.value;
+            return api.setScreenBrightness.apply(api, arguments);
+        }
+    };
 };
 
 var win = getWindow();

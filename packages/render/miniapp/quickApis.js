@@ -87,5 +87,44 @@ export var api = {
     share(obj) {
         var share = require('@system.share');
         share.share(obj);
+    },
+    // 上传
+
+    uploadFile(obj) {
+        var request = require('@system.request');
+        var data = [];
+        Object.keys(obj.formData).map(key => {
+      
+            let value = obj.formData[key];
+            let item = {
+                value,
+                name: key
+            };
+            data.push(item);
+        });
+        obj.data = data;
+        delete obj.formData;
+
+        let files = [{
+            uri: obj.filePath,
+            name: obj.name
+        }];
+
+        obj.files = files;
+        delete obj.filePath;
+        delete obj.name;
+        request.upload(obj);
+    },
+
+    // 下载
+    downloadFile(obj) {
+        var request = require('@system.request');
+        request.download(obj);
+    },
+    // 网络请求
+    request(obj) {
+        const fetch = require('@system.fetch');
+        fetch.fetch(obj);
     }
+
 };
