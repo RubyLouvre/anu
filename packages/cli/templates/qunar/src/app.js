@@ -1,7 +1,6 @@
 import React from '@react';
 import './pages/index/index';
 
-
 import './pages/demo/base/index';
 
 import './pages/demo/native/index/index';
@@ -101,4 +100,4 @@ class Demo extends React.Component {
     
 }
 // eslint-disable-next-line
-App(new Demo());
+export default App(new Demo());
