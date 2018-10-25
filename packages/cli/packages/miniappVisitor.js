@@ -532,6 +532,7 @@ module.exports = {
                     );
                     if (otherEventName !== eventName) {
                         astPath.node.name.name = prefix + otherEventName;
+                        eventName = otherEventName;
                     }
 
                     //事件存在的标签，必须添加上data-eventName-uid, data-class-uid, data-instance-uid
