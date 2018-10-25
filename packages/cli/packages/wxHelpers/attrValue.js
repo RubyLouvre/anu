@@ -47,7 +47,7 @@ module.exports = function(astPath) {
                 if (t.isMemberExpression) return `{{${generate(node).code}}}`
             }
             astPath.replaceWith(
-                t.stringLiteral(`${toString(astPath.node.expression.left)} ${toString(astPath.node.expression.right)}}`)
+                t.stringLiteral(`${toString(astPath.node.expression.left)} ${toString(astPath.node.expression.right)}`)
             );
             break;
         case 'MemberExpression':
