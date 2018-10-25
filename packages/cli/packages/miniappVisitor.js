@@ -75,9 +75,9 @@ module.exports = {
                             'components',
                             'PageWrapper',
                             'index.ux'
-                        )
+                        ),
+                        type: 'ux'
                     });
-                    utils.emit('build');
                 }
                 let fn = utils.createMethod(astPath, methodName);
                 modules.thisMethods.push(fn);
@@ -146,7 +146,7 @@ module.exports = {
                 );
             }
 
-            if (name === '_asyncToGenerator' && buildType == 'wx') {
+            if (name === '_asyncToGenerator' && (buildType == 'wx' ||  buildType == 'bu') ) {
                 astPath.insertBefore(
                     t.variableDeclaration('var', [
                         t.variableDeclarator(
@@ -173,7 +173,7 @@ module.exports = {
             }
         }
 
-        if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
+        if (/\.(less|scss|sass|css|json)$/.test(path.extname(source))) {
             astPath.remove();
         }
 
@@ -251,9 +251,9 @@ module.exports = {
             }
             queue.push({
                 path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', 'json'),
-                code: JSON.stringify(json, null, 4)
+                code: JSON.stringify(json, null, 4),
+                type: 'json'
             });
-            utils.emit('build');
         }
     },
 
@@ -532,6 +532,7 @@ module.exports = {
                     );
                     if (otherEventName !== eventName) {
                         astPath.node.name.name = prefix + otherEventName;
+                        eventName = otherEventName;
                     }
 
                     //事件存在的标签，必须添加上data-eventName-uid, data-class-uid, data-instance-uid

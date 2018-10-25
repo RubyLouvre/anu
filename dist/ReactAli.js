@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-23
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-25
  * IE9+
  */
 
@@ -788,6 +788,7 @@ function request(options) {
             url: options
         };
     }
+    options.headers = options.headers || options.header;
     var originSuccess = options['success'];
     var originFail = options['fail'];
     var originComplete = options['complete'];
@@ -2295,7 +2296,7 @@ function toStyle(obj, props, key) {
         var str = transform.call(this, obj);
         props[key] = str;
     } else {
-        console.warn('props 为空');
+        console.warn('toStyle生成样式失败，key为', key);
     }
     return obj;
 }
@@ -2377,55 +2378,47 @@ var aliApis = function aliApis(api) {
     showModal: function _(a) {
       a.cancelButtonText = a.cancelText;
       a.confirmButtonText = a.confirmText;
-      return api.confirm.apply(api, arguments);
+      return api.confirm(a);
     },
     showActionSheet: function _(a) {
       a.items = a.itemList;
-      return api.showActionSheet.apply(api, arguments);
+      return api.showActionSheet(a);
     },
     showToast: function _(a) {
       a.content = a.title;
       a.type = a.icon;
-      return api.showToast.apply(api, arguments);
+      return api.showToast(a);
     },
     showLoading: function _(a) {
       a.content = a.title;
-      return api.showLoading.apply(api, arguments);
+      return api.showLoading(a);
     },
     setNavigationBarTitle: function _(a) {
-      a.image = null;
-      a.backgroundColor = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
+      return api.setNavigationBar(a);
     },
     setNavigationBarColor: function _(a) {
-      a.image = null;
-      a.title = null;
-      a.borderBottomColor = null;
-      a.reset = null;
-      return api.setNavigationBar.apply(api, arguments);
+      return api.setNavigationBar(a);
     },
     saveImageToPhotosAlbum: function _(a) {
       a.url = a.filePath;
-      return api.saveImage.apply(api, arguments);
+      return api.saveImage(a);
     },
     previewImage: function _(a) {
       var index = a.urls.indexOf(a.current || a.urls[0]);
       a.current = index;
-      return api.previewImage.apply(api, arguments);
+      return api.previewImage(a);
     },
     getFileInfo: function _(a) {
       a.apFilePath = a.filePath;
-      return api.getFileInfo.apply(api, arguments);
+      return api.getFileInfo(a);
     },
     getSavedFileInfo: function _(a) {
       a.apFilePath = a.filePath;
-      return api.getSavedFileInfo.apply(api, arguments);
+      return api.getSavedFileInfo(a);
     },
     removeSavedFile: function _(a) {
       a.apFilePath = a.filePath;
-      return api.removeSavedFile.apply(api, arguments);
+      return api.removeSavedFile(a);
     },
     saveFile: function _(a) {
       a.apFilePath = a.tempFilePath;
@@ -2434,30 +2427,28 @@ var aliApis = function aliApis(api) {
         res.savedFilePath = res.apFilePath;
         fn && fn(res);
       };
-      return api.saveFile.apply(api, arguments);
+      return api.saveFile(a);
     },
     openLocation: function _(a) {
       a.latitude = a.latitude + '';
       a.longitude = a.longitude + '';
-      return api.openLocation.apply(api, arguments);
+      return api.openLocation(a);
     },
     getStorageSync: function _(a) {
-      var k = {};
-      k.key = a;
-      arguments[0] = k;
-      var res = api.getStorageSync.apply(api, arguments);
+      if (a == null) throw new Error('key 不能是 undefined或者是空');
+      var res = api.getStorageSync({ key: a });
       return res.data || '';
     },
     setStorageSync: function _(a1, a2) {
+      if (a1 == null) throw new Error('key 不能是 undefined或者是空');
       var k = {};
       k.key = a1;
       k.data = a2;
-      arguments[0] = k;
-      api.setStorageSync.apply(api, arguments);
+      return api.setStorageSync(k);
     },
     uploadFile: function _(a) {
       a.fileName = a.name;
-      return api.uploadFile.apply(api, arguments);
+      return api.uploadFile(a);
     },
     downloadFile: function _(a) {
       var fn = a['success'];
@@ -2465,7 +2456,7 @@ var aliApis = function aliApis(api) {
         res.tempFilePath = res.apFilePath;
         fn && fn(res);
       };
-      return api.downloadFile.apply(api, arguments);
+      return api.downloadFile(a);
     },
     chooseImage: function _(a) {
       var fn = a['success'];
@@ -2473,7 +2464,7 @@ var aliApis = function aliApis(api) {
         res.tempFilePaths = res.apFilePaths;
         fn && fn(res);
       };
-      return api.chooseImage.apply(api, arguments);
+      return api.chooseImage(a);
     },
     getClipboardData: function _(a) {
       var fn = a['success'];
@@ -2481,15 +2472,15 @@ var aliApis = function aliApis(api) {
         res.data = res.text;
         fn && fn(res);
       };
-      return api.getClipboard.apply(api, arguments);
+      return api.getClipboard(a);
     },
     setClipboardData: function _(a) {
       a.text = a.data;
-      return api.setClipboard.apply(api, arguments);
+      return api.setClipboard(a);
     },
     makePhoneCall: function _(a) {
       a.number = a.phoneNumber;
-      return api.makePhoneCall.apply(api, arguments);
+      return api.makePhoneCall(a);
     },
     scanCode: function _(a) {
       a.hideAlbum = a.onlyFromCamera;
@@ -2499,11 +2490,11 @@ var aliApis = function aliApis(api) {
         res.result = res.code;
         fn && fn(res);
       };
-      return api.scan.apply(api, arguments);
+      return api.scan(a);
     },
     setScreenBrightness: function _(a) {
       a.brightness = a.value;
-      return api.setScreenBrightness.apply(api, arguments);
+      return api.setScreenBrightness(a);
     }
   };
 };

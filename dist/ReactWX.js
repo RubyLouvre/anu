@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-10-23
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-10-25
  * IE9+
  */
 
@@ -788,6 +788,7 @@ function request(options) {
             url: options
         };
     }
+    options.headers = options.headers || options.header;
     var originSuccess = options['success'];
     var originFail = options['fail'];
     var originComplete = options['complete'];
@@ -2295,7 +2296,7 @@ function toStyle(obj, props, key) {
         var str = transform.call(this, obj);
         props[key] = str;
     } else {
-        console.warn('props 为空');
+        console.warn('toStyle生成样式失败，key为', key);
     }
     return obj;
 }

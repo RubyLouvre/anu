@@ -5,7 +5,7 @@
 */
 const path = require('path');
 
-module.exports = function quickConfig(config, modules, queue, utils){
+module.exports = function quickConfig(config, modules, queue){
   
     if (modules.componentType === 'App'){
         var manifest = {
@@ -121,12 +121,11 @@ module.exports = function quickConfig(config, modules, queue, utils){
         display.titleBarText = win.navigationBarTitleText || 'nanachi';
         display.titleBarTextColor = win.navigationBarTextStyle || 'black';
         display.backgroundColor = win.navigationBarBackgroundColor || '#000000';
-        //console.log(path.join(process.cwd(), 'dist', 'manifest.json'));
         queue.push({
-            path: path.join(process.cwd(), 'dist', 'manifest.json'),
-            code: JSON.stringify(manifest, null, 4)
+            path: path.join(process.cwd(), 'src', 'manifest.json'),
+            code: JSON.stringify(manifest, null, 4),
+            type: 'json'
         });
-        utils.emit('build');
         delete config.window;
         delete config.pages;
         Object.assign(config, win);

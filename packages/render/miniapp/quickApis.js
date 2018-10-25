@@ -4,7 +4,8 @@ function createRouter(name) {
   return function(obj) {
     const router = require('@system.router');
     const params = {};
-    const uri = obj.url
+    let uri = obj.url.slice(obj.url.indexOf('/pages')+1)
+     uri = uri
       .replace(/\?(.*)/, function(a, b) {
         b.split('=').forEach(function(k, v) {
           params[k] = v;

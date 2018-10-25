@@ -3,7 +3,6 @@
  */
 let babel = require('babel-core');
 let fs = require('fs');
-let nodeResolve = require('resolve');
 let path = require('path');
 let beautify = require('js-beautify');
 let miniappPlugin = require('./miniappPlugin');
@@ -15,8 +14,12 @@ let utils = require('./utils');
 let cwd = process.cwd();
 
 function transform(sourcePath, resolvedIds) {
-    let customAliasMap = utils.updateCustomAlias(sourcePath, resolvedIds);
-    let npmAliasMap = utils.updateNpmAlias(sourcePath, resolvedIds);
+    //用户自定义alias与npm相对路径处理都作为alias配置
+    let aliasMap = Object.assign(
+        utils.updateCustomAlias(sourcePath, resolvedIds),
+        utils.updateNpmAlias(sourcePath, resolvedIds)
+    );
+    
     //pages|app|components需经过miniappPlugin处理
     let miniAppPluginsInjectConfig = utils
         .getComponentOrAppOrPageReg()
@@ -38,48 +41,31 @@ function transform(sourcePath, resolvedIds) {
                     'module-resolver',
                     {
                         resolvePath(moduleName) {
+                            if (!utils.isNpm(moduleName)) return;
+
                             //针对async/await语法做特殊处理
-                            if (
-                                /regenerator-runtime\/runtime/.test(moduleName)
-                            ) {
-                                let npmFile = nodeResolve.sync(moduleName, {
-                                    basedir: cwd,
-                                    moduleDirectory: path.join(
-                                        cwd,
-                                        'node_modules'
-                                    )
-                                });
-                                Object.assign(
-                                    npmAliasMap,
-                                    utils.updateNpmAlias(sourcePath, {
-                                        'regenerator-runtime/runtime': npmFile
-                                    })
-                                );
+                            if (/regenerator-runtime\/runtime/.test(moduleName)) {
+                                //微信,百度小程序async/await语法依赖regenerator-runtime/runtime
+                                let regeneratorRuntimePath =  utils.getRegeneratorRuntimePath(sourcePath);
 
                                 queue.push({
-                                    code: fs.readFileSync(npmFile, 'utf-8'),
+                                    code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
                                     path: utils.updatePath(
-                                        npmFile,
+                                        regeneratorRuntimePath,
                                         'node_modules',
                                         'dist' + path.sep + 'npm'
                                     ),
                                     type: 'npm'
                                 });
-                                utils.emit('build');
-                            }
 
-                            let value = '';
-                            if (customAliasMap[moduleName]) {
-                                value = customAliasMap[moduleName];
-                            } else if (npmAliasMap[moduleName]) {
-                                //某些模块中可能不存在任何配置依赖, 搜集的alias则为空object.
-                                value = npmAliasMap[moduleName];
-                            }
+                                Object.assign(
+                                    aliasMap,
+                                    utils.updateNpmAlias(sourcePath, { 'regenerator-runtime/runtime': regeneratorRuntimePath } )
+                                );
 
-                            //require('xxx.js') => require('./xxx.js');
-                            if (/^\w/.test(value)) {
-                                value = `./${value}`;
                             }
+                            let value = aliasMap[moduleName] ;
+                            value = /^\w/.test(value) ? `./${value}` : value;
                             return value;
                         }
                     }
@@ -90,24 +76,20 @@ function transform(sourcePath, resolvedIds) {
             if (err) throw err;
 
             //babel6无transform异步方法
-            setTimeout(() => {
+            setImmediate(() => {
                 let babelPlugins = [
                     [
                         //process.env.ANU_ENV
                         'transform-inline-environment-variables',
                         {
                             env: {
-                                ANU_ENV: config['buildType']
+                                ANU_ENV: config['buildType'],
+                                BUILD_ENV: process.env.BUILD_ENV
                             }
                         }
                     ],
                     'minify-dead-code-elimination'
                 ];
-
-                if (config.buildType === 'wx') {
-                    //支付宝小程序默认支持es6 module
-                    //  babelPlugins.push('transform-es2015-modules-commonjs');
-                }
 
                 result = babel.transform(result.code, {
                     babelrc: false,
@@ -144,29 +126,29 @@ function transform(sourcePath, resolvedIds) {
                     });
                     //假设存在<script>
                     ux += `
-<script>
-${beautify.js(result.code)}
-</script>`;
+                        <script>
+                        ${beautify.js(result.code)}
+                        </script>`;
                     if (uxFile.cssType) {
                         //假设存在<style>
                         ux += `
-<style lang="${uxFile.cssType}">
-${beautify.css(uxFile.cssCode)}
-</style>`;
+                            <style lang="${uxFile.cssType}">
+                            ${beautify.css(uxFile.cssCode)}
+                            </style>`;
                     }
                     queue.push({
                         code: ux,
+                        type: 'ux',
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux') 
                     });
                 } else {
                     queue.push({
                         code: result.code,
+                        type: 'js',
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist')
                     });
                 }
-
-                utils.emit('build');
-            }, 4);
+            });
         }
     );
 }
