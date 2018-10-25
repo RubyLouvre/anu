@@ -40,9 +40,15 @@ module.exports = function(astPath) {
                     if (t.isMemberExpression(nodePath.parentPath)) {
                         nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
                     }
-                },
+                }
             });
-            replaceWithExpr(astPath, generate(astPath.node.expression).code);
+            function toString(node) {
+                if (t.isStringLiteral(node)) return node.value;
+                if (t.isMemberExpression) return `{{${generate(node).code}}}`
+            }
+            astPath.replaceWith(
+                t.stringLiteral(`${toString(astPath.node.expression.left)} ${toString(astPath.node.expression.right)}}`)
+            );
             break;
         case 'MemberExpression':
             if (isEvent) {
