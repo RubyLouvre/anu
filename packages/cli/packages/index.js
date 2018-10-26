@@ -8,7 +8,7 @@ const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const rollupLess = require('rollup-plugin-less');
 const rollupJson = require('rollup-plugin-json');
-const rollupSass = require('rollup-plugin-sass');
+const rollupScss = require('rollup-plugin-scss');
 const alias = require('rollup-plugin-alias');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
@@ -17,12 +17,10 @@ const queue = require('./queue');
 const crypto = require('crypto');
 const config = require('./config');
 const quickFiles = require('./quickFiles');
-
 const miniTransform = require('./miniappTransform');
 const styleTransform = require('./styleTransform');
 const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
-
 let cwd = process.cwd();
 let inputPath = path.join(cwd,  config.sourceDir);
 let entry = path.join(inputPath, 'app.js');
@@ -79,7 +77,11 @@ class Parser {
                     }
                 }),
                 rollupJson(),
-                rollupSass(),
+                rollupScss({
+                    output: function() {
+                        return '';
+                    }
+                }),
                 rbabel({
                     babelrc: false,
                     runtimeHelpers: true,
@@ -96,8 +98,7 @@ class Parser {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
                 if (warning.code === 'UNRESOLVED_IMPORT') {
-                    if (this.customAliasConfig[warning.source.split('/')[0]])
-                        return;
+                    if (this.customAliasConfig[warning.source.split(path.sep)[0]]) return;
                     console.log(chalk.red(`缺少${warning.source}, 请检查`));
                 }
             }
@@ -228,13 +229,7 @@ class Parser {
         while (npmFiles.length) {
             let item = npmFiles.shift();
             // rollup 处理 commonjs 模块时候，会在 id 加上 commonjs-proxy: 前缀
-            if (/commonjs-proxy:/.test(item.id)) {
-                item.id = item.id.split(':')[1];
-                item.moduleType = 'cjs';
-            } else {
-                item.moduleType = 'es';
-            }
-            // 处理所有 npm 模块中其他依赖
+            if (/commonjs-proxy:/.test(item.id)) item.id = item.id.split(':')[1];
             needUpdate(item.id, item.originalCode, function(){
                 resolveNpm(item);
             });
@@ -245,7 +240,7 @@ class Parser {
             let item = jsonFiles.shift();
             needUpdate(item.id, item.originalCode, function(){
                 queue.push({
-                    path: item.id.replace(/\/src\//, '/dist/'),
+                    path:  utils.updatePath(item.id, config.sourceDir, 'dist'),
                     code: item.originalCode,
                     type: 'json'
                 });
@@ -253,7 +248,6 @@ class Parser {
         }
     }
     copyAssets() {
-        //to do 差异化copy
         const dir = 'assets';
         const inputDir = path.join(inputPath, dir);
         //快应用copy到src目录中
@@ -261,7 +255,7 @@ class Parser {
         fs.ensureDirSync(distDir);
         fs.copy(inputDir, distDir, err => {
             if (err) {
-                console.error(err);
+                console.log(err);
             }
         });
         

@@ -6,6 +6,7 @@ const queue = require('./queue');
 const config = require('./config');
 const utils = require('./utils');
 const validateStyle = require('./validateStyle');
+const exitName = config[config['buildType']].styleExt;
 
 const isLess = (filePath) => {
     return /\.less$/.test(filePath);
@@ -16,13 +17,10 @@ const isCss = (filePath) => {
 const isSass = (filePath) => {
     return /\.(scss|sass)$/.test(filePath);
 };
-const getDist = (filePath) => {
-    let { name, dir } = path.parse(filePath);
-    let relativePath = path.relative( path.join(cwd, config.sourceDir), dir);
-    let distDir = path.join(cwd, config.buildDir , relativePath);
-    let styleExt = config[config['buildType']].styleExt; //获取构建的样式文件后缀名
-    let distFilePath = path.join(distDir, `${name}.${styleExt}`);
-    return distFilePath;
+const getDist = (filePath) =>{
+    let dist = utils.updatePath(filePath, config.sourceDir, 'dist');
+    let { name, dir } =  path.parse(dist);
+    return  path.join(dir, `${name}.${exitName}`);
 };
 
 var less = require('less');
@@ -37,6 +35,7 @@ const compileLess = (filePath, originalCode) => {
     )
         .then(res => {
             let code = validateStyle(res.css);
+            if(!code) return;
             queue.push({
                 code: code,
                 path: getDist(filePath),
@@ -59,6 +58,7 @@ const renderSass = (filePath) => {
         (err, res) => {
             if (err) throw err;
             let code = validateStyle(res.css.toString());
+            if(!code) return;
             queue.push({
                 code: code,
                 path: getDist(filePath),
@@ -71,7 +71,7 @@ const compileSass = (filePath) => {
     try {
         require(path.join(cwd, 'node_modules', 'node-sass', 'package.json'));
     } catch (err) {
-        utils.installer('node-sass')
+        utils.installer('node-sass', 'dev')
     }
     renderSass(filePath);
 };
