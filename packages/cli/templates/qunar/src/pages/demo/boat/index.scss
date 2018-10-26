@@ -1,13 +1,29 @@
-page {
-  position: relative;
-  background-color: #3399ff;
+.col {
+  display:flex;
+  flex-direction: column;
+  
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.font-38 {
+  font-size: 38rpx;
+}
+
+.font-22 {
+  font-size: 22rpx;
 }
 .boat {
-  position: absolute;
-  top: 180rpx;
-  left: 0;
+  
   width: 100%;
   .content {
+    display: flex;
+    flex-direction: column;
     background-color: #fff;
     padding: 30rpx 25rpx;
     padding-bottom: 50rpx;
@@ -20,7 +36,6 @@ page {
       flex-direction: row;
       justify-content: space-between;
       align-items:center;
-
       .dot {
         display: inline-block;
         width: 12rpx;
@@ -31,7 +46,10 @@ page {
       .orgin-city-wrapper {
         width: 250rpx;
         font-size: 38rpx;
-        border-bottom: 1px solid rgb(189, 188, 188);
+        border-style: solid;
+        border-bottom-color: rgb(189, 188, 188);
+        border-bottom-width: 1px;
+
         padding-bottom: 10rpx;
         .tip-wrapper {
           .dot {
@@ -43,12 +61,11 @@ page {
       }
       .target-city-wrapper {
         width: 250rpx;
-        // position: absolute;
-        // top: 0;
-        // right: 0;
         font-size: 38rpx;
-        border-bottom: 1px solid rgb(189, 188, 188);
-        text-align: right;
+        border-style: solid;
+        border-bottom-color: rgb(189, 188, 188);
+        border-bottom-width: 1px;
+        align-items: flex-end;
         padding-bottom: 10rpx;
         .tip-wrapper {
           .dot {
@@ -59,22 +76,18 @@ page {
         }
       }
       .switch-logo {
-        // position: absolute;
-        // top: 50%;
-        // left: 50%;
-        // transform: translate(-50%, -50%);
         width: 70rpx;
         height: 70rpx;
         border-radius: 36rpx;
         border: 1px solid #000;
         image {
-          // position: absolute;
-          // top: 50%;
-          // left: 50%;
-          transform: translate(-50%, -50%);
+          // transform: translate(-50%, -50%);
+          // transform: translate(-35rpx, -35rpx);
           width: 46rpx;
           height: 32rpx;
-          margin: 35rpx 0 0 35rpx;
+          // margin: 35rpx 0 0 35rpx;
+          margin-top: 18rpx;
+          margin-left: 10rpx;
         }
       }
     }

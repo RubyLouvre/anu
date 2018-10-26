@@ -1,6 +1,24 @@
 .page {
-  background: #fff;
-  margin: 0;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  background-color: #ffffff;
+  .c-flex {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .col {
+    display:flex;
+    flex-direction: column;
+    
+  }
+  
+  .c-flex__item {
+    flex: 1;
+  }
+
   .top-image {
     box-sizing: border-box;
     width: 750rpx;
@@ -11,23 +29,22 @@
     padding: 10rpx 20rpx;
     font-size: 0;
     .radius-top-left image {
-      border-radius: 5px 0 0 0;
+      border-top-left-radius: 5px;
     }
     .radius-top-right image {
-      border-radius: 0 5px 0 0;
+      border-top-right-radius: 5px;
     }
     .radius-bottom-left image {
-      border-radius: 0 0 0 5px;
+      border-bottom-right-radius:5px;
     }
     .radius-bottom-right image {
-      border-radius: 0 0 5px 0;
+      
+      border-bottom-left-radius: 5px;
     }
     .item-wrapper {
       margin-bottom: 4rpx;
-      // position: relative;
       box-sizing: border-box;
       width: 236rpx;
-      display: inline-block;
       font-size: 0;
       display: flex;
       flex-direction: column;
@@ -39,14 +56,10 @@
         height: 137rpx;
       }
       .title {
-        // position: absolute;
-        // top: 50%;
-        // left: 50%;
-        // transform: translate(-50%, -50%);
         font-size: 25rpx;
         color: #fff;
         height: 137rpx;
-        margin: -137rpx 0 0 0;
+        margin-top: -137rpx;
         line-height: 137rpx;
       }
       .special-text {
@@ -64,6 +77,7 @@
     .tool-item {
       flex: 1;
       text-align: center;
+      align-items: center;
       image {
         display: block;
         width: 60rpx;
@@ -76,20 +90,26 @@
     }
   }
   .special-offer {
-    padding: 0 15rpx;
+    padding-left: 15rpx;
+    padding-right: 15rpx;
     .title {
       font-size: 35rpx;
-      margin: 20rpx 10rpx;
       margin-top: 50rpx;
+      margin-bottom: 20rpx;
+      margin-left: 10rpx;
+      margin-right: 10rpx;
     }
   }
   .special-offer-wrapper {
     height: 130rpx !important;
     display: flex;
     flex-direction: row;
+    
     .special-offer-item {
-      position: relative;
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       image {
         display: block;
         margin: 0 auto;
@@ -98,22 +118,23 @@
         border-radius: 4px;
       }
       text {
-        position: absolute;
-        top: 50%;
-        left: 50%;
         transform: translate(-50%, -50%);
         color: #fff;
         font-size: 26rpx;
+        margin-top: -80px;
       }
     }
   }
   .activity {
-    padding: 0 15rpx;
+    padding-left:15rpx;
     padding-bottom: 40rpx;
+    padding-right: 15rpx;
     .title {
       font-size: 35rpx;
-      margin: 20rpx 10rpx;
       margin-top: 50rpx;
+      margin-bottom: 20rpx;
+      margin-left: 10rpx;
+      margin-right: 10rpx;
     }
     .activity-wrapper {
       display: flex;
@@ -139,12 +160,11 @@
       }
       .right-content {
         .right-content-wrapper {
-          // position: relative;
           display: flex;
           flex-direction: column;
-          &:first-child {
-            margin-bottom: 10rpx;
-          }
+        }
+        .first-child {
+          margin-bottom: 10rpx;
         }
         image {
           box-sizing: border-box;
@@ -156,7 +176,7 @@
         }
         .content {
           height: 175rpx;
-          margin: -175rpx 0 0 0;
+          margin-top: -175rpx;
           .title {
             display: block;
             font-size: 28rpx;
@@ -171,7 +191,7 @@
       }
       .content {
         height: 360rpx;
-        margin: -360rpx 0 0 0;
+        margin-top: -360rpx;
         .title {
           display: block;
           font-size: 28rpx;

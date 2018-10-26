@@ -51,6 +51,7 @@ class P extends React.Component {
         React.api.navigateTo({
             url: '../../demo/calendar/index'
         });
+
     }
     exChangeCity() {
         let curData = this.state.orginCity;
@@ -58,27 +59,27 @@ class P extends React.Component {
         this.setState({targerCity: curData});
     }
     render() {
-        return (
+        return ( 
             <div class='boat'>
                 <div class='content'>
                     <div class='city-select-container'>
-                        <div onTap={this.toCitySelect.bind(this,true)}  class='orgin-city-wrapper'>
-                            <div class='tip-wrapper'><i class='dot'></i><span>出发</span></div>
-                            <div class='orgin-ctiy'>{this.state.orginCity}</div>
+                        <div onTap={this.toCitySelect.bind(this,true)}  class='orgin-city-wrapper col'>
+                            <div class='tip-wrapper row'><i class='dot'></i><span class="font-22">出发</span></div>
+                            <div class='orgin-ctiy'><text class="font-38">{this.state.orginCity}</text></div>
                         </div>
                         <div onTap={this.exChangeCity.bind(this)} class='switch-logo'>
                             <image src='../../../assets/image/switch.png' />
                         </div>
-                        <div onTap={this.toCitySelect.bind(this,false)}  class='target-city-wrapper' >
-                            <div class='tip-wrapper'><i class='dot'></i>到达</div>
-                            <div class='target-ctiy'>{this.state.targerCity}</div>
+                        <div onTap={this.toCitySelect.bind(this,false)}  class='target-city-wrapper col' >
+                            <div class='tip-wrapper row'><i class='dot'></i><span class="font-22">到达</span></div>
+                            <div class='target-ctiy'><text class="font-38">{this.state.targerCity}</text></div>
                         </div>
                     </div>
-                    <div onTap={this.toDateSelect.bind(this)} class='date-select-container'>
-                        <div class='title'>出发日期</div>
-                        <div class='date'>{this.state.date}</div>
+                    <div onTap={this.toDateSelect.bind(this)} class='date-select-container col'>
+                        <text class='title'>出发日期</text>
+                        <text class='date'>{this.state.date}</text>
                     </div>
-                    <div onTap={this.fun_tip.bind(this)} class='search-btn'>开始查询</div>
+                    <div onTap={this.fun_tip.bind(this)}><text  class='search-btn'>开始查询</text></div>
                 </div>
             </div>
         );
