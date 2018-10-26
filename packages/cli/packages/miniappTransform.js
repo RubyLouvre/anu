@@ -134,6 +134,16 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         indent: 4,
                         'wrap-line-length': 100
                     });
+                    if (sourcePath.indexOf('components' ) > 0){
+                        queue.push({
+                            code: beautify.js(result.code),
+                          
+                            path:  utils.updatePath(sourcePath, config.sourceDir, 'dist') 
+                        });
+                        var componentName =  sourcePath.match(/components\/(\w+)/)[1];
+                        result.code = `import ${componentName}, { React } from './index.js';
+                        export default  React.registerComponent(${componentName}, '${componentName}');`;
+                    }
                     //假设存在<script>
                     ux += `
                         <script>
@@ -146,6 +156,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                             ${beautify.css(uxFile.cssCode)}
                             </style>`;
                     }
+
                     queue.push({
                         code: ux,
                         type: 'ux',
