@@ -211,7 +211,7 @@ class Parser {
                 );
             }
             needUpdate(id, originalCode, function(){
-                miniTransform(id, resolvedIds);
+                miniTransform(id, resolvedIds, originalCode);
             });
         }
     }
