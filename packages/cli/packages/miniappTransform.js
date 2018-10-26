@@ -10,6 +10,8 @@ let config = require('./config');
 let quickFiles = require('./quickFiles');
 let queue = require('./queue');
 let utils = require('./utils');
+let validateStyle = require('./validateStyle');
+let nodeSass = require('node-sass');
 
 let cwd = process.cwd();
 
@@ -143,7 +145,11 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         //假设存在<style>
                         ux += `
                             <style lang="${uxFile.cssType}">
-                            ${beautify.css(uxFile.cssCode)}
+                            ${beautify.css(validateStyle(
+        nodeSass.renderSync({
+            data: uxFile.cssCode
+        }).css.toString()
+    ))}
                             </style>`;
                     }
                     queue.push({
