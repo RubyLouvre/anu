@@ -98,7 +98,10 @@ const visitors = {
 };
 
 const replaceRPXtoPX = declaration => {
-    declaration.value = R.replace(/([\s\d]+)(rpx)/g, '$1px')(declaration.value);
+    declaration.value = R.replace(/([\s\d]+)(rpx)/g, (match, numberStr) => {
+        const number = (Number(numberStr.trim()) * 2).toFixed(2);
+        return ` ${number} px`;
+    })(declaration.value);
 };
 
 module.exports = function validateStyle(code) {
