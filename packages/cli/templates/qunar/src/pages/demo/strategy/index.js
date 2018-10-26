@@ -1,6 +1,14 @@
 import React from '@react';
 import './index.scss';
 
+function json_parse(data) {
+    try {
+        return JSON.parse(data);
+    } catch (e){
+        return data;
+    }
+}
+
 class P extends React.Component {
     constructor() {
         super();
@@ -10,16 +18,16 @@ class P extends React.Component {
     }
     componentDidMount() {
         let that = this;
-        React.api.showLoading({
-            title: '获取资源中',
-            mask: true
-        });
+        // React.api.showLoading({
+        //     title: '获取资源中',
+        //     mask: true
+        // });
 
         React.api.request({
             url: 'http://yapi.demo.qunar.com/mock/18752/qunar/strategy',
             success: function(data) {
-                React.api.hideLoading();
-                that.setState({ data: data.data });
+                
+                that.setState({ data: json_parse(data.data) });
             }
         });
     }
@@ -37,14 +45,15 @@ class P extends React.Component {
       });
   }
   render() {
+    
       return (
-          <div class="strategy">
+          <div class="page">
               {this.state.data.map(function(item, index) {
                   return (
-                      <div onTap={this.fun_tip.bind(this)} class="strategy-item" key={index}>
+                      <div onTap={this.fun_tip.bind(this)} class="strategy-item col" key={index}>
                           <image class="big-image" src={item.bigImage} />
                           <div class="strategy-item-content">
-                              <div>
+                              <div class="col">
                                   <span class="desc">{item.desc}</span>
                                   <span class="date">{item.date}</span>
                               </div>
