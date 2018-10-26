@@ -6,7 +6,7 @@ package-lock.json
 node_modules/
 chromedriver
 selenium-server-*
-/.vscode/*
+.vscode/
 /.history/*
 xxx.js
 index.css

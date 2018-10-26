@@ -97,12 +97,16 @@ const visitors = {
     }
 };
 
+const replaceRPXtoPX = declaration => {
+    declaration.value = R.replace(/([\s\d]+)(rpx)/g, '$1px')(declaration.value);
+};
+
 module.exports = function validateStyle(code) {
     const ast = css.parse(code);
     const rules = ast.stylesheet.rules;
-    rules.forEach(rule => {
-        if (!rule.declarations) return;
-        rule.declarations.forEach(declaration => {
+    rules.forEach(({ declarations = [] }) => {
+        declarations.forEach(declaration => {
+            replaceRPXtoPX(declaration);
             if (visitors[declaration.property]) {
                 visitors[declaration.property](declaration);
             }
