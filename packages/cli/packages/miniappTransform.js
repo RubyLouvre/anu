@@ -136,7 +136,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                     });
                     if (sourcePath.indexOf('components' ) > 0){
                         queue.push({
-                            code: beautify.js(result.code),
+                            code: beautify.js(result.code.replace('console.log(nanachi)', 'export {React}')),
                           
                             path:  utils.updatePath(sourcePath, config.sourceDir, 'dist') 
                         });
