@@ -115,7 +115,7 @@ module.exports = function validateStyle(code) {
     const ast = css.parse(code);
     const rules = ast.stylesheet.rules;
     rules.forEach(({ declarations = [] }) => {
-        declarations.forEach(declaration => {
+        R.filter(R.propEq('declaration'))(declarations).forEach(declaration => {
             replaceRPXtoPX(declaration);
             if (visitors[declaration.property]) {
                 visitors[declaration.property](declaration);
