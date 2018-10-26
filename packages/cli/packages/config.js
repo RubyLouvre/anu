@@ -3,24 +3,31 @@ module.exports = {
         libName: 'ReactWX',
         styleExt: 'wxss',
         xmlExt: 'wxml',
-        helpers: 'wxHelpers'
+        helpers: 'wxHelpers',
+        patchComponents: {
+        }
     },
     ali: {
         libName: 'ReactAli',
         styleExt: 'acss',
         xmlExt: 'axml',
-        helpers: 'aliHelpers'
+        helpers: 'aliHelpers',
+        patchComponents: {}
     },
     bu: {
         libName: 'ReactBu',
         styleExt: 'css',
         xmlExt: 'swan',
-        helpers: 'buHelpers'
+        helpers: 'buHelpers',
+        patchComponents: {}
     },
     quick: {
         libName: 'ReactQuick',
         jsExt: 'ux',
-        helpers: 'quickHelpers'
+        helpers: 'quickHelpers',
+        patchComponents: {
+            // navigator: url,
+        }
     },
     buildType: 'wx',    //构建类型默认微信小程序
     buildDir: 'dist',   //非快应用项目默认构建目录为dist
