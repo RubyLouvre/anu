@@ -13,7 +13,17 @@ let utils = require('./utils');
 
 let cwd = process.cwd();
 
-function transform(sourcePath, resolvedIds) {
+function transform(sourcePath, resolvedIds, originalCode) {
+
+    if (/^(React)/.test( path.basename(sourcePath)) ) {
+        queue.push({
+            code: originalCode,
+            type: 'js',
+            path: utils.updatePath(sourcePath, config.sourceDir, 'dist') 
+        });
+        return;
+    }
+    
     //用户自定义alias与npm相对路径处理都作为alias配置
     let aliasMap = Object.assign(
         utils.updateCustomAlias(sourcePath, resolvedIds),
