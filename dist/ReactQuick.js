@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-10-25
+ * 运行于快应用的React by 司徒正美 Copyright 2018-10-26
  * IE9+
  */
 
@@ -1984,6 +1984,7 @@ function registerPage(PageClass, path) {
         },
         dispatchEvent: eventSystem.dispatchEvent,
         onInit: function onInit(query) {
+            shareObject.app = this.$app.$def || this.$app._def;
             instance = render(createElement(PageClass, {
                 path: path,
                 query: query,
@@ -2027,7 +2028,6 @@ function transmitData(pageClass, pagePath, reactInstance, quickInstance) {
     shareObject.pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
     shareObject.pagePath = pagePath;
     shareObject.page = reactInstance;
-    shareObject.app = quickInstance.$app.$def || quickInstance.$app._def;
 }
 
 function createRouter(name) {
