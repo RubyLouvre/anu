@@ -193,8 +193,8 @@ let utils = {
             arr[arr.length - 1] = lastSegement.replace('.' + ext, '.' + newExt);
         }
         let resolvedPath = path.join.apply(path, arr);
-        if (resolvedPath[0] != '/'){
-            resolvedPath = '/'+ resolvedPath;
+        if (resolvedPath[0] != '/') {
+            resolvedPath = '/' + resolvedPath;
         }
         return resolvedPath;
     },
@@ -315,7 +315,8 @@ let utils = {
             wx: 'ReactWX.js',
             ali: 'ReactAli.js',
             bu: 'ReactBu.js',
-            quick: 'ReactQuick.js'
+            quick: 'ReactQuick.js',
+            h5: 'ReactH5.js'
         };
     },
     getReactLibName() {
@@ -329,20 +330,20 @@ let utils = {
             '@react': path.join(cwd, `${config.sourceDir}/${React}`),
             '@components': path.join(cwd, `${config.sourceDir}/components`)
         };
-        let pkg =  require( path.join(cwd, 'package.json') );
+        let pkg = require(path.join(cwd, 'package.json'));
         let pkgAlias = pkg.mpreact && pkg.mpreact.alias ? pkg.mpreact.alias : {};
 
-       
-        Object.keys(pkgAlias).forEach((aliasKey)=>{
+
+        Object.keys(pkgAlias).forEach((aliasKey) => {
             //@components, @react无法自定义配置
-            if ( !defaultAlias[aliasKey] ) {
+            if (!defaultAlias[aliasKey]) {
                 defaultAlias[aliasKey] = path.join(cwd, pkgAlias[aliasKey]);
             }
         });
         return defaultAlias;
     },
     resolveNpmAliasPath(id, depFile) {
-        let distJs = id.replace( new RegExp('/'+ config.sourceDir + '/'), '/dist/');
+        let distJs = id.replace(new RegExp('/' + config.sourceDir + '/'), '/dist/');
         let distNpm = depFile.replace(/\/node_modules\//, '/dist/npm/');
 
         //根据被依赖文件和依赖文件，求相对路径
@@ -354,13 +355,13 @@ let utils = {
         let aliasPath = path.relative(path.dirname(file), depFile);
         return aliasPath;
     },
-    replacePath: function(sPath, segement, newSegement){
+    replacePath: function (sPath, segement, newSegement) {
         let sep = path.sep;
         if (process.platform === 'win32') {
-            segement = segement.replace(/\//g, sep); 
+            segement = segement.replace(/\//g, sep);
             newSegement = newSegement.replace(/\//g, sep);
         }
-        return path.resolve(sPath.replace( segement, newSegement ));
+        return path.resolve(sPath.replace(segement, newSegement));
     },
     updateNpmAlias(id, deps) {
         //依赖的npm模块也当alias处理
@@ -379,7 +380,7 @@ let utils = {
     updateCustomAlias(id, deps) {
         //自定义alias是以@react和@components开头
         let aliasConfig = Object.keys(this.getCustomAliasConfig()).join('|');
-        let reg = new RegExp( `^(${aliasConfig})` ); // /^(@react|@components|...)/
+        let reg = new RegExp(`^(${aliasConfig})`); // /^(@react|@components|...)/
         let result = {};
         Object.keys(deps).forEach(depKey => {
             if (reg.test(depKey)) {
@@ -388,10 +389,10 @@ let utils = {
         });
         return result;
     },
-    getRegeneratorRuntimePath: function(sourcePath){
+    getRegeneratorRuntimePath: function (sourcePath) {
         //小程序async/await语法依赖regenerator-runtime/runtime
         try {
-            return nodeResolve.sync('regenerator-runtime/runtime', {basedir: process.cwd()});
+            return nodeResolve.sync('regenerator-runtime/runtime', { basedir: process.cwd() });
         } catch (err) {
             // eslint-disable-next-line
             console.log(
@@ -407,9 +408,9 @@ let utils = {
             init: 'var h = React.createElement;'
         }
     },
-    getQuickDevPkg: function(){
+    getQuickDevPkg: function () {
         //后期从git拉
-        return  {
+        return {
             'scripts': {
                 'server': 'hap server',
                 'postinstall': 'hap postinstall',
@@ -437,7 +438,7 @@ let utils = {
             }
         };
     },
-    mergeQuickJson: function(){
+    mergeQuickJson: function () {
         let pkg = require(path.join(cwd, 'package.json'));
         let quickPkg = this.getQuickDevPkg();
         Object.assign(pkg.devDependencies, quickPkg.devDependencies);
@@ -445,7 +446,7 @@ let utils = {
         fs.writeFile(
             path.join(cwd, 'package.json'),
             JSON.stringify(pkg, null, 4),
-            (err)=>{
+            (err) => {
                 if (err) {
                     // eslint-disable-next-line
                     console.log(err);
@@ -453,39 +454,39 @@ let utils = {
             }
         );
     },
-    compress: function(){
+    compress: function () {
         return {
-            js: function(code){
-                let result =  uglifyJS.minify(code);
+            js: function (code) {
+                let result = uglifyJS.minify(code);
                 if (result.error) {
                     throw result.error;
                 }
                 return result.code;
             },
-            npm: function(code){
+            npm: function (code) {
                 return this.js.call(this, code);
             },
-            css: function(code){
+            css: function (code) {
                 let result = new cleanCSS().minify(code);
                 if (result.errors.length) {
                     throw result.errors;
                 }
                 return result.styles;
             },
-            ux: function(code){
+            ux: function (code) {
                 return code;
             },
-            wxml: function(code){
+            wxml: function (code) {
                 //TODO: comporess xml file;
                 return code;
             },
-            json: function(code){
+            json: function (code) {
                 return JSON.stringify(JSON.parse(code));
             }
         };
     },
-    getComponentOrAppOrPageReg(){
-        return new RegExp( this.sepForRegex  + '(?:pages|app|components)'  );
+    getComponentOrAppOrPageReg() {
+        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
