@@ -5,6 +5,7 @@ const path = require('path');
 const queue = require('./queue');
 const utils = require('./utils');
 const fs = require('fs');
+const chalk = require('chalk');
 const deps = [];
 const config = require('./config');
 const buildType = config['buildType'];
@@ -165,6 +166,8 @@ module.exports = {
         let modules = utils.getAnu(state);
         let source = node.source.value;
         let specifiers = node.specifiers;
+        
+        
         if (modules.componentType === 'App') {
             if (/\/pages\//.test(source)) {
                 modules['appRoute'] = modules['appRoute'] || [];
@@ -177,11 +180,32 @@ module.exports = {
             astPath.remove();
         }
 
+        //检测component导出的模块名是否
+        if ( ['Page', 'App'].includes(modules.componentType) ) {
+            specifiers.forEach(item => {
+                if ( !/\/components\//.test(source) ) return;
+                //引入的模块名
+                let componentImportedName = item.local.name; 
+                let componentPathLevel = source.split(path.sep);
+                //component模块所在的目录名 components/a/b/index => b
+                let componentDirName = componentPathLevel[componentPathLevel.length - 2];
+                if ( componentDirName !=  componentImportedName) {
+                    /* eslint-disable */
+                    console.log(chalk.red(`error: ${modules.sourcePath}`));
+                    console.log(chalk.red(`imported name:  ${componentImportedName}`));
+                    console.log(chalk.red(`imported value: ${source}`));
+                    console.log(chalk.red('errMsg: 引用的component组件名需与所在的目录名保持一致, 例如：import Loading from @components/Loading/index'));
+                    console.log();
+                }
+            })
+        }
+        
         specifiers.forEach(item => {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
             if (/\.js$/.test(source)) {
                 source = source.replace(/\.js$/, '');
             }
+
             modules.importComponents[item.local.name] = {
                 astPath: astPath,
                 source: source
