@@ -2206,7 +2206,7 @@ React = win.React = {
     toStyle: toStyle,
     getApp: getApp,
     appType: 'quick',
-    App: function App(demo) {
+    registerApp: function registerApp(demo) {
         var app = {};
         for (var i in demo) {
             app[i] = demo[i];

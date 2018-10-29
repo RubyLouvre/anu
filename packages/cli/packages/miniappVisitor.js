@@ -357,7 +357,7 @@ module.exports = {
                 callee.type === 'Identifier' &&
                 callee.name === 'App'
             ) {
-                callee.name = 'React.App';
+                callee.name = 'React.registerApp';
                 return;
             }
 
