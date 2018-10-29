@@ -1,5 +1,5 @@
 import React from '@react';
-import './index./index.scss';
+import './index.scss';
 
 
 function randomHexColor() {
