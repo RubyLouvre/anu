@@ -36,7 +36,21 @@ module.exports = function(astPath) {
 
             replaceWithExpr(astPath, attrValue);
             break;
-        case 'BinaryExpression':
+        case 'BinaryExpression': {
+            var { left, right } = astPath.node.expression;
+            if (t.isStringLiteral(left) || t.isStringLiteral(right)) {
+                const attrName = astPath.parentPath.node.name.name;
+                // 快应用的 bug
+                // class={{this.className0 + ' dynamicClassName'}} 快应用会将后者的空格吞掉
+                // 影响 class 的求值
+                if (attrName === 'class' || attrName === 'className') {
+                    astPath.replaceWith(t.stringLiteral(`${toString(astPath.node.expression.left)} ${toString(astPath.node.expression.right)}`));
+                    return;
+                }
+            }
+            replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
+            break;
+        }
         case 'LogicalExpression':
         case 'UnaryExpression':
             astPath.traverse({
@@ -46,13 +60,10 @@ module.exports = function(astPath) {
                     }
                 }
             });
-            astPath.replaceWith(
-                t.stringLiteral(`${toString(astPath.node.expression.left)} ${toString(astPath.node.expression.right)}`)
-            );
+            replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
             break;
         case 'MemberExpression':
             if (isEvent) {
-               
                 bindEvent(astPath, attrName, attrValue.replace(/^\s*this\./, ''));
             } else {
                 replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
