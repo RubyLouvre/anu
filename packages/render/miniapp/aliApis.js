@@ -4,6 +4,11 @@ export var aliApis = function(api) {
     showModal: function _(a) {
       a.cancelButtonText = a.cancelText;
       a.confirmButtonText = a.confirmText;
+      if(a.showCancel === false) {
+        a.buttonText = a.confirmText
+        return api.alert(a);
+
+      }
       return api.confirm(a);
     },
     showActionSheet: function _(a) {
