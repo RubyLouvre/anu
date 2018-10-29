@@ -30,7 +30,7 @@ class P extends React.Component {
         }
     }
     config = {
-        backgroundColor: '3399ff',
+        backgroundColor: '#3399ff',
         navigationBarBackgroundColor: '#3399ff',
         navigationBarTitleText: '船票',
     }
@@ -79,7 +79,7 @@ class P extends React.Component {
                         <text class='title'>出发日期</text>
                         <text class='date'>{this.state.date}</text>
                     </div>
-                    <div onTap={this.fun_tip.bind(this)}><text  class='search-btn'>开始查询</text></div>
+                    <text onTap={this.fun_tip.bind(this)} class='search-btn'>开始查询</text>
                 </div>
             </div>
         );
