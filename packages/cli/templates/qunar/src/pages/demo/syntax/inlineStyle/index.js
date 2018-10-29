@@ -1,5 +1,5 @@
 import React from '@react';
-import './index.less';
+import './index.scss';
 const formItemStyle = {
     marginBottom: '10px',
     textAlign: 'center',

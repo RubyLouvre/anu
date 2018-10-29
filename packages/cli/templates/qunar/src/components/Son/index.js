@@ -1,5 +1,5 @@
 import React from '@react';
-import './index.less';
+import './index.scss';
 class Son extends React.Component {
     constructor() {
         super();
