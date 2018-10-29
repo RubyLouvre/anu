@@ -7,6 +7,7 @@
 const css = require('css');
 const R = require('ramda');
 const chalk = require('chalk');
+const config = require('./config');
 
 const extractPropertyOfDeclaration = R.prop('property');
 const extractPropertyOfValue = R.prop('value');
@@ -97,19 +98,23 @@ const visitors = {
     }
 };
 
-const replaceRPXtoPX = declaration => {
-    declaration.value = R.replace(/([-\d]+)(r?px)/g, (match, numberStr, unit) => {
-     
-        const number = Number(numberStr.trim());
-        if (unit === 'rpx') {
-            return ` ${number}px`;
-        } else {
-        
-            return ` ${number*2}px`;
-        }
-        
-    })(declaration.value);
-};
+const replaceRPXtoPX = R.ifElse(
+    R.equals('quick', config.buildType),
+    declaration => {
+        declaration.value = R.replace(
+            /([-\d]+)(r?px)/g,
+            (match, numberStr, unit) => {
+                const number = Number(numberStr.trim());
+                if (unit === 'rpx') {
+                    return ` ${number}px`;
+                } else {
+                    return ` ${number * 2}px`;
+                }
+            }
+        )(declaration.value);
+    },
+    R.F
+);
 
 module.exports = function validateStyle(code) {
     const ast = css.parse(code);

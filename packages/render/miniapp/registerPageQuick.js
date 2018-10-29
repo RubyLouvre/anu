@@ -46,7 +46,6 @@ export function registerPage(PageClass, path) {
             fn && fn.call(instance);
         },
         onReady() {
-            console.log('页面布局完成', path);
             var el;
             while ((el = delayMounts.pop())) {
                 el.fn.call(el.instance);

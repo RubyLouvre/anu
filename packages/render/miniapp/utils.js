@@ -58,6 +58,6 @@ function safeClone(originVal) {
     return temp;
 }
 
-export function toRenderProps(props) {
+export function toRenderProps() {
     return null;
 }
