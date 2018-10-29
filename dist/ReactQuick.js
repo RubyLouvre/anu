@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-10-26
+ * 运行于快应用的React by 司徒正美 Copyright 2018-10-29
  * IE9+
  */
 
@@ -2208,7 +2208,9 @@ React = win.React = {
     appType: 'quick',
     App: function App(demo) {
         var app = {};
-        Object.assign(app, demo);
+        for (var i in demo) {
+            app[i] = demo[i];
+        }
         delete app.constructor;
         return app;
     },

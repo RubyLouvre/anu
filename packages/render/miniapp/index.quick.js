@@ -114,7 +114,9 @@ React = win.React = {
     appType: 'quick',
     App(demo){
         var app = {};
-        Object.assign(app, demo);
+        for (var i in demo){
+            app[i] = demo[i];
+        }
         delete app.constructor;//有这属性会报错
         return app;
     },
