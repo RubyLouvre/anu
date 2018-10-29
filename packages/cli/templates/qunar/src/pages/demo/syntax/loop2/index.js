@@ -1,7 +1,7 @@
 import React from '@react';
 import Fish from '@components/Fish/index';
 
-import './index./index.scss';
+import './index.scss';
 class P extends React.Component {
     constructor() {
         super();
