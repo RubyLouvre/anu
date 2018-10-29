@@ -85,7 +85,12 @@ function transform(sourcePath, resolvedIds, originalCode) {
             ]
         },
         function(err, result) {
-            if (err) throw err;
+            if (err) {
+                // eslint-disable-next-line
+                console.log(sourcePath);
+                // eslint-disable-next-line
+                console.log(err);
+            }
 
             //babel6无transform异步方法
             setImmediate(() => {

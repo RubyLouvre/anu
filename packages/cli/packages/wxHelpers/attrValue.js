@@ -46,9 +46,13 @@ module.exports = function(astPath) {
                     }
                 }
             });
-            astPath.replaceWith(
-                t.stringLiteral(`${toString(astPath.node.expression.left)} ${toString(astPath.node.expression.right)}`)
-            );
+
+            if ( astPath.node.expression.left && astPath.node.expression.right) {
+                astPath.replaceWith(
+                    t.stringLiteral(`${toString(astPath.node.expression.left)} ${toString(astPath.node.expression.right)}`)
+                );
+            }
+            
             break;
         case 'MemberExpression':
             if (isEvent) {
