@@ -11,17 +11,16 @@ const HookMap = {
 };
 
 export function applyAppStore() {
+    // eslint-disable-next-line
     console.log('此方法已废弃');
 }
 export function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
-    console.log(path, '注册页面');
     var pageViewInstance,
         config = {
             data: {},
             dispatchEvent: eventSystem.dispatchEvent,
             onLoad: function onLoad(query) {
-                console.log('开始载入页面', path);
                 pageViewInstance = render(
                     createElement(PageClass, {
                         path: path,
@@ -39,13 +38,9 @@ export function registerPage(PageClass, path, testObject) {
 
                 this.reactInstance = pageViewInstance;
                 pageViewInstance.wx = this;
-                //	pageViewInstance.setState = setState;
-                //	pageViewInstance.forceUpdate = forceUpdate;
-                console.log('更新页面数据', path);
                 updateMiniApp(pageViewInstance);
             },
             onReady: function onReady() {
-                console.log('页面布局完成', path);
                 var el;
                 while ((el = delayMounts.pop())) {
                     el.fn.call(el.instance);
