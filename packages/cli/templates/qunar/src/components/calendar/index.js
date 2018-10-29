@@ -1,5 +1,5 @@
 import React from '@react';
-import './index.less';
+import './index.scss';
 class Calendar extends React.Component {
     constructor() {
         super();

@@ -1,5 +1,5 @@
 import React from '@react';
-import './index.less';
+import './index./index.scss';
 
 class P extends React.Component {
     constructor() {

@@ -148,30 +148,28 @@ function transform(sourcePath, resolvedIds, originalCode) {
                     }
                     //假设存在<script>
                     ux += `
-                        <script>
+<script>
                         ${beautify.js(result.code)}
-                        </script>`;
+</script>`;
                     if (uxFile.cssType) {
                         //假设存在<style>
                         ux += `
-                            <style lang="${uxFile.cssType}">
+<style lang="${uxFile.cssType}">
                             ${beautify.css(validateStyle(
         nodeSass.renderSync({
             data: uxFile.cssCode
         }).css.toString()
     ))}
-                            </style>`;
+</style>`;
                     }
 
                     queue.push({
                         code: ux,
-                        type: 'ux',
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux') 
                     });
                 } else {
                     queue.push({
                         code: result.code,
-                        type: 'js',
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist')
                     });
                 }

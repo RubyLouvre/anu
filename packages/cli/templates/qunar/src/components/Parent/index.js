@@ -1,6 +1,6 @@
 import React from '@react';
 import Son from '../Son/index';
-import './index.less';
+import './index./index.scss';
 class Parent extends React.Component {
     constructor() {
         super();
