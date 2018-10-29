@@ -146,19 +146,7 @@ module.exports = {
                     template(utils.shortcutOfCreateElement())()
                 );
             }
-
-            if (name === '_asyncToGenerator' && (buildType == 'wx' ||  buildType == 'bu') ) {
-                astPath.insertBefore(
-                    t.variableDeclaration('var', [
-                        t.variableDeclarator(
-                            t.identifier('regeneratorRuntime'),
-                            t.callExpression(t.identifier('require'), [
-                                t.stringLiteral('regenerator-runtime/runtime')
-                            ])
-                        )
-                    ])
-                );
-            }
+           
         }
     },
     ImportDeclaration(astPath, state) {
