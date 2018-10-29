@@ -1,5 +1,5 @@
-@imgae-size: 150rpx;
-@menu-item-height: 90rpx;
+$imgae-size: 150rpx;
+$menu-item-height: 90rpx;
 page{
     background-color: rgb(245, 245, 245);
 }
@@ -14,13 +14,13 @@ page{
 
         image {
             display: inline-block;
-            width: @imgae-size;
-            height: @imgae-size;
+            width: $imgae-size;
+            height: $imgae-size;
             vertical-align: top;
         }
         .user-name {
             display: inline-block;
-            line-height: @imgae-size;
+            line-height: $imgae-size;
             margin-left: 20rpx;
             font-size: 31rpx;
         }
@@ -30,13 +30,13 @@ page{
         padding: 0 30rpx;
         margin-bottom: 10rpx;
         background-color: #fff;
-        line-height: @menu-item-height;
+        line-height: $menu-item-height;
         font-size: 27rpx;
         .right-content {
             position: absolute;
             top: 0;
             right: 30rpx;
-            line-height: @menu-item-height;
+            line-height: $menu-item-height;
             .right-message{
                 margin-right: 15rpx;
             }
@@ -51,7 +51,7 @@ page{
         margin-bottom: 1px;
         padding: 0 30rpx;
         background-color: #fff;
-        line-height: @menu-item-height;
+        line-height: $menu-item-height;
         font-size: 27rpx;
         letter-spacing: 1rpx;
         &:last-child {

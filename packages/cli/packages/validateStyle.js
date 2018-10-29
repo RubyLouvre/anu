@@ -99,7 +99,7 @@ const visitors = {
 };
 
 const replaceRPXtoPX = declaration => {
-    if (config.buildType === 'quick') return;
+    if (config.buildType !== 'quick') return;
     declaration.value = R.replace(
         /([-\d]+)(r?px)/g,
         (match, numberStr, unit) => {
