@@ -106,7 +106,8 @@ exports.exit = function(astPath, type, componentName, modules) {
             path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', xmlExt),
             code: minifier(wxml,{
                 collapseWhitespace: true ,
-                keepClosingSlash: true
+                keepClosingSlash: true,
+                caseSensitive: true
             })
         });
     }
