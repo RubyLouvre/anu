@@ -86,7 +86,6 @@ let utils = {
         }
         return eventName;
     },
-
     createElement(nodeName, attrs, children) {
         return t.JSXElement(
             t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, false),
@@ -212,7 +211,7 @@ let utils = {
             }
         }
     },
-    installer(npmName) {
+    installer(npmName, dev) {
         return new Promise(resolve => {
             console.log(
                 chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`)
@@ -221,13 +220,13 @@ let utils = {
             let options = [];
             if (this.useYarn()) {
                 bin = 'yarn';
-                options.push('add', npmName, '--save');
+                options.push('add', npmName, dev === 'dev' ? '--dev' : '--save');
             } else if (this.useCnpm()) {
                 bin = 'cnpm';
-                options.push('install', npmName, '--save');
+                options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
             } else {
                 bin = 'npm';
-                options.push('install', npmName, '--save');
+                options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
             }
 
             let result = spawn.sync(bin, options, { stdio: 'inherit' });
@@ -388,6 +387,33 @@ let utils = {
             }
         });
         return result;
+    },
+    asyncAwaitHackPlugin: function(buildType){
+        let visitor = {
+            FunctionDeclaration: {
+                exit(astPath) {
+                    //微信，百度小程序async/await语法需要插入var regeneratorRuntime = require('regenerator-runtime/runtime');
+                    let name = astPath.node.id.name;
+                    if (name === '_asyncToGenerator' && ['wx', 'bu'].includes(buildType) ) {
+                        astPath.insertBefore(
+                            t.variableDeclaration('var', [
+                                t.variableDeclarator(
+                                    t.identifier('regeneratorRuntime'),
+                                    t.callExpression(t.identifier('require'), [
+                                        t.stringLiteral('regenerator-runtime/runtime')
+                                    ])
+                                )
+                            ])
+                        );
+                    }
+                }
+            }
+        };
+        return function(){
+            return {
+                visitor: visitor
+            };
+        };
     },
     getRegeneratorRuntimePath: function (sourcePath) {
         //小程序async/await语法依赖regenerator-runtime/runtime

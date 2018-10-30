@@ -12,11 +12,12 @@ let queue = require('./queue');
 let utils = require('./utils');
 let validateStyle = require('./validateStyle');
 let nodeSass = require('node-sass');
-
 let cwd = process.cwd();
 
-function transform(sourcePath, resolvedIds, originalCode) {
+//抽离async/await语法支持，可能非App/Component/Page业务中也包含async/await语法
+const asyncAwaitPlugin  = utils.asyncAwaitHackPlugin(config.buildType);
 
+function transform(sourcePath, resolvedIds, originalCode) {
     if (/^(React)/.test( path.basename(sourcePath)) ) {
         queue.push({
             code: originalCode,
@@ -25,7 +26,6 @@ function transform(sourcePath, resolvedIds, originalCode) {
         });
         return;
     }
-    
     //用户自定义alias与npm相对路径处理都作为alias配置
     let aliasMap = Object.assign(
         utils.updateCustomAlias(sourcePath, resolvedIds),
@@ -38,6 +38,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
         .test(sourcePath)
         ? [miniappPlugin]
         : [];
+
+    
     babel.transformFile(
         sourcePath,
         {
@@ -48,14 +50,14 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 'transform-object-rest-spread',
                 'transform-async-to-generator',
                 'transform-es2015-template-literals',
+                asyncAwaitPlugin,
                 ...miniAppPluginsInjectConfig,
                 [
                     'module-resolver',
                     {
                         resolvePath(moduleName) {
                             if (!utils.isNpm(moduleName)) return;
-
-                            //针对async/await语法做特殊处理
+                            //针对async/await语法依赖的npm路径做处理
                             if (/regenerator-runtime\/runtime/.test(moduleName)) {
                                 //微信,百度小程序async/await语法依赖regenerator-runtime/runtime
                                 let regeneratorRuntimePath =  utils.getRegeneratorRuntimePath(sourcePath);
