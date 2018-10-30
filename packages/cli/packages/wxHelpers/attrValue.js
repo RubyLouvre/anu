@@ -52,17 +52,20 @@ module.exports = function(astPath) {
             });
             if (t.isStringLiteral(left) || t.isStringLiteral(right)) {
                 const attrName = astPath.parentPath.node.name.name;
+                
+                if (attrName === 'class' || attrName === 'className') {
                 // 快应用的 bug
                 // class={{this.className0 + ' dynamicClassName'}} 快应用会将后者的空格吞掉
                 // 影响 class 的求值
-                if (attrName === 'class' || attrName === 'className') {
-                    astPath.replaceWith(
-                        t.stringLiteral(
-                            `${toString(
+                    var className =
+                        buildType == 'quick'
+                            ? `${toString(
                                 astPath.node.expression.left
-                            )}${toString(astPath.node.expression.right)}`
-                        )
-                    );
+                            )} ${toString(astPath.node.expression.right)}`
+                            : `${toString(
+                                astPath.node.expression.left
+                            )}${toString(astPath.node.expression.right)}`;
+                    astPath.replaceWith(t.stringLiteral(className));
                     return;
                 }
             }

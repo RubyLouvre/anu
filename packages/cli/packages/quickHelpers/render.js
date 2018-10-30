@@ -62,11 +62,11 @@ exports.exit = function (astPath, type, componentName, modules) {
                 }
                 if (modules.componentType === 'Page') {
                     quickFile.template = `
-<import name="PageWrapper" src="${path.relative(modules.sourcePath.replace('/index.js', ''), wrapperPath)}"></import>
+<import name="anu-page-wrapper" src="${path.relative(modules.sourcePath.replace('/index.js', ''), wrapperPath)}"></import>
 <template>
-   <PageWrapper>
+   <anu-page-wrapper>
      ${wxml}
-   </PageWrapper>
+   </anu-page-wrapper>
 </template>`;
                 } else {
                     quickFile.template = `
