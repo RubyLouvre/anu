@@ -365,11 +365,13 @@ let utils = {
     updateNpmAlias(id, deps) {
         //依赖的npm模块也当alias处理
         let result = {};
+        let aliasConfig = Object.keys(this.getCustomAliasConfig()).join('|');
+        let reg = new RegExp(`^(${aliasConfig})`);
         Object.keys(deps).forEach(depKey => {
             if (
                 !this.isBuildInLibs(depKey) &&
                 this.isNpm(depKey) &&
-                !/^(@react|@components)/.test(depKey)
+                !reg.test(depKey)
             ) {
                 result[depKey] = this.resolveNpmAliasPath(id, deps[depKey]);
             }
