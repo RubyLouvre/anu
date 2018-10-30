@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-25
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-30
  * IE9+
  */
 
@@ -2135,7 +2135,7 @@ function safeClone(originVal) {
     }
     return temp;
 }
-function toRenderProps(props) {
+function toRenderProps() {
     return null;
 }
 
@@ -2322,13 +2322,11 @@ function applyAppStore() {
 }
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
-    console.log(path, '注册页面');
     var pageViewInstance,
         config = {
         data: {},
         dispatchEvent: eventSystem.dispatchEvent,
         onLoad: function onLoad(query) {
-            console.log('开始载入页面', path);
             pageViewInstance = render(createElement(PageClass, {
                 path: path,
                 query: query,
@@ -2342,11 +2340,9 @@ function registerPage(PageClass, path, testObject) {
             });
             this.reactInstance = pageViewInstance;
             pageViewInstance.wx = this;
-            console.log('更新页面数据', path);
             updateMiniApp(pageViewInstance);
         },
         onReady: function onReady() {
-            console.log('页面布局完成', path);
             var el;
             while (el = delayMounts.pop()) {
                 el.fn.call(el.instance);
@@ -2377,7 +2373,11 @@ var aliApis = function aliApis(api) {
   return {
     showModal: function _(a) {
       a.cancelButtonText = a.cancelText;
-      a.confirmButtonText = a.confirmText;
+      a.confirmButtonText = a.confirmText || '好的';
+      if (a.showCancel === false) {
+        a.buttonText = a.confirmText || '好的';
+        return api.alert(a);
+      }
       return api.confirm(a);
     },
     showActionSheet: function _(a) {
