@@ -184,7 +184,7 @@
       navigationBarTextStyle: "white",
       navigationBarBackgroundColor: "#000000"
     }, appConfig, pageConfg)
-    instance.backgroundColor = backgroundColor || "#ffffff"
+    instance.backgroundColor = mixin.backgroundColor || "#ffffff"
     instance.$page.setTitleBar({
       text: mixin.navigationBarTitleText,
       textColor: mixin.navigationBarTextStyle,
