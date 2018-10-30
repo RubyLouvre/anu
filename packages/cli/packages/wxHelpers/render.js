@@ -7,7 +7,7 @@ const babel = require('babel-core');
 const queue = require('../queue');
 const utils = require('../utils');
 const config = require('../config');
-//const beautify = require('js-beautify');
+const minifier = require('html-minifier');
 const xmlExt = config[config.buildType].xmlExt;
 
 /**
@@ -104,7 +104,9 @@ exports.exit = function(astPath, type, componentName, modules) {
         }
         queue.push({
             path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', xmlExt),
-            code: wxml
+            code: minifier(wxml,{
+                collapseWhitespace: true 
+            })
         });
     }
 };
