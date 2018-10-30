@@ -7,7 +7,7 @@ const babel = require('babel-core');
 const queue = require('../queue');
 const utils = require('../utils');
 const config = require('../config');
-const beautify = require('js-beautify');
+//const beautify = require('js-beautify');
 const xmlExt = config[config.buildType].xmlExt;
 
 /**
@@ -82,7 +82,6 @@ exports.exit = function(astPath, type, componentName, modules) {
         if (type == 'RenderProps') {
             handleRenderProps(wxml, componentName, modules);
         } else if (modules.componentType === 'Component') {
-            //  wxml = `<template name="${componentName}">${wxml}</template>`;
             deps[componentName] = deps[componentName] || {
                 set: new Set()
             };
@@ -105,11 +104,7 @@ exports.exit = function(astPath, type, componentName, modules) {
         }
         queue.push({
             path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', xmlExt),
-            code: beautify.html(wxml, {
-                indent: 4,
-                'wrap-line-length': 100
-            }),
-            type: 'wxml'
+            code: wxml
         });
     }
 };
@@ -141,8 +136,7 @@ function handleRenderProps(wxml, componentName, modules) {
     }
     queue.push({
         path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', 'json'),
-        code: JSON.stringify(dep.json, null, 4), //prettifyXml(wxml, { indent: 2 })
-        type: 'wxml'
+        code: JSON.stringify(dep.json, null, 4) //prettifyXml(wxml, { indent: 2 })
     });
 }
 

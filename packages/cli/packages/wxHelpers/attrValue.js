@@ -16,9 +16,12 @@ function toString(node) {
 module.exports = function(astPath) {
     var expr = astPath.node.expression;
     var attrName = astPath.parent.name.name;
-    var isEventRegex = buildType == 'ali' ||  buildType == 'quick' ?  /^(on|catch)/:  /^(bind|catch)/;
+    var isEventRegex =
+        buildType == 'ali' || buildType == 'quick'
+            ? /^(on|catch)/
+            : /^(bind|catch)/;
     var isEvent = isEventRegex.test(attrName);
-    if (isEvent && buildType == 'quick'){
+    if (isEvent && buildType == 'quick') {
         var n = attrName.charAt(0) === 'o' ? 2 : 5;
         astPath.parent.name.name = 'on' + attrName.slice(n).toLowerCase();
     }
@@ -38,13 +41,28 @@ module.exports = function(astPath) {
             break;
         case 'BinaryExpression': {
             var { left, right } = astPath.node.expression;
+            astPath.traverse({
+                ThisExpression(nodePath) {
+                    if (t.isMemberExpression(nodePath.parentPath)) {
+                        nodePath.parentPath.replaceWith(
+                            t.identifier(nodePath.parent.property.name)
+                        );
+                    }
+                }
+            });
             if (t.isStringLiteral(left) || t.isStringLiteral(right)) {
                 const attrName = astPath.parentPath.node.name.name;
                 // 快应用的 bug
                 // class={{this.className0 + ' dynamicClassName'}} 快应用会将后者的空格吞掉
                 // 影响 class 的求值
                 if (attrName === 'class' || attrName === 'className') {
-                    astPath.replaceWith(t.stringLiteral(`${toString(astPath.node.expression.left)} ${toString(astPath.node.expression.right)}`));
+                    astPath.replaceWith(
+                        t.stringLiteral(
+                            `${toString(
+                                astPath.node.expression.left
+                            )}${toString(astPath.node.expression.right)}`
+                        )
+                    );
                     return;
                 }
             }
@@ -56,7 +74,9 @@ module.exports = function(astPath) {
             astPath.traverse({
                 ThisExpression(nodePath) {
                     if (t.isMemberExpression(nodePath.parentPath)) {
-                        nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
+                        nodePath.parentPath.replaceWith(
+                            t.identifier(nodePath.parent.property.name)
+                        );
                     }
                 }
             });
@@ -64,7 +84,11 @@ module.exports = function(astPath) {
             break;
         case 'MemberExpression':
             if (isEvent) {
-                bindEvent(astPath, attrName, attrValue.replace(/^\s*this\./, ''));
+                bindEvent(
+                    astPath,
+                    attrName,
+                    attrValue.replace(/^\s*this\./, '')
+                );
             } else {
                 replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
             }
@@ -78,7 +102,10 @@ module.exports = function(astPath) {
                     throwEventValue(attrName, attrValue);
                 }
             } else {
-                if (attrName === 'style' && attrValue.indexOf('React.toStyle') === 0) {
+                if (
+                    attrName === 'style' &&
+                    attrValue.indexOf('React.toStyle') === 0
+                ) {
                     // style={{}} 类型解析
                     let start = attrValue.indexOf('\'style');
                     let end = attrValue.lastIndexOf(')');
@@ -101,9 +128,11 @@ module.exports = function(astPath) {
             astPath.traverse({
                 ThisExpression(nodePath) {
                     if (t.isMemberExpression(nodePath.parentPath)) {
-                        nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
+                        nodePath.parentPath.replaceWith(
+                            t.identifier(nodePath.parent.property.name)
+                        );
                     }
-                },
+                }
             });
             replaceWithExpr(astPath, attrValue.replace(/\s*this\./, ''));
             break;
