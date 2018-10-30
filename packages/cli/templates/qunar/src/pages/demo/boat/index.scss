@@ -4,6 +4,10 @@
   
 }
 
+page {
+  background-color: #3399ff
+}
+
 .row {
   display: flex;
   flex-direction: row;
@@ -21,6 +25,7 @@
 .boat {
   
   width: 100%;
+  margin-top: 180rpx;
   .content {
     display: flex;
     flex-direction: column;
@@ -46,7 +51,7 @@
       .orgin-city-wrapper {
         width: 250rpx;
         font-size: 38rpx;
-        border-style: solid;
+        border-bottom-style: solid;
         border-bottom-color: rgb(189, 188, 188);
         border-bottom-width: 1px;
 
@@ -62,7 +67,7 @@
       .target-city-wrapper {
         width: 250rpx;
         font-size: 38rpx;
-        border-style: solid;
+        border-bottom-style: solid;
         border-bottom-color: rgb(189, 188, 188);
         border-bottom-width: 1px;
         align-items: flex-end;
@@ -107,8 +112,9 @@
       line-height: 74rpx;
       text-align: center;
       color: #fff;
-      background-color: rgb(243, 142, 60);
       font-size: 38rpx;
+      background-color: rgb(243, 142, 60);
+      
     }
   }
 }

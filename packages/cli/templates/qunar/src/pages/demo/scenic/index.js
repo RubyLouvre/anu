@@ -1,5 +1,12 @@
 import React from '@react';
 import './index.scss';
+function json_parse(data) {
+    try {
+        return JSON.parse(data);
+    } catch (e) {
+        return data;
+    }
+}
 
 class P extends React.Component {
     constructor() {
@@ -10,15 +17,16 @@ class P extends React.Component {
     }
     componentDidMount() {
         let that = this;
-        React.api.showLoading({
-            title: '获取资源中',
-            mask: true
-        });
+        // React.api.showLoading({
+        //     title: '获取资源中',
+        //     mask: true
+        // });
         React.api.request({
             url: 'http://yapi.demo.qunar.com/mock/18752/qunar/scenic',
             success: function(data) {
-                React.api.hideLoading();
-                that.setState({ data: data.data });
+                // React.api.hideLoading();
+                // console.log('data', data.data);
+                that.setState({ data: json_parse(data.data) });
             }
         });
     }
@@ -35,29 +43,32 @@ class P extends React.Component {
       navigationBarTitleText: '景点门票',
       navigationBarTextStyle: '#d5d6d6'
   };
+
   render() {
       return (
           <div class="scenic">
               <div class="input-wrapper">
-                  <input placeholder="请输入城市或景点" type="text" />
+                  <div class="input">
+                      <input placeholder="请输入城市或景点" type="text" />
+                  </div>
               </div>
-              <div class="scenic-content">
+              <div class="scenic-content col">
                   {this.state.data.map(function(item, index) {
                       return (
-                          <div class="item" key={index}>
+                          <div class="item col" key={index}>
                               <div class="title-wrapper">
                                   <div class="mark" />
-                                  <div class="title">{item.title}</div>
+                                  <text class="title">{item.title}</text>
                               </div>
                               {item.data.map(function(item, index) {
                                   return (
                                       <div onTap={this.fun_tip.bind(this)} class="scenic-item" key={index}>
                                           <image class="left-content" src={item.url} />
                                           <div class="right-content">
-                                              <div>
-                                                  <div class="scenic-name">{item.name}</div>
-                                                  <div class="desc">{item.desc}</div>
-                                                  <div class="comment">{item.comment + '评论'}</div>
+                                              <div class="col">
+                                                  <text class="scenic-name">{item.name}</text>
+                                                  <text class="desc">{item.desc}</text>
+                                                  <text class="comment">{item.comment + '评论'}</text>
                                               </div>
 
                                               <div class="price-distance c-flex">
@@ -76,5 +87,4 @@ class P extends React.Component {
       );
   }
 }
-
 export default P;
