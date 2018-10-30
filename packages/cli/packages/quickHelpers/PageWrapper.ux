@@ -1,5 +1,5 @@
 <template>
-  <div class="pagewrapper" style="padding-bottom: {{tabBar.list.length?'150px': '0px'}}">
+  <div class="pagewrapper" style="padding-bottom: {{tabBar.list.length?'150px': '0px'}}; background-color:{{backgroundColor}};">
     <refresh refreshing="{{refreshing}}" @refresh="onPullDownRefresh">
       <list @scroll="onPageScroll" @scrollbottom="onReachBottom">
         <list-item type='a'>
@@ -57,7 +57,8 @@
     props: {
       tabBar: Object,
       refreshing: Boolean,
-      currentPath: String
+      currentPath: String,
+      backgroundColor: String
     },
     onReady() {
     },
@@ -183,6 +184,7 @@
       navigationBarTextStyle: "white",
       navigationBarBackgroundColor: "#000000"
     }, appConfig, pageConfg)
+    instance.backgroundColor = backgroundColor || "#ffffff"
     instance.$page.setTitleBar({
       text: mixin.navigationBarTitleText,
       textColor: mixin.navigationBarTextStyle,
