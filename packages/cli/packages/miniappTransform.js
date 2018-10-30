@@ -144,7 +144,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                     if (sourcePath.indexOf('components' ) > 0){
                         queue.push({
                             code: beautify.js(result.code.replace('console.log(nanachi)', 'export {React}')),
-                          
+                             
                             path:  utils.updatePath(sourcePath, config.sourceDir, 'dist') 
                         });
                         var componentName =  sourcePath.match(/components\/(\w+)/)[1];
@@ -175,7 +175,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 } else {
                     queue.push({
                         code: result.code,
-                        path:  utils.updatePath(sourcePath, config.sourceDir, 'dist')
+                        path:  utils.updatePath(sourcePath, config.sourceDir, 'dist'),
+                        type: 'js'
                     });
                 }
             });

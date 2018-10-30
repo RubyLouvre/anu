@@ -27,6 +27,16 @@ module.exports = function(astPath) {
         astPath.parent.name.name = 'on' + attrName.slice(n).toLowerCase();
     }
 
+    astPath.traverse({
+        ThisExpression(nodePath) {
+            if (t.isMemberExpression(nodePath.parentPath)) {
+                nodePath.parentPath.replaceWith(
+                    t.identifier(nodePath.parent.property.name)
+                );
+            }
+        }
+    });
+
     var attrValue = generate(expr).code;
     switch (astPath.node.expression.type) {
         case 'NumericLiteral': //11
@@ -42,15 +52,6 @@ module.exports = function(astPath) {
             break;
         case 'BinaryExpression': {
             var { left, right } = astPath.node.expression;
-            astPath.traverse({
-                ThisExpression(nodePath) {
-                    if (t.isMemberExpression(nodePath.parentPath)) {
-                        nodePath.parentPath.replaceWith(
-                            t.identifier(nodePath.parent.property.name)
-                        );
-                    }
-                }
-            });
             if (t.isStringLiteral(left) || t.isStringLiteral(right)) {
                 const attrName = astPath.parentPath.node.name.name;
                 
@@ -75,15 +76,6 @@ module.exports = function(astPath) {
         }
         case 'LogicalExpression':
         case 'UnaryExpression':
-            astPath.traverse({
-                ThisExpression(nodePath) {
-                    if (t.isMemberExpression(nodePath.parentPath)) {
-                        nodePath.parentPath.replaceWith(
-                            t.identifier(nodePath.parent.property.name)
-                        );
-                    }
-                }
-            });
             replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
             break;
         case 'MemberExpression':
@@ -129,15 +121,6 @@ module.exports = function(astPath) {
             }
             break;
         case 'ConditionalExpression':
-            astPath.traverse({
-                ThisExpression(nodePath) {
-                    if (t.isMemberExpression(nodePath.parentPath)) {
-                        nodePath.parentPath.replaceWith(
-                            t.identifier(nodePath.parent.property.name)
-                        );
-                    }
-                }
-            });
             replaceWithExpr(astPath, attrValue.replace(/\s*this\./, ''));
             break;
         default:
