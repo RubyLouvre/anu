@@ -27,15 +27,15 @@ module.exports = function(astPath) {
         astPath.parent.name.name = 'on' + attrName.slice(n).toLowerCase();
     }
 
-    astPath.traverse({
-        ThisExpression(nodePath) {
-            if (t.isMemberExpression(nodePath.parentPath)) {
-                nodePath.parentPath.replaceWith(
-                    t.identifier(nodePath.parent.property.name)
-                );
+    if (!isEvent) {
+        astPath.traverse({
+            ThisExpression(nodePath) {
+                if (t.isMemberExpression(nodePath.parentPath)) {
+                    nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
+                }
             }
-        }
-    });
+        });
+    }
 
     var attrValue = generate(expr).code;
     switch (astPath.node.expression.type) {
