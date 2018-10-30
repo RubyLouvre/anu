@@ -14,7 +14,7 @@ module.exports = ()=>{
     while (queue.length){
         let {code, path, type } = queue.shift();
     
-        if (config.compress) {
+        if (config.compress && compress[type]) {
             code = compress[type](code);
         }
         if (config['buildType'] === 'quick') {
