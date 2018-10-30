@@ -105,7 +105,8 @@ exports.exit = function(astPath, type, componentName, modules) {
         queue.push({
             path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', xmlExt),
             code: minifier(wxml,{
-                collapseWhitespace: true 
+                collapseWhitespace: true ,
+                keepClosingSlash: true
             })
         });
     }
