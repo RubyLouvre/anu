@@ -37,6 +37,7 @@ import './pages/demo/syntax/await/index';
 import './pages/demo/syntax/multiple/index';
 import './pages/demo/syntax/renderprops/index';
 import './pages/demo/syntax/request/index';
+import './pages/demo/webview/index';
 
 import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';
@@ -47,6 +48,7 @@ import './pages/demo/userCenter/index';
 import './pages/demo/question/index/index';
 import './pages/demo/question/detail/index';
 import './pages/demo/cardList/index';
+
 import './pages/demo/citySelect/index';
 
 import './app.scss';

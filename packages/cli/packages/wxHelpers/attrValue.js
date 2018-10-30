@@ -14,6 +14,7 @@ function toString(node) {
 }
 
 module.exports = function(astPath) {
+    
     var expr = astPath.node.expression;
     var attrName = astPath.parent.name.name;
     var isEventRegex =
