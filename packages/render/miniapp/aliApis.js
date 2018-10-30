@@ -3,10 +3,10 @@ export var aliApis = function(api) {
     // 交互
     showModal: function _(a) {
       a.cancelButtonText = a.cancelText;
-      a.confirmButtonText = a.confirmText;
+      a.confirmButtonText = a.confirmText || '好的';
       // 没有取消按钮
       if(a.showCancel === false) {
-        a.buttonText = a.confirmText
+        a.buttonText = a.confirmText || '好的';
         return api.alert(a);
 
       }
