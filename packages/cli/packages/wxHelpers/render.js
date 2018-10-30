@@ -7,7 +7,7 @@ const babel = require('babel-core');
 const queue = require('../queue');
 const utils = require('../utils');
 const config = require('../config');
-const minifier = require('html-minifier');
+const minifier = require('html-minifier').minify;
 const xmlExt = config[config.buildType].xmlExt;
 
 /**
