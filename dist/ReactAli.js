@@ -2195,10 +2195,8 @@ var Renderer$1 = createRenderer({
                 if (!type.ali && !instance.wx && type.wxInstances.length) {
                     var wx = instance.wx = type.wxInstances.shift();
                     wx.reactInstance = instance;
-                    console.log('onBeforeRender时更新', name, instance.props);
                 }
                 if (!instance.wx) {
-                    console.log('onBeforeRender时更新', name, '没有wx');
                     type.reactInstances.push(instance);
                 }
             }
@@ -2308,7 +2306,6 @@ function useComponent(props) {
     delete props.is;
     var args = [].slice.call(arguments, 2);
     args.unshift(clazz, props);
-    console.log('使用组件', is);
     return createElement.apply(null, args);
 }
 
@@ -2318,10 +2315,11 @@ var HookMap = {
     onUnload: 'componentWillUnmount'
 };
 function applyAppStore() {
-    console.log('此方法已废弃');
+    console.log("此方法已废弃");
 }
 var currentPageComponents = {};
 function updateChildComponents() {
+    var queue = [];
     for (var name in currentPageComponents) {
         var type = currentPageComponents[name];
         if (type && type.wxInstances) {
@@ -2334,11 +2332,17 @@ function updateChildComponents() {
                 var wxInstance = wxInstances.shift();
                 reactInstance.wx = wxInstance;
                 wxInstance.reactInstance = reactInstance;
-                updateMiniApp(reactInstance);
+                queue.push(reactInstance);
             }
-            delete currentPageComponents[name];
+            if (reactInstances.length + wxInstances.length === 0) {
+                delete currentPageComponents[name];
+            } else {
+                console.log(reactInstances, wxInstances);
+            }
         }
     }
+    currentPageComponents.$$pageIsReady = true;
+    queue.forEach(updateMiniApp);
     var el = void 0;
     while (el = delayMounts.pop()) {
         el.fn.call(el.instance);
@@ -2352,23 +2356,41 @@ function registerPage(PageClass, path, testObject) {
         data: {},
         dispatchEvent: eventSystem.dispatchEvent,
         onLoad: function onLoad(query) {
-            pageViewInstance = render(createElement(PageClass, {
-                path: path,
-                query: query,
-                isPageComponent: true
-            }), {
+            var container = {
                 type: 'page',
                 props: {},
                 children: [],
                 root: true,
                 appendChild: noop
-            });
+            };
+            pageViewInstance = render(createElement(PageClass, {
+                path: path,
+                query: query,
+                isPageComponent: true
+            }), container);
             this.reactInstance = pageViewInstance;
+            this.reactContainer = container;
             pageViewInstance.wx = this;
             updateMiniApp(pageViewInstance);
         },
         onReady: function onReady() {
             updateChildComponents();
+        },
+        onUnload: function onUnload() {
+            var root = this.reactContainer;
+            var container = root._reactInternalFiber;
+            if (container) {
+                Renderer.updateComponent(container.hostRoot, {
+                    child: null
+                }, function () {
+                    root._reactInternalFiber = null;
+                    var j = topNodes.indexOf(root);
+                    if (j !== -1) {
+                        topFibers.splice(j, 1);
+                        topNodes.splice(j, 1);
+                    }
+                }, true);
+            }
         }
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
@@ -2538,7 +2560,7 @@ function registerComponent(type, name) {
             wxInstances.push(this);
             currentPageComponents[name] = type;
             if (currentPageComponents.$$pageIsReady && Object.keys(currentPageComponents).length > 1) {
-                setTimeout(updateChildComponents, 20);
+                setTimeout(updateChildComponents, 40);
             }
         },
         didUnmount: function didUnmount() {

@@ -50,7 +50,7 @@ export function registerComponent(type, name) {
                 currentPageComponents.$$pageIsReady &&
                 Object.keys(currentPageComponents).length > 1
             ) {
-                setTimeout(updateChildComponents, 20);
+                setTimeout(updateChildComponents, 40);
             }
         },
         didUnmount() {

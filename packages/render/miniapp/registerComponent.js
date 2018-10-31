@@ -6,6 +6,5 @@ export function useComponent(props) {
     delete props.is;
     var args = [].slice.call(arguments, 2);
     args.unshift(clazz, props);
-    console.log('使用组件', is);/* eslint-disable-line */
     return createElement.apply(null, args);
 }
