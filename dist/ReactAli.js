@@ -2354,6 +2354,14 @@ function registerPage(PageClass, path, testObject) {
         data: {},
         dispatchEvent: eventSystem.dispatchEvent,
         onLoad: function onLoad(query) {
+            for (var i in currentPageComponents) {
+                var a = currentPageComponents[i];
+                if (a.reactInstances) {
+                    a.reactInstances.length = 0;
+                    a.wxInstances.length = 0;
+                }
+                delete currentPageComponents[i];
+            }
             var container = {
                 type: 'page',
                 props: {},
@@ -2371,7 +2379,7 @@ function registerPage(PageClass, path, testObject) {
             pageViewInstance.wx = this;
             updateMiniApp(pageViewInstance);
         },
-        onReady: function _() {
+        onReady: function onReady() {
             console.log(path, 'onReady');
             updateChildComponents();
         },
