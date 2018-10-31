@@ -62,9 +62,9 @@ export let Renderer = createRenderer({
                 type[uuid] = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
-            if (type.wxInstances) {
-                //只处理通用组件
-                if (type.wxInstances.length && !instance.wx) {
+            if (type.wxInstances) {//只处理component目录下的组件
+                //支付宝不会走这分支
+                if (!type.ali && !instance.wx && type.wxInstances.length) {
                     var wx = (instance.wx = type.wxInstances.shift());
                     wx.reactInstance = instance;
                     console.log('onBeforeRender时更新', name, instance.props);

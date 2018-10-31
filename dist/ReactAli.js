@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-30
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-31
  * IE9+
  */
 
@@ -2192,7 +2192,7 @@ var Renderer$1 = createRenderer({
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {
-                if (type.wxInstances.length && !instance.wx) {
+                if (!type.ali && !instance.wx && type.wxInstances.length) {
                     var wx = instance.wx = type.wxInstances.shift();
                     wx.reactInstance = instance;
                     console.log('onBeforeRender时更新', name, instance.props);
@@ -2320,6 +2320,32 @@ var HookMap = {
 function applyAppStore() {
     console.log('此方法已废弃');
 }
+var currentPageComponents = {};
+function updateChildComponents() {
+    for (var name in currentPageComponents) {
+        var type = currentPageComponents[name];
+        if (type && type.wxInstances) {
+            var wxInstances = type.wxInstances.sort(function (a, b) {
+                return a.$id - b.$id;
+            });
+            var reactInstances = type.reactInstances;
+            while (reactInstances.length) {
+                var reactInstance = reactInstances.shift();
+                var wxInstance = wxInstances.shift();
+                reactInstance.wx = wxInstance;
+                wxInstance.reactInstance = reactInstance;
+                updateMiniApp(reactInstance);
+            }
+            delete currentPageComponents[name];
+        }
+    }
+    currentPageComponents.$$pageIsReady = true;
+    var el = void 0;
+    while (el = delayMounts.pop()) {
+        el.fn.call(el.instance);
+        el.instance.componentDidMount = el.fn;
+    }
+}
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     var pageViewInstance,
@@ -2343,11 +2369,7 @@ function registerPage(PageClass, path, testObject) {
             updateMiniApp(pageViewInstance);
         },
         onReady: function onReady() {
-            var el;
-            while (el = delayMounts.pop()) {
-                el.fn.call(el.instance);
-                el.instance.componentDidMount = el.fn;
-            }
+            updateChildComponents();
         }
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
@@ -2504,7 +2526,8 @@ var React = void 0;
 var render$1 = Renderer$1.render;
 function registerComponent(type, name) {
     registeredComponents[name] = type;
-    var reactInstances = type.reactInstances = [];
+    type.ali = true;
+    type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
     return {
         data: {
@@ -2513,18 +2536,10 @@ function registerComponent(type, name) {
             context: {}
         },
         didMount: function didMount() {
-            var instance = reactInstances.shift();
-            if (instance) {
-                console.log("didMount时", name, "添加wx");
-                instance.wx = this;
-                this.reactInstance = instance;
-            } else {
-                console.log("didMount时", name, "没有对应react实例");
-                wxInstances.push(this);
-            }
-            if (this.reactInstance) {
-                updateMiniApp(this.reactInstance);
-                console.log("didMount时 更新", name);
+            wxInstances.push(this);
+            currentPageComponents[name] = type;
+            if (currentPageComponents.$$pageIsReady && Object.keys(currentPageComponents).length > 1) {
+                setTimeout(updateChildComponents, 20);
             }
         },
         didUnmount: function didUnmount() {

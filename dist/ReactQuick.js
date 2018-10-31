@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-10-30
+ * 运行于快应用的React by 司徒正美 Copyright 2018-10-31
  * IE9+
  */
 
@@ -1853,7 +1853,7 @@ var Renderer$1 = createRenderer({
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {
-                if (type.wxInstances.length && !instance.wx) {
+                if (!type.ali && !instance.wx && type.wxInstances.length) {
                     var wx = instance.wx = type.wxInstances.shift();
                     wx.reactInstance = instance;
                     console.log('onBeforeRender时更新', name, instance.props);
