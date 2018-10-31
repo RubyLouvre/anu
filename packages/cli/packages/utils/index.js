@@ -90,7 +90,7 @@ let utils = {
 
     createElement(nodeName, attrs, children) {
         return t.JSXElement(
-            t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, false),
+            t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, config.buildType === 'quick' ? false : children.length > 0),
             t.jSXClosingElement(t.JSXIdentifier(nodeName)),
             children
         );
@@ -114,7 +114,7 @@ let utils = {
         }
         return false;
     },
-    
+
     createUUID(astPath) {
         return astPath.node.start + astPath.node.end;
     },
@@ -188,10 +188,10 @@ let utils = {
     },
     isBuildInLibs(name) {
         let libs = new Set(require('repl')._builtinLibs);
-        if (libs.has(name)){
+        if (libs.has(name)) {
             //如果是内置模块，先查找本地node_modules是否有对应重名模块
-            let isLocalBuildInLib = /\/node_modules\//.test(nodeResolve.sync(name, {basedir: cwd}));
-            if (isLocalBuildInLib){
+            let isLocalBuildInLib = /\/node_modules\//.test(nodeResolve.sync(name, { basedir: cwd }));
+            if (isLocalBuildInLib) {
                 return false;
             } else {
                 return true;
@@ -207,13 +207,13 @@ let utils = {
             let options = [];
             if (this.useYarn()) {
                 bin = 'yarn';
-                options.push('add', npmName, type === 'dev' ? '--dev': '--save');
+                options.push('add', npmName, type === 'dev' ? '--dev' : '--save');
             } else if (this.useCnpm()) {
                 bin = 'cnpm';
-                options.push('install', npmName, type === 'dev' ? '--save-dev' : '--save' );
+                options.push('install', npmName, type === 'dev' ? '--save-dev' : '--save');
             } else {
                 bin = 'npm';
-                options.push('install', npmName, type === 'dev' ? '--save-dev' : '--save' );
+                options.push('install', npmName, type === 'dev' ? '--save-dev' : '--save');
             }
 
             let result = spawn.sync(bin, options, { stdio: 'inherit' });
@@ -314,20 +314,20 @@ let utils = {
             '@react': path.join(cwd, `src/${React}`),
             '@components': path.join(cwd, 'src/components')
         };
-        let pkg =  require( path.join(cwd, 'package.json') );
+        let pkg = require(path.join(cwd, 'package.json'));
         let pkgAlias = pkg.mpreact && pkg.mpreact.alias ? pkg.mpreact.alias : {};
 
-       
-        Object.keys(pkgAlias).forEach((aliasKey)=>{
+
+        Object.keys(pkgAlias).forEach((aliasKey) => {
             //@components, @react无法自定义配置
-            if ( !defaultAlias[aliasKey] ) {
+            if (!defaultAlias[aliasKey]) {
                 defaultAlias[aliasKey] = path.join(cwd, pkgAlias[aliasKey]);
             }
         });
         return defaultAlias;
     },
     resolveNpmAliasPath(id, depFile) {
-        let distJs =  this.replacePath(id, '/src/', '/dist/');
+        let distJs = this.replacePath(id, '/src/', '/dist/');
         let distNpm = this.replacePath(depFile, '/node_modules/', '/dist/npm/');
         //根据被依赖文件和依赖文件，求相对路径
         let aliasPath = path.relative(path.dirname(distJs), distNpm);
@@ -381,13 +381,13 @@ let utils = {
 
         return result;
     },
-    replacePath: function(sPath, segement, newSegement){
+    replacePath: function (sPath, segement, newSegement) {
         let sep = path.sep;
         if (process.platform === 'win32') {
-            segement = segement.replace(/\//g, sep); 
+            segement = segement.replace(/\//g, sep);
             newSegement = newSegement.replace(/\//g, sep);
         }
-        return path.resolve(sPath.replace( segement, newSegement ));
+        return path.resolve(sPath.replace(segement, newSegement));
     },
     updateNpmAlias(id, deps) {
         //依赖的npm模块也当alias处理
@@ -406,7 +406,7 @@ let utils = {
     updateCustomAlias(id, deps) {
         //自定义alias是以@react和@components开头
         let aliasConfig = Object.keys(this.getCustomAliasConfig()).join('|');
-        let reg = new RegExp( `^(${aliasConfig})` ); // /^(@react|@components|...)/
+        let reg = new RegExp(`^(${aliasConfig})`); // /^(@react|@components|...)/
         let result = {};
         Object.keys(deps).forEach(depKey => {
             if (reg.test(depKey)) {
@@ -415,43 +415,38 @@ let utils = {
         });
         return result;
     },
-    shortNameAlias: {
-        h: {
-            variableDeclarator: 'h',
-            init: 'var h = React.createElement;'
-        }
-    },
-    compress: function(){
+
+    compress: function () {
         return {
-            js: function(code){
-                let result =  uglifyJS.minify(code);
+            js: function (code) {
+                let result = uglifyJS.minify(code);
                 if (result.error) {
                     throw result.error;
                 }
                 return result.code;
             },
-            npm: function(code){
+            npm: function (code) {
                 console.log(code);
                 return this.js.call(this, code);
             },
-            css: function(code){
+            css: function (code) {
                 let result = new cleanCSS().minify(code);
                 if (result.errors.length) {
                     throw result.errors;
                 }
                 return result.styles;
             },
-            wxml: function(code){
+            wxml: function (code) {
                 //TODO: compress xml file;
                 return code;
             },
-            json: function(code){
+            json: function (code) {
                 return JSON.stringify(JSON.parse(code));
             }
         };
     },
-    getComponentOrAppOrPageReg(){
-        return new RegExp( this.sepForRegex  + '(?:pages|app|components)'  );
+    getComponentOrAppOrPageReg() {
+        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
