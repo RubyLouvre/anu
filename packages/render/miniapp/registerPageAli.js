@@ -19,22 +19,22 @@ export var currentPageComponents = {};
 export function updateChildComponents() {
     for (var name in currentPageComponents) {
         var type = currentPageComponents[name];
-        if (type && type.wxInstances){
+        if (type && type.wxInstances) {//对支付宝原生组件的实例进行排序
             var wxInstances = type.wxInstances.sort(function (a, b) {
                 return a.$id - b.$id;
             });
             var reactInstances = type.reactInstances;
-            while (reactInstances.length) {
+            while (reactInstances.length && wxInstances.length) {//各自持有引用
                 var reactInstance = reactInstances.shift();
                 var wxInstance = wxInstances.shift();
                 reactInstance.wx = wxInstance;
                 wxInstance.reactInstance = reactInstance;
-                updateMiniApp(reactInstance);
+                updateMiniApp(reactInstance);//刷新视图
             }
             delete currentPageComponents[name];
         }
     }
-    currentPageComponents.$$pageIsReady = true;
+    //标记第一屏子组件已更新完毕，如果组件包含子组件的情况，再递归调用updateChildComponents
     var el = void 0;
     while (el = delayMounts.pop()) {
         el.fn.call(el.instance);

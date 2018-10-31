@@ -2329,7 +2329,7 @@ function updateChildComponents() {
                 return a.$id - b.$id;
             });
             var reactInstances = type.reactInstances;
-            while (reactInstances.length) {
+            while (reactInstances.length && wxInstances.length) {
                 var reactInstance = reactInstances.shift();
                 var wxInstance = wxInstances.shift();
                 reactInstance.wx = wxInstance;
@@ -2339,7 +2339,6 @@ function updateChildComponents() {
             delete currentPageComponents[name];
         }
     }
-    currentPageComponents.$$pageIsReady = true;
     var el = void 0;
     while (el = delayMounts.pop()) {
         el.fn.call(el.instance);
