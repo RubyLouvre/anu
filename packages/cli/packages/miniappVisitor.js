@@ -168,24 +168,29 @@ module.exports = {
             astPath.remove();
         }
 
-        //检测component导出的模块名是否
+        //检测component导出的模块名是否与模块所在目录名一致
         if ( ['Page', 'App'].includes(modules.componentType) ) {
             specifiers.forEach(item => {
                 if ( !/\/components\//.test(source) ) return;
-                //引入的模块名
-                let componentImportedName = item.local.name; 
-                let componentPathLevel = source.split(path.sep);
+                let importedName = item.local.name; 
+                let pathLevel = source.split(path.sep);
                 //component模块所在的目录名 components/a/b/index => b
-                let componentDirName = componentPathLevel[componentPathLevel.length - 2];
-                if ( componentDirName !=  componentImportedName) {
-                    /* eslint-disable */
-                    console.log(chalk.red(`error: ${modules.sourcePath}`));
-                    console.log(chalk.red(`imported name:  ${componentImportedName}`));
-                    console.log(chalk.red(`imported value: ${source}`));
-                    console.log(chalk.red('errMsg: 引用的component组件名需与所在的目录名保持一致, 例如：import Loading from @components/Loading/index'));
-                    console.log();
-                }
+                let dirName = pathLevel[pathLevel.length - 2];
+                if (dirName ==  importedName) return;
+                /* eslint-disable */
+                console.log(chalk.red(`error at: ${modules.sourcePath}`));
+                console.log(chalk.red(`imported: ${importedName}`));
+                console.log(chalk.red(`value:    ${source}`));
+                console.log(chalk.red('info: 引用的component组件名需与所在的目录名保持一致, 例如：import Loading from @components/Loading/index'));
+                console.log();
             })
+        }
+
+        if (modules.componentType === 'Component' && path.basename(modules.sourcePath)!= 'index.js' ) {
+            /* eslint-disable */
+            console.log(chalk.red(`error at: ${modules.sourcePath}`));
+            console.log(chalk.red('info: components文件名需定义成index.js'));
+            console.log();
         }
         
         specifiers.forEach(item => {
@@ -193,7 +198,6 @@ module.exports = {
             if (/\.js$/.test(source)) {
                 source = source.replace(/\.js$/, '');
             }
-
             modules.importComponents[item.local.name] = {
                 astPath: astPath,
                 source: source
