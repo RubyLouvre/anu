@@ -12,12 +12,17 @@ import {
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 import { injectAPIs } from './api';
 import { eventSystem } from './eventSystem';
-import { Renderer } from './wxrender';
+import { Renderer } from './wxRender';
 import { toStyle } from './toStyle';
 import { useComponent, registeredComponents } from './registerComponent';
 
-import { registerPage, applyAppStore } from './registerPage';
-import { updateMiniApp, toRenderProps } from './utils';
+import {
+    registerPage,
+    applyAppStore,
+    currentPageComponents,
+    updateChildComponents
+} from './registerPageAli';
+import { toRenderProps } from './utils';
 import { aliApis } from './aliApis';
 
 let win = getWindow();
@@ -25,10 +30,10 @@ let React;
 
 let { render } = Renderer;
 
-
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
-    var reactInstances = (type.reactInstances = []);
+    type.ali = true;
+    type.reactInstances = [];
     var wxInstances = (type.wxInstances = []);
     return {
         data: {
@@ -38,21 +43,14 @@ export function registerComponent(type, name) {
         },
 
         didMount() {
-            var instance = reactInstances.shift();
-            if (instance) {
-                /* eslint-disable-next-line */
-                console.log("didMount时", name, "添加wx");
-                instance.wx = this;
-                this.reactInstance = instance;
-            } else {
-                /* eslint-disable-next-line */
-                console.log("didMount时", name, "没有对应react实例");
-                wxInstances.push(this);
-            }
-            if (this.reactInstance) {
-                updateMiniApp(this.reactInstance);
-                /* eslint-disable-next-line */
-                console.log("didMount时 更新", name);
+            //支付宝小程序的实例didMount是没有顺序的
+            wxInstances.push(this);
+            currentPageComponents[name] = type;
+            if (
+                currentPageComponents.$$pageIsReady &&
+                Object.keys(currentPageComponents).length > 1
+            ) {
+                setTimeout(updateChildComponents, 40);
             }
         },
         didUnmount() {

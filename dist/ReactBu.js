@@ -1,5 +1,5 @@
 /**
- * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-10-30
+ * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-10-31
  * IE9+
  */
 
@@ -2192,13 +2192,11 @@ var Renderer$1 = createRenderer({
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {
-                if (type.wxInstances.length && !instance.wx) {
+                if (!type.ali && !instance.wx && type.wxInstances.length) {
                     var wx = instance.wx = type.wxInstances.shift();
                     wx.reactInstance = instance;
-                    console.log('onBeforeRender时更新', name, instance.props);
                 }
                 if (!instance.wx) {
-                    console.log('onBeforeRender时更新', name, '没有wx');
                     type.reactInstances.push(instance);
                 }
             }
@@ -2308,7 +2306,6 @@ function useComponent(props) {
     delete props.is;
     var args = [].slice.call(arguments, 2);
     args.unshift(clazz, props);
-    console.log('使用组件', is);
     return createElement.apply(null, args);
 }
 

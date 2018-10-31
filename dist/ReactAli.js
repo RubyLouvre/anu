@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-30
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-31
  * IE9+
  */
 
@@ -2192,13 +2192,11 @@ var Renderer$1 = createRenderer({
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {
-                if (type.wxInstances.length && !instance.wx) {
+                if (!type.ali && !instance.wx && type.wxInstances.length) {
                     var wx = instance.wx = type.wxInstances.shift();
                     wx.reactInstance = instance;
-                    console.log('onBeforeRender时更新', name, instance.props);
                 }
                 if (!instance.wx) {
-                    console.log('onBeforeRender时更新', name, '没有wx');
                     type.reactInstances.push(instance);
                 }
             }
@@ -2308,7 +2306,6 @@ function useComponent(props) {
     delete props.is;
     var args = [].slice.call(arguments, 2);
     args.unshift(clazz, props);
-    console.log('使用组件', is);
     return createElement.apply(null, args);
 }
 
@@ -2318,7 +2315,37 @@ var HookMap = {
     onUnload: 'componentWillUnmount'
 };
 function applyAppStore() {
-    console.log('此方法已废弃');
+    console.log("此方法已废弃");
+}
+var currentPageComponents = {};
+function updateChildComponents() {
+    var queue = [];
+    for (var name in currentPageComponents) {
+        var type = currentPageComponents[name];
+        if (type && type.wxInstances) {
+            var wxInstances = type.wxInstances.sort(function (a, b) {
+                return a.$id - b.$id;
+            });
+            var reactInstances = type.reactInstances;
+            while (reactInstances.length && wxInstances.length) {
+                var reactInstance = reactInstances.shift();
+                var wxInstance = wxInstances.shift();
+                reactInstance.wx = wxInstance;
+                wxInstance.reactInstance = reactInstance;
+                queue.push(reactInstance);
+            }
+            if (reactInstances.length + wxInstances.length === 0) {
+                delete currentPageComponents[name];
+            }
+        }
+    }
+    currentPageComponents.$$pageIsReady = true;
+    queue.forEach(updateMiniApp);
+    var el = void 0;
+    while (el = delayMounts.pop()) {
+        el.fn.call(el.instance);
+        el.instance.componentDidMount = el.fn;
+    }
 }
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
@@ -2327,32 +2354,60 @@ function registerPage(PageClass, path, testObject) {
         data: {},
         dispatchEvent: eventSystem.dispatchEvent,
         onLoad: function onLoad(query) {
-            pageViewInstance = render(createElement(PageClass, {
-                path: path,
-                query: query,
-                isPageComponent: true
-            }), {
+            for (var i in currentPageComponents) {
+                var a = currentPageComponents[i];
+                if (a.reactInstances) {
+                    a.reactInstances.length = 0;
+                    a.wxInstances.length = 0;
+                }
+                delete currentPageComponents[i];
+            }
+            var container = {
                 type: 'page',
                 props: {},
                 children: [],
                 root: true,
                 appendChild: noop
-            });
+            };
+            pageViewInstance = render(createElement(PageClass, {
+                path: path,
+                query: query,
+                isPageComponent: true
+            }), container);
             this.reactInstance = pageViewInstance;
+            this.reactContainer = container;
             pageViewInstance.wx = this;
             updateMiniApp(pageViewInstance);
         },
         onReady: function onReady() {
-            var el;
-            while (el = delayMounts.pop()) {
-                el.fn.call(el.instance);
-                el.instance.componentDidMount = el.fn;
+            console.log(path, 'onReady');
+            updateChildComponents();
+        },
+        onUnload: function onUnload() {
+            console.log(path, 'onUnload');
+            var root = this.reactContainer;
+            var container = root._reactInternalFiber;
+            if (container) {
+                Renderer.updateComponent(container.hostRoot, {
+                    child: null
+                }, function () {
+                    root._reactInternalFiber = null;
+                    var j = topNodes.indexOf(root);
+                    if (j !== -1) {
+                        topFibers.splice(j, 1);
+                        topNodes.splice(j, 1);
+                    }
+                }, true);
             }
         }
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
+        var fn2 = config[hook];
         config[hook] = function () {
             var name = HookMap[hook] || hook;
+            if (isFn(fn2)) {
+                fn2.call(this, arguments);
+            }
             var fn = pageViewInstance[name];
             if (isFn(fn)) {
                 return fn.apply(pageViewInstance, arguments);
@@ -2504,7 +2559,8 @@ var React = void 0;
 var render$1 = Renderer$1.render;
 function registerComponent(type, name) {
     registeredComponents[name] = type;
-    var reactInstances = type.reactInstances = [];
+    type.ali = true;
+    type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
     return {
         data: {
@@ -2513,18 +2569,10 @@ function registerComponent(type, name) {
             context: {}
         },
         didMount: function didMount() {
-            var instance = reactInstances.shift();
-            if (instance) {
-                console.log("didMount时", name, "添加wx");
-                instance.wx = this;
-                this.reactInstance = instance;
-            } else {
-                console.log("didMount时", name, "没有对应react实例");
-                wxInstances.push(this);
-            }
-            if (this.reactInstance) {
-                updateMiniApp(this.reactInstance);
-                console.log("didMount时 更新", name);
+            wxInstances.push(this);
+            currentPageComponents[name] = type;
+            if (currentPageComponents.$$pageIsReady && Object.keys(currentPageComponents).length > 1) {
+                setTimeout(updateChildComponents, 40);
             }
         },
         didUnmount: function didUnmount() {
