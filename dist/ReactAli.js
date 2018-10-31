@@ -2336,8 +2336,6 @@ function updateChildComponents() {
             }
             if (reactInstances.length + wxInstances.length === 0) {
                 delete currentPageComponents[name];
-            } else {
-                console.log(reactInstances, wxInstances);
             }
         }
     }
@@ -2373,10 +2371,12 @@ function registerPage(PageClass, path, testObject) {
             pageViewInstance.wx = this;
             updateMiniApp(pageViewInstance);
         },
-        onReady: function onReady() {
+        onReady: function _() {
+            console.log(path, 'onReady');
             updateChildComponents();
         },
         onUnload: function onUnload() {
+            console.log(path, 'onUnload');
             var root = this.reactContainer;
             var container = root._reactInternalFiber;
             if (container) {
@@ -2394,8 +2394,12 @@ function registerPage(PageClass, path, testObject) {
         }
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
+        var fn2 = config[hook];
         config[hook] = function () {
             var name = HookMap[hook] || hook;
+            if (isFn(fn2)) {
+                fn2.call(this, arguments);
+            }
             var fn = pageViewInstance[name];
             if (isFn(fn)) {
                 return fn.apply(pageViewInstance, arguments);
