@@ -15,14 +15,14 @@ export function applyAppStore() {
     // eslint-disable-next-line
     console.log("此方法已废弃");
 }
-export var currentPageComponents = {};
-export function updateChildComponents() {
+var currentPageComponents = {};
+function updateChildComponents() {
     var queue = [];
     for (var name in currentPageComponents) {
         var type = currentPageComponents[name];
         if (type && type.wxInstances) {
             //对支付宝原生组件的实例进行排序
-            var wxInstances = type.wxInstances.sort(function(a, b) {
+            var wxInstances = type.wxInstances.sort(function (a, b) {
                 return a.$id - b.$id;
             });
             var reactInstances = type.reactInstances;
@@ -30,12 +30,10 @@ export function updateChildComponents() {
             while (reactInstances.length && wxInstances.length) {
                 //各自持有引用
                 var reactInstance = reactInstances.shift();
-
                 var wxInstance = wxInstances.shift();
                 reactInstance.wx = wxInstance;
                 wxInstance.reactInstance = reactInstance;
                 queue.push(reactInstance);
-                // updateMiniApp(reactInstance);//刷新视图
             }
             if (reactInstances.length + wxInstances.length === 0) {
                 delete currentPageComponents[name];
@@ -58,14 +56,17 @@ export function registerPage(PageClass, path, testObject) {
             data: {},
             dispatchEvent: eventSystem.dispatchEvent,
             onLoad(query) {
-                for (let i in currentPageComponents) {
-                    var a = currentPageComponents[i];
-                    if (a.reactInstances) {
-                        a.reactInstances.length = 0;
-                        a.wxInstances.length = 0;
-                    }
-                    delete currentPageComponents[i];
-                }
+
+                /*  //临时移除
+                 for (let i in currentPageComponents) {
+                      var a = currentPageComponents[i];
+                      if (a.reactInstances) {
+                          a.reactInstances.length = 0;
+                          a.wxInstances.length = 0;
+                      }
+                      delete currentPageComponents[i];
+                  }
+                  */
                 var container = {
                     type: 'page',
                     props: {},
@@ -88,7 +89,12 @@ export function registerPage(PageClass, path, testObject) {
             },
             onReady() {
                 console.log(path, 'onReady');
-                updateChildComponents();
+                var el = void 0;
+                while ((el = delayMounts.pop())) {
+                    el.fn.call(el.instance);
+                    el.instance.componentDidMount = el.fn;
+                }
+                // updateChildComponents();
             },
 
             onUnload() {
@@ -101,7 +107,7 @@ export function registerPage(PageClass, path, testObject) {
                         {
                             child: null
                         },
-                        function() {
+                        function () {
                             root._reactInternalFiber = null;
                             var j = topNodes.indexOf(root);
                             if (j !== -1) {
@@ -122,9 +128,9 @@ export function registerPage(PageClass, path, testObject) {
         'onShow',
         'onHide',
         'onUnload'
-    ).forEach(function(hook) {
+    ).forEach(function (hook) {
         var fn2 = config[hook];
-        config[hook] = function() {
+        config[hook] = function () {
             var name = HookMap[hook] || hook;
             if (isFn(fn2)) {
                 fn2.call(this, arguments);
@@ -136,7 +142,7 @@ export function registerPage(PageClass, path, testObject) {
         };
     });
     if (testObject) {
-        config.setData = function(obj) {
+        config.setData = function (obj) {
             config.data = obj;
         };
         config.onLoad();

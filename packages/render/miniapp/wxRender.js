@@ -53,13 +53,13 @@ export let Renderer = createRenderer({
     onBeforeRender: function(fiber) {
         var type = fiber.type;
         if (type.reactInstances) {
-            var name = fiber.name;
+            //var name = fiber.name;
             var noMount = !fiber.hasMounted;
             var instance = fiber.stateNode;
             if (!instance.instanceUid) {
                 var uuid = 'i' + getUUID();
-                instance.instanceUid = uuid;
-                type[uuid] = instance;
+                instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
+                //type[uuid] = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {//只处理component目录下的组件

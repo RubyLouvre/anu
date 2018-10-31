@@ -34,6 +34,14 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/loop3/index'
                 },
                 {
+                    title: '一个页面有多个相同组件',
+                    url: '/pages/demo/syntax/loop5/index'
+                },
+                {
+                    title: '一个页面有多个相同组件跳',
+                    url: '/pages/demo/syntax/loop6/index'
+                },
+                {
                     title: '循环里面交替使用两种不同组件（对话形式）',
                     url: '/pages/demo/syntax/loop4/index'
                 },

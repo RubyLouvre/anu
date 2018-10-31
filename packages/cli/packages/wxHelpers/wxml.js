@@ -65,7 +65,7 @@ var visitor = {
                     children.splice(i + 1, 1);
                     astPath.parentPath.replaceWith(template);
                 } else if (openTag.property.name === 'useComponent') {
-                    var is;
+                    var is, instanceUid;
                     astPath.node.attributes.forEach(function (el) {
                         var attrName = el.name.name;
                         var attrValue = el.value.value;
@@ -76,8 +76,18 @@ var visitor = {
                         if (attrName === 'is') {
                             is = 'anu-' + attrValue.slice(1, -1).toLowerCase();
                         }
+                        if (attrName === 'data-instance-uid') {
+                            instanceUid = attrValue;
+                        }
                     });
                     attributes = [];
+                    if (config.buildType == 'ali') {
+                        attributes.push(utils.createAttribute(
+                            'instanceUid', `{{${instanceUid}}}` 
+                        ));
+
+                       
+                    }
                     template = utils.createElement(
                         is,
                         attributes,

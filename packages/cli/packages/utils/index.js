@@ -88,9 +88,10 @@ let utils = {
     },
     createElement(nodeName, attrs, children) {
         return t.JSXElement(
-            t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, false),
+            t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, !children.length),
             t.jSXClosingElement(t.JSXIdentifier(nodeName)),
-            children
+            children,
+            !children.length
         );
     },
     createAttribute(name, value) {
