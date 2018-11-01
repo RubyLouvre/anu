@@ -59,6 +59,7 @@ class Parser {
 
         this.inputConfig = {
             input: this.entry,
+            treeshake: false,
             plugins: [
                 alias(this.customAliasConfig), //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
@@ -69,7 +70,7 @@ class Parser {
                     }
                 }),
                 commonjs({
-                    include: 'node_modules/**'
+                    include: path.join(cwd, 'node_modules/**')
                 }),
                 rollupLess({
                     output: function() {
@@ -84,13 +85,10 @@ class Parser {
                 }),
                 rbabel({
                     babelrc: false,
-                    runtimeHelpers: true,
-                    presets: ['react'],
-                    externalHelpers: false,
+                    presets: [require('babel-preset-react')],
                     plugins: [
-                        'transform-class-properties',
-                        'transform-object-rest-spread',
-                        'transform-es2015-template-literals'
+                        require('babel-plugin-transform-class-properties'),
+                        require('babel-plugin-transform-object-rest-spread')
                     ]
                 })
             ],
@@ -137,7 +135,6 @@ class Parser {
                         return;
                     }
                 }
-               
                 this.styleFiles.push({
                     id: id,
                     originalCode: item.originalCode

@@ -33,7 +33,7 @@ exports.exit = function (astPath, type, componentName, modules) {
         var jsx = generate(expr.argument).code;
         var jsxAst = babel.transform(jsx, {
             babelrc: false,
-            plugins: [['transform-react-jsx', { pragma: 'h' }]]
+            plugins: [[ require('babel-plugin-transform-react-jsx'), { pragma: 'h' }]]
         });
 
         expr.argument = jsxAst.ast.program.body[0];
