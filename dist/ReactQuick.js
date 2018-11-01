@@ -1860,6 +1860,9 @@ function _uuid() {
 var delayMounts = [];
 var usingComponents = [];
 var registeredComponents = {};
+var currentPage = {
+    isReady: false
+};
 function getUUID() {
     return _uuid() + _uuid();
 }
@@ -1974,7 +1977,7 @@ var Renderer$1 = createRenderer({
                 }
             }
         }
-        if (noMount && instance.componentDidMount) {
+        if (!currentPage.isReady && noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount
@@ -2167,13 +2170,71 @@ function registerComponent(type, name) {
     };
 }
 
+function onLoad(PageClass, path, query) {
+    currentPage.isReady = false;
+    var container = {
+        type: 'page',
+        props: {},
+        children: [],
+        root: true,
+        appendChild: noop
+    };
+    var pageInstance = render(createElement(PageClass, {
+        path: path,
+        query: query,
+        isPageComponent: true
+    }), container);
+    this.reactInstance = pageInstance;
+    this.reactContainer = container;
+    pageInstance.wx = this;
+    updateMiniApp(pageInstance);
+    return pageInstance;
+}
+function onReady() {
+    currentPage.isReady = true;
+    var el = void 0;
+    while (el = delayMounts.pop()) {
+        el.fn.call(el.instance);
+        el.instance.componentDidMount = el.fn;
+    }
+}
+function onUnload() {
+    for (var i in usingComponents) {
+        var a = usingComponents[i];
+        if (a.reactInstances.length) {
+            console.log(i, "还有", a.reactInstances.length, "实例没有使用过");
+            a.reactInstances.length = 0;
+            a.wxInstances.length = 0;
+        }
+        delete usingComponents[i];
+    }
+    var root = this.reactContainer;
+    var container = root._reactInternalFiber;
+    var instance = this.reactInstance;
+    var hook = instance.componentWillUnmount;
+    if (isFn(hook)) {
+        hook.call(instance);
+    }
+    if (container) {
+        Renderer.updateComponent(container.hostRoot, {
+            child: null
+        }, function () {
+            root._reactInternalFiber = null;
+            var j = topNodes.indexOf(root);
+            if (j !== -1) {
+                topFibers.splice(j, 1);
+                topNodes.splice(j, 1);
+            }
+        }, true);
+    }
+}
+
 var shareObject = {};
 function getApp() {
     return shareObject.app;
 }
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
-    var instance;
     var config = {
         private: {
             props: Object,
@@ -2183,48 +2244,25 @@ function registerPage(PageClass, path) {
         dispatchEvent: eventSystem.dispatchEvent,
         onInit: function onInit(query) {
             shareObject.app = this.$app.$def || this.$app._def;
-            instance = render(createElement(PageClass, {
-                path: path,
-                query: query,
-                isPageComponent: true
-            }), {
-                type: 'page',
-                props: {},
-                children: [],
-                root: true,
-                appendChild: noop
-            });
-            transmitData(PageClass, path, instance, this);
+            var instance = onLoad.call(this, PageClass, path, query);
+            var pageConfig = instance.config || PageClass.config;
+            shareObject.pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
+            shareObject.pagePath = path;
+            shareObject.page = instance;
         },
-        onShow: function onShow() {
-            var fn = this.reactInstance.componentDidShow;
-            fn && fn.call(instance);
-        },
-        onHide: function onHide() {
-            var fn = this.reactInstance.componentDidHide;
-            fn && fn.call(instance);
-        },
-        onReady: function onReady() {
-            var el;
-            while (el = delayMounts.pop()) {
-                el.fn.call(el.instance);
-                el.instance.componentDidMount = el.fn;
-            }
-        },
-        onMenuPress: function onMenuPress(a) {
-            instance.onMenuPress && instance.onMenuPress(a);
-        }
+        onReady: onReady,
+        onDestroy: onUnload
     };
+    Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
+        config[hook] = function () {
+            var instance = this.reactInstance;
+            var fn = instance[hook];
+            if (isFn(fn)) {
+                return fn.apply(instance, arguments);
+            }
+        };
+    });
     return config;
-}
-function transmitData(pageClass, pagePath, reactInstance, quickInstance) {
-    reactInstance.wx = quickInstance;
-    quickInstance.reactInstance = reactInstance;
-    updateMiniApp(reactInstance);
-    var pageConfig = reactInstance.config || pageClass.config;
-    shareObject.pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
-    shareObject.pagePath = pagePath;
-    shareObject.page = reactInstance;
 }
 
 var render$1 = Renderer$1.render;

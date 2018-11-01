@@ -882,133 +882,133 @@ function injectAPIs(ReactWX, facade, override) {
 }
 
 var aliApis = function aliApis(api) {
-  return {
-    showModal: function _(a) {
-      a.cancelButtonText = a.cancelText;
-      a.confirmButtonText = a.confirmText || '好的';
-      if (a.showCancel === false) {
-        a.buttonText = a.confirmText || '好的';
-        return api.alert(a);
-      }
-      return api.confirm(a);
-    },
-    showActionSheet: function _(a) {
-      a.items = a.itemList;
-      return api.showActionSheet(a);
-    },
-    showToast: function _(a) {
-      a.content = a.title;
-      a.type = a.icon;
-      return api.showToast(a);
-    },
-    showLoading: function _(a) {
-      a.content = a.title;
-      return api.showLoading(a);
-    },
-    setNavigationBarTitle: function _(a) {
-      return api.setNavigationBar(a);
-    },
-    setNavigationBarColor: function _(a) {
-      return api.setNavigationBar(a);
-    },
-    saveImageToPhotosAlbum: function _(a) {
-      a.url = a.filePath;
-      return api.saveImage(a);
-    },
-    previewImage: function _(a) {
-      var index = a.urls.indexOf(a.current || a.urls[0]);
-      a.current = index;
-      return api.previewImage(a);
-    },
-    getFileInfo: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.getFileInfo(a);
-    },
-    getSavedFileInfo: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.getSavedFileInfo(a);
-    },
-    removeSavedFile: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.removeSavedFile(a);
-    },
-    saveFile: function _(a) {
-      a.apFilePath = a.tempFilePath;
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.savedFilePath = res.apFilePath;
-        fn && fn(res);
-      };
-      return api.saveFile(a);
-    },
-    openLocation: function _(a) {
-      a.latitude = a.latitude + '';
-      a.longitude = a.longitude + '';
-      return api.openLocation(a);
-    },
-    getStorageSync: function _(a) {
-      if (a == null) throw new Error('key 不能是 undefined或者是空');
-      var res = api.getStorageSync({ key: a });
-      return res.data || '';
-    },
-    setStorageSync: function _(a1, a2) {
-      if (a1 == null) throw new Error('key 不能是 undefined或者是空');
-      var k = {};
-      k.key = a1;
-      k.data = a2;
-      return api.setStorageSync(k);
-    },
-    uploadFile: function _(a) {
-      a.fileName = a.name;
-      return api.uploadFile(a);
-    },
-    downloadFile: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.tempFilePath = res.apFilePath;
-        fn && fn(res);
-      };
-      return api.downloadFile(a);
-    },
-    chooseImage: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.tempFilePaths = res.apFilePaths;
-        fn && fn(res);
-      };
-      return api.chooseImage(a);
-    },
-    getClipboardData: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.data = res.text;
-        fn && fn(res);
-      };
-      return api.getClipboard(a);
-    },
-    setClipboardData: function _(a) {
-      a.text = a.data;
-      return api.setClipboard(a);
-    },
-    makePhoneCall: function _(a) {
-      a.number = a.phoneNumber;
-      return api.makePhoneCall(a);
-    },
-    scanCode: function _(a) {
-      a.hideAlbum = a.onlyFromCamera;
-      a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.result = res.code;
-        fn && fn(res);
-      };
-      return api.scan(a);
-    },
-    setScreenBrightness: function _(a) {
-      a.brightness = a.value;
-      return api.setScreenBrightness(a);
-    }
-  };
+    return {
+        showModal: function _(a) {
+            a.cancelButtonText = a.cancelText;
+            a.confirmButtonText = a.confirmText || '好的';
+            if (a.showCancel === false) {
+                a.buttonText = a.confirmText || '好的';
+                return api.alert(a);
+            }
+            return api.confirm(a);
+        },
+        showActionSheet: function _(a) {
+            a.items = a.itemList;
+            return api.showActionSheet(a);
+        },
+        showToast: function _(a) {
+            a.content = a.title;
+            a.type = a.icon;
+            return api.showToast(a);
+        },
+        showLoading: function _(a) {
+            a.content = a.title;
+            return api.showLoading(a);
+        },
+        setNavigationBarTitle: function _(a) {
+            return api.setNavigationBar(a);
+        },
+        setNavigationBarColor: function _(a) {
+            return api.setNavigationBar(a);
+        },
+        saveImageToPhotosAlbum: function _(a) {
+            a.url = a.filePath;
+            return api.saveImage(a);
+        },
+        previewImage: function _(a) {
+            var index = a.urls.indexOf(a.current || a.urls[0]);
+            a.current = index;
+            return api.previewImage(a);
+        },
+        getFileInfo: function _(a) {
+            a.apFilePath = a.filePath;
+            return api.getFileInfo(a);
+        },
+        getSavedFileInfo: function _(a) {
+            a.apFilePath = a.filePath;
+            return api.getSavedFileInfo(a);
+        },
+        removeSavedFile: function _(a) {
+            a.apFilePath = a.filePath;
+            return api.removeSavedFile(a);
+        },
+        saveFile: function _(a) {
+            a.apFilePath = a.tempFilePath;
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.savedFilePath = res.apFilePath;
+                fn && fn(res);
+            };
+            return api.saveFile(a);
+        },
+        openLocation: function _(a) {
+            a.latitude = a.latitude + '';
+            a.longitude = a.longitude + '';
+            return api.openLocation(a);
+        },
+        getStorageSync: function _(a) {
+            if (a == null) throw new Error('key 不能是 undefined或者是空');
+            var res = api.getStorageSync({ key: a });
+            return res.data || '';
+        },
+        setStorageSync: function _(a1, a2) {
+            if (a1 == null) throw new Error('key 不能是 undefined或者是空');
+            var k = {};
+            k.key = a1;
+            k.data = a2;
+            return api.setStorageSync(k);
+        },
+        uploadFile: function _(a) {
+            a.fileName = a.name;
+            return api.uploadFile(a);
+        },
+        downloadFile: function _(a) {
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.tempFilePath = res.apFilePath;
+                fn && fn(res);
+            };
+            return api.downloadFile(a);
+        },
+        chooseImage: function _(a) {
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.tempFilePaths = res.apFilePaths;
+                fn && fn(res);
+            };
+            return api.chooseImage(a);
+        },
+        getClipboardData: function _(a) {
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.data = res.text;
+                fn && fn(res);
+            };
+            return api.getClipboard(a);
+        },
+        setClipboardData: function _(a) {
+            a.text = a.data;
+            return api.setClipboard(a);
+        },
+        makePhoneCall: function _(a) {
+            a.number = a.phoneNumber;
+            return api.makePhoneCall(a);
+        },
+        scanCode: function _(a) {
+            a.hideAlbum = a.onlyFromCamera;
+            a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.result = res.code;
+                fn && fn(res);
+            };
+            return api.scan(a);
+        },
+        setScreenBrightness: function _(a) {
+            a.brightness = a.value;
+            return api.setScreenBrightness(a);
+        }
+    };
 };
 
 var eventSystem = {
@@ -2474,93 +2474,75 @@ function registerComponent(type, name) {
     };
 }
 
+function onLoad(PageClass, path, query) {
+    currentPage.isReady = false;
+    var container = {
+        type: 'page',
+        props: {},
+        children: [],
+        root: true,
+        appendChild: noop
+    };
+    var pageInstance = render(createElement(PageClass, {
+        path: path,
+        query: query,
+        isPageComponent: true
+    }), container);
+    this.reactInstance = pageInstance;
+    this.reactContainer = container;
+    pageInstance.wx = this;
+    updateMiniApp(pageInstance);
+    return pageInstance;
+}
+function onReady() {
+    currentPage.isReady = true;
+    var el = void 0;
+    while (el = delayMounts.pop()) {
+        el.fn.call(el.instance);
+        el.instance.componentDidMount = el.fn;
+    }
+}
+function onUnload() {
+    for (var i in usingComponents) {
+        var a = usingComponents[i];
+        if (a.reactInstances.length) {
+            console.log(i, "还有", a.reactInstances.length, "实例没有使用过");
+            a.reactInstances.length = 0;
+            a.wxInstances.length = 0;
+        }
+        delete usingComponents[i];
+    }
+    var root = this.reactContainer;
+    var container = root._reactInternalFiber;
+    var instance = this.reactInstance;
+    var hook = instance.componentWillUnmount;
+    if (isFn(hook)) {
+        hook.call(instance);
+    }
+    if (container) {
+        Renderer.updateComponent(container.hostRoot, {
+            child: null
+        }, function () {
+            root._reactInternalFiber = null;
+            var j = topNodes.indexOf(root);
+            if (j !== -1) {
+                topFibers.splice(j, 1);
+                topNodes.splice(j, 1);
+            }
+        }, true);
+    }
+}
+
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
-    var pageViewInstance,
-        config = {
+    var config = {
         data: {},
         dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function onLoad(query) {
-            currentPage.isReady = false;
-            var container = {
-                type: 'page',
-                props: {},
-                children: [],
-                root: true,
-                appendChild: noop
-            };
-            pageViewInstance = render(createElement(PageClass, {
-                path: path,
-                query: query,
-                isPageComponent: true
-            }), container);
-            this.reactInstance = pageViewInstance;
-            this.reactContainer = container;
-            pageViewInstance.wx = this;
-            updateMiniApp(pageViewInstance);
+        onLoad: function onLoad$$1(query) {
+            onLoad.call(this, PageClass, path, query);
         },
-        onReady: function onReady() {
-            currentPage.isReady = true;
-            var el = void 0;
-            while (el = delayMounts.pop()) {
-                el.fn.call(el.instance);
-                el.instance.componentDidMount = el.fn;
-            }
-        },
-        onShow: function onShow() {
-            var instance = this.reactInstance;
-            var fn = instance.onShow;
-            if (fn) {
-                return fn.apply(instance, arguments);
-            }
-            var fn2 = instance.componentDidShow;
-            if (fn2) {
-                console.warn("componentDidShow 已经被废弃，请使用onShow");
-                return fn2.apply(instance, arguments);
-            }
-        },
-        onHide: function onHide() {
-            var instance = this.reactInstance;
-            var fn = instance.onHide;
-            if (fn) {
-                return fn.apply(instance, arguments);
-            }
-            var fn2 = instance.componentDidHide;
-            if (fn2) {
-                console.warn("componentDidHide 已经被废弃，请使用onHide");
-                return fn2.apply(instance, arguments);
-            }
-        },
-        onUnload: function onUnload() {
-            for (var i in usingComponents) {
-                var a = usingComponents[i];
-                if (a.reactInstances) {
-                    console.log(i, '还有', a.reactInstances.length, '实例没有使用过');
-                    a.reactInstances.length = 0;
-                    a.wxInstances.length = 0;
-                }
-                delete usingComponents[i];
-            }
-            var root = this.reactContainer;
-            var container = root._reactInternalFiber;
-            var instance = this.reactInstance;
-            var hook = instance.componentWillUnmount;
-            if (isFn(hook)) {
-                hook.call(instance);
-            }
-            if (container) {
-                Renderer.updateComponent(container.hostRoot, {
-                    child: null
-                }, function () {
-                    root._reactInternalFiber = null;
-                    var j = topNodes.indexOf(root);
-                    if (j !== -1) {
-                        topFibers.splice(j, 1);
-                        topNodes.splice(j, 1);
-                    }
-                }, true);
-            }
-        }
+        onReady: onReady,
+        onUnload: onUnload
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh').forEach(function (hook) {
         config[hook] = function () {
@@ -2568,6 +2550,21 @@ function registerPage(PageClass, path, testObject) {
             var fn = instance[hook];
             if (isFn(fn)) {
                 return fn.apply(instance, arguments);
+            }
+        };
+    });
+    Array('onShow', 'onHide').forEach(function (hook) {
+        config[hook] = function () {
+            var instance = this.reactInstance;
+            var fn = instance[hook];
+            if (isFn(fn)) {
+                return fn.apply(instance, arguments);
+            }
+            var discarded = hook == 'onShow' ? 'componentDidShow' : 'componentDidHide';
+            var fn2 = instance[discarded];
+            if (isFn(fn2)) {
+                console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
+                return fn2.apply(instance, arguments);
             }
         };
     });

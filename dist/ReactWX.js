@@ -2310,93 +2310,75 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
+function onLoad(PageClass, path, query) {
+    currentPage.isReady = false;
+    var container = {
+        type: 'page',
+        props: {},
+        children: [],
+        root: true,
+        appendChild: noop
+    };
+    var pageInstance = render(createElement(PageClass, {
+        path: path,
+        query: query,
+        isPageComponent: true
+    }), container);
+    this.reactInstance = pageInstance;
+    this.reactContainer = container;
+    pageInstance.wx = this;
+    updateMiniApp(pageInstance);
+    return pageInstance;
+}
+function onReady() {
+    currentPage.isReady = true;
+    var el = void 0;
+    while (el = delayMounts.pop()) {
+        el.fn.call(el.instance);
+        el.instance.componentDidMount = el.fn;
+    }
+}
+function onUnload() {
+    for (var i in usingComponents) {
+        var a = usingComponents[i];
+        if (a.reactInstances.length) {
+            console.log(i, "还有", a.reactInstances.length, "实例没有使用过");
+            a.reactInstances.length = 0;
+            a.wxInstances.length = 0;
+        }
+        delete usingComponents[i];
+    }
+    var root = this.reactContainer;
+    var container = root._reactInternalFiber;
+    var instance = this.reactInstance;
+    var hook = instance.componentWillUnmount;
+    if (isFn(hook)) {
+        hook.call(instance);
+    }
+    if (container) {
+        Renderer.updateComponent(container.hostRoot, {
+            child: null
+        }, function () {
+            root._reactInternalFiber = null;
+            var j = topNodes.indexOf(root);
+            if (j !== -1) {
+                topFibers.splice(j, 1);
+                topNodes.splice(j, 1);
+            }
+        }, true);
+    }
+}
+
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
-    var pageViewInstance,
-        config = {
+    var config = {
         data: {},
         dispatchEvent: eventSystem.dispatchEvent,
-        onLoad: function onLoad(query) {
-            currentPage.isReady = false;
-            var container = {
-                type: 'page',
-                props: {},
-                children: [],
-                root: true,
-                appendChild: noop
-            };
-            pageViewInstance = render(createElement(PageClass, {
-                path: path,
-                query: query,
-                isPageComponent: true
-            }), container);
-            this.reactInstance = pageViewInstance;
-            this.reactContainer = container;
-            pageViewInstance.wx = this;
-            updateMiniApp(pageViewInstance);
+        onLoad: function onLoad$$1(query) {
+            onLoad.call(this, PageClass, path, query);
         },
-        onReady: function onReady() {
-            currentPage.isReady = true;
-            var el = void 0;
-            while (el = delayMounts.pop()) {
-                el.fn.call(el.instance);
-                el.instance.componentDidMount = el.fn;
-            }
-        },
-        onShow: function onShow() {
-            var instance = this.reactInstance;
-            var fn = instance.onShow;
-            if (fn) {
-                return fn.apply(instance, arguments);
-            }
-            var fn2 = instance.componentDidShow;
-            if (fn2) {
-                console.warn("componentDidShow 已经被废弃，请使用onShow");
-                return fn2.apply(instance, arguments);
-            }
-        },
-        onHide: function onHide() {
-            var instance = this.reactInstance;
-            var fn = instance.onHide;
-            if (fn) {
-                return fn.apply(instance, arguments);
-            }
-            var fn2 = instance.componentDidHide;
-            if (fn2) {
-                console.warn("componentDidHide 已经被废弃，请使用onHide");
-                return fn2.apply(instance, arguments);
-            }
-        },
-        onUnload: function onUnload() {
-            for (var i in usingComponents) {
-                var a = usingComponents[i];
-                if (a.reactInstances) {
-                    console.log(i, '还有', a.reactInstances.length, '实例没有使用过');
-                    a.reactInstances.length = 0;
-                    a.wxInstances.length = 0;
-                }
-                delete usingComponents[i];
-            }
-            var root = this.reactContainer;
-            var container = root._reactInternalFiber;
-            var instance = this.reactInstance;
-            var hook = instance.componentWillUnmount;
-            if (isFn(hook)) {
-                hook.call(instance);
-            }
-            if (container) {
-                Renderer.updateComponent(container.hostRoot, {
-                    child: null
-                }, function () {
-                    root._reactInternalFiber = null;
-                    var j = topNodes.indexOf(root);
-                    if (j !== -1) {
-                        topFibers.splice(j, 1);
-                        topNodes.splice(j, 1);
-                    }
-                }, true);
-            }
-        }
+        onReady: onReady,
+        onUnload: onUnload
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh').forEach(function (hook) {
         config[hook] = function () {
@@ -2404,6 +2386,21 @@ function registerPage(PageClass, path, testObject) {
             var fn = instance[hook];
             if (isFn(fn)) {
                 return fn.apply(instance, arguments);
+            }
+        };
+    });
+    Array('onShow', 'onHide').forEach(function (hook) {
+        config[hook] = function () {
+            var instance = this.reactInstance;
+            var fn = instance[hook];
+            if (isFn(fn)) {
+                return fn.apply(instance, arguments);
+            }
+            var discarded = hook == 'onShow' ? 'componentDidShow' : 'componentDidHide';
+            var fn2 = instance[discarded];
+            if (isFn(fn2)) {
+                console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
+                return fn2.apply(instance, arguments);
             }
         };
     });
