@@ -56,7 +56,10 @@ const renderSass = (filePath) => {
             file: filePath
         },
         (err, res) => {
-            if (err) throw err;
+            if (err) {
+              console.log('filePath: ', filePath,'\n', err);
+              return;
+            }
             let code = validateStyle(res.css.toString());
             if(!code) return;
             queue.push({
