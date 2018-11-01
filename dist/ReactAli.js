@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-10-31
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-01
  * IE9+
  */
 
@@ -880,6 +880,136 @@ function injectAPIs(ReactWX, facade, override) {
     ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
     ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
+
+var aliApis = function aliApis(api) {
+  return {
+    showModal: function _(a) {
+      a.cancelButtonText = a.cancelText;
+      a.confirmButtonText = a.confirmText || '好的';
+      if (a.showCancel === false) {
+        a.buttonText = a.confirmText || '好的';
+        return api.alert(a);
+      }
+      return api.confirm(a);
+    },
+    showActionSheet: function _(a) {
+      a.items = a.itemList;
+      return api.showActionSheet(a);
+    },
+    showToast: function _(a) {
+      a.content = a.title;
+      a.type = a.icon;
+      return api.showToast(a);
+    },
+    showLoading: function _(a) {
+      a.content = a.title;
+      return api.showLoading(a);
+    },
+    setNavigationBarTitle: function _(a) {
+      return api.setNavigationBar(a);
+    },
+    setNavigationBarColor: function _(a) {
+      return api.setNavigationBar(a);
+    },
+    saveImageToPhotosAlbum: function _(a) {
+      a.url = a.filePath;
+      return api.saveImage(a);
+    },
+    previewImage: function _(a) {
+      var index = a.urls.indexOf(a.current || a.urls[0]);
+      a.current = index;
+      return api.previewImage(a);
+    },
+    getFileInfo: function _(a) {
+      a.apFilePath = a.filePath;
+      return api.getFileInfo(a);
+    },
+    getSavedFileInfo: function _(a) {
+      a.apFilePath = a.filePath;
+      return api.getSavedFileInfo(a);
+    },
+    removeSavedFile: function _(a) {
+      a.apFilePath = a.filePath;
+      return api.removeSavedFile(a);
+    },
+    saveFile: function _(a) {
+      a.apFilePath = a.tempFilePath;
+      var fn = a['success'];
+      a['success'] = function (res) {
+        res.savedFilePath = res.apFilePath;
+        fn && fn(res);
+      };
+      return api.saveFile(a);
+    },
+    openLocation: function _(a) {
+      a.latitude = a.latitude + '';
+      a.longitude = a.longitude + '';
+      return api.openLocation(a);
+    },
+    getStorageSync: function _(a) {
+      if (a == null) throw new Error('key 不能是 undefined或者是空');
+      var res = api.getStorageSync({ key: a });
+      return res.data || '';
+    },
+    setStorageSync: function _(a1, a2) {
+      if (a1 == null) throw new Error('key 不能是 undefined或者是空');
+      var k = {};
+      k.key = a1;
+      k.data = a2;
+      return api.setStorageSync(k);
+    },
+    uploadFile: function _(a) {
+      a.fileName = a.name;
+      return api.uploadFile(a);
+    },
+    downloadFile: function _(a) {
+      var fn = a['success'];
+      a['success'] = function (res) {
+        res.tempFilePath = res.apFilePath;
+        fn && fn(res);
+      };
+      return api.downloadFile(a);
+    },
+    chooseImage: function _(a) {
+      var fn = a['success'];
+      a['success'] = function (res) {
+        res.tempFilePaths = res.apFilePaths;
+        fn && fn(res);
+      };
+      return api.chooseImage(a);
+    },
+    getClipboardData: function _(a) {
+      var fn = a['success'];
+      a['success'] = function (res) {
+        res.data = res.text;
+        fn && fn(res);
+      };
+      return api.getClipboard(a);
+    },
+    setClipboardData: function _(a) {
+      a.text = a.data;
+      return api.setClipboard(a);
+    },
+    makePhoneCall: function _(a) {
+      a.number = a.phoneNumber;
+      return api.makePhoneCall(a);
+    },
+    scanCode: function _(a) {
+      a.hideAlbum = a.onlyFromCamera;
+      a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
+      var fn = a['success'];
+      a['success'] = function (res) {
+        res.result = res.code;
+        fn && fn(res);
+      };
+      return api.scan(a);
+    },
+    setScreenBrightness: function _(a) {
+      a.brightness = a.value;
+      return api.setScreenBrightness(a);
+    }
+  };
+};
 
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
@@ -2093,6 +2223,11 @@ function _uuid() {
     return (Math.random() + '').slice(-4);
 }
 var delayMounts = [];
+var usingComponents = [];
+var registeredComponents = {};
+var currentPage = {
+    isReady: false
+};
 function getUUID() {
     return _uuid() + _uuid();
 }
@@ -2117,6 +2252,14 @@ function updateQuickApp(quick, instance) {
 }
 function isReferenceType(val) {
     return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+}
+function useComponent(props) {
+    var is = props.is;
+    var clazz = registeredComponents[is];
+    delete props.is;
+    var args = [].slice.call(arguments, 2);
+    args.unshift(clazz, props);
+    return createElement.apply(null, args);
 }
 function safeClone(originVal) {
     var temp = originVal instanceof Array ? [] : {};
@@ -2199,7 +2342,7 @@ var Renderer$1 = createRenderer({
                 }
             }
         }
-        if (noMount && instance.componentDidMount) {
+        if (!currentPage.isReady && noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount
@@ -2297,24 +2440,40 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
-var registeredComponents = {};
-function useComponent(props) {
-    var is = props.is;
-    var clazz = registeredComponents[is];
-    delete props.is;
-    var args = [].slice.call(arguments, 2);
-    args.unshift(clazz, props);
-    return createElement.apply(null, args);
+function registerComponent(type, name) {
+    type.ali = true;
+    registeredComponents[name] = type;
+    var reactInstances = type.reactInstances = [];
+    type.wxInstances = [];
+    return {
+        data: {
+            props: {},
+            state: {},
+            context: {}
+        },
+        didMount: function didMount() {
+            usingComponents[name] = type;
+            var uid = this.props.instanceUid;
+            for (var i = reactInstances.length - 1; i >= 0; i--) {
+                var reactInstance = reactInstances[i];
+                if (reactInstance.instanceUid === uid) {
+                    reactInstance.wx = this;
+                    this.reactInstance = reactInstance;
+                    updateMiniApp(reactInstance);
+                    reactInstances.splice(i, 1);
+                    break;
+                }
+            }
+        },
+        didUnmount: function didUnmount() {
+            this.reactInstance = null;
+        },
+        methods: {
+            dispatchEvent: eventSystem.dispatchEvent
+        }
+    };
 }
 
-var HookMap = {
-    onShow: 'componentDidShow',
-    onHide: 'componentDidHide',
-    onUnload: 'componentWillUnmount'
-};
-function applyAppStore() {
-    console.log("此方法已废弃");
-}
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     var pageViewInstance,
@@ -2322,6 +2481,7 @@ function registerPage(PageClass, path, testObject) {
         data: {},
         dispatchEvent: eventSystem.dispatchEvent,
         onLoad: function onLoad(query) {
+            currentPage.isReady = false;
             var container = {
                 type: 'page',
                 props: {},
@@ -2340,17 +2500,54 @@ function registerPage(PageClass, path, testObject) {
             updateMiniApp(pageViewInstance);
         },
         onReady: function onReady() {
-            console.log(path, 'onReady');
+            currentPage.isReady = true;
             var el = void 0;
             while (el = delayMounts.pop()) {
                 el.fn.call(el.instance);
                 el.instance.componentDidMount = el.fn;
             }
         },
+        onShow: function onShow() {
+            var instance = this.reactInstance;
+            var fn = instance.onShow;
+            if (fn) {
+                return fn.apply(instance, arguments);
+            }
+            var fn2 = instance.componentDidShow;
+            if (fn2) {
+                console.warn("componentDidShow 已经被废弃，请使用onShow");
+                return fn2.apply(instance, arguments);
+            }
+        },
+        onHide: function onHide() {
+            var instance = this.reactInstance;
+            var fn = instance.onHide;
+            if (fn) {
+                return fn.apply(instance, arguments);
+            }
+            var fn2 = instance.componentDidHide;
+            if (fn2) {
+                console.warn("componentDidHide 已经被废弃，请使用onHide");
+                return fn2.apply(instance, arguments);
+            }
+        },
         onUnload: function onUnload() {
-            console.log(path, 'onUnload');
+            for (var i in usingComponents) {
+                var a = usingComponents[i];
+                if (a.reactInstances) {
+                    console.log(i, '还有', a.reactInstances.length, '实例没有使用过');
+                    a.reactInstances.length = 0;
+                    a.wxInstances.length = 0;
+                }
+                delete usingComponents[i];
+            }
             var root = this.reactContainer;
             var container = root._reactInternalFiber;
+            var instance = this.reactInstance;
+            var hook = instance.componentWillUnmount;
+            if (isFn(hook)) {
+                hook.call(instance);
+            }
             if (container) {
                 Renderer.updateComponent(container.hostRoot, {
                     child: null
@@ -2365,16 +2562,12 @@ function registerPage(PageClass, path, testObject) {
             }
         }
     };
-    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
-        var fn2 = config[hook];
+    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh').forEach(function (hook) {
         config[hook] = function () {
-            var name = HookMap[hook] || hook;
-            if (isFn(fn2)) {
-                fn2.call(this, arguments);
-            }
-            var fn = pageViewInstance[name];
+            var instance = this.reactInstance;
+            var fn = instance[hook];
             if (isFn(fn)) {
-                return fn.apply(pageViewInstance, arguments);
+                return fn.apply(instance, arguments);
             }
         };
     });
@@ -2388,173 +2581,8 @@ function registerPage(PageClass, path, testObject) {
     return config;
 }
 
-var aliApis = function aliApis(api) {
-  return {
-    showModal: function _(a) {
-      a.cancelButtonText = a.cancelText;
-      a.confirmButtonText = a.confirmText || '好的';
-      if (a.showCancel === false) {
-        a.buttonText = a.confirmText || '好的';
-        return api.alert(a);
-      }
-      return api.confirm(a);
-    },
-    showActionSheet: function _(a) {
-      a.items = a.itemList;
-      return api.showActionSheet(a);
-    },
-    showToast: function _(a) {
-      a.content = a.title;
-      a.type = a.icon;
-      return api.showToast(a);
-    },
-    showLoading: function _(a) {
-      a.content = a.title;
-      return api.showLoading(a);
-    },
-    setNavigationBarTitle: function _(a) {
-      return api.setNavigationBar(a);
-    },
-    setNavigationBarColor: function _(a) {
-      return api.setNavigationBar(a);
-    },
-    saveImageToPhotosAlbum: function _(a) {
-      a.url = a.filePath;
-      return api.saveImage(a);
-    },
-    previewImage: function _(a) {
-      var index = a.urls.indexOf(a.current || a.urls[0]);
-      a.current = index;
-      return api.previewImage(a);
-    },
-    getFileInfo: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.getFileInfo(a);
-    },
-    getSavedFileInfo: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.getSavedFileInfo(a);
-    },
-    removeSavedFile: function _(a) {
-      a.apFilePath = a.filePath;
-      return api.removeSavedFile(a);
-    },
-    saveFile: function _(a) {
-      a.apFilePath = a.tempFilePath;
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.savedFilePath = res.apFilePath;
-        fn && fn(res);
-      };
-      return api.saveFile(a);
-    },
-    openLocation: function _(a) {
-      a.latitude = a.latitude + '';
-      a.longitude = a.longitude + '';
-      return api.openLocation(a);
-    },
-    getStorageSync: function _(a) {
-      if (a == null) throw new Error('key 不能是 undefined或者是空');
-      var res = api.getStorageSync({ key: a });
-      return res.data || '';
-    },
-    setStorageSync: function _(a1, a2) {
-      if (a1 == null) throw new Error('key 不能是 undefined或者是空');
-      var k = {};
-      k.key = a1;
-      k.data = a2;
-      return api.setStorageSync(k);
-    },
-    uploadFile: function _(a) {
-      a.fileName = a.name;
-      return api.uploadFile(a);
-    },
-    downloadFile: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.tempFilePath = res.apFilePath;
-        fn && fn(res);
-      };
-      return api.downloadFile(a);
-    },
-    chooseImage: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.tempFilePaths = res.apFilePaths;
-        fn && fn(res);
-      };
-      return api.chooseImage(a);
-    },
-    getClipboardData: function _(a) {
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.data = res.text;
-        fn && fn(res);
-      };
-      return api.getClipboard(a);
-    },
-    setClipboardData: function _(a) {
-      a.text = a.data;
-      return api.setClipboard(a);
-    },
-    makePhoneCall: function _(a) {
-      a.number = a.phoneNumber;
-      return api.makePhoneCall(a);
-    },
-    scanCode: function _(a) {
-      a.hideAlbum = a.onlyFromCamera;
-      a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
-      var fn = a['success'];
-      a['success'] = function (res) {
-        res.result = res.code;
-        fn && fn(res);
-      };
-      return api.scan(a);
-    },
-    setScreenBrightness: function _(a) {
-      a.brightness = a.value;
-      return api.setScreenBrightness(a);
-    }
-  };
-};
-
-var win = getWindow();
-var React = void 0;
 var render$1 = Renderer$1.render;
-function registerComponent(type, name) {
-    registeredComponents[name] = type;
-    type.ali = true;
-    var reactInstances = type.reactInstances = [];
-    type.wxInstances = [];
-    return {
-        data: {
-            props: {},
-            state: {},
-            context: {}
-        },
-        didMount: function didMount() {
-            var uid = this.props.instanceUid;
-            for (var i = reactInstances.length - 1; i >= 0; i--) {
-                var reactInstance = reactInstances[i];
-                if (reactInstance.instanceUid === uid) {
-                    reactInstance.wx = this;
-                    console.log("命中", this);
-                    this.reactInstance = reactInstance;
-                    updateMiniApp(reactInstance);
-                    reactInstances.splice(i, 1);
-                    break;
-                }
-            }
-        },
-        didUnmount: function didUnmount() {
-            this.reactInstance = null;
-        },
-        methods: {
-            dispatchEvent: eventSystem.dispatchEvent
-        }
-    };
-}
-React = win.React = {
+var React = getWindow().React = {
     eventSystem: eventSystem,
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
@@ -2565,17 +2593,14 @@ React = win.React = {
     Fragment: Fragment,
     PropTypes: PropTypes,
     Children: Children,
-    createPortal: createPortal,
     Component: Component,
+    createPortal: createPortal,
     createElement: createElement,
+    createFactory: createFactory,
     cloneElement: cloneElement,
     PureComponent: PureComponent,
     isValidElement: isValidElement,
-    createFactory: createFactory,
-    toClass: function toClass() {
-        return miniCreateClass.apply(null, arguments);
-    },
-    applyAppStore: applyAppStore,
+    toClass: miniCreateClass,
     toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
@@ -2588,7 +2613,6 @@ if (typeof my != 'undefined') {
     apiContainer = my;
 }
 injectAPIs(React, apiContainer, aliApis);
-var React$1 = React;
 
-export default React$1;
-export { registerComponent, Children, createElement, Component };
+export default React;
+export { Children, createElement, Component };

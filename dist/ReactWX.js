@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-10-31
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-01
  * IE9+
  */
 
@@ -2093,6 +2093,11 @@ function _uuid() {
     return (Math.random() + '').slice(-4);
 }
 var delayMounts = [];
+var usingComponents = [];
+var registeredComponents = {};
+var currentPage = {
+    isReady: false
+};
 function getUUID() {
     return _uuid() + _uuid();
 }
@@ -2117,6 +2122,14 @@ function updateQuickApp(quick, instance) {
 }
 function isReferenceType(val) {
     return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+}
+function useComponent(props) {
+    var is = props.is;
+    var clazz = registeredComponents[is];
+    delete props.is;
+    var args = [].slice.call(arguments, 2);
+    args.unshift(clazz, props);
+    return createElement.apply(null, args);
 }
 function safeClone(originVal) {
     var temp = originVal instanceof Array ? [] : {};
@@ -2199,7 +2212,7 @@ var Renderer$1 = createRenderer({
                 }
             }
         }
-        if (noMount && instance.componentDidMount) {
+        if (!currentPage.isReady && noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount
@@ -2297,24 +2310,6 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
-var registeredComponents = {};
-function useComponent(props) {
-    var is = props.is;
-    var clazz = registeredComponents[is];
-    delete props.is;
-    var args = [].slice.call(arguments, 2);
-    args.unshift(clazz, props);
-    return createElement.apply(null, args);
-}
-
-var HookMap = {
-    onShow: 'componentDidShow',
-    onHide: 'componentDidHide',
-    onUnload: 'componentWillUnmount'
-};
-function applyAppStore() {
-    console.log('此方法已废弃');
-}
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     var pageViewInstance,
@@ -2322,35 +2317,93 @@ function registerPage(PageClass, path, testObject) {
         data: {},
         dispatchEvent: eventSystem.dispatchEvent,
         onLoad: function onLoad(query) {
-            pageViewInstance = render(createElement(PageClass, {
-                path: path,
-                query: query,
-                isPageComponent: true
-            }), {
+            currentPage.isReady = false;
+            var container = {
                 type: 'page',
                 props: {},
                 children: [],
                 root: true,
                 appendChild: noop
-            });
+            };
+            pageViewInstance = render(createElement(PageClass, {
+                path: path,
+                query: query,
+                isPageComponent: true
+            }), container);
             this.reactInstance = pageViewInstance;
+            this.reactContainer = container;
             pageViewInstance.wx = this;
             updateMiniApp(pageViewInstance);
         },
         onReady: function onReady() {
-            var el;
+            currentPage.isReady = true;
+            var el = void 0;
             while (el = delayMounts.pop()) {
                 el.fn.call(el.instance);
                 el.instance.componentDidMount = el.fn;
             }
+        },
+        onShow: function onShow() {
+            var instance = this.reactInstance;
+            var fn = instance.onShow;
+            if (fn) {
+                return fn.apply(instance, arguments);
+            }
+            var fn2 = instance.componentDidShow;
+            if (fn2) {
+                console.warn("componentDidShow 已经被废弃，请使用onShow");
+                return fn2.apply(instance, arguments);
+            }
+        },
+        onHide: function onHide() {
+            var instance = this.reactInstance;
+            var fn = instance.onHide;
+            if (fn) {
+                return fn.apply(instance, arguments);
+            }
+            var fn2 = instance.componentDidHide;
+            if (fn2) {
+                console.warn("componentDidHide 已经被废弃，请使用onHide");
+                return fn2.apply(instance, arguments);
+            }
+        },
+        onUnload: function onUnload() {
+            for (var i in usingComponents) {
+                var a = usingComponents[i];
+                if (a.reactInstances) {
+                    console.log(i, '还有', a.reactInstances.length, '实例没有使用过');
+                    a.reactInstances.length = 0;
+                    a.wxInstances.length = 0;
+                }
+                delete usingComponents[i];
+            }
+            var root = this.reactContainer;
+            var container = root._reactInternalFiber;
+            var instance = this.reactInstance;
+            var hook = instance.componentWillUnmount;
+            if (isFn(hook)) {
+                hook.call(instance);
+            }
+            if (container) {
+                Renderer.updateComponent(container.hostRoot, {
+                    child: null
+                }, function () {
+                    root._reactInternalFiber = null;
+                    var j = topNodes.indexOf(root);
+                    if (j !== -1) {
+                        topFibers.splice(j, 1);
+                        topNodes.splice(j, 1);
+                    }
+                }, true);
+            }
         }
     };
-    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide', 'onUnload').forEach(function (hook) {
+    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh').forEach(function (hook) {
         config[hook] = function () {
-            var name = HookMap[hook] || hook;
-            var fn = pageViewInstance[name];
+            var instance = this.reactInstance;
+            var fn = instance[hook];
             if (isFn(fn)) {
-                return fn.apply(pageViewInstance, arguments);
+                return fn.apply(instance, arguments);
             }
         };
     });
@@ -2364,9 +2417,6 @@ function registerPage(PageClass, path, testObject) {
     return config;
 }
 
-var win = getWindow();
-var React = void 0;
-var render$1 = Renderer$1.render;
 function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
@@ -2379,22 +2429,23 @@ function registerComponent(type, name) {
         },
         lifetimes: {
             created: function created() {
+                usingComponents[name] = type;
                 var instance = reactInstances.shift();
                 if (instance) {
-                    console.log('created时为', name, '添加wx');
+                    console.log("created时为", name, "添加wx");
                     instance.wx = this;
                     this.reactInstance = instance;
                 } else {
-                    console.log('created时为', name, '没有对应react实例');
+                    console.log("created时为", name, "没有对应react实例");
                     wxInstances.push(this);
                 }
             },
             attached: function attached() {
                 if (this.reactInstance) {
                     updateMiniApp(this.reactInstance);
-                    console.log('attached时更新', name);
+                    console.log("attached时更新", name);
                 } else {
-                    console.log('attached时无法更新', name);
+                    console.log("attached时无法更新", name);
                 }
             },
             detached: function detached() {
@@ -2406,28 +2457,26 @@ function registerComponent(type, name) {
         }
     };
 }
-React = win.React = {
+
+var render$1 = Renderer$1.render;
+var React = getWindow().React = {
     eventSystem: eventSystem,
     findDOMNode: function findDOMNode() {
         console.log('小程序不支持findDOMNode');
     },
-    version: '1.4.8',
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,
     PropTypes: PropTypes,
     Children: Children,
-    createPortal: createPortal,
     Component: Component,
+    createPortal: createPortal,
     createElement: createElement,
+    createFactory: createFactory,
     cloneElement: cloneElement,
     PureComponent: PureComponent,
     isValidElement: isValidElement,
-    createFactory: createFactory,
-    toClass: function toClass() {
-        return miniCreateClass.apply(null, arguments);
-    },
-    applyAppStore: applyAppStore,
+    toClass: miniCreateClass,
     toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
@@ -2440,7 +2489,6 @@ if (typeof wx != 'undefined') {
     apiContainer = wx;
 }
 injectAPIs(React, apiContainer);
-var React$1 = React;
 
-export default React$1;
-export { registerComponent, Children, createElement, Component };
+export default React;
+export { Children, createElement, Component };

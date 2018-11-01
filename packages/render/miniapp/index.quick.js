@@ -2,7 +2,7 @@ import { Children } from 'react-core/Children';
 import { PropTypes } from 'react-core/PropTypes';
 import { Component } from 'react-core/Component';
 import { PureComponent } from 'react-core/PureComponent';
-//import { createPortal } from 'react-core/createPortal';
+import { createPortal } from 'react-core/createPortal';
 import {
     createElement,
     cloneElement,
@@ -12,74 +12,20 @@ import {
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { eventSystem } from './eventSystemQuick';
+import { api } from './quickApis';
 import { Renderer } from './wxRender';
 import { toStyle } from './toStyleQuick';
-import { useComponent, registeredComponents } from './registerComponent';
+import { toRenderProps, useComponent } from './utils';
 
+import { registerComponent } from './registerComponentQuick';
 import { registerPage, getApp, shareObject } from './registerPageQuick';
-import { updateMiniApp, toRenderProps } from './utils';
-import { api } from './quickApis';
 
-let win = getWindow();
-let React;
+
 
 let { render } = Renderer;
 
-export function registerComponent(type, name) {
-    registeredComponents[name] = type;
-    var reactInstances = (type.reactInstances = []);
-    var wxInstances = (type.wxInstances = []);
-    return {
-        props: {
-            props: {
-                type: Object,
-                default: {}
-            },
-            state: {
-                type: Object,
-                default: {}
-            },
-            context: {
-                type: Object,
-                default: {}
-            }
-        },
 
-        onInit() {
-            var instance = reactInstances.shift();
-            if (instance) {
-                /* eslint-disable-next-line */
-                console.log("created时为", name, "添加wx");
-                instance.wx = this;
-                this.reactInstance = instance;
-            } else {
-                /* eslint-disable-next-line */
-                console.log("created时为", name, "没有对应react实例");
-                wxInstances.push(this);
-            }
-        },
-        onReady() {
-            if (this.reactInstance) {
-                updateMiniApp(this.reactInstance);
-                /* eslint-disable-next-line */
-                console.log("attached时更新", name);
-            } else {
-                /* eslint-disable-next-line */
-                console.log("attached时无法更新", name);
-            }
-        },
-        onDestroy() {
-            this.reactInstance = null;
-        },
-
-        methods: {
-            dispatchEvent: eventSystem.dispatchEvent
-        }
-    };
-}
-
-
-React = win.React = {
+let React = getWindow().React = {
     //平台相关API
     eventSystem,
     findDOMNode: function() {
@@ -93,17 +39,15 @@ React = win.React = {
     Fragment,
     PropTypes,
     Children,
-    // createPortal,
     Component,
+    createPortal,
     createElement,
+    createFactory,
     cloneElement,
     PureComponent,
     isValidElement,
-    createFactory,
-    toClass: function() {
-        //保存所有class到classCache中，方便在事件回调中找到对应实例
-        return miniCreateClass.apply(null, arguments);
-    },
+   
+    toClass: miniCreateClass,
     toRenderProps,
     useComponent,
     registerComponent,

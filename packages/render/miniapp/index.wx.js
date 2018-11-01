@@ -10,66 +10,20 @@ import {
     createFactory
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
+
 import { injectAPIs } from './api';
 import { eventSystem } from './eventSystem';
 import { Renderer } from './wxRender';
 import { toStyle } from './toStyle';
-import { useComponent, registeredComponents } from './registerComponent';
+import { toRenderProps, useComponent } from './utils';
 
-import { registerPage, applyAppStore } from './registerPage';
-import { updateMiniApp, toRenderProps } from './utils';
+import { registerPage } from './registerPageWx';
+import { registerComponent } from './registerComponentWx';
 
-let win = getWindow();
-let React;
 
 let { render } = Renderer;
 
-export function registerComponent(type, name) {
-    registeredComponents[name] = type;
-    var reactInstances = (type.reactInstances = []);
-    var wxInstances = (type.wxInstances = []);
-    return {
-        data: {
-            props: {},
-            state: {},
-            context: {},
-        },
-        lifetimes: {
-            created() {
-                var instance = reactInstances.shift();
-                if (instance) {
-                    /* eslint-disable-next-line */
-                    console.log('created时为', name, '添加wx');
-                    instance.wx = this;
-                    this.reactInstance = instance;
-                } else {
-                    /* eslint-disable-next-line */
-                    console.log('created时为', name, '没有对应react实例');
-                    wxInstances.push(this);
-                }
-            },
-            attached() {
-                if (this.reactInstance) {
-                    updateMiniApp(this.reactInstance);
-                    /* eslint-disable-next-line */
-                    console.log('attached时更新', name);
-                } else {
-                    /* eslint-disable-next-line */
-                    console.log('attached时无法更新', name);
-                }
-            },
-            detached() {
-                this.reactInstance = null;
-            },
-        },
-        methods: {
-            dispatchEvent: eventSystem.dispatchEvent,
-        },
-    };
-    
-}
-
-React = win.React =  {
+let React = getWindow().React =  {
     //平台相关API
     eventSystem,
 
@@ -77,25 +31,21 @@ React = win.React =  {
         console.log('小程序不支持findDOMNode'); /* eslint-disable-line */
     },
     //fiber底层API
-    version: 'VERSION',
     render: render,
     hydrate: render,
 
     Fragment,
     PropTypes,
     Children,
-    createPortal,
     Component,
+    createPortal,
     createElement,
+    createFactory,
     cloneElement,
     PureComponent,
     isValidElement,
-    createFactory,
-    toClass: function() {
-        //保存所有class到classCache中，方便在事件回调中找到对应实例
-        return  miniCreateClass.apply(null, arguments);
-    },
-    applyAppStore,
+   
+    toClass: miniCreateClass,
     toRenderProps,
     useComponent,
     registerComponent,
@@ -103,14 +53,11 @@ React = win.React =  {
     toStyle,
     appType: 'wx'
 };
-var apiContainer = {};
+let apiContainer = {};
 if (typeof wx != 'undefined'){
     apiContainer = wx;
 } 
 injectAPIs(React, apiContainer);
+
 export default React;
-export {
-    Children,
-    createElement,
-    Component
-};
+export { Children, createElement, Component };

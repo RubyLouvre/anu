@@ -10,62 +10,23 @@ import {
     createFactory
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
+
 import { injectAPIs } from './api';
+import { buApis } from './buApis';
+
 import { eventSystem } from './eventSystem';
 import { Renderer } from './wxRender';
 import { toStyle } from './toStyle';
-import { useComponent, registeredComponents } from './registerComponent';
-import { registerPage, applyAppStore } from './registerPage';
-import { updateMiniApp, toRenderProps } from './utils';
-import { buApis } from './buApis';
+import { toRenderProps, useComponent } from './utils';
 
-let win = getWindow();
-let React;
+import { registerComponent } from './registerComponentBu';
+import { registerPage } from './registerPageWx';
+
+
 
 let { render } = Renderer;
 
-export function registerComponent(type, name) {
-    registeredComponents[name] = type;
-    var reactInstances = (type.reactInstances = []);
-    var wxInstances = (type.wxInstances = []);
-    return {
-        data: {
-            props: {},
-            state: {},
-            context: {}
-        },
-
-        created() {
-            var instance = reactInstances.shift();
-            if (instance) {
-                /* eslint-disable-next-line */
-                console.log("created时为", name, "添加wx");
-                instance.wx = this;
-                this.reactInstance = instance;
-            } else {
-                /* eslint-disable-next-line */
-                console.log("created时为", name, "没有对应react实例");
-                wxInstances.push(this);
-            }
-        },
-        attached() {
-            if (this.reactInstance) {
-                updateMiniApp(this.reactInstance);
-                /* eslint-disable-next-line */
-                console.log("attached时更新", name);
-            } else {
-                /* eslint-disable-next-line */
-                console.log("attached时无法更新", name);
-            }
-        },
-        detached() {
-            this.reactInstance = null;
-        },
-        dispatchEvent: eventSystem.dispatchEvent
-    };
-}
-
-React = win.React = {
+let React = getWindow().React = {
     //平台相关API
     eventSystem,
 
@@ -80,18 +41,15 @@ React = win.React = {
     Fragment,
     PropTypes,
     Children,
-    createPortal,
     Component,
+    createPortal,
     createElement,
+    createFactory,
     cloneElement,
     PureComponent,
     isValidElement,
-    createFactory,
-    toClass: function() {
-        //保存所有class到classCache中，方便在事件回调中找到对应实例
-        return miniCreateClass.apply(null, arguments);
-    },
-    applyAppStore,
+   
+    toClass: miniCreateClass,
     toRenderProps,
     useComponent,
     registerComponent,
@@ -99,10 +57,11 @@ React = win.React = {
     toStyle,
     appType: 'bu'
 };
-var apiContainer = {};
+let apiContainer = {};
 if (typeof swan != 'undefined') {
-    apiContainer = swan;
+    apiContainer = swan;//eslint-disable-line
 }
 injectAPIs(React, apiContainer, buApis);
+
 export default React;
 export { Children, createElement, Component };

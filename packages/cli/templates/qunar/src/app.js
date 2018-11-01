@@ -38,7 +38,7 @@ import './pages/demo/syntax/await/index';
 import './pages/demo/syntax/multiple/index';
 import './pages/demo/syntax/renderprops/index';
 import './pages/demo/syntax/request/index';
-import './pages/demo/webview/index';
+import './pages/demo/syntax/webview/index';
 
 import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';

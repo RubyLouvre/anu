@@ -1,7 +1,7 @@
 import { isFn, noop, toLowerCase, get } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
-import { getUUID, delayMounts, updateMiniApp } from './utils';
+import { getUUID, delayMounts, updateMiniApp, currentPage } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
@@ -73,7 +73,7 @@ export let Renderer = createRenderer({
                 }
             }
         }
-        if (noMount && instance.componentDidMount) {
+        if ( !currentPage.isReady &&  noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount

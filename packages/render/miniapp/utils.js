@@ -1,9 +1,17 @@
 import { hasOwnProperty } from 'react-core/util';
+import { createElement } from 'react-core/createElement';
 
 function _uuid() {
     return (Math.random() + '').slice(-4);
 }
+
 export var delayMounts = [];
+export var usingComponents = [];
+export var registeredComponents = {};
+export var currentPage = {
+    isReady: false
+};
+
 export function getUUID() {
     return _uuid() + _uuid();
 }
@@ -12,32 +20,48 @@ export var classCached = {};
 
 export function newData() {
     return {
-        components: {},
+        components: {}
     };
 }
 export function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
         return;
     }
-    if (instance.wx.setData){
+    if (instance.wx.setData) {
         instance.wx.setData(
             safeClone({
                 props: instance.props,
                 state: instance.state || null,
-                context: instance.context,
+                context: instance.context
             })
         );
     } else {
         updateQuickApp(instance.wx, instance);
     }
 }
+
 function updateQuickApp(quick, instance) {
     quick.props = instance.props;
     quick.state = instance.state || null;
     quick.context = instance.context;
 }
+
 function isReferenceType(val) {
-    return val && (typeof val === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+    return (
+        val &&
+        (typeof val === 'object' ||
+            Object.prototype.toString.call(val) === '[object Array]')
+    );
+}
+
+
+export function useComponent(props) {
+    var is = props.is;
+    var clazz = registeredComponents[is];
+    delete props.is;
+    var args = [].slice.call(arguments, 2);
+    args.unshift(clazz, props);
+    return createElement.apply(null, args);
 }
 
 function safeClone(originVal) {

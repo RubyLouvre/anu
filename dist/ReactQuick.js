@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-10-31
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-01
  * IE9+
  */
 
@@ -542,6 +542,15 @@ var PureComponent = miniCreateClass(function PureComponent() {
     }
 });
 
+function AnuPortal(props) {
+    return props.children;
+}
+function createPortal(children, parent) {
+    var child = createElement(AnuPortal, { children: children, parent: parent });
+    child.isPortal = true;
+    return child;
+}
+
 function getDataSet(obj) {
     var ret = {};
     for (var name in obj) {
@@ -589,9 +598,104 @@ function createEvent(e, target) {
     return event;
 }
 
-function AnuPortal(props) {
-    return props.children;
+function createRouter(name) {
+    return function (obj) {
+        var router = require('@system.router');
+        var params = {};
+        var uri = obj.url.slice(obj.url.indexOf('/pages') + 1);
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('=').forEach(function (k, v) {
+                params[k] = v;
+            });
+            return '';
+        }).replace(/\/index$/, '');
+        router[name]({
+            uri: uri,
+            params: params
+        });
+    };
 }
+var api = {
+    showModal: function showModal(obj) {
+        obj.showCancel = obj.showCancel === false ? false : true;
+        var buttons = [{
+            text: obj.confirmText,
+            color: obj.confirmColor
+        }];
+        if (obj.showCancel) {
+            buttons.push({
+                text: obj.cancelText,
+                color: obj.cancelColor
+            });
+        }
+        obj.buttons = obj.confirmText ? buttons : [];
+        obj.message = obj.content;
+        delete obj.content;
+        var fn = obj['success'];
+        obj['success'] = function (res) {
+            res.confirm = !res.index;
+            fn && fn(res);
+        };
+        var prompt = require('@system.prompt');
+        prompt.showDialog(obj);
+    },
+    showToast: function showToast(obj) {
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = obj.duration / 1000;
+        prompt.showToast(obj);
+    },
+    hideToast: noop,
+    showActionSheet: function showActionSheet(obj) {
+        var prompt = require('@system.prompt');
+        prompt.showContextMenu(obj);
+    },
+    navigateTo: createRouter('push'),
+    redirectTo: createRouter('replace'),
+    navigateBack: createRouter('back'),
+    vibrateLong: function vibrateLong() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    vibrateShort: function vibrateShort() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    share: function share(obj) {
+        var share = require('@system.share');
+        share.share(obj);
+    },
+    uploadFile: function uploadFile(obj) {
+        var request = require('@system.request');
+        var data = [];
+        Object.keys(obj.formData).map(function (key) {
+            var value = obj.formData[key];
+            var item = {
+                value: value,
+                name: key
+            };
+            data.push(item);
+        });
+        obj.data = data;
+        delete obj.formData;
+        var files = [{
+            uri: obj.filePath,
+            name: obj.name
+        }];
+        obj.files = files;
+        delete obj.filePath;
+        delete obj.name;
+        request.upload(obj);
+    },
+    downloadFile: function downloadFile(obj) {
+        var request = require('@system.request');
+        request.download(obj);
+    },
+    request: function request(obj) {
+        var fetch = require('@system.fetch');
+        fetch.fetch(obj);
+    }
+};
 
 function UpdateQueue() {
     return {
@@ -1754,6 +1858,8 @@ function _uuid() {
     return (Math.random() + '').slice(-4);
 }
 var delayMounts = [];
+var usingComponents = [];
+var registeredComponents = {};
 function getUUID() {
     return _uuid() + _uuid();
 }
@@ -1778,6 +1884,14 @@ function updateQuickApp(quick, instance) {
 }
 function isReferenceType(val) {
     return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+}
+function useComponent(props) {
+    var is = props.is;
+    var clazz = registeredComponents[is];
+    delete props.is;
+    var args = [].slice.call(arguments, 2);
+    args.unshift(clazz, props);
+    return createElement.apply(null, args);
 }
 function safeClone(originVal) {
     var temp = originVal instanceof Array ? [] : {};
@@ -1954,14 +2068,103 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
-var registeredComponents = {};
-function useComponent(props) {
-    var is = props.is;
-    var clazz = registeredComponents[is];
-    delete props.is;
-    var args = [].slice.call(arguments, 2);
-    args.unshift(clazz, props);
-    return createElement.apply(null, args);
+var eventSystem$1 = {
+    dispatchEvent: function dispatchEvent(e) {
+        if (e.type == 'message') {
+            return;
+        }
+        var instance = this.reactInstance;
+        if (!instance || !instance.$$eventCached) {
+            return;
+        }
+        var target = e.currentTarget;
+        var dataset = target.dataset || {};
+        var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
+        if (e.type == 'change' && fiber) {
+            if (fiber.props.value + '' == e.detail.value) {
+                return;
+            }
+        }
+        var key = dataset['key'];
+        eventUid += key != null ? '-' + key : '';
+        if (instance) {
+            Renderer.batchedUpdates(function () {
+                try {
+                    var fn = instance.$$eventCached[eventUid];
+                    fn && fn.call(instance, createEvent$1(e, target));
+                } catch (err) {
+                    console.log(err.stack);
+                }
+            }, e);
+        }
+    }
+};
+function createEvent$1(e, target) {
+    var event = Object.assign({}, e);
+    if (e.detail) {
+        Object.assign(event, e.detail);
+        target.value = e.detail.value;
+    }
+    event.stopPropagation = function () {
+        console.warn("小程序不支持这方法，请使用catchXXX");
+    };
+    event.preventDefault = returnFalse;
+    event.target = target;
+    event.timeStamp = new Date() - 0;
+    if (!("x" in event)) {
+        event.x = event.pageX;
+        event.y = event.pageY;
+    }
+    return event;
+}
+
+function registerComponent(type, name) {
+    registeredComponents[name] = type;
+    var reactInstances = type.reactInstances = [];
+    var wxInstances = type.wxInstances = [];
+    return {
+        props: {
+            props: {
+                type: Object,
+                default: {}
+            },
+            state: {
+                type: Object,
+                default: {}
+            },
+            context: {
+                type: Object,
+                default: {}
+            }
+        },
+        onInit: function onInit() {
+            usingComponents[name] = type;
+            var instance = reactInstances.shift();
+            if (instance) {
+                console.log("created时为", name, "添加wx");
+                instance.wx = this;
+                this.reactInstance = instance;
+            } else {
+                console.log("created时为", name, "没有对应react实例");
+                wxInstances.push(this);
+            }
+        },
+        onReady: function onReady() {
+            if (this.reactInstance) {
+                updateMiniApp(this.reactInstance);
+                console.log("attached时更新", name);
+            } else {
+                console.log("attached时无法更新", name);
+            }
+        },
+        onDestroy: function onDestroy() {
+            this.reactInstance = null;
+        },
+        methods: {
+            dispatchEvent: eventSystem$1.dispatchEvent
+        }
+    };
 }
 
 var shareObject = {};
@@ -2024,155 +2227,8 @@ function transmitData(pageClass, pagePath, reactInstance, quickInstance) {
     shareObject.page = reactInstance;
 }
 
-function createRouter(name) {
-    return function (obj) {
-        var router = require('@system.router');
-        var params = {};
-        var uri = obj.url.slice(obj.url.indexOf('/pages') + 1);
-        uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('=').forEach(function (k, v) {
-                params[k] = v;
-            });
-            return '';
-        }).replace(/\/index$/, '');
-        router[name]({
-            uri: uri,
-            params: params
-        });
-    };
-}
-var api = {
-    showModal: function showModal(obj) {
-        obj.showCancel = obj.showCancel === false ? false : true;
-        var buttons = [{
-            text: obj.confirmText,
-            color: obj.confirmColor
-        }];
-        if (obj.showCancel) {
-            buttons.push({
-                text: obj.cancelText,
-                color: obj.cancelColor
-            });
-        }
-        obj.buttons = obj.confirmText ? buttons : [];
-        obj.message = obj.content;
-        delete obj.content;
-        var fn = obj['success'];
-        obj['success'] = function (res) {
-            res.confirm = !res.index;
-            fn && fn(res);
-        };
-        var prompt = require('@system.prompt');
-        prompt.showDialog(obj);
-    },
-    showToast: function showToast(obj) {
-        var prompt = require('@system.prompt');
-        obj.message = obj.title;
-        obj.duration = obj.duration / 1000;
-        prompt.showToast(obj);
-    },
-    hideToast: noop,
-    showActionSheet: function showActionSheet(obj) {
-        var prompt = require('@system.prompt');
-        prompt.showContextMenu(obj);
-    },
-    navigateTo: createRouter('push'),
-    redirectTo: createRouter('replace'),
-    navigateBack: createRouter('back'),
-    vibrateLong: function vibrateLong() {
-        var vibrator = require('@system.vibrator');
-        vibrator.vibrate();
-    },
-    vibrateShort: function vibrateShort() {
-        var vibrator = require('@system.vibrator');
-        vibrator.vibrate();
-    },
-    share: function share(obj) {
-        var share = require('@system.share');
-        share.share(obj);
-    },
-    uploadFile: function uploadFile(obj) {
-        var request = require('@system.request');
-        var data = [];
-        Object.keys(obj.formData).map(function (key) {
-            var value = obj.formData[key];
-            var item = {
-                value: value,
-                name: key
-            };
-            data.push(item);
-        });
-        obj.data = data;
-        delete obj.formData;
-        var files = [{
-            uri: obj.filePath,
-            name: obj.name
-        }];
-        obj.files = files;
-        delete obj.filePath;
-        delete obj.name;
-        request.upload(obj);
-    },
-    downloadFile: function downloadFile(obj) {
-        var request = require('@system.request');
-        request.download(obj);
-    },
-    request: function request(obj) {
-        var fetch = require('@system.fetch');
-        fetch.fetch(obj);
-    }
-};
-
-var win = getWindow();
-var React = void 0;
 var render$1 = Renderer$1.render;
-function registerComponent(type, name) {
-    registeredComponents[name] = type;
-    var reactInstances = type.reactInstances = [];
-    var wxInstances = type.wxInstances = [];
-    return {
-        props: {
-            props: {
-                type: Object,
-                default: {}
-            },
-            state: {
-                type: Object,
-                default: {}
-            },
-            context: {
-                type: Object,
-                default: {}
-            }
-        },
-        onInit: function onInit() {
-            var instance = reactInstances.shift();
-            if (instance) {
-                console.log("created时为", name, "添加wx");
-                instance.wx = this;
-                this.reactInstance = instance;
-            } else {
-                console.log("created时为", name, "没有对应react实例");
-                wxInstances.push(this);
-            }
-        },
-        onReady: function onReady() {
-            if (this.reactInstance) {
-                updateMiniApp(this.reactInstance);
-                console.log("attached时更新", name);
-            } else {
-                console.log("attached时无法更新", name);
-            }
-        },
-        onDestroy: function onDestroy() {
-            this.reactInstance = null;
-        },
-        methods: {
-            dispatchEvent: eventSystem.dispatchEvent
-        }
-    };
-}
-React = win.React = {
+var React = getWindow().React = {
     eventSystem: eventSystem,
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
@@ -2184,14 +2240,13 @@ React = win.React = {
     PropTypes: PropTypes,
     Children: Children,
     Component: Component,
+    createPortal: createPortal,
     createElement: createElement,
+    createFactory: createFactory,
     cloneElement: cloneElement,
     PureComponent: PureComponent,
     isValidElement: isValidElement,
-    createFactory: createFactory,
-    toClass: function toClass() {
-        return miniCreateClass.apply(null, arguments);
-    },
+    toClass: miniCreateClass,
     toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
@@ -2210,7 +2265,6 @@ React = win.React = {
     },
     api: api
 };
-var React$1 = React;
 
-export default React$1;
-export { registerComponent, Children, createElement, Component };
+export default React;
+export { Children, createElement, Component };
