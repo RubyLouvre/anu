@@ -16,7 +16,6 @@ let cwd = process.cwd();
 
 //抽离async/await语法支持，可能非App/Component/Page业务中也包含async/await语法
 const asyncAwaitPlugin  = utils.asyncAwaitHackPlugin(config.buildType);
-
 function transform(sourcePath, resolvedIds, originalCode) {
     if (/^(React)/.test( path.basename(sourcePath)) ) {
         queue.push({
@@ -31,29 +30,25 @@ function transform(sourcePath, resolvedIds, originalCode) {
         utils.updateCustomAlias(sourcePath, resolvedIds),
         utils.updateNpmAlias(sourcePath, resolvedIds)
     );
-    
     //pages|app|components需经过miniappPlugin处理
     let miniAppPluginsInjectConfig = utils
         .getComponentOrAppOrPageReg()
         .test(sourcePath)
         ? [miniappPlugin]
         : [];
-
-    
     babel.transformFile(
         sourcePath,
         {
             babelrc: false,
             plugins: [
-                'syntax-jsx',
-                'transform-decorators-legacy',
-                'transform-object-rest-spread',
-                'transform-async-to-generator',
-                'transform-es2015-template-literals',
+                require('babel-plugin-syntax-jsx'),
+                require('babel-plugin-transform-decorators-legacy').default,
+                require('babel-plugin-transform-object-rest-spread'),
+                require('babel-plugin-transform-async-to-generator'),
                 asyncAwaitPlugin,
                 ...miniAppPluginsInjectConfig,
                 [
-                    'module-resolver',
+                    require('babel-plugin-module-resolver'),
                     {
                         resolvePath(moduleName) {
                             if (!utils.isNpm(moduleName)) return;
@@ -88,16 +83,15 @@ function transform(sourcePath, resolvedIds, originalCode) {
         },
         function(err, result) {
             if (err) {
-                // eslint-disable-next-line
+                //eslint-disable-next-line
                 console.log(sourcePath, '\n', err);
             }
-
             //babel6无transform异步方法
             setImmediate(() => {
                 let babelPlugins = [
                     [
                         //process.env.ANU_ENV
-                        'transform-inline-environment-variables',
+                        require('babel-plugin-transform-inline-environment-variables'),
                         {
                             env: {
                                 ANU_ENV: config['buildType'],
@@ -105,9 +99,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
                             }
                         }
                     ],
-                    'minify-dead-code-elimination'
+                    require('babel-plugin-minify-dead-code-elimination')
                 ];
-
                 result = babel.transform(result.code, {
                     babelrc: false,
                     plugins: babelPlugins
@@ -178,6 +171,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         path:  utils.updatePath(sourcePath, config.sourceDir, 'dist'),
                         type: 'js'
                     });
+
                 }
             });
         }

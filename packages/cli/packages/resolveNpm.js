@@ -80,19 +80,21 @@ module.exports = (file)=>{
                     }
                 }
             },
-            ['transform-node-env-inline'], //处理环境判断的相关代码
-            ['module-resolver', {
-                resolvePath(moduleName){
-                    if (moduleName === 'react'){
-                        
-                        //配置react别名
-                        let distNpmFile = utils.replacePath(id, '/node_modules/', '/dist/npm/');
-                        let distReactFile = path.join(cwd, 'dist', ReactFileName);
-                        return getRelativePath(distNpmFile, distReactFile);
+            require('babel-plugin-transform-node-env-inline'),//处理环境判断的相关代码
+            [ 
+                require('babel-plugin-module-resolver'), 
+                {
+                    resolvePath(moduleName){
+                        if (moduleName === 'react'){
+                            //配置react别名
+                            let distNpmFile = utils.replacePath(id, '/node_modules/', '/dist/npm/');
+                            let distReactFile = path.join(cwd, 'dist', ReactFileName);
+                            return getRelativePath(distNpmFile, distReactFile);
 
+                        }
                     }
                 }
-            }]
+            ]
              
         ]
     };
