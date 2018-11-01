@@ -7,7 +7,7 @@ const babel = require('babel-core');
 const queue = require('../queue');
 const utils = require('../utils');
 const config = require('../config');
-const minifier = require('html-minifier').minify;
+//const minifier = require('html-minifier').minify;
 const xmlExt = config[config.buildType].xmlExt;
 
 /**
@@ -104,11 +104,11 @@ exports.exit = function(astPath, type, componentName, modules) {
         }
         queue.push({
             path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', xmlExt),
-            code: minifier(wxml,{
+            code: wxml /* minifier(wxml,{
                 collapseWhitespace: true ,
                 keepClosingSlash: true,
                 caseSensitive: true
-            })
+            })*/
         });
     }
 };

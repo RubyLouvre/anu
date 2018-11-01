@@ -146,7 +146,7 @@ module.exports = {
                     template(utils.shortcutOfCreateElement())()
                 );
             }
-           
+
         }
     },
     ImportDeclaration(astPath, state) {
@@ -154,8 +154,8 @@ module.exports = {
         let modules = utils.getAnu(state);
         let source = node.source.value;
         let specifiers = node.specifiers;
-        
-        
+
+
         if (modules.componentType === 'App') {
             if (/\/pages\//.test(source)) {
                 modules['appRoute'] = modules['appRoute'] || [];
@@ -169,14 +169,14 @@ module.exports = {
         }
 
         //检测component导出的模块名是否与模块所在目录名一致
-        if ( ['Page', 'App'].includes(modules.componentType) ) {
+        if (['Page', 'App'].includes(modules.componentType)) {
             specifiers.forEach(item => {
-                if ( !/\/components\//.test(source) ) return;
-                let importedName = item.local.name; 
+                if (!/\/components\//.test(source)) return;
+                let importedName = item.local.name;
                 let pathLevel = source.split(path.sep);
                 //component模块所在的目录名 components/a/b/index => b
                 let dirName = pathLevel[pathLevel.length - 2];
-                if (dirName ==  importedName) return;
+                if (dirName == importedName) return;
                 /* eslint-disable */
                 console.log(chalk.red(`error at: ${modules.sourcePath}`));
                 console.log(chalk.red(`imported: ${importedName}`));
@@ -186,13 +186,13 @@ module.exports = {
             })
         }
 
-        if (modules.componentType === 'Component' && path.basename(modules.sourcePath)!= 'index.js' ) {
+        if (modules.componentType === 'Component' && path.basename(modules.sourcePath) != 'index.js') {
             /* eslint-disable */
             console.log(chalk.red(`error at: ${modules.sourcePath}`));
             console.log(chalk.red('info: components文件名需定义成index.js'));
             console.log();
         }
-        
+
         specifiers.forEach(item => {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
             if (/\.js$/.test(source)) {
@@ -316,7 +316,7 @@ module.exports = {
                 }
                 try {
                     var json = eval('0,' + generate(astPath.node.value).code);
-                   
+
                     Object.assign(modules.config, json);
                 } catch (e) {
                     /**/
@@ -457,7 +457,7 @@ module.exports = {
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     JSXElement(astPath) {
-        let node =  astPath.node;
+        let node = astPath.node;
         let nodeName = node.openingElement.name.name;
         if (buildType == 'quick' && !node.closingElement) {
             node.openingElement.selfClosing = false;
@@ -494,6 +494,18 @@ module.exports = {
                         t.jSXExpressionContainer(t.stringLiteral(nodeName))
                     )
                 );
+                if (buildType == "ali") {
+                    var varString = `var a = 'i${astPath.node.start}' ${
+                        modules.indexArr ? "+" + modules.indexArr.join('+\'-\'+') : ""
+                        }`
+                    var expr = template(varString)();
+                    attributes.push(
+                        t.JSXAttribute(
+                            t.JSXIdentifier('data-instance-uid'),
+                            t.jSXExpressionContainer(expr.declarations[0].init)
+                        )
+                    );
+                }
 
                 if (modules.indexArr) {
                     attributes.push(

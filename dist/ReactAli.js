@@ -2182,13 +2182,11 @@ var Renderer$1 = createRenderer({
     onBeforeRender: function onBeforeRender(fiber) {
         var type = fiber.type;
         if (type.reactInstances) {
-            var name = fiber.name;
             var noMount = !fiber.hasMounted;
             var instance = fiber.stateNode;
             if (!instance.instanceUid) {
                 var uuid = 'i' + getUUID();
-                instance.instanceUid = uuid;
-                type[uuid] = instance;
+                instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {
@@ -2317,36 +2315,6 @@ var HookMap = {
 function applyAppStore() {
     console.log("此方法已废弃");
 }
-var currentPageComponents = {};
-function updateChildComponents() {
-    var queue = [];
-    for (var name in currentPageComponents) {
-        var type = currentPageComponents[name];
-        if (type && type.wxInstances) {
-            var wxInstances = type.wxInstances.sort(function (a, b) {
-                return a.$id - b.$id;
-            });
-            var reactInstances = type.reactInstances;
-            while (reactInstances.length && wxInstances.length) {
-                var reactInstance = reactInstances.shift();
-                var wxInstance = wxInstances.shift();
-                reactInstance.wx = wxInstance;
-                wxInstance.reactInstance = reactInstance;
-                queue.push(reactInstance);
-            }
-            if (reactInstances.length + wxInstances.length === 0) {
-                delete currentPageComponents[name];
-            }
-        }
-    }
-    currentPageComponents.$$pageIsReady = true;
-    queue.forEach(updateMiniApp);
-    var el = void 0;
-    while (el = delayMounts.pop()) {
-        el.fn.call(el.instance);
-        el.instance.componentDidMount = el.fn;
-    }
-}
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     var pageViewInstance,
@@ -2354,14 +2322,6 @@ function registerPage(PageClass, path, testObject) {
         data: {},
         dispatchEvent: eventSystem.dispatchEvent,
         onLoad: function onLoad(query) {
-            for (var i in currentPageComponents) {
-                var a = currentPageComponents[i];
-                if (a.reactInstances) {
-                    a.reactInstances.length = 0;
-                    a.wxInstances.length = 0;
-                }
-                delete currentPageComponents[i];
-            }
             var container = {
                 type: 'page',
                 props: {},
@@ -2381,7 +2341,11 @@ function registerPage(PageClass, path, testObject) {
         },
         onReady: function onReady() {
             console.log(path, 'onReady');
-            updateChildComponents();
+            var el = void 0;
+            while (el = delayMounts.pop()) {
+                el.fn.call(el.instance);
+                el.instance.componentDidMount = el.fn;
+            }
         },
         onUnload: function onUnload() {
             console.log(path, 'onUnload');
@@ -2560,8 +2524,8 @@ var render$1 = Renderer$1.render;
 function registerComponent(type, name) {
     registeredComponents[name] = type;
     type.ali = true;
-    type.reactInstances = [];
-    var wxInstances = type.wxInstances = [];
+    var reactInstances = type.reactInstances = [];
+    type.wxInstances = [];
     return {
         data: {
             props: {},
@@ -2569,10 +2533,17 @@ function registerComponent(type, name) {
             context: {}
         },
         didMount: function didMount() {
-            wxInstances.push(this);
-            currentPageComponents[name] = type;
-            if (currentPageComponents.$$pageIsReady && Object.keys(currentPageComponents).length > 1) {
-                setTimeout(updateChildComponents, 40);
+            var uid = this.props.instanceUid;
+            for (var i = reactInstances.length - 1; i >= 0; i--) {
+                var reactInstance = reactInstances[i];
+                if (reactInstance.instanceUid === uid) {
+                    reactInstance.wx = this;
+                    console.log("命中", this);
+                    this.reactInstance = reactInstance;
+                    updateMiniApp(reactInstance);
+                    reactInstances.splice(i, 1);
+                    break;
+                }
             }
         },
         didUnmount: function didUnmount() {

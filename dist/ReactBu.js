@@ -2182,13 +2182,11 @@ var Renderer$1 = createRenderer({
     onBeforeRender: function onBeforeRender(fiber) {
         var type = fiber.type;
         if (type.reactInstances) {
-            var name = fiber.name;
             var noMount = !fiber.hasMounted;
             var instance = fiber.stateNode;
             if (!instance.instanceUid) {
                 var uuid = 'i' + getUUID();
-                instance.instanceUid = uuid;
-                type[uuid] = instance;
+                instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {

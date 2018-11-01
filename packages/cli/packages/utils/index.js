@@ -88,7 +88,7 @@ let utils = {
     },
     createElement(nodeName, attrs, children) {
         return t.JSXElement(
-            t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, false),
+            t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, config.buildType === 'quick' ? false: !children.length),
             t.jSXClosingElement(t.JSXIdentifier(nodeName)),
             children
         );
@@ -428,12 +428,6 @@ let utils = {
                 'Msg: ' + chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
             );
             process.exit(1);
-        }
-    },
-    shortNameAlias: {
-        h: {
-            variableDeclarator: 'h',
-            init: 'var h = React.createElement;'
         }
     },
     getQuickDevPkg: function () {

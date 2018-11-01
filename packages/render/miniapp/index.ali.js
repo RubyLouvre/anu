@@ -19,10 +19,8 @@ import { useComponent, registeredComponents } from './registerComponent';
 import {
     registerPage,
     applyAppStore,
-    currentPageComponents,
-    updateChildComponents
 } from './registerPageAli';
-import { toRenderProps } from './utils';
+import { toRenderProps, updateMiniApp } from './utils';
 import { aliApis } from './aliApis';
 
 let win = getWindow();
@@ -33,8 +31,8 @@ let { render } = Renderer;
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
     type.ali = true;
-    type.reactInstances = [];
-    var wxInstances = (type.wxInstances = []);
+    var reactInstances = type.reactInstances = [];
+    type.wxInstances = [];
     return {
         data: {
             props: {},
@@ -43,7 +41,20 @@ export function registerComponent(type, name) {
         },
 
         didMount() {
+            var uid = this.props.instanceUid;
+            for (var i = reactInstances.length - 1; i >= 0; i--) {
+                var reactInstance = reactInstances[i];
+                if (reactInstance.instanceUid === uid) {
+                    reactInstance.wx = this;
+                    console.log("命中", this);
+                    this.reactInstance = reactInstance;
+                    updateMiniApp(reactInstance);
+                    reactInstances.splice(i, 1);
+                    break;
+                }
+            }
             //支付宝小程序的实例didMount是没有顺序的
+            /*
             wxInstances.push(this);
             currentPageComponents[name] = type;
             if (
@@ -52,6 +63,7 @@ export function registerComponent(type, name) {
             ) {
                 setTimeout(updateChildComponents, 40);
             }
+            */
         },
         didUnmount() {
             this.reactInstance = null;
