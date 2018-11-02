@@ -12,7 +12,6 @@ const logicHelper = require(logicSrc);
 const utils = require('../utils');
 
 const quickTextContainer = {
-    span: 1,
     text: 1,
     a: 1,
     option: 1
