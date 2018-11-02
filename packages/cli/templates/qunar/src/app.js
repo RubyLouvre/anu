@@ -1,7 +1,7 @@
 import React from '@react';
 import './pages/index/index';
 
-import './pages/demo/base/index';
+import './pages/demo/base/index/index';
 
 import './pages/demo/native/index/index';
 import './pages/demo/native/button/index';
@@ -21,7 +21,7 @@ import './pages/demo/native/image/index';
 import './pages/demo/native/video/index';
 import './pages/demo/native/camera/index';
 
-import './pages/demo/syntax/index';
+import './pages/demo/syntax/index/index';
 import './pages/demo/syntax/api/index';
 import './pages/demo/syntax/stateless/index';
 import './pages/demo/syntax/loop/index';
@@ -42,7 +42,7 @@ import './pages/demo/syntax/webview/index';
 
 import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';
-import './pages/demo/boat/index';
+import './pages/demo/boat/index/index';
 import './pages/demo/scenic/index';
 import './pages/demo/strategy/index';
 import './pages/demo/userCenter/index';

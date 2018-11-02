@@ -106,7 +106,8 @@ let visitor = {
         }
     },
     JSXAttribute(astPath, state) {
-        if (astPath.node.name.name === 'key') {
+        let attrName = astPath.node.name.name;
+        if (attrName === 'key') {
             let node = astPath.node.value;
             let value;
             let modules = utils.getAnu(state);
@@ -122,6 +123,14 @@ let visitor = {
             modules.key = value;
             astPath.remove();
             return;
+        }
+        let parentNode = astPath.parentPath.node;
+        if (
+            config.buildType == 'quick' &&
+            attrName === 'url' &&
+            parentNode.name.name === 'a'
+        ) {
+            astPath.node.name.name = 'src';
         }
         attrNameHelper(astPath);
     },
