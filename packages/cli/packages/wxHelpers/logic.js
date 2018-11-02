@@ -50,7 +50,7 @@ function logic(expr, modules) {
 }
 // 处理 test ? consequent: alternate 或 test && consequent
 function condition(test, consequent, alternate, modules) {
-    var ifNode = createElement(
+    let ifNode = createElement(
         'block',
         [createAttribute('wx:if', parseExpr(test))],
         logic(consequent, modules)
@@ -60,7 +60,7 @@ function condition(test, consequent, alternate, modules) {
     if (alternate && alternate.type !== 'NullLiteral') {
         // 如果存在if分支，那么就再包一层，一共三个block,
         // <block><block wx:if /><block wx:else /></block>
-        var elseNode = createElement(
+        let elseNode = createElement(
             'block',
             [createAttribute('wx:else', 'true')],
             logic(alternate, modules)
@@ -91,7 +91,7 @@ function loop(callee, fn, modules) {
 
     if (body) {
         // 循环内部存在循环或条件
-        var children = logic(
+        let children = logic(
             t.isBlockStatement(fn.body) ? body.argument : body,
             modules
         );

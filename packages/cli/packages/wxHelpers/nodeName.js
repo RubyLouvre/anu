@@ -9,6 +9,7 @@ let builtIn = {};
 builtInStr.replace(rword, function(el) {
     builtIn[el] = el;
 });
+
 //兼容小程序自定义组件
 function addCustomComponents(customComponents){
     customComponents.forEach(function(el){

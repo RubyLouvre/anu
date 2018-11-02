@@ -2,7 +2,7 @@ let rword = /[^, ]+/g;
 
 let builtInStr =
     'div,list,list-item,popup,refresh,richtext,stack,swiper,tab,tab-bar,tab-context,'+
-    'a,span,text,image,progress,rating,'+
+    'a,text,image,progress,rating,'+
     'input,label,option,picker,select,slider,switch,textarea,'+
     'video,canvas,web,map'; 
 
@@ -10,6 +10,7 @@ let builtIn = {};
 builtInStr.replace(rword, function(el) {
     builtIn[el] = el;
 });
+
 //兼容小程序自定义组件
 function addCustomComponents(customComponents){
     customComponents.forEach(function(el){

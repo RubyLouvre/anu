@@ -6,21 +6,21 @@ const utils = require('../utils');
 module.exports = {
     enter(astPath, state) {
         //重置数据
-        var modules = utils.getAnu(state);
+        let modules = utils.getAnu(state);
         modules.className = astPath.node.id.name;
         modules.parentName = generate(astPath.node.superClass).code || 'Object';
         modules.classUid = 'c' + utils.createUUID(astPath);
     },
     exit(astPath, state) {
         // 将类表式变成函数调用
-        var modules = utils.getAnu(state);
+        let modules = utils.getAnu(state);
         if (!modules.ctorFn) {
             modules.ctorFn = template('function x(){b}')({
                 x: t.identifier(modules.className),
                 b: modules.thisProperties
             });
         }
-        var parent = astPath.parentPath.parentPath;
+        let parent = astPath.parentPath.parentPath;
         parent.insertBefore(modules.ctorFn);
         //用于绑定事件
         modules.thisMethods.push(

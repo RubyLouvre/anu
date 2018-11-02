@@ -62,17 +62,19 @@ exports.exit = function(astPath, type, componentName, modules) {
     }
 
     if (t.isReturnStatement(expr)) {
-        var jsx = generate(expr.argument).code;
-        var jsxAst = babel.transform(jsx, {
+        let jsx = generate(expr.argument).code;
+        let jsxAst = babel.transform(jsx, {
             babelrc: false,
-            plugins: [[require('babel-plugin-transform-react-jsx'), { pragma: 'h' }]]
+            plugins: [
+                [require('babel-plugin-transform-react-jsx'), { pragma: 'h' }]
+            ]
         });
 
         expr.argument = jsxAst.ast.program.body[0];
-        var wxml = wxmlHelper(`<block>{${jsx}}</block>`, modules).slice(7, -9); //去掉<block> </block>;
+        let wxml = wxmlHelper(`<block>{${jsx}}</block>`, modules).slice(7, -9); //去掉<block> </block>;
 
         //添加import语句产生的显式依赖
-        for (var i in modules.importComponents) {
+        for (let i in modules.importComponents) {
             if (modules.usedComponents[i]) {
                 wxml = `<import src="${
                     modules.importComponents[i].source
@@ -103,7 +105,12 @@ exports.exit = function(astPath, type, componentName, modules) {
                 '/components/' + parentClass + '/index';
         }
         queue.push({
-            path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', xmlExt),
+            path: utils.updatePath(
+                modules.sourcePath,
+                config.sourceDir,
+                'dist',
+                xmlExt
+            ),
             code: wxml /* minifier(wxml,{
                 collapseWhitespace: true ,
                 keepClosingSlash: true,
@@ -119,7 +126,7 @@ function handleRenderProps(wxml, componentName, modules) {
         code: renderText,
         type: 'wxml'
     });
-    var dep =
+    let dep =
         deps['renderProps'] ||
         (deps['renderProps'] = {
             json: {
@@ -139,7 +146,12 @@ function handleRenderProps(wxml, componentName, modules) {
             '/components/' + i + '/index';
     }
     queue.push({
-        path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist', 'json'),
+        path: utils.updatePath(
+            modules.sourcePath,
+            config.sourceDir,
+            'dist',
+            'json'
+        ),
         code: JSON.stringify(dep.json, null, 4) //prettifyXml(wxml, { indent: 2 })
     });
 }

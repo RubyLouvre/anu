@@ -51,6 +51,16 @@ class P extends React.Component {
                         <Dog name={el.name} key={el.name} />
                     )}
                 </div>
+                <div>
+                    {this.state.array.map(el => {
+                        return <Dog name={el.name} key={el.name} />;
+                    })}
+                </div>
+                <div>
+                    {this.state.array.map(function(el)  {
+                        return <Dog name={el.name} key={el.name} />;
+                    })}
+                </div>
             </div>
         );
     }

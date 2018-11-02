@@ -13,7 +13,7 @@ class P extends React.Component {
                     logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/hotel2.png',
                     showSpecialLogo: false,
                     specialText: '',
-                    url: '../../pages/demo/base/index'
+                    url: '../../pages/demo/base/index/index'
                 },
                 {
                     class: '',
@@ -29,7 +29,7 @@ class P extends React.Component {
                     logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/train2.png',
                     showSpecialLogo: false,
                     specialText: '',
-                    url: '../../pages/demo/syntax/index'
+                    url: '../../pages/demo/syntax/index/index'
                 },
                 {
                     class: '',
@@ -54,7 +54,7 @@ class P extends React.Component {
                     logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/ship1.png',
                     showSpecialLogo: false,
                     specialText: '',
-                    url: '../../pages/demo/boat/index'
+                    url: '../../pages/demo/boat/index/index'
                 },
                 {
                     class: 'radius-bottom-left',
@@ -141,6 +141,7 @@ class P extends React.Component {
           this.fun_tip();
       }
   }
+
   componentDidMount() {
       // eslint-disable-next-line
     console.log('page did mount!');
