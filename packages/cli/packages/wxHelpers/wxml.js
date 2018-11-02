@@ -124,14 +124,7 @@ let visitor = {
             astPath.remove();
             return;
         }
-        let parentNode = astPath.parentPath.node;
-        if (
-            config.buildType == 'quick' &&
-            attrName === 'url' &&
-            parentNode.name.name === 'a'
-        ) {
-            astPath.node.name.name = 'src';
-        }
+      
         attrNameHelper(astPath);
     },
     JSXText: {

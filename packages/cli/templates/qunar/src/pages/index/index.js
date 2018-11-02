@@ -141,6 +141,7 @@ class P extends React.Component {
           this.fun_tip();
       }
   }
+
   componentDidMount() {
       // eslint-disable-next-line
     console.log('page did mount!');

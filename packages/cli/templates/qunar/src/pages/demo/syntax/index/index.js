@@ -1,4 +1,5 @@
 import React from '@react';
+import Navigator from '@components/navigator/index';
 class Express extends React.Component {
     constructor() {
         super();
@@ -99,7 +100,7 @@ class Express extends React.Component {
                     <div class='navigation'>
                         {
                             this.state.pages.map(function(page) {
-                                return <navigator open-type="navigate" class='item' hover-class="navigator-hover" url={page.url}>{page.title}</navigator>;
+                                return <Navigator open-type="navigate" class='item' hover-class="navigator-hover" url={page.url}>{page.title}</Navigator>;
                             })
                         }
                     </div>
