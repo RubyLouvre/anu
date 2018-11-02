@@ -1,0 +1,25 @@
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.col {
+  display:flex;
+  flex-direction: column;
+  flex:1;
+  width: 100%
+  
+}
+
+.item {
+  border: 1px solid #eee;
+
+  padding: 10px 20px;
+
+  text {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+}

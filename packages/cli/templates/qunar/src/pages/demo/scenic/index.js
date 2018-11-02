@@ -1,12 +1,6 @@
 import React from '@react';
 import './index.scss';
-function json_parse(data) {
-    try {
-        return JSON.parse(data);
-    } catch (e) {
-        return data;
-    }
-}
+
 
 class P extends React.Component {
     constructor() {
@@ -26,7 +20,7 @@ class P extends React.Component {
             success: function(data) {
                 // React.api.hideLoading();
                 // console.log('data', data.data);
-                that.setState({ data: json_parse(data.data) });
+                that.setState({ data: data.data });
             }
         });
     }

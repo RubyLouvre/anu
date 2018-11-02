@@ -32,12 +32,12 @@ page {
       color: #000;
       display: flex;
       align-items: center;
+      flex-direction: row;
       &:last-child {
         margin-right: 0;
       }
       
       .open-icon {
-        
         margin-left: 10rpx;
         width: 25rpx;
         height: 15rpx;
@@ -58,13 +58,13 @@ page {
   }
   .first-choose {
     
-    transform: translateX(40rpx);
+    transform: translateX(60rpx);
   }
   .second-choose {
-    transform: translateX(170rpx);
+    transform: translateX(190rpx);
   }
   .third-choose {
-    transform: translateX(280rpx);
+    transform: translateX(300rpx);
   }
   .content {
     background-color: #ffffff;
