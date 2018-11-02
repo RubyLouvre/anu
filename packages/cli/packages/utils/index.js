@@ -13,6 +13,7 @@ const nodeResolve = require('resolve');
 const template = require('babel-template');
 const axios = require('axios');
 const ora = require('ora');
+const merge = require('lodash.merge');
 const EventEmitter = require('events').EventEmitter;
 const config = require('../config');
 const Event = new EventEmitter();
@@ -427,54 +428,45 @@ let utils = {
                 'Error: ' + sourcePath + '\n' +
                 'Msg: ' + chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
             );
-            process.exit(1);
         }
     },
-    getQuickDevPkg: function () {
-        //后期从git拉
-        return {
-            'scripts': {
-                'server': 'hap server',
-                'postinstall': 'hap postinstall',
-                'debug': 'hap debug',
-                'build': 'hap build',
-                'release': 'hap release',
-                'watch': 'hap watch'
-            },
-            'devDependencies': {
-                'hap-toolkit': '0.0.36',
-                'babel-cli': '^6.10.1',
-                'babel-core': '^6.26.0',
-                'babel-eslint': '^8.2.1',
-                'babel-loader': '^7.1.4',
-                'babel-plugin-syntax-jsx': '^6.18.0',
-                'cross-env': '^5.1.4',
-                'css-what': '^2.1.0',
-                'koa': '^2.3.0',
-                'koa-send': '^4.1.1',
-                'koa-static': '^4.0.1',
-                'koa-body': '^2.5.0',
-                'koa-router': '^7.2.1',
-                'socket.io': '^2.1.0',
-                'webpack': '^3.11.0'
-            }
-        };
+    mergeQuickAppJson: function () {
+        let prevPkgPath = path.join(cwd, 'package.json');
+        let prevpkg = require(prevPkgPath);
+        let quickPkg = require(path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig', 'package.json') );
+        fs.writeFile(prevPkgPath, JSON.stringify(merge(prevpkg, quickPkg), null, 4))
+            .catch((err)=>{
+                // eslint-disable-next-line
+                console.log(err);
+            });
     },
-    mergeQuickJson: function () {
-        let pkg = require(path.join(cwd, 'package.json'));
-        let quickPkg = this.getQuickDevPkg();
-        Object.assign(pkg.devDependencies, quickPkg.devDependencies);
-        Object.assign(pkg.scripts || (pkg.scripts = {}), quickPkg.scripts);
-        fs.writeFile(
-            path.join(cwd, 'package.json'),
-            JSON.stringify(pkg, null, 4),
-            (err) => {
-                if (err) {
+    initQuickAppConfig: function(){
+        //merge快应用依赖的package.json配置
+        this.mergeQuickAppJson();
+        
+        //copy快应用秘钥
+        let signSourceDir = path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig', 'sign');
+        let signDistDir = path.join(cwd, 'sign');
+        fs.ensureDirSync(signDistDir);
+        fs.copy( signSourceDir, signDistDir)
+            .catch((err)=>{
+                // eslint-disable-next-line
+                console.log(err);
+            });
+    },
+    
+    cleanDir: function(){
+        let fileList = ['package-lock.json', 'yarn.lock'];
+        config.buildType === 'quick'
+            ? fileList = fileList.concat([ config.buildDir ])
+            : fileList = fileList.concat( [ 'dist', 'build', 'sign', 'src' ] );
+        fileList.forEach((item)=>{
+            fs.remove(path.join(cwd, item))
+                .catch((err)=>{
                     // eslint-disable-next-line
-                    console.log(err);
-                }
-            }
-        );
+                     console.log(err);
+                });
+        });
     },
     compress: function () {
         return {
