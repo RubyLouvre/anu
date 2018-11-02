@@ -48,6 +48,10 @@ const isJs = path => {
     return /\.js$/.test(path);
 };
 
+utils.on('build', ()=>{
+    generate();
+});
+
 class Parser {
     constructor(entry) {
         this.entry = entry;
@@ -283,14 +287,15 @@ class Parser {
     }
 }
 
-utils.on('build', ()=>{
-    generate();
-});
 
 
 async function build(arg) {
-    //同步react
-    await utils.asyncReact();
+    await utils.asyncReact();  //同步react
+    utils.cleanDir();  //删除一些不必要的目录, 避免来回切换构建类型产生冗余目录
+    if (config['buildType'] === 'quick') {
+        //快应用mege package.json 以及 生成秘钥
+        utils.initQuickAppConfig();
+    }
     const parser = new Parser(entry);
     await parser.parse();
     if (arg === 'watch') {
