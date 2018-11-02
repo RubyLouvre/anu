@@ -106,7 +106,8 @@ let visitor = {
         }
     },
     JSXAttribute(astPath, state) {
-        if (astPath.node.name.name === 'key') {
+        let attrName = astPath.node.name.name;
+        if (attrName === 'key') {
             let node = astPath.node.value;
             let value;
             let modules = utils.getAnu(state);
@@ -123,6 +124,7 @@ let visitor = {
             astPath.remove();
             return;
         }
+      
         attrNameHelper(astPath);
     },
     JSXText: {
