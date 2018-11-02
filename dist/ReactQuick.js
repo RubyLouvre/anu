@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-01
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-02
  * IE9+
  */
 
@@ -2246,7 +2246,7 @@ function registerPage(PageClass, path) {
             shareObject.app = this.$app.$def || this.$app._def;
             var instance = onLoad.call(this, PageClass, path, query);
             var pageConfig = instance.config || PageClass.config;
-            shareObject.pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
+            shareObject.pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
             shareObject.pagePath = path;
             shareObject.page = instance;
         },

@@ -22,7 +22,7 @@ export function registerPage(PageClass, path) {
             var instance = onLoad.call(this,PageClass, path, query);
             // shareObject的数据不是长久的，在页面跳转时，就会丢失
             var pageConfig = instance.config || PageClass.config;
-            shareObject.pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
+            shareObject.pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
             shareObject.pagePath = path;
             shareObject.page = instance;
         },
