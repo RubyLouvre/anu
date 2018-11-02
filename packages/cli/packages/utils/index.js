@@ -13,7 +13,6 @@ const nodeResolve = require('resolve');
 const template = require('babel-template');
 const axios = require('axios');
 const ora = require('ora');
-const merge = require('lodash.merge');
 const EventEmitter = require('events').EventEmitter;
 const config = require('../config');
 const Event = new EventEmitter();
@@ -434,7 +433,11 @@ let utils = {
         let prevPkgPath = path.join(cwd, 'package.json');
         let prevpkg = require(prevPkgPath);
         let quickPkg = require(path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig', 'package.json') );
-        fs.writeFile(prevPkgPath, JSON.stringify(merge(prevpkg, quickPkg), null, 4))
+        let mergeJsonResult = {
+            ...prevpkg,
+            ...quickPkg
+        };
+        fs.writeFile(prevPkgPath, JSON.stringify(mergeJsonResult, null, 4))
             .catch((err)=>{
                 // eslint-disable-next-line
                 console.log(err);
