@@ -1,7 +1,7 @@
 import React from '@react';
 import './pages/index/index';
 
-import './pages/demo/base/index/index';
+import './pages/demo/apis/index';
 
 import './pages/demo/native/index/index';
 import './pages/demo/native/button/index';

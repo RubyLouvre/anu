@@ -1,13 +1,7 @@
 import React from '@react';
 import './index.scss';
 
-function json_parse(data) {
-    try {
-        return JSON.parse(data);
-    } catch (e) {
-        return data;
-    }
-}
+
 
 class P extends React.Component {
     constructor() {
@@ -20,7 +14,6 @@ class P extends React.Component {
         };
     }
     navItemClick(navBtnActiveIndex) {
-        
         this.setState({ navBtnActiveIndex });
         if (navBtnActiveIndex === 1 || navBtnActiveIndex === 2) {
             this.getData();
@@ -39,7 +32,7 @@ class P extends React.Component {
             url: 'http://yapi.demo.qunar.com/mock/18752/qunar/question',
             success: function(data) {
                 // React.api.hideLoading();
-                that.setState({ data: json_parse(data.data) });
+                that.setState({ data: data.data });
             }
         });
     }
