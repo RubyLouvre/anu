@@ -167,7 +167,12 @@ let visitor = {
                 let modules = utils.getAnu(state);
                 //返回block元素或template元素
                 let block = logicHelper(expr, modules);
-                astPath.replaceWithMultiple(block);
+                try {
+                    astPath.replaceWithMultiple(block);
+                } catch (e){
+                    //快应用将文本节点包一层text，可能在这里引发BUG
+                    astPath.replaceWith(block[0]);
+                }
             }
         }
     }
