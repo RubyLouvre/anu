@@ -1,4 +1,5 @@
 import React from '@react';
+import './index.scss';
 class Express extends React.Component {
     constructor() {
         super();
@@ -34,14 +35,6 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/loop3/index'
                 },
                 {
-                    title: '一个页面有多个相同组件',
-                    url: '/pages/demo/syntax/loop5/index'
-                },
-                {
-                    title: '一个页面有多个相同组件跳',
-                    url: '/pages/demo/syntax/loop6/index'
-                },
-                {
                     title: '循环里面交替使用两种不同组件（对话形式）',
                     url: '/pages/demo/syntax/loop4/index'
                 },
@@ -66,12 +59,16 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/renderprops/index'
                 },
                 {
-                    title: '数据请求',
-                    url: '/pages/demo/syntax/request/index'
+                    title: 'Redux',
+                    url: '/pages/demo/syntax/redux/index'
                 },
                 {
-                    title: 'webview',
-                    url: '/pages/demo/syntax/webview/index'
+                    title: 'Redux只是显示数据',
+                    url: '/pages/demo/syntax/redux2/index'
+                },
+                {
+                    title: '数据请求',
+                    url: '/pages/demo/syntax/request/index'
                 }
             ]
         };
@@ -80,7 +77,7 @@ class Express extends React.Component {
         'navigationBarTextStyle': '#fff',
         'navigationBarBackgroundColor': '#0088a4',
         'navigationBarTitleText': 'Demo',
-        'backgroundColor': '#eeeeee',
+        'backgroundColor': '#ffffff',
         'backgroundTextStyle': 'light'
     }
     componentWillMount(){
@@ -91,15 +88,18 @@ class Express extends React.Component {
         // eslint-disable-next-line
         console.log('syntax componentDidMount');
     }
+    gotoSome(url) {
+        React.api.navigateTo({ url });
+    }
     render() {
         return (
-            <div class='container'>
+            <div class='container col'>
                 <div class='page_hd'>{this.state.title}</div>
                 <div class='page_bd'>
-                    <div class='navigation'>
+                    <div class='navigation col center'>
                         {
                             this.state.pages.map(function(page) {
-                                return <navigator open-type="navigate" class='item' hover-class="navigator-hover" url={page.url}>{page.title}</navigator>;
+                                return <div class='item' hover-class="navigator-hover" onTap={this.gotoSome.bind(this, page.url)}>{page.title}</div>;
                             })
                         }
                     </div>

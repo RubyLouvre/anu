@@ -1,13 +1,6 @@
 import React from '@react';
 import './index.scss';
 
-function json_parse(data) {
-    try {
-        return JSON.parse(data);
-    } catch (e){
-        return data;
-    }
-}
 
 class P extends React.Component {
     constructor() {
@@ -26,8 +19,7 @@ class P extends React.Component {
         React.api.request({
             url: 'http://yapi.demo.qunar.com/mock/18752/qunar/strategy',
             success: function(data) {
-                
-                that.setState({ data: json_parse(data.data) });
+                that.setState({ data: data.data });
             }
         });
     }
@@ -54,14 +46,14 @@ class P extends React.Component {
                           <image class="big-image" src={item.bigImage} />
                           <div class="strategy-item-content">
                               <div class="col">
-                                  <span class="desc">{item.desc}</span>
-                                  <span class="date">{item.date}</span>
+                                  <span class="desc fontColor">{item.desc}</span>
+                                  <span class="date fontColor">{item.date}</span>
                               </div>
                               <div class="user-wrapper">
                                   <div class="user-image">
                                       <image src={item.userImage} />
                                   </div>
-                                  <div class="user-name">{item.userName}</div>
+                                  <text class="user-name fontColor">{item.userName}</text>
                               </div>
                           </div>
                       </div>
