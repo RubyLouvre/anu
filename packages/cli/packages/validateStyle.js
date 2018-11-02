@@ -7,6 +7,7 @@
 const css = require('css');
 const R = require('ramda');
 const chalk = require('chalk');
+const expandDeclarations = require('./expandDeclarations');
 const config = require('./config');
 
 const extractPropertyOfDeclaration = R.prop('property');
@@ -95,6 +96,15 @@ const visitors = {
             'background-image',
             /url\(['"]https?:\/\/\S+['"]\)/i
         )(declaration);
+    },
+    margin(declaration) {
+        expandDeclarations(declaration, 'margin');
+    },
+    border(declaration) {
+        expandDeclarations(declaration, 'border');
+    },
+    padding(declaration) {
+        expandDeclarations(declaration, 'padding');
     }
 };
 
@@ -117,12 +127,14 @@ module.exports = function validateStyle(code) {
     const ast = css.parse(code);
     const rules = ast.stylesheet.rules;
     rules.forEach(({ declarations = [] }) => {
-        R.filter(R.propEq('type', 'declaration'))(declarations).forEach(declaration => {
-            replaceRPXtoPX(declaration);
-            if (visitors[declaration.property]) {
-                visitors[declaration.property](declaration);
+        R.filter(R.propEq('type', 'declaration'))(declarations).forEach(
+            declaration => {
+                replaceRPXtoPX(declaration);
+                if (visitors[declaration.property]) {
+                    visitors[declaration.property](declaration);
+                }
             }
-        });
+        );
     });
     return css.stringify(ast);
 };
