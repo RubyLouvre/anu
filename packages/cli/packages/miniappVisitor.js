@@ -246,8 +246,10 @@ module.exports = {
 
             if (buildType == "quick") {
                 var obj = quickFiles[modules.sourcePath];
+
                 if (obj) {
                     quickConfig(json, modules, queue, utils);
+                    obj.config = Object.assign({}, json)
                 }
                 delete json.usingComponents;
                 if (Object.keys(json).length) {
