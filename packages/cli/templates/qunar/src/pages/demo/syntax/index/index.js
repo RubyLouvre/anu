@@ -1,5 +1,5 @@
 import React from '@react';
-import Navigator from '@components/navigator/index';
+import Navigator from '@components/Navigator/index';
 class Express extends React.Component {
     constructor() {
         super();
