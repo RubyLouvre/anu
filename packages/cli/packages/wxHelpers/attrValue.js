@@ -14,16 +14,15 @@ function toString(node) {
 }
 
 module.exports = function(astPath) {
-    
-    var expr = astPath.node.expression;
-    var attrName = astPath.parent.name.name;
-    var isEventRegex =
+    let expr = astPath.node.expression;
+    let attrName = astPath.parent.name.name;
+    let isEventRegex =
         buildType == 'ali' || buildType == 'quick'
             ? /^(on|catch)/
             : /^(bind|catch)/;
-    var isEvent = isEventRegex.test(attrName);
+    let isEvent = isEventRegex.test(attrName);
     if (isEvent && buildType == 'quick') {
-        var n = attrName.charAt(0) === 'o' ? 2 : 5;
+        let n = attrName.charAt(0) === 'o' ? 2 : 5;
         astPath.parent.name.name = 'on' + attrName.slice(n).toLowerCase();
     }
 
@@ -31,13 +30,15 @@ module.exports = function(astPath) {
         astPath.traverse({
             ThisExpression(nodePath) {
                 if (t.isMemberExpression(nodePath.parentPath)) {
-                    nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
+                    nodePath.parentPath.replaceWith(
+                        t.identifier(nodePath.parent.property.name)
+                    );
                 }
             }
         });
     }
 
-    var attrValue = generate(expr).code;
+    let attrValue = generate(expr).code;
     switch (astPath.node.expression.type) {
         case 'NumericLiteral': //11
         case 'StringLiteral': // "string"
@@ -51,15 +52,15 @@ module.exports = function(astPath) {
             replaceWithExpr(astPath, attrValue);
             break;
         case 'BinaryExpression': {
-            var { left, right } = astPath.node.expression;
+            let { left, right } = astPath.node.expression;
             if (t.isStringLiteral(left) || t.isStringLiteral(right)) {
                 const attrName = astPath.parentPath.node.name.name;
-                
+
                 if (attrName === 'class' || attrName === 'className') {
-                // 快应用的 bug
-                // class={{this.className0 + ' dynamicClassName'}} 快应用会将后者的空格吞掉
-                // 影响 class 的求值
-                    var className =
+                    // 快应用的 bug
+                    // class={{this.className0 + ' dynamicClassName'}} 快应用会将后者的空格吞掉
+                    // 影响 class 的求值
+                    let className =
                         buildType == 'quick'
                             ? `${toString(
                                 astPath.node.expression.left
@@ -91,7 +92,7 @@ module.exports = function(astPath) {
             break;
         case 'CallExpression':
             if (isEvent) {
-                var match = attrValue.match(/this\.(\w+)\.bind/);
+                let match = attrValue.match(/this\.(\w+)\.bind/);
                 if (match && match[1]) {
                     bindEvent(astPath, attrName, match[1]);
                 } else {
@@ -134,6 +135,6 @@ function throwEventValue(attrName, attrValue) {
 }
 
 function replaceWithExpr(astPath, value, noBracket) {
-    var v = noBracket ? value : '{{' + value + '}}';
+    let v = noBracket ? value : '{{' + value + '}}';
     astPath.replaceWith(t.stringLiteral(v));
 }
