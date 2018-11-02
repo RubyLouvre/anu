@@ -123,11 +123,12 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         let importTag = '';
                         for (let i in using) {
                             let importSrc = path.relative(
-                                sourcePath,
-                                path.resolve(cwd +'/'+ config.sourceDir + using[i])
+                                path.dirname(sourcePath),
+                                path.join(cwd, config.sourceDir, using[i])
                             );
                             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
                         }
+                        
                         ux = importTag + ux;
                     }
                     ux = beautify.html(ux, {
