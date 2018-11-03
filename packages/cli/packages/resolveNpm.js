@@ -50,7 +50,7 @@ const getDistPath = (id)=>{
 let ReactFileName = utils.getReactMap()[config['buildType']];
 
 module.exports = (file)=>{
-    let {id, originalCode, moduleType} = file;
+    let {id, originalCode} = file;
     //已处理过的不再处理
     if (transformCache[id]) return;
     transformCache[id] = true;
@@ -80,28 +80,24 @@ module.exports = (file)=>{
                     }
                 }
             },
-            ['transform-node-env-inline'], //处理环境判断的相关代码
-            ['module-resolver', {
-                resolvePath(moduleName){
-                    if (moduleName === 'react'){
-                        
-                        //配置react别名
-                        let distNpmFile = utils.replacePath(id, '/node_modules/', '/dist/npm/');
-                        let distReactFile = path.join(cwd, 'dist', ReactFileName);
-                        return getRelativePath(distNpmFile, distReactFile);
+            require('babel-plugin-transform-node-env-inline'),//处理环境判断的相关代码
+            [ 
+                require('babel-plugin-module-resolver'), 
+                {
+                    resolvePath(moduleName){
+                        if (moduleName === 'react'){
+                            //配置react别名
+                            let distNpmFile = utils.replacePath(id, '/node_modules/', '/dist/npm/');
+                            let distReactFile = path.join(cwd, 'dist', ReactFileName);
+                            return getRelativePath(distNpmFile, distReactFile);
 
+                        }
                     }
                 }
-            }]
+            ]
              
         ]
     };
-
-    if (moduleType === 'es' &&  config['buildType'] === 'wx'){
-        //{allowTopLevelThis: true}, 防止this被转成undefined
-        //https://github.com/babel/babelify/issues/37#issuecomment-160041164
-        babelConfig.plugins.push(['transform-es2015-modules-commonjs', {'allowTopLevelThis': true}]);
-    }
 
     setImmediate(()=>{
         let code = babel.transform(originalCode, babelConfig ).code;

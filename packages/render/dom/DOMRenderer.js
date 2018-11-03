@@ -3,7 +3,6 @@ import { document, NAMESPACE } from './browser';
 import {
     get,
     noop,
-    extend,
     emptyObject,
     topNodes,
     topFibers

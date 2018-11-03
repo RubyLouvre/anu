@@ -1,3 +1,7 @@
+/*!
+输出命令行提示与选择模板
+*/
+
 /* eslint no-console: 0 */
 
 const validateProjectName = require('validate-npm-package-name');
@@ -6,6 +10,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const inquirer = require('inquirer');
 const ownRoot = path.join(__dirname, '..');
+const config = require('./config');
 const exists = fs.existsSync;
 
 const ignore = new Set(['.DS_Store', '.git', '.gitignore']);
@@ -90,7 +95,7 @@ const writeDir = appName => {
         if (ignore.has(item) || item != TEMPLATE) return;
         let src = path.join(ownRoot, 'templates', item, 'src');
         let pkg = path.join(ownRoot, 'templates', item, 'package.json');
-        let dist = path.join(appName, 'src');
+        let dist = path.join(appName,  config.sourceDir );
         let distPkg = path.join(appName, 'package.json');
         fs.copySync(src, dist);
         fs.copySync(pkg, distPkg);

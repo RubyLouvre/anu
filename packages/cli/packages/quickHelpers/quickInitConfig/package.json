@@ -1,0 +1,30 @@
+{
+    "scripts": {
+        "server": "hap server",
+        "postinstall": "hap postinstall",
+        "debug": "hap debug",
+        "build": "hap build",
+        "release": "hap release",
+        "watch": "hap watch"
+    },
+    "devDependencies": {
+        "babel-cli": "^6.10.1",
+        "babel-core": "^6.26.0",
+        "babel-eslint": "^8.2.1",
+        "babel-loader": "^7.1.4",
+        "babel-plugin-syntax-jsx": "^6.18.0",
+        "cross-env": "^5.1.4",
+        "css-what": "^2.1.0",
+        "hap-toolkit": "0.0.36",
+        "koa": "^2.3.0",
+        "koa-body": "^2.5.0",
+        "koa-router": "^7.2.1",
+        "koa-send": "^4.1.1",
+        "koa-static": "^4.0.1",
+        "less-loader": "^4.1.0",
+        "node-sass": "^4.9.4",
+        "sass-loader": "^7.1.0",
+        "socket.io": "^2.1.0",
+        "webpack": "^3.11.0"
+    }
+}

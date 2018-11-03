@@ -8,19 +8,37 @@ const buildType = require('../config').buildType;
 function bindEvent(astPath) {
     replaceWithExpr(astPath, 'dispatchEvent', true);
 }
-// 形如 React.toStyle({ width: index + 'px' }, this.props, "style2313" + index)
-// 输出  "style2313" + index)
-// function handlePropsStyleName(str) {
-//     let strArr = str.split(',');
-//     return strArr[strArr.length - 1].trim();
-// }
+function toString(node) {
+    if (t.isStringLiteral(node)) return node.value;
+    if (t.isMemberExpression) return `{{${generate(node).code}}}`;
+}
 
 module.exports = function(astPath) {
-    var expr = astPath.node.expression;
-    var attrName = astPath.parent.name.name;
-    var isEventRegex = buildType == 'ali' ?  /^(on|catch)/:  /^(bind|catch)/;
-    var isEvent = isEventRegex.test(attrName);
-    var attrValue = generate(expr).code;
+    let expr = astPath.node.expression;
+    let attrName = astPath.parent.name.name;
+    let isEventRegex =
+        buildType == 'ali' || buildType == 'quick'
+            ? /^(on|catch)/
+            : /^(bind|catch)/;
+    let isEvent = isEventRegex.test(attrName);
+    if (isEvent && buildType == 'quick') {
+        let n = attrName.charAt(0) === 'o' ? 2 : 5;
+        astPath.parent.name.name = 'on' + attrName.slice(n).toLowerCase();
+    }
+
+    if (!isEvent) {
+        astPath.traverse({
+            ThisExpression(nodePath) {
+                if (t.isMemberExpression(nodePath.parentPath)) {
+                    nodePath.parentPath.replaceWith(
+                        t.identifier(nodePath.parent.property.name)
+                    );
+                }
+            }
+        });
+    }
+
+    let attrValue = generate(expr).code;
     switch (astPath.node.expression.type) {
         case 'NumericLiteral': //11
         case 'StringLiteral': // "string"
@@ -33,35 +51,58 @@ module.exports = function(astPath) {
 
             replaceWithExpr(astPath, attrValue);
             break;
-        case 'BinaryExpression':
+        case 'BinaryExpression': {
+            let { left, right } = astPath.node.expression;
+            if (t.isStringLiteral(left) || t.isStringLiteral(right)) {
+                const attrName = astPath.parentPath.node.name.name;
+
+                if (attrName === 'class' || attrName === 'className') {
+                    // 快应用的 bug
+                    // class={{this.className0 + ' dynamicClassName'}} 快应用会将后者的空格吞掉
+                    // 影响 class 的求值
+                    let className =
+                        buildType == 'quick'
+                            ? `${toString(
+                                astPath.node.expression.left
+                            )} ${toString(astPath.node.expression.right)}`
+                            : `${toString(
+                                astPath.node.expression.left
+                            )}${toString(astPath.node.expression.right)}`;
+                    astPath.replaceWith(t.stringLiteral(className));
+                    return;
+                }
+            }
+            replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
+            break;
+        }
         case 'LogicalExpression':
         case 'UnaryExpression':
-            astPath.traverse({
-                ThisExpression(nodePath) {
-                    if (t.isMemberExpression(nodePath.parentPath)) {
-                        nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
-                    }
-                },
-            });
-            replaceWithExpr(astPath, generate(astPath.node.expression).code);
+            replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
             break;
         case 'MemberExpression':
             if (isEvent) {
-                bindEvent(astPath, attrName, attrValue.replace(/^\s*this\./, ''));
+                bindEvent(
+                    astPath,
+                    attrName,
+                    attrValue.replace(/^\s*this\./, '')
+                );
             } else {
                 replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
             }
             break;
         case 'CallExpression':
             if (isEvent) {
-                var match = attrValue.match(/this\.(\w+)\.bind/);
+                let match = attrValue.match(/this\.(\w+)\.bind/);
                 if (match && match[1]) {
                     bindEvent(astPath, attrName, match[1]);
                 } else {
                     throwEventValue(attrName, attrValue);
                 }
             } else {
-                if (attrName === 'style' && attrValue.indexOf('React.toStyle') === 0) {
+                if (
+                    attrName === 'style' &&
+                    attrValue.indexOf('React.toStyle') === 0
+                ) {
                     // style={{}} 类型解析
                     let start = attrValue.indexOf('\'style');
                     let end = attrValue.lastIndexOf(')');
@@ -81,13 +122,6 @@ module.exports = function(astPath) {
             }
             break;
         case 'ConditionalExpression':
-            astPath.traverse({
-                ThisExpression(nodePath) {
-                    if (t.isMemberExpression(nodePath.parentPath)) {
-                        nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
-                    }
-                },
-            });
             replaceWithExpr(astPath, attrValue.replace(/\s*this\./, ''));
             break;
         default:
@@ -101,6 +135,6 @@ function throwEventValue(attrName, attrValue) {
 }
 
 function replaceWithExpr(astPath, value, noBracket) {
-    var v = noBracket ? value : '{{' + value + '}}';
+    let v = noBracket ? value : '{{' + value + '}}';
     astPath.replaceWith(t.stringLiteral(v));
 }

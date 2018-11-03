@@ -1,7 +1,14 @@
+/*!
+ * 
+ * 这是用检测用户写的样式表是否符合快应用的要求
+ */
+
 /* eslint no-console: 0 */
 const css = require('css');
 const R = require('ramda');
 const chalk = require('chalk');
+const expandDeclarations = require('./expandDeclarations');
+const config = require('./config');
 
 const extractPropertyOfDeclaration = R.prop('property');
 const extractPropertyOfValue = R.prop('value');
@@ -89,19 +96,45 @@ const visitors = {
             'background-image',
             /url\(['"]https?:\/\/\S+['"]\)/i
         )(declaration);
+    },
+    margin(declaration) {
+        expandDeclarations(declaration, 'margin');
+    },
+    border(declaration) {
+        expandDeclarations(declaration, 'border');
+    },
+    padding(declaration) {
+        expandDeclarations(declaration, 'padding');
     }
+};
+
+const replaceRPXtoPX = declaration => {
+    if (config.buildType !== 'quick') return;
+    declaration.value = R.replace(
+        /([-\d]+)(r?px)/g,
+        (match, numberStr, unit) => {
+            const number = Number(numberStr.trim());
+            if (unit === 'rpx') {
+                return ` ${number}px`;
+            } else {
+                return ` ${number * 2}px`;
+            }
+        }
+    )(declaration.value);
 };
 
 module.exports = function validateStyle(code) {
     const ast = css.parse(code);
     const rules = ast.stylesheet.rules;
-    rules.forEach(rule => {
-        if (!rule.declarations) return;
-        rule.declarations.forEach(declaration => {
-            if (visitors[declaration.property]) {
-                visitors[declaration.property](declaration);
+    rules.forEach(({ declarations = [] }) => {
+        R.filter(R.propEq('type', 'declaration'))(declarations).forEach(
+            declaration => {
+                replaceRPXtoPX(declaration);
+                if (visitors[declaration.property]) {
+                    visitors[declaration.property](declaration);
+                }
             }
-        });
+        );
     });
     return css.stringify(ast);
 };

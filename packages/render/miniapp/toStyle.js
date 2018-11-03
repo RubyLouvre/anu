@@ -23,7 +23,7 @@ export function toStyle(obj, props, key) {
         var str = transform.call(this, obj);
         props[key] = str;
     } else {
-        console.warn('props 为空');
+        console.warn('toStyle生成样式失败，key为',key);//eslint-disable-line
     }
 
     return obj;

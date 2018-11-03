@@ -8,39 +8,36 @@ const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const rollupLess = require('rollup-plugin-less');
 const rollupJson = require('rollup-plugin-json');
-const rollupSass = require('rollup-plugin-sass');
+const rollupScss = require('rollup-plugin-scss');
 const alias = require('rollup-plugin-alias');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
 const utils = require('./utils');
 const queue = require('./queue');
 const crypto = require('crypto');
-const miniTransform = require('./miniTransform');
+const config = require('./config');
+const quickFiles = require('./quickFiles');
+const miniTransform = require('./miniappTransform');
 const styleTransform = require('./styleTransform');
 const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
 let cwd = process.cwd();
-let inputPath = path.join(cwd, 'src');
+let inputPath = path.join(cwd,  config.sourceDir);
 let entry = path.join(inputPath, 'app.js');
 let cache = {};
 
-//缓存
-let needUpdate = (id, code) => {
+let needUpdate = (id, code, fn) => {
     let sha1 = crypto
         .createHash('sha1')
         .update(code)
         .digest('hex');
-    return new Promise((resolve, reject) => {
-        if (!cache[id] || cache[id] != sha1) {
-            cache[id] = sha1;
-            resolve(1);
-        } else {
-            reject(0);
-        }
-    });
+    if (!cache[id] || cache[id] != sha1) {
+        cache[id] = sha1;
+        fn();
+    }
 };
 
-const isNpm = path => {
+const isInNodeModules = path => {
     return /\/node_modules\//.test(path);
 };
 const isStyle = path => {
@@ -50,6 +47,10 @@ const isStyle = path => {
 const isJs = path => {
     return /\.js$/.test(path);
 };
+
+utils.on('build', ()=>{
+    generate();
+});
 
 class Parser {
     constructor(entry) {
@@ -62,6 +63,7 @@ class Parser {
 
         this.inputConfig = {
             input: this.entry,
+            treeshake: false,
             plugins: [
                 alias(this.customAliasConfig), //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
@@ -72,7 +74,7 @@ class Parser {
                     }
                 }),
                 commonjs({
-                    include: 'node_modules/**'
+                    include: path.join(cwd, 'node_modules/**')
                 }),
                 rollupLess({
                     output: function() {
@@ -80,16 +82,17 @@ class Parser {
                     }
                 }),
                 rollupJson(),
-                rollupSass(),
+                rollupScss({
+                    output: function() {
+                        return '';
+                    }
+                }),
                 rbabel({
                     babelrc: false,
-                    runtimeHelpers: true,
-                    presets: ['react'],
-                    externalHelpers: false,
+                    presets: [require('babel-preset-react')],
                     plugins: [
-                        'transform-class-properties',
-                        'transform-object-rest-spread',
-                        'transform-es2015-template-literals'
+                        require('babel-plugin-transform-class-properties'),
+                        require('babel-plugin-transform-object-rest-spread')
                     ]
                 })
             ],
@@ -97,8 +100,7 @@ class Parser {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
                 if (warning.code === 'UNRESOLVED_IMPORT') {
-                    if (this.customAliasConfig[warning.source.split('/')[0]])
-                        return;
+                    if (this.customAliasConfig[warning.source.split(path.sep)[0]]) return;
                     console.log(chalk.red(`缺少${warning.source}, 请检查`));
                 }
             }
@@ -117,7 +119,7 @@ class Parser {
             if (/commonjsHelpers/.test(id)) {
                 return;
             }
-            if (isNpm(id)) {
+            if (isInNodeModules(id)) {
                 this.npmFiles.push({
                     id: id,
                     originalCode: item.originalCode
@@ -125,6 +127,18 @@ class Parser {
                 return;
             }
             if (isStyle(id)) {
+                if (config.buildType == 'quick'){
+                    //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
+                    var jsName = id.replace(/\.\w+$/, '.js');
+                    if (fs.pathExistsSync(jsName)){
+                        var cssExt = path.extname(id).slice(1);
+                        quickFiles[jsName] = {
+                            cssCode: item.originalCode,
+                            cssType: cssExt === 'scss' ?  'sass' : cssExt
+                        };
+                        return;
+                    }
+                }
                 this.styleFiles.push({
                     id: id,
                     originalCode: item.originalCode
@@ -155,6 +169,7 @@ class Parser {
         
     }
     filterNpmModule(resolvedIds) {
+        //判定路径是否以字母开头
         let result = {};
         Object.keys(resolvedIds).forEach(key => {
             if (utils.isNpm(key)) {
@@ -182,7 +197,6 @@ class Parser {
     updateJsQueue(jsFiles) {
         while (jsFiles.length) {
             let { id, originalCode, resolvedIds } = jsFiles.shift();
-            
             if (this.checkComponentsInPages(id)) {
                 // eslint-disable-next-line
                 console.log(
@@ -198,68 +212,51 @@ class Parser {
                     )
                 );
             }
-
-            needUpdate(id, originalCode)
-                .then(() => {
-                    miniTransform.transform(id, resolvedIds);
-                })
-                .catch(() => {});
+            needUpdate(id, originalCode, function(){
+                miniTransform(id, resolvedIds, originalCode);
+            });
         }
     }
     updateStyleQueue(styleFiles) {
-        let result = utils.resolveComponentStyle(styleFiles);
-        while (result.length) {
-            let data = result.shift();
-            let { id, originalCode } = data;
-            needUpdate(id, originalCode)
-                .then(() => {
-                    styleTransform(data);
-                })
-                .catch(() => {});
+        while (styleFiles.length) {
+            let data = styleFiles.shift();
+            let { id, originalCode } = data;           
+            needUpdate(id, originalCode, function(){
+                styleTransform(data);
+            });
         }
     }
     updateNpmQueue(npmFiles) {
         while (npmFiles.length) {
             let item = npmFiles.shift();
             // rollup 处理 commonjs 模块时候，会在 id 加上 commonjs-proxy: 前缀
-            if (/commonjs-proxy:/.test(item.id)) {
-                item.id = item.id.split(':')[1];
-                item.moduleType = 'cjs';
-            } else {
-                item.moduleType = 'es';
-            }
-            // 处理所有 npm 模块中其他依赖
-            needUpdate(item.id, item.originalCode)
-                .then(() => {
-                    resolveNpm(item);
-                })
-                .catch(() => {});
+            if (/commonjs-proxy:/.test(item.id)) item.id = item.id.split(':')[1];
+            needUpdate(item.id, item.originalCode, function(){
+                resolveNpm(item);
+            });
         }
     }
     updateJsonQueue(jsonFiles) {
         while (jsonFiles.length){
             let item = jsonFiles.shift();
-            needUpdate(item.id, item.originalCode)
-                .then(() => {
-                    queue.push({
-                        path: item.id.replace(/\/src\//, '/dist/'),
-                        code: item.originalCode,
-                        type: 'json'
-                    });
-                    utils.emit('build');
-                })
-                .catch(() => {});
+            needUpdate(item.id, item.originalCode, function(){
+                queue.push({
+                    path:  utils.updatePath(item.id, config.sourceDir, 'dist'),
+                    code: item.originalCode,
+                    type: 'json'
+                });
+            });
         }
     }
     copyAssets() {
-        //to do 差异化copy
         const dir = 'assets';
         const inputDir = path.join(inputPath, dir);
-        const distDir = path.join(path.join(cwd, 'dist'), dir);
+        //快应用copy到src目录中
+        const distDir =  path.join( cwd, config.buildType === 'quick' ? 'src' : config.buildDir, dir );
         fs.ensureDirSync(distDir);
         fs.copy(inputDir, distDir, err => {
             if (err) {
-                console.error(err);
+                console.log(err);
             }
         });
         
@@ -290,14 +287,15 @@ class Parser {
     }
 }
 
-utils.on('build', ()=>{
-    generate();
-});
 
 
 async function build(arg) {
-    //同步react
-    await utils.asyncReact();
+    await utils.asyncReact();  //同步react
+    utils.cleanDir();  //删除一些不必要的目录, 避免来回切换构建类型产生冗余目录
+    if (config['buildType'] === 'quick') {
+        //快应用mege package.json 以及 生成秘钥
+        utils.initQuickAppConfig();
+    }
     const parser = new Parser(entry);
     await parser.parse();
     if (arg === 'watch') {

@@ -1,34 +1,35 @@
 module.exports = {
     wx: {
-        support: true,
         libName: 'ReactWX',
         styleExt: 'wxss',
-        jsExt: 'js',
         xmlExt: 'wxml',
-        notSupportResText: '',
         helpers: 'wxHelpers',
+        patchComponents: {
+        }
     },
     ali: {
-        support: true,
         libName: 'ReactAli',
         styleExt: 'acss',
-        jsExt: 'js',
         xmlExt: 'axml',
-        notSupportResText: '支付宝小程序正在努力支持中, 请静候佳音',
         helpers: 'aliHelpers',
+        patchComponents: {}
     },
     bu: {
-        support: true,
-        jsExt: 'js',
+        libName: 'ReactBu',
         styleExt: 'css',
-        notSupportResText: '百度小程序正在努力支持中, 请静候佳音',
+        xmlExt: 'swan',
         helpers: 'buHelpers',
+        patchComponents: {}
     },
     quick: {
-        support: false,
+        libName: 'ReactQuick',
         jsExt: 'ux',
-        notSupportResText: '快应用正在努力支持中, 请静候佳音',
-        buHelpers: 'quickHelpers',
+        helpers: 'quickHelpers',
+        patchComponents: {
+            // navigator: url,
+        }
     },
-    buildType: 'wx'   //构建类型默认微信小程序
+    buildType: 'wx',    //构建类型默认微信小程序
+    buildDir: 'dist',   //非快应用项目默认构建目录为dist
+    sourceDir: 'source' //默认生成的源码目录
 };

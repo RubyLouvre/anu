@@ -18,7 +18,7 @@ const config = require('../config');
 const Event = new EventEmitter();
 process.on('unhandledRejection', error => {
     // eslint-disable-next-line
-    console.error('unhandledRejection', error);
+    console.error("unhandledRejection", error);
     process.exit(1); // To exit with a 'failure' code
 });
 let utils = {
@@ -28,7 +28,6 @@ let utils = {
     emit() {
         Event.emit.apply(global, arguments);
     },
-    createChineseHack: require('./chinese'),
     getNodeVersion() {
         return Number(process.version.match(/v(\d+)/)[1]);
     },
@@ -87,10 +86,9 @@ let utils = {
         }
         return eventName;
     },
-
     createElement(nodeName, attrs, children) {
         return t.JSXElement(
-            t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, config.buildType === 'quick' ? false : children.length > 0),
+            t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, config.buildType === 'quick' ? false: !children.length),
             t.jSXClosingElement(t.JSXIdentifier(nodeName)),
             children
         );
@@ -101,20 +99,6 @@ let utils = {
             typeof value == 'object' ? value : t.stringLiteral(value)
         );
     },
-    isRenderProps(attrValue) {
-        if (
-            attrValue.expression &&
-            attrValue.type == 'JSXExpressionContainer'
-        ) {
-            var type = attrValue.expression.type;
-            return (
-                type == 'FunctionExpression' ||
-                type === 'ArrowFunctionExpression'
-            );
-        }
-        return false;
-    },
-
     createUUID(astPath) {
         return astPath.node.start + astPath.node.end;
     },
@@ -161,11 +145,11 @@ let utils = {
             return template(`module.exports["${name}"] = ${name};`)();
         }
     },
-    copyCustomComponents(config, modules) {
-        Object.keys(config).forEach(componentName => {
+    copyCustomComponents(conf, modules) {
+        Object.keys(conf).forEach(componentName => {
             //对usingComponents直接copy目录
-            let componentDir = path.dirname(config[componentName]);
-            let src = path.join(cwd, 'src', componentDir);
+            let componentDir = path.dirname(conf[componentName]);
+            let src = path.join(cwd, config.sourceDir, componentDir);
             let dest = path.join(cwd, 'dist', componentDir);
             let list = modules.customComponents;
             fs.ensureDirSync(dest);
@@ -179,18 +163,47 @@ let utils = {
     },
     createRegisterStatement(className, path, isPage) {
         var templateString = isPage
-            ? 'Page(React.toPage(className,astPath))'
-            : 'Number(className,astPath)';
+            ? 'Page(React.registerPage(className,astPath))'
+            : 'Component(React.registerComponent(className,astPath))';
         return template(templateString)({
             className: t.identifier(className),
             astPath: t.stringLiteral(path)
         });
     },
+    /**
+     *
+     * @param {String} 要修改的路径（存在平台差异性）
+     * @param {String} segement
+     * @param {String} newSegement
+     * @param {String?} ext 新的后缀名
+     */
+    updatePath(spath, segement, newSegement, newExt, ext) {
+        var lastSegement = '', replaced = false;
+        var arr = spath.split(path.sep).map(function (el) {
+            lastSegement = el;
+            if (segement === el && !replaced) {
+                replaced = true;
+                return newSegement;
+            }
+            return el;
+        });
+        if (newExt) {
+            ext = ext || 'js';
+            arr[arr.length - 1] = lastSegement.replace('.' + ext, '.' + newExt);
+        }
+        let resolvedPath = path.join.apply(path, arr);
+        if (resolvedPath[0] != '/') {
+            resolvedPath = '/' + resolvedPath;
+        }
+        return resolvedPath;
+    },
     isBuildInLibs(name) {
         let libs = new Set(require('repl')._builtinLibs);
         if (libs.has(name)) {
             //如果是内置模块，先查找本地node_modules是否有对应重名模块
-            let isLocalBuildInLib = /\/node_modules\//.test(nodeResolve.sync(name, { basedir: cwd }));
+            let isLocalBuildInLib = /\/node_modules\//.test(
+                nodeResolve.sync(name, { basedir: cwd })
+            );
             if (isLocalBuildInLib) {
                 return false;
             } else {
@@ -198,7 +211,7 @@ let utils = {
             }
         }
     },
-    installer(npmName, type) {
+    installer(npmName, dev) {
         return new Promise(resolve => {
             console.log(
                 chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`)
@@ -207,13 +220,13 @@ let utils = {
             let options = [];
             if (this.useYarn()) {
                 bin = 'yarn';
-                options.push('add', npmName, type === 'dev' ? '--dev' : '--save');
+                options.push('add', npmName, dev === 'dev' ? '--dev' : '--save');
             } else if (this.useCnpm()) {
                 bin = 'cnpm';
-                options.push('install', npmName, type === 'dev' ? '--save-dev' : '--save');
+                options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
             } else {
                 bin = 'npm';
-                options.push('install', npmName, type === 'dev' ? '--save-dev' : '--save');
+                options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
             }
 
             let result = spawn.sync(bin, options, { stdio: 'inherit' });
@@ -256,21 +269,21 @@ let utils = {
     async getReactLibPath() {
         let reactPath = '';
         let React = this.getReactLibName();
-        let srcPath = path.join(cwd, 'src', React);
+        let srcPath = path.join(cwd, config.sourceDir, React);
         try {
             reactPath = nodeResolve.sync(srcPath, {
                 basedir: cwd,
-                moduleDirectory: path.join(cwd, 'src')
+                moduleDirectory: path.join(cwd, config.sourceDir)
             });
         } catch (err) {
             let spinner = this.spinner(`正在下载最新的${React}`);
             spinner.start();
-            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/master/dist/${React}`;
+            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/branch3/dist/${React}`;
             let ReactLib = await axios.get(remoteUrl);
             fs.ensureFileSync(srcPath);
             fs.writeFileSync(srcPath, ReactLib.data);
             spinner.succeed(`下载${React}成功`);
-            reactPath = path.join(cwd, 'src', React);
+            reactPath = path.join(cwd, config.sourceDir, React);
         }
         return reactPath;
     },
@@ -283,7 +296,7 @@ let utils = {
         Object.keys(map).forEach(key => {
             let ReactName = map[key];
             if (ReactName != ReactLibName) {
-                fs.remove(path.join(cwd, 'src', ReactName), err => {
+                fs.remove(path.join(cwd, config.sourceDir, ReactName), err => {
                     if (err) {
                         console.log(err);
                     }
@@ -300,7 +313,9 @@ let utils = {
         return {
             wx: 'ReactWX.js',
             ali: 'ReactAli.js',
-            bu: 'ReactBu.js'
+            bu: 'ReactBu.js',
+            quick: 'ReactQuick.js',
+            h5: 'ReactH5.js'
         };
     },
     getReactLibName() {
@@ -310,9 +325,9 @@ let utils = {
     getCustomAliasConfig() {
         let React = this.getReactLibName();
         let defaultAlias = {
-            'react': path.join(cwd, `src/${React}`),
-            '@react': path.join(cwd, `src/${React}`),
-            '@components': path.join(cwd, 'src/components')
+            'react': path.join(cwd, `${config.sourceDir}/${React}`),
+            '@react': path.join(cwd, `${config.sourceDir}/${React}`),
+            '@components': path.join(cwd, `${config.sourceDir}/components`)
         };
         let pkg = require(path.join(cwd, 'package.json'));
         let pkgAlias = pkg.mpreact && pkg.mpreact.alias ? pkg.mpreact.alias : {};
@@ -327,59 +342,17 @@ let utils = {
         return defaultAlias;
     },
     resolveNpmAliasPath(id, depFile) {
-        let distJs = this.replacePath(id, '/src/', '/dist/');
-        let distNpm = this.replacePath(depFile, '/node_modules/', '/dist/npm/');
+        let distJs = id.replace(new RegExp('/' + config.sourceDir + '/'), '/dist/');
+        let distNpm = depFile.replace(/\/node_modules\//, '/dist/npm/');
+
         //根据被依赖文件和依赖文件，求相对路径
         let aliasPath = path.relative(path.dirname(distJs), distNpm);
+
         return aliasPath;
     },
     resolveCustomAliasPath(file, depFile) {
         let aliasPath = path.relative(path.dirname(file), depFile);
         return aliasPath;
-    },
-    resolveComponentStyle(styleFiles) {
-        let result = [];
-        let componentsStyle = [];
-        let appStyleId = ''; //app全局样式只有一个
-        styleFiles.forEach(item => {
-            let { id, originalCode } = item;
-            if (/components/.test(id)) {
-                id = path.relative(path.join(cwd, 'src'), id);
-                if (/^\w/.test(id)) {
-                    id = `./${id}`;
-                }
-                if (this.isWin()) {
-                    id = id.replace(/\\/g, '/');
-                }
-                let importKey = `@import '${id}';`;
-                if (!componentsStyle.includes(importKey)) {
-                    componentsStyle.push(importKey);
-                }
-            } else if (/app/.test(id)) {
-                appStyleId = id;
-            } else {
-                result.push({
-                    id: item.id,
-                    originalCode: originalCode
-                });
-            }
-        });
-
-        let appStyleContent = '';
-        try {
-            appStyleContent = fs.readFileSync(appStyleId);
-        } catch (err) {
-            console.log(chalk.red('需配置全局app样式, 请检查...'));
-            process.exit(1);
-        }
-
-        appStyleContent = componentsStyle.join('\n') + '\n' + appStyleContent;
-        result.push({
-            id: appStyleId,
-            originalCode: appStyleContent
-        });
-
-        return result;
     },
     replacePath: function (sPath, segement, newSegement) {
         let sep = path.sep;
@@ -392,11 +365,13 @@ let utils = {
     updateNpmAlias(id, deps) {
         //依赖的npm模块也当alias处理
         let result = {};
+        let aliasConfig = Object.keys(this.getCustomAliasConfig()).join('|');
+        let reg = new RegExp(`^(${aliasConfig})`);
         Object.keys(deps).forEach(depKey => {
             if (
                 !this.isBuildInLibs(depKey) &&
                 this.isNpm(depKey) &&
-                !/^(@react|@components)/.test(depKey)
+                !reg.test(depKey)
             ) {
                 result[depKey] = this.resolveNpmAliasPath(id, deps[depKey]);
             }
@@ -415,7 +390,87 @@ let utils = {
         });
         return result;
     },
-
+    asyncAwaitHackPlugin: function(buildType){
+        let visitor = {
+            FunctionDeclaration: {
+                exit(astPath) {
+                    //微信，百度小程序async/await语法需要插入var regeneratorRuntime = require('regenerator-runtime/runtime');
+                    let name = astPath.node.id.name;
+                    if (name === '_asyncToGenerator' && ['wx', 'bu'].includes(buildType) ) {
+                        astPath.insertBefore(
+                            t.variableDeclaration('var', [
+                                t.variableDeclarator(
+                                    t.identifier('regeneratorRuntime'),
+                                    t.callExpression(t.identifier('require'), [
+                                        t.stringLiteral('regenerator-runtime/runtime')
+                                    ])
+                                )
+                            ])
+                        );
+                    }
+                }
+            }
+        };
+        return function(){
+            return {
+                visitor: visitor
+            };
+        };
+    },
+    getRegeneratorRuntimePath: function (sourcePath) {
+        //小程序async/await语法依赖regenerator-runtime/runtime
+        try {
+            return nodeResolve.sync('regenerator-runtime/runtime', { basedir: process.cwd() });
+        } catch (err) {
+            // eslint-disable-next-line
+            console.log(
+                'Error: ' + sourcePath + '\n' +
+                'Msg: ' + chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
+            );
+        }
+    },
+    mergeQuickAppJson: function () {
+        let prevPkgPath = path.join(cwd, 'package.json');
+        let prevpkg = require(prevPkgPath);
+        let quickPkg = require(path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig', 'package.json') );
+        let mergeJsonResult = {
+            ...prevpkg,
+            ...quickPkg
+        };
+        fs.writeFile(prevPkgPath, JSON.stringify(mergeJsonResult, null, 4))
+            .catch((err)=>{
+                // eslint-disable-next-line
+                console.log(err);
+            });
+    },
+    initQuickAppConfig: function(){
+        //merge快应用依赖的package.json配置
+        this.mergeQuickAppJson();
+        
+        //copy快应用秘钥
+        let signSourceDir = path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig', 'sign');
+        let signDistDir = path.join(cwd, 'sign');
+        fs.ensureDirSync(signDistDir);
+        fs.copy( signSourceDir, signDistDir)
+            .catch((err)=>{
+                // eslint-disable-next-line
+                console.log(err);
+            });
+    },
+    
+    cleanDir: function(){
+        let fileList = ['package-lock.json', 'yarn.lock'];
+        config.buildType === 'quick'
+            ? fileList = fileList.concat([ config.buildDir ])
+            : fileList = fileList.concat( [ 'dist', 'build', 'sign', 'src' ] );
+        fileList.forEach((item)=>{
+            fs.remove(path.join(cwd, item))
+                .catch((err)=>{
+                    // eslint-disable-next-line
+                     console.log(err);
+                });
+        });
+    },
     compress: function () {
         return {
             js: function (code) {
@@ -426,7 +481,6 @@ let utils = {
                 return result.code;
             },
             npm: function (code) {
-                console.log(code);
                 return this.js.call(this, code);
             },
             css: function (code) {
@@ -436,8 +490,11 @@ let utils = {
                 }
                 return result.styles;
             },
+            ux: function (code) {
+                return code;
+            },
             wxml: function (code) {
-                //TODO: compress xml file;
+                //TODO: comporess xml file;
                 return code;
             },
             json: function (code) {

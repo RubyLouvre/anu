@@ -1,5 +1,6 @@
 import React from '@react';
 import './index.scss';
+
 class P extends React.Component {
     constructor() {
         super();
@@ -15,10 +16,12 @@ class P extends React.Component {
         };
     }
     componentWillMount() {
+        
         React.getApp().globalData.dateSelect = new Date();
     }
     componentDidShow() {
         let week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+       
         let date = React.getApp().globalData.dateSelect;
         this.setState({ displayDate: date.getMonth() + 1 + '月' + date.getDate() + '日' });
         this.setState({ dateWeek: week[date.getDay()] });
@@ -67,6 +70,7 @@ class P extends React.Component {
       navigationBarBackgroundColor: '#feb64e',
       navigationBarTitleText: '车牌搜索'
   };
+
   render() {
       return (
           <div className="page" style="{background-color: #feb64e}">
@@ -75,14 +79,10 @@ class P extends React.Component {
                   mode="scaleToFill"
                   src="http://picbed.qunarzz.com/image/b96f82f01ef5850d50e93ea511f618fa.png"
               />
-              <div style="{top: -15px}" className="search-container">
+              <div style="{top: -15px}" className="search-container  col">
                   <div className="citySelector">
                       <div onTap={this.toCitySelect.bind(this,true)} className="cityTap">
-                          <div
-                              className='depCityContent'
-                          >
-                              {this.state.depCity}
-                          </div>
+                          <text  className='depCityContent'>{this.state.depCity}</text>
                       </div>
                       <div className="city_change">
                           <image
@@ -96,18 +96,14 @@ class P extends React.Component {
                           />
                       </div>
                       
-                      <div onTap={this.toCitySelect.bind(this,false)} className="cityTap">
-                          <div
-                              className='arrCityContent'
-                          >
-                              {this.state.arrCity}
-                          </div>
+                      <div onTap={this.toCitySelect.bind(this,false)} className="cityTap flex-right">
+                          <text className='arrCityContent'>{this.state.arrCity}</text>
                       </div>
                   </div>
 
                   <div onTap={this.toDateSelect} className="dateSelector">
                       <span>{this.state.displayDate}</span>
-                      <div className="date-week"><span>{this.state.dateWeek}</span></div>
+                      <div className="flex-right date-week"><span class="date-week-text">{this.state.dateWeek}</span></div>
                   </div>
 
                   <div className="switch-content">
@@ -117,15 +113,11 @@ class P extends React.Component {
                               mode="widthFix"
                               src="../../../assets/image/train_highSpeed.png"
                           />
-                          <div
-                              className={
-                                  this.state.isOnlyGaotie
-                                      ? 'switch-context switch-label-check'
-                                      : 'switch-context switch-label-uncheck'
-                              }
-                          >
-                只查看高铁/动车
-                          </div>
+                          <text  className={'switch-context ' + 
+                                  (this.state.isOnlyGaotie
+                                      ? 'switch-label-check'
+                                      : 'switch-label-uncheck')
+                          }>只查看高铁/动车</text>
                       </div>
                       <switch
                           checked={this.state.isOnlyGaotie}
@@ -134,9 +126,9 @@ class P extends React.Component {
                       />
                   </div>
 
-                  <div onTap={this.fun_tip} className="search-button">
+                  <text onTap={this.fun_tip} className="search-button">
             搜 索
-                  </div>
+                  </text>
 
                   <div className="actions-container">
                       <div onTap={this.fun_tip} className="order-action">
@@ -152,15 +144,15 @@ class P extends React.Component {
               <div className="welfare-entrance">
                   <div className="welfare-content">
                       <div onTap={this.fun_tip} className="welfare-action">
-                          <image
+                          <image 
                               className="welfare-icon"
                               src="http://s.qunarzz.com/open_m_train/miniprogram/home_redpack.png"
                           />
                           <text className="action-text">优惠拼团</text>
                       </div>
-                      <div className="seprator" />
+                      <div className="seprator"></div>
                       <div onTap={this.fun_tip} className="welfare-action">
-                          <image
+                          <image 
                               className="welfare-icon"
                               src="http://s.qunarzz.com/open_m_train/miniprogram/home_welfare.png"
                           />
