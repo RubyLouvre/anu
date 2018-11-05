@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-02
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-05
  * IE9+
  */
 
@@ -598,22 +598,35 @@ function createEvent(e, target) {
     return event;
 }
 
+var JSON_TYPE_STRING = 'json';
 function createRouter(name) {
     return function (obj) {
         var router = require('@system.router');
         var params = {};
-        var uri = obj.url.slice(obj.url.indexOf('/pages') + 1);
+        var href = obj.url || obj.uri || '';
+        var uri = href.slice(href.indexOf('/pages') + 1);
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('=').forEach(function (k, v) {
                 params[k] = v;
             });
             return '';
         }).replace(/\/index$/, '');
+        if (uri[0] !== '/') {
+            uri = '/' + uri;
+        }
         router[name]({
             uri: uri,
             params: params
         });
     };
+}
+function runFunction(fn) {
+    if (typeof fn == 'function') {
+        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            args[_key - 1] = arguments[_key];
+        }
+        fn.call.apply(fn, [null].concat(args));
+    }
 }
 var api = {
     showModal: function showModal(obj) {
@@ -665,35 +678,84 @@ var api = {
         var share = require('@system.share');
         share.share(obj);
     },
-    uploadFile: function uploadFile(obj) {
+    uploadFile: function uploadFile(_ref) {
+        var url = _ref.url,
+            filePath = _ref.filePath,
+            name = _ref.name,
+            header = _ref.header,
+            formData = _ref.formData,
+            success = _ref.success,
+            fail = _ref.fail,
+            complete = _ref.complete;
         var request = require('@system.request');
         var data = [];
-        Object.keys(obj.formData).map(function (key) {
-            var value = obj.formData[key];
+        Object.keys(formData).map(function (key) {
+            var value = formData[key];
             var item = {
                 value: value,
                 name: key
             };
             data.push(item);
         });
-        obj.data = data;
-        delete obj.formData;
-        var files = [{
-            uri: obj.filePath,
-            name: obj.name
-        }];
-        obj.files = files;
-        delete obj.filePath;
-        delete obj.name;
-        request.upload(obj);
+        function successForMi(_ref2) {
+            var statusCode = _ref2.code,
+                data = _ref2.data;
+            success({
+                statusCode: statusCode,
+                data: data
+            });
+        }
+        request.upload({
+            url: url,
+            header: header,
+            data: data,
+            files: [{ uri: filePath, name: name }],
+            success: successForMi,
+            fail: fail,
+            complete: complete
+        });
     },
     downloadFile: function downloadFile(obj) {
         var request = require('@system.request');
         request.download(obj);
     },
-    request: function request(obj) {
+    request: function request(_ref3) {
+        var url = _ref3.url,
+            data = _ref3.data,
+            header = _ref3.header,
+            method = _ref3.method,
+            _ref3$dataType = _ref3.dataType,
+            dataType = _ref3$dataType === undefined ? JSON_TYPE_STRING : _ref3$dataType,
+            success = _ref3.success,
+            fail = _ref3.fail,
+            complete = _ref3.complete;
         var fetch = require('@system.fetch');
-        fetch.fetch(obj);
+        function onFetchSuccess(_ref4) {
+            var statusCode = _ref4.code,
+                data = _ref4.data,
+                headers = _ref4.header;
+            if (dataType === JSON_TYPE_STRING) {
+                try {
+                    data = JSON.parse(data);
+                } catch (error) {
+                    runFunction(fail, error);
+                }
+            }
+            success({
+                statusCode: statusCode,
+                data: data,
+                headers: headers
+            });
+        }
+        fetch.fetch({
+            url: url,
+            data: data,
+            header: header,
+            method: method,
+            success: onFetchSuccess,
+            fail: fail,
+            complete: complete
+        });
     }
 };
 
@@ -2071,57 +2133,6 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
-var eventSystem$1 = {
-    dispatchEvent: function dispatchEvent(e) {
-        if (e.type == 'message') {
-            return;
-        }
-        var instance = this.reactInstance;
-        if (!instance || !instance.$$eventCached) {
-            return;
-        }
-        var target = e.currentTarget;
-        var dataset = target.dataset || {};
-        var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
-        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber) {
-            if (fiber.props.value + '' == e.detail.value) {
-                return;
-            }
-        }
-        var key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-        if (instance) {
-            Renderer.batchedUpdates(function () {
-                try {
-                    var fn = instance.$$eventCached[eventUid];
-                    fn && fn.call(instance, createEvent$1(e, target));
-                } catch (err) {
-                    console.log(err.stack);
-                }
-            }, e);
-        }
-    }
-};
-function createEvent$1(e, target) {
-    var event = Object.assign({}, e);
-    if (e.detail) {
-        Object.assign(event, e.detail);
-        target.value = e.detail.value;
-    }
-    event.stopPropagation = function () {
-        console.warn("小程序不支持这方法，请使用catchXXX");
-    };
-    event.preventDefault = returnFalse;
-    event.target = target;
-    event.timeStamp = new Date() - 0;
-    if (!("x" in event)) {
-        event.x = event.pageX;
-        event.y = event.pageY;
-    }
-    return event;
-}
-
 function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
@@ -2164,9 +2175,7 @@ function registerComponent(type, name) {
         onDestroy: function onDestroy() {
             this.reactInstance = null;
         },
-        methods: {
-            dispatchEvent: eventSystem$1.dispatchEvent
-        }
+        dispatchEvent: eventSystem.dispatchEvent
     };
 }
 
