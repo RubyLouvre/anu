@@ -31,6 +31,13 @@ map.button = 'input';
 module.exports = function mapTagName(astPath, modules) {
     var orig = astPath.node.name.name;
     if (orig == 'button' && astPath.node.type === 'JSXOpeningElement'){
+        var attrs = astPath.node.attributes;
+        for (var i = 0, el; el = attrs[i]; i++){//eslint-disable-line
+            if ( el.name.name == 'type' && /^(primary|default|warn)$/.test(el.value.value )){
+                attrs.splice(i, 1);
+                break;
+            }
+        }
         astPath.node.attributes.push( utils.createAttribute(
             'fixQuickButtonType',
             'button'
