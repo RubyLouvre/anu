@@ -1,5 +1,13 @@
 import { noop } from 'react-core/util';
-const JSON_TYPE_STRING = 'json';
+import request from './quickApis/fetch.js';
+import {uploadFile, downloadFile} from './quickApis/request.js';
+import {setStorage,getStorage, removeStorage, clearStorage, setStorageSync, getStorageSync, removeStorageSync,clearStorageSync} from './quickApis/storage.js';
+import {getSavedFileInfo, getSavedFileList, removeSavedFile, saveFile} from './quickApis/file.js';
+import {setClipboardData, getClipboardData} from './quickApis/clipboard.js';
+import {getNetworkType, onNetworkStatusChange} from './quickApis/network.js';
+import {getSystemInfo} from './quickApis/device.js';
+import {chooseImage} from './quickApis/media.js';
+
 
 function createRouter(name) {
   return function(obj) {
@@ -21,11 +29,6 @@ function createRouter(name) {
   };
 }
 
-function runFunction(fn, ...args) {
-  if (typeof fn == 'function') {
-    fn.call(null, ...args);
-  }
-}
 
 export var api = {
   // 交互
@@ -97,88 +100,42 @@ export var api = {
   },
 
   // 上传
-  uploadFile({
-    url,
-    filePath,
-    // 小米不支持
-    name,
-    header,
-    // 小米不支持
-    formData,
-    success,
-    fail,
-    complete
-  }) {
-    var request = require('@system.request');
-    var data = [];
-    Object.keys(formData).map(key => {
-      let value = formData[key];
-      let item = {
-        value,
-        name: key
-      };
-      data.push(item);
-    });
-    function successForMi({ code: statusCode, data }) {
-      success({
-        statusCode,
-        data
-      });
-    }
-    request.upload({
-      url,
-      header,
-      data,
-      files: [{ uri: filePath, name: name }],
-      success: successForMi,
-      fail,
-      complete
-    });
-  },
+  uploadFile,
 
   // 下载
-  downloadFile(obj) {
-    var request = require('@system.request');
-    request.download(obj);
-  },
+  downloadFile,
   // 网络请求
-  request({
-    url,
-    data,
-    header,
-    method,
-    dataType = JSON_TYPE_STRING,
-    // 小米不支持设置 responseType
-    // responseType,
-    success,
-    fail,
-    complete
-  }) {
-    const fetch = require('@system.fetch');
-    function onFetchSuccess({ code: statusCode, data, header: headers }) {
-      if (dataType === JSON_TYPE_STRING) {
-        try {
-          data = JSON.parse(data);
-        } catch (error) {
-          runFunction(fail, error);
-        }
-      }
-
-      success({
-        statusCode,
-        data,
-        headers
-      });
-    }
-
-    fetch.fetch({
-      url,
-      data,
-      header,
-      method,
-      success: onFetchSuccess,
+  request,
+  // 二维码
+  scanCode({success, fail, complete}) {
+    const barcode = require('@system.barcode')
+    barcode.scan({
+      // 小米回调函数参数对象仅提供 result，不含 scanType、charSet 及 path
+      success,
       fail,
+      cancel: fail,
       complete
     });
-  }
+  },
+  setStorage,
+  getStorage,
+  removeStorage,
+  clearStorage,
+  setStorageSync, 
+  getStorageSync, 
+  removeStorageSync,
+  clearStorageSync,
+  getSavedFileInfo,
+  getSavedFileInfo, getSavedFileList, removeSavedFile, saveFile,
+  setClipboardData, getClipboardData,
+  // 位置
+  getLocation(obj) {
+    const geolocation = require('@system.geolocation');
+    geolocation.getLocation(obj)
+  },
+  getNetworkType,
+  onNetworkStatusChange,
+  getSystemInfo,
+  chooseImage
+
 };
