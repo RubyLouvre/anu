@@ -49,7 +49,7 @@ const visitors = {
 };
 
 module.exports = function validateStyle(code) {
-    if (config.buildType !== 'quick') return;
+    if (config.buildType !== 'quick') return code;
     const ast = css.parse(code);
     const rules = ast.stylesheet.rules;
     rules.forEach(({ declarations = [] }) => {
