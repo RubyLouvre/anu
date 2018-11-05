@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-02
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-05
  * IE9+
  */
 
@@ -881,24 +881,25 @@ function injectAPIs(ReactWX, facade, override) {
     ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
 
+function getDataSet(obj) {
+    var ret = {};
+    for (var name in obj) {
+        var key = name.replace(/data(\w)(\.*)/, function (a, b, c) {
+            return toLowerCase(b) + c;
+        });
+        ret[key] = obj[name];
+    }
+    return ret;
+}
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
-        if (e.type == 'message') {
-            return;
-        }
         var instance = this.reactInstance;
         if (!instance || !instance.$$eventCached) {
             return;
         }
-        var target = e.currentTarget;
-        var dataset = target.dataset || {};
+        var target = e.target;
+        var dataset = getDataSet(target._attr);
         var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
-        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber) {
-            if (fiber.props.value + '' == e.detail.value) {
-                return;
-            }
-        }
         var key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
         if (instance) {
@@ -919,16 +920,11 @@ function createEvent(e, target) {
         Object.assign(event, e.detail);
         target.value = e.detail.value;
     }
-    event.stopPropagation = function () {
-        console.warn("小程序不支持这方法，请使用catchXXX");
-    };
-    event.preventDefault = returnFalse;
+    event.stopPropagation = e.stopPropagation.bind(e);
+    event.preventDefault = e.preventDefault.bind(e);
     event.target = target;
+    event.type = e._type;
     event.timeStamp = new Date() - 0;
-    if (!("x" in event)) {
-        event.x = event.pageX;
-        event.y = event.pageY;
-    }
     return event;
 }
 
@@ -2310,6 +2306,57 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
+var eventSystem$1 = {
+    dispatchEvent: function dispatchEvent(e) {
+        if (e.type == 'message') {
+            return;
+        }
+        var instance = this.reactInstance;
+        if (!instance || !instance.$$eventCached) {
+            return;
+        }
+        var target = e.currentTarget;
+        var dataset = target.dataset || {};
+        var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
+        if (e.type == 'change' && fiber) {
+            if (fiber.props.value + '' == e.detail.value) {
+                return;
+            }
+        }
+        var key = dataset['key'];
+        eventUid += key != null ? '-' + key : '';
+        if (instance) {
+            Renderer.batchedUpdates(function () {
+                try {
+                    var fn = instance.$$eventCached[eventUid];
+                    fn && fn.call(instance, createEvent$1(e, target));
+                } catch (err) {
+                    console.log(err.stack);
+                }
+            }, e);
+        }
+    }
+};
+function createEvent$1(e, target) {
+    var event = Object.assign({}, e);
+    if (e.detail) {
+        Object.assign(event, e.detail);
+        target.value = e.detail.value;
+    }
+    event.stopPropagation = function () {
+        console.warn("小程序不支持这方法，请使用catchXXX");
+    };
+    event.preventDefault = returnFalse;
+    event.target = target;
+    event.timeStamp = new Date() - 0;
+    if (!("x" in event)) {
+        event.x = event.pageX;
+        event.y = event.pageY;
+    }
+    return event;
+}
+
 function onLoad(PageClass, path, query) {
     currentPage.isReady = false;
     var container = {
@@ -2373,7 +2420,7 @@ function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     var config = {
         data: {},
-        dispatchEvent: eventSystem.dispatchEvent,
+        dispatchEvent: eventSystem$1.dispatchEvent,
         onLoad: function onLoad$$1(query) {
             onLoad.call(this, PageClass, path, query);
         },
@@ -2450,7 +2497,7 @@ function registerComponent(type, name) {
             }
         },
         methods: {
-            dispatchEvent: eventSystem.dispatchEvent
+            dispatchEvent: eventSystem$1.dispatchEvent
         }
     };
 }
