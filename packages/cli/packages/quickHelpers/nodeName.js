@@ -1,4 +1,5 @@
 let rword = /[^, ]+/g;
+const utils = require('../utils/index');
 
 let builtInStr =
     'div,list,list-item,popup,refresh,richtext,stack,swiper,tab,tab-bar,tab-context,'+
@@ -25,9 +26,22 @@ let map = Object.assign({}, builtIn);
 'span,b,s,code,quote,cite'.replace(rword, function(el) {
     map[el] = 'text';
 });
+map.button = 'input';
+module.exports = function mapTagName(astPath, modules) {
+    var orig = astPath.node.name.name;
+    if (orig == 'button' && astPath.node.type === 'JSXOpeningElement'){
+        var children = astPath.parentPath.node.children;
+        var value = children.length == 1 ? (children[0].type == 'JSXText' ? children[0].value: '') : '';
+        astPath.node.attributes.push( utils.createAttribute(
+            'type',
+            'button'
+        ),  utils.createAttribute(
+            'value',
+            value
+        ));
+        
+    }
 
-module.exports = function mapTagName(path, modules) {
-    var orig = path.node.name.name;
     addCustomComponents(modules.customComponents);
-    path.node.name.name = map[orig] || 'div';
+    astPath.node.name.name = map[orig] || 'div';
 };
