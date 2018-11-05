@@ -7,63 +7,12 @@
 const css = require('css');
 const R = require('ramda');
 const chalk = require('chalk');
-const expandDeclarations = require('./expandDeclarations');
 const config = require('./config');
+const generateProhibitValue = require('./stylesTransformer/generateProhibitValue');
+const generateConflictDeclarations = require('./stylesTransformer/generateConflictDeclarations');
+const replaceRPXtoPX = require('./stylesTransformer/replaceRPXtoPX');
 
-const extractPropertyOfDeclaration = R.prop('property');
-const extractPropertyOfValue = R.prop('value');
 const gtOne = R.gt(1);
-const shouldReturn = R.equals(0);
-
-const generateConflictDeclarations = (
-    declarationName,
-    conflictRegex
-) => declaration => {
-    const parent = declaration.parent;
-    const declarations = parent.declarations;
-    const properties = declarations.map(extractPropertyOfDeclaration);
-    const filter = s => conflictRegex.test(s);
-    const rejectedProperties = R.filter(filter)(properties);
-
-    if (shouldReturn(rejectedProperties.length)) return;
-
-    console.log(
-        chalk`if {red ${declarationName}} is set, {red ${rejectedProperties.join(
-            ', '
-        )}} will be removed.`
-    );
-
-    rejectedProperties.forEach(property => {
-        const index = declarations.findIndex(
-            R.compose(
-                R.equals(property),
-                extractPropertyOfDeclaration
-            )
-        );
-        parent.declarations = R.remove(index, 1, declarations);
-    });
-};
-
-const generateProhibitValue = (
-    declarationName,
-    prohibitRegex
-) => declaration => {
-    const parent = declaration.parent;
-    const declarations = parent.declarations;
-    if (prohibitRegex.test(extractPropertyOfValue(declaration))) {
-        console.log(
-            chalk`Remote resource is not supported in {cyan ${declarationName}}, ` +
-                chalk`supplied {red ${declaration.value}} will be removed.`
-        );
-        const index = declarations.findIndex(
-            R.compose(
-                R.equals(declaration.property),
-                extractPropertyOfDeclaration
-            )
-        );
-        parent.declarations = R.remove(index, 1, declarations);
-    }
-};
 
 const visitors = {
     'border-style'(declaration) {
@@ -96,34 +45,11 @@ const visitors = {
             'background-image',
             /url\(['"]https?:\/\/\S+['"]\)/i
         )(declaration);
-    },
-    margin(declaration) {
-        expandDeclarations(declaration, 'margin');
-    },
-    border(declaration) {
-        expandDeclarations(declaration, 'border');
-    },
-    padding(declaration) {
-        expandDeclarations(declaration, 'padding');
     }
 };
 
-const replaceRPXtoPX = declaration => {
-    if (config.buildType !== 'quick') return;
-    declaration.value = R.replace(
-        /([-\d]+)(r?px)/g,
-        (match, numberStr, unit) => {
-            const number = Number(numberStr.trim());
-            if (unit === 'rpx') {
-                return ` ${number}px`;
-            } else {
-                return ` ${number * 2}px`;
-            }
-        }
-    )(declaration.value);
-};
-
 module.exports = function validateStyle(code) {
+    if (config.buildType !== 'quick') return;
     const ast = css.parse(code);
     const rules = ast.stylesheet.rules;
     rules.forEach(({ declarations = [] }) => {
