@@ -1,27 +1,31 @@
 import { noop } from 'react-core/util';
 import request from './quickApis/fetch.js';
-import {uploadFile, downloadFile} from './quickApis/request.js';
-import {setStorage,getStorage, removeStorage, clearStorage, setStorageSync, getStorageSync, removeStorageSync,clearStorageSync} from './quickApis/storage.js';
-import {getSavedFileInfo, getSavedFileList, removeSavedFile, saveFile} from './quickApis/file.js';
-import {setClipboardData, getClipboardData} from './quickApis/clipboard.js';
-import {getNetworkType, onNetworkStatusChange} from './quickApis/network.js';
-import {getSystemInfo} from './quickApis/device.js';
-import {chooseImage} from './quickApis/media.js';
+import { uploadFile, downloadFile } from './quickApis/request.js';
+import { setStorage, getStorage, removeStorage, clearStorage, setStorageSync, getStorageSync, removeStorageSync, clearStorageSync } from './quickApis/storage.js';
+import { getSavedFileInfo, getSavedFileList, removeSavedFile, saveFile } from './quickApis/file.js';
+import { setClipboardData, getClipboardData } from './quickApis/clipboard.js';
+import { getNetworkType, onNetworkStatusChange } from './quickApis/network.js';
+import { getSystemInfo } from './quickApis/device.js';
+import { chooseImage } from './quickApis/media.js';
 
 
 function createRouter(name) {
-    return function(obj) {
+    return function (obj) {
         const router = require('@system.router');
         const params = {};
-        let uri = obj.url.slice(obj.url.indexOf('/pages') + 1);
+        let href = obj.url || obj.uri || '';
+        let uri = href.slice(href.indexOf('/pages') + 1);
         uri = uri
-            .replace(/\?(.*)/, function(a, b) {
-                b.split('=').forEach(function(k, v) {
+            .replace(/\?(.*)/, function (a, b) {
+                b.split('=').forEach(function (k, v) {
                     params[k] = v;
                 });
                 return '';
             })
             .replace(/\/index$/, '');
+        if (uri.charAt(0) !== '/') {
+            uri = '/' + uri;
+        }
         router[name]({
             uri,
             params
@@ -33,7 +37,7 @@ function createRouter(name) {
 export var api = {
     // 交互
     showModal(obj) {
-    // showCancel 默认值是 true
+        // showCancel 默认值是 true
         obj.showCancel = obj.showCancel === false ? false : true;
         var buttons = [
             {
@@ -107,7 +111,7 @@ export var api = {
     // 网络请求
     request,
     // 二维码
-    scanCode({success, fail, complete}) {
+    scanCode({ success, fail, complete }) {
         const barcode = require('@system.barcode');
         barcode.scan({
             // 小米回调函数参数对象仅提供 result，不含 scanType、charSet 及 path
@@ -121,11 +125,10 @@ export var api = {
     getStorage,
     removeStorage,
     clearStorage,
-    setStorageSync, 
-    getStorageSync, 
+    setStorageSync,
+    getStorageSync,
     removeStorageSync,
     clearStorageSync,
-    getSavedFileInfo,
     getSavedFileInfo, getSavedFileList, removeSavedFile, saveFile,
     setClipboardData, getClipboardData,
     // 位置
