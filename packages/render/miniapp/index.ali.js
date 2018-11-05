@@ -15,7 +15,7 @@ import { injectAPIs } from './api';
 import { aliApis } from './api.ali';
 
 import { eventSystem } from './eventSystem';
-import { Renderer } from './wxRender';
+import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyle';
 import { toRenderProps, useComponent } from './utils';
 
@@ -51,6 +51,7 @@ let React =  getWindow().React = {
     toClass: miniCreateClass,
     toRenderProps,
     useComponent,
+    getCurrentPage,
     registerComponent,
     registerPage,
     toStyle,

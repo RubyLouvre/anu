@@ -12,8 +12,8 @@ import {
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { injectAPIs } from './api';
-import { eventSystem } from './eventSystemQuick';
-import { Renderer } from './wxRender';
+import { eventSystem } from './eventSystem';
+import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyle';
 import { toRenderProps, useComponent } from './utils';
 
@@ -49,6 +49,7 @@ let React = getWindow().React =  {
     toRenderProps,
     useComponent,
     registerComponent,
+    getCurrentPage,
     registerPage,
     toStyle,
     appType: 'wx'

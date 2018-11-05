@@ -866,9 +866,6 @@ function injectAPIs(ReactWX, facade, override) {
     ReactWX.api = {};
     processApis(ReactWX, facade);
     ReactWX.api.request = request;
-    if (typeof getCurrentPages == 'function') {
-        ReactWX.getCurrentPages = getCurrentPages;
-    }
     if (typeof getApp == 'function') {
         ReactWX.getApp = getApp;
     }
@@ -2179,6 +2176,10 @@ function getEventHashCode(name, props, key) {
     var eventCode = props['data-' + type + '-uid'];
     return eventCode + (key != null ? '-' + key : '');
 }
+var pageInstance = null;
+function getCurrentPage() {
+    return pageInstance;
+}
 var Renderer$1 = createRenderer({
     render: render,
     updateAttribute: function updateAttribute(fiber) {
@@ -2220,6 +2221,9 @@ var Renderer$1 = createRenderer({
             if (!instance.instanceUid) {
                 var uuid = 'i' + getUUID();
                 instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
+            }
+            if (fiber.props.isPageComponent) {
+                pageInstance = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {
@@ -2444,6 +2448,12 @@ function registerPage(PageClass, path, testObject) {
             if (isFn(fn)) {
                 return fn.apply(instance, arguments);
             }
+            if (hook === 'onShareAppMessage' && typeof getApp == 'function') {
+                fn = Object(getApp()).onShareAppMessage;
+                if (isFn(fn)) {
+                    return fn();
+                }
+            }
         };
     });
     Array('onShow', 'onHide').forEach(function (hook) {
@@ -2494,6 +2504,7 @@ var React = getWindow().React = {
     toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
+    getCurrentPage: getCurrentPage,
     registerPage: registerPage,
     toStyle: toStyle,
     appType: 'bu'
