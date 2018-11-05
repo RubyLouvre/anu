@@ -10,6 +10,10 @@ function getEventHashCode(name, props, key) {
     var eventCode = props['data-' + type + '-uid'];
     return eventCode + (key != null ? '-' + key : '');
 }
+var pageInstance = null;
+export function getCurrentPage(){
+    return pageInstance;
+}
 export let Renderer = createRenderer({
     render: render,
     updateAttribute(fiber) {
@@ -60,6 +64,9 @@ export let Renderer = createRenderer({
                 var uuid = 'i' + getUUID();
                 instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
                 //type[uuid] = instance;
+            }
+            if (fiber.props.isPageComponent){
+                pageInstance = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {//只处理component目录下的组件

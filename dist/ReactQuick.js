@@ -1986,6 +1986,10 @@ function getEventHashCode(name, props, key) {
     var eventCode = props['data-' + type + '-uid'];
     return eventCode + (key != null ? '-' + key : '');
 }
+var pageInstance = null;
+function getCurrentPage() {
+    return pageInstance;
+}
 var Renderer$1 = createRenderer({
     render: render,
     updateAttribute: function updateAttribute(fiber) {
@@ -2027,6 +2031,9 @@ var Renderer$1 = createRenderer({
             if (!instance.instanceUid) {
                 var uuid = 'i' + getUUID();
                 instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
+            }
+            if (fiber.props.isPageComponent) {
+                pageInstance = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {
@@ -2297,6 +2304,7 @@ var React = getWindow().React = {
     toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
+    getCurrentPage: getCurrentPage,
     registerPage: registerPage,
     shareObject: shareObject,
     toStyle: toStyle,
