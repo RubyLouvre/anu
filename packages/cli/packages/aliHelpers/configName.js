@@ -1,6 +1,7 @@
 const navNames = {
     navigationBarBackgroundColor: 'titleBarColor',
-    navigationBarTitleText: 'defaultTitle'
+    navigationBarTitleText: 'defaultTitle',
+    enablePullDownRefresh: 'pullRefresh'
 };
 const barNames = {
     color: 'textColor',

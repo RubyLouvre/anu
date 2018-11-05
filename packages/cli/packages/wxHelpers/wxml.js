@@ -123,7 +123,22 @@ let visitor = {
             astPath.remove();
             return;
         }
-      
+        if (config.buildType === 'quick' && attrName === 'fixQuickButtonType') {
+            astPath.node.name.name = 'type';
+            var c = astPath.parentPath.parentPath.node.children;
+            var valueString = c.map(function(el){
+                if (el.type === 'JSXText'){
+                    return el.value.trim();
+                } else {
+                    return  '{' + generate(el).code +'}';
+                }
+            }).join('');
+            c.length = 0;
+            astPath.parentPath.node.attributes.push(
+                utils.createAttribute('value', valueString)
+            );
+        }
+
         attrNameHelper(astPath);
     },
     JSXText: {
@@ -168,7 +183,7 @@ let visitor = {
                 let block = logicHelper(expr, modules);
                 try {
                     astPath.replaceWithMultiple(block);
-                } catch (e){
+                } catch (e) {
                     //快应用将文本节点包一层text，可能在这里引发BUG
                     astPath.replaceWith(block[0]);
                 }

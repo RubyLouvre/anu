@@ -1,6 +1,7 @@
 let rword = /[^, ]+/g;
 const utils = require('../utils/index');
 
+
 let builtInStr =
     'div,list,list-item,popup,refresh,richtext,stack,swiper,tab,tab-bar,tab-context,'+
     'a,text,image,progress,rating,'+
@@ -30,16 +31,10 @@ map.button = 'input';
 module.exports = function mapTagName(astPath, modules) {
     var orig = astPath.node.name.name;
     if (orig == 'button' && astPath.node.type === 'JSXOpeningElement'){
-        var children = astPath.parentPath.node.children;
-        var value = children.length == 1 ? (children[0].type == 'JSXText' ? children[0].value: '') : '';
         astPath.node.attributes.push( utils.createAttribute(
-            'type',
+            'fixQuickButtonType',
             'button'
-        ),  utils.createAttribute(
-            'value',
-            value
         ));
-        
     }
 
     addCustomComponents(modules.customComponents);
