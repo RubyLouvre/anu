@@ -251,11 +251,13 @@ export function updateClassComponent(fiber, info) {
     if (fiber.catchError) {
         return;
     }
-    Renderer.onUpdate(fiber)
+    Renderer.onBeforeRender(fiber)
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     let rendered = applyCallback(instance, "render", []);
     diffChildren(fiber, rendered);
+    Renderer.onAfterRender(fiber)
+
 }
 
 function applybeforeMountHooks(fiber, instance, newProps) {

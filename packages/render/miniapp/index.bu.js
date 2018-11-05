@@ -12,10 +12,10 @@ import {
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { injectAPIs } from './api';
-import { buApis } from './buApis';
+import { buApis } from './api.bu';
 
 import { eventSystem } from './eventSystem';
-import { Renderer } from './wxRender';
+import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyle';
 import { toRenderProps, useComponent } from './utils';
 
@@ -53,6 +53,7 @@ let React = getWindow().React = {
     toRenderProps,
     useComponent,
     registerComponent,
+    getCurrentPage,
     registerPage,
     toStyle,
     appType: 'bu'

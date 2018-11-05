@@ -1,6 +1,6 @@
 
 import { registeredComponents, usingComponents, updateMiniApp } from './utils';
-import { eventSystem } from './eventSystem';
+import { eventSystem } from './eventSystemQuick';
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = (type.reactInstances = []);
@@ -48,9 +48,7 @@ export function registerComponent(type, name) {
         onDestroy() {
             this.reactInstance = null;
         },
-
-        methods: {
-            dispatchEvent: eventSystem.dispatchEvent
-        }
+        dispatchEvent: eventSystem.dispatchEvent
+        
     };
 }

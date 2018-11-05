@@ -27,8 +27,8 @@ export const onAndSyncApis = {
     getSystemInfoSync: true,
     getExtConfigSync: true,
     getLogManager: true
-  }
- export const noPromiseApis = {
+};
+export const noPromiseApis = {
     // 媒体
     stopRecord: true,
     getRecorderManager: true,
@@ -74,8 +74,8 @@ export const onAndSyncApis = {
   
     getUpdateManager: true,
     createWorker: true
-  }
-  export const otherApis = {
+};
+export const otherApis = {
     // 网络
     uploadFile: true,
     downloadFile: true,
@@ -211,5 +211,4 @@ export const onAndSyncApis = {
     startSoterAuthentication: true,
     checkIsSoterEnrolledInDevice: true
     //
-  }
-  
+};

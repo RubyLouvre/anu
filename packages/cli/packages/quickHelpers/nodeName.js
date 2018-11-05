@@ -1,4 +1,6 @@
 let rword = /[^, ]+/g;
+const utils = require('../utils/index');
+
 
 let builtInStr =
     'div,list,list-item,popup,refresh,richtext,stack,swiper,tab,tab-bar,tab-context,'+
@@ -25,9 +27,23 @@ let map = Object.assign({}, builtIn);
 'span,b,s,code,quote,cite'.replace(rword, function(el) {
     map[el] = 'text';
 });
+map.button = 'input';
+module.exports = function mapTagName(astPath, modules) {
+    var orig = astPath.node.name.name;
+    if (orig == 'button' && astPath.node.type === 'JSXOpeningElement'){
+        var attrs = astPath.node.attributes;
+        for (var i = 0, el; el = attrs[i]; i++){//eslint-disable-line
+            if ( el.name.name == 'type' && /^(primary|default|warn)$/.test(el.value.value )){
+                attrs.splice(i, 1);
+                break;
+            }
+        }
+        astPath.node.attributes.push( utils.createAttribute(
+            'fixQuickButtonType',
+            'button'
+        ));
+    }
 
-module.exports = function mapTagName(path, modules) {
-    var orig = path.node.name.name;
     addCustomComponents(modules.customComponents);
-    path.node.name.name = map[orig] || 'div';
+    astPath.node.name.name = map[orig] || 'div';
 };

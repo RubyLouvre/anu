@@ -141,9 +141,6 @@ export function injectAPIs(ReactWX, facade, override) {
     ReactWX.api = {};
     processApis(ReactWX, facade);
     ReactWX.api.request = request;
-    if (typeof getCurrentPages == 'function') {
-        ReactWX.getCurrentPages = getCurrentPages;
-    }
     if (typeof getApp == 'function') {
         ReactWX.getApp = getApp;
     }
