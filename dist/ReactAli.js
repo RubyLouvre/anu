@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-02
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-05
  * IE9+
  */
 
@@ -2550,6 +2550,12 @@ function registerPage(PageClass, path, testObject) {
             var fn = instance[hook];
             if (isFn(fn)) {
                 return fn.apply(instance, arguments);
+            }
+            if (hook === 'onShareAppMessage' && typeof getApp == 'function') {
+                fn = Object(getApp()).onShareAppMessage;
+                if (isFn(fn)) {
+                    return fn();
+                }
             }
         };
     });

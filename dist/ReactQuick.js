@@ -2487,57 +2487,6 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
-var eventSystem$1 = {
-    dispatchEvent: function dispatchEvent(e) {
-        if (e.type == 'message') {
-            return;
-        }
-        var instance = this.reactInstance;
-        if (!instance || !instance.$$eventCached) {
-            return;
-        }
-        var target = e.currentTarget;
-        var dataset = target.dataset || {};
-        var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
-        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber) {
-            if (fiber.props.value + '' == e.detail.value) {
-                return;
-            }
-        }
-        var key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-        if (instance) {
-            Renderer.batchedUpdates(function () {
-                try {
-                    var fn = instance.$$eventCached[eventUid];
-                    fn && fn.call(instance, createEvent$1(e, target));
-                } catch (err) {
-                    console.log(err.stack);
-                }
-            }, e);
-        }
-    }
-};
-function createEvent$1(e, target) {
-    var event = Object.assign({}, e);
-    if (e.detail) {
-        Object.assign(event, e.detail);
-        target.value = e.detail.value;
-    }
-    event.stopPropagation = function () {
-        console.warn("小程序不支持这方法，请使用catchXXX");
-    };
-    event.preventDefault = returnFalse;
-    event.target = target;
-    event.timeStamp = new Date() - 0;
-    if (!("x" in event)) {
-        event.x = event.pageX;
-        event.y = event.pageY;
-    }
-    return event;
-}
-
 function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
@@ -2580,9 +2529,7 @@ function registerComponent(type, name) {
         onDestroy: function onDestroy() {
             this.reactInstance = null;
         },
-        methods: {
-            dispatchEvent: eventSystem$1.dispatchEvent
-        }
+        dispatchEvent: eventSystem.dispatchEvent
     };
 }
 

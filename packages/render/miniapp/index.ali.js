@@ -12,7 +12,7 @@ import {
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { injectAPIs } from './api';
-import { aliApis } from './aliApis';
+import { aliApis } from './api.ali';
 
 import { eventSystem } from './eventSystem';
 import { Renderer } from './wxRender';

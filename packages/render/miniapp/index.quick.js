@@ -12,7 +12,7 @@ import {
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { eventSystem } from './eventSystemQuick';
-import { api } from './quickApis';
+import { api } from './api.quick';
 import { Renderer } from './wxRender';
 import { toStyle } from './toStyleQuick';
 import { toRenderProps, useComponent } from './utils';
