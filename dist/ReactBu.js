@@ -2444,6 +2444,12 @@ function registerPage(PageClass, path, testObject) {
             if (isFn(fn)) {
                 return fn.apply(instance, arguments);
             }
+            if (hook === 'onShareAppMessage' && typeof getApp == 'function') {
+                fn = Object(getApp()).onShareAppMessage;
+                if (isFn(fn)) {
+                    return fn();
+                }
+            }
         };
     });
     Array('onShow', 'onHide').forEach(function (hook) {
