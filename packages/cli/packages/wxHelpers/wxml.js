@@ -157,7 +157,7 @@ let visitor = {
                         parentNode.children.splice(
                             index,
                             1,
-                            utils.createElement('text', [], [astPath.node])
+                            utils.createElement('text', [utils.createAttribute('class','anu-text')], [astPath.node])
                         );
                     }
                 }
