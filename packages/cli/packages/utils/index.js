@@ -464,11 +464,12 @@ let utils = {
             ? fileList = fileList.concat([ config.buildDir ])
             : fileList = fileList.concat( [ 'dist', 'build', 'sign', 'src' ] );
         fileList.forEach((item)=>{
-            fs.remove(path.join(cwd, item))
-                .catch((err)=>{
-                    // eslint-disable-next-line
-                     console.log(err);
-                });
+            try {
+                fs.removeSync(path.join(cwd, item));
+            } catch (err){
+                // eslint-disable-next-line
+                console.log(err);
+            }
         });
     },
     compress: function () {
