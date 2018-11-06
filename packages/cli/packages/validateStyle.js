@@ -11,6 +11,9 @@ const config = require('./config');
 const generateProhibitValue = require('./stylesTransformer/generateProhibitValue');
 const generateConflictDeclarations = require('./stylesTransformer/generateConflictDeclarations');
 const replaceRPXtoPX = require('./stylesTransformer/replaceRPXtoPX');
+const validateMargin = require('./stylesTransformer/validateMargin');
+const splitBorder = require('./stylesTransformer/splitBorder');
+const transformBorderRadius = require('./stylesTransformer/transformBorderRadius');
 
 const gtOne = R.gt(1);
 
@@ -28,10 +31,13 @@ const visitors = {
             declaration.value = value[0];
         }
     },
-    'border-radius': generateConflictDeclarations(
-        'border-radius',
-        /border-(left|bottom|right|top)-(color|width)/i
-    ),
+    'border-radius'(declaration) {
+        generateConflictDeclarations(
+            'border-radius',
+            /border-(left|bottom|right|top)-(color|width)/i
+        );
+        transformBorderRadius(declaration);
+    },
     background: generateConflictDeclarations(
         'background',
         /(background|border)-color/i
@@ -45,7 +51,12 @@ const visitors = {
             'background-image',
             /url\(['"]https?:\/\/\S+['"]\)/i
         )(declaration);
-    }
+    },
+    margin: validateMargin,
+    'border-left': splitBorder('left'),
+    'border-right': splitBorder('right'),
+    'border-bottom': splitBorder('bottom'),
+    'border-top': splitBorder('top')
 };
 
 module.exports = function validateStyle(code) {
