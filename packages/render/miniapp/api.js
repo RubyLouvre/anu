@@ -144,10 +144,6 @@ export function injectAPIs(ReactWX, facade, override) {
     if (typeof getApp == 'function') {
         ReactWX.getApp = getApp;
     }
-    if (typeof getCurrentPages == 'function') {
-        ReactWX.getCurrentPages = getCurrentPages;
-    }
-    
     if (override){
         var obj = override(facade);
         Object.assign(ReactWX.api, obj);

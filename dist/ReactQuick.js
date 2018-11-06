@@ -2287,6 +2287,12 @@ var registeredComponents = {};
 var currentPage = {
     isReady: false
 };
+function _getCurrentPages() {
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    if (typeof getCurrentPages === 'function') {
+        return getCurrentPages();
+    }
+}
 function getUUID() {
     return _uuid() + _uuid();
 }
@@ -2667,6 +2673,7 @@ var React = getWindow().React = {
     useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
+    getCurrentPages: _getCurrentPages,
     registerPage: registerPage,
     shareObject: shareObject,
     toStyle: toStyle,

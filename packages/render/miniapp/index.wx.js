@@ -15,7 +15,7 @@ import { injectAPIs } from './api';
 import { eventSystem } from './eventSystem';
 import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyle';
-import { toRenderProps, useComponent } from './utils';
+import { toRenderProps,_getCurrentPages, useComponent } from './utils';
 
 import { registerPage } from './registerPageWx';
 import { registerComponent } from './registerComponentWx';
@@ -50,6 +50,7 @@ let React = getWindow().React =  {
     useComponent,
     registerComponent,
     getCurrentPage,
+    getCurrentPages: _getCurrentPages,
     registerPage,
     toStyle,
     appType: 'wx'

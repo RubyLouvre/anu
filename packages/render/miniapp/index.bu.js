@@ -17,16 +17,14 @@ import { buApis } from './api.bu';
 import { eventSystem } from './eventSystem';
 import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyle';
-import { toRenderProps, useComponent } from './utils';
+import { toRenderProps, _getCurrentPages, useComponent } from './utils';
 
 import { registerComponent } from './registerComponentBu';
 import { registerPage } from './registerPageWx';
 
-
-
 let { render } = Renderer;
 
-let React = getWindow().React = {
+let React = (getWindow().React = {
     //平台相关API
     eventSystem,
 
@@ -48,19 +46,20 @@ let React = getWindow().React = {
     cloneElement,
     PureComponent,
     isValidElement,
-   
+
     toClass: miniCreateClass,
     toRenderProps,
     useComponent,
     registerComponent,
     getCurrentPage,
+    getCurrentPages: _getCurrentPages,
     registerPage,
     toStyle,
     appType: 'bu'
-};
+});
 let apiContainer = {};
 if (typeof swan != 'undefined') {
-    apiContainer = swan;//eslint-disable-line
+    apiContainer = swan; //eslint-disable-line
 }
 injectAPIs(React, apiContainer, buApis);
 

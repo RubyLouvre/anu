@@ -15,7 +15,7 @@ import { eventSystem } from './eventSystemQuick';
 import { api } from './api.quick';
 import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyleQuick';
-import { toRenderProps, useComponent } from './utils';
+import { toRenderProps, _getCurrentPages, useComponent } from './utils';
 
 import { registerComponent } from './registerComponentQuick';
 import { registerPage, getApp, shareObject } from './registerPageQuick';
@@ -52,6 +52,7 @@ let React = getWindow().React = {
     useComponent,
     registerComponent,
     getCurrentPage,
+    getCurrentPages: _getCurrentPages,
     registerPage,
     shareObject,
     toStyle,

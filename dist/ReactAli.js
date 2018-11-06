@@ -869,9 +869,6 @@ function injectAPIs(ReactWX, facade, override) {
     if (typeof getApp == 'function') {
         ReactWX.getApp = getApp;
     }
-    if (typeof getCurrentPages == 'function') {
-        ReactWX.getCurrentPages = getCurrentPages;
-    }
     if (override) {
         var obj = override(facade);
         Object.assign(ReactWX.api, obj);
@@ -2228,6 +2225,12 @@ var registeredComponents = {};
 var currentPage = {
     isReady: false
 };
+function _getCurrentPages() {
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    if (typeof getCurrentPages === 'function') {
+        return getCurrentPages();
+    }
+}
 function getUUID() {
     return _uuid() + _uuid();
 }
@@ -2614,6 +2617,7 @@ var React = getWindow().React = {
     toRenderProps: toRenderProps,
     useComponent: useComponent,
     getCurrentPage: getCurrentPage,
+    getCurrentPages: _getCurrentPages,
     registerComponent: registerComponent,
     registerPage: registerPage,
     toStyle: toStyle,
