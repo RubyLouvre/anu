@@ -98,11 +98,11 @@ let utils = {
         const patchComponents = config[buildType].patchComponents;
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return function(astPath, modules){
-            var orig = path.node.name.name;
+            var orig = astPath.node.name.name;
             var hasPatch = patchComponents[orig];
             if (hasPatch) {
                 var newName = hasPatch.name;
-                path.node.name.name = newName; //{button: {name :'Button', href:''}}
+                astPath.node.name.name = newName; //{button: {name :'Button', href:''}}
                 modules.importComponents[newName] = {
                     source: `/@components/${newName} /index`
                 };
