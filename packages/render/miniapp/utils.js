@@ -11,7 +11,12 @@ export var registeredComponents = {};
 export var currentPage = {
     isReady: false
 };
-
+export function _getCurrentPages(){
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');//eslint-disable-line
+    if (typeof getCurrentPages === 'function'){
+        return getCurrentPages(); //eslint-disable-line
+    }
+}
 export function getUUID() {
     return _uuid() + _uuid();
 }

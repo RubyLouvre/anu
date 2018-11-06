@@ -93,6 +93,24 @@ let utils = {
             children
         );
     },
+    createNodeName(map, backup){
+        const buildType = config.buildType;
+        const patchComponents = config[buildType].patchComponents;
+        //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
+        return function(astPath, modules){
+            var orig = path.node.name.name;
+            var hasPatch = patchComponents[orig];
+            if (hasPatch) {
+                var newName = hasPatch.name;
+                path.node.name.name = newName; //{button: {name :'Button', href:''}}
+                modules.importComponents[newName] = {
+                    source: `/@components/${newName} /index`
+                };
+                return newName;
+            }
+            return  astPath.node.name.name = (map[orig] || backup);
+        };
+    },
     createAttribute(name, value) {
         return t.JSXAttribute(
             t.JSXIdentifier(name),

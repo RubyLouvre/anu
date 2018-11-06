@@ -147,7 +147,8 @@ let visitor = {
                 let parentNode = astPath.parentPath.node;
                 let parentTag = parentNode.openingElement.name.name;
                 let children = parentNode.children;
-                if (!quickTextContainer[parentTag]) {
+                //如果文本节点的父节点不是text, a, option, span并且不是组件, 我们在外面生成一个text
+                if (!quickTextContainer[parentTag] && !/^anu-/.test(parentTag)) {
                     let index = children.indexOf(astPath.node);
                     let trimValue = astPath.node.value.trim();
                     if (trimValue == '') {
@@ -157,7 +158,8 @@ let visitor = {
                         parentNode.children.splice(
                             index,
                             1,
-                            utils.createElement('text', [utils.createAttribute('class','anu-text')], [astPath.node])
+                            utils.createElement('text', [utils.createAttribute('class','anu-text')], 
+                                [astPath.node])
                         );
                     }
                 }

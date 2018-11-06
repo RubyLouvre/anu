@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-05
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-06
  * IE9+
  */
 
@@ -2225,6 +2225,12 @@ var registeredComponents = {};
 var currentPage = {
     isReady: false
 };
+function _getCurrentPages() {
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    if (typeof getCurrentPages === 'function') {
+        return getCurrentPages();
+    }
+}
 function getUUID() {
     return _uuid() + _uuid();
 }
@@ -2611,6 +2617,7 @@ var React = getWindow().React = {
     toRenderProps: toRenderProps,
     useComponent: useComponent,
     getCurrentPage: getCurrentPage,
+    getCurrentPages: _getCurrentPages,
     registerComponent: registerComponent,
     registerPage: registerPage,
     toStyle: toStyle,
