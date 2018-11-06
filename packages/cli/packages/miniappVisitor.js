@@ -479,6 +479,7 @@ module.exports = {
         enter: function(astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
+            nodeName = helpers.nodeName(astPath, modules) || nodeName
             let bag = modules.importComponents[nodeName];
 
             if (bag) {
