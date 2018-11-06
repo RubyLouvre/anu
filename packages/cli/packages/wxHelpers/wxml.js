@@ -123,21 +123,6 @@ let visitor = {
             astPath.remove();
             return;
         }
-        if (config.buildType === 'quick' && attrName === 'fixQuickButtonType') {
-            astPath.node.name.name = 'type';
-            var c = astPath.parentPath.parentPath.node.children;
-            var valueString = c.map(function(el){
-                if (el.type === 'JSXText'){
-                    return el.value.trim();
-                } else {
-                    return  '{' + generate(el).code +'}';
-                }
-            }).join('');
-            c.length = 0;
-            astPath.parentPath.node.attributes.push(
-                utils.createAttribute('value', valueString)
-            );
-        }
 
         attrNameHelper(astPath);
     },
