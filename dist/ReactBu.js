@@ -1,5 +1,5 @@
 /**
- * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-05
+ * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-06
  * IE9+
  */
 
@@ -868,6 +868,9 @@ function injectAPIs(ReactWX, facade, override) {
     ReactWX.api.request = request;
     if (typeof getApp == 'function') {
         ReactWX.getApp = getApp;
+    }
+    if (typeof getCurrentPages == 'function') {
+        ReactWX.getCurrentPages = getCurrentPages;
     }
     if (override) {
         var obj = override(facade);
