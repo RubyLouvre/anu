@@ -29,6 +29,16 @@ module.exports = {
             // navigator: url,
         }
     },
+    tt: {
+        libName: 'ReactTt',
+        jsExt: 'js',
+        styleExt: 'ttss',
+        xmlExt: 'ttml',
+        helpers: 'ttHelpers',
+        patchComponents: {
+            // navigator: url,
+        }
+    },
     buildType: 'wx',    //构建类型默认微信小程序
     buildDir: 'dist',   //非快应用项目默认构建目录为dist
     sourceDir: 'source' //默认生成的源码目录

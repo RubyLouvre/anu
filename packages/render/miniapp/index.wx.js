@@ -57,8 +57,12 @@ let React = getWindow().React =  {
 };
 let apiContainer = {};
 if (typeof wx != 'undefined'){
-    apiContainer = wx;
+    apiContainer = wx;//eslint-disable-line
+} else if (typeof tt != 'undefined'){
+    apiContainer = tt;//eslint-disable-line
+    React.appType = 'tt';
 } 
+
 injectAPIs(React, apiContainer);
 
 export default React;
