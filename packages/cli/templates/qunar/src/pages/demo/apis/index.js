@@ -1,12 +1,13 @@
 import React from '@react';
 import './index.scss';
-// 事件
 /* eslint-disable */
+// 事件
 class Express extends React.Component {
     constructor() {
         super();
         this.state = {
-            text: 'page3'
+            text: 'page3',
+            img: []
         };
     }
   config = {
@@ -20,7 +21,6 @@ class Express extends React.Component {
   componentDidMount() {}
 
   click() {
-      
       console.log(111);
   }
 
@@ -30,11 +30,10 @@ class Express extends React.Component {
           content: '内容是啥',
           cancelText: '取消',
           confirmText: '确定',
-          success: function (result) {
+          success: function(result) {
               console.log('result', result);
           }
       });
-    
   }
   showContextMenu() {
       React.api.showActionSheet({
@@ -56,7 +55,6 @@ class Express extends React.Component {
       React.api.vibrateLong();
   }
   share() {
-     
       console.log('share');
       share.share({
           type: 'text/html',
@@ -101,12 +99,84 @@ class Express extends React.Component {
       React.api.request({
           url: 'http://yapi.demo.qunar.com/mock/13807/unauth/account/register',
           method: 'post',
-         
           success: function(res) {
               console.log(`the status code of the response: ${res.data}`);
           },
           fail: function(err) {
               console.log(`handling fail, code = ${err}`);
+          }
+      });
+  }
+
+  download() {
+      React.api.downloadFile({
+          url: 'https://yapi.ymfe.org/devops/index.html#%E7%A6%81%E6%AD%A2%E6%B3%A8%E5%86%8C',
+          success: function(data) {
+              console.log(`handling success${data}`);
+          },
+          fail: function(data, code) {
+              console.log(`handling fail, code = ${code}`);
+          }
+      });
+  }
+
+  scan() {
+      React.api.scanCode({
+          success: function(data) {
+              console.log(`handling success: ${data.result}`);
+          },
+          fail: function(data, code) {
+              console.log(`handling fail, code = ${code}`);
+          }
+      });
+  }
+
+
+
+  getSavedFileInfo() {
+      React.api.getSavedFileInfo({
+          filePath: 'internal://Users/qitmac000476/Documents/weixin/nanachi/_site/apis/file.html',
+          success: function(data) {
+              console.log(data.uri);
+              console.log(data.size);
+              console.log(data.createTime);
+          },
+          fail: function(data, code) {
+              console.log(`handling fail, code = ${code}`);
+          }
+      });
+  }
+
+  gotoSome(url) {
+      console.log('url', url);
+      if (url) {
+          React.api.navigateTo({ url });
+      }
+  }
+
+  getLocation() {
+      React.api.getLocation({
+          success: function (data) {
+              console.log(`handling success: longitude = ${data.longitude}, latitude = ${data.latitude}`);
+          },
+      });
+  }
+
+  getNetworkType() {
+      React.api.getNetworkType({
+          success: function (data) {
+              console.log(`handling success: ${data.networkType}`);
+          }
+      });
+  }
+
+  chooseImage() {
+      React.api.chooseImage({
+          count: 1,
+          success: res => {
+              this.setState({
+                  img: res.tempFilePaths
+              });
           }
       });
   }
@@ -142,6 +212,42 @@ class Express extends React.Component {
                   <div onClick={this.scan} class="item">
                       <text>扫一扫</text>
                   </div>
+                  <div
+                      onClick={this.gotoSome.bind(this, '../../pages/demo/apis/storage/index')}
+                      class="item"
+                  >
+                      <text>存储</text>
+                  </div>
+          
+                  <div onClick={this.getSavedFileInfo} class="item">
+                      <text>获取本地文件</text>
+                  </div>
+                  <div
+                      onClick={this.gotoSome.bind(this, '../../pages/demo/apis/clipboard/index')}
+                      class="item"
+                  >
+                      <text>剪切板</text>
+                  </div>
+                  <div onClick={this.getLocation} class="item">
+                      <text>获取地理位置</text>
+                  </div>
+                  <div onClick={this.getNetworkType} class="item">
+                      <text>获取网络类型</text>
+                  </div>
+                  <div onClick={this.getNetworkType} class="item">
+                      <text>获取网络类型</text>
+                  </div>
+                  <div onClick={this.getNetworkType} class="item">
+                      <text>获取系统信息</text>
+                  </div>
+                  <div onClick={this.chooseImage} class="item">
+                      <text>选择图片</text>
+                  </div>
+                  {
+                      this.state.img.map(function(item) {
+                          return  <image src={item}/>;
+                      })
+                  }
               </div>
           </div>
       );
