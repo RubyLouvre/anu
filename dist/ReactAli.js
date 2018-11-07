@@ -908,6 +908,12 @@ var aliApis = function aliApis(api) {
         setNavigationBarColor: function _(a) {
             return api.setNavigationBar(a);
         },
+        vibrateLong: function _(a) {
+            return api.vibrate(a);
+        },
+        vibrateShort: function _(a) {
+            return api.vibrate(a);
+        },
         saveImageToPhotosAlbum: function _(a) {
             a.url = a.filePath;
             return api.saveImage(a);

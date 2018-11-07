@@ -59,6 +59,12 @@ function isReferenceType(val) {
     );
 }
 
+export function runFunction(fn, ...args) {
+  if (typeof fn == 'function') {
+    fn.call(null, ...args);
+  }
+}
+
 
 export function useComponent(props) {
     var is = props.is;
