@@ -1,9 +1,3 @@
-.button-wrapper {
-    button {
-        margin-bottom: 20px;
-    }
-}
-
 .row {
   display: flex;
   flex-direction: row;
@@ -18,13 +12,14 @@
 }
 
 .item {
+  border: 1px solid #eee;
+
+  padding: 10px 20px;
   margin: 10px 20px;
 
-}
-
-.text {
-  width: 200px;
-  height: 50px;
-  border: 1px solid #eeeeee;
-  border-radius: 0 0 0 5px;
+  text {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
 }
