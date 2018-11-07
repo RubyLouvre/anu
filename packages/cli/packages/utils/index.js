@@ -98,7 +98,7 @@ let utils = {
         const patchComponents = config[buildType].patchComponents;
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return function(astPath, modules){
-            var orig = astPath.node.name.name;
+            var orig = astPath.node.name.name;//button
             var hasPatch = patchComponents[orig];
             if (hasPatch) {
                 var newName = hasPatch.name;
@@ -108,7 +108,7 @@ let utils = {
                 };
                 return newName;
             }
-            return  astPath.node.name.name = (map[orig] || backup);
+            return  astPath.node.name.name = (map[orig] || backup);//div
         };
     },
     createAttribute(name, value) {
