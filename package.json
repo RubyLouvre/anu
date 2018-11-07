@@ -9,7 +9,7 @@
     "start": "serve .",
     "sync": "node ./scripts/build/syncAntd.js",
     "buildIE": "webpack --config ./scripts/build/buildIE.js",
-    "precommit": "eslint packages/cli/"
+    "precommit": "eslint packages/cli/ --fix"
   },
   "lint-staged": {
     "linters": {
