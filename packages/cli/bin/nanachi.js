@@ -20,12 +20,12 @@ program
 program.command('init <project-name>').description('初始化项目');
 
 program
-    .command('watch:[wx|ali|bu|quick]')
-    .description('监听[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用]');
+    .command('watch:[wx|ali|bu|quick|tt]')
+    .description('监听[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用 | 头条小程序]');
 
 program
-    .command('build:[wx|ali|bu|quick]')
-    .description('构建[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用]');
+    .command('build:[wx|ali|bu|quick|tt]')
+    .description('构建[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用 | 头条小程序]');
 
 program.parse(process.argv);
 if (program.args.length === 0) program.help();
@@ -62,6 +62,7 @@ if (!config[buildType]) {
     console.log(chalk.green(`2.百度智能小程序:    nanachi ${type[0]}:bu`));
     console.log(chalk.green(`3.支付宝小程序:      nanachi ${type[0]}:ali`));
     console.log(chalk.green(`4.快应用:            nanachi ${type[0]}:quick`));
+    console.log(chalk.green(`t.头条小程序:          nanachi ${type[0]}:tt`));
     process.exit(1);
 }
 

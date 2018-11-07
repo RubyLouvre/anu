@@ -480,7 +480,14 @@ module.exports = {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
             let bag = modules.importComponents[nodeName];
-
+            if(!bag){
+                var oldName = nodeName;
+                //button --> Button
+                nodeName = helpers.nodeName(astPath, modules) || oldName;
+                if(oldName !== oldName){
+                    bag = modules.importComponents[nodeName];
+                }
+            }
             if (bag) {
                 deps[nodeName] ||
                     (deps[nodeName] = {

@@ -1,45 +1,102 @@
 import React from '@react';
 import './index.scss';
+import Button from '@components/Button/index';
+/*eslint-disable*/
 class P extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            defaultSize: 'default',
-            primarySize: 'default',
-            warnSize: 'default',
-            disabled: false,
-            plain: false,
-            loading: false
-        };
-    }
+  constructor() {
+    super();
+    this.state = {
+      defaultSize: 'default',
+      primarySize: 'default',
+      warnSize: 'default',
+      disabled: false,
+      plain: false,
+      loading: false
+    };
+  }
 
-    setDisabled() {
-        this.setState({
-            disabled: !this.state.disabled
-        });
-    }
+  setDisabled() {
+    console.log('disabled');
+    this.setState({
+      disabled: !this.state.disabled
+    });
+  }
 
-    setPlain() {
-        this.setState({
-            plain: !this.state.plain
-        });
-    }
+  setPlain() {
+    this.setState({
+      plain: !this.state.plain
+    });
+  }
 
-    setLoading() {
-        this.setState({
-            loading: !this.state.loading
-        });
-    }
+  setLoading() {
+    this.setState({
+      loading: !this.state.loading
+    });
+  }
 
-    onGotUserInfo(e) {
-        // eslint-disable-next-line
-        console.log(e);
-    }
+  onGotUserInfo(e) {
+    // eslint-disable-next-line
+    console.log(e);
+  }
 
-    render() {
-        return (
-            <div class="container button-wrapper">
-                <button
+  click() {
+    console.log(11111);
+  }
+  render() {
+    return (
+      <div class="container button-wrapper col">
+        <div class="item">
+          <Button
+            class="item"
+            type="default"
+            loading={this.state.loading}
+            disabled={this.state.disabled}
+            plain={this.state.plain}
+          >
+            default
+          </Button>
+        </div>
+        <div class="item">
+          <Button
+            class="item"
+            type="primary"
+            size="mini"
+            loading={this.state.loading}
+            disabled={this.state.disabled}
+            plain={this.state.plain}
+          >
+            primary
+          </Button>
+        </div>
+        <div class="item">
+          <Button class="item" type="warn"
+           disabled={this.state.disabled} 
+           plain={this.state.plain}
+           loading={this.state.loading}
+           >
+            warn
+          </Button>
+          <Button class="item" type="warn"
+           disabled={this.state.disabled} 
+           plain={this.state.plain}
+           >
+            warn
+          </Button>
+        </div>
+        <div class="item">
+          <Button click={this.setDisabled.bind(this)} >点击设置以上按钮disabled属性</Button>
+        </div>
+        <div class="item">
+          <Button click={this.setPlain.bind(this)}>点击设置以上按钮plain属性</Button>
+        </div>
+        <div class="item">
+          <Button click={this.setLoading.bind(this)}>点击设置以上按钮loading属性</Button>
+        </div>
+        <div class="item">
+          <input value="xxxxx" color="rgba(1,0,0,1)" type="button"></input>
+        </div>
+
+        {/* <button
                     type="default"
                     size={this.state.defaultSize}
                     loading={this.state.loading}
@@ -88,10 +145,10 @@ class P extends React.Component {
                 >
                     获取用户信息
                 </button>
-                <button open-type="openSetting">打开授权设置页</button>
-            </div>
-        );
-    }
+                <button open-type="openSetting">打开授权设置页</button> */}
+      </div>
+    );
+  }
 }
 
 export default P;

@@ -93,6 +93,24 @@ let utils = {
             children
         );
     },
+    createNodeName(map, backup){
+        const buildType = config.buildType;
+        const patchComponents = config[buildType].patchComponents;
+        //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
+        return function(astPath, modules){
+            var orig = astPath.node.name.name;//button
+            var hasPatch = patchComponents[orig];
+            if (hasPatch) {
+                var newName = hasPatch.name;
+                astPath.node.name.name = newName; //{button: {name :'Button', href:''}}
+                modules.importComponents[newName] = {
+                    source: `/@components/${newName} /index`
+                };
+                return newName;
+            }
+            return  astPath.node.name.name = (map[orig] || backup);//div
+        };
+    },
     createAttribute(name, value) {
         return t.JSXAttribute(
             t.JSXIdentifier(name),
@@ -269,6 +287,7 @@ let utils = {
     async getReactLibPath() {
         let reactPath = '';
         let React = this.getReactLibName();
+        console.log('getReactLibPath', React);
         let srcPath = path.join(cwd, config.sourceDir, React);
         try {
             reactPath = nodeResolve.sync(srcPath, {
@@ -315,7 +334,8 @@ let utils = {
             ali: 'ReactAli.js',
             bu: 'ReactBu.js',
             quick: 'ReactQuick.js',
-            h5: 'ReactH5.js'
+            h5: 'ReactH5.js',
+            tt: 'ReactWX.js'
         };
     },
     getReactLibName() {

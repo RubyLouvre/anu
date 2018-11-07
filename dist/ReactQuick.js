@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-05
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-07
  * IE9+
  */
 
@@ -2287,6 +2287,12 @@ var registeredComponents = {};
 var currentPage = {
     isReady: false
 };
+function _getCurrentPages() {
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    if (typeof getCurrentPages === 'function') {
+        return getCurrentPages();
+    }
+}
 function getUUID() {
     return _uuid() + _uuid();
 }
@@ -2487,10 +2493,11 @@ function hyphen(target) {
     return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
 function transform(obj) {
-    return Object.keys(obj).map(function (item) {
-        var value = obj[item].toString();
-        return hyphen(item) + ': ' + value;
-    }).join(';');
+    var ret = {};
+    for (var i in obj) {
+        ret[hyphen(i)] = obj[i];
+    }
+    return ret;
 }
 function toStyle(obj, props, key) {
     if (props) {
@@ -2667,6 +2674,7 @@ var React = getWindow().React = {
     useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
+    getCurrentPages: _getCurrentPages,
     registerPage: registerPage,
     shareObject: shareObject,
     toStyle: toStyle,

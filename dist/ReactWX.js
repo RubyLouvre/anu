@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-05
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-07
  * IE9+
  */
 
@@ -2095,6 +2095,12 @@ var registeredComponents = {};
 var currentPage = {
     isReady: false
 };
+function _getCurrentPages() {
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    if (typeof getCurrentPages === 'function') {
+        return getCurrentPages();
+    }
+}
 function getUUID() {
     return _uuid() + _uuid();
 }
@@ -2428,7 +2434,7 @@ function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
-    return {
+    var config = {
         data: {
             props: {},
             state: {},
@@ -2463,6 +2469,8 @@ function registerComponent(type, name) {
             dispatchEvent: eventSystem.dispatchEvent
         }
     };
+    Object.assign(config, config.lifetimes);
+    return config;
 }
 
 var render$1 = Renderer$1.render;
@@ -2488,6 +2496,7 @@ var React = getWindow().React = {
     useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
+    getCurrentPages: _getCurrentPages,
     registerPage: registerPage,
     toStyle: toStyle,
     appType: 'wx'
@@ -2495,6 +2504,9 @@ var React = getWindow().React = {
 var apiContainer = {};
 if (typeof wx != 'undefined') {
     apiContainer = wx;
+} else if (typeof tt != 'undefined') {
+    apiContainer = tt;
+    React.appType = 'tt';
 }
 injectAPIs(React, apiContainer);
 

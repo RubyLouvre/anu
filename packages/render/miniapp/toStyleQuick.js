@@ -7,12 +7,11 @@ function hyphen(target) {
 }
 
 function transform(obj) {
-    return Object.keys(obj)
-        .map(item => {
-            let value = obj[item].toString();
-            return hyphen(item) + ': ' + value;
-        })
-        .join(';');
+    var ret = {};
+    for (var i in obj){
+        ret[hyphen(i)] = obj[i];
+    }
+    return ret;
 }
 
 export function toStyle(obj, props, key) {

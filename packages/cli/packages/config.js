@@ -22,9 +22,19 @@ module.exports = {
         patchComponents: {}
     },
     quick: {
-        libName: 'ReactQuick',
+        libName: 'ReactWX',
         jsExt: 'ux',
         helpers: 'quickHelpers',
+        patchComponents: {
+            // navigator: url,
+        }
+    },
+    tt: {
+        libName: 'ReactWX',
+        jsExt: 'js',
+        styleExt: 'ttss',
+        xmlExt: 'ttml',
+        helpers: 'ttHelpers',
         patchComponents: {
             // navigator: url,
         }

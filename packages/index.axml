@@ -1,0 +1,1 @@
+<web-view src="{{state.src}}" id="aaaa"></web-view>

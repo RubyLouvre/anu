@@ -1,150 +1,272 @@
 import React from '@react';
 import './index.scss';
-// 事件
 /* eslint-disable */
+function alert(msg) {
+  React.api.showModal({
+    title: '',
+    content: msg,
+    showCancel: false,
+    confirmText: '确定'
+  })
+} 
+// 事件
 class Express extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            text: 'page3'
-        };
-    }
+  constructor() {
+    super();
+    this.state = {
+      text: 'page3',
+      img: []
+    };
+  }
   config = {
-      navigationBarTextStyle: '#fff',
-      navigationBarBackgroundColor: '#0088a4',
-      navigationBarTitleText: 'API',
-      'background-color': '#eeeeee',
-      backgroundTextStyle: 'light'
+    navigationBarTextStyle: '#fff',
+    navigationBarBackgroundColor: '#0088a4',
+    navigationBarTitleText: 'API',
+    'background-color': '#eeeeee',
+    backgroundTextStyle: 'light'
   };
 
   componentDidMount() {}
 
   click() {
-      
-      console.log(111);
+    console.log(111);
   }
 
   async showModal() {
-      React.api.showModal({
-          title: '我是一个title',
-          content: '内容是啥',
-          cancelText: '取消',
-          confirmText: '确定',
-          success: function (result) {
-              console.log('result', result);
-          }
-      });
-    
+    React.api.showModal({
+      title: '我是一个title',
+      content: '内容是啥',
+      cancelText: '取消',
+      confirmText: '确定',
+      success: function(result) {
+        console.log('result', result);
+      }
+    });
   }
   showContextMenu() {
-      React.api.showActionSheet({
-          itemList: ['item1', 'item2', 'item3', 'item4'],
-          itemColor: '#ff33ff',
-          success: function(data) {
-              console.log('handling success', data);
-          },
-          cancel: function() {
-              console.log('handling cancel');
-          },
-          fail: function(data, code) {
-              console.log(`handling fail, code = ${code}`);
-          }
-      });
+    
+    React.api.showActionSheet({
+      itemList: ['item1', 'item2', 'item3', 'item4'],
+      itemColor: '#ff33ff',
+      success: function(data) {
+        alert(`handling success, ${JSON.stringify(data)}`);
+       
+      },
+      cancel: function() {
+        alert('handling cancel');
+      },
+      fail: function(data, code) {
+        alert(`handling fail, code = ${code}`);
+      }
+    });
   }
   vibrator() {
-      console.log('vibrator');
-      React.api.vibrateLong();
+    console.log('vibrator');
+    React.api.vibrateLong({
+      success: () => {
+        alert('震动起来了');
+      }
+    });
   }
+  
   share() {
-     
-      console.log('share');
-      share.share({
-          type: 'text/html',
-          data: '<b>bold</b>',
-          success: function(data) {
-              console.log('handling success');
-          },
-          fail: function(data, code) {
-              console.log(`handling fail, code = ${code}`);
-          }
+    console.log('share');
+
+    if(process.env.ANU_ENV == 'quick') {
+      React.api.share({
+        type: 'text/html',
+        data: '<b>bold</b>',
+        success: function(data) {
+          console.log('handling success');
+        },
+        fail: function(data, code) {
+          console.log(`handling fail, code = ${code}`);
+        }
       });
+    }
+    
   }
   upload() {
-      console.log('upload');
-      media.pickImage({
+    console.log('upload');
+    React.api.chooseImage({
+      success: function(data) {
+        console.log(`handling success: ${data.uri}`);
+        React.api.uploadFile({
+          url: 'http://yapi.beta.qunar.com/mock/291/aaaaa',
+          filePath: data.uri,
+          name: 'file1',
+          formData: {
+            user: 'test'
+          },
           success: function(data) {
-              console.log(`handling success: ${data.uri}`);
-              React.api.uploadFile({
-                  url: 'http://yapi.beta.qunar.com/mock/291/aaaaa',
-                  filePath: data.uri,
-                  name: 'file1',
-                  formData: {
-                      user: 'test'
-                  },
-                  success: function(data) {
-                      React.api.showModal({
-                          title: 'success'
-                      });
-                  },
-                  fail: function(data, code) {
-                      console.log(`handling fail, code = ${code}`);
-                      React.api.showModal({
-                          title: 'fail',
-                          content: `code = ${code}`
-                      });
-                  }
-              });
+            React.api.showModal({
+              title: 'success'
+            });
+          },
+          fail: function(data, code) {
+            console.log(`handling fail, code = ${code}`);
+            React.api.showModal({
+              title: 'fail',
+              content: `code = ${code}`
+            });
           }
-      });
+        });
+      }
+    });
   }
   request() {
-      React.api.request({
-          url: 'http://yapi.demo.qunar.com/mock/13807/unauth/account/register',
-          method: 'post',
-         
-          success: function(res) {
-              console.log(`the status code of the response: ${res.data}`);
-          },
-          fail: function(err) {
-              console.log(`handling fail, code = ${err}`);
-          }
-      });
+    React.api.request({
+      url: 'http://yapi.demo.qunar.com/mock/13807/unauth/account/register',
+      method: 'post',
+      success: function(res) {
+        alert(`the status code of the response: ${JSON.stringify(res.data)}`);
+      },
+      fail: function(err) {
+        alert(`handling fail, code = ${err}`);
+      }
+    });
   }
 
+  download() {
+    React.api.downloadFile({
+      url: 'https://yapi.ymfe.org/devops/index.html#%E7%A6%81%E6%AD%A2%E6%B3%A8%E5%86%8C',
+      success: function(data) {
+       alert(`handling success${data}`);
+      },
+      fail: function(data, code) {
+        alert(`handling fail, code = ${code}`);
+      }
+    });
+  }
+
+  scan() {
+    React.api.scanCode({
+      success: function(data) {
+        alert(`handling success: ${data.result}`);
+      },
+      fail: function(data, code) {
+        alert(`handling fail, code = ${code}`);
+      }
+    });
+  }
+
+
+
+  getSavedFileInfo() {
+    React.api.getSavedFileInfo({
+      filePath: 'internal://Users/qitmac000476/Documents/weixin/nanachi/_site/apis/file.html',
+      success: function(data) {
+        alert(`uri:${data.uri}, size: ${data.size}, createTime: ${data.createTime}`)
+      },
+      fail: function(data, code) {
+        alert(`handling fail, code = ${code}`);
+      }
+    });
+  }
+
+  gotoSome(url) {
+    console.log('url', url);
+    if (url) {
+      React.api.navigateTo({ url });
+    }
+  }
+
+  getLocation() {
+    React.api.getLocation({
+      success: function (data) {
+        alert(`handling success: longitude = ${data.longitude}, latitude = ${data.latitude}`)
+      },
+    })
+  }
+
+  getNetworkType() {
+    React.api.getNetworkType({
+      success: function (data) {
+        alert(`handling success: ${data.networkType}`)
+      }
+    })
+  }
+
+  getSystemInfo() {
+    React.api.getSystemInfo({
+      success: function (data) {
+        alert(`handling success: ${JSON.stringify(data)}`)
+      }
+    })
+  }
+
+  chooseImage() {
+    React.api.chooseImage({
+      count: 1,
+      success: res => {
+        this.setState({
+          img: res.tempFilePaths
+        })
+      }
+    })
+   }
+
   render() {
-      return (
-          <div class="page">
-              <div class="content col">
-                  <div onClick={this.showModal} class="item">
-                      <text>showModal</text>
-                  </div>
-                  <div onClick={this.showContextMenu} class="item">
-                      <text>显示上下文菜单</text>
-                  </div>
-                  <div onClick={this.show} class="item">
-                      <text>通知消息</text>
-                  </div>
-                  <div onClick={this.vibrator} class="item">
-                      <text>震动</text>
-                  </div>
-                  <div onClick={this.share} class="item">
-                      <text>分享</text>
-                  </div>
-                  <div onClick={this.upload} class="item">
-                      <text>文件上传</text>
-                  </div>
-                  <div onClick={this.download} class="item">
-                      <text>文件下载</text>
-                  </div>
-                  <div onClick={this.request} class="item">
-                      <text>数据请求</text>
-                  </div>
-                  <div onClick={this.scan} class="item">
-                      <text>扫一扫</text>
-                  </div>
-              </div>
+    return (
+      <div class="page">
+        <div class="content col">
+          <div onClick={this.showModal} class="item">
+            <text>showModal</text>
           </div>
-      );
+          <div onClick={this.showContextMenu} class="item">
+            <text>显示上下文菜单</text>
+          </div>
+          <div onClick={this.vibrator} class="item">
+            <text>震动</text>
+          </div>
+          <div onClick={this.upload} class="item">
+            <text>文件上传</text>
+          </div>
+          <div onClick={this.download} class="item">
+            <text>文件下载</text>
+          </div>
+          <div onClick={this.request} class="item">
+            <text>数据请求</text>
+          </div>
+          <div onClick={this.scan} class="item">
+            <text>扫一扫</text>
+          </div>
+          <div
+            onClick={this.gotoSome.bind(this, '../../../pages/demo/apis/storage/index')}
+            class="item"
+          >
+            <text>存储</text>
+          </div>
+          
+          <div onClick={this.getSavedFileInfo} class="item">
+            <text>获取本地文件</text>
+          </div>
+          <div
+            onClick={this.gotoSome.bind(this, '../../../pages/demo/apis/clipboard/index')}
+            class="item"
+          >
+            <text>剪切板</text>
+          </div>
+          <div onClick={this.getLocation} class="item">
+            <text>获取地理位置</text>
+          </div>
+          <div onClick={this.getNetworkType} class="item">
+            <text>获取网络类型</text>
+          </div>
+          <div onClick={this.getSystemInfo} class="item">
+            <text>获取系统信息</text>
+          </div>
+          <div onClick={this.chooseImage} class="item">
+            <text>选择图片</text>
+          </div>
+          {
+            this.state.img.map(function(item) {
+              return  <image src={item}/>
+            })
+          }
+        </div>
+      </div>
+    );
   }
 }
 export default Express;

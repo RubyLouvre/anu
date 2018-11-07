@@ -1,5 +1,7 @@
-let rword = /[^, ]+/g;
 
+const utils = require('../utils/index');
+
+let rword = /[^, ]+/g;
 let builtInStr =
     'block,scroll-view,swiper,swiper-item,movable-area,movable-view,cover-view,icon,rich-text,' +
     'progress,checkbox,picker,picker-view,radio,slider,switch,template,' +
@@ -9,12 +11,6 @@ let builtIn = {};
 builtInStr.replace(rword, function(el) {
     builtIn[el] = el;
 });
-//兼容小程序自定义组件
-function addCustomComponents(customComponents){
-    customComponents.forEach(function(el){
-        map[el] = el;
-    });
-}
 
 let map = Object.assign({}, builtIn);
 'view'.replace(rword, function(el) {
@@ -24,8 +20,5 @@ let map = Object.assign({}, builtIn);
     map[el] = 'span';
 });
 
-module.exports = function mapTagName(path, modules) {
-    var orig = path.node.name.name;
-    addCustomComponents(modules.customComponents);
-    path.node.name.name = map[orig] || 'view';
-};
+
+module.exports = utils.createNodeName(map, 'div');

@@ -1,11 +1,6 @@
 import React from  '@react';
 const noop = function(){};
 class Navigator extends React.Component{
-    constructor(props){
-        super();
-        props.className = props.class || '';
-        this.props = props;
-    }
     static defaultProps = {
         target: 'self',
         url: '',
@@ -23,7 +18,7 @@ class Navigator extends React.Component{
         });
     }
     render(){
-        return <div class={this.props.className} onTap={this.goPage.bind(this)}>{this.props.children}</div>;
+        return <div class={this.props.class} onTap={this.goPage.bind(this)}>{this.props.children}</div>;
     }
 
 }

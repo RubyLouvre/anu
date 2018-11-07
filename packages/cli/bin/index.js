@@ -23,12 +23,12 @@ program
 program.command('init <project-name>').description('初始化项目');
 
 program
-    .command('watch:[wx|ali|bu|quick]')
-    .description('监听[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用]');
+    .command('watch:[wx|ali|bu|quick|tt]')
+    .description('监听[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用 | 头条小程序]');
 
 program
-    .command('build:[wx|ali|bu|quick]')
-    .description('构建[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用]');
+    .command('build:[wx|ali|bu|quick|tt]')
+    .description('构建[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用 | 头条小程序]');
     
 
 program.parse(process.argv);
@@ -63,10 +63,14 @@ if (!config[buildType]) {
     let type = args[0].split(':');
     console.log(chalk.red('请检查命令是否正确'));
     console.log(chalk.green(`1.微信小程序:        mpreact ${type[0]}`));
-    console.log(chalk.green(`2.百度智能小程序:    mpreact ${type[0]}:bu`));
-    console.log(chalk.green(`3.支付宝小程序:      mpreact ${type[0]}:ali`));
+    console.log(chalk.green(`2.百度智能小程序:     mpreact ${type[0]}:bu`));
+    console.log(chalk.green(`3.支付宝小程序:       mpreact ${type[0]}:ali`));
     console.log(chalk.green(`4.快应用:            mpreact ${type[0]}:quick`));
+    console.log(chalk.green(`5.头条小程序:         mpreact ${type[0]}:tt`));
+
     process.exit(1);
+}else{
+    console.warn("mpreact "+ args[0]+" 命令已经废弃， 请改用nanachi "+ args[0])
 }
 
 process.env.ANU_ENV = buildType;
@@ -98,5 +102,5 @@ switch (command) {
         require('../packages/init')(args[1]);
         break;
     default:
-        console.log(chalk.green('初始化项目: mpreact init <project-name>'));
+        console.log(chalk.green('初始化项目: nanachi init <project-name>'));
 }
