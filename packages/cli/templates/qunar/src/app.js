@@ -25,7 +25,6 @@ import './pages/demo/native/video/index';
 import './pages/demo/native/camera/index';
 
 import './pages/demo/syntax/index/index';
-import './pages/demo/syntax/api/index';
 import './pages/demo/syntax/stateless/index';
 import './pages/demo/syntax/loop/index';
 import './pages/demo/syntax/loop2/index';

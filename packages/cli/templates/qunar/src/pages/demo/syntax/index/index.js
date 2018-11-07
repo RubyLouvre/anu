@@ -8,10 +8,6 @@ class Express extends React.Component {
             title: '语法相关',
             pages: [
                 {
-                    title: 'API',
-                    url: '/pages/demo/syntax/api/index'
-                },
-                {
                     title: '继承',
                     url: '/pages/demo/syntax/extend/index'
                 },
