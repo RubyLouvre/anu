@@ -80,14 +80,14 @@ class P extends React.Component {
             <div class='user-center'>
                 <div class='user-information row'>
                     <image src='https://s.qunarzz.com/wechatapp/common/images/my/unLogin.png' class='user-image' />
-                    <span class='user-name'>授权登录</span>
+                    <text class='user-name'>授权登录</text>
                 </div>
-                <div onTap={this.fun_tip.bind(this)} class='qunar-information row'>
-                    <span class="font-27">关注公众号</span>
+                <div class='qunar-information row'>
+                    <div class="font-27">关注公众号</div>
                     <div class='right-content'>
-                        <span class='right-message font-27'>去关注</span>
+                        <text class='right-message font-27'>去关注</text>
                         <image src='../../../assets/image/arrow.png' />
-                    </div> 
+                    </div>
                 </div>
                 {
                     this.state.menu.map(function(item,index) {
