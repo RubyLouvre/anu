@@ -4,10 +4,10 @@ const utils = require('../utils/index');
 const chalk = require('chalk');
 const { createElement, createAttribute } = utils;
 /**
- * 本模板将array.map(fn)变成<block a:for="{{}}"></block>
- * 将if(xxx){}变成<block a:if="{{xxx}}"></block>
- * 将xxx? aaa: bbb变成<block a:if="aaa">aaa</block>
- * <block a:if="!xxx">bbb</block>
+ * 本模板将array.map(fn)变成<block tt:for="{{}}"></block>
+ * 将if(xxx){}变成<block tt:if="{{xxx}}"></block>
+ * 将xxx? aatt: bbb变成<block tt:if="aaa">aaa</block>
+ * <block tt:if="!xxx">bbb</block>
  */
 const rexpr = /(^|[^\w.])this\./g;
 
@@ -53,14 +53,14 @@ function logic(expr, modules) {
 function condition(test, consequent, alternate, modules) {
     var ifNode = createElement(
         'block',
-        [createAttribute('a:if', parseExpr(test))],
+        [createAttribute('tt:if', parseExpr(test))],
         logic(consequent, modules) 
     );
     // null就不用创建一个<block>元素了，&&表达式也不需要创建<block>元素
     if (alternate && alternate.type !== 'NullLiteral') {
         var elseNode = createElement(
             'block',
-            [createAttribute('a:else', 'true')],
+            [createAttribute('tt:else', 'true')],
             logic(alternate, modules)
         );
         return [ifNode, elseNode];
@@ -72,15 +72,15 @@ function condition(test, consequent, alternate, modules) {
 function loop(callee, fn, modules) {
     const attrs = [];
 
-    attrs.push(createAttribute('a:for', parseExpr(callee.object)));
-    attrs.push(createAttribute('a:for-item', fn.params[0].name));
-    attrs.push(createAttribute('a:for-index', fn.params[1].name));
+    attrs.push(createAttribute('tt:for', parseExpr(callee.object)));
+    attrs.push(createAttribute('tt:for-item', fn.params[0].name));
+    attrs.push(createAttribute('tt:for-index', fn.params[1].name));
     if (modules.key) {
-        attrs.push(createAttribute('a:key', utils.genKey(modules.key)));
+        //  attrs.push(createAttribute('tt:key', utils.genKey(modules.key)));
 
         modules.key = null;
     } else {
-        attrs.push(createAttribute('a:key', '*this'));
+        // attrs.push(createAttribute('tt:key', '*this'));
         // console.log( fn.params[1].name);
     }
 

@@ -2434,7 +2434,7 @@ function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
-    return {
+    var config = {
         data: {
             props: {},
             state: {},
@@ -2469,6 +2469,8 @@ function registerComponent(type, name) {
             dispatchEvent: eventSystem.dispatchEvent
         }
     };
+    Object.assign(config, config.lifetimes);
+    return config;
 }
 
 var render$1 = Renderer$1.render;
@@ -2502,6 +2504,9 @@ var React = getWindow().React = {
 var apiContainer = {};
 if (typeof wx != 'undefined') {
     apiContainer = wx;
+} else if (typeof tt != 'undefined') {
+    apiContainer = tt;
+    React.appType = 'tt';
 }
 injectAPIs(React, apiContainer);
 

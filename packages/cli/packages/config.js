@@ -22,7 +22,7 @@ module.exports = {
         patchComponents: {}
     },
     quick: {
-        libName: 'ReactQuick',
+        libName: 'ReactWX',
         jsExt: 'ux',
         helpers: 'quickHelpers',
         patchComponents: {
@@ -30,7 +30,7 @@ module.exports = {
         }
     },
     tt: {
-        libName: 'ReactTt',
+        libName: 'ReactWX',
         jsExt: 'js',
         styleExt: 'ttss',
         xmlExt: 'ttml',
