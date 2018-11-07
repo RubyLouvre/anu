@@ -11,14 +11,14 @@ class Navigator extends React.Component{
         var method = this.props['open-type'];
         var hook = methodMap[method] || 'navigateTo';
         React.api[hook]({
-            uri: this.props.url,
+            url: this.props.url,
             success:   this.props.bindsuccess || noop,
             fail:this.props.bindfail || noop,
             complete: this.props.bindcomplete || noop
         });
     }
     render(){
-        return <div onTap={this.goPage.bind(this)}>{this.props.children}</div>;
+        return <div class={this.props.class} onTap={this.goPage.bind(this)}>{this.props.children}</div>;
     }
 
 }
