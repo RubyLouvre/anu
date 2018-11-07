@@ -31,6 +31,14 @@ export var aliApis = function(api) {
         setNavigationBarColor: function _(a) {
             return api.setNavigationBar(a);
         },
+
+        // 震动
+        vibrateLong: function _(a) {
+          return api.vibrate(a);
+        },
+        vibrateShort: function _(a) {
+          return api.vibrate(a);
+        },
         // 图片保存到本地
         saveImageToPhotosAlbum: function _(a) {
             a.url = a.filePath;
