@@ -67,6 +67,8 @@ if (!config[buildType]) {
     console.log(chalk.green(`3.支付宝小程序:      mpreact ${type[0]}:ali`));
     console.log(chalk.green(`4.快应用:            mpreact ${type[0]}:quick`));
     process.exit(1);
+}else{
+    console.warn("mpreact "+ args[0]+" 命令已经废弃， 请改用nanachi "+ args[0])
 }
 
 process.env.ANU_ENV = buildType;
@@ -98,5 +100,5 @@ switch (command) {
         require('../packages/init')(args[1]);
         break;
     default:
-        console.log(chalk.green('初始化项目: mpreact init <project-name>'));
+        console.log(chalk.green('初始化项目: nanachi init <project-name>'));
 }

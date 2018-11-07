@@ -107,15 +107,15 @@ const writeDir = appName => {
         )}\n`
     );
 
-    console.log(chalk.green('mpreact watch'));
+    console.log(chalk.green('nanachi watch'));
     console.log(`  实时构建项目, \n
-                   \t或使用mpreact watch:ali 构建支付宝小程序\n
-                   \t或使用mpreact watch:bu 构建百度智能小程序`);
+                   \t或使用nanachi watch:ali 构建支付宝小程序\n
+                   \t或使用nanachi watch:bu 构建百度智能小程序`);
     console.log();
-    console.log(chalk.green('mpreact build'));
+    console.log(chalk.green('nanachi build'));
     console.log(`  构建项目(构建出错的情况下，修复后需要强制全量构建), \n
-                   \t或使用mpreact build:ali 构建支付宝小程序\n
-                   \t或使用mpreact build:bu 构建百度智能小程序`);
+                   \t或使用nanachi build:ali 构建支付宝小程序\n
+                   \t或使用nanachi build:bu 构建百度智能小程序`);
     console.log();
     console.log(
         chalk.magenta(
@@ -125,7 +125,7 @@ const writeDir = appName => {
     );
     console.log();
     console.log(`  cd ${appName} && npm i `);
-    console.log('  mpreact watch');
+    console.log('  nanachi watch');
     console.log();
 };
 
