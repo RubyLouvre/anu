@@ -14,6 +14,6 @@ const throwError = () => {
     );
 };
 
-const validateMargin = R.ifElse(containsAuto, throwError, R.F);
+const validateMargin = R.when(containsAuto, throwError);
 
 module.exports = validateMargin;
