@@ -1,11 +1,7 @@
 const fetch = require('@system.fetch');
 const JSON_TYPE_STRING = 'json';
+import {runFunction} from '../utils';
 
-function runFunction(fn, ...args) {
-  if (typeof fn == 'function') {
-    fn.call(null, ...args);
-  }
-}
  
  // 网络请求
  function request({

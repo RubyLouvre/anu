@@ -7,6 +7,8 @@ import { setClipboardData, getClipboardData } from './quickApis/clipboard.js';
 import { getNetworkType, onNetworkStatusChange } from './quickApis/network.js';
 import { getSystemInfo } from './quickApis/device.js';
 import { chooseImage } from './quickApis/media.js';
+import {getCurrentPage} from './wxRender';
+import {runFunction } from './utils';
 
 
 function createRouter(name) {
@@ -139,6 +141,20 @@ export var api = {
     getNetworkType,
     onNetworkStatusChange,
     getSystemInfo,
-    chooseImage
+    chooseImage,
+    setNavigationBarTitle({title, success, fail, complete}) {
+      
+      try {
+        let currentPage = getCurrentPage();
+        currentPage.wx.$page.setTitleBar({ text: title });;
+        
+        runFunction(success);
+      } catch (error) {
+        runFunction(fail, error);
+      } finally {
+        runFunction(complete);
+      }
+      
+    }
 };
 
