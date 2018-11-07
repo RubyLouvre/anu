@@ -1,6 +1,6 @@
 import React from '@react';
 import './index.scss';
-// eslint-disable-next-line
+/*eslint-disable*/
 
 class P extends React.Component {
     constructor() {
@@ -9,11 +9,11 @@ class P extends React.Component {
             indexPageIcons: [
                 {
                     class: 'radius-top-left',
-                    bizTitle: '基础内容',
+                    bizTitle: 'API',
                     logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/hotel2.png',
                     showSpecialLogo: false,
                     specialText: '',
-                    url: '../../pages/demo/base/index/index'
+                    url: '../../pages/demo/apis/index'
                 },
                 {
                     class: '',
@@ -54,7 +54,7 @@ class P extends React.Component {
                     logoSrc: 'https://s.qunarzz.com/wechatapp/home/business/ship1.png',
                     showSpecialLogo: false,
                     specialText: '',
-                    url: '../../pages/demo/boat/index/index'
+                    url: '../../pages/demo/boat/index'
                 },
                 {
                     class: 'radius-bottom-left',
@@ -135,13 +135,13 @@ class P extends React.Component {
       navigationBarTextStyle: 'white'
   };
   gotoSome(url) {
+      console.log('url', url);
       if (url){
           React.api.navigateTo({ url });
       } else {
           this.fun_tip();
       }
   }
-
   componentDidMount() {
       // eslint-disable-next-line
     console.log('page did mount!');

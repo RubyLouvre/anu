@@ -1,4 +1,5 @@
 import React from '@react';
+/*eslint-disable*/
 class P extends React.Component {
     constructor() {
         super();
