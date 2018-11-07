@@ -14,6 +14,8 @@ const utils = require('../utils');
 const quickTextContainer = {
     text: 1,
     a: 1,
+    span:1,
+    label: 1,
     option: 1
 };
 /**
