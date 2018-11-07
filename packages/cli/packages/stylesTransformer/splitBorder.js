@@ -1,6 +1,8 @@
 const R = require('ramda');
 const { splitBySpaces, pickValue } = require('./shared');
 
+const replaceComma = R.replace(/(,\s+)/g, ',');
+
 const directionPrefix = direction => `border-${direction}`;
 
 const generatePrefixes = R.curry((direction, property) =>
@@ -19,6 +21,7 @@ const composeDeclarations = declaration =>
 
 const composeValues = R.compose(
     splitBySpaces,
+    replaceComma,
     pickValue
 );
 
