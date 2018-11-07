@@ -1,6 +1,6 @@
 import React from '@react';
 import './index.scss';
-/* eslint-disable */
+/*eslint-disable*/
 class P extends React.Component {
     constructor() {
         super();
@@ -33,9 +33,9 @@ class P extends React.Component {
     }
 
     gotoSome(url) {
-        if (url) {
-            React.api.navigateTo({ url });
-        }
+      if (url) {
+        React.api.navigateTo({ url });
+      }
     }
     render() {
         return (
