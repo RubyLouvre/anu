@@ -12,7 +12,7 @@ const buildType = config['buildType'];
 const quickFiles = require('./quickFiles');
 const quickConfig = require('./quickHelpers/config');
 /* eslint no-console: 0 */
-const helpers = require(`./${config[buildType].helpers}`);
+const helpers = require(`./${buildType}Helpers/index`);
 //微信的文本节点，需要处理换行符
 const inlineElement = {
     text: 1,
@@ -232,9 +232,8 @@ module.exports = {
                 delete modules["appRoute"];
             }
 
-            if (buildType == "ali") {
-                helpers.configName(json, modules.componentType);
-            }
+            helpers.configName(json, modules.componentType);
+
             var keys = Object.keys(modules.usedComponents),
                 usings;
             if (keys.length) {
@@ -249,7 +248,7 @@ module.exports = {
 
                 if (obj) {
                     quickConfig(json, modules, queue, utils);
-                    obj.config = Object.assign({}, json)
+                    obj.config = Object.assign({}, json);
                 }
                 delete json.usingComponents;
                 if (Object.keys(json).length) {
@@ -480,11 +479,11 @@ module.exports = {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
             let bag = modules.importComponents[nodeName];
-            if(!bag){
+            if (!bag) {
                 var oldName = nodeName;
                 //button --> Button
                 nodeName = helpers.nodeName(astPath, modules) || oldName;
-                if(oldName !== oldName){
+                if (oldName !== oldName) {
                     bag = modules.importComponents[nodeName];
                 }
             }
