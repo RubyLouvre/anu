@@ -166,6 +166,8 @@ class Parser {
         });
         this.transform();
         this.copyAssets();
+        this.copyProjectConfig();
+        
         
     }
     filterNpmModule(resolvedIds) {
@@ -260,6 +262,18 @@ class Parser {
             }
         });
         
+    }
+    copyProjectConfig() {
+        //copy project.config.json
+        if ( ['ali', 'bu', 'quick'].includes( config.buildType) ) return;
+        let dist = path.join(cwd, config.buildDir, 'project.config.json');
+        let src = path.join(cwd, config.sourceDir, 'project.config.json');
+        fs.ensureFileSync(dist);
+        fs.copyFile( src, dist, (err)=>{
+            if (err) {
+                console.log(err);
+            }
+        });
     }
     watching() {
         let watchDir = path.dirname(this.entry);

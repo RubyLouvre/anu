@@ -29,6 +29,17 @@ const init = appName => {
         });
 };
 
+const projectConfigJson = {
+    'appid': 'touristappid',
+    'setting': {
+        'urlCheck': true,
+        'es6': true,
+        'postcss': true,
+        'minified': true,
+        'newFeature': true
+    }
+}
+
 const checkNameIsOk = appName => {
     return new Promise(resolve => {
         let absoluteAppNamePath = path.resolve(appName);
@@ -100,6 +111,18 @@ const writeDir = appName => {
         fs.copySync(src, dist);
         fs.copySync(pkg, distPkg);
     });
+
+    //写入project.config.json
+    let pathLevel = appName.split(path.sep);
+    let projectname = pathLevel[pathLevel.length-1];
+    projectConfigJson['projectname'] = projectname;
+    let projectConfigJsonDist = path.join( appName, config.sourceDir , 'project.config.json');
+    fs.ensureFileSync( projectConfigJsonDist );
+    fs.writeFile(projectConfigJsonDist, JSON.stringify(projectConfigJson, null, 4), (err)=>{
+        if (err) {
+            console.log(err)
+        }
+    })
 
     console.log(
         `\n项目 ${chalk.green(appName)} 创建成功, 路径: ${chalk.green(
