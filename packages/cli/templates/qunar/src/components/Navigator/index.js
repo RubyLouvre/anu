@@ -2,10 +2,10 @@ import React from  '@react';
 const noop = function(){};
 class Navigator extends React.Component{
     constructor(props){
-       super(props);
-       this.state = {
-           title: props.children
-       };
+        super(props);
+        this.state = {
+            title: props.children
+        };
     }
     static defaultProps = {
         target: 'self',
