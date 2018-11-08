@@ -2459,29 +2459,27 @@ function registerComponent(type, name) {
             context: {}
         },
         lifetimes: {
-            created: function created() {
+            attached: function attached() {
                 usingComponents[name] = type;
                 var instance = reactInstances.shift();
                 if (instance) {
-                    console.log("created时为", name, "添加wx");
+                    console.log("attached时为", name, "添加wx");
                     instance.wx = this;
                     this.reactInstance = instance;
+                    this.isUpdate = true;
+                    updateMiniApp(this.reactInstance);
                 } else {
-                    console.log("created时为", name, "没有对应react实例");
+                    console.log("attached时为", name, "没有对应react实例");
                     wxInstances.push(this);
                 }
             },
-            attached: function attached() {
-                if (this.reactInstance) {
-                    updateMiniApp(this.reactInstance);
-                    console.log("attached时更新", name);
-                } else {
-                    console.log("attached时无法更新", name);
-                }
-            },
             detached: function detached() {
+                var t = this.reactInstance;
+                if (t) {
+                    t.wx = null;
+                    this.reactInstance = null;
+                }
                 console.log('detached...', name);
-                this.reactInstance = null;
             }
         },
         methods: {
