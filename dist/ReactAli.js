@@ -2470,17 +2470,40 @@ function toStyle(obj, props, key) {
 }
 
 function registerComponent(type, name) {
-    type.ali = true;
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    type.wxInstances = [];
+    var wxInstances = type.wxInstances = [];
+    var hasInit = false;
     return {
         data: {
             props: {},
             state: {},
             context: {}
         },
+        onInit: function onInit() {
+            hasInit = true;
+        },
+        onMount: function onMount() {
+            usingComponents[name] = type;
+            var instance = reactInstances.shift();
+            if (instance) {
+                console.log("onMount时为", name, "添加wx");
+                instance.wx = this;
+                this.reactInstance = instance;
+            } else {
+                wxInstances.push(this);
+            }
+            if (this.reactInstance) {
+                updateMiniApp(this.reactInstance);
+            }
+        },
+        onUnmount: function onUnmount() {
+            this.reactInstance = null;
+        },
         didMount: function didMount() {
+            if (hasInit) {
+                return;
+            }
             usingComponents[name] = type;
             var uid = this.props.instanceUid;
             for (var i = reactInstances.length - 1; i >= 0; i--) {
@@ -2495,6 +2518,9 @@ function registerComponent(type, name) {
             }
         },
         didUnmount: function didUnmount() {
+            if (hasInit) {
+                return;
+            }
             this.reactInstance = null;
         },
         methods: {
