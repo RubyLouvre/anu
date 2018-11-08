@@ -1,5 +1,6 @@
 import { hasOwnProperty } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
+import { noop } from 'react-core/util';
 
 function _uuid() {
     return (Math.random() + '').slice(-4);
@@ -65,6 +66,26 @@ export function runFunction(fn, ...args) {
     if (typeof fn == 'function') {
         fn.call(null, ...args);
     }
+}
+
+// 计算参数中有多少个函数
+function functionCount(...fns) {
+  return fns
+    .map(fn => typeof fn === 'function')
+    .reduce((count, fn) => count + fn, 0);
+}
+
+export function apiRunner(arg = {}, apiCallback, apiPromise) {
+  const { success, fail, complete } = arg;
+  // 如果提供了回调函数则使用回调函数形式调用 API
+  // 否则返回一个 Promise
+  const handler = functionCount(success, fail, complete)
+    ? apiCallback
+    : apiPromise;
+  arg.success = arg.success || noop;
+  arg.fail = arg.fail || noop;
+  arg.complete = arg.complete || noop;
+  return handler(arg);
 }
 
 
