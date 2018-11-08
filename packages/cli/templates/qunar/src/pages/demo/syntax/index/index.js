@@ -56,12 +56,16 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/renderprops/index'
                 },
                 {
-                    title: 'Redux',
-                    url: '/pages/demo/syntax/redux/index'
+                    title: '一个页面多个相同组件',
+                    url: '/pages/demo/syntax/loop5/index'
                 },
                 {
-                    title: 'Redux只是显示数据',
-                    url: '/pages/demo/syntax/redux2/index'
+                    title: '一个页面多个相同组件(测试跳转)',
+                    url: '/pages/demo/syntax/loop6/index'
+                },
+                {
+                    title: 'webview',
+                    url: '/pages/demo/syntax/webview/index'
                 },
                 {
                     title: '数据请求',

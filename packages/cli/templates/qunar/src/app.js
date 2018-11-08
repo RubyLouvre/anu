@@ -30,6 +30,10 @@ import './pages/demo/syntax/loop/index';
 import './pages/demo/syntax/loop2/index';
 import './pages/demo/syntax/loop3/index';
 import './pages/demo/syntax/loop4/index';
+import './pages/demo/syntax/loop5/index';
+import './pages/demo/syntax/loop6/index';
+import './pages/demo/syntax/webview/index';
+
 
 import './pages/demo/syntax/extend/index';
 import './pages/demo/syntax/inlineStyle/index';

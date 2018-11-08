@@ -1,6 +1,5 @@
 import React from '@react';
 import './index.scss';
-import Button from '@components/Button/index';
 /*eslint-disable*/
 class P extends React.Component {
   constructor() {
@@ -46,7 +45,7 @@ class P extends React.Component {
     return (
       <div class="container button-wrapper col">
         <div class="item">
-          <Button
+          <button
             class="item"
             type="default"
             loading={this.state.loading}
@@ -54,10 +53,10 @@ class P extends React.Component {
             plain={this.state.plain}
           >
             default
-          </Button>
+          </button>
         </div>
         <div class="item">
-          <Button
+          <button
             class="item"
             type="primary"
             size="mini"
@@ -66,31 +65,31 @@ class P extends React.Component {
             plain={this.state.plain}
           >
             primary
-          </Button>
+          </button>
         </div>
         <div class="item">
-          <Button class="item" type="warn"
+          <button class="item" type="warn"
            disabled={this.state.disabled} 
            plain={this.state.plain}
            loading={this.state.loading}
            >
             warn
-          </Button>
-          <Button class="item" type="warn"
+          </button>
+          <button class="item" type="warn"
            disabled={this.state.disabled} 
            plain={this.state.plain}
            >
             warn
-          </Button>
+          </button>
         </div>
         <div class="item">
-          <Button click={this.setDisabled.bind(this)} >点击设置以上按钮disabled属性</Button>
+          <button click={this.setDisabled.bind(this)} >点击设置以上按钮disabled属性</button>
         </div>
         <div class="item">
-          <Button click={this.setPlain.bind(this)}>点击设置以上按钮plain属性</Button>
+          <button click={this.setPlain.bind(this)}>点击设置以上按钮plain属性</button>
         </div>
         <div class="item">
-          <Button click={this.setLoading.bind(this)}>点击设置以上按钮loading属性</Button>
+          <button click={this.setLoading.bind(this)}>点击设置以上按钮loading属性</button>
         </div>
         <div class="item">
           <input value="xxxxx" color="rgba(1,0,0,1)" type="button"></input>
@@ -115,9 +114,7 @@ class P extends React.Component {
                     plain={this.state.plain}
                     disabled={this.state.disabled}
                     bindtap="primary"
-                >
-                    {' '}
-                    primary{' '}
+                >primary
                 </button>
                 <button
                     type="warn"
@@ -126,9 +123,7 @@ class P extends React.Component {
                     plain={this.state.plain}
                     disabled={this.state.disabled}
                     bindtap="warn"
-                >
-                    {' '}
-                    warn{' '}
+                >warn
                 </button>
                 <button onTap={this.setDisabled}>
                     点击设置以上按钮disabled属性
