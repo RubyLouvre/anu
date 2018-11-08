@@ -38,6 +38,7 @@ export function registerComponent(type, name) {
                 }
             },
             detached() {
+                console.log('detached...',name);//eslint-disabled-line
                 this.reactInstance = null;
             }
         },

@@ -41,6 +41,7 @@ export function onReady() {
 
 
 export function onUnload() {
+   
     for (let i in usingComponents) {
         let a = usingComponents[i];
         if (a.reactInstances.length) {
@@ -52,8 +53,14 @@ export function onUnload() {
         delete usingComponents[i];
     }
     let root = this.reactContainer;
+    
     let container = root._reactInternalFiber;
     let instance = this.reactInstance;
+    if (!instance){
+        console.log('onUnload的this没有React实例');//eslint-disable-line
+        return;
+    }
+    console.log('onUnload...');//eslint-disable-line
     let hook = instance.componentWillUnmount;
     if (isFn(hook)) {
         hook.call(instance);

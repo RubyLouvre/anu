@@ -2431,6 +2431,11 @@ function onUnload() {
     var root = this.reactContainer;
     var container = root._reactInternalFiber;
     var instance = this.reactInstance;
+    if (!instance) {
+        console.log('onUnload的this没有React实例');
+        return;
+    }
+    console.log('onUnload...');
     var hook = instance.componentWillUnmount;
     if (isFn(hook)) {
         hook.call(instance);
