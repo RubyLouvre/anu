@@ -57,9 +57,6 @@ exports.exit = function (astPath, type, componentName, modules) {
             }
             var quickFile = quickFiles[modules.sourcePath];
             if (quickFile) {
-                if (quickFile.template) {
-                    return;
-                }
                 if (modules.componentType === 'Page') {
                     quickFile.template = `
 <import name="anu-page-wrapper" src="${path.relative(modules.sourcePath.replace('/index.js', ''), wrapperPath)}"></import>
