@@ -30,7 +30,9 @@ import './pages/demo/syntax/loop/index';
 import './pages/demo/syntax/loop2/index';
 import './pages/demo/syntax/loop3/index';
 import './pages/demo/syntax/loop4/index';
-
+import './pages/demo/syntax/loop5/index';
+import './pages/demo/syntax/loop6/index';
+import './pages/demo/syntax/webview/index';
 import './pages/demo/syntax/extend/index';
 import './pages/demo/syntax/inlineStyle/index';
 import './pages/demo/syntax/if/index';
@@ -102,8 +104,4 @@ class Demo extends React.Component {
     }
     
 }
-//这样写相当于为每一个页面组件的外面都加上一个<Provider />，如果你想在页面上用到store里的数据，
-//需要用react-redux的connect方法包一下，详见pages/demo/syntax/redux
-//React.applyAppStore(store);
-// eslint-disable-next-line
-export default App(new Demo());
+export default App(new Demo());//eslint-disable-line
