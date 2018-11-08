@@ -1,11 +1,13 @@
+const path = require('path');
+const getPatchComponentDir = (componentName)=>{
+    return path.join(__dirname, 'patchComponents', componentName);
+};
 module.exports = {
     wx: {
         libName: 'ReactWX',
         styleExt: 'wxss',
         xmlExt: 'wxml',
-        helpers: 'wxHelpers',
-        patchComponents: {
-        }
+        helpers: 'wxHelpers'
     },
     ali: {
         libName: 'ReactAli',
@@ -26,7 +28,18 @@ module.exports = {
         jsExt: 'ux',
         helpers: 'quickHelpers',
         patchComponents: {
-            // navigator: url,
+            Button: {
+                name: 'Button',
+                href: getPatchComponentDir('Button') //获得patchComponent路径
+            },
+            Radio: {
+                name: 'Radio',
+                href: getPatchComponentDir('Radio')
+            },
+            Checkbox: {
+                name: 'Checkbox',
+                href: getPatchComponentDir('Checkbox')
+            }
         }
     },
     tt: {
@@ -35,9 +48,7 @@ module.exports = {
         styleExt: 'ttss',
         xmlExt: 'ttml',
         helpers: 'ttHelpers',
-        patchComponents: {
-            // navigator: url,
-        }
+        patchComponents: {}
     },
     buildType: 'wx',    //构建类型默认微信小程序
     buildDir: 'dist',   //非快应用项目默认构建目录为dist
