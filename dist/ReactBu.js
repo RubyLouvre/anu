@@ -1,5 +1,5 @@
 /**
- * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-07
+ * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-08
  * IE9+
  */
 
@@ -2316,6 +2316,7 @@ function remove(children, node) {
     }
 }
 
+var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
     return target.replace(rhyphen, '$1-$2').toLowerCase();
@@ -2332,7 +2333,11 @@ function transform(obj) {
 }
 function toStyle(obj, props, key) {
     if (props) {
-        var str = transform.call(this, obj);
+        if ((typeof obj === 'undefined' ? 'undefined' : _typeof$2(obj)) == 'object') {
+            var str = transform.call(this, obj);
+        } else {
+            str = obj;
+        }
         props[key] = str;
     } else {
         console.warn('toStyle生成样式失败，key为', key);
