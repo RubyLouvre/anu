@@ -19,7 +19,7 @@ class P extends React.Component {
         
         React.getApp().globalData.dateSelect = new Date();
     }
-    componentDidShow() {
+    onShow() {
         let week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
        
         let date = React.getApp().globalData.dateSelect;

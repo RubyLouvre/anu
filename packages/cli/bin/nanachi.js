@@ -62,7 +62,7 @@ if (!config[buildType]) {
     console.log(chalk.green(`2.百度智能小程序:    nanachi ${type[0]}:bu`));
     console.log(chalk.green(`3.支付宝小程序:      nanachi ${type[0]}:ali`));
     console.log(chalk.green(`4.快应用:            nanachi ${type[0]}:quick`));
-    console.log(chalk.green(`t.头条小程序:          nanachi ${type[0]}:tt`));
+    console.log(chalk.green(`5.头条小程序:          nanachi ${type[0]}:tt`));
     process.exit(1);
 }
 

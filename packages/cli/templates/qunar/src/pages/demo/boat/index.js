@@ -15,7 +15,7 @@ class P extends React.Component {
     componentWillMount() {
         React.getApp().globalData.dateSelect = new Date();
     }
-    componentDidShow() {
+    onShow() {
         let date = React.getApp().globalData.dateSelect;
         date = (date.getMonth()+1) + '月' + date.getDate() + '日 ' + WEEK[date.getDay()];
         this.setState({date});

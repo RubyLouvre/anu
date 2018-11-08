@@ -38,7 +38,7 @@ const projectConfigJson = {
         'minified': true,
         'newFeature': true
     }
-}
+};
 
 const checkNameIsOk = appName => {
     return new Promise(resolve => {
@@ -120,9 +120,9 @@ const writeDir = appName => {
     fs.ensureFileSync( projectConfigJsonDist );
     fs.writeFile(projectConfigJsonDist, JSON.stringify(projectConfigJson, null, 4), (err)=>{
         if (err) {
-            console.log(err)
+            console.log(err);
         }
-    })
+    });
 
     console.log(
         `\n项目 ${chalk.green(appName)} 创建成功, 路径: ${chalk.green(
