@@ -33,13 +33,15 @@ export function updateMiniApp(instance) {
         return;
     }
     if (instance.wx.setData) {
-        instance.wx.setData(
-            safeClone({
-                props: instance.props,
-                state: instance.state || null,
-                context: instance.context
-            })
-        );
+        var data = safeClone({
+            props: instance.props,
+            state: instance.state || null,
+            context: instance.context
+        });
+        if (instance.props.isPageComponent){
+            console.log(instance.props.path, 'setData', data);//eslint-disable-line
+        }
+        instance.wx.setData(data);
     } else {
         updateQuickApp(instance.wx, instance);
     }
@@ -60,9 +62,9 @@ function isReferenceType(val) {
 }
 
 export function runFunction(fn, ...args) {
-  if (typeof fn == 'function') {
-    fn.call(null, ...args);
-  }
+    if (typeof fn == 'function') {
+        fn.call(null, ...args);
+    }
 }
 
 

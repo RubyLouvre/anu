@@ -622,11 +622,15 @@ function updateMiniApp(instance) {
         return;
     }
     if (instance.wx.setData) {
-        instance.wx.setData(safeClone({
+        var data = safeClone({
             props: instance.props,
             state: instance.state || null,
             context: instance.context
-        }));
+        });
+        if (instance.props.isPageComponent) {
+            console.log(instance.props.path, 'setData', data);
+        }
+        instance.wx.setData(data);
     } else {
         updateQuickApp(instance.wx, instance);
     }

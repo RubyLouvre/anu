@@ -836,7 +836,11 @@ function processApis(ReactWX, facade) {
                             }
                         };
                     });
-                    task = facade[key](obj);
+                    if (!isFn(facade[key])) {
+                        console.warn('平台未不支持', key, '方法');
+                    } else {
+                        task = facade[key](obj);
+                    }
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
                     p.progress = function (cb) {
@@ -2109,11 +2113,15 @@ function updateMiniApp(instance) {
         return;
     }
     if (instance.wx.setData) {
-        instance.wx.setData(safeClone({
+        var data = safeClone({
             props: instance.props,
             state: instance.state || null,
             context: instance.context
-        }));
+        });
+        if (instance.props.isPageComponent) {
+            console.log(instance.props.path, 'setData', data);
+        }
+        instance.wx.setData(data);
     } else {
         updateQuickApp(instance.wx, instance);
     }
