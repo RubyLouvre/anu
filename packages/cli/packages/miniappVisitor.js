@@ -4,7 +4,7 @@ const template = require('babel-template');
 const path = require('path');
 const queue = require('./queue');
 const utils = require('./utils');
-const fs = require('fs');
+const fs = require('fs-extra');
 const chalk = require('chalk');
 const deps = [];
 const config = require('./config');
@@ -464,7 +464,7 @@ module.exports = {
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-    JSXElement(astPath) {
+    JSXElement(astPath, state) {
         let node = astPath.node;
         let nodeName = node.openingElement.name.name;
         if (buildType == "quick" && !node.closingElement) {
@@ -473,20 +473,17 @@ module.exports = {
                 t.JSXIdentifier(nodeName)
             );
         }
+
+    
+        
     },
     JSXOpeningElement: {
         enter: function(astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
+            nodeName = helpers.nodeName(astPath, modules) || nodeName;
             let bag = modules.importComponents[nodeName];
-            if (!bag) {
-                var oldName = nodeName;
-                //button --> Button
-                nodeName = helpers.nodeName(astPath, modules) || oldName;
-                if (oldName !== oldName) {
-                    bag = modules.importComponents[nodeName];
-                }
-            }
+            
             if (bag) {
                 deps[nodeName] ||
                     (deps[nodeName] = {
@@ -500,6 +497,7 @@ module.exports = {
                 }
                 modules.usedComponents["anu-" + nodeName.toLowerCase()] =
                     "/components/" + nodeName + "/index";
+                
                 astPath.node.name.name = "React.useComponent";
 
                 // eslint-disable-next-line
@@ -720,8 +718,8 @@ module.exports = {
         let nodeName = astPath.node.name.name;
         //将组件标签转换成React.toComponent标签，html标签转换成view/text标签
         if (
-            !modules.importComponents[nodeName] &&
-            nodeName !== "React.useComponent"
+            !modules.importComponents[nodeName] 
+            && nodeName !== "React.useComponent"
         ) {
             helpers.nodeName(astPath, modules);
         } else {

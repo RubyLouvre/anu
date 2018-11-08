@@ -18,6 +18,7 @@ const isSass = (filePath) => {
     return /\.(scss|sass)$/.test(filePath);
 };
 const getDist = (filePath) =>{
+    filePath = utils.resolvePatchComponentPath(filePath);
     let dist = utils.updatePath(filePath, config.sourceDir, 'dist');
     let { name, dir } =  path.parse(dist);
     return  path.join(dir, `${name}.${exitName}`);

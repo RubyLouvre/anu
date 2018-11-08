@@ -2,6 +2,7 @@ let syntaxClassProperties = require('babel-plugin-syntax-class-properties');
 let visitor = require('./miniappVisitor');
 let config = require('./config');
 let quickFiles = require('./quickFiles');
+let utils = require('./utils/index');
 
 module.exports = function miniappPlugin() {
     return {
@@ -18,10 +19,10 @@ module.exports = function miniappPlugin() {
                 usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
                 customComponents: [] //定义在page.json中usingComponents对象的自定义组件
             });
-            modules.sourcePath = opts.filename;
+            modules.sourcePath =  utils.resolvePatchComponentPath(opts.filename);
 
             modules.current = opts.filename.replace(process.cwd(), '');
-            if (/\/components\//.test(opts.filename)) {
+            if (/\/(components|patchComponents)\//.test(opts.filename)) {
                 modules.componentType = 'Component';
             } else if (/\/pages\//.test(opts.filename)) {
                 modules.componentType = 'Page';

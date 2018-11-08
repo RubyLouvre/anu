@@ -22,17 +22,17 @@ module.exports = ()=>{
         fs.ensureFileSync(path);
         fs.writeFile(path, code)
             .then(()=>{
+                sucSize++;
                 // eslint-disable-next-line
                 console.log(
                     chalk.gray(`[${sucSize}] `) + 
                     chalk.green(`build success: ${nPath.relative(cwd, path)} `) +
                     chalk.gray(`[${getSize(code)}KB]`)
                 );
-                sucSize++;
                 if (queue.size !== sucSize) return;
                 queue.size = 0;
                 sucSize = 0;
-                utils.spinner('').succeed('构建结束\n');
+                //utils.spinner('').succeed('构建结束\n');
             })
             .catch((err)=>{
                 // eslint-disable-next-line

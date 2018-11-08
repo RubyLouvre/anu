@@ -96,19 +96,34 @@ let utils = {
     createNodeName(map, backup){
         const buildType = config.buildType;
         const patchComponents = config[buildType].patchComponents;
+        const _this = this;
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return function(astPath, modules){
-            var orig = astPath.node.name.name;//button
-            var hasPatch = patchComponents[orig];
+            var orig = astPath.node.name.name;
+            var hasPatch = patchComponents && patchComponents[orig];
+            
+            //组件补丁
             if (hasPatch) {
                 var newName = hasPatch.name;
-                astPath.node.name.name = newName; //{button: {name :'Button', href:''}}
+                astPath.node.name.name = newName;  //{button: {name :'Button', href:''}}
                 modules.importComponents[newName] = {
-                    source: `/@components/${newName} /index`
+                    source: `/@components/${newName}/index`,
                 };
+                _this.emit('compliePatch', hasPatch);
                 return newName;
+            } 
+            
+            //如果是native组件,  组件jsx名小写
+            if ( map[orig.toLowerCase()] ) {
+                orig = orig.toLowerCase();
+                return  astPath.node.name.name = (map[orig] || backup);
             }
-            return  astPath.node.name.name = (map[orig] || backup);//div
+
+            //普通业务组件
+            if ( new RegExp(`/${orig}/`).test(modules.source) ) {
+                astPath.node.name.name = 'React.useComponent';
+            }
+            
         };
     },
     createAttribute(name, value) {
@@ -477,7 +492,15 @@ let utils = {
                 console.log(err);
             });
     },
-    
+    resolvePatchComponentPath: function(filePath){
+        //patchComponent路径在cli中, 需要处理成souces/components/...
+        let isPatchComponentReg = utils.isWin() ? /\\patchComponents\\/ : /\/patchComponents\//;
+        if (isPatchComponentReg.test(filePath)) {
+            let dirLevel = path.dirname(filePath).split(path.sep);
+            filePath = path.join(cwd, config.sourceDir, 'components', dirLevel[dirLevel.length-1], path.basename(filePath));
+        }
+        return filePath;
+    },
     cleanDir: function(){
         let fileList = ['package-lock.json', 'yarn.lock'];
         config.buildType === 'quick'
@@ -524,7 +547,7 @@ let utils = {
         };
     },
     getComponentOrAppOrPageReg() {
-        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
+        return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
