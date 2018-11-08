@@ -36,7 +36,10 @@ function createRouter(name) {
 }
 
 
-export var api = {
+
+
+
+export  var api = {
     // 交互
     showModal(obj) {
         // showCancel 默认值是 true
@@ -99,7 +102,7 @@ export var api = {
         vibrator.vibrate();
     },
 
-    // 分享
+    // 分享(小程序没有这个api)
     share(obj) {
         var share = require('@system.share');
         share.share(obj);
@@ -157,4 +160,8 @@ export var api = {
       
     }
 };
+
+
+
+
 
