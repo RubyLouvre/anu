@@ -1,7 +1,6 @@
 /* eslint no-console: 0 */
 
 const path = require('path');
-const cwd = process.cwd();
 const queue = require('./queue');
 const config = require('./config');
 const utils = require('./utils');
@@ -25,9 +24,8 @@ const getDist = (filePath) =>{
 };
 
 var less = require('less');
-/* eslint-disable */
+var sass = require('node-sass');
 const compileLess = (filePath, originalCode) => {
-   
     less.render(
         originalCode,
         {
@@ -36,7 +34,7 @@ const compileLess = (filePath, originalCode) => {
     )
         .then(res => {
             let code = validateStyle(res.css);
-            if(!code) return;
+            if (!code) return;
             queue.push({
                 code: code,
                 path: getDist(filePath),
@@ -44,25 +42,23 @@ const compileLess = (filePath, originalCode) => {
             });
         })
         .catch(err => {
-            if (err) {
-                console.log(err);
-            }
+        //eslint-disable-next-line
+        console.log('filePath: ', filePath,'\n', err);
         });
 };
 
-const renderSass = (filePath) => {
-    let sass = require(path.join(cwd, 'node_modules', 'node-sass'));
+const compileSass = (filePath) => {
     sass.render(
         {
             file: filePath
         },
         (err, res) => {
             if (err) {
-              console.log('filePath: ', filePath,'\n', err);
-              return;
+                console.log('filePath: ', filePath,'\n', err);
+                return;
             }
             let code = validateStyle(res.css.toString());
-            if(!code) return;
+            if (!code) return;
             queue.push({
                 code: code,
                 path: getDist(filePath),
@@ -71,15 +67,6 @@ const renderSass = (filePath) => {
         }
     );
 };
-const compileSass = (filePath) => {
-    try {
-        require(path.join(cwd, 'node_modules', 'node-sass', 'package.json'));
-    } catch (err) {
-        utils.installer('node-sass', 'dev')
-    }
-    renderSass(filePath);
-};
-
 
 module.exports = (data) => {
     let {id, originalCode} = data;
