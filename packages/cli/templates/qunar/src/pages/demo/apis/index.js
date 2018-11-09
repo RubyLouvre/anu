@@ -206,6 +206,15 @@ class Express extends React.Component {
     })
    }
 
+   setTitleBar() {
+    React.api.setNavigationBarTitle({
+      title: 111,
+      success: function() {
+        alert('setTitleBar success');
+      }
+    })
+  }
+
   render() {
     return (
       <div class="page">
@@ -264,6 +273,9 @@ class Express extends React.Component {
               return  <image src={item}/>
             })
           }
+          <div onClick={this.setTitleBar} class="item">
+            <text>setTitleBar</text>
+          </div>
         </div>
       </div>
     );

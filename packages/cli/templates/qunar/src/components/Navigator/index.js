@@ -1,11 +1,22 @@
 import React from  '@react';
 const noop = function(){};
 class Navigator extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            title: props.children
+        };
+    }
     static defaultProps = {
         target: 'self',
         url: '',
         'open-type': 'navigate',
         'hover-class': 'navigator-hover'
+    }
+    componentWillReceiveProps(props){
+        this.setState({
+            title: props.children
+        });
     }
     goPage(){
         var method = this.props['open-type'];
@@ -18,7 +29,7 @@ class Navigator extends React.Component{
         });
     }
     render(){
-        return <div class={this.props.class} onTap={this.goPage.bind(this)}>{this.props.children}</div>;
+        return <div class={this.props.class} onTap={this.goPage.bind(this)}><text>{this.state.title}</text></div>;
     }
 
 }

@@ -20,7 +20,11 @@ function transform(obj) {
 
 export function toStyle(obj, props, key) {
     if (props) {
-        var str = transform.call(this, obj);
+        if (typeof obj == 'object'){//clor: red;
+            var str = transform.call(this, obj);
+        } else {
+            str = obj;
+        }
         props[key] = str;
     } else {
         console.warn('toStyle生成样式失败，key为',key);//eslint-disable-line

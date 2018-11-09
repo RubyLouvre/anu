@@ -96,19 +96,31 @@ let utils = {
     createNodeName(map, backup){
         const buildType = config.buildType;
         const patchComponents = config[buildType].patchComponents;
+        const _this = this;
+        
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return function(astPath, modules){
-            var orig = astPath.node.name.name;//button
-            var hasPatch = patchComponents[orig];
+            var orig = astPath.node.name.name;
+            var hasPatch = patchComponents && patchComponents[orig];
+            //组件补丁
             if (hasPatch) {
                 var newName = hasPatch.name;
-                astPath.node.name.name = newName; //{button: {name :'Button', href:''}}
+                astPath.node.name.name = newName;  //{Button: {name :'Button', href:''}}
                 modules.importComponents[newName] = {
-                    source: `/@components/${newName} /index`
+                    source: `/@components/${newName}/index`,
                 };
+                _this.emit('compliePatch', hasPatch);
                 return newName;
+            } 
+            
+            //如果是native组件,  组件jsx名小写
+            if (orig.toLowerCase() !== orig ){
+                return orig;
             }
-            return  astPath.node.name.name = (map[orig] || backup);//div
+              
+            return  astPath.node.name.name = (map[orig] || backup);
+
+            
         };
     },
     createAttribute(name, value) {
@@ -466,7 +478,6 @@ let utils = {
     initQuickAppConfig: function(){
         //merge快应用依赖的package.json配置
         this.mergeQuickAppJson();
-        
         //copy快应用秘钥
         let signSourceDir = path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig', 'sign');
         let signDistDir = path.join(cwd, 'sign');
@@ -477,7 +488,15 @@ let utils = {
                 console.log(err);
             });
     },
-    
+    resolvePatchComponentPath: function(filePath){
+        //patchComponent路径在cli中, 需要处理成${config.sourceDir}/components/... 否则路径解析混乱
+        let isPatchComponentReg = utils.isWin() ? /\\patchComponents\\/ : /\/patchComponents\//;
+        if (isPatchComponentReg.test(filePath)) {
+            let dirLevel = path.dirname(filePath).split(path.sep);
+            filePath = path.join(cwd, config.sourceDir, 'components', dirLevel[dirLevel.length-1], path.basename(filePath));
+        }
+        return filePath;
+    },
     cleanDir: function(){
         let fileList = ['package-lock.json', 'yarn.lock'];
         config.buildType === 'quick'
@@ -524,7 +543,7 @@ let utils = {
         };
     },
     getComponentOrAppOrPageReg() {
-        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
+        return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };

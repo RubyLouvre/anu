@@ -4,7 +4,7 @@ const template = require('babel-template');
 const path = require('path');
 const queue = require('./queue');
 const utils = require('./utils');
-const fs = require('fs');
+const fs = require('fs-extra');
 const chalk = require('chalk');
 const deps = [];
 const config = require('./config');
@@ -12,7 +12,7 @@ const buildType = config['buildType'];
 const quickFiles = require('./quickFiles');
 const quickConfig = require('./quickHelpers/config');
 /* eslint no-console: 0 */
-const helpers = require(`./${config[buildType].helpers}`);
+const helpers = require(`./${buildType}Helpers/index`);
 //微信的文本节点，需要处理换行符
 const inlineElement = {
     text: 1,
@@ -158,7 +158,7 @@ module.exports = {
             }
         }
 
-        if (/\.(less|scss|sass|css|json)$/.test(path.extname(source))) {
+        if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
             astPath.remove();
         }
 
@@ -232,9 +232,8 @@ module.exports = {
                 delete modules["appRoute"];
             }
 
-            if (buildType == "ali") {
-                helpers.configName(json, modules.componentType);
-            }
+            helpers.configName(json, modules.componentType);
+
             var keys = Object.keys(modules.usedComponents),
                 usings;
             if (keys.length) {
@@ -249,7 +248,7 @@ module.exports = {
 
                 if (obj) {
                     quickConfig(json, modules, queue, utils);
-                    obj.config = Object.assign({}, json)
+                    obj.config = Object.assign({}, json);
                 }
                 delete json.usingComponents;
                 if (Object.keys(json).length) {
@@ -465,7 +464,7 @@ module.exports = {
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-    JSXElement(astPath) {
+    JSXElement(astPath, state) {
         let node = astPath.node;
         let nodeName = node.openingElement.name.name;
         if (buildType == "quick" && !node.closingElement) {
@@ -474,17 +473,21 @@ module.exports = {
                 t.JSXIdentifier(nodeName)
             );
         }
+
+    
+        
     },
     JSXOpeningElement: {
         enter: function(astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
+            nodeName = helpers.nodeName(astPath, modules) || nodeName;
             let bag = modules.importComponents[nodeName];
-            if(!bag){
+            if (!bag) {
                 var oldName = nodeName;
                 //button --> Button
                 nodeName = helpers.nodeName(astPath, modules) || oldName;
-                if(oldName !== oldName){
+                if (oldName !== oldName) {
                     bag = modules.importComponents[nodeName];
                 }
             }
@@ -501,6 +504,7 @@ module.exports = {
                 }
                 modules.usedComponents["anu-" + nodeName.toLowerCase()] =
                     "/components/" + nodeName + "/index";
+                
                 astPath.node.name.name = "React.useComponent";
 
                 // eslint-disable-next-line
@@ -719,9 +723,10 @@ module.exports = {
     JSXClosingElement: function(astPath, state) {
         let modules = utils.getAnu(state);
         let nodeName = astPath.node.name.name;
+        nodeName = helpers.nodeName(astPath, modules) || nodeName;
         //将组件标签转换成React.toComponent标签，html标签转换成view/text标签
         if (
-            !modules.importComponents[nodeName] &&
+            !modules.importComponents[nodeName] && 
             nodeName !== "React.useComponent"
         ) {
             helpers.nodeName(astPath, modules);

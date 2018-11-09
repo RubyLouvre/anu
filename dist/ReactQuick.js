@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-07
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-09
  * IE9+
  */
 
@@ -551,6 +551,117 @@ function createPortal(children, parent) {
     return child;
 }
 
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+function _uuid() {
+    return (Math.random() + '').slice(-4);
+}
+var shareObject = {
+    app: {}
+};
+function _getApp() {
+    return shareObject.app;
+}
+if (typeof getApp == 'function') {
+    _getApp = getApp;
+}
+var delayMounts = [];
+var usingComponents = [];
+var registeredComponents = {};
+var currentPage = {
+    isReady: false
+};
+function _getCurrentPages() {
+    console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
+    if (typeof getCurrentPages === 'function') {
+        return getCurrentPages();
+    }
+}
+function getUUID() {
+    return _uuid() + _uuid();
+}
+function updateMiniApp(instance) {
+    if (!instance || !instance.wx) {
+        return;
+    }
+    var data = safeClone({
+        props: instance.props,
+        state: instance.state || null,
+        context: instance.context
+    });
+    if (instance.wx.setData) {
+        instance.wx.setData(data);
+    } else {
+        updateQuickApp(instance.wx, data);
+    }
+}
+function updateQuickApp(quick, data) {
+    for (var i in data) {
+        quick[i] = data[i];
+    }
+}
+function isReferenceType(val) {
+    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+}
+function runFunction(fn) {
+    if (typeof fn == 'function') {
+        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            args[_key - 1] = arguments[_key];
+        }
+        fn.call.apply(fn, [null].concat(args));
+    }
+}
+function functionCount() {
+    for (var _len2 = arguments.length, fns = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        fns[_key2] = arguments[_key2];
+    }
+    return fns.map(function (fn) {
+        return typeof fn === 'function';
+    }).reduce(function (count, fn) {
+        return count + fn;
+    }, 0);
+}
+function apiRunner() {
+    var arg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var apiCallback = arguments[1];
+    var apiPromise = arguments[2];
+    var success = arg.success,
+        fail = arg.fail,
+        complete = arg.complete;
+    var handler = functionCount(success, fail, complete) ? apiCallback : apiPromise;
+    arg.success = arg.success || noop;
+    arg.fail = arg.fail || noop;
+    arg.complete = arg.complete || noop;
+    return handler(arg);
+}
+function useComponent(props) {
+    var is = props.is;
+    var clazz = registeredComponents[is];
+    delete props.is;
+    var args = [].slice.call(arguments, 2);
+    args.unshift(clazz, props);
+    return createElement.apply(null, args);
+}
+function safeClone(originVal) {
+    var temp = originVal instanceof Array ? [] : {};
+    for (var item in originVal) {
+        if (hasOwnProperty.call(originVal, item)) {
+            var value = originVal[item];
+            if (isReferenceType(value)) {
+                if (value.$$typeof) {
+                    continue;
+                }
+                temp[item] = safeClone(value);
+            } else {
+                temp[item] = value;
+            }
+        }
+    }
+    return temp;
+}
+function toRenderProps() {
+    return null;
+}
+
 function getDataSet(obj) {
     var ret = {};
     for (var name in obj) {
@@ -563,13 +674,18 @@ function getDataSet(obj) {
 }
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
+        var eventType = e._type;
+        var target = e.target;
+        var dataset = getDataSet(target._attr);
+        if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
+            var fn = Object(_getApp()).onCollectLogs;
+            fn && fn(dataset);
+        }
         var instance = this.reactInstance;
         if (!instance || !instance.$$eventCached) {
             return;
         }
-        var target = e.target;
-        var dataset = getDataSet(target._attr);
-        var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+        var eventUid = dataset[toLowerCase(eventType) + 'Uid'];
         var key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
         if (instance) {
@@ -600,15 +716,7 @@ function createEvent(e, target) {
 
 var fetch = require('@system.fetch');
 var JSON_TYPE_STRING = 'json';
-function runFunction(fn) {
-  if (typeof fn == 'function') {
-    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-    fn.call.apply(fn, [null].concat(args));
-  }
-}
-function request(_ref) {
+function requestCallback(_ref) {
   var url = _ref.url,
       data = _ref.data,
       header = _ref.header,
@@ -644,6 +752,48 @@ function request(_ref) {
     fail: fail,
     complete: complete
   });
+}
+function requestPromise(_ref3) {
+  var url = _ref3.url,
+      data = _ref3.data,
+      header = _ref3.header,
+      method = _ref3.method,
+      _ref3$dataType = _ref3.dataType,
+      dataType = _ref3$dataType === undefined ? JSON_TYPE_STRING : _ref3$dataType,
+      complete = _ref3.complete;
+  return new Promise(function (resolve, reject) {
+    function onFetchSuccess(_ref4) {
+      var statusCode = _ref4.code,
+          data = _ref4.data,
+          headers = _ref4.header;
+      if (dataType === JSON_TYPE_STRING) {
+        try {
+          data = JSON.parse(data);
+        } catch (error) {
+          reject(error);
+        }
+      }
+      resolve({
+        statusCode: statusCode,
+        data: data,
+        headers: headers
+      });
+    }
+    fetch.fetch({
+      url: url,
+      data: data,
+      header: header,
+      method: method,
+      success: onFetchSuccess,
+      fail: function fail(error) {
+        return reject(error);
+      },
+      complete: complete
+    });
+  });
+}
+function request(opt) {
+  return apiRunner(opt, requestCallback, requestPromise);
 }
 
 var request$1 = require('@system.request');
@@ -715,16 +865,8 @@ function downloadFile(_ref3) {
   });
 }
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
-function runFunction$1(fn) {
-  if (typeof fn == 'function') {
-    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-    fn.call.apply(fn, [null].concat(args));
-  }
-}
 function setStorage(_ref) {
   var key = _ref.key,
       data = _ref.data,
@@ -732,11 +874,11 @@ function setStorage(_ref) {
       fail = _ref.fail,
       complete = _ref.complete;
   var value = data;
-  if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
+  if ((typeof value === 'undefined' ? 'undefined' : _typeof$2(value)) === 'object') {
     try {
       value = JSON.stringify(value);
     } catch (error) {
-      runFunction$1(fail, error);
+      runFunction(fail, error);
     }
   }
   storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
@@ -778,14 +920,6 @@ function clearStorageSync(key) {
 
 var file = require('@system.file');
 var SUCCESS_MESSAGE = 'ok';
-function runFunction$2(fn) {
-  if (typeof fn == 'function') {
-    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-    fn.call.apply(fn, [null].concat(args));
-  }
-}
 function getSavedFileInfo(_ref) {
   var uri = _ref.filePath,
       success = _ref.success,
@@ -813,7 +947,7 @@ function getSavedFileList(_ref3) {
       fali = _ref3.fali,
       complete = _ref3.complete;
   if (!uri) {
-    runFunction$2(fail, new Error('小米需要指定目录'));
+    runFunction(fail, new Error('小米需要指定目录'));
   }
   function gotFileList(fileList) {
     var newFileList = fileList.map(function (item) {
@@ -854,7 +988,7 @@ function saveFile(_ref5) {
       fail = _ref5.fail,
       complete = _ref5.complete;
   if (!dstUri) {
-    runFunction$2(fail, new Error('小米需要指定需要指定目标路径'));
+    runFunction(fail, new Error('小米需要指定需要指定目标路径'));
   }
   function gotSuccess(uri) {
     success({
@@ -971,14 +1105,6 @@ function getSystemInfo(_ref) {
 
 var media = require('@system.media');
 var file$1 = require('@system.file');
-function runFunction$3(fn) {
-  if (typeof fn == 'function') {
-    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-    fn.call.apply(fn, [null].concat(args));
-  }
-}
 function chooseImage(_ref) {
   var _ref$count = _ref.count,
       count = _ref$count === undefined ? 1 : _ref$count,
@@ -988,7 +1114,7 @@ function chooseImage(_ref) {
       fail = _ref.fail,
       complete = _ref.complete;
   if (count > 1) {
-    runFunction$3(fail, new Error('快应用选择图片的数量不能大于1'));
+    runFunction(fail, new Error('快应用选择图片的数量不能大于1'));
   }
   function imagePicked(_ref2) {
     var path = _ref2.uri;
@@ -1014,112 +1140,6 @@ function chooseImage(_ref) {
     cancel: fail || noop
   });
 }
-
-function createRouter(name) {
-    return function (obj) {
-        var router = require('@system.router');
-        var params = {};
-        var href = obj.url || obj.uri || '';
-        var uri = href.slice(href.indexOf('/pages') + 1);
-        uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('=').forEach(function (k, v) {
-                params[k] = v;
-            });
-            return '';
-        }).replace(/\/index$/, '');
-        if (uri.charAt(0) !== '/') {
-            uri = '/' + uri;
-        }
-        router[name]({
-            uri: uri,
-            params: params
-        });
-    };
-}
-var api = {
-    showModal: function showModal(obj) {
-        obj.showCancel = obj.showCancel === false ? false : true;
-        var buttons = [{
-            text: obj.confirmText,
-            color: obj.confirmColor
-        }];
-        if (obj.showCancel) {
-            buttons.push({
-                text: obj.cancelText,
-                color: obj.cancelColor
-            });
-        }
-        obj.buttons = obj.confirmText ? buttons : [];
-        obj.message = obj.content;
-        delete obj.content;
-        var fn = obj['success'];
-        obj['success'] = function (res) {
-            res.confirm = !res.index;
-            fn && fn(res);
-        };
-        var prompt = require('@system.prompt');
-        prompt.showDialog(obj);
-    },
-    showToast: function showToast(obj) {
-        var prompt = require('@system.prompt');
-        obj.message = obj.title;
-        obj.duration = obj.duration / 1000;
-        prompt.showToast(obj);
-    },
-    hideToast: noop,
-    showActionSheet: function showActionSheet(obj) {
-        var prompt = require('@system.prompt');
-        prompt.showContextMenu(obj);
-    },
-    navigateTo: createRouter('push'),
-    redirectTo: createRouter('replace'),
-    navigateBack: createRouter('back'),
-    vibrateLong: function vibrateLong() {
-        var vibrator = require('@system.vibrator');
-        vibrator.vibrate();
-    },
-    vibrateShort: function vibrateShort() {
-        var vibrator = require('@system.vibrator');
-        vibrator.vibrate();
-    },
-    share: function share(obj) {
-        var share = require('@system.share');
-        share.share(obj);
-    },
-    uploadFile: uploadFile,
-    downloadFile: downloadFile,
-    request: request,
-    scanCode: function scanCode(_ref) {
-        var success = _ref.success,
-            fail = _ref.fail,
-            complete = _ref.complete;
-        var barcode = require('@system.barcode');
-        barcode.scan({
-            success: success,
-            fail: fail,
-            cancel: fail,
-            complete: complete
-        });
-    },
-    setStorage: setStorage,
-    getStorage: getStorage,
-    removeStorage: removeStorage,
-    clearStorage: clearStorage,
-    setStorageSync: setStorageSync,
-    getStorageSync: getStorageSync,
-    removeStorageSync: removeStorageSync,
-    clearStorageSync: clearStorageSync,
-    getSavedFileInfo: getSavedFileInfo, getSavedFileList: getSavedFileList, removeSavedFile: removeSavedFile, saveFile: saveFile,
-    setClipboardData: setClipboardData, getClipboardData: getClipboardData,
-    getLocation: function getLocation(obj) {
-        var geolocation = require('@system.geolocation');
-        geolocation.getLocation(obj);
-    },
-    getNetworkType: getNetworkType,
-    onNetworkStatusChange: onNetworkStatusChange,
-    getSystemInfo: getSystemInfo,
-    chooseImage: chooseImage
-};
 
 function UpdateQueue() {
     return {
@@ -2277,76 +2297,6 @@ function getContainer(p) {
     }
 }
 
-var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-function _uuid() {
-    return (Math.random() + '').slice(-4);
-}
-var delayMounts = [];
-var usingComponents = [];
-var registeredComponents = {};
-var currentPage = {
-    isReady: false
-};
-function _getCurrentPages() {
-    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-    if (typeof getCurrentPages === 'function') {
-        return getCurrentPages();
-    }
-}
-function getUUID() {
-    return _uuid() + _uuid();
-}
-function updateMiniApp(instance) {
-    if (!instance || !instance.wx) {
-        return;
-    }
-    if (instance.wx.setData) {
-        instance.wx.setData(safeClone({
-            props: instance.props,
-            state: instance.state || null,
-            context: instance.context
-        }));
-    } else {
-        updateQuickApp(instance.wx, instance);
-    }
-}
-function updateQuickApp(quick, instance) {
-    quick.props = instance.props;
-    quick.state = instance.state || null;
-    quick.context = instance.context;
-}
-function isReferenceType(val) {
-    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$2(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
-}
-function useComponent(props) {
-    var is = props.is;
-    var clazz = registeredComponents[is];
-    delete props.is;
-    var args = [].slice.call(arguments, 2);
-    args.unshift(clazz, props);
-    return createElement.apply(null, args);
-}
-function safeClone(originVal) {
-    var temp = originVal instanceof Array ? [] : {};
-    for (var item in originVal) {
-        if (hasOwnProperty.call(originVal, item)) {
-            var value = originVal[item];
-            if (isReferenceType(value)) {
-                if (value.$$typeof) {
-                    continue;
-                }
-                temp[item] = safeClone(value);
-            } else {
-                temp[item] = value;
-            }
-        }
-    }
-    return temp;
-}
-function toRenderProps() {
-    return null;
-}
-
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
     var n = name.charAt(0) == 'o' ? 2 : 5;
@@ -2488,6 +2438,126 @@ function remove(children, node) {
     }
 }
 
+function createRouter(name) {
+    return function (obj) {
+        var router = require('@system.router');
+        var params = {};
+        var href = obj.url || obj.uri || '';
+        var uri = href.slice(href.indexOf('/pages') + 1);
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('=').forEach(function (k, v) {
+                params[k] = v;
+            });
+            return '';
+        }).replace(/\/index$/, '');
+        if (uri.charAt(0) !== '/') {
+            uri = '/' + uri;
+        }
+        router[name]({
+            uri: uri,
+            params: params
+        });
+    };
+}
+var api = {
+    showModal: function showModal(obj) {
+        obj.showCancel = obj.showCancel === false ? false : true;
+        var buttons = [{
+            text: obj.confirmText,
+            color: obj.confirmColor
+        }];
+        if (obj.showCancel) {
+            buttons.push({
+                text: obj.cancelText,
+                color: obj.cancelColor
+            });
+        }
+        obj.buttons = obj.confirmText ? buttons : [];
+        obj.message = obj.content;
+        delete obj.content;
+        var fn = obj['success'];
+        obj['success'] = function (res) {
+            res.confirm = !res.index;
+            fn && fn(res);
+        };
+        var prompt = require('@system.prompt');
+        prompt.showDialog(obj);
+    },
+    showToast: function showToast(obj) {
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = obj.duration / 1000;
+        prompt.showToast(obj);
+    },
+    hideToast: noop,
+    showActionSheet: function showActionSheet(obj) {
+        var prompt = require('@system.prompt');
+        prompt.showContextMenu(obj);
+    },
+    navigateTo: createRouter('push'),
+    redirectTo: createRouter('replace'),
+    navigateBack: createRouter('back'),
+    vibrateLong: function vibrateLong() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    vibrateShort: function vibrateShort() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    share: function share(obj) {
+        var share = require('@system.share');
+        share.share(obj);
+    },
+    uploadFile: uploadFile,
+    downloadFile: downloadFile,
+    request: request,
+    scanCode: function scanCode(_ref) {
+        var success = _ref.success,
+            fail = _ref.fail,
+            complete = _ref.complete;
+        var barcode = require('@system.barcode');
+        barcode.scan({
+            success: success,
+            fail: fail,
+            cancel: fail,
+            complete: complete
+        });
+    },
+    setStorage: setStorage,
+    getStorage: getStorage,
+    removeStorage: removeStorage,
+    clearStorage: clearStorage,
+    setStorageSync: setStorageSync,
+    getStorageSync: getStorageSync,
+    removeStorageSync: removeStorageSync,
+    clearStorageSync: clearStorageSync,
+    getSavedFileInfo: getSavedFileInfo, getSavedFileList: getSavedFileList, removeSavedFile: removeSavedFile, saveFile: saveFile,
+    setClipboardData: setClipboardData, getClipboardData: getClipboardData,
+    getLocation: function getLocation(obj) {
+        var geolocation = require('@system.geolocation');
+        geolocation.getLocation(obj);
+    },
+    getNetworkType: getNetworkType,
+    onNetworkStatusChange: onNetworkStatusChange,
+    getSystemInfo: getSystemInfo,
+    chooseImage: chooseImage,
+    setNavigationBarTitle: function setNavigationBarTitle(_ref2) {
+        var title = _ref2.title,
+            success = _ref2.success,
+            fail = _ref2.fail,
+            complete = _ref2.complete;
+        try {
+            var currentPage$$1 = getCurrentPage();
+            currentPage$$1.wx.$page.setTitleBar({ text: title });            runFunction(success);
+        } catch (error) {
+            runFunction(fail, error);
+        } finally {
+            runFunction(complete);
+        }
+    }
+};
+
 var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
     return target.replace(rhyphen, '$1-$2').toLowerCase();
@@ -2501,6 +2571,18 @@ function transform(obj) {
 }
 function toStyle(obj, props, key) {
     if (props) {
+        if (typeof obj == 'string') {
+            var ret = {};
+            obj.split(';').forEach(function (el) {
+                var index = el.indexOf(':');
+                var name = el.slice(0, index).trim();
+                var value = el.slice(index).trim();
+                if (name) {
+                    ret[name] = value;
+                }
+            });
+            obj = ret;
+        }
         var str = transform.call(this, obj);
         props[key] = str;
     } else {
@@ -2596,6 +2678,11 @@ function onUnload() {
     var root = this.reactContainer;
     var container = root._reactInternalFiber;
     var instance = this.reactInstance;
+    if (!instance) {
+        console.log('onUnload的this没有React实例');
+        return;
+    }
+    console.log('onUnload...', instance.props.path);
     var hook = instance.componentWillUnmount;
     if (isFn(hook)) {
         hook.call(instance);
@@ -2614,10 +2701,6 @@ function onUnload() {
     }
 }
 
-var shareObject = {};
-function getApp() {
-    return shareObject.app;
-}
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
     var config = {
@@ -2628,12 +2711,12 @@ function registerPage(PageClass, path) {
         },
         dispatchEvent: eventSystem.dispatchEvent,
         onInit: function onInit(query) {
-            shareObject.app = this.$app.$def || this.$app._def;
+            var $app = shareObject.app = this.$app.$def || this.$app._def;
             var instance = onLoad.call(this, PageClass, path, query);
             var pageConfig = instance.config || PageClass.config;
-            shareObject.pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
-            shareObject.pagePath = path;
-            shareObject.page = instance;
+            $app.pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
+            $app.pagePath = path;
+            $app.page = instance;
         },
         onReady: onReady,
         onDestroy: onUnload
@@ -2675,10 +2758,10 @@ var React = getWindow().React = {
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
+    getApp: _getApp,
     registerPage: registerPage,
     shareObject: shareObject,
     toStyle: toStyle,
-    getApp: getApp,
     appType: 'quick',
     registerApp: function registerApp(demo) {
         var app = {};

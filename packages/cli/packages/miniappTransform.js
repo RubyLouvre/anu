@@ -14,6 +14,8 @@ let validateStyle = require('./validateStyle');
 let nodeSass = require('node-sass');
 let cwd = process.cwd();
 
+
+let componentOrAppOrPageReg = utils.getComponentOrAppOrPageReg();
 //抽离async/await语法支持，可能非App/Component/Page业务中也包含async/await语法
 const asyncAwaitPlugin  = utils.asyncAwaitHackPlugin(config.buildType);
 function transform(sourcePath, resolvedIds, originalCode) {
@@ -25,19 +27,19 @@ function transform(sourcePath, resolvedIds, originalCode) {
         });
         return;
     }
+    let transformFilePath = sourcePath;
+    sourcePath = utils.resolvePatchComponentPath(sourcePath);
+    
     //用户自定义alias与npm相对路径处理都作为alias配置
     let aliasMap = Object.assign(
         utils.updateCustomAlias(sourcePath, resolvedIds),
         utils.updateNpmAlias(sourcePath, resolvedIds)
     );
+    
     //pages|app|components需经过miniappPlugin处理
-    let miniAppPluginsInjectConfig = utils
-        .getComponentOrAppOrPageReg()
-        .test(sourcePath)
-        ? [miniappPlugin]
-        : [];
+    let miniAppPluginsInjectConfig = componentOrAppOrPageReg.test(transformFilePath) ? [miniappPlugin] : [];
     babel.transformFile(
-        sourcePath,
+        transformFilePath,
         {
             babelrc: false,
             plugins: [
@@ -85,7 +87,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
         function(err, result) {
             if (err) {
                 //eslint-disable-next-line
-                console.log(sourcePath, '\n', err);
+                console.log(transformFilePath, '\n', err);
             }
             //babel6无transform异步方法
             setImmediate(() => {
@@ -106,6 +108,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                     babelrc: false,
                     plugins: babelPlugins
                 });
+                
                 //处理中文转义问题
                 result.code = result.code.replace(
                     /\\?(?:\\u)([\da-f]{4})/gi,

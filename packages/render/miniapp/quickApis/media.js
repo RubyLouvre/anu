@@ -1,11 +1,8 @@
 const media = require('@system.media')
 const file = require('@system.file');
 import { noop } from 'react-core/util';
-function runFunction(fn, ...args) {
-  if (typeof fn == 'function') {
-    fn.call(null, ...args);
-  }
-}
+import {runFunction} from '../utils';
+
 //从本地相册选择图片或使用相机拍照。
 
 function chooseImage({

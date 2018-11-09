@@ -7,6 +7,8 @@ import { setClipboardData, getClipboardData } from './quickApis/clipboard.js';
 import { getNetworkType, onNetworkStatusChange } from './quickApis/network.js';
 import { getSystemInfo } from './quickApis/device.js';
 import { chooseImage } from './quickApis/media.js';
+import {getCurrentPage} from './wxRender';
+import {runFunction } from './utils';
 
 
 function createRouter(name) {
@@ -34,7 +36,10 @@ function createRouter(name) {
 }
 
 
-export var api = {
+
+
+
+export  var api = {
     // 交互
     showModal(obj) {
         // showCancel 默认值是 true
@@ -97,7 +102,7 @@ export var api = {
         vibrator.vibrate();
     },
 
-    // 分享
+    // 分享(小程序没有这个api)
     share(obj) {
         var share = require('@system.share');
         share.share(obj);
@@ -139,6 +144,24 @@ export var api = {
     getNetworkType,
     onNetworkStatusChange,
     getSystemInfo,
-    chooseImage
+    chooseImage,
+    setNavigationBarTitle({title, success, fail, complete}) {
+      
+      try {
+        let currentPage = getCurrentPage();
+        currentPage.wx.$page.setTitleBar({ text: title });;
+        
+        runFunction(success);
+      } catch (error) {
+        runFunction(fail, error);
+      } finally {
+        runFunction(complete);
+      }
+      
+    }
 };
+
+
+
+
 
