@@ -2714,12 +2714,12 @@ function registerPage(PageClass, path) {
         },
         dispatchEvent: eventSystem.dispatchEvent,
         onInit: function onInit(query) {
-            shareObject.app = this.$app.$def || this.$app._def;
+            var $app = shareObject.app = this.$app.$def || this.$app._def;
             var instance = onLoad.call(this, PageClass, path, query);
             var pageConfig = instance.config || PageClass.config;
-            shareObject.pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
-            shareObject.pagePath = path;
-            shareObject.page = instance;
+            $app.pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
+            $app.pagePath = path;
+            $app.page = instance;
         },
         onReady: onReady,
         onDestroy: onUnload
