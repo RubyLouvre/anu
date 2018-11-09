@@ -1,6 +1,7 @@
 import { returnFalse, toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
 import { _getApp } from './utils';
+export let webview = {};
 export let eventSystem = { //hijack
 
     dispatchEvent: function (e) {
@@ -43,7 +44,7 @@ export let eventSystem = { //hijack
     },
 };
 
-export const webview = {};
+
 //创建事件对象
 function createEvent(e, target) {
     var event = Object.assign({}, e);

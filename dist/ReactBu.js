@@ -982,10 +982,14 @@ function toRenderProps() {
     return null;
 }
 
+var webview = {};
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
         var eventType = e.type;
         if (eventType == 'message') {
+            if (webview.instance && webview.cb) {
+                webview.cb.call(webview.instance, e);
+            }
             return;
         }
         var target = e.currentTarget;
@@ -2522,6 +2526,7 @@ var React = getWindow().React = {
     version: '1.4.8',
     render: render$1,
     hydrate: render$1,
+    webview: webview,
     Fragment: Fragment,
     PropTypes: PropTypes,
     Children: Children,

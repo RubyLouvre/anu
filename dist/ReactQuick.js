@@ -2763,6 +2763,7 @@ var React = getWindow().React = {
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
     registerPage: registerPage,
+    shareObject: shareObject,
     toStyle: toStyle,
     appType: 'quick',
     registerApp: function registerApp(demo) {

@@ -12,7 +12,7 @@ import {
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { injectAPIs } from './api';
-import { eventSystem } from './eventSystem';
+import { eventSystem, webview } from './eventSystem';
 import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyle';
 import { toRenderProps,_getApp, _getCurrentPages, useComponent } from './utils';
@@ -33,7 +33,7 @@ let React = getWindow().React =  {
     //fiber底层API
     render: render,
     hydrate: render,
-
+    webview,
     Fragment,
     PropTypes,
     Children,
