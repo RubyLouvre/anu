@@ -42,25 +42,22 @@ export function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
         return;
     }
+    var data = safeClone({
+        props: instance.props,
+        state: instance.state || null,
+        context: instance.context
+    });
     if (instance.wx.setData) {
-        var data = safeClone({
-            props: instance.props,
-            state: instance.state || null,
-            context: instance.context
-        });
-        if (instance.props.isPageComponent) {
-            console.log(instance.props.path, "setData", data); //eslint-disable-line
-        }
         instance.wx.setData(data);
     } else {
-        updateQuickApp(instance.wx, instance);
+        updateQuickApp(instance.wx, data);
     }
 }
 
-function updateQuickApp(quick, instance) {
-    quick.props = instance.props;
-    quick.state = instance.state || null;
-    quick.context = instance.context;
+function updateQuickApp(quick, data) {
+    for(var i in data){
+        quick[i] = data[i];
+    }
 }
 
 function isReferenceType(val) {
