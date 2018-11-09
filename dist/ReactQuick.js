@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-08
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-09
  * IE9+
  */
 
@@ -551,56 +551,18 @@ function createPortal(children, parent) {
     return child;
 }
 
-function getDataSet(obj) {
-    var ret = {};
-    for (var name in obj) {
-        var key = name.replace(/data(\w)(\.*)/, function (a, b, c) {
-            return toLowerCase(b) + c;
-        });
-        ret[key] = obj[name];
-    }
-    return ret;
-}
-var eventSystem = {
-    dispatchEvent: function dispatchEvent(e) {
-        var instance = this.reactInstance;
-        if (!instance || !instance.$$eventCached) {
-            return;
-        }
-        var target = e.target;
-        var dataset = getDataSet(target._attr);
-        var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
-        var key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-        if (instance) {
-            Renderer.batchedUpdates(function () {
-                try {
-                    var fn = instance.$$eventCached[eventUid];
-                    fn && fn.call(instance, createEvent(e, target));
-                } catch (err) {
-                    console.log(err.stack);
-                }
-            }, e);
-        }
-    }
-};
-function createEvent(e, target) {
-    var event = Object.assign({}, e);
-    if (e.detail) {
-        Object.assign(event, e.detail);
-        target.value = e.detail.value;
-    }
-    event.stopPropagation = e.stopPropagation.bind(e);
-    event.preventDefault = e.preventDefault.bind(e);
-    event.target = target;
-    event.type = e._type;
-    event.timeStamp = new Date() - 0;
-    return event;
-}
-
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function _uuid() {
     return (Math.random() + '').slice(-4);
+}
+var shareObject = {
+    app: {}
+};
+function _getApp() {
+    return shareObject.app;
+}
+if (typeof getApp == 'function') {
+    _getApp = getApp;
 }
 var delayMounts = [];
 var usingComponents = [];
@@ -609,7 +571,7 @@ var currentPage = {
     isReady: false
 };
 function _getCurrentPages() {
-    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
     if (typeof getCurrentPages === 'function') {
         return getCurrentPages();
     }
@@ -628,7 +590,7 @@ function updateMiniApp(instance) {
             context: instance.context
         });
         if (instance.props.isPageComponent) {
-            console.log(instance.props.path, 'setData', data);
+            console.log(instance.props.path, "setData", data);
         }
         instance.wx.setData(data);
     } else {
@@ -650,6 +612,29 @@ function runFunction(fn) {
         }
         fn.call.apply(fn, [null].concat(args));
     }
+}
+function functionCount() {
+    for (var _len2 = arguments.length, fns = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        fns[_key2] = arguments[_key2];
+    }
+    return fns.map(function (fn) {
+        return typeof fn === 'function';
+    }).reduce(function (count, fn) {
+        return count + fn;
+    }, 0);
+}
+function apiRunner() {
+    var arg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var apiCallback = arguments[1];
+    var apiPromise = arguments[2];
+    var success = arg.success,
+        fail = arg.fail,
+        complete = arg.complete;
+    var handler = functionCount(success, fail, complete) ? apiCallback : apiPromise;
+    arg.success = arg.success || noop;
+    arg.fail = arg.fail || noop;
+    arg.complete = arg.complete || noop;
+    return handler(arg);
 }
 function useComponent(props) {
     var is = props.is;
@@ -680,9 +665,61 @@ function toRenderProps() {
     return null;
 }
 
+function getDataSet(obj) {
+    var ret = {};
+    for (var name in obj) {
+        var key = name.replace(/data(\w)(\.*)/, function (a, b, c) {
+            return toLowerCase(b) + c;
+        });
+        ret[key] = obj[name];
+    }
+    return ret;
+}
+var eventSystem = {
+    dispatchEvent: function dispatchEvent(e) {
+        var eventType = e._type;
+        var target = e.target;
+        var dataset = getDataSet(target._attr);
+        if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
+            var fn = Object(_getApp()).onCollectLogs;
+            fn && fn(dataset);
+        }
+        var instance = this.reactInstance;
+        if (!instance || !instance.$$eventCached) {
+            return;
+        }
+        var eventUid = dataset[toLowerCase(eventType) + 'Uid'];
+        var key = dataset['key'];
+        eventUid += key != null ? '-' + key : '';
+        if (instance) {
+            Renderer.batchedUpdates(function () {
+                try {
+                    var fn = instance.$$eventCached[eventUid];
+                    fn && fn.call(instance, createEvent(e, target));
+                } catch (err) {
+                    console.log(err.stack);
+                }
+            }, e);
+        }
+    }
+};
+function createEvent(e, target) {
+    var event = Object.assign({}, e);
+    if (e.detail) {
+        Object.assign(event, e.detail);
+        target.value = e.detail.value;
+    }
+    event.stopPropagation = e.stopPropagation.bind(e);
+    event.preventDefault = e.preventDefault.bind(e);
+    event.target = target;
+    event.type = e._type;
+    event.timeStamp = new Date() - 0;
+    return event;
+}
+
 var fetch = require('@system.fetch');
 var JSON_TYPE_STRING = 'json';
-function request(_ref) {
+function requestCallback(_ref) {
   var url = _ref.url,
       data = _ref.data,
       header = _ref.header,
@@ -718,6 +755,48 @@ function request(_ref) {
     fail: fail,
     complete: complete
   });
+}
+function requestPromise(_ref3) {
+  var url = _ref3.url,
+      data = _ref3.data,
+      header = _ref3.header,
+      method = _ref3.method,
+      _ref3$dataType = _ref3.dataType,
+      dataType = _ref3$dataType === undefined ? JSON_TYPE_STRING : _ref3$dataType,
+      complete = _ref3.complete;
+  return new Promise(function (resolve, reject) {
+    function onFetchSuccess(_ref4) {
+      var statusCode = _ref4.code,
+          data = _ref4.data,
+          headers = _ref4.header;
+      if (dataType === JSON_TYPE_STRING) {
+        try {
+          data = JSON.parse(data);
+        } catch (error) {
+          reject(error);
+        }
+      }
+      resolve({
+        statusCode: statusCode,
+        data: data,
+        headers: headers
+      });
+    }
+    fetch.fetch({
+      url: url,
+      data: data,
+      header: header,
+      method: method,
+      success: onFetchSuccess,
+      fail: function fail(error) {
+        return reject(error);
+      },
+      complete: complete
+    });
+  });
+}
+function request(opt) {
+  return apiRunner(opt, requestCallback, requestPromise);
 }
 
 var request$1 = require('@system.request');
@@ -2606,7 +2685,7 @@ function onUnload() {
         console.log('onUnload的this没有React实例');
         return;
     }
-    console.log('onUnload...');
+    console.log('onUnload...', instance.props.path);
     var hook = instance.componentWillUnmount;
     if (isFn(hook)) {
         hook.call(instance);
@@ -2625,10 +2704,6 @@ function onUnload() {
     }
 }
 
-var shareObject = {};
-function getApp() {
-    return shareObject.app;
-}
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
     var config = {
@@ -2686,10 +2761,9 @@ var React = getWindow().React = {
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
+    getApp: _getApp,
     registerPage: registerPage,
-    shareObject: shareObject,
     toStyle: toStyle,
-    getApp: getApp,
     appType: 'quick',
     registerApp: function registerApp(demo) {
         var app = {};

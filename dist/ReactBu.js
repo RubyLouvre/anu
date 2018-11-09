@@ -1,5 +1,5 @@
 /**
- * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-08
+ * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-09
  * IE9+
  */
 
@@ -870,9 +870,6 @@ function injectAPIs(ReactWX, facade, override) {
     ReactWX.api = {};
     processApis(ReactWX, facade);
     ReactWX.api.request = request;
-    if (typeof getApp == 'function') {
-        ReactWX.getApp = getApp;
-    }
     if (override) {
         var obj = override(facade);
         Object.assign(ReactWX.api, obj);
@@ -902,17 +899,105 @@ var buApis = function buApis(api) {
     };
 };
 
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+function _uuid() {
+    return (Math.random() + '').slice(-4);
+}
+var shareObject = {
+    app: {}
+};
+function _getApp() {
+    return shareObject.app;
+}
+if (typeof getApp == 'function') {
+    _getApp = getApp;
+}
+var delayMounts = [];
+var usingComponents = [];
+var registeredComponents = {};
+var currentPage = {
+    isReady: false
+};
+function _getCurrentPages() {
+    console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
+    if (typeof getCurrentPages === 'function') {
+        return getCurrentPages();
+    }
+}
+function getUUID() {
+    return _uuid() + _uuid();
+}
+function updateMiniApp(instance) {
+    if (!instance || !instance.wx) {
+        return;
+    }
+    if (instance.wx.setData) {
+        var data = safeClone({
+            props: instance.props,
+            state: instance.state || null,
+            context: instance.context
+        });
+        if (instance.props.isPageComponent) {
+            console.log(instance.props.path, "setData", data);
+        }
+        instance.wx.setData(data);
+    } else {
+        updateQuickApp(instance.wx, instance);
+    }
+}
+function updateQuickApp(quick, instance) {
+    quick.props = instance.props;
+    quick.state = instance.state || null;
+    quick.context = instance.context;
+}
+function isReferenceType(val) {
+    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+}
+function useComponent(props) {
+    var is = props.is;
+    var clazz = registeredComponents[is];
+    delete props.is;
+    var args = [].slice.call(arguments, 2);
+    args.unshift(clazz, props);
+    return createElement.apply(null, args);
+}
+function safeClone(originVal) {
+    var temp = originVal instanceof Array ? [] : {};
+    for (var item in originVal) {
+        if (hasOwnProperty.call(originVal, item)) {
+            var value = originVal[item];
+            if (isReferenceType(value)) {
+                if (value.$$typeof) {
+                    continue;
+                }
+                temp[item] = safeClone(value);
+            } else {
+                temp[item] = value;
+            }
+        }
+    }
+    return temp;
+}
+function toRenderProps() {
+    return null;
+}
+
 var eventSystem = {
     dispatchEvent: function dispatchEvent(e) {
-        if (e.type == 'message') {
+        var eventType = e.type;
+        if (eventType == 'message') {
             return;
+        }
+        var target = e.currentTarget;
+        var dataset = target.dataset || {};
+        if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
+            var fn = Object(_getApp()).onCollectLogs;
+            fn && fn(dataset);
         }
         var instance = this.reactInstance;
         if (!instance || !instance.$$eventCached) {
             return;
         }
-        var target = e.currentTarget;
-        var dataset = target.dataset || {};
         var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
         var fiber = instance.$$eventCached[eventUid + 'Fiber'];
         if (e.type == 'change' && fiber) {
@@ -946,7 +1031,7 @@ function createEvent(e, target) {
     event.preventDefault = returnFalse;
     event.target = target;
     event.timeStamp = new Date() - 0;
-    if (!("x" in event)) {
+    if (!('x' in event)) {
         event.x = event.pageX;
         event.y = event.pageY;
     }
@@ -2109,80 +2194,6 @@ function getContainer(p) {
     }
 }
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-function _uuid() {
-    return (Math.random() + '').slice(-4);
-}
-var delayMounts = [];
-var usingComponents = [];
-var registeredComponents = {};
-var currentPage = {
-    isReady: false
-};
-function _getCurrentPages() {
-    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-    if (typeof getCurrentPages === 'function') {
-        return getCurrentPages();
-    }
-}
-function getUUID() {
-    return _uuid() + _uuid();
-}
-function updateMiniApp(instance) {
-    if (!instance || !instance.wx) {
-        return;
-    }
-    if (instance.wx.setData) {
-        var data = safeClone({
-            props: instance.props,
-            state: instance.state || null,
-            context: instance.context
-        });
-        if (instance.props.isPageComponent) {
-            console.log(instance.props.path, 'setData', data);
-        }
-        instance.wx.setData(data);
-    } else {
-        updateQuickApp(instance.wx, instance);
-    }
-}
-function updateQuickApp(quick, instance) {
-    quick.props = instance.props;
-    quick.state = instance.state || null;
-    quick.context = instance.context;
-}
-function isReferenceType(val) {
-    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
-}
-function useComponent(props) {
-    var is = props.is;
-    var clazz = registeredComponents[is];
-    delete props.is;
-    var args = [].slice.call(arguments, 2);
-    args.unshift(clazz, props);
-    return createElement.apply(null, args);
-}
-function safeClone(originVal) {
-    var temp = originVal instanceof Array ? [] : {};
-    for (var item in originVal) {
-        if (hasOwnProperty.call(originVal, item)) {
-            var value = originVal[item];
-            if (isReferenceType(value)) {
-                if (value.$$typeof) {
-                    continue;
-                }
-                temp[item] = safeClone(value);
-            } else {
-                temp[item] = value;
-            }
-        }
-    }
-    return temp;
-}
-function toRenderProps() {
-    return null;
-}
-
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
     var n = name.charAt(0) == 'o' ? 2 : 5;
@@ -2432,7 +2443,7 @@ function onUnload() {
         console.log('onUnload的this没有React实例');
         return;
     }
-    console.log('onUnload...');
+    console.log('onUnload...', instance.props.path);
     var hook = instance.componentWillUnmount;
     if (isFn(hook)) {
         hook.call(instance);
@@ -2527,6 +2538,7 @@ var React = getWindow().React = {
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
+    getApp: _getApp,
     registerPage: registerPage,
     toStyle: toStyle,
     appType: 'bu'

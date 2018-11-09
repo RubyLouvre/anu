@@ -114,15 +114,12 @@ let utils = {
             } 
             
             //如果是native组件,  组件jsx名小写
-            if ( map[orig.toLowerCase()] ) {
-                orig = orig.toLowerCase();
-                return  astPath.node.name.name = (map[orig] || backup);
+            if (orig.toLowerCase() !== orig ){
+                return orig;
             }
+              
+            return  astPath.node.name.name = (map[orig] || backup);
 
-            //普通业务组件
-            if ( new RegExp(`/${orig}/`).test(modules.source) ) {
-                astPath.node.name.name = 'React.useComponent';
-            }
             
         };
     },

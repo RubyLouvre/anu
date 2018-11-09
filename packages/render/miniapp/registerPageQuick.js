@@ -2,11 +2,7 @@
 import {  isFn } from 'react-core/util';
 import { eventSystem } from './eventSystemQuick';
 import { onLoad, onUnload, onReady } from './registerPageMethod';
-
-export let shareObject = {};
-export function getApp() {
-    return shareObject.app;
-}
+import { shareObject } from './utils';
 
 export function registerPage(PageClass, path) {
     PageClass.reactInstances = [];

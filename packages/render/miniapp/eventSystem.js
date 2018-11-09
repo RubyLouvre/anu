@@ -1,21 +1,26 @@
 import { returnFalse, toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
-
-export var eventSystem = { //hijack
+import { _getApp } from './utils';
+export let eventSystem = { //hijack
 
     dispatchEvent: function (e) {
-        if (e.type == 'message') {//处理支付宝web-view组件的dataset为空的BUG
+        const eventType = e.type;
+        if (eventType == 'message') {//处理支付宝web-view组件的dataset为空的BUG
             if (webview.instance && webview.cb) {
                 webview.cb.call(webview.instance, e);
             }
             return;
         }
+        const target = e.currentTarget;
+        const dataset = target.dataset || {};
+        if ((eventType == 'click' || eventType== 'tap' ) && dataset.beaconId){
+            let fn = Object(_getApp()).onCollectLogs;
+            fn && fn(dataset);
+        }
         const instance = this.reactInstance;
         if (!instance || !instance.$$eventCached) {
             return;
         }
-        const target = e.currentTarget;
-        const dataset = target.dataset || {};
         let eventUid = dataset[toLowerCase(e.type) + 'Uid'];
         const fiber = instance.$$eventCached[eventUid + 'Fiber'];
         if (e.type == 'change' && fiber) {
@@ -54,7 +59,7 @@ function createEvent(e, target) {
     event.preventDefault = returnFalse;
     event.target = target;
     event.timeStamp = new Date() - 0;
-    if (!("x" in event)) { //支付宝没有x, y
+    if (!('x' in event)) { //支付宝没有x, y
         event.x = event.pageX;
         event.y = event.pageY;
     }

@@ -60,7 +60,7 @@ export function onUnload() {
         console.log('onUnload的this没有React实例');//eslint-disable-line
         return;
     }
-    console.log('onUnload...');//eslint-disable-line
+    console.log('onUnload...',instance.props.path);//eslint-disable-line
     let hook = instance.componentWillUnmount;
     if (isFn(hook)) {
         hook.call(instance);

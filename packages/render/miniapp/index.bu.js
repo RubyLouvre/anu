@@ -17,7 +17,7 @@ import { buApis } from './api.bu';
 import { eventSystem } from './eventSystem';
 import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyle';
-import { toRenderProps, _getCurrentPages, useComponent } from './utils';
+import { toRenderProps,  _getApp , _getCurrentPages, useComponent } from './utils';
 
 import { registerComponent } from './registerComponentBu';
 import { registerPage } from './registerPageWx';
@@ -53,6 +53,7 @@ let React = (getWindow().React = {
     registerComponent,
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
+    getApp: _getApp,
     registerPage,
     toStyle,
     appType: 'bu'

@@ -17,7 +17,7 @@ import { aliApis } from './api.ali';
 import { eventSystem } from './eventSystem';
 import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyle';
-import { toRenderProps, _getCurrentPages, useComponent } from './utils';
+import { toRenderProps,_getApp, _getCurrentPages, useComponent } from './utils';
 
 import { registerComponent } from './registerComponentAli';
 import { registerPage } from './registerPageWx';
@@ -53,6 +53,7 @@ let React =  getWindow().React = {
     useComponent,
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
+    getApp: _getApp,
     registerComponent,
     registerPage,
     toStyle,

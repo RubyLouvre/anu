@@ -1,5 +1,7 @@
 import { toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
+import { _getApp } from './utils';
+
 function getDataSet(obj) {
     let ret = {};
     for (let name in obj) {
@@ -10,16 +12,22 @@ function getDataSet(obj) {
     }
     return ret;
 }
+
 export var eventSystem = {
     //hijack
     dispatchEvent: function(e) {
+        const eventType = e._type;
+        const target = e.target;
+        const dataset = getDataSet(target._attr);
+        if ((eventType == 'click' || eventType== 'tap' ) && dataset.beaconId){
+            let fn = Object(_getApp()).onCollectLogs;
+            fn && fn(dataset);
+        }
         const instance = this.reactInstance;
         if (!instance || !instance.$$eventCached) {
             return;
         }
-        const target = e.target;
-        const dataset = getDataSet(target._attr);
-        let eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+        let eventUid = dataset[toLowerCase(eventType) + 'Uid'];
         const key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
         if (instance) {

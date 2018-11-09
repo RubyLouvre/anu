@@ -147,9 +147,6 @@ export function injectAPIs(ReactWX, facade, override) {
     ReactWX.api = {};
     processApis(ReactWX, facade);
     ReactWX.api.request = request;
-    if (typeof getApp == 'function') {
-        ReactWX.getApp = getApp;
-    }
     if (override){
         var obj = override(facade);
         Object.assign(ReactWX.api, obj);
