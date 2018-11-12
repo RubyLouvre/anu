@@ -15,8 +15,6 @@ export function registerComponent(type, name) {
         },
         onInit() {
             hasInit = true;
-        },
-        onMount() {
             usingComponents[name] = type;
             var instance = reactInstances.shift();
             if (instance) {
@@ -30,7 +28,8 @@ export function registerComponent(type, name) {
             if (this.reactInstance) {
                 updateMiniApp(this.reactInstance);
             }
-
+        },
+        onMount() {
         },
         onUnmount() {
             this.reactInstance = null;

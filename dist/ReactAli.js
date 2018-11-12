@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-09
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-12
  * IE9+
  */
 
@@ -2491,8 +2491,6 @@ function registerComponent(type, name) {
         },
         onInit: function onInit() {
             hasInit = true;
-        },
-        onMount: function onMount() {
             usingComponents[name] = type;
             var instance = reactInstances.shift();
             if (instance) {
@@ -2506,6 +2504,7 @@ function registerComponent(type, name) {
                 updateMiniApp(this.reactInstance);
             }
         },
+        onMount: function onMount() {},
         onUnmount: function onUnmount() {
             this.reactInstance = null;
         },
