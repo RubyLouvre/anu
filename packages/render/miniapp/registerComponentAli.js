@@ -1,5 +1,5 @@
 import { registeredComponents, usingComponents, updateMiniApp } from './utils';
-import { eventSystem } from './eventSystem';
+import { dispatchEvent } from './eventSystem';
 
 export function registerComponent(type, name) {
     // type.ali = true;
@@ -61,7 +61,7 @@ export function registerComponent(type, name) {
         },
 
         methods: {
-            dispatchEvent: eventSystem.dispatchEvent
+            dispatchEvent
         }
     };
 }

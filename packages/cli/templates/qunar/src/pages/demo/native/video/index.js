@@ -26,7 +26,7 @@ class P extends React.Component {
     }
     render() {
         return (
-            <div class="container">
+            <div>
                 <div class="page_hd">{this.state.title}</div>
                 <div class="page_bd">
                     <div class="navigation">

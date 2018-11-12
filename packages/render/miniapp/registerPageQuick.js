@@ -1,6 +1,6 @@
 
 import {  isFn } from 'react-core/util';
-import { eventSystem } from './eventSystemQuick';
+import { dispatchEvent } from './eventSystemQuick';
 import { onLoad, onUnload, onReady } from './registerPageMethod';
 import { shareObject } from './utils';
 
@@ -12,7 +12,7 @@ export function registerPage(PageClass, path) {
             context: Object,
             state: Object
         },
-        dispatchEvent: eventSystem.dispatchEvent,
+        dispatchEvent,
         onInit(query) {
             var $app =  shareObject.app = this.$app.$def || this.$app._def;
             var instance = onLoad.call(this,PageClass, path, query);

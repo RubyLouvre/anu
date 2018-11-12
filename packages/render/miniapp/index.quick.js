@@ -11,7 +11,7 @@ import {
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
-import { eventSystem } from './eventSystemQuick';
+import { dispatchEvent } from './eventSystemQuick';
 import { api } from './api.quick';
 import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyleQuick';
@@ -27,7 +27,9 @@ let { render } = Renderer;
 
 let React = getWindow().React = {
     //平台相关API
-    eventSystem,
+    eventSystem: {
+        dispatchEvent
+    },
     findDOMNode: function() {
         console.log("小程序不支持findDOMNode"); /* eslint-disable-line */
     },

@@ -1,12 +1,12 @@
 import { isFn} from 'react-core/util';
-import { eventSystem } from './eventSystem';
+import { dispatchEvent } from './eventSystem';
 import { onLoad, onUnload, onReady } from './registerPageMethod';
 
 export function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     let config = {
         data: {},
-        dispatchEvent: eventSystem.dispatchEvent,
+        dispatchEvent,
         onLoad(query) {
             onLoad.call(this, PageClass, path, query);
         },

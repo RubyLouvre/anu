@@ -2,46 +2,43 @@ import { returnFalse, toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
 import { _getApp } from './utils';
 export let webview = {};
-export let eventSystem = { //hijack
-
-    dispatchEvent: function (e) {
-        const eventType = e.type;
-        if (eventType == 'message') {//处理支付宝web-view组件的dataset为空的BUG
-            if (webview.instance && webview.cb) {
-                webview.cb.call(webview.instance, e);
-            }
+export function dispatchEvent(e) {
+    const eventType = e.type;
+    if (eventType == 'message') {//处理支付宝web-view组件的dataset为空的BUG
+        if (webview.instance && webview.cb) {
+            webview.cb.call(webview.instance, e);
+        }
+        return;
+    }
+    const target = e.currentTarget;
+    const dataset = target.dataset || {};
+    if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
+        let fn = Object(_getApp()).onCollectLogs;
+        fn && fn(dataset);
+    }
+    const instance = this.reactInstance;
+    if (!instance || !instance.$$eventCached) {
+        return;
+    }
+    let eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+    const fiber = instance.$$eventCached[eventUid + 'Fiber'];
+    if (e.type == 'change' && fiber) {
+        if (fiber.props.value + '' == e.detail.value) {
             return;
         }
-        const target = e.currentTarget;
-        const dataset = target.dataset || {};
-        if ((eventType == 'click' || eventType== 'tap' ) && dataset.beaconId){
-            let fn = Object(_getApp()).onCollectLogs;
-            fn && fn(dataset);
-        }
-        const instance = this.reactInstance;
-        if (!instance || !instance.$$eventCached) {
-            return;
-        }
-        let eventUid = dataset[toLowerCase(e.type) + 'Uid'];
-        const fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber) {
-            if (fiber.props.value + '' == e.detail.value) {
-                return;
+    }
+    const key = dataset['key'];
+    eventUid += key != null ? '-' + key : '';
+    if (instance) {
+        Renderer.batchedUpdates(function () {
+            try {
+                var fn = instance.$$eventCached[eventUid];
+                fn && fn.call(instance, createEvent(e, target));
+            } catch (err) {
+                console.log(err.stack);  // eslint-disable-line
             }
-        }
-        const key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-        if (instance) {
-            Renderer.batchedUpdates(function () {
-                try {
-                    var fn = instance.$$eventCached[eventUid];
-                    fn && fn.call(instance, createEvent(e, target));
-                } catch (err) {
-                    console.log(err.stack);  // eslint-disable-line
-                }
-            }, e);
-        }
-    },
+        }, e);
+    }
 };
 
 

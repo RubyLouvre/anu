@@ -672,34 +672,32 @@ function getDataSet(obj) {
     }
     return ret;
 }
-var eventSystem = {
-    dispatchEvent: function dispatchEvent(e) {
-        var eventType = e._type;
-        var target = e.target;
-        var dataset = getDataSet(target._attr);
-        if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
-            var fn = Object(_getApp()).onCollectLogs;
-            fn && fn(dataset);
-        }
-        var instance = this.reactInstance;
-        if (!instance || !instance.$$eventCached) {
-            return;
-        }
-        var eventUid = dataset[toLowerCase(eventType) + 'Uid'];
-        var key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-        if (instance) {
-            Renderer.batchedUpdates(function () {
-                try {
-                    var fn = instance.$$eventCached[eventUid];
-                    fn && fn.call(instance, createEvent(e, target));
-                } catch (err) {
-                    console.log(err.stack);
-                }
-            }, e);
-        }
+function dispatchEvent(e) {
+    var eventType = e._type;
+    var target = e.target;
+    var dataset = getDataSet(target._attr);
+    if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
+        var fn = Object(_getApp()).onCollectLogs;
+        fn && fn(dataset);
     }
-};
+    var instance = this.reactInstance;
+    if (!instance || !instance.$$eventCached) {
+        return;
+    }
+    var eventUid = dataset[toLowerCase(eventType) + 'Uid'];
+    var key = dataset['key'];
+    eventUid += key != null ? '-' + key : '';
+    if (instance) {
+        Renderer.batchedUpdates(function () {
+            try {
+                var fn = instance.$$eventCached[eventUid];
+                fn && fn.call(instance, createEvent(e, target));
+            } catch (err) {
+                console.log(err.stack);
+            }
+        }, e);
+    }
+}
 function createEvent(e, target) {
     var event = Object.assign({}, e);
     if (e.detail) {
@@ -2633,7 +2631,7 @@ function registerComponent(type, name) {
         onDestroy: function onDestroy() {
             this.reactInstance = null;
         },
-        dispatchEvent: eventSystem.dispatchEvent
+        dispatchEvent: dispatchEvent
     };
 }
 
@@ -2709,7 +2707,7 @@ function registerPage(PageClass, path) {
             context: Object,
             state: Object
         },
-        dispatchEvent: eventSystem.dispatchEvent,
+        dispatchEvent: dispatchEvent,
         onInit: function onInit(query) {
             var $app = shareObject.app = this.$app.$def || this.$app._def;
             var instance = onLoad.call(this, PageClass, path, query);
@@ -2735,7 +2733,9 @@ function registerPage(PageClass, path) {
 
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
-    eventSystem: eventSystem,
+    eventSystem: {
+        dispatchEvent: dispatchEvent
+    },
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },

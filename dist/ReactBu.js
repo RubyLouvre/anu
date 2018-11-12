@@ -980,47 +980,44 @@ function toRenderProps() {
 }
 
 var webview = {};
-var eventSystem = {
-    dispatchEvent: function dispatchEvent(e) {
-        var eventType = e.type;
-        if (eventType == 'message') {
-            if (webview.instance && webview.cb) {
-                webview.cb.call(webview.instance, e);
-            }
+function dispatchEvent(e) {
+    var eventType = e.type;
+    if (eventType == 'message') {
+        if (webview.instance && webview.cb) {
+            webview.cb.call(webview.instance, e);
+        }
+        return;
+    }
+    var target = e.currentTarget;
+    var dataset = target.dataset || {};
+    if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
+        var fn = Object(_getApp()).onCollectLogs;
+        fn && fn(dataset);
+    }
+    var instance = this.reactInstance;
+    if (!instance || !instance.$$eventCached) {
+        return;
+    }
+    var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+    var fiber = instance.$$eventCached[eventUid + 'Fiber'];
+    if (e.type == 'change' && fiber) {
+        if (fiber.props.value + '' == e.detail.value) {
             return;
-        }
-        var target = e.currentTarget;
-        var dataset = target.dataset || {};
-        if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
-            var fn = Object(_getApp()).onCollectLogs;
-            fn && fn(dataset);
-        }
-        var instance = this.reactInstance;
-        if (!instance || !instance.$$eventCached) {
-            return;
-        }
-        var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
-        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber) {
-            if (fiber.props.value + '' == e.detail.value) {
-                return;
-            }
-        }
-        var key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-        if (instance) {
-            Renderer.batchedUpdates(function () {
-                try {
-                    var fn = instance.$$eventCached[eventUid];
-                    fn && fn.call(instance, createEvent(e, target));
-                } catch (err) {
-                    console.log(err.stack);
-                }
-            }, e);
         }
     }
-};
-function createEvent(e, target) {
+    var key = dataset['key'];
+    eventUid += key != null ? '-' + key : '';
+    if (instance) {
+        Renderer.batchedUpdates(function () {
+            try {
+                var fn = instance.$$eventCached[eventUid];
+                fn && fn.call(instance, createEvent(e, target));
+            } catch (err) {
+                console.log(err.stack);
+            }
+        }, e);
+    }
+}function createEvent(e, target) {
     var event = Object.assign({}, e);
     if (e.detail) {
         Object.assign(event, e.detail);
@@ -2395,7 +2392,7 @@ function registerComponent(type, name) {
         detached: function detached() {
             this.reactInstance = null;
         },
-        dispatchEvent: eventSystem.dispatchEvent
+        dispatchEvent: dispatchEvent
     };
 }
 
@@ -2467,7 +2464,7 @@ function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     var config = {
         data: {},
-        dispatchEvent: eventSystem.dispatchEvent,
+        dispatchEvent: dispatchEvent,
         onLoad: function onLoad$$1(query) {
             onLoad.call(this, PageClass, path, query);
         },
@@ -2516,7 +2513,9 @@ function registerPage(PageClass, path, testObject) {
 
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
-    eventSystem: eventSystem,
+    eventSystem: {
+        dispatchEvent: dispatchEvent
+    },
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },

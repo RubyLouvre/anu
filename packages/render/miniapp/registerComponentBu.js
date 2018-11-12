@@ -1,5 +1,5 @@
 import { registeredComponents, usingComponents, updateMiniApp } from './utils';
-import { eventSystem } from './eventSystem';
+import { dispatchEvent } from './eventSystem';
 
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
@@ -31,6 +31,6 @@ export function registerComponent(type, name) {
         detached() {
             this.reactInstance = null;
         },
-        dispatchEvent: eventSystem.dispatchEvent
+        dispatchEvent
     };
 }
