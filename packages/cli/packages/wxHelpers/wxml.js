@@ -54,6 +54,7 @@ let visitor = {
                 openTag.object.name === 'React'
             ) {
                 if (openTag.property.name === 'toRenderProps') {
+                    //在使用了render props的组件中添加<anu-render />
                     let attributes = [];
                     //实现render props;
                     let template = utils.createElement(

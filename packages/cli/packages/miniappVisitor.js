@@ -242,7 +242,6 @@ module.exports = {
                     usings[name] = modules.usedComponents[name];
                 });
             }
-
             if (buildType == "quick") {
                 var obj = quickFiles[modules.sourcePath];
 
@@ -250,7 +249,7 @@ module.exports = {
                     quickConfig(json, modules, queue, utils);
                     obj.config = Object.assign({}, json);
                 }
-                delete json.usingComponents;
+               // delete json.usingComponents;
                 if (Object.keys(json).length) {
                     var a = template("0," + JSON.stringify(json, null, 4))();
                     var keyValue = t.ObjectProperty(
@@ -373,8 +372,8 @@ module.exports = {
                     return;
                 }
             }
-            //app.js export default App(new Demo())改成
-            //     export default React.App(new Demo())
+            //     app.js export default App(new Demo())转换成
+            //     export default React.registerApp(new Demo())
             if (
                 modules.componentType == "App" &&
                 buildType == "quick" &&
@@ -721,7 +720,7 @@ module.exports = {
         //去掉内联元素内部的所有换行符
         if (astPath.parentPath.node.type == "JSXElement") {
             var open = astPath.parentPath.node.openingElement;
-            if (config.buildType === "wx" && inlineElement[open.name.name]) {
+            if (/quick|wx/.test(config.buildType) && inlineElement[open.name.name]) {
                 astPath.node.value = astPath.node.value.replace(/\r?\n/g, "");
             }
         }
