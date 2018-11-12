@@ -17,7 +17,7 @@ export function dispatchEvent(e) {
     const eventType = e._type;
     const target = e.target;
     const dataset = getDataSet(target._attr);
-    if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
+    if (dataset.beaconId) {
         let fn = Object(_getApp()).onCollectLogs;
         fn && fn(dataset);
     }

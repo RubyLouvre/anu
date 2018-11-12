@@ -24,9 +24,9 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-
+const rbeaconTag = /^(input|button|textarea|checkbox|radio|switch|navigator|text|div|view)$/i
 if (buildType == 'quick') {
-    utils.createRegisterStatement = function(className, path, isPage) {
+    utils.createRegisterStatement = function (className, path, isPage) {
         var templateString = isPage
             ? 'className = React.registerPage(className,astPath)'
             : 'console.log(nanachi)';
@@ -238,7 +238,7 @@ module.exports = {
                 usings;
             if (keys.length) {
                 usings = json.usingComponents || (json.usingComponents = {});
-                keys.forEach(function(name) {
+                keys.forEach(function (name) {
                     usings[name] = modules.usedComponents[name];
                 });
             }
@@ -305,7 +305,7 @@ module.exports = {
                     break;
                 case "{}":
                     astPath.replaceWithMultiple(
-                        astPath.node.specifiers.map(function(el) {
+                        astPath.node.specifiers.map(function (el) {
                             return utils.exportExpr(el.local.name);
                         })
                     );
@@ -358,8 +358,8 @@ module.exports = {
             astPath.remove();
         }
     },
-    MemberExpression() {},
-    AssignmentExpression() {},
+    MemberExpression() { },
+    AssignmentExpression() { },
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
@@ -474,11 +474,11 @@ module.exports = {
             );
         }
 
-    
-        
+
+
     },
     JSXOpeningElement: {
-        enter: function(astPath, state) {
+        enter: function (astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
@@ -504,7 +504,7 @@ module.exports = {
                 }
                 modules.usedComponents["anu-" + nodeName.toLowerCase()] =
                     "/components/" + nodeName + "/index";
-                
+
                 astPath.node.name.name = "React.useComponent";
 
                 // eslint-disable-next-line
@@ -521,7 +521,7 @@ module.exports = {
                         modules.indexArr
                             ? "+" + modules.indexArr.join("+'-'+")
                             : ""
-                    }`;
+                        }`;
                     var expr = template(varString)();
                     attributes.push(
                         t.JSXAttribute(
@@ -549,7 +549,7 @@ module.exports = {
         }
     },
     JSXAttribute: {
-        enter: function(astPath, state) {
+        enter: function (astPath, state) {
             let attrName = astPath.node.name.name;
             let attrValue = astPath.node.value;
             let parentPath = astPath.parentPath;
@@ -595,6 +595,19 @@ module.exports = {
                             "e" + utils.createUUID(astPath)
                         )
                     );
+                    //以下标签，如果绑定了事件，我们会加上data-beacon-id，实现日志自动上传
+                    if (rbeaconTag.test(nodeName) &&
+                        /click|tap|change|blur/i.test(eventName)) {
+                        if (!attrs.some(function (el) {
+                            return el.name.name == 'data-beacon-id'
+                        })) {//自动添加
+                            attrs.push(
+                                utils.createAttribute(
+                                    'data-beacon-id',
+                                    nodeName + utils.createUUID(astPath)
+                                ))
+                        }
+                    } 
                     if (!attrs.setClassCode) {
                         attrs.setClassCode = true;
                         attrs.push(
@@ -675,7 +688,7 @@ module.exports = {
                 delete astPath.parentPath.renderProps;
                 let modules = utils.getAnu(state);
                 let subComponents = {};
-                modules.is.forEach(function(a) {
+                modules.is.forEach(function (a) {
                     subComponents[a] = path.join("..", a, "index");
                 });
 
@@ -720,13 +733,13 @@ module.exports = {
             }
         }
     },
-    JSXClosingElement: function(astPath, state) {
+    JSXClosingElement: function (astPath, state) {
         let modules = utils.getAnu(state);
         let nodeName = astPath.node.name.name;
         nodeName = helpers.nodeName(astPath, modules) || nodeName;
         //将组件标签转换成React.toComponent标签，html标签转换成view/text标签
         if (
-            !modules.importComponents[nodeName] && 
+            !modules.importComponents[nodeName] &&
             nodeName !== "React.useComponent"
         ) {
             helpers.nodeName(astPath, modules);
