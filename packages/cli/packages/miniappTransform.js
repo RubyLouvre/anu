@@ -151,19 +151,28 @@ function transform(sourcePath, resolvedIds, originalCode) {
                     }
                     //假设存在<script>
                     ux += `
-<script>
-                        ${beautify.js(result.code)}
-</script>`;
+                        <script>
+                            ${beautify.js(result.code)}
+                        </script>`;
                     if (uxFile.cssType) {
                         //假设存在<style>
                         ux += `
-<style lang="${uxFile.cssType}">
-                            ${beautify.css(validateStyle(
+                            <style lang="${uxFile.cssType}">
+                                ${beautify.css(validateStyle(
         nodeSass.renderSync({
-            data: uxFile.cssCode
+            data: uxFile.cssCode,
+                                        
+            // importer: function(url){
+            //     //url: import的路径
+            //     url = utils.resolveStyleAlias(filePath, url);  //resolveStyleAlias: //处理scss文件中的alias配置
+            //     return {
+            //         //file: url.
+            //         contents: fs.readFileSync(url).toString()
+            //     };
+            // }
         }).css.toString()
     ))}
-</style>`;
+                            </style>`;
                     }
 
                     queue.push({

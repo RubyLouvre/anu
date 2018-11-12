@@ -16,6 +16,8 @@ const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
 const config = require('../config');
 const Event = new EventEmitter();
+const pkg = require(path.join(cwd, 'package.json'));
+const userConfig =  pkg.nanachi || pkg.mpreact;
 process.on('unhandledRejection', error => {
     // eslint-disable-next-line
     console.error("unhandledRejection", error);
@@ -112,14 +114,7 @@ let utils = {
                 _this.emit('compliePatch', hasPatch);
                 return newName;
             } 
-            
-            //如果是native组件,  组件jsx名小写
-            if (orig.toLowerCase() !== orig ){
-                return orig;
-            }
-              
             return  astPath.node.name.name = (map[orig] || backup);
-
             
         };
     },
@@ -541,6 +536,24 @@ let utils = {
                 return JSON.stringify(JSON.parse(code));
             }
         };
+    },
+    resolveStyleAlias(filePath, importer) {
+        //解析样式中的alias别名配置
+        let aliasConfig = userConfig && userConfig.alias || {};
+        let importerPathLevel = importer.split(path.sep);  // '@path/x/y.scss' => ['@path', 'x', 'y.scss']
+        let aliasPrefix = importerPathLevel[0];
+        let importCssAbsolutePath;
+        if (aliasConfig[aliasPrefix] ) {
+            importCssAbsolutePath = path.join(
+                cwd, 
+                aliasConfig[aliasPrefix],              
+                importerPathLevel.slice(1).join(path.sep)   //['@path', 'x', 'y.scss'] => 'x/y.scss'
+            );
+        } else {
+            //相对路径引用处理
+            importCssAbsolutePath = path.join( path.dirname(filePath), importer);
+        }
+        return importCssAbsolutePath;
     },
     getComponentOrAppOrPageReg() {
         return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');

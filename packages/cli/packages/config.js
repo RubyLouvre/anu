@@ -28,15 +28,15 @@ module.exports = {
         jsExt: 'ux',
         helpers: 'quickHelpers',
         patchComponents: {
-            Button: {
+            button: {
                 name: 'Button',
                 href: getPatchComponentDir('Button') //获得patchComponent路径
             },
-            Radio: {
+            radio: {
                 name: 'Radio',
                 href: getPatchComponentDir('Radio')
             },
-            Checkbox: {
+            checkbox: {
                 name: 'Checkbox',
                 href: getPatchComponentDir('Checkbox')
             }

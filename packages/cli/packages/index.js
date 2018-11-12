@@ -11,6 +11,7 @@ const rollupScss = require('rollup-plugin-scss');
 const alias = require('rollup-plugin-alias');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
+const glob = require('glob');
 const utils = require('./utils');
 const crypto = require('crypto');
 const config = require('./config');
@@ -72,6 +73,7 @@ let rollupfilterPatchStylePlugin = ()=>{
         }
     };
 };
+
 //监听打包资源
 utils.on('build', ()=>{
     generate();
@@ -84,7 +86,10 @@ class Parser {
         this.jsFiles = [];
         this.styleFiles = [];
         this.npmFiles = [];
-        this.customAliasConfig = utils.getCustomAliasConfig();
+        this.customAliasConfig = Object.assign(
+            { resolve: ['.js','.css', '.scss', '.sass', '.less'] },
+            utils.getCustomAliasConfig()
+        );
         this.inputConfig = {
             input: this.entry,
             treeshake: false,
@@ -150,7 +155,6 @@ class Parser {
         this.transform();
         this.copyAssets();
         this.copyProjectConfig();
-        
     }
     moduleMap() {
         return {
@@ -161,25 +165,33 @@ class Parser {
                 });
             },
             css: (data)=>{
-                if (config.buildType == 'quick'){
-                    //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
-                    var jsName = data.id.replace(/\.\w+$/, '.js');
-                    jsName = utils.resolvePatchComponentPath(jsName);
-                    if (fs.pathExistsSync(jsName)) {
-                        var cssExt = path.extname(data.id).slice(1);
-                        quickFiles[jsName] = {
-                            cssCode: data.originalCode,
-                            cssType: cssExt === 'scss' ?  'sass' : cssExt
-                        };
-                        return;
-                    }
-                }
+                if (config.buildType == 'quick') return;
                 this.styleFiles.push({
                     id: data.id,
                     originalCode: data.originalCode
                 });
             },
             js: (data)=>{
+                //快应用下, js中所有的依赖样式打包到<style></style>中
+                if (config.buildType == 'quick') {
+                    var jsName =  utils.resolvePatchComponentPath(data.id);
+                    //获取当前js依赖的所有样式
+                    var styleDeps = data.dependencies.filter((filePath)=>{
+                        return isStyle(filePath);
+                    });
+                    //拼接所有样式内容
+                    let cssCode = styleDeps.map((filePath)=>{
+                        return fs.readFileSync(filePath).toString();
+                    });
+                    if (cssCode.length) {
+                        var cssExt = path.extname(jsName).slice(1);
+                        quickFiles[jsName] = {
+                            cssCode: cssCode.join(''),
+                            cssType: cssExt === 'scss' ?  'sass' : cssExt
+                        };
+                    }
+                } 
+
                 this.jsFiles.push({
                     id: data.id,
                     originalCode: data.originalCode,
@@ -258,15 +270,29 @@ class Parser {
     copyAssets() {
         const dir = 'assets';
         const inputDir = path.join(inputPath, dir);
-        //快应用copy到src目录中
-        const distDir =  path.join( cwd, config.buildType === 'quick' ? 'src' : config.buildDir, dir );
-        fs.ensureDirSync(distDir);
-        fs.copy(inputDir, distDir, err => {
+        //拷贝assets下非js, css, sass, scss, less文件
+        glob(inputDir + '/**', {nodir: true}, (err, files)=>{
             if (err) {
                 console.log(err);
+                return;
             }
+            
+            files.forEach((filePath)=>{
+                if ( /\.(js|scss|sass|less|css)$/.test(filePath) ) return;
+                let dist  = utils.updatePath(
+                    filePath, 
+                    config.sourceDir, 
+                    config.buildType === 'quick' ? 'src' : config.buildDir
+                );
+                fs.ensureFileSync(dist);
+                fs.copyFile(filePath, dist, (err)=>{
+                    if (err ) {
+                        console.log(err);
+                    }
+                });
+            });
         });
-        
+
     }
     copyProjectConfig() {
         //copy project.config.json
