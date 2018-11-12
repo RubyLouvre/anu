@@ -24,7 +24,7 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-const rbeaconTag = /^(input|button|textarea|checkbox|radio|switch|navigator|text|div|view)$/i
+const rbeaconTag = /^(input|button|textarea|checkbox|radio|switch|navigator|text|div|view)$/i;
 if (buildType == 'quick') {
     utils.createRegisterStatement = function (className, path, isPage) {
         var templateString = isPage
@@ -601,10 +601,11 @@ module.exports = {
                         if (!attrs.some(function (el) {
                             return el.name.name == 'data-beacon-id'
                         })) {//自动添加
+                            var start = astPath.node.loc.start;
                             attrs.push(
                                 utils.createAttribute(
                                     'data-beacon-id',
-                                    nodeName + utils.createUUID(astPath)
+                                    nodeName + start.line+"_"+ start.column
                                 ))
                         }
                     } 
