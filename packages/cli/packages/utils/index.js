@@ -114,6 +114,10 @@ let utils = {
                 _this.emit('compliePatch', hasPatch);
                 return newName;
             } 
+            //如果是native组件,  组件jsx名小写
+            if (orig.toLowerCase() !== orig ){
+                return orig;
+            }
             return  astPath.node.name.name = (map[orig] || backup);
             
         };
@@ -423,7 +427,7 @@ let utils = {
                 exit(astPath) {
                     // //微信，百度小程序async/await语法需要插入var regeneratorRuntime = require('regenerator-runtime/runtime');
                     let name = astPath.node.id.name;
-                    if ( !(name === '_asyncToGenerator' && ['wx', 'bu'].includes(buildType))  ) return
+                    if ( !(name === '_asyncToGenerator' && ['wx', 'bu'].includes(buildType))  ) return;
                     let root = astPath.findParent(t.isProgram);
                     root.node.body.unshift(
                         t.variableDeclaration('var', [
