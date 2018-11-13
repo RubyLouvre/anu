@@ -39,7 +39,11 @@ module.exports = {
             checkbox: {
                 name: 'Checkbox',
                 href: getPatchComponentDir('Checkbox')
-            }
+            },
+            label: {
+              name: 'Label',
+              href: getPatchComponentDir('Label')
+          }
         }
     },
     tt: {

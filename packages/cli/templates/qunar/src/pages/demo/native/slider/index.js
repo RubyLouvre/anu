@@ -31,20 +31,20 @@ class P extends React.Component {
     render() {
         return (
             <div>
-                <div class="section section_gap">
+                <div class="section section_gap anu-block">
                     <text class="section__title">设置step</text>
                     <div class="body-div">
                         <slider onChange={this.slider2change} step="5" />
                     </div>
                 </div>
-                <div class="section section_gap">
+                <div class="section section_gap anu-block">
                     <text class="section__title">显示当前value</text>
                     <div class="body-div">
                         <slider onChange={this.slider3change} show-value />
                     </div>
                 </div>
 
-                <div class="section section_gap">
+                <div class="section section_gap anu-block">
                     <text class="section__title">设置最小/最大值</text>
                     <div class="body-div">
                         <slider
@@ -55,7 +55,7 @@ class P extends React.Component {
                         />
                     </div>
                 </div>
-                <div class="section section_gap">
+                <div class="section section_gap anu-block">
                     <switch checked onChange={this.switch1Change} />
                     <switch onChange={this.switch2Change} />
                 </div>

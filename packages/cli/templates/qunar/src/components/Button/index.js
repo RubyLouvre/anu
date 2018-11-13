@@ -1,52 +1,56 @@
-/*eslint-disable*/
+// eslint-disable-next-line
 import React from '@react';
 import './index.scss';
+
+function handleStyle(props, active) {
+  let activeStyle = active ?  'active ' : ''
+  let buttonStyle = props.size + ' ' + activeStyle;
+  let textStyle = '';
+  let value;
+  if (props.disabled) {
+    if (props.plain) {
+      value = props.type + '-disabled-plain';
+    } else {
+      value = props.type + '-disabled';
+    }
+  } else {
+    if (props.plain) {
+      value = props.type + '-plain';
+    } else {
+      value = props.type;
+    }
+  } 
+
+  textStyle = colorStyleMap[value];
+  buttonStyle += value;
+  let fontStyle = fontStyleMap[props.size]
+
+  return {
+    textStyle,
+    buttonStyle,
+    fontStyle
+  };
+}
 
 class Button extends React.Component {
   constructor(props) {
     super(props);
-    let { buttonStyle, textStyle, fontStyle } = this.handleStyle(props);
+    let { buttonStyle, textStyle, fontStyle } = handleStyle(props);
+    if (typeof props.children === 'object') {
+      console.wan('button内部只能传字符串与数字'); //eslint-disable-line
+    }
     props.value = props.children;
     this.state = {
       buttonStyle,
       textStyle,
-      fontStyle,
-      isClick: false
-    };
-  }
-
-  handleStyle(props) {
-    let buttonStyle = props.size + ' ';
-    let textStyle = '';
-    let value;
-    if (props.disabled) {
-      if (props.plain) {
-        value = props.type + '-disabled-plain';
-      } else {
-        value = props.type + '-disabled';
-      }
-    } else {
-      if (props.plain) {
-        value = props.type + '-plain';
-      } else {
-        value = props.type;
-      }
-    } 
-
-    textStyle = colorStyleMap[value];
-    console.log('isClick', this.state);
-    buttonStyle += value;
-    let fontStyle = fontStyleMap[this.props.size]
-
-    return {
-      textStyle,
-      buttonStyle,
       fontStyle
-    };
+    }; 
   }
+
+   
 
   componentWillReceiveProps(nextProps) {
-    let { buttonStyle, textStyle, fontStyle } = this.handleStyle(nextProps);
+    let { buttonStyle, textStyle, fontStyle } = handleStyle(nextProps);
     nextProps.value = nextProps.children;
     this.setState({
       buttonStyle,
@@ -54,12 +58,20 @@ class Button extends React.Component {
       fontStyle
     });
   }
-  click() {
+  click(e) {
     console.log(222);
-    // this.setState({
-    //   isClick: !this.state.isClick
-    // })
-    this.props.click && this.props.click();
+  
+    var fn = this.props.click;
+    fn && fn.call(this, e);
+
+    this.setState({
+      buttonStyle: handleStyle(this.props, true).buttonStyle
+    });
+    setTimeout(() => {
+      this.setState({
+        buttonStyle: handleStyle(this.props).buttonStyle
+      });
+    }, 150);
   }
   render() {
     return (
@@ -67,9 +79,6 @@ class Button extends React.Component {
         class={'center button ' + this.state.buttonStyle}
         disabled={this.props.disabled}
         onClick={this.click.bind(this)}
-        plain={this.props.plain}
-        type={this.props.type}
-        size={this.props.size}
       >
         <image  show={this.props.loading} class='loading-style' src="https://s.qunarzz.com/flight_qzz/loading.gif" />
 

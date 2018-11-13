@@ -1,5 +1,6 @@
 import React from '@react';
 import Count from '@components/Count/index';
+import './index.scss';
 class P extends React.Component {
     constructor() {
         super();
@@ -25,7 +26,7 @@ class P extends React.Component {
     }
     render() {
         return (
-            <div>
+            <div class="col">
                 <div style={this.state.styles.a}>无狀态组件</div>
                 <p>
                     <p>输入a(绑定onInput事件)</p>
