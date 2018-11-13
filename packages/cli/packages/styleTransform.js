@@ -55,7 +55,7 @@ const compileSass = (filePath) => {
             file: filePath,
             importer: (url)=>{
                 //url: import的路径
-                url = utils.resolveStyleAlias(filePath, url);  //处理scss文件中的alias配置
+                url = utils.resolveStyleAlias(url);  //处理scss文件中的alias配置
                 return {
                     file: url
                 };

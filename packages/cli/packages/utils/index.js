@@ -539,7 +539,7 @@ let utils = {
             }
         };
     },
-    resolveStyleAlias(filePath, importer) {
+    resolveStyleAlias(importer) {
         //解析样式中的alias别名配置
         let aliasMap = userConfig && userConfig.alias || {};
         let depLevel = importer.split(path.sep); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
@@ -552,8 +552,8 @@ let utils = {
                 aliasMap[prefix],              
                 depLevel.slice(1).join(path.sep)   //['@path', 'x', 'y.scss'] => 'x/y.scss'
             );
-        } else if ( /^\/|\./.test(importer) ) {
-            url = path.join( path.dirname(filePath), importer);
+        } else {
+            url = importer;
         }
         return url;
     },
