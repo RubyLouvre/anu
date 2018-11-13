@@ -1,5 +1,5 @@
 /**
- * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-12
+ * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-13
  * IE9+
  */
 
@@ -990,9 +990,9 @@ function dispatchEvent(e) {
     }
     var target = e.currentTarget;
     var dataset = target.dataset || {};
-    if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
-        var fn = Object(_getApp()).onCollectLogs;
-        fn && fn(dataset);
+    var app = _getApp();
+    if (dataset.beaconId && app && app.onCollectLogs) {
+        app.onCollectLogs(dataset, eventType);
     }
     var instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
@@ -1017,7 +1017,8 @@ function dispatchEvent(e) {
             }
         }, e);
     }
-}function createEvent(e, target) {
+}
+function createEvent(e, target) {
     var event = Object.assign({}, e);
     if (e.detail) {
         Object.assign(event, e.detail);

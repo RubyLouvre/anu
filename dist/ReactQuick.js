@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-12
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-13
  * IE9+
  */
 
@@ -676,9 +676,9 @@ function dispatchEvent(e) {
     var eventType = e._type;
     var target = e.target;
     var dataset = getDataSet(target._attr);
-    if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
-        var fn = Object(_getApp()).onCollectLogs;
-        fn && fn(dataset);
+    var app = _getApp();
+    if (dataset.beaconId && app && app.onCollectLogs) {
+        app.onCollectLogs(dataset, eventType);
     }
     var instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {

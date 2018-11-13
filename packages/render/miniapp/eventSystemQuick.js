@@ -17,9 +17,9 @@ export function dispatchEvent(e) {
     const eventType = e._type;
     const target = e.target;
     const dataset = getDataSet(target._attr);
-    if (dataset.beaconId) {
-        let fn = Object(_getApp()).onCollectLogs;
-        fn && fn(dataset);
+    const app = _getApp();
+    if ( dataset.beaconId && app && app.onCollectLogs ) {
+        app.onCollectLogs(dataset, eventType);
     }
     const instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {

@@ -12,9 +12,9 @@ export function dispatchEvent(e) {
     }
     const target = e.currentTarget;
     const dataset = target.dataset || {};
-    if ( dataset.beaconId ) {
-        let fn = Object(_getApp()).onCollectLogs;
-        fn && fn(dataset);
+    const app = _getApp();
+    if ( dataset.beaconId && app && app.onCollectLogs ) {
+        app.onCollectLogs(dataset, eventType);
     }
     const instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
@@ -39,7 +39,7 @@ export function dispatchEvent(e) {
             }
         }, e);
     }
-};
+}
 
 
 //创建事件对象
