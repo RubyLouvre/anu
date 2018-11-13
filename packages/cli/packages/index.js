@@ -79,7 +79,6 @@ utils.on('build', ()=>{
     generate();
 });
 
-
 class Parser {
     constructor(entry) {
         this.entry = entry;
@@ -105,14 +104,18 @@ class Parser {
                     }
                 }),
                 rollupLess({
-                    output: false
+                    output: ()=>{
+                        return '';
+                    }
                 }),
-                rollupScss({
-                    output: false
+                rollupScss(()=>{
+                    return '';
                 }),
                 rollupfilterPatchStylePlugin(),
                 commonjs({
-                    include: [path.join(cwd, 'node_modules/**')]
+                    include: [
+                        path.join(cwd, 'node_modules/**')
+                    ]
                 }),
                 rbabel({
                     babelrc: false,
@@ -131,7 +134,7 @@ class Parser {
                 //warning.source   依赖的模块名
                 if (warning.code === 'UNRESOLVED_IMPORT') {
                     if (this.customAliasConfig[warning.source.split(path.sep)[0]]) return;
-                    console.log(chalk.red(`缺少${warning.source}, 请检查`));
+                    console.log(chalk.red(`缺少模块: ${warning.source}, 请检查`));
                 }
             }
             
@@ -142,7 +145,6 @@ class Parser {
             this.inputConfig.input = path.join(data.href, 'index.js');
             this.parse();
         });
-       
         
     }
     async parse() {
@@ -165,33 +167,25 @@ class Parser {
                 });
             },
             css: (data)=>{
-                if (config.buildType == 'quick') return;
+                if (config.buildType == 'quick'){
+                    //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
+                    var jsName = data.id.replace(/\.\w+$/, '.js');
+                    jsName = utils.resolvePatchComponentPath(jsName);
+                    if (fs.pathExistsSync(jsName)) {
+                        var cssExt = path.extname(data.id).slice(1);
+                        quickFiles[jsName] = {
+                            cssPath: data.id,
+                            cssType: cssExt === 'scss' ?  'sass' : cssExt
+                        };
+                    }
+                    return;
+                }
                 this.styleFiles.push({
                     id: data.id,
                     originalCode: data.originalCode
                 });
             },
             js: (data)=>{
-                //快应用下, js中所有的依赖样式打包到<style></style>中
-                if (config.buildType == 'quick') {
-                    var jsName =  utils.resolvePatchComponentPath(data.id);
-                    //获取当前js依赖的所有样式
-                    var styleDeps = data.dependencies.filter((filePath)=>{
-                        return isStyle(filePath);
-                    });
-                    //拼接所有样式内容
-                    let cssCode = styleDeps.map((filePath)=>{
-                        return fs.readFileSync(filePath).toString();
-                    });
-                    if (cssCode.length) {
-                        var cssExt = path.extname(jsName).slice(1);
-                        quickFiles[jsName] = {
-                            cssCode: cssCode.join(''),
-                            cssType: cssExt === 'scss' ?  'sass' : cssExt
-                        };
-                    }
-                } 
-
                 this.jsFiles.push({
                     id: data.id,
                     originalCode: data.originalCode,
@@ -276,7 +270,6 @@ class Parser {
                 console.log(err);
                 return;
             }
-            
             files.forEach((filePath)=>{
                 if ( /\.(js|scss|sass|less|css)$/.test(filePath) ) return;
                 let dist  = utils.updatePath(
@@ -297,8 +290,9 @@ class Parser {
     copyProjectConfig() {
         //copy project.config.json
         if ( ['ali', 'bu', 'quick'].includes( config.buildType) ) return;
-        let dist = path.join(cwd, config.buildDir, 'project.config.json');
-        let src = path.join(cwd, config.sourceDir, 'project.config.json');
+        let fileName = 'project.config.json';
+        let dist = path.join(cwd, config.buildDir, fileName);
+        let src = path.join(cwd, config.sourceDir, fileName);
         fs.ensureFileSync(dist);
         fs.copyFile( src, dist, (err)=>{
             if (err) {
@@ -332,11 +326,8 @@ class Parser {
     }
 }
 
-
-
 async function build(arg) {
     await utils.asyncReact();  //同步react
-    utils.cleanDir();  //删除一些不必要的目录, 避免来回切换构建类型产生冗余目录
     if (config['buildType'] === 'quick') {
         //快应用mege package.json 以及 生成秘钥
         utils.initQuickAppConfig();

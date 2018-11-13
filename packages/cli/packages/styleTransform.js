@@ -55,7 +55,7 @@ const compileSass = (filePath) => {
             file: filePath,
             importer: (url)=>{
                 //url: import的路径
-                url = utils.resolveStyleAlias(filePath, url);  //resolveStyleAlias: //处理scss文件中的alias配置
+                url = utils.resolveStyleAlias(filePath, url);  //处理scss文件中的alias配置
                 return {
                     file: url
                 };
@@ -63,7 +63,8 @@ const compileSass = (filePath) => {
         },
         (err, result)=>{
             if (err) {
-                console.log(err);
+                //eslint-disable-next-line
+                console.log('filePath: ', filePath,'\n', err);
                 return;
             }
             let code = result.css.toString();

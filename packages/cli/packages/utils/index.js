@@ -421,20 +421,20 @@ let utils = {
         let visitor = {
             FunctionDeclaration: {
                 exit(astPath) {
-                    //微信，百度小程序async/await语法需要插入var regeneratorRuntime = require('regenerator-runtime/runtime');
+                    // //微信，百度小程序async/await语法需要插入var regeneratorRuntime = require('regenerator-runtime/runtime');
                     let name = astPath.node.id.name;
-                    if (name === '_asyncToGenerator' && ['wx', 'bu'].includes(buildType) ) {
-                        astPath.insertBefore(
-                            t.variableDeclaration('var', [
-                                t.variableDeclarator(
-                                    t.identifier('regeneratorRuntime'),
-                                    t.callExpression(t.identifier('require'), [
-                                        t.stringLiteral('regenerator-runtime/runtime')
-                                    ])
-                                )
-                            ])
-                        );
-                    }
+                    if ( !(name === '_asyncToGenerator' && ['wx', 'bu'].includes(buildType))  ) return
+                    let root = astPath.findParent(t.isProgram);
+                    root.node.body.unshift(
+                        t.variableDeclaration('var', [
+                            t.variableDeclarator(
+                                t.identifier('regeneratorRuntime'),
+                                t.callExpression(t.identifier('require'), [
+                                    t.stringLiteral('regenerator-runtime/runtime')
+                                ])
+                            )
+                        ])
+                    );
                 }
             }
         };
@@ -539,21 +539,21 @@ let utils = {
     },
     resolveStyleAlias(filePath, importer) {
         //解析样式中的alias别名配置
-        let aliasConfig = userConfig && userConfig.alias || {};
-        let importerPathLevel = importer.split(path.sep);  // '@path/x/y.scss' => ['@path', 'x', 'y.scss']
-        let aliasPrefix = importerPathLevel[0];
-        let importCssAbsolutePath;
-        if (aliasConfig[aliasPrefix] ) {
-            importCssAbsolutePath = path.join(
+        let aliasMap = userConfig && userConfig.alias || {};
+        let depLevel = importer.split(path.sep); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
+        let prefix = depLevel[0]; 
+        let url = '';
+        //将alias以及相对路径引用解析成绝对路径
+        if (aliasMap[prefix] ) {
+            url = path.join(
                 cwd, 
-                aliasConfig[aliasPrefix],              
-                importerPathLevel.slice(1).join(path.sep)   //['@path', 'x', 'y.scss'] => 'x/y.scss'
+                aliasMap[prefix],              
+                depLevel.slice(1).join(path.sep)   //['@path', 'x', 'y.scss'] => 'x/y.scss'
             );
-        } else {
-            //相对路径引用处理
-            importCssAbsolutePath = path.join( path.dirname(filePath), importer);
+        } else if ( /^\/|\./.test(importer) ) {
+            url = path.join( path.dirname(filePath), importer);
         }
-        return importCssAbsolutePath;
+        return url;
     },
     getComponentOrAppOrPageReg() {
         return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');

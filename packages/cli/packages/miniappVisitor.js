@@ -463,7 +463,7 @@ module.exports = {
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-    JSXElement(astPath, state) {
+    JSXElement(astPath) {
         let node = astPath.node;
         let nodeName = node.openingElement.name.name;
         if (buildType == "quick" && !node.closingElement) {

@@ -61,7 +61,7 @@ exports.exit = function (astPath, type, componentName, modules) {
             }
             if (type == 'RenderProps') {
                 handleRenderProps(wxml, componentName, modules);
-                return
+                return;
             }
             var quickFile = quickFiles[modules.sourcePath];
             if (quickFile) {
@@ -102,7 +102,7 @@ function handleRenderProps(wxml, componentName, modules) {
         dep.wxml +
         `<block wx:if="{{renderUid === '${componentName}'}}">${wxml}</block>`;
     //生成render props的json
-    var importTag = "";
+    var importTag = '';
     for (let i in modules.importComponents) {
         importTag += `<import name="anu-${ i.toLowerCase() }" src="/components/${ i }/index"></import>\n`;
     }
