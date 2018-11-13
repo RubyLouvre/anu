@@ -11,6 +11,7 @@ const rollupScss = require('rollup-plugin-scss');
 const alias = require('rollup-plugin-alias');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
+const glob = require('glob');
 const utils = require('./utils');
 const crypto = require('crypto');
 const config = require('./config');
@@ -72,11 +73,11 @@ let rollupfilterPatchStylePlugin = ()=>{
         }
     };
 };
+
 //监听打包资源
 utils.on('build', ()=>{
     generate();
 });
-
 
 class Parser {
     constructor(entry) {
@@ -84,7 +85,10 @@ class Parser {
         this.jsFiles = [];
         this.styleFiles = [];
         this.npmFiles = [];
-        this.customAliasConfig = utils.getCustomAliasConfig();
+        this.customAliasConfig = Object.assign(
+            { resolve: ['.js','.css', '.scss', '.sass', '.less'] },
+            utils.getCustomAliasConfig()
+        );
         this.inputConfig = {
             input: this.entry,
             treeshake: false,
@@ -100,14 +104,18 @@ class Parser {
                     }
                 }),
                 rollupLess({
-                    output: false
+                    output: ()=>{
+                        return '';
+                    }
                 }),
-                rollupScss({
-                    output: false
+                rollupScss(()=>{
+                    return '';
                 }),
                 rollupfilterPatchStylePlugin(),
                 commonjs({
-                    include: [path.join(cwd, 'node_modules/**')]
+                    include: [
+                        path.join(cwd, 'node_modules/**')
+                    ]
                 }),
                 rbabel({
                     babelrc: false,
@@ -126,7 +134,7 @@ class Parser {
                 //warning.source   依赖的模块名
                 if (warning.code === 'UNRESOLVED_IMPORT') {
                     if (this.customAliasConfig[warning.source.split(path.sep)[0]]) return;
-                    console.log(chalk.red(`缺少${warning.source}, 请检查`));
+                    console.log(chalk.red(`缺少模块: ${warning.source}, 请检查`));
                 }
             }
             
@@ -137,7 +145,6 @@ class Parser {
             this.inputConfig.input = path.join(data.href, 'index.js');
             this.parse();
         });
-       
         
     }
     async parse() {
@@ -150,7 +157,6 @@ class Parser {
         this.transform();
         this.copyAssets();
         this.copyProjectConfig();
-        
     }
     moduleMap() {
         return {
@@ -168,11 +174,11 @@ class Parser {
                     if (fs.pathExistsSync(jsName)) {
                         var cssExt = path.extname(data.id).slice(1);
                         quickFiles[jsName] = {
-                            cssCode: data.originalCode,
+                            cssPath: data.id,
                             cssType: cssExt === 'scss' ?  'sass' : cssExt
                         };
-                        return;
                     }
+                    return;
                 }
                 this.styleFiles.push({
                     id: data.id,
@@ -258,21 +264,35 @@ class Parser {
     copyAssets() {
         const dir = 'assets';
         const inputDir = path.join(inputPath, dir);
-        //快应用copy到src目录中
-        const distDir =  path.join( cwd, config.buildType === 'quick' ? 'src' : config.buildDir, dir );
-        fs.ensureDirSync(distDir);
-        fs.copy(inputDir, distDir, err => {
+        //拷贝assets下非js, css, sass, scss, less文件
+        glob(inputDir + '/**', {nodir: true}, (err, files)=>{
             if (err) {
                 console.log(err);
+                return;
             }
+            files.forEach((filePath)=>{
+                if ( /\.(js|scss|sass|less|css)$/.test(filePath) ) return;
+                let dist  = utils.updatePath(
+                    filePath, 
+                    config.sourceDir, 
+                    config.buildType === 'quick' ? 'src' : config.buildDir
+                );
+                fs.ensureFileSync(dist);
+                fs.copyFile(filePath, dist, (err)=>{
+                    if (err ) {
+                        console.log(err);
+                    }
+                });
+            });
         });
-        
+
     }
     copyProjectConfig() {
         //copy project.config.json
         if ( ['ali', 'bu', 'quick'].includes( config.buildType) ) return;
-        let dist = path.join(cwd, config.buildDir, 'project.config.json');
-        let src = path.join(cwd, config.sourceDir, 'project.config.json');
+        let fileName = 'project.config.json';
+        let dist = path.join(cwd, config.buildDir, fileName);
+        let src = path.join(cwd, config.sourceDir, fileName);
         fs.ensureFileSync(dist);
         fs.copyFile( src, dist, (err)=>{
             if (err) {
@@ -306,11 +326,8 @@ class Parser {
     }
 }
 
-
-
 async function build(arg) {
     await utils.asyncReact();  //同步react
-    utils.cleanDir();  //删除一些不必要的目录, 避免来回切换构建类型产生冗余目录
     if (config['buildType'] === 'quick') {
         //快应用mege package.json 以及 生成秘钥
         utils.initQuickAppConfig();

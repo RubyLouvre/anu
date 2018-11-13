@@ -25,6 +25,8 @@ const getDist = (filePath) =>{
 
 var less = require('less');
 var sass = require('node-sass');
+
+
 const compileLess = (filePath, originalCode) => {
     less.render(
         originalCode,
@@ -42,30 +44,41 @@ const compileLess = (filePath, originalCode) => {
             });
         })
         .catch(err => {
-        //eslint-disable-next-line
-        console.log('filePath: ', filePath,'\n', err);
+            //eslint-disable-next-line
+            console.log('filePath: ', filePath,'\n', err);
         });
 };
 
 const compileSass = (filePath) => {
     sass.render(
         {
-            file: filePath
+            file: filePath,
+            importer: (url)=>{
+                //url: import的路径
+                url = utils.resolveStyleAlias(filePath, url);  //处理scss文件中的alias配置
+                return {
+                    file: url
+                };
+            }
         },
-        (err, res) => {
+        (err, result)=>{
             if (err) {
+                //eslint-disable-next-line
                 console.log('filePath: ', filePath,'\n', err);
                 return;
             }
-            let code = validateStyle(res.css.toString());
+            let code = result.css.toString();
             if (!code) return;
+            code = validateStyle(code);
             queue.push({
                 code: code,
                 path: getDist(filePath),
                 type: 'css'
             });
         }
+        
     );
+    
 };
 
 module.exports = (data) => {

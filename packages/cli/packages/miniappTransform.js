@@ -46,8 +46,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 require('babel-plugin-syntax-jsx'),
                 require('babel-plugin-transform-decorators-legacy').default,
                 require('babel-plugin-transform-object-rest-spread'),
-                require('babel-plugin-transform-async-to-generator'),
                 require('babel-plugin-transform-es2015-template-literals'),
+                require('babel-plugin-transform-async-to-generator'),
                 asyncAwaitPlugin,
                 ...miniAppPluginsInjectConfig,
                 [
@@ -92,7 +92,9 @@ function transform(sourcePath, resolvedIds, originalCode) {
             //babel6无transform异步方法
             setImmediate(() => {
                 let babelPlugins = [
+                    
                     [
+                        
                         //process.env.ANU_ENV
                         require('babel-plugin-transform-inline-environment-variables'),
                         {
@@ -103,6 +105,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         }
                     ],
                     require('babel-plugin-minify-dead-code-elimination')
+                    
                 ];
                 result = babel.transform(result.code, {
                     babelrc: false,
@@ -151,19 +154,27 @@ function transform(sourcePath, resolvedIds, originalCode) {
                     }
                     //假设存在<script>
                     ux += `
-<script>
-                        ${beautify.js(result.code)}
-</script>`;
+                        <script>
+                            ${beautify.js(result.code)}
+                        </script>`;
                     if (uxFile.cssType) {
                         //假设存在<style>
+                        let cssCode = nodeSass.renderSync({
+                            file: uxFile.cssPath,
+                            importer: function(importer){
+                                //处理scss文件中的alias配置, 返回@import引用的绝对路径
+                                importer = utils.resolveStyleAlias(uxFile.cssPath, importer);
+                                return {
+                                    file: importer
+                                };
+                            }
+                        }).css.toString();
                         ux += `
-<style lang="${uxFile.cssType}">
-                            ${beautify.css(validateStyle(
-        nodeSass.renderSync({
-            data: uxFile.cssCode
-        }).css.toString()
+                            <style lang="${uxFile.cssType}">
+                                ${beautify.css(validateStyle(
+        cssCode
     ))}
-</style>`;
+                            </style>`;
                     }
 
                     queue.push({
