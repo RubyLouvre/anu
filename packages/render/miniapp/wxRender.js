@@ -123,11 +123,13 @@ export let Renderer = createRenderer({
                 //要插入最前面
                 if (dom !== children[0]) {
                     remove(children, dom);
+                    dom.parentNode = parentNode;
                     children.unshift(dom);
                 }
             } else {
                 if (dom !== children[children.length - 1]) {
                     remove(children, dom);
+                    dom.parentNode = parentNode;
                     var i = children.indexOf(before);
                     children.splice(i + 1, 0, dom);
                 }
@@ -147,6 +149,7 @@ export let Renderer = createRenderer({
         if (fiber.parent) {
             var parent = fiber.parent;
             var node = fiber.stateNode;
+            node.parentNode = null;
             remove(parent.children, node);
         }
     }
