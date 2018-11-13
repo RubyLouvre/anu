@@ -131,6 +131,20 @@ let utils = {
     createUUID(astPath) {
         return astPath.node.start + astPath.node.end;
     },
+    createDynamicAttributeValue(prefix, astPath, indexes){
+        var start = astPath.node.loc.start;
+        var name =  prefix + start.line +'_' +  start.column;
+        if (Array.isArray(indexes) && indexes.length){
+            var more =  indexes.join('+\'-\'+');
+            return t.jSXExpressionContainer(
+                t.identifier(
+                    `'${name}_'+${more}` 
+                )
+            );
+        } else {
+            return name ;
+        }
+    },
     genKey(key) {
         key = key + '';
         if (/\{\{/.test(key)) {

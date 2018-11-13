@@ -26,7 +26,7 @@ const inlineElement = {
 };
 const rbeaconTag = /^(input|button|textarea|checkbox|radio|switch|navigator|text|div|view)$/i;
 if (buildType == 'quick') {
-    utils.createRegisterStatement = function (className, path, isPage) {
+    utils.createRegisterStatement = function(className, path, isPage) {
         var templateString = isPage
             ? 'className = React.registerPage(className,astPath)'
             : 'console.log(nanachi)';
@@ -238,7 +238,7 @@ module.exports = {
                 usings;
             if (keys.length) {
                 usings = json.usingComponents || (json.usingComponents = {});
-                keys.forEach(function (name) {
+                keys.forEach(function(name) {
                     usings[name] = modules.usedComponents[name];
                 });
             }
@@ -249,7 +249,7 @@ module.exports = {
                     quickConfig(json, modules, queue, utils);
                     obj.config = Object.assign({}, json);
                 }
-               // delete json.usingComponents;
+                // delete json.usingComponents;
                 if (Object.keys(json).length) {
                     var a = template("0," + JSON.stringify(json, null, 4))();
                     var keyValue = t.ObjectProperty(
@@ -304,7 +304,7 @@ module.exports = {
                     break;
                 case "{}":
                     astPath.replaceWithMultiple(
-                        astPath.node.specifiers.map(function (el) {
+                        astPath.node.specifiers.map(function(el) {
                             return utils.exportExpr(el.local.name);
                         })
                     );
@@ -357,8 +357,8 @@ module.exports = {
             astPath.remove();
         }
     },
-    MemberExpression() { },
-    AssignmentExpression() { },
+    MemberExpression() {},
+    AssignmentExpression() {},
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
@@ -472,12 +472,9 @@ module.exports = {
                 t.JSXIdentifier(nodeName)
             );
         }
-
-
-
     },
     JSXOpeningElement: {
-        enter: function (astPath, state) {
+        enter: function(astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
@@ -516,16 +513,18 @@ module.exports = {
                     )
                 );
                 if (buildType == "ali") {
-                    var varString = `var a = 'i${astPath.node.start}' ${
+                  /*  var varString = `var a = 'i${astPath.node.start}' ${
                         modules.indexArr
                             ? "+" + modules.indexArr.join("+'-'+")
                             : ""
-                        }`;
+                    }`;
                     var expr = template(varString)();
+                  */
                     attributes.push(
-                        t.JSXAttribute(
-                            t.JSXIdentifier("data-instance-uid"),
-                            t.jSXExpressionContainer(expr.declarations[0].init)
+                        utils.createAttribute(
+                            "data-instance-uid",
+                            utils.createDynamicAttributeValue("i", astPath,   modules.indexArr|| ["0"] )
+                          //  t.jSXExpressionContainer(expr.declarations[0].init)
                         )
                     );
                 }
@@ -548,7 +547,7 @@ module.exports = {
         }
     },
     JSXAttribute: {
-        enter: function (astPath, state) {
+        enter: function(astPath, state) {
             let attrName = astPath.node.name.name;
             let attrValue = astPath.node.value;
             let parentPath = astPath.parentPath;
@@ -595,19 +594,23 @@ module.exports = {
                         )
                     );
                     //以下标签，如果绑定了事件，我们会加上data-beacon-id，实现日志自动上传
-                    if (rbeaconTag.test(nodeName) &&
-                        /click|tap|change|blur/i.test(eventName)) {
-                        if (!attrs.some(function (el) {
-                            return el.name.name == 'data-beacon-id'
-                        })) {//自动添加
-                            var start = astPath.node.loc.start;
+                    if (
+                        rbeaconTag.test(nodeName) &&
+                        /click|tap|change|blur/i.test(eventName)
+                    ) {
+                        if (
+                            !attrs.some(function(el) {
+                                return el.name.name == "data-beacon-id";
+                            })
+                        ) {
+                            //自动添加
                             attrs.push(
                                 utils.createAttribute(
-                                    'data-beacon-id',
-                                    nodeName + start.line+"_"+ start.column
-                                ))
+                                    "data-beacon-id",
+                                    utils.createDynamicAttributeValue(nodeName, astPath, modules.indexArr)
+                            ));
                         }
-                    } 
+                    }
                     if (!attrs.setClassCode) {
                         attrs.setClassCode = true;
                         attrs.push(
@@ -688,7 +691,7 @@ module.exports = {
                 delete astPath.parentPath.renderProps;
                 let modules = utils.getAnu(state);
                 let subComponents = {};
-                modules.is.forEach(function (a) {
+                modules.is.forEach(function(a) {
                     subComponents[a] = path.join("..", a, "index");
                 });
 
@@ -720,7 +723,10 @@ module.exports = {
         //去掉内联元素内部的所有换行符
         if (astPath.parentPath.node.type == "JSXElement") {
             var open = astPath.parentPath.node.openingElement;
-            if (/quick|wx/.test(config.buildType) && inlineElement[open.name.name]) {
+            if (
+                /quick|wx/.test(config.buildType) &&
+                inlineElement[open.name.name]
+            ) {
                 astPath.node.value = astPath.node.value.replace(/\r?\n/g, "");
             }
         }
@@ -733,7 +739,7 @@ module.exports = {
             }
         }
     },
-    JSXClosingElement: function (astPath, state) {
+    JSXClosingElement: function(astPath, state) {
         let modules = utils.getAnu(state);
         let nodeName = astPath.node.name.name;
         nodeName = helpers.nodeName(astPath, modules) || nodeName;
