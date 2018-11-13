@@ -12,7 +12,7 @@ export function dispatchEvent(e) {
     }
     const target = e.currentTarget;
     const dataset = target.dataset || {};
-    if ((eventType == 'click' || eventType == 'tap') && dataset.beaconId) {
+    if ( dataset.beaconId ) {
         let fn = Object(_getApp()).onCollectLogs;
         fn && fn(dataset);
     }

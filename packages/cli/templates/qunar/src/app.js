@@ -97,6 +97,17 @@ class Demo extends React.Component {
             ]
         }
     };
+    onCollectLogs(dataset){
+        var path = React.getCurrentPage().props.path;
+        var uuid = dataset.beaconId;
+        console.log(path, uuid);//eslint-disable-line
+    }
+    onReportLogs(){
+
+    }
+    onHide(){
+
+    }
     globalData = {
         ufo: 'ufo'
     };
