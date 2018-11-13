@@ -17,7 +17,7 @@ const EventEmitter = require('events').EventEmitter;
 const config = require('../config');
 const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
-const userConfig =  pkg.nanachi || pkg.mpreact;
+const userConfig =  pkg.nanachi || pkg.mpreact || {};
 process.on('unhandledRejection', error => {
     // eslint-disable-next-line
     console.error("unhandledRejection", error);
@@ -360,9 +360,7 @@ let utils = {
             '@react': path.join(cwd, `${config.sourceDir}/${React}`),
             '@components': path.join(cwd, `${config.sourceDir}/components`)
         };
-        let pkg = require(path.join(cwd, 'package.json'));
-        let pkgAlias = pkg.mpreact && pkg.mpreact.alias ? pkg.mpreact.alias : {};
-
+        let pkgAlias = userConfig.alias ? userConfig.alias : {};
 
         Object.keys(pkgAlias).forEach((aliasKey) => {
             //@components, @react无法自定义配置
@@ -541,7 +539,7 @@ let utils = {
             }
         };
     },
-    resolveStyleAlias(filePath, importer) {
+    resolveStyleAlias(importer) {
         //解析样式中的alias别名配置
         let aliasMap = userConfig && userConfig.alias || {};
         let depLevel = importer.split(path.sep); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
@@ -554,8 +552,8 @@ let utils = {
                 aliasMap[prefix],              
                 depLevel.slice(1).join(path.sep)   //['@path', 'x', 'y.scss'] => 'x/y.scss'
             );
-        } else if ( /^\/|\./.test(importer) ) {
-            url = path.join( path.dirname(filePath), importer);
+        } else {
+            url = importer;
         }
         return url;
     },

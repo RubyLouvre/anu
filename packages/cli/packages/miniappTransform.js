@@ -163,7 +163,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                             file: uxFile.cssPath,
                             importer: function(importer){
                                 //处理scss文件中的alias配置, 返回@import引用的绝对路径
-                                importer = utils.resolveStyleAlias(uxFile.cssPath, importer);
+                                importer = utils.resolveStyleAlias(importer);
                                 return {
                                     file: importer
                                 };
