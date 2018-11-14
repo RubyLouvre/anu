@@ -1,13 +1,12 @@
 import { Renderer } from 'react-core/createRenderer';
 import { isFn, topNodes, noop, topFibers } from 'react-core/util';
-import { delayMounts, usingComponents, currentPage, updateMiniApp } from './utils';
+import { delayMounts, usingComponents, pageState, updateMiniApp, callGlobalHook } from './utils';
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
 
 
 export function onLoad(PageClass, path, query) {
-    //临时移除
-    currentPage.isReady = false;
+    pageState.isReady = false;
     let container = {
         type: 'page',
         props: {},
@@ -15,7 +14,8 @@ export function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
-    var pageInstance = render(
+
+    var pageInstance = render(//生成页面的React对象
         createElement(PageClass, {
             path: path,
             query: query,
@@ -23,48 +23,44 @@ export function onLoad(PageClass, path, query) {
         }),
         container
     );
+    callGlobalHook('onGlobalLoad');//调用全局onLoad方法
     this.reactInstance = pageInstance;
     this.reactContainer = container;
-    pageInstance.wx = this;
-    updateMiniApp(pageInstance);
+    pageInstance.wx = this;//保存小程序的页面对象
+    updateMiniApp(pageInstance);//更新小程序视图
     return pageInstance;
 }
 
 export function onReady() {
-    currentPage.isReady = true;
+    pageState.isReady = true;
     let el = void 0;
     while ((el = delayMounts.pop())) {
         el.fn.call(el.instance);
         el.instance.componentDidMount = el.fn;
     }
+    callGlobalHook('onGlobalReady');
 }
 
 
 export function onUnload() {
-   
     for (let i in usingComponents) {
         let a = usingComponents[i];
         if (a.reactInstances.length) {
-            // eslint-disable-next-line
-            console.log(i, "还有", a.reactInstances.length, "实例没有使用过");
             a.reactInstances.length = 0;
             a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }
-    let root = this.reactContainer;
-    
-    let container = root._reactInternalFiber;
     let instance = this.reactInstance;
-    if (!instance){
-        console.log('onUnload的this没有React实例');//eslint-disable-line
-        return;
+    if (instance){
+        console.log('onUnload...',instance.props.path);//eslint-disable-line
+        let hook = instance.componentWillUnmount;
+        if (isFn(hook)) {
+            hook.call(instance);
+        }
     }
-    console.log('onUnload...',instance.props.path);//eslint-disable-line
-    let hook = instance.componentWillUnmount;
-    if (isFn(hook)) {
-        hook.call(instance);
-    }
+    let root = this.reactContainer;
+    let container = root && root._reactInternalFiber;
     if (container) {
         Renderer.updateComponent(
             container.hostRoot,
@@ -82,5 +78,6 @@ export function onUnload() {
             true
         );
     }
+    callGlobalHook('onGlobalReady');
 }
 

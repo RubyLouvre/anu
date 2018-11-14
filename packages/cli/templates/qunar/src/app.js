@@ -97,10 +97,19 @@ class Demo extends React.Component {
             ]
         }
     };
-    onCollectLogs(dataset){
+    onCollectLogs(dataset, type, node){
         var path = React.getCurrentPage().props.path;
         var uuid = dataset.beaconId;
-        console.log(path, uuid);//eslint-disable-line
+        if (node){
+            var xpath = [];
+            while (node.parentNode){
+                var index = node.parentNode.children.indexOf(node);
+                xpath.unshift(index);
+                node = node.parentNode;
+            }
+            uuid =  xpath.join('/');
+        }
+        console.log("收集日志", path, type, uuid);//eslint-disable-line
     }
     onReportLogs(){
 

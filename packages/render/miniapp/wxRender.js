@@ -1,7 +1,7 @@
 import { isFn, noop, toLowerCase, get } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
-import { getUUID, delayMounts, updateMiniApp, currentPage } from './utils';
+import { getUUID, delayMounts, updateMiniApp, pageState, _getApp } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
@@ -15,9 +15,9 @@ function getEventHashCode2(name, props) {
     var type = toLowerCase(name.slice(n));
     return props['data-' + type + '-uid'];
 }
-var pageInstance = null;
 export function getCurrentPage() {
-    return pageInstance;
+    console.log('------getCurrentPage-----');
+    return _getApp().page;
 }
 export let Renderer = createRenderer({
     render: render,
@@ -98,7 +98,7 @@ export let Renderer = createRenderer({
                 //type[uuid] = instance;
             }
             if (fiber.props.isPageComponent) {
-                pageInstance = instance;
+                _getApp().page = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {
@@ -113,7 +113,7 @@ export let Renderer = createRenderer({
                 }
             }
         }
-        if (!currentPage.isReady && noMount && instance.componentDidMount) {
+        if (!pageState.isReady && noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount

@@ -564,10 +564,16 @@ function _getApp() {
 if (typeof getApp == 'function') {
     _getApp = getApp;
 }
+function callGlobalHook(method) {
+    var app = _getApp();
+    if (app && app[method]) {
+        return app[method]();
+    }
+}
 var delayMounts = [];
 var usingComponents = [];
 var registeredComponents = {};
-var currentPage = {
+var pageState = {
     isReady: false
 };
 function _getCurrentPages() {
@@ -2311,9 +2317,9 @@ function getEventHashCode2(name, props) {
     var type = toLowerCase(name.slice(n));
     return props['data-' + type + '-uid'];
 }
-var pageInstance = null;
 function getCurrentPage() {
-    return pageInstance;
+    console.log('------getCurrentPage-----');
+    return _getApp().page;
 }
 var Renderer$1 = createRenderer({
     render: render,
@@ -2378,7 +2384,7 @@ var Renderer$1 = createRenderer({
                 instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
             }
             if (fiber.props.isPageComponent) {
-                pageInstance = instance;
+                _getApp().page = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {
@@ -2391,7 +2397,7 @@ var Renderer$1 = createRenderer({
                 }
             }
         }
-        if (!currentPage.isReady && noMount && instance.componentDidMount) {
+        if (!pageState.isReady && noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount
@@ -2578,8 +2584,8 @@ var api = {
             fail = _ref2.fail,
             complete = _ref2.complete;
         try {
-            var currentPage$$1 = getCurrentPage();
-            currentPage$$1.wx.$page.setTitleBar({ text: title });            runFunction(success);
+            var currentPage = getCurrentPage();
+            currentPage.wx.$page.setTitleBar({ text: title });            runFunction(success);
         } catch (error) {
             runFunction(fail, error);
         } finally {
@@ -2668,7 +2674,7 @@ function registerComponent(type, name) {
 }
 
 function onLoad(PageClass, path, query) {
-    currentPage.isReady = false;
+    pageState.isReady = false;
     var container = {
         type: 'page',
         props: {},
@@ -2681,6 +2687,7 @@ function onLoad(PageClass, path, query) {
         query: query,
         isPageComponent: true
     }), container);
+    callGlobalHook('onGlobalLoad');
     this.reactInstance = pageInstance;
     this.reactContainer = container;
     pageInstance.wx = this;
@@ -2688,35 +2695,33 @@ function onLoad(PageClass, path, query) {
     return pageInstance;
 }
 function onReady() {
-    currentPage.isReady = true;
+    pageState.isReady = true;
     var el = void 0;
     while (el = delayMounts.pop()) {
         el.fn.call(el.instance);
         el.instance.componentDidMount = el.fn;
     }
+    callGlobalHook('onGlobalReady');
 }
 function onUnload() {
     for (var i in usingComponents) {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
-            console.log(i, "还有", a.reactInstances.length, "实例没有使用过");
             a.reactInstances.length = 0;
             a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }
-    var root = this.reactContainer;
-    var container = root._reactInternalFiber;
     var instance = this.reactInstance;
-    if (!instance) {
-        console.log('onUnload的this没有React实例');
-        return;
+    if (instance) {
+        console.log('onUnload...', instance.props.path);
+        var hook = instance.componentWillUnmount;
+        if (isFn(hook)) {
+            hook.call(instance);
+        }
     }
-    console.log('onUnload...', instance.props.path);
-    var hook = instance.componentWillUnmount;
-    if (isFn(hook)) {
-        hook.call(instance);
-    }
+    var root = this.reactContainer;
+    var container = root && root._reactInternalFiber;
     if (container) {
         Renderer.updateComponent(container.hostRoot, {
             child: null
@@ -2729,8 +2734,14 @@ function onUnload() {
             }
         }, true);
     }
+    callGlobalHook('onGlobalReady');
 }
 
+var globalHooks = {
+    onShareAppMessage: 'onGlobalShare',
+    onShow: 'onGlobalShow',
+    onHide: 'onGlobalHide'
+};
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
     var config = {
@@ -2756,8 +2767,10 @@ function registerPage(PageClass, path) {
             var instance = this.reactInstance;
             var fn = instance[hook];
             if (isFn(fn)) {
-                return fn.apply(instance, arguments);
+                fn.apply(instance, arguments);
             }
+            var globalHook = globalHooks[hook];
+            callGlobalHook(globalHook);
         };
     });
     return config;

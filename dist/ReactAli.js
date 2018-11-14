@@ -1028,10 +1028,16 @@ function _getApp() {
 if (typeof getApp == 'function') {
     _getApp = getApp;
 }
+function callGlobalHook(method) {
+    var app = _getApp();
+    if (app && app[method]) {
+        return app[method]();
+    }
+}
 var delayMounts = [];
 var usingComponents = [];
 var registeredComponents = {};
-var currentPage = {
+var pageState = {
     isReady: false
 };
 function _getCurrentPages() {
@@ -2324,9 +2330,9 @@ function getEventHashCode2(name, props) {
     var type = toLowerCase(name.slice(n));
     return props['data-' + type + '-uid'];
 }
-var pageInstance = null;
 function getCurrentPage() {
-    return pageInstance;
+    console.log('------getCurrentPage-----');
+    return _getApp().page;
 }
 var Renderer$1 = createRenderer({
     render: render,
@@ -2391,7 +2397,7 @@ var Renderer$1 = createRenderer({
                 instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
             }
             if (fiber.props.isPageComponent) {
-                pageInstance = instance;
+                _getApp().page = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {
@@ -2404,7 +2410,7 @@ var Renderer$1 = createRenderer({
                 }
             }
         }
-        if (!currentPage.isReady && noMount && instance.componentDidMount) {
+        if (!pageState.isReady && noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount
@@ -2570,7 +2576,7 @@ function registerComponent(type, name) {
 }
 
 function onLoad(PageClass, path, query) {
-    currentPage.isReady = false;
+    pageState.isReady = false;
     var container = {
         type: 'page',
         props: {},
@@ -2583,6 +2589,7 @@ function onLoad(PageClass, path, query) {
         query: query,
         isPageComponent: true
     }), container);
+    callGlobalHook('onGlobalLoad');
     this.reactInstance = pageInstance;
     this.reactContainer = container;
     pageInstance.wx = this;
@@ -2590,35 +2597,33 @@ function onLoad(PageClass, path, query) {
     return pageInstance;
 }
 function onReady() {
-    currentPage.isReady = true;
+    pageState.isReady = true;
     var el = void 0;
     while (el = delayMounts.pop()) {
         el.fn.call(el.instance);
         el.instance.componentDidMount = el.fn;
     }
+    callGlobalHook('onGlobalReady');
 }
 function onUnload() {
     for (var i in usingComponents) {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
-            console.log(i, "还有", a.reactInstances.length, "实例没有使用过");
             a.reactInstances.length = 0;
             a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }
-    var root = this.reactContainer;
-    var container = root._reactInternalFiber;
     var instance = this.reactInstance;
-    if (!instance) {
-        console.log('onUnload的this没有React实例');
-        return;
+    if (instance) {
+        console.log('onUnload...', instance.props.path);
+        var hook = instance.componentWillUnmount;
+        if (isFn(hook)) {
+            hook.call(instance);
+        }
     }
-    console.log('onUnload...', instance.props.path);
-    var hook = instance.componentWillUnmount;
-    if (isFn(hook)) {
-        hook.call(instance);
-    }
+    var root = this.reactContainer;
+    var container = root && root._reactInternalFiber;
     if (container) {
         Renderer.updateComponent(container.hostRoot, {
             child: null
@@ -2631,8 +2636,18 @@ function onUnload() {
             }
         }, true);
     }
+    callGlobalHook('onGlobalReady');
 }
 
+var globalHooks = {
+    onShareAppMessage: 'onGlobalShare',
+    onShow: 'onGlobalShow',
+    onHide: 'onGlobalHide'
+};
+var showHideHooks = {
+    onShow: 'componentDidShow',
+    onHide: 'componentDidHide'
+};
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     var config = {
@@ -2644,33 +2659,29 @@ function registerPage(PageClass, path, testObject) {
         onReady: onReady,
         onUnload: onUnload
     };
-    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh').forEach(function (hook) {
+    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide').forEach(function (hook) {
         config[hook] = function () {
             var instance = this.reactInstance;
-            var fn = instance[hook];
+            var fn = instance[hook],
+                fired = false;
             if (isFn(fn)) {
-                return fn.apply(instance, arguments);
-            }
-            if (hook === 'onShareAppMessage' && typeof getApp == 'function') {
-                fn = Object(getApp()).onShareAppMessage;
-                if (isFn(fn)) {
-                    return fn();
+                fired = true;
+                var ret = fn.apply(instance, arguments);
+                if (hook === 'onShareAppMessage') {
+                    return ret;
                 }
             }
-        };
-    });
-    Array('onShow', 'onHide').forEach(function (hook) {
-        config[hook] = function () {
-            var instance = this.reactInstance;
-            var fn = instance[hook];
-            if (isFn(fn)) {
-                return fn.apply(instance, arguments);
+            var globalHook = globalHooks[hook];
+            if (globalHook) {
+                ret = callGlobalHook(globalHook);
+                if (hook === 'onShareAppMessage') {
+                    return ret;
+                }
             }
-            var discarded = hook == 'onShow' ? 'componentDidShow' : 'componentDidHide';
-            var fn2 = instance[discarded];
-            if (isFn(fn2)) {
+            var discarded = showHideHooks[hook];
+            if (!fired && instance[discarded]) {
                 console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
-                return fn2.apply(instance, arguments);
+                instance[discarded]();
             }
         };
     });
