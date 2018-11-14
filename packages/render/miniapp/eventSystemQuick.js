@@ -1,6 +1,5 @@
 import { toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
-import { _getApp } from './utils';
 
 function getDataSet(obj) {
     let ret = {};
@@ -21,7 +20,7 @@ export function dispatchEvent(e) {
     const eventType = toLowerCase(e._type);
     const target = e.target;
     const dataset = getDataSet(target._attr);
-    const app = _getApp();
+    const app = this.$app.def;
     let eventUid = dataset[eventType + 'Uid'];
     if (dataset['classUid']){
         const key = dataset['key'];

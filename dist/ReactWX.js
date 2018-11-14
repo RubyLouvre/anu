@@ -2195,7 +2195,7 @@ function getEventHashCode2(name, props) {
     return props['data-' + type + '-uid'];
 }
 function getCurrentPage() {
-    console.log('------getCurrentPage-----');
+    console.log('------getCurrentPage-----', _getApp());
     return _getApp().page;
 }
 var Renderer$1 = createRenderer({
@@ -2389,7 +2389,8 @@ function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
-    var pageInstance = render(createElement(PageClass, {
+    var pageInstance = render(
+    createElement(PageClass, {
         path: path,
         query: query,
         isPageComponent: true
@@ -2441,7 +2442,7 @@ function onUnload() {
             }
         }, true);
     }
-    callGlobalHook('onGlobalReady');
+    callGlobalHook('onGlobalUnload');
 }
 
 var globalHooks = {

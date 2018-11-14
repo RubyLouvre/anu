@@ -40,9 +40,6 @@ export function registerComponent(type, name) {
                 updateMiniApp(this.reactInstance);
                 /* eslint-disable-next-line */
                 console.log("attached时更新", name);
-            } else {
-                /* eslint-disable-next-line */
-                console.log("attached时无法更新", name);
             }
         },
         onDestroy() {

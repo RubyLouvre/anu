@@ -38,7 +38,9 @@ export function registerPage(PageClass, path) {
                 fn.apply(instance, arguments);
             }
             let globalHook = globalHooks[hook];
-            callGlobalHook(globalHook);
+            if( globalHook ){
+                callGlobalHook(globalHook);
+            }
         };
     });
     return config;

@@ -16,7 +16,7 @@ function getEventHashCode2(name, props) {
     return props['data-' + type + '-uid'];
 }
 export function getCurrentPage() {
-    console.log('------getCurrentPage-----');
+    console.log('------getCurrentPage-----', _getApp());
     return _getApp().page;
 }
 export let Renderer = createRenderer({

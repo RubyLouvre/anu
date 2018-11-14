@@ -78,6 +78,6 @@ export function onUnload() {
             true
         );
     }
-    callGlobalHook('onGlobalReady');
+    callGlobalHook('onGlobalUnload');
 }
 

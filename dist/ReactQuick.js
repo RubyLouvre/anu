@@ -551,6 +551,60 @@ function createPortal(children, parent) {
     return child;
 }
 
+function getDataSet(obj) {
+    var ret = {};
+    for (var name in obj) {
+        var key = name.replace(/data(\w)(\.*)/, function (a, b, c) {
+            return toLowerCase(b) + c;
+        });
+        ret[key] = obj[name];
+    }
+    return ret;
+}
+var beaconType = /click|tap|change|blur|input/i;
+function dispatchEvent(e) {
+    var instance = this.reactInstance;
+    if (!instance || !instance.$$eventCached) {
+        return;
+    }
+    var eventType = toLowerCase(e._type);
+    var target = e.target;
+    var dataset = getDataSet(target._attr);
+    var app = this.$app.def;
+    var eventUid = dataset[eventType + 'Uid'];
+    if (dataset['classUid']) {
+        var key = dataset['key'];
+        eventUid += key != null ? '-' + key : '';
+    }
+    var fiber = instance.$$eventCached[eventUid + 'Fiber'];
+    if (app && app.onCollectLogs && beaconType.test(eventType)) {
+        app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
+    }
+    if (instance) {
+        Renderer.batchedUpdates(function () {
+            try {
+                var fn = instance.$$eventCached[eventUid];
+                fn && fn.call(instance, createEvent(e, target));
+            } catch (err) {
+                console.log(err.stack);
+            }
+        }, e);
+    }
+}
+function createEvent(e, target) {
+    var event = Object.assign({}, e);
+    if (e.detail) {
+        Object.assign(event, e.detail);
+        target.value = e.detail.value;
+    }
+    event.stopPropagation = e.stopPropagation.bind(e);
+    event.preventDefault = e.preventDefault.bind(e);
+    event.target = target;
+    event.type = e._type;
+    event.timeStamp = new Date() - 0;
+    return event;
+}
+
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function _uuid() {
     return (Math.random() + '').slice(-4);
@@ -666,60 +720,6 @@ function safeClone(originVal) {
 }
 function toRenderProps() {
     return null;
-}
-
-function getDataSet(obj) {
-    var ret = {};
-    for (var name in obj) {
-        var key = name.replace(/data(\w)(\.*)/, function (a, b, c) {
-            return toLowerCase(b) + c;
-        });
-        ret[key] = obj[name];
-    }
-    return ret;
-}
-var beaconType = /click|tap|change|blur|input/i;
-function dispatchEvent(e) {
-    var instance = this.reactInstance;
-    if (!instance || !instance.$$eventCached) {
-        return;
-    }
-    var eventType = toLowerCase(e._type);
-    var target = e.target;
-    var dataset = getDataSet(target._attr);
-    var app = _getApp();
-    var eventUid = dataset[eventType + 'Uid'];
-    if (dataset['classUid']) {
-        var key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-    }
-    var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-    if (app && app.onCollectLogs && beaconType.test(eventType)) {
-        app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
-    }
-    if (instance) {
-        Renderer.batchedUpdates(function () {
-            try {
-                var fn = instance.$$eventCached[eventUid];
-                fn && fn.call(instance, createEvent(e, target));
-            } catch (err) {
-                console.log(err.stack);
-            }
-        }, e);
-    }
-}
-function createEvent(e, target) {
-    var event = Object.assign({}, e);
-    if (e.detail) {
-        Object.assign(event, e.detail);
-        target.value = e.detail.value;
-    }
-    event.stopPropagation = e.stopPropagation.bind(e);
-    event.preventDefault = e.preventDefault.bind(e);
-    event.target = target;
-    event.type = e._type;
-    event.timeStamp = new Date() - 0;
-    return event;
 }
 
 var fetch = require('@system.fetch');
@@ -2318,7 +2318,7 @@ function getEventHashCode2(name, props) {
     return props['data-' + type + '-uid'];
 }
 function getCurrentPage() {
-    console.log('------getCurrentPage-----');
+    console.log('------getCurrentPage-----', _getApp());
     return _getApp().page;
 }
 var Renderer$1 = createRenderer({
@@ -2662,8 +2662,6 @@ function registerComponent(type, name) {
             if (this.reactInstance) {
                 updateMiniApp(this.reactInstance);
                 console.log("attached时更新", name);
-            } else {
-                console.log("attached时无法更新", name);
             }
         },
         onDestroy: function onDestroy() {
@@ -2682,7 +2680,8 @@ function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
-    var pageInstance = render(createElement(PageClass, {
+    var pageInstance = render(
+    createElement(PageClass, {
         path: path,
         query: query,
         isPageComponent: true
@@ -2734,7 +2733,7 @@ function onUnload() {
             }
         }, true);
     }
-    callGlobalHook('onGlobalReady');
+    callGlobalHook('onGlobalUnload');
 }
 
 var globalHooks = {
@@ -2770,7 +2769,9 @@ function registerPage(PageClass, path) {
                 fn.apply(instance, arguments);
             }
             var globalHook = globalHooks[hook];
-            callGlobalHook(globalHook);
+            if (globalHook) {
+                callGlobalHook(globalHook);
+            }
         };
     });
     return config;
