@@ -24,7 +24,6 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-const rbeaconTag = /^(input|button|textarea|checkbox|radio|switch|navigator|text|div|view)$/i;
 if (buildType == 'quick') {
     utils.createRegisterStatement = function(className, path, isPage) {
         var templateString = isPage
@@ -513,7 +512,7 @@ module.exports = {
                     )
                 );
                 if (buildType == "ali") {
-                  /*  var varString = `var a = 'i${astPath.node.start}' ${
+                    /*  var varString = `var a = 'i${astPath.node.start}' ${
                         modules.indexArr
                             ? "+" + modules.indexArr.join("+'-'+")
                             : ""
@@ -523,13 +522,17 @@ module.exports = {
                     attributes.push(
                         utils.createAttribute(
                             "data-instance-uid",
-                            utils.createDynamicAttributeValue("i", astPath,   modules.indexArr|| ["0"] )
-                          //  t.jSXExpressionContainer(expr.declarations[0].init)
+                            utils.createDynamicAttributeValue(
+                                "i",
+                                astPath,
+                                modules.indexArr || ["0"]
+                            )
+                            //  t.jSXExpressionContainer(expr.declarations[0].init)
                         )
                     );
                 }
 
-                if (modules.indexArr) {
+                /*  if (modules.indexArr) {
                     attributes.push(
                         utils.createAttribute(
                             "$$index",
@@ -538,7 +541,7 @@ module.exports = {
                             )
                         )
                     );
-                }
+                }*/
             } else {
                 if (nodeName != "React.useComponent") {
                     helpers.nodeName(astPath, modules);
@@ -590,50 +593,25 @@ module.exports = {
                     attrs.push(
                         utils.createAttribute(
                             name,
-                            "e" + utils.createUUID(astPath)
+                            utils.createDynamicAttributeValue('e', astPath, modules.indexArr)
+                          //  "e" + utils.createUUID(astPath)
                         )
                     );
                     //以下标签，如果绑定了事件，我们会加上data-beacon-id，实现日志自动上传
-                    if (
-                        rbeaconTag.test(nodeName) &&
-                        /click|tap|change|blur/i.test(eventName)
+                    if (!attrs.setClassCode &&
+                        !attrs.some(function(el) {
+                            return el.name.name == "data-beacon-id";
+                        })
                     ) {
-                        if (
-                            !attrs.some(function(el) {
-                                return el.name.name == "data-beacon-id";
-                            })
-                        ) {
-                            //自动添加
-                            attrs.push(
-                                utils.createAttribute(
-                                    "data-beacon-id",
-                                    utils.createDynamicAttributeValue(nodeName, astPath, modules.indexArr)
-                            ));
-                        }
-                    }
-                    if (!attrs.setClassCode) {
-                        attrs.setClassCode = true;
+                        //自动添加
                         attrs.push(
                             utils.createAttribute(
-                                "data-class-uid",
-                                modules.classUid
+                                "data-beacon-id",
+                                "default"
                             )
                         );
-
-                        //如果是位于循环里，还必须加上data-key，防止事件回调乱窜
-                        if (modules.indexArr) {
-                            attrs.push(
-                                utils.createAttribute(
-                                    "data-key",
-                                    t.jSXExpressionContainer(
-                                        t.identifier(
-                                            modules.indexArr.join("+'-'+")
-                                        )
-                                    )
-                                )
-                            );
-                        }
                     }
+                    attrs.setClassCode = true;
                 } else if (attrName === "style") {
                     //将动态样式封装到React.toStyle中
                     var styleType = expr.type;

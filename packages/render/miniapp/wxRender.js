@@ -10,8 +10,13 @@ function getEventHashCode(name, props, key) {
     var eventCode = props['data-' + type + '-uid'];
     return eventCode + (key != null ? '-' + key : '');
 }
+function getEventHashCode2(name, props) {
+    var n = name.charAt(0) == 'o' ? 2 : 5;
+    var type = toLowerCase(name.slice(n));
+    return props['data-' + type + '-uid'];
+}
 var pageInstance = null;
-export function getCurrentPage(){
+export function getCurrentPage() {
     return pageInstance;
 }
 export let Renderer = createRenderer({
@@ -19,32 +24,59 @@ export let Renderer = createRenderer({
     updateAttribute(fiber) {
         let { props, lastProps } = fiber;
         let classId = props['data-class-uid'];
+        let beaconId = props['data-beacon-uid'];
         let instance = fiber._owner; //clazz[instanceId];
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
         }
-
-        if (instance && classId) {
-            //保存用户创建的事件在实例上
+        if (instance) {
             var cached =
                 instance.$$eventCached || (instance.$$eventCached = {});
-            for (let name in props) {
-                if (onEvent.test(name) && isFn(props[name])) {
-                    var code = getEventHashCode(name, props, props['data-key']);
-                    cached[code] = props[name];
-                    cached[code + 'Fiber'] = fiber;
-                }
-            }
-            if (lastProps) {
-                for (let name in lastProps) {
-                    if (onEvent.test(name) && !props[name]) {
-                        code = getEventHashCode(
+            if (classId) {
+                //保存用户创建的事件在实例上
+
+                for (let name in props) {
+                    if (onEvent.test(name) && isFn(props[name])) {
+                        var code = getEventHashCode(
                             name,
-                            lastProps,
-                            lastProps['data-key']
+                            props,
+                            props['data-key']
                         );
-                        delete cached[code];
-                        delete cached[code + 'Fiber'];
+                        cached[code] = props[name];
+                        cached[code + 'Fiber'] = fiber;
+                    }
+                }
+                if (lastProps) {
+                    for (let name in lastProps) {
+                        if (onEvent.test(name) && !props[name]) {
+                            code = getEventHashCode(
+                                name,
+                                lastProps,
+                                lastProps['data-key']
+                            );
+                            delete cached[code];
+                            delete cached[code + 'Fiber'];
+                        }
+                    }
+                }
+            } else if (beaconId) {
+                for (let name in props) {
+                    if (onEvent.test(name) && isFn(props[name])) {
+                        var code = getEventHashCode2(name, props);
+                        cached[code] = props[name];
+                        cached[code + 'Fiber'] = fiber;
+                    }
+                }
+                if (lastProps) {
+                    for (let name in lastProps) {
+                        if (onEvent.test(name) && !props[name]) {
+                            code = getEventHashCode2(
+                                name,
+                                lastProps
+                            );
+                            delete cached[code];
+                            delete cached[code + 'Fiber'];
+                        }
                     }
                 }
             }
@@ -65,11 +97,12 @@ export let Renderer = createRenderer({
                 instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
                 //type[uuid] = instance;
             }
-            if (fiber.props.isPageComponent){
+            if (fiber.props.isPageComponent) {
                 pageInstance = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
-            if (type.wxInstances) {//只处理component目录下的组件
+            if (type.wxInstances) {
+                //只处理component目录下的组件
                 //支付宝不会走这分支
                 if (!type.ali && !instance.wx && type.wxInstances.length) {
                     var wx = (instance.wx = type.wxInstances.shift());
@@ -80,7 +113,7 @@ export let Renderer = createRenderer({
                 }
             }
         }
-        if ( !currentPage.isReady &&  noMount && instance.componentDidMount) {
+        if (!currentPage.isReady && noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount

@@ -2,33 +2,39 @@ import { returnFalse, toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
 import { _getApp } from './utils';
 export let webview = {};
+
+var rbeaconType = /click|tap|change|blur|input/i;
 export function dispatchEvent(e) {
-    const eventType = e.type;
+    const eventType = toLowerCase(e.type);
     if (eventType == 'message') {//处理支付宝web-view组件的dataset为空的BUG
         if (webview.instance && webview.cb) {
             webview.cb.call(webview.instance, e);
         }
         return;
     }
-    const target = e.currentTarget;
-    const dataset = target.dataset || {};
-    const app = _getApp();
-    if ( dataset.beaconId && app && app.onCollectLogs ) {
-        app.onCollectLogs(dataset, eventType);
-    }
     const instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
         return;
     }
-    let eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+   
+    const app = _getApp();
+    const target = e.currentTarget;
+    const dataset = target.dataset || {};
+    let eventUid = dataset[eventType + 'Uid'];
+    if (dataset['classUid']){
+        const key = dataset['key'];
+        eventUid += key != null ? '-' + key : '';
+    }
     const fiber = instance.$$eventCached[eventUid + 'Fiber'];
-    if (e.type == 'change' && fiber) {
+    if (eventType == 'change' && fiber) {
         if (fiber.props.value + '' == e.detail.value) {
             return;
         }
     }
-    const key = dataset['key'];
-    eventUid += key != null ? '-' + key : '';
+    if ( app && app.onCollectLogs && rbeaconType.test(eventType) ) {
+        app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
+    }
+  
     if (instance) {
         Renderer.batchedUpdates(function () {
             try {

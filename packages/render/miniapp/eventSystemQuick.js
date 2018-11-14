@@ -12,22 +12,25 @@ function getDataSet(obj) {
     }
     return ret;
 }
-
+var beaconType = /click|tap|change|blur|input/i;
 export function dispatchEvent(e) {
-    const eventType = e._type;
-    const target = e.target;
-    const dataset = getDataSet(target._attr);
-    const app = _getApp();
-    if ( dataset.beaconId && app && app.onCollectLogs ) {
-        app.onCollectLogs(dataset, eventType);
-    }
     const instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
         return;
     }
-    let eventUid = dataset[toLowerCase(eventType) + 'Uid'];
-    const key = dataset['key'];
-    eventUid += key != null ? '-' + key : '';
+    const eventType = toLowerCase(e._type);
+    const target = e.target;
+    const dataset = getDataSet(target._attr);
+    const app = _getApp();
+    let eventUid = dataset[eventType + 'Uid'];
+    if (dataset['classUid']){
+        const key = dataset['key'];
+        eventUid += key != null ? '-' + key : '';
+    }
+    const fiber = instance.$$eventCached[eventUid + 'Fiber'];
+    if ( app && app.onCollectLogs && beaconType.test(eventType) ) {
+        app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
+    }
     if (instance) {
         Renderer.batchedUpdates(function () {
             try {

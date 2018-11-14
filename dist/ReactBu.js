@@ -1,5 +1,5 @@
 /**
- * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-13
+ * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-14
  * IE9+
  */
 
@@ -980,33 +980,36 @@ function toRenderProps() {
 }
 
 var webview = {};
+var rbeaconType = /click|tap|change|blur|input/i;
 function dispatchEvent(e) {
-    var eventType = e.type;
+    var eventType = toLowerCase(e.type);
     if (eventType == 'message') {
         if (webview.instance && webview.cb) {
             webview.cb.call(webview.instance, e);
         }
         return;
     }
-    var target = e.currentTarget;
-    var dataset = target.dataset || {};
-    var app = _getApp();
-    if (dataset.beaconId && app && app.onCollectLogs) {
-        app.onCollectLogs(dataset, eventType);
-    }
     var instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
         return;
     }
-    var eventUid = dataset[toLowerCase(e.type) + 'Uid'];
+    var app = _getApp();
+    var target = e.currentTarget;
+    var dataset = target.dataset || {};
+    var eventUid = dataset[eventType + 'Uid'];
+    if (dataset['classUid']) {
+        var key = dataset['key'];
+        eventUid += key != null ? '-' + key : '';
+    }
     var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-    if (e.type == 'change' && fiber) {
+    if (eventType == 'change' && fiber) {
         if (fiber.props.value + '' == e.detail.value) {
             return;
         }
     }
-    var key = dataset['key'];
-    eventUid += key != null ? '-' + key : '';
+    if (app && app.onCollectLogs && rbeaconType.test(eventType)) {
+        app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
+    }
     if (instance) {
         Renderer.batchedUpdates(function () {
             try {
@@ -2200,6 +2203,11 @@ function getEventHashCode(name, props, key) {
     var eventCode = props['data-' + type + '-uid'];
     return eventCode + (key != null ? '-' + key : '');
 }
+function getEventHashCode2(name, props) {
+    var n = name.charAt(0) == 'o' ? 2 : 5;
+    var type = toLowerCase(name.slice(n));
+    return props['data-' + type + '-uid'];
+}
 var pageInstance = null;
 function getCurrentPage() {
     return pageInstance;
@@ -2210,25 +2218,45 @@ var Renderer$1 = createRenderer({
         var props = fiber.props,
             lastProps = fiber.lastProps;
         var classId = props['data-class-uid'];
+        var beaconId = props['data-beacon-uid'];
         var instance = fiber._owner;
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
         }
-        if (instance && classId) {
+        if (instance) {
             var cached = instance.$$eventCached || (instance.$$eventCached = {});
-            for (var name in props) {
-                if (onEvent.test(name) && isFn(props[name])) {
-                    var code = getEventHashCode(name, props, props['data-key']);
-                    cached[code] = props[name];
-                    cached[code + 'Fiber'] = fiber;
+            if (classId) {
+                for (var name in props) {
+                    if (onEvent.test(name) && isFn(props[name])) {
+                        var code = getEventHashCode(name, props, props['data-key']);
+                        cached[code] = props[name];
+                        cached[code + 'Fiber'] = fiber;
+                    }
                 }
-            }
-            if (lastProps) {
-                for (var _name in lastProps) {
-                    if (onEvent.test(_name) && !props[_name]) {
-                        code = getEventHashCode(_name, lastProps, lastProps['data-key']);
-                        delete cached[code];
-                        delete cached[code + 'Fiber'];
+                if (lastProps) {
+                    for (var _name in lastProps) {
+                        if (onEvent.test(_name) && !props[_name]) {
+                            code = getEventHashCode(_name, lastProps, lastProps['data-key']);
+                            delete cached[code];
+                            delete cached[code + 'Fiber'];
+                        }
+                    }
+                }
+            } else if (beaconId) {
+                for (var _name2 in props) {
+                    if (onEvent.test(_name2) && isFn(props[_name2])) {
+                        var code = getEventHashCode2(_name2, props);
+                        cached[code] = props[_name2];
+                        cached[code + 'Fiber'] = fiber;
+                    }
+                }
+                if (lastProps) {
+                    for (var _name3 in lastProps) {
+                        if (onEvent.test(_name3) && !props[_name3]) {
+                            code = getEventHashCode2(_name3, lastProps);
+                            delete cached[code];
+                            delete cached[code + 'Fiber'];
+                        }
                     }
                 }
             }
@@ -2299,11 +2327,13 @@ var Renderer$1 = createRenderer({
             if (before == null) {
                 if (dom !== children[0]) {
                     remove(children, dom);
+                    dom.parentNode = parentNode;
                     children.unshift(dom);
                 }
             } else {
                 if (dom !== children[children.length - 1]) {
                     remove(children, dom);
+                    dom.parentNode = parentNode;
                     var i = children.indexOf(before);
                     children.splice(i + 1, 0, dom);
                 }
@@ -2323,6 +2353,7 @@ var Renderer$1 = createRenderer({
         if (fiber.parent) {
             var parent = fiber.parent;
             var node = fiber.stateNode;
+            node.parentNode = null;
             remove(parent.children, node);
         }
     }
