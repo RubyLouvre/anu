@@ -597,16 +597,16 @@ module.exports = {
                           //  "e" + utils.createUUID(astPath)
                         )
                     );
-                    //以下标签，如果绑定了事件，我们会加上data-beacon-id，实现日志自动上传
+                    //以下标签，如果绑定了事件，我们会加上data-beacon-uid，实现日志自动上传
                     if (!attrs.setClassCode &&
                         !attrs.some(function(el) {
-                            return el.name.name == "data-beacon-id";
+                            return el.name.name == "data-beacon-uid";
                         })
                     ) {
                         //自动添加
                         attrs.push(
                             utils.createAttribute(
-                                "data-beacon-id",
+                                "data-beacon-uid",
                                 "default"
                             )
                         );
