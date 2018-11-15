@@ -575,7 +575,7 @@ module.exports = {
                 let attrs = parentPath.node.attributes;
                 let expr = attrValue.expression;
                 let nodeName = parentPath.node.name.name;
-                if (/^(?:on|catch)[A-Z]/.test(attrName)) {
+                if (/^(?:on|catch)[A-Z]/.test(attrName) && !/[A-Z]/.test(nodeName)) {
                     var prefix = attrName.charAt(0) == "o" ? "on" : "catch";
                     var eventName = attrName.replace(prefix, "");
                     var otherEventName = utils.getEventName(

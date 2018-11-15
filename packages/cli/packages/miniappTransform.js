@@ -172,8 +172,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         ux += `
                             <style lang="${uxFile.cssType}">
                                 ${beautify.css(validateStyle(
-                                    cssCode
-                                ))}
+        cssCode
+    ))}
                             </style>`;
                     }
 
