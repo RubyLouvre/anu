@@ -65,7 +65,7 @@ function createEvent(e, target) {
     }
     event.stopPropagation = e.stopPropagation.bind(e);
     event.preventDefault = e.preventDefault.bind(e);
-    event.target = target;
+    event.target = fackTarget;
     event.type = e._type;
     event.timeStamp = new Date() - 0;
     return event;
