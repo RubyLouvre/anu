@@ -101,7 +101,7 @@ class Express extends React.Component {
                     this.state.pages.map(function (page) {
                         return (<div class='anu-item'>
                             <Navigator open-type="navigate" hover-class="navigator-hover" url={page.url}>{page.title}</Navigator>
-                        </div>)
+                        </div>);
                     })
                 }
 
