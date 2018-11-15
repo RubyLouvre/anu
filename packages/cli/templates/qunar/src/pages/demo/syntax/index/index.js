@@ -94,16 +94,14 @@ class Express extends React.Component {
     }
     render() {
         return (
-            <div class='col'>
-                <div class='page_hd'>{this.state.title}</div>
-                <div class='page_bd'>
-                    <div class='navigation col'>
-                        {
-                            this.state.pages.map(function(page) {
-                                return <Navigator open-type="navigate" class='item' hover-class="navigator-hover" url={page.url}>{page.title}</Navigator>;
-                            })
-                        }
-                    </div>
+            <div class='anu-block'>
+                <div class='anu-page-header'>{this.state.title}</div>
+                <div class='anu-item'>
+                    {
+                        this.state.pages.map(function(page) {
+                            return <Navigator open-type="navigate" class='anu-item' hover-class="navigator-hover" url={page.url}>{page.title}</Navigator>;
+                        })
+                    }
                 </div>
             </div>
         );

@@ -6,12 +6,12 @@ import Navigator from '@components/Navigator/index';
 class P extends React.Component {
     constructor() {
         super();
-        const ROOT_PATH = '/pages/demo/native';
+        const ROOT_PATH = "/pages/demo/native";
         this.state = {
-            title: '原生组件',
-            array: 'button,checkbox,input,slider,picker,radio,textarea,label,audio,camera,image,video'
-                .split(',')
-                .map(function (name) {
+            title: "原生组件",
+            array: "button,checkbox,input,slider,picker,radio,textarea,label,audio,camera,image,video"
+                .split(",")
+                .map(function(name) {
                     return {
                         url: `${ROOT_PATH}/${name}/index`,
                         name: name
@@ -20,19 +20,19 @@ class P extends React.Component {
         };
     }
     config = {
-        navigationBarTextStyle: '#fff',
-        navigationBarBackgroundColor: '#0088a4',
-        navigationBarTitleText: 'button demo',
-        backgroundColor: '#eeeeee',
-        backgroundTextStyle: 'light'
+        navigationBarTextStyle: "#fff",
+        navigationBarBackgroundColor: "#0088a4",
+        navigationBarTitleText: "button demo",
+        backgroundColor: "#eeeeee",
+        backgroundTextStyle: "light"
     };
     componentWillMount() {
         // eslint-disable-next-line
-        console.log('native componentWillMount');
+        console.log("native componentWillMount");
     }
     componentDidMount() {
         // eslint-disable-next-line
-        console.log('native componentDidMount');
+        console.log("native componentDidMount");
     }
 
     gotoSome(url) {
@@ -42,21 +42,22 @@ class P extends React.Component {
     }
     render() {
         return (
-            <div class='col'>
-            <div class='page_hd'>{this.state.title}</div>
-            <div class='page_bd'>
-                <div class='col'>
-                    {this.state.array.map(function (item) {
-                        return (
-                            <Navigator class="item" onClick={this.gotoSome.bind(this, item.url)}
-                                open-type="navigate"
-                                hover-class="navigator-hover"
-                                url={item.url}>{item.name}</Navigator>
-                        );
-                    })}
-                </div>
+            <div class="anu-block">
+                <div class="anu-page-header">{this.state.title}</div>
+                {this.state.array.map(function(item) {
+                    return (
+                        <Navigator
+                            class="anu-item"
+                            onClick={this.gotoSome.bind(this, item.url)}
+                            open-type="navigate"
+                            hover-class="navigator-hover"
+                            url={item.url}
+                        >
+                            {item.name}
+                        </Navigator>
+                    );
+                })}
             </div>
-        </div>
         );
     }
 }

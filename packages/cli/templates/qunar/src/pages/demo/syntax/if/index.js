@@ -1,4 +1,5 @@
 import React from '@react';
+import './index.scss';
 
 class P extends React.Component {
     constructor() {
@@ -25,7 +26,7 @@ class P extends React.Component {
         if (this.state.condition1) {
             if (this.state.condition2) {
                 return (
-                    <div>
+                    <div class='anu-block'>
                         <div>Condition1 active</div>
                         <button onTap={this.toggleCondition1.bind(this)}>
                             Inactive Condition1
@@ -38,7 +39,7 @@ class P extends React.Component {
                 );
             } else {
                 return (
-                    <div>
+                    <div class='anu-block'>
                         <div>Condition1 active</div>
                         <button onTap={this.toggleCondition1.bind(this)}>
                             Inactive Condition1
@@ -53,7 +54,7 @@ class P extends React.Component {
         } else {
             if (this.state.condition2) {
                 return (
-                    <div>
+                    <div class='anu-block'>
                         <div>Condition1 inactive</div>
                         <button onTap={this.toggleCondition1.bind(this)}>
                             Active Condition1
@@ -66,7 +67,7 @@ class P extends React.Component {
                 );
             } else {
                 return (
-                    <div>
+                    <div class='anu-block'>
                         <div>Condition1 inactive</div>
                         <button onTap={this.toggleCondition1.bind(this)}>
                             Active Condition1

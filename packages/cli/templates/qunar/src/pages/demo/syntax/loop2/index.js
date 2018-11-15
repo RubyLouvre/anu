@@ -24,7 +24,7 @@ class P extends React.Component {
 
     render() {
         return (
-            <div>
+            <div class='anu-block'>
                 <div>测试循环中的事件，点击下方格子</div>
                 <div>
 					title:
