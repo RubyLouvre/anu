@@ -43,7 +43,7 @@ class P extends React.Component {
   }
   render() {
     return (
-      <div class="container button-wrapper col">
+      <div class="button-wrapper col">
         <div class="item">
           <button
             class="item"
@@ -114,9 +114,7 @@ class P extends React.Component {
                     plain={this.state.plain}
                     disabled={this.state.disabled}
                     bindtap="primary"
-                >
-                    {' '}
-                    primary{' '}
+                >primary
                 </button>
                 <button
                     type="warn"
@@ -125,9 +123,7 @@ class P extends React.Component {
                     plain={this.state.plain}
                     disabled={this.state.disabled}
                     bindtap="warn"
-                >
-                    {' '}
-                    warn{' '}
+                >warn
                 </button>
                 <button onTap={this.setDisabled}>
                     点击设置以上按钮disabled属性

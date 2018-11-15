@@ -1,5 +1,7 @@
 import React from  '@react';
 const noop = function(){};
+import './index.scss';
+
 class Navigator extends React.Component{
     static defaultProps = {
         target: 'self',
@@ -18,7 +20,7 @@ class Navigator extends React.Component{
         });
     }
     render(){
-        return <div class={this.props.class} onTap={this.goPage.bind(this)}>{this.props.children}</div>;
+        return <div class={this.props.class} onTap={this.goPage.bind(this)}><text>{this.props.children}</text></div>;
     }
 
 }

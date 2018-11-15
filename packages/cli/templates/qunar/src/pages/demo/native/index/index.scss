@@ -11,12 +11,11 @@
   width: 100%;
 }
 
+
 .item {
-  border: 1px solid #eee;
-
   padding: 10px 20px;
-  margin: 10px 20px;
-
+  background-color: #eee;
+  margin: 2px 0px;
   text {
     display: flex;
     flex-direction: row;

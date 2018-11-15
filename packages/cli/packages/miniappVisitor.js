@@ -4,7 +4,7 @@ const template = require('babel-template');
 const path = require('path');
 const queue = require('./queue');
 const utils = require('./utils');
-const fs = require('fs');
+const fs = require('fs-extra');
 const chalk = require('chalk');
 const deps = [];
 const config = require('./config');
@@ -12,7 +12,7 @@ const buildType = config['buildType'];
 const quickFiles = require('./quickFiles');
 const quickConfig = require('./quickHelpers/config');
 /* eslint no-console: 0 */
-const helpers = require(`./${config[buildType].helpers}`);
+const helpers = require(`./${buildType}Helpers/index`);
 //微信的文本节点，需要处理换行符
 const inlineElement = {
     text: 1,
@@ -24,7 +24,6 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-
 if (buildType == 'quick') {
     utils.createRegisterStatement = function(className, path, isPage) {
         var templateString = isPage
@@ -158,7 +157,7 @@ module.exports = {
             }
         }
 
-        if (/\.(less|scss|sass|css|json)$/.test(path.extname(source))) {
+        if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
             astPath.remove();
         }
 
@@ -232,9 +231,8 @@ module.exports = {
                 delete modules["appRoute"];
             }
 
-            if (buildType == "ali") {
-                helpers.configName(json, modules.componentType);
-            }
+            helpers.configName(json, modules.componentType);
+
             var keys = Object.keys(modules.usedComponents),
                 usings;
             if (keys.length) {
@@ -243,15 +241,14 @@ module.exports = {
                     usings[name] = modules.usedComponents[name];
                 });
             }
-
             if (buildType == "quick") {
                 var obj = quickFiles[modules.sourcePath];
 
                 if (obj) {
                     quickConfig(json, modules, queue, utils);
-                    obj.config = Object.assign({}, json)
+                    obj.config = Object.assign({}, json);
                 }
-                delete json.usingComponents;
+                // delete json.usingComponents;
                 if (Object.keys(json).length) {
                     var a = template("0," + JSON.stringify(json, null, 4))();
                     var keyValue = t.ObjectProperty(
@@ -374,8 +371,8 @@ module.exports = {
                     return;
                 }
             }
-            //app.js export default App(new Demo())改成
-            //     export default React.App(new Demo())
+            //     app.js export default App(new Demo())转换成
+            //     export default React.registerApp(new Demo())
             if (
                 modules.componentType == "App" &&
                 buildType == "quick" &&
@@ -479,12 +476,13 @@ module.exports = {
         enter: function(astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
+            nodeName = helpers.nodeName(astPath, modules) || nodeName;
             let bag = modules.importComponents[nodeName];
-            if(!bag){
+            if (!bag) {
                 var oldName = nodeName;
                 //button --> Button
                 nodeName = helpers.nodeName(astPath, modules) || oldName;
-                if(oldName !== oldName){
+                if (oldName !== oldName) {
                     bag = modules.importComponents[nodeName];
                 }
             }
@@ -501,6 +499,7 @@ module.exports = {
                 }
                 modules.usedComponents["anu-" + nodeName.toLowerCase()] =
                     "/components/" + nodeName + "/index";
+
                 astPath.node.name.name = "React.useComponent";
 
                 // eslint-disable-next-line
@@ -513,21 +512,27 @@ module.exports = {
                     )
                 );
                 if (buildType == "ali") {
-                    var varString = `var a = 'i${astPath.node.start}' ${
+                    /*  var varString = `var a = 'i${astPath.node.start}' ${
                         modules.indexArr
                             ? "+" + modules.indexArr.join("+'-'+")
                             : ""
                     }`;
                     var expr = template(varString)();
+                  */
                     attributes.push(
-                        t.JSXAttribute(
-                            t.JSXIdentifier("data-instance-uid"),
-                            t.jSXExpressionContainer(expr.declarations[0].init)
+                        utils.createAttribute(
+                            "data-instance-uid",
+                            utils.createDynamicAttributeValue(
+                                "i",
+                                astPath,
+                                modules.indexArr || ["0"]
+                            )
+                            //  t.jSXExpressionContainer(expr.declarations[0].init)
                         )
                     );
                 }
 
-                if (modules.indexArr) {
+                /*  if (modules.indexArr) {
                     attributes.push(
                         utils.createAttribute(
                             "$$index",
@@ -536,7 +541,7 @@ module.exports = {
                             )
                         )
                     );
-                }
+                }*/
             } else {
                 if (nodeName != "React.useComponent") {
                     helpers.nodeName(astPath, modules);
@@ -588,32 +593,27 @@ module.exports = {
                     attrs.push(
                         utils.createAttribute(
                             name,
-                            "e" + utils.createUUID(astPath)
+                            utils.createDynamicAttributeValue(
+                                "e",
+                                astPath,
+                                modules.indexArr
+                            )
+                            //  "e" + utils.createUUID(astPath)
                         )
                     );
-                    if (!attrs.setClassCode) {
-                        attrs.setClassCode = true;
+                    //以下标签，如果绑定了事件，我们会加上data-beacon-uid，实现日志自动上传
+                    if (
+                        !attrs.setClassCode &&
+                        !attrs.some(function(el) {
+                            return el.name.name == "data-beacon-uid";
+                        })
+                    ) {
+                        //自动添加
                         attrs.push(
-                            utils.createAttribute(
-                                "data-class-uid",
-                                modules.classUid
-                            )
+                            utils.createAttribute("data-beacon-uid", "default")
                         );
-
-                        //如果是位于循环里，还必须加上data-key，防止事件回调乱窜
-                        if (modules.indexArr) {
-                            attrs.push(
-                                utils.createAttribute(
-                                    "data-key",
-                                    t.jSXExpressionContainer(
-                                        t.identifier(
-                                            modules.indexArr.join("+'-'+")
-                                        )
-                                    )
-                                )
-                            );
-                        }
                     }
+                    attrs.setClassCode = true;
                 } else if (attrName === "style") {
                     //将动态样式封装到React.toStyle中
                     var styleType = expr.type;
@@ -703,7 +703,10 @@ module.exports = {
         //去掉内联元素内部的所有换行符
         if (astPath.parentPath.node.type == "JSXElement") {
             var open = astPath.parentPath.node.openingElement;
-            if (config.buildType === "wx" && inlineElement[open.name.name]) {
+            if (
+                /quick|wx/.test(config.buildType) &&
+                inlineElement[open.name.name]
+            ) {
                 astPath.node.value = astPath.node.value.replace(/\r?\n/g, "");
             }
         }
@@ -719,6 +722,7 @@ module.exports = {
     JSXClosingElement: function(astPath, state) {
         let modules = utils.getAnu(state);
         let nodeName = astPath.node.name.name;
+        nodeName = helpers.nodeName(astPath, modules) || nodeName;
         //将组件标签转换成React.toComponent标签，html标签转换成view/text标签
         if (
             !modules.importComponents[nodeName] &&

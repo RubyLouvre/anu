@@ -7,13 +7,12 @@ const rbabel = require('rollup-plugin-babel');
 const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const rollupLess = require('rollup-plugin-less');
-const rollupJson = require('rollup-plugin-json');
 const rollupScss = require('rollup-plugin-scss');
 const alias = require('rollup-plugin-alias');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
+const glob = require('glob');
 const utils = require('./utils');
-const queue = require('./queue');
 const crypto = require('crypto');
 const config = require('./config');
 const quickFiles = require('./quickFiles');
@@ -25,7 +24,6 @@ let cwd = process.cwd();
 let inputPath = path.join(cwd,  config.sourceDir);
 let entry = path.join(inputPath, 'app.js');
 let cache = {};
-
 let needUpdate = (id, code, fn) => {
     let sha1 = crypto
         .createHash('sha1')
@@ -37,17 +35,46 @@ let needUpdate = (id, code, fn) => {
     }
 };
 
-const isInNodeModules = path => {
+const isNpm = path => {
     return /\/node_modules\//.test(path);
 };
 const isStyle = path => {
     return /\.(?:less|scss|sass)$/.test(path);
 };
-
 const isJs = path => {
     return /\.js$/.test(path);
 };
+const isJson = path => {
+    return /\.json$/.test(path);
+};
+const getFileType = (id)=>{
+    if ( isNpm(id) ) {
+        return 'npm';
+    } else if (isStyle(id)){
+        return 'css';
+    } else if (isJs(id)) {
+        return 'js';
+    } else if (isJson(id)){
+        return 'json';
+    }
 
+};
+
+//跳过rollup的语法解析patchComponents中的样式插件
+let rollupfilterPatchStylePlugin = ()=>{
+    return {
+        transform: function(code, id){
+            if (
+                /\/patchComponents\//.test(id)
+                && ['.css', '.less', '.scss', '.sass'].includes(path.extname(id))
+            ) {
+                return false;
+            }
+        }
+    };
+};
+
+//监听打包资源
 utils.on('build', ()=>{
     generate();
 });
@@ -58,9 +85,10 @@ class Parser {
         this.jsFiles = [];
         this.styleFiles = [];
         this.npmFiles = [];
-        this.jsonFiles = [];
-        this.customAliasConfig = utils.getCustomAliasConfig();
-
+        this.customAliasConfig = Object.assign(
+            { resolve: ['.js','.css', '.scss', '.sass', '.less'] },
+            utils.getCustomAliasConfig()
+        );
         this.inputConfig = {
             input: this.entry,
             treeshake: false,
@@ -70,103 +98,101 @@ class Parser {
                     jail: path.join(cwd), //从项目根目录中搜索npm模块, 防止向父级查找
                     preferBuiltins: false,
                     customResolveOptions: {
-                        moduleDirectory: path.join(cwd, 'node_modules')
+                        moduleDirectory: [
+                            path.join(cwd, 'node_modules'),
+                        ]
                     }
-                }),
-                commonjs({
-                    include: path.join(cwd, 'node_modules/**')
                 }),
                 rollupLess({
-                    output: function() {
+                    output: ()=>{
                         return '';
                     }
                 }),
-                rollupJson(),
-                rollupScss({
-                    output: function() {
-                        return '';
-                    }
+                rollupScss(()=>{
+                    return '';
+                }),
+                rollupfilterPatchStylePlugin(),
+                commonjs({
+                    include: [
+                        path.join(cwd, 'node_modules/**')
+                    ]
                 }),
                 rbabel({
                     babelrc: false,
+                    only: ['**/*.js'],
                     presets: [require('babel-preset-react')],
                     plugins: [
                         require('babel-plugin-transform-class-properties'),
                         require('babel-plugin-transform-object-rest-spread')
                     ]
-                })
+                    
+                }),
+                
             ],
             onwarn: warning => {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
                 if (warning.code === 'UNRESOLVED_IMPORT') {
                     if (this.customAliasConfig[warning.source.split(path.sep)[0]]) return;
-                    console.log(chalk.red(`缺少${warning.source}, 请检查`));
+                    console.log(chalk.red(`缺少模块: ${warning.source}, 请检查`));
                 }
             }
+            
         };
 
-        
+        //监听是否有patchComponent解析
+        utils.on('compliePatch', (data)=>{
+            this.inputConfig.input = path.join(data.href, 'index.js');
+            this.parse();
+        });
         
     }
     async parse() {
-        let spinner = utils.spinner('正在分析依赖...');
-        spinner.start();
-        const bundle = await rollup.rollup(this.inputConfig);
-        spinner.succeed('依赖分析成功');
+        let bundle = await rollup.rollup(this.inputConfig);
         bundle.modules.forEach(item => {
             const id = item.id;
-            if (/commonjsHelpers/.test(id)) {
-                return;
-            }
-            if (isInNodeModules(id)) {
-                this.npmFiles.push({
-                    id: id,
-                    originalCode: item.originalCode
-                });
-                return;
-            }
-            if (isStyle(id)) {
-                if (config.buildType == 'quick'){
-                    //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
-                    var jsName = id.replace(/\.\w+$/, '.js');
-                    if (fs.pathExistsSync(jsName)){
-                        var cssExt = path.extname(id).slice(1);
-                        quickFiles[jsName] = {
-                            cssCode: item.originalCode,
-                            cssType: cssExt === 'scss' ?  'sass' : cssExt
-                        };
-                        return;
-                    }
-                }
-                this.styleFiles.push({
-                    id: id,
-                    originalCode: item.originalCode
-                });
-                return;
-            }
-
-            if (/\.json$/.test(id)) {
-                this.jsonFiles.push({
-                    id: id,
-                    originalCode: item.originalCode
-                });
-                return;
-            }
-
-            if (isJs(id)) {
-                this.jsFiles.push({
-                    id: id,
-                    originalCode: item.originalCode,
-                    resolvedIds: this.filterNpmModule(item.resolvedIds) //处理路径alias配置
-                });
-                return;
-            }
-
+            if (/commonjsHelpers/.test(id)) return;
+            this.moduleMap()[getFileType(id)](item);
         });
         this.transform();
         this.copyAssets();
-        
+        this.copyProjectConfig();
+    }
+    moduleMap() {
+        return {
+            npm: (data)=>{
+                this.npmFiles.push({
+                    id: data.id,
+                    originalCode: data.originalCode
+                });
+            },
+            css: (data)=>{
+                if (config.buildType == 'quick'){
+                    //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
+                    var jsName = data.id.replace(/\.\w+$/, '.js');
+                    jsName = utils.resolvePatchComponentPath(jsName);
+                    if (fs.pathExistsSync(jsName)) {
+                        var cssExt = path.extname(data.id).slice(1);
+                        quickFiles[jsName] = {
+                            cssPath: data.id,
+                            cssType: cssExt === 'scss' ?  'sass' : cssExt
+                        };
+                    }
+                    return;
+                }
+                this.styleFiles.push({
+                    id: data.id,
+                    originalCode: data.originalCode
+                });
+            },
+            js: (data)=>{
+                this.jsFiles.push({
+                    id: data.id,
+                    originalCode: data.originalCode,
+                    resolvedIds: this.filterNpmModule(data.resolvedIds) //处理路径alias配置
+                });
+            }
+        };
     }
     filterNpmModule(resolvedIds) {
         //判定路径是否以字母开头
@@ -182,7 +208,6 @@ class Parser {
         this.updateJsQueue(this.jsFiles);
         this.updateStyleQueue(this.styleFiles);
         this.updateNpmQueue(this.npmFiles);
-        this.updateJsonQueue(this.jsonFiles);
     }
     checkComponentsInPages(id) {
         let flag = false;
@@ -220,9 +245,9 @@ class Parser {
     updateStyleQueue(styleFiles) {
         while (styleFiles.length) {
             let data = styleFiles.shift();
-            let { id, originalCode } = data;           
+            let { id, originalCode } = data;    
             needUpdate(id, originalCode, function(){
-                styleTransform(data);
+                styleTransform(data);   
             });
         }
     }
@@ -236,30 +261,44 @@ class Parser {
             });
         }
     }
-    updateJsonQueue(jsonFiles) {
-        while (jsonFiles.length){
-            let item = jsonFiles.shift();
-            needUpdate(item.id, item.originalCode, function(){
-                queue.push({
-                    path:  utils.updatePath(item.id, config.sourceDir, 'dist'),
-                    code: item.originalCode,
-                    type: 'json'
-                });
-            });
-        }
-    }
     copyAssets() {
         const dir = 'assets';
         const inputDir = path.join(inputPath, dir);
-        //快应用copy到src目录中
-        const distDir =  path.join( cwd, config.buildType === 'quick' ? 'src' : config.buildDir, dir );
-        fs.ensureDirSync(distDir);
-        fs.copy(inputDir, distDir, err => {
+        //拷贝assets下非js, css, sass, scss, less文件
+        glob(inputDir + '/**', {nodir: true}, (err, files)=>{
+            if (err) {
+                console.log(err);
+                return;
+            }
+            files.forEach((filePath)=>{
+                if ( /\.(js|scss|sass|less|css)$/.test(filePath) ) return;
+                let dist  = utils.updatePath(
+                    filePath, 
+                    config.sourceDir, 
+                    config.buildType === 'quick' ? 'src' : config.buildDir
+                );
+                fs.ensureFileSync(dist);
+                fs.copyFile(filePath, dist, (err)=>{
+                    if (err ) {
+                        console.log(err);
+                    }
+                });
+            });
+        });
+
+    }
+    copyProjectConfig() {
+        //copy project.config.json
+        if ( ['ali', 'bu', 'quick'].includes( config.buildType) ) return;
+        let fileName = 'project.config.json';
+        let dist = path.join(cwd, config.buildDir, fileName);
+        let src = path.join(cwd, config.sourceDir, fileName);
+        fs.ensureFileSync(dist);
+        fs.copyFile( src, dist, (err)=>{
             if (err) {
                 console.log(err);
             }
         });
-        
     }
     watching() {
         let watchDir = path.dirname(this.entry);
@@ -287,21 +326,17 @@ class Parser {
     }
 }
 
-
-
 async function build(arg) {
     await utils.asyncReact();  //同步react
-    utils.cleanDir();  //删除一些不必要的目录, 避免来回切换构建类型产生冗余目录
     if (config['buildType'] === 'quick') {
         //快应用mege package.json 以及 生成秘钥
         utils.initQuickAppConfig();
     }
-    const parser = new Parser(entry);
+    let spinner = utils.spinner('正在分析依赖...').start();
+    let parser = new Parser(entry);
     await parser.parse();
-    if (arg === 'watch') {
-        parser.watching();
-    }
-    
+    spinner.succeed('依赖分析成功');
+    if (arg === 'watch') parser.watching();
 }
 
 module.exports = build;

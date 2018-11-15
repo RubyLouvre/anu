@@ -1,11 +1,7 @@
 const file = require('@system.file');
 const SUCCESS_MESSAGE = 'ok';
+import {runFunction} from '../utils';
 
-function runFunction(fn, ...args) {
-  if (typeof fn == 'function') {
-    fn.call(null, ...args);
-  }
-}
 
 // 获取本地文件的文件信息
 function getSavedFileInfo({

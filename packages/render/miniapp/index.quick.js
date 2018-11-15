@@ -11,14 +11,14 @@ import {
 } from 'react-core/createElement';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
-import { eventSystem } from './eventSystemQuick';
+import { dispatchEvent } from './eventSystemQuick';
 import { api } from './api.quick';
 import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyleQuick';
-import { toRenderProps, _getCurrentPages, useComponent } from './utils';
+import { toRenderProps, shareObject, _getApp, _getCurrentPages, useComponent } from './utils';
 
 import { registerComponent } from './registerComponentQuick';
-import { registerPage, getApp, shareObject } from './registerPageQuick';
+import { registerPage } from './registerPageQuick';
 
 
 
@@ -27,7 +27,9 @@ let { render } = Renderer;
 
 let React = getWindow().React = {
     //平台相关API
-    eventSystem,
+    eventSystem: {
+        dispatchEvent
+    },
     findDOMNode: function() {
         console.log("小程序不支持findDOMNode"); /* eslint-disable-line */
     },
@@ -53,10 +55,10 @@ let React = getWindow().React = {
     registerComponent,
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
+    getApp: _getApp,
     registerPage,
     shareObject,
     toStyle,
-    getApp,
     appType: 'quick',
     registerApp(demo){
         var app = {};

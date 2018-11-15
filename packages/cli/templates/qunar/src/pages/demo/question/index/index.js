@@ -42,7 +42,7 @@ class P extends React.Component {
     componentDidMount() {
         this.getData();
     }
-    componentDidShow() {
+    onShow() {
         let app = React.getApp();
         if (app.globalData.citySelect) {
             this.setState({ city: app.globalData.citySelect });

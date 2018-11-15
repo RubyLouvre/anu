@@ -1,5 +1,5 @@
 import { registeredComponents, usingComponents, updateMiniApp } from './utils';
-import { eventSystem } from './eventSystem';
+import { dispatchEvent } from './eventSystem';
 
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
@@ -11,34 +11,26 @@ export function registerComponent(type, name) {
             state: {},
             context: {}
         },
-
         created() {
-            usingComponents[name] = type;
-            var instance = reactInstances.shift();
-            if (instance) {
-                /* eslint-disable-next-line */
-                console.log("created时为", name, "添加wx");
-                instance.wx = this;
-                this.reactInstance = instance;
-            } else {
-                /* eslint-disable-next-line */
-                console.log("created时为", name, "没有对应react实例");
-                wxInstances.push(this);
-            }
+            console.log("create", name);//eslint-disabled-line
         },
         attached() {
-            if (this.reactInstance) {
+            usingComponents[name] = type;
+            let instance = reactInstances.shift();
+            if (instance) {
+                console.log("attached时为", name, "添加wx");//eslint-disabled-line
+                instance.wx = this;
+                this.reactInstance = instance;
+                this.isUpdate = true;
                 updateMiniApp(this.reactInstance);
-                /* eslint-disable-next-line */
-                console.log("attached时更新", name);
             } else {
-                /* eslint-disable-next-line */
-                console.log("attached时无法更新", name);
+                console.log("attached时为", name, "没有对应react实例");//eslint-disabled-line
+                wxInstances.push(this);
             }
         },
         detached() {
             this.reactInstance = null;
         },
-        dispatchEvent: eventSystem.dispatchEvent
+        dispatchEvent
     };
 }

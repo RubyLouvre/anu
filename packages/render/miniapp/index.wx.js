@@ -12,10 +12,10 @@ import {
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { injectAPIs } from './api';
-import { eventSystem } from './eventSystem';
+import { dispatchEvent, webview } from './eventSystem';
 import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyle';
-import { toRenderProps,_getCurrentPages, useComponent } from './utils';
+import { toRenderProps,_getApp, _getCurrentPages, useComponent } from './utils';
 
 import { registerPage } from './registerPageWx';
 import { registerComponent } from './registerComponentWx';
@@ -25,7 +25,9 @@ let { render } = Renderer;
 
 let React = getWindow().React =  {
     //平台相关API
-    eventSystem,
+    eventSystem: {
+        dispatchEvent
+    },
 
     findDOMNode: function() {
         console.log('小程序不支持findDOMNode'); /* eslint-disable-line */
@@ -33,7 +35,7 @@ let React = getWindow().React =  {
     //fiber底层API
     render: render,
     hydrate: render,
-
+    webview,
     Fragment,
     PropTypes,
     Children,
@@ -51,6 +53,7 @@ let React = getWindow().React =  {
     registerComponent,
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
+    getApp: _getApp,
     registerPage,
     toStyle,
     appType: 'wx'

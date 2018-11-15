@@ -16,6 +16,18 @@ function transform(obj) {
 
 export function toStyle(obj, props, key) {
     if (props) {
+        if (typeof obj == 'string' ){
+            var ret = {};
+            obj.split(';').forEach(function(el){
+                var index = el.indexOf(':');
+                var name  = el.slice(0, index).trim();
+                var value  = el.slice(index).trim();
+                if (name){
+                    ret[name] = value;
+                }
+            });
+            obj = ret;
+        }
         var str = transform.call(this, obj);
         props[key] = str;
     } else {

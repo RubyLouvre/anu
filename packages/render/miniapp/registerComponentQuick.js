@@ -1,6 +1,6 @@
 
 import { registeredComponents, usingComponents, updateMiniApp } from './utils';
-import { eventSystem } from './eventSystemQuick';
+import { dispatchEvent } from './eventSystemQuick';
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = (type.reactInstances = []);
@@ -40,15 +40,12 @@ export function registerComponent(type, name) {
                 updateMiniApp(this.reactInstance);
                 /* eslint-disable-next-line */
                 console.log("attached时更新", name);
-            } else {
-                /* eslint-disable-next-line */
-                console.log("attached时无法更新", name);
             }
         },
         onDestroy() {
             this.reactInstance = null;
         },
-        dispatchEvent: eventSystem.dispatchEvent
+        dispatchEvent
         
     };
 }

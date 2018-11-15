@@ -33,6 +33,8 @@ import './pages/demo/syntax/loop4/index';
 import './pages/demo/syntax/loop5/index';
 import './pages/demo/syntax/loop6/index';
 import './pages/demo/syntax/webview/index';
+
+
 import './pages/demo/syntax/extend/index';
 import './pages/demo/syntax/inlineStyle/index';
 import './pages/demo/syntax/if/index';
@@ -95,6 +97,26 @@ class Demo extends React.Component {
             ]
         }
     };
+    onCollectLogs(dataset, type, node){
+        var path = React.getCurrentPage().props.path;
+        var uuid = dataset.beaconId;
+        if (node){
+            var xpath = [];
+            while (node.parentNode){
+                var index = node.parentNode.children.indexOf(node);
+                xpath.unshift(index);
+                node = node.parentNode;
+            }
+            uuid =  xpath.join('/');
+        }
+        console.log("收集日志", path, type, uuid);//eslint-disable-line
+    }
+    onReportLogs(){
+
+    }
+    onHide(){
+
+    }
     globalData = {
         ufo: 'ufo'
     };
@@ -104,4 +126,8 @@ class Demo extends React.Component {
     }
     
 }
-export default App(new Demo());//eslint-disable-line
+//这样写相当于为每一个页面组件的外面都加上一个<Provider />，如果你想在页面上用到store里的数据，
+//需要用react-redux的connect方法包一下，详见pages/demo/syntax/redux
+//React.applyAppStore(store);
+// eslint-disable-next-line
+export default App(new Demo());

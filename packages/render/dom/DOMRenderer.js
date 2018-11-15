@@ -122,7 +122,7 @@ function insertElement(fiber) {
         parent.insertBefore(dom, after);
         Renderer.inserting = null;
     } catch (e) {
-        throw e;
+        //eslint-disable-line
     }
 }
 

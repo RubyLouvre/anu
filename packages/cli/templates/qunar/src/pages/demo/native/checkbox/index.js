@@ -33,7 +33,7 @@ class P extends React.Component {
 
     render() {
         return (
-            <div class="container">
+            <div>
                 <checkbox-group onChange={this.checkboxChange}>
                     {this.state.items.map(function(item) {
                         return (

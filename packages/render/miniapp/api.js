@@ -1,4 +1,5 @@
 import { onAndSyncApis, noPromiseApis, otherApis } from './apiList';
+import { isFn } from 'react-core/util';
 
 function initPxTransform() {
     var wxConfig = this.api;
@@ -107,7 +108,12 @@ function processApis(ReactWX, facade) {
                             }
                         };
                     });
-                    task = facade[key](obj);
+                    if (!isFn(facade[key])){
+                        console.warn('平台未不支持',key, '方法');
+                    } else {
+                        task = facade[key](obj);
+                    }
+                   
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
                     p.progress = cb => {
@@ -141,9 +147,6 @@ export function injectAPIs(ReactWX, facade, override) {
     ReactWX.api = {};
     processApis(ReactWX, facade);
     ReactWX.api.request = request;
-    if (typeof getApp == 'function') {
-        ReactWX.getApp = getApp;
-    }
     if (override){
         var obj = override(facade);
         Object.assign(ReactWX.api, obj);

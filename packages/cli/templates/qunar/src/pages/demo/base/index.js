@@ -54,7 +54,7 @@ class P extends React.Component {
     }
     render() {
         return (
-            <div class="container">
+            <div>
                 <div class="item-list">
                     <h2 class="item-list-hd">Icon</h2>
                     <div class="group">

@@ -14,84 +14,57 @@ let validateStyle = require('./validateStyle');
 let nodeSass = require('node-sass');
 let cwd = process.cwd();
 
+let componentOrAppOrPageReg = utils.getComponentOrAppOrPageReg();
 //抽离async/await语法支持，可能非App/Component/Page业务中也包含async/await语法
-const asyncAwaitPlugin  = utils.asyncAwaitHackPlugin(config.buildType);
+const asyncAwaitPlugin = utils.asyncAwaitHackPlugin(config.buildType);
 function transform(sourcePath, resolvedIds, originalCode) {
-    if (/^(React)/.test( path.basename(sourcePath)) ) {
+    if (/^(React)/.test(path.basename(sourcePath))) {
         queue.push({
             code: originalCode,
             type: 'js',
-            path: utils.updatePath(sourcePath, config.sourceDir, 'dist') 
+            path: utils.updatePath(sourcePath, config.sourceDir, 'dist')
         });
         return;
     }
+    let transformFilePath = sourcePath;
+    sourcePath = utils.resolvePatchComponentPath(sourcePath);
+
     //用户自定义alias与npm相对路径处理都作为alias配置
     let aliasMap = Object.assign(
         utils.updateCustomAlias(sourcePath, resolvedIds),
         utils.updateNpmAlias(sourcePath, resolvedIds)
     );
+
     //pages|app|components需经过miniappPlugin处理
-    let miniAppPluginsInjectConfig = utils
-        .getComponentOrAppOrPageReg()
-        .test(sourcePath)
+    let miniAppPluginsInjectConfig = componentOrAppOrPageReg.test(
+        transformFilePath
+    )
         ? [miniappPlugin]
         : [];
     babel.transformFile(
-        sourcePath,
+        transformFilePath,
         {
             babelrc: false,
             plugins: [
                 require('babel-plugin-syntax-jsx'),
                 require('babel-plugin-transform-decorators-legacy').default,
                 require('babel-plugin-transform-object-rest-spread'),
-                require('babel-plugin-transform-async-to-generator'),
                 require('babel-plugin-transform-es2015-template-literals'),
-                asyncAwaitPlugin,
-                ...miniAppPluginsInjectConfig,
-                [
-                    require('babel-plugin-module-resolver'),
-                    {
-                        resolvePath(moduleName) {
-                            if (!utils.isNpm(moduleName)) return;
-                            //针对async/await语法依赖的npm路径做处理
-                            if (/regenerator-runtime\/runtime/.test(moduleName)) {
-                                //微信,百度小程序async/await语法依赖regenerator-runtime/runtime
-                                let regeneratorRuntimePath =  utils.getRegeneratorRuntimePath(sourcePath);
-
-                                queue.push({
-                                    code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
-                                    path: utils.updatePath(
-                                        regeneratorRuntimePath,
-                                        'node_modules',
-                                        'dist' + path.sep + 'npm'
-                                    ),
-                                    type: 'npm'
-                                });
-
-                                Object.assign(
-                                    aliasMap,
-                                    utils.updateNpmAlias(sourcePath, { 'regenerator-runtime/runtime': regeneratorRuntimePath } )
-                                );
-
-                            }
-                            let value = aliasMap[moduleName] ;
-                            value = /^\w/.test(value) ? `./${value}` : value;
-                            return value;
-                        }
-                    }
-                ]
+                require('babel-plugin-transform-async-to-generator'),
+                ...miniAppPluginsInjectConfig
             ]
         },
         function(err, result) {
             if (err) {
                 //eslint-disable-next-line
-                console.log(sourcePath, '\n', err);
+                console.log(transformFilePath, "\n", err);
             }
             //babel6无transform异步方法
             setImmediate(() => {
                 let babelPlugins = [
+                    asyncAwaitPlugin,
                     [
-                        //process.env.ANU_ENV
+                        //配置环境变量
                         require('babel-plugin-transform-inline-environment-variables'),
                         {
                             env: {
@@ -100,12 +73,60 @@ function transform(sourcePath, resolvedIds, originalCode) {
                             }
                         }
                     ],
-                    require('babel-plugin-minify-dead-code-elimination')
+                    require('babel-plugin-minify-dead-code-elimination'), //移除没用的代码
+                    [
+                        require('babel-plugin-module-resolver'), //计算别名配置以及处理npm路径计算
+                        {
+                            resolvePath(moduleName) {
+                                if (!utils.isNpm(moduleName)) return;
+                                //针对async/await语法依赖的npm路径做处理
+                                if (
+                                    /regenerator-runtime\/runtime/.test(
+                                        moduleName
+                                    )
+                                ) {
+                                    let regeneratorRuntimePath = utils.getRegeneratorRuntimePath(
+                                        sourcePath
+                                    );
+                                    queue.push({
+                                        code: fs.readFileSync(
+                                            regeneratorRuntimePath,
+                                            'utf-8'
+                                        ),
+                                        path: utils.updatePath(
+                                            regeneratorRuntimePath,
+                                            'node_modules',
+                                            'dist' + path.sep + 'npm'
+                                        ),
+                                        type: 'npm'
+                                    });
+                                    Object.assign(
+                                        aliasMap,
+                                        utils.updateNpmAlias(sourcePath, {
+                                            'regenerator-runtime/runtime': regeneratorRuntimePath
+                                        })
+                                    );
+                                }
+                                let value = aliasMap[moduleName];
+                                value = /^\w/.test(value)
+                                    ? `./${value}`
+                                    : value;
+                                return value;
+                            }
+                        }
+                    ]
                 ];
-                result = babel.transform(result.code, {
-                    babelrc: false,
-                    plugins: babelPlugins
-                });
+                //babel无transform异步方法
+                try {
+                    result = babel.transform(result.code, {
+                        babelrc: false,
+                        plugins: babelPlugins
+                    });
+                } catch (err) {
+                    //eslint-disable-next-line
+                    console.log(transformFilePath, "\n", err);
+                }
+
                 //处理中文转义问题
                 result.code = result.code.replace(
                     /\\?(?:\\u)([\da-f]{4})/gi,
@@ -129,51 +150,80 @@ function transform(sourcePath, resolvedIds, originalCode) {
                             );
                             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
                         }
-                        
+
                         ux = importTag + ux;
                     }
                     ux = beautify.html(ux, {
                         indent: 4,
                         'wrap-line-length': 100
                     });
-                    if (sourcePath.indexOf('components' ) > 0){
+                    if (sourcePath.indexOf('components') > 0) {
                         queue.push({
-                            code: beautify.js(result.code.replace('console.log(nanachi)', 'export {React}')),
-                             
-                            path:  utils.updatePath(sourcePath, config.sourceDir, 'dist') 
+                            code: beautify.js(
+                                result.code.replace(
+                                    'console.log(nanachi)',
+                                    'export {React}'
+                                )
+                            ),
+
+                            path: utils.updatePath(
+                                sourcePath,
+                                config.sourceDir,
+                                'dist'
+                            )
                         });
-                        var componentName =  sourcePath.match(/components\/(\w+)/)[1];
+                        var componentName = sourcePath.match(
+                            /components\/(\w+)/
+                        )[1];
                         result.code = `import ${componentName}, { React } from './index.js';
                         export default  React.registerComponent(${componentName}, '${componentName}');`;
                     }
                     //假设存在<script>
                     ux += `
-<script>
-                        ${beautify.js(result.code)}
-</script>`;
+                        <script>
+                            ${beautify.js(result.code)}
+                        </script>`;
                     if (uxFile.cssType) {
                         //假设存在<style>
+                        let cssCode = nodeSass
+                            .renderSync({
+                                file: uxFile.cssPath,
+                                importer: function(importer) {
+                                    //处理scss文件中的alias配置, 返回@import引用的绝对路径
+                                    importer = utils.resolveStyleAlias(
+                                        importer
+                                    );
+                                    return {
+                                        file: importer
+                                    };
+                                }
+                            })
+                            .css.toString();
                         ux += `
-<style lang="${uxFile.cssType}">
-                            ${beautify.css(validateStyle(
-        nodeSass.renderSync({
-            data: uxFile.cssCode
-        }).css.toString()
-    ))}
-</style>`;
+                            <style lang="${uxFile.cssType}">
+                                ${beautify.css(validateStyle(cssCode))}
+                            </style>`;
                     }
 
                     queue.push({
                         code: ux,
-                        path:  utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux') 
+                        path: utils.updatePath(
+                            sourcePath,
+                            config.sourceDir,
+                            'dist',
+                            'ux'
+                        )
                     });
                 } else {
                     queue.push({
                         code: result.code,
-                        path:  utils.updatePath(sourcePath, config.sourceDir, 'dist'),
+                        path: utils.updatePath(
+                            sourcePath,
+                            config.sourceDir,
+                            'dist'
+                        ),
                         type: 'js'
                     });
-
                 }
             });
         }

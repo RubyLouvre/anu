@@ -16,6 +16,8 @@ const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
 const config = require('../config');
 const Event = new EventEmitter();
+const pkg = require(path.join(cwd, 'package.json'));
+const userConfig =  pkg.nanachi || pkg.mpreact || {};
 process.on('unhandledRejection', error => {
     // eslint-disable-next-line
     console.error("unhandledRejection", error);
@@ -96,19 +98,28 @@ let utils = {
     createNodeName(map, backup){
         const buildType = config.buildType;
         const patchComponents = config[buildType].patchComponents;
+        const _this = this;
+        
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return function(astPath, modules){
-            var orig = astPath.node.name.name;//button
-            var hasPatch = patchComponents[orig];
+            var orig = astPath.node.name.name;
+            var hasPatch = patchComponents && patchComponents[orig];
+            //组件补丁
             if (hasPatch) {
                 var newName = hasPatch.name;
-                astPath.node.name.name = newName; //{button: {name :'Button', href:''}}
+                astPath.node.name.name = newName;  //{Button: {name :'Button', href:''}}
                 modules.importComponents[newName] = {
-                    source: `/@components/${newName} /index`
+                    source: `/@components/${newName}/index`,
                 };
+                _this.emit('compliePatch', hasPatch);
                 return newName;
+            } 
+            //如果是native组件,  组件jsx名小写
+            if (orig.toLowerCase() !== orig ){
+                return orig;
             }
-            return  astPath.node.name.name = (map[orig] || backup);//div
+            return  astPath.node.name.name = (map[orig] || backup);
+            
         };
     },
     createAttribute(name, value) {
@@ -119,6 +130,20 @@ let utils = {
     },
     createUUID(astPath) {
         return astPath.node.start + astPath.node.end;
+    },
+    createDynamicAttributeValue(prefix, astPath, indexes){
+        var start = astPath.node.loc.start;
+        var name =  prefix + start.line +'_' +  start.column;
+        if (Array.isArray(indexes) && indexes.length){
+            var more =  indexes.join('+\'-\'+');
+            return t.jSXExpressionContainer(
+                t.identifier(
+                    `'${name}_'+${more}` 
+                )
+            );
+        } else {
+            return name ;
+        }
     },
     genKey(key) {
         key = key + '';
@@ -349,9 +374,7 @@ let utils = {
             '@react': path.join(cwd, `${config.sourceDir}/${React}`),
             '@components': path.join(cwd, `${config.sourceDir}/components`)
         };
-        let pkg = require(path.join(cwd, 'package.json'));
-        let pkgAlias = pkg.mpreact && pkg.mpreact.alias ? pkg.mpreact.alias : {};
-
+        let pkgAlias = userConfig.alias ? userConfig.alias : {};
 
         Object.keys(pkgAlias).forEach((aliasKey) => {
             //@components, @react无法自定义配置
@@ -414,20 +437,20 @@ let utils = {
         let visitor = {
             FunctionDeclaration: {
                 exit(astPath) {
-                    //微信，百度小程序async/await语法需要插入var regeneratorRuntime = require('regenerator-runtime/runtime');
+                    // //微信，百度小程序async/await语法需要插入var regeneratorRuntime = require('regenerator-runtime/runtime');
                     let name = astPath.node.id.name;
-                    if (name === '_asyncToGenerator' && ['wx', 'bu'].includes(buildType) ) {
-                        astPath.insertBefore(
-                            t.variableDeclaration('var', [
-                                t.variableDeclarator(
-                                    t.identifier('regeneratorRuntime'),
-                                    t.callExpression(t.identifier('require'), [
-                                        t.stringLiteral('regenerator-runtime/runtime')
-                                    ])
-                                )
-                            ])
-                        );
-                    }
+                    if ( !(name === '_asyncToGenerator' && ['wx', 'bu'].includes(buildType))  ) return;
+                    let root = astPath.findParent(t.isProgram);
+                    root.node.body.unshift(
+                        t.variableDeclaration('var', [
+                            t.variableDeclarator(
+                                t.identifier('regeneratorRuntime'),
+                                t.callExpression(t.identifier('require'), [
+                                    t.stringLiteral('regenerator-runtime/runtime')
+                                ])
+                            )
+                        ])
+                    );
                 }
             }
         };
@@ -466,7 +489,6 @@ let utils = {
     initQuickAppConfig: function(){
         //merge快应用依赖的package.json配置
         this.mergeQuickAppJson();
-        
         //copy快应用秘钥
         let signSourceDir = path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig', 'sign');
         let signDistDir = path.join(cwd, 'sign');
@@ -477,7 +499,15 @@ let utils = {
                 console.log(err);
             });
     },
-    
+    resolvePatchComponentPath: function(filePath){
+        //patchComponent路径在cli中, 需要处理成${config.sourceDir}/components/... 否则路径解析混乱
+        let isPatchComponentReg = utils.isWin() ? /\\patchComponents\\/ : /\/patchComponents\//;
+        if (isPatchComponentReg.test(filePath)) {
+            let dirLevel = path.dirname(filePath).split(path.sep);
+            filePath = path.join(cwd, config.sourceDir, 'components', dirLevel[dirLevel.length-1], path.basename(filePath));
+        }
+        return filePath;
+    },
     cleanDir: function(){
         let fileList = ['package-lock.json', 'yarn.lock'];
         config.buildType === 'quick'
@@ -523,8 +553,26 @@ let utils = {
             }
         };
     },
+    resolveStyleAlias(importer) {
+        //解析样式中的alias别名配置
+        let aliasMap = userConfig && userConfig.alias || {};
+        let depLevel = importer.split(path.sep); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
+        let prefix = depLevel[0]; 
+        let url = '';
+        //将alias以及相对路径引用解析成绝对路径
+        if (aliasMap[prefix] ) {
+            url = path.join(
+                cwd, 
+                aliasMap[prefix],              
+                depLevel.slice(1).join(path.sep)   //['@path', 'x', 'y.scss'] => 'x/y.scss'
+            );
+        } else {
+            url = importer;
+        }
+        return url;
+    },
     getComponentOrAppOrPageReg() {
-        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
+        return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };

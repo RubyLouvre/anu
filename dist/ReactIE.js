@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-11-07
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-11-14
  */
 
 (function (global, factory) {
@@ -1123,9 +1123,9 @@
     var eventPropHooks = {};
     var eventHooks = {};
     var eventLowerCache = {
-        onClick: "click",
-        onChange: "change",
-        onWheel: "wheel"
+        onClick: 'click',
+        onChange: 'change',
+        onWheel: 'wheel'
     };
     function eventAction(dom, name, val, lastProps, fiber) {
         var events = dom.__events || (dom.__events = {});
@@ -1145,7 +1145,7 @@
             events[refName] = val;
         }
     }
-    var isTouch = "ontouchstart" in document;
+    var isTouch = 'ontouchstart' in document;
     function dispatchEvent(e, type, endpoint) {
         e = new SyntheticEvent(e);
         if (type) {
@@ -1159,7 +1159,7 @@
         }
         Renderer.batchedUpdates(function () {
             var paths = collectPaths(e.target, terminal, {});
-            var captured = bubble + "capture";
+            var captured = bubble + 'capture';
             triggerEventFlow(paths, captured, e);
             if (!e._stopPropagation) {
                 triggerEventFlow(paths.reverse(), bubble, e);
@@ -1221,7 +1221,7 @@
         if (el.addEventListener) {
             el.addEventListener(type, fn, bool || false);
         } else if (el.attachEvent) {
-            el.attachEvent("on" + type, fn);
+            el.attachEvent('on' + type, fn);
         }
     }
     var rcapture = /Capture$/;
@@ -1230,35 +1230,35 @@
         if (lower) {
             return lower;
         }
-        var camel = onStr.slice(2).replace(rcapture, "");
+        var camel = onStr.slice(2).replace(rcapture, '');
         lower = camel.toLowerCase();
         eventLowerCache[onStr] = lower;
         return lower;
     }
     function getRelatedTarget(e) {
         if (!e.timeStamp) {
-            e.relatedTarget = e.type === "mouseover" ? e.fromElement : e.toElement;
+            e.relatedTarget = e.type === 'mouseover' ? e.fromElement : e.toElement;
         }
         return e.relatedTarget;
     }
     function getTarget(e) {
         return e.target || e.srcElement;
     }
-    String("load,error").replace(/\w+/g, function (name) {
+    String('load,error').replace(/\w+/g, function (name) {
         eventHooks[name] = function (dom, type) {
-            var mark = "__" + type;
+            var mark = '__' + type;
             if (!dom[mark]) {
                 dom[mark] = true;
                 addEvent(dom, type, dispatchEvent);
             }
         };
     });
-    String("mouseenter,mouseleave").replace(/\w+/g, function (name) {
+    String('mouseenter,mouseleave').replace(/\w+/g, function (name) {
         eventHooks[name] = function (dom, type) {
-            var mark = "__" + type;
+            var mark = '__' + type;
             if (!dom[mark]) {
                 dom[mark] = true;
-                var mask = type === "mouseenter" ? "mouseover" : "mouseout";
+                var mask = type === 'mouseenter' ? 'mouseover' : 'mouseout';
                 addEvent(dom, mask, function (e) {
                     var t = getRelatedTarget(e);
                     if (!t || t !== dom && !contains(dom, t)) {
@@ -1285,15 +1285,15 @@
         e.target.__onComposition = false;
     }
     var input2change = /text|password|search|url|email/i;
-    if (!document["__input"]) {
-        globalEvents.input = document["__input"] = true;
-        addEvent(document, "compositionstart", onCompositionStart);
-        addEvent(document, "compositionend", onCompositionEnd);
-        addEvent(document, "input", function (e) {
+    if (!document['__input']) {
+        globalEvents.input = document['__input'] = true;
+        addEvent(document, 'compositionstart', onCompositionStart);
+        addEvent(document, 'compositionend', onCompositionEnd);
+        addEvent(document, 'input', function (e) {
             var dom = getTarget(e);
             if (input2change.test(dom.type)) {
                 if (!dom.__onComposition) {
-                    dispatchEvent(e, "change");
+                    dispatchEvent(e, 'change');
                 }
             }
             dispatchEvent(e);
@@ -1329,9 +1329,9 @@
     eventPropHooks.change = function (e) {
         enqueueDuplex(e.target);
     };
-    createHandle("doubleclick");
-    createHandle("scroll");
-    createHandle("wheel");
+    createHandle('doubleclick');
+    createHandle('scroll');
+    createHandle('wheel');
     globalEvents.wheel = true;
     globalEvents.scroll = true;
     globalEvents.doubleclick = true;
@@ -1343,27 +1343,27 @@
     eventPropHooks.click = function (e) {
         return !e.target.disabled;
     };
-    var fixWheelType = document.onwheel !== void 666 ? "wheel" : "onmousewheel" in document ? "mousewheel" : "DOMMouseScroll";
+    var fixWheelType = document.onwheel !== void 666 ? 'wheel' : 'onmousewheel' in document ? 'mousewheel' : 'DOMMouseScroll';
     eventHooks.wheel = function (dom) {
         addEvent(dom, fixWheelType, specialHandles.wheel);
     };
     eventPropHooks.wheel = function (event) {
-        event.deltaX = "deltaX" in event ? event.deltaX :
-        "wheelDeltaX" in event ? -event.wheelDeltaX : 0;
-        event.deltaY = "deltaY" in event ? event.deltaY :
-        "wheelDeltaY" in event ? -event.wheelDeltaY :
-        "wheelDelta" in event ? -event.wheelDelta : 0;
+        event.deltaX = 'deltaX' in event ? event.deltaX :
+        'wheelDeltaX' in event ? -event.wheelDeltaX : 0;
+        event.deltaY = 'deltaY' in event ? event.deltaY :
+        'wheelDeltaY' in event ? -event.wheelDeltaY :
+        'wheelDelta' in event ? -event.wheelDelta : 0;
     };
     var focusMap = {
-        focus: "focus",
-        blur: "blur"
+        focus: 'focus',
+        blur: 'blur'
     };
     var innerFocus = void 0;
     function blurFocus(e) {
         var dom = getTarget(e);
         var type = focusMap[e.type];
         if (Renderer.inserting) {
-            if (type === "blur") {
+            if (type === 'blur') {
                 innerFocus = true;
                 Renderer.inserting.focus();
                 return;
@@ -1384,10 +1384,10 @@
             }
         } while (dom = dom.parentNode);
     }
-    "blur,focus".replace(/\w+/g, function (type) {
+    'blur,focus'.replace(/\w+/g, function (type) {
         globalEvents[type] = true;
         if (modern) {
-            var mark = "__" + type;
+            var mark = '__' + type;
             if (!document[mark]) {
                 document[mark] = true;
                 addEvent(document, type, blurFocus, true);
@@ -1402,7 +1402,7 @@
         addEvent(dom, name, specialHandles[name]);
     };
     eventHooks.doubleclick = function (dom, name) {
-        addEvent(document, "dblclick", specialHandles[name]);
+        addEvent(document, 'dblclick', specialHandles[name]);
     };
     function SyntheticEvent(event) {
         if (event.nativeEvent) {
@@ -1429,6 +1429,7 @@
             e.returnValue = this.returnValue = false;
             if (e.preventDefault) {
                 e.preventDefault();
+                this.defaultPrevented = true;
             }
         },
         stopPropagation: function stopPropagation() {
@@ -1443,7 +1444,7 @@
             this.stopImmediate = true;
         },
         toString: function toString() {
-            return "[object Event]";
+            return '[object Event]';
         }
     };
     Renderer.eventSystem = {

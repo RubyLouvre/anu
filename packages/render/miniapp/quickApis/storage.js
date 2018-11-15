@@ -1,9 +1,6 @@
 const storage = require('@system.storage');
-function runFunction(fn, ...args) {
-  if (typeof fn == 'function') {
-    fn.call(null, ...args);
-  }
-}
+import {runFunction} from '../utils';
+
 
 function setStorage({ key, data, success, fail, complete }) {
   let value = data;

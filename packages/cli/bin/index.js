@@ -4,10 +4,10 @@ const chalk = require('chalk');
 const semver = require('semver');
 const program = require('commander');
 
-if (semver.lt(process.version, '8.0.0')) {
+if (semver.lt(process.version, '8.6.0')) {
     // eslint-disable-next-line
     console.log(
-        chalk`mpreact only support {green.bold v8.0.0} or later (current v{green.bold ${
+        chalk`nanachi only support {green.bold v8.6.0} or later (current {green.bold ${
             process.version
         }}) of Node.js`
     );
@@ -102,5 +102,5 @@ switch (command) {
         require('../packages/init')(args[1]);
         break;
     default:
-        console.log(chalk.green('初始化项目: nanachi init <project-name>'));
+        console.log(chalk.green('初始化项目: mpreact init <project-name>'));
 }

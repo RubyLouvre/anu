@@ -3,18 +3,20 @@ const syntaxJSX = require('babel-plugin-syntax-jsx');
 const babel = require('babel-core');
 const t = require('babel-types');
 const generate = require('babel-generator').default;
-const attrValueHelper = require('./attrValue');
-const config = require('../config');
-const logicSrc = '../' + config.buildType + 'Helpers/logic';
-const attrNameSrc = '../' + config.buildType + 'Helpers/attrName';
-const attrNameHelper = require(attrNameSrc);
-const logicHelper = require(logicSrc);
+
+
 const utils = require('../utils');
+const config = require('../config');
+const buildType = config.buildType;
+const attrNameHelper = require(`../${buildType}Helpers/attrName`);
+const attrValueHelper = require(`../${buildType}Helpers/attrValue`);
+const logicHelper = require(`../${buildType}Helpers/logic`);
+
 
 const quickTextContainer = {
     text: 1,
     a: 1,
-    span:1,
+    span: 1,
     label: 1,
     option: 1
 };
@@ -52,6 +54,7 @@ let visitor = {
                 openTag.object.name === 'React'
             ) {
                 if (openTag.property.name === 'toRenderProps') {
+                    //在使用了render props的组件中添加<anu-render />
                     let attributes = [];
                     //实现render props;
                     let template = utils.createElement(
@@ -72,9 +75,19 @@ let visitor = {
                     astPath.parentPath.replaceWith(template);
                 } else if (openTag.property.name === 'useComponent') {
                     let is, instanceUid;
+                    // let modules = utils.getAnu(state);
                     astPath.node.attributes.forEach(function(el) {
                         let attrName = el.name.name;
-                        let attrValue = el.value.value;
+                        if (!el.value){//如果用户只写属性名，不写属性值，默认为true
+                            el.value = { 
+                                type: 'StringLiteral',
+                                value: '{{true}}',
+                                trailingComments: [],
+                                leadingComments: [],
+                                innerComments: [] 
+                            };
+                        }
+                        let attrValue = el.value.value ;//这里要重构
                         if (/^\{\{.+\}\}/.test(attrValue)) {
                             attrValue = attrValue.slice(2, -2);
                         }
@@ -135,7 +148,10 @@ let visitor = {
                 let parentTag = parentNode.openingElement.name.name;
                 let children = parentNode.children;
                 //如果文本节点的父节点不是text, a, option, span并且不是组件, 我们在外面生成一个text
-                if (!quickTextContainer[parentTag] && !/^anu-/.test(parentTag)) {
+                if (
+                    !quickTextContainer[parentTag] &&
+                    !/^anu-/.test(parentTag)
+                ) {
                     let index = children.indexOf(astPath.node);
                     let trimValue = astPath.node.value.trim();
                     if (trimValue == '') {
@@ -145,8 +161,11 @@ let visitor = {
                         parentNode.children.splice(
                             index,
                             1,
-                            utils.createElement('text', [utils.createAttribute('class','anu-text')], 
-                                [astPath.node])
+                            utils.createElement(
+                                'text',
+                                [utils.createAttribute('class', 'anu-text')],
+                                [astPath.node]
+                            )
                         );
                     }
                 }
