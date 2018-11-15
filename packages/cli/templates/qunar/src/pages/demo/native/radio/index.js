@@ -21,7 +21,7 @@ class P extends React.Component {
 
     render() {
         return (
-            <div class="container">
+            <div>
                 <radio-group class="radio-group" onChange={this.radioChange}>
                     {this.state.items.map(function(item) {
                         return (

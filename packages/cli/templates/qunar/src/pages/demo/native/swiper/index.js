@@ -51,7 +51,7 @@ class P extends React.Component {
 
     render() {
         return (
-            <view class="container">
+            <view>
                 <view class="page-body">
                     <view class="page-section page-section-spacing swiper">
                         <swiper

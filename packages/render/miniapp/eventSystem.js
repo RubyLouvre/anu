@@ -2,47 +2,50 @@ import { returnFalse, toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
 import { _getApp } from './utils';
 export let webview = {};
-export let eventSystem = { //hijack
 
-    dispatchEvent: function (e) {
-        const eventType = e.type;
-        if (eventType == 'message') {//处理支付宝web-view组件的dataset为空的BUG
-            if (webview.instance && webview.cb) {
-                webview.cb.call(webview.instance, e);
-            }
-            return;
+var rbeaconType = /click|tap|change|blur|input/i;
+export function dispatchEvent(e) {
+    const eventType = toLowerCase(e.type);
+    if (eventType == 'message') {//处理支付宝web-view组件的dataset为空的BUG
+        if (webview.instance && webview.cb) {
+            webview.cb.call(webview.instance, e);
         }
-        const target = e.currentTarget;
-        const dataset = target.dataset || {};
-        if ((eventType == 'click' || eventType== 'tap' ) && dataset.beaconId){
-            let fn = Object(_getApp()).onCollectLogs;
-            fn && fn(dataset);
-        }
-        const instance = this.reactInstance;
-        if (!instance || !instance.$$eventCached) {
-            return;
-        }
-        let eventUid = dataset[toLowerCase(e.type) + 'Uid'];
-        const fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber) {
-            if (fiber.props.value + '' == e.detail.value) {
-                return;
-            }
-        }
+        return;
+    }
+    const instance = this.reactInstance;
+    if (!instance || !instance.$$eventCached) {
+        return;
+    }
+   
+    const app = _getApp();
+    const target = e.currentTarget;
+    const dataset = target.dataset || {};
+    let eventUid = dataset[eventType + 'Uid'];
+    if (dataset['classUid']){
         const key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
-        if (instance) {
-            Renderer.batchedUpdates(function () {
-                try {
-                    var fn = instance.$$eventCached[eventUid];
-                    fn && fn.call(instance, createEvent(e, target));
-                } catch (err) {
-                    console.log(err.stack);  // eslint-disable-line
-                }
-            }, e);
+    }
+    const fiber = instance.$$eventCached[eventUid + 'Fiber'];
+    if (eventType == 'change' && fiber) {
+        if (fiber.props.value + '' == e.detail.value) {
+            return;
         }
-    },
-};
+    }
+    if ( app && app.onCollectLogs && rbeaconType.test(eventType) ) {
+        app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
+    }
+  
+    if (instance) {
+        Renderer.batchedUpdates(function () {
+            try {
+                var fn = instance.$$eventCached[eventUid];
+                fn && fn.call(instance, createEvent(e, target));
+            } catch (err) {
+                console.log(err.stack);  // eslint-disable-line
+            }
+        }, e);
+    }
+}
 
 
 //创建事件对象

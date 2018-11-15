@@ -43,7 +43,7 @@ class P extends React.Component {
   }
   render() {
     return (
-      <div class="container button-wrapper col">
+      <div class="button-wrapper col">
         <div class="item">
           <button
             class="item"

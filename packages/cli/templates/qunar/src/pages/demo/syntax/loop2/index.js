@@ -24,7 +24,7 @@ class P extends React.Component {
 
     render() {
         return (
-            <div>
+            <div class='anu-block'>
                 <div>测试循环中的事件，点击下方格子</div>
                 <div>
 					title:
@@ -32,10 +32,10 @@ class P extends React.Component {
                     {'  key '}
                     {this.state.key}
                 </div>
-                <div class="grid-wrap">
+                <div class="anu-block">
                     {this.state.trs.map(function(item) {
                         return (
-                            <div>
+                            <div class="anu-line">
                                 {item.map(function(el) {
                                     return (
                                         <div class="grid" onClick={this.getData.bind(this, el)}>

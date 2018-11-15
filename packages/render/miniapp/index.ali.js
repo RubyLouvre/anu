@@ -14,7 +14,7 @@ import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 import { injectAPIs } from './api';
 import { aliApis } from './api.ali';
 
-import { eventSystem, webview } from './eventSystem';
+import { dispatchEvent, webview } from './eventSystem';
 import { Renderer, getCurrentPage } from './wxRender';
 import { toStyle } from './toStyle';
 import { toRenderProps,_getApp, _getCurrentPages, useComponent } from './utils';
@@ -27,7 +27,9 @@ let { render } = Renderer;
 
 let React =  getWindow().React = {
     //平台相关API
-    eventSystem,
+    eventSystem:{
+        dispatchEvent
+    },
 
     findDOMNode: function() {
         console.log("小程序不支持findDOMNode"); /* eslint-disable-line */

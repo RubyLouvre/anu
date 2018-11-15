@@ -54,6 +54,7 @@ let visitor = {
                 openTag.object.name === 'React'
             ) {
                 if (openTag.property.name === 'toRenderProps') {
+                    //在使用了render props的组件中添加<anu-render />
                     let attributes = [];
                     //实现render props;
                     let template = utils.createElement(
@@ -74,9 +75,19 @@ let visitor = {
                     astPath.parentPath.replaceWith(template);
                 } else if (openTag.property.name === 'useComponent') {
                     let is, instanceUid;
+                    // let modules = utils.getAnu(state);
                     astPath.node.attributes.forEach(function(el) {
                         let attrName = el.name.name;
-                        let attrValue = el.value.value;
+                        if (!el.value){//如果用户只写属性名，不写属性值，默认为true
+                            el.value = { 
+                                type: 'StringLiteral',
+                                value: '{{true}}',
+                                trailingComments: [],
+                                leadingComments: [],
+                                innerComments: [] 
+                            };
+                        }
+                        let attrValue = el.value.value ;//这里要重构
                         if (/^\{\{.+\}\}/.test(attrValue)) {
                             attrValue = attrValue.slice(2, -2);
                         }

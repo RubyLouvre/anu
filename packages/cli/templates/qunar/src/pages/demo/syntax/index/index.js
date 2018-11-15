@@ -81,11 +81,11 @@ class Express extends React.Component {
         'backgroundColor': '#ffffff',
         'backgroundTextStyle': 'light'
     }
-    componentWillMount(){
+    componentWillMount() {
         // eslint-disable-next-line
         console.log('syntax componentWillMount');
     }
-    componentDidMount(){
+    componentDidMount() {
         // eslint-disable-next-line
         console.log('syntax componentDidMount');
     }
@@ -94,17 +94,17 @@ class Express extends React.Component {
     }
     render() {
         return (
-            <div class='container col'>
-                <div class='page_hd'>{this.state.title}</div>
-                <div class='page_bd'>
-                    <div class='navigation col center'>
-                        {
-                            this.state.pages.map(function(page) {
-                                return <Navigator open-type="navigate" class='item' hover-class="navigator-hover" url={page.url}>{page.title}</Navigator>;
-                            })
-                        }
-                    </div>
-                </div>
+            <div class='anu-block'>
+                <div class='anu-page-header'>{this.state.title}</div>
+
+                {
+                    this.state.pages.map(function (page) {
+                        return (<div class='anu-item'>
+                            <Navigator open-type="navigate" hover-class="navigator-hover" url={page.url}>{page.title}</Navigator>
+                        </div>);
+                    })
+                }
+
             </div>
         );
     }

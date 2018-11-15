@@ -199,7 +199,7 @@ class P extends React.Component {
 
     render() {
         return (
-            <div class="container">
+            <div>
                 <div class="section">
                     <div class="section__title">普通选择器</div>
                     <picker

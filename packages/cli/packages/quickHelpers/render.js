@@ -6,6 +6,10 @@ const path = require('path');
 const generate = require('babel-generator').default;
 const quickFiles = require('../quickFiles');
 const config = require('../config');
+const utils = require('../utils');
+const queue = require('../queue');
+
+const deps = [];
 
 var wrapperPath = path.join(process.cwd(), config.sourceDir, 'components', 'PageWrapper', 'index.ux');
 /**
@@ -55,6 +59,10 @@ exports.exit = function (astPath, type, componentName, modules) {
                     wxml = `<import src="${ modules.importComponents[i]}.ux" />\n${wxml}`;
                 }
             }
+            if (type == 'RenderProps') {
+                handleRenderProps(wxml, componentName, modules);
+                return;
+            }
             var quickFile = quickFiles[modules.sourcePath];
             if (quickFile) {
                 if (modules.componentType === 'Page') {
@@ -77,6 +85,53 @@ ${wxml}
             break;
     }
 };
+
+function handleRenderProps(wxml, componentName, modules) {
+    let dep =
+        deps['renderProps'] ||
+        (deps['renderProps'] = {
+            json: {
+                component: true,
+                usingComponents: {}
+            },
+            wxml: ''
+        });
+
+    //生成render props的模板
+    dep.wxml =
+        dep.wxml +
+        `<block wx:if="{{renderUid === '${componentName}'}}">${wxml}</block>`;
+    //生成render props的json
+    var importTag = '';
+    for (let i in modules.importComponents) {
+        importTag += `<import name="anu-${ i.toLowerCase() }" src="/components/${ i }/index"></import>\n`;
+    }
+    queue.push({
+        path: utils.updatePath(
+            modules.sourcePath,
+            config.sourceDir,
+            'dist',
+            'ux'
+        ),
+        code: `${importTag}<template>
+${dep.wxml}
+</template>
+<script>
+export default {
+props: {
+    renderUid: String,
+    props: Object,
+    state: Object,
+    context: Object
+},
+data: {},
+onInit: function () { },
+onDistory: function () { }
+};
+</script>
+        `
+    });
+}
 
 function transformIfStatementToConditionalExpression(node) {
     const { test, consequent, alternate } = node;

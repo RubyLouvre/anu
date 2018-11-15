@@ -11,7 +11,7 @@ class P extends React.Component {
     }
     render() {
         return (
-            <view class="container">
+            <view class="col">
                 <view class="section">
                     <view class="section__title">flex-direction: row</view>
                     <view class="flex-wrp" style="flex-direction:row;">

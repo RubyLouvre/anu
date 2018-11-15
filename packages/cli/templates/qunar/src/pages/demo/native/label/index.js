@@ -56,7 +56,7 @@ class P extends React.Component {
     }
     render() {
         return (
-            <div class="container">
+            <div>
                 {this.a}
                 <view class="section section_gap">
                     <view class="section__title">表单组件在label内</view>

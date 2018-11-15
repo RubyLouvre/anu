@@ -16,13 +16,11 @@
   padding: 10px;
 }
 
-.container {
-  padding: 20px;
-  .page_hd {
-    text-align: center;
-    padding: 10px;
-    font-weight: bold;
-  }
+
+.page_hd {
+  text-align: center;
+  padding: 10px;
+  font-weight: bold;
 }
 
 .btn {
@@ -31,24 +29,6 @@
   margin-bottom: 10px;
 }
 
-.navigation {
-  .item {
-    background: #f8f8f8;
-    padding: 20px;
-    margin-bottom: 10px;
-  }
-  .navigator-hover {
-    background: #c5c5c5;
-  }
-}
-
-.item-list {
-  .item {
-    padding: 10px;
-    background-color: #cfcfcf;
-    margin-bottom: 10px;
-  }
-}
 
 /*!
  * weui.js v1.1.0 (https://github.com/weui/weui-wxss)

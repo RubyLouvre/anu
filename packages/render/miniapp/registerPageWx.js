@@ -1,12 +1,21 @@
 import { isFn} from 'react-core/util';
-import { eventSystem } from './eventSystem';
+import { dispatchEvent } from './eventSystem';
 import { onLoad, onUnload, onReady } from './registerPageMethod';
-
+import { callGlobalHook } from './utils';
+var globalHooks = {
+    onShareAppMessage: 'onGlobalShare',
+    onShow: 'onGlobalShow',
+    onHide: 'onGlobalHide',
+};
+var showHideHooks = {
+    onShow: 'componentDidShow',
+    onHide: 'componentDidHide'
+};
 export function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     let config = {
         data: {},
-        dispatchEvent: eventSystem.dispatchEvent,
+        dispatchEvent,
         onLoad(query) {
             onLoad.call(this, PageClass, path, query);
         },
@@ -17,35 +26,32 @@ export function registerPage(PageClass, path, testObject) {
         'onPageScroll',
         'onShareAppMessage',
         'onReachBottom',
-        'onPullDownRefresh'
+        'onPullDownRefresh',
+        'onShow',
+        'onHide'
     ).forEach(function(hook) {
         config[hook] = function() {
             let instance = this.reactInstance;
-            let fn = instance[hook];
+            let fn = instance[hook], fired = false;
             if (isFn(fn)) {
-                return fn.apply(instance, arguments);
-            }
-            if ( hook === 'onShareAppMessage' && typeof getApp == 'function'){
-                fn = Object(getApp()).onShareAppMessage;
-                if (isFn(fn)){
-                    return fn();
+                fired = true;
+                var ret =  fn.apply(instance, arguments);
+                if (hook === 'onShareAppMessage'){
+                    return ret;
                 }
             }
-        };
-    });
-    Array('onShow', 'onHide').forEach(function(hook) {
-        config[hook] = function() {
-            let instance = this.reactInstance;
-            let fn = instance[hook];
-            if (isFn(fn)) {
-                return fn.apply(instance, arguments);
+            var globalHook = globalHooks[hook];
+            if (globalHook){
+                ret = callGlobalHook(globalHook);
+                if (hook === 'onShareAppMessage'){
+                    return ret;
+                }
             }
-            let discarded =
-                hook == 'onShow' ? 'componentDidShow' : 'componentDidHide';
-            let fn2 = instance[discarded];
-            if (isFn(fn2)) {
+
+            let discarded = showHideHooks[hook];
+            if (!fired && instance[discarded]){
                 console.warn(`${discarded} 已经被废弃，请使用${hook}`); //eslint-disable-line
-                return fn2.apply(instance, arguments);
+                instance[discarded]();
             }
         };
     });
