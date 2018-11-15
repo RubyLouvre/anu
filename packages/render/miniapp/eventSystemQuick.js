@@ -53,15 +53,13 @@ export const webview = {};
 function createEvent(e, target) {
     var event = {};
     var fackTarget = {
-        nodeName: target._nodeName
+        nodeName: target._nodeName,
+        value: e.value
     };
     for (var i in e) {
         if (i.indexOf("_") !== 0) {
             event[i] = e[i];
         }
-    }
-    if (typeof e.value == 'string') {
-        fackTarget.value = e.value;
     }
     event.stopPropagation = e.stopPropagation.bind(e);
     event.preventDefault = e.preventDefault.bind(e);
