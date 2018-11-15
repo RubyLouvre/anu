@@ -3,7 +3,7 @@ const generate = require('babel-generator').default;
 const utils = require('../utils/index');
 const chalk = require('chalk');
 const { createElement, createAttribute } = utils;
-const prefix = 'wx:'; // "tt:"
+const prefix = 'tt:'; // "tt:"
 /**
  * 本模板将array.map(fn)变成<block tt:for="{{}}"></block>
  * 将if(xxx){}变成<block tt:if="{{xxx}}"></block>
