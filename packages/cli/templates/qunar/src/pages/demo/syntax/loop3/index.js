@@ -89,16 +89,16 @@ class P extends React.Component {
     }
     render() {
         return (
-            <div onTap={this.changeNumbers.bind(this)} class="loop3-container">
+            <div onTap={this.changeNumbers.bind(this)} class="anu-block">
                 {this.state.array1.map(function(el) {
                     return (
-                        <div key={el.name}>
+                        <div key={el.name} class="anu-block">
                             <div class="index-item-1" style={{ backgroundColor: randomHexColor() }}>
                                 {el.name}
                             </div>
                             {this.state.array2.map(function(item) {
                                 return (
-                                    <div key={item.name}>
+                                    <div key={item.name} class="anu-block">
                                         <div class="index-item-2" style={{ backgroundColor: randomHexColor() }}>
                                             {item.name}
                       =======

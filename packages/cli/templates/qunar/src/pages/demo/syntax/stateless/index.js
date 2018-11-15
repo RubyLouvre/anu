@@ -1,5 +1,7 @@
 import React from '@react';
 import Count from '@components/Count/index';
+import './index.scss';
+
 class P extends React.Component {
     constructor() {
         super();
