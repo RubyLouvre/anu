@@ -4,10 +4,10 @@ import { Renderer } from 'react-core/createRenderer';
 function getDataSet(obj) {
     let ret = {};
     for (let name in obj) {
-        let key = name.replace(/data(\w)(\.*)/, function (a, b, c) {
-            return toLowerCase(b) + c;
-        });
-        ret[key] = obj[name];
+        if(name.slice(0, 4) == 'data'){
+            var key = toLowerCase(name[4]) + name.slice(5);
+            ret[key] = obj[name];
+        }       
     }
     return ret;
 }
