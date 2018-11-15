@@ -48,40 +48,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 require('babel-plugin-transform-object-rest-spread'),
                 require('babel-plugin-transform-es2015-template-literals'),
                 require('babel-plugin-transform-async-to-generator'),
-                asyncAwaitPlugin,
                 ...miniAppPluginsInjectConfig,
-                [
-                    require('babel-plugin-module-resolver'),
-                    {
-                        resolvePath(moduleName) {
-                            if (!utils.isNpm(moduleName)) return;
-                            //针对async/await语法依赖的npm路径做处理
-                            if (/regenerator-runtime\/runtime/.test(moduleName)) {
-                                //微信,百度小程序async/await语法依赖regenerator-runtime/runtime
-                                let regeneratorRuntimePath =  utils.getRegeneratorRuntimePath(sourcePath);
-
-                                queue.push({
-                                    code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
-                                    path: utils.updatePath(
-                                        regeneratorRuntimePath,
-                                        'node_modules',
-                                        'dist' + path.sep + 'npm'
-                                    ),
-                                    type: 'npm'
-                                });
-
-                                Object.assign(
-                                    aliasMap,
-                                    utils.updateNpmAlias(sourcePath, { 'regenerator-runtime/runtime': regeneratorRuntimePath } )
-                                );
-
-                            }
-                            let value = aliasMap[moduleName] ;
-                            value = /^\w/.test(value) ? `./${value}` : value;
-                            return value;
-                        }
-                    }
-                ]
             ]
         },
         function(err, result) {
@@ -92,10 +59,9 @@ function transform(sourcePath, resolvedIds, originalCode) {
             //babel6无transform异步方法
             setImmediate(() => {
                 let babelPlugins = [
-                    
+                    asyncAwaitPlugin,
                     [
-                        
-                        //process.env.ANU_ENV
+                        //配置环境变量
                         require('babel-plugin-transform-inline-environment-variables'),
                         {
                             env: {
@@ -104,13 +70,47 @@ function transform(sourcePath, resolvedIds, originalCode) {
                             }
                         }
                     ],
-                    require('babel-plugin-minify-dead-code-elimination')
-                    
+                    require('babel-plugin-minify-dead-code-elimination'), //移除没用的代码
+                    [
+                        require('babel-plugin-module-resolver'),        //计算别名配置以及处理npm路径计算
+                        {
+                            resolvePath(moduleName) {
+                                if (!utils.isNpm(moduleName)) return;
+                                //针对async/await语法依赖的npm路径做处理
+                                if (/regenerator-runtime\/runtime/.test(moduleName)) {
+                                    let regeneratorRuntimePath = utils.getRegeneratorRuntimePath(sourcePath);
+                                    queue.push({
+                                        code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
+                                        path: utils.updatePath(
+                                            regeneratorRuntimePath,
+                                            'node_modules',
+                                            'dist' + path.sep + 'npm'
+                                        ),
+                                        type: 'npm'
+                                    });
+                                    Object.assign(
+                                        aliasMap,
+                                        utils.updateNpmAlias(sourcePath, { 'regenerator-runtime/runtime': regeneratorRuntimePath } )
+                                    );
+                                }
+                                let value = aliasMap[moduleName] ;
+                                value = /^\w/.test(value) ? `./${value}` : value;
+                                return value;
+                            }
+                        }
+                    ]
                 ];
-                result = babel.transform(result.code, {
-                    babelrc: false,
-                    plugins: babelPlugins
-                });
+                //babel无transform异步方法
+                try {
+                    result = babel.transform(result.code, {
+                        babelrc: false,
+                        plugins: babelPlugins
+                    });
+                } catch (err) {
+                    //eslint-disable-next-line
+                    console.log(transformFilePath, '\n', err);
+                }
+                
                 
                 //处理中文转义问题
                 result.code = result.code.replace(
@@ -172,8 +172,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         ux += `
                             <style lang="${uxFile.cssType}">
                                 ${beautify.css(validateStyle(
-        cssCode
-    ))}
+                                    cssCode
+                                ))}
                             </style>`;
                     }
 
