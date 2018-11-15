@@ -23,10 +23,16 @@ export function dispatchEvent(e) {
     const app = this.$app.def;
     let eventUid = dataset[eventType + 'Uid'];
     if (dataset['classUid']){
+        console.log("请尽快升级nanachi");//eslint-disable-line;
         const key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
     }
     const fiber = instance.$$eventCached[eventUid + 'Fiber'];
+    if (eventType == 'change' && fiber) {
+        if (fiber.props.value + '' == e.value) {
+            return;
+        }
+    }
     if ( app && app.onCollectLogs && beaconType.test(eventType) ) {
         app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
     }
@@ -45,10 +51,17 @@ export function dispatchEvent(e) {
 export const webview = {};
 //创建事件对象
 function createEvent(e, target) {
-    var event = Object.assign({}, e);
-    if (e.detail) {
-        Object.assign(event, e.detail);
-        target.value = e.detail.value; //input.value
+    var event = {};
+    var fackTarget = {
+        nodeName: target._nodeName
+    };
+    for (var i in e) {
+        if (i.indexOf("_") !== 0) {
+            event[i] = e[i];
+        }
+    }
+    if (typeof e.value == 'string') {
+        fackTarget.value = e.value;
     }
     event.stopPropagation = e.stopPropagation.bind(e);
     event.preventDefault = e.preventDefault.bind(e);
