@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-11-15
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-11-16
  */
 
 (function (global, factory) {
@@ -85,15 +85,17 @@
     try {
         var supportEval = Function('a', 'return a + 1')(2) == 3;
     } catch (e) {}
+    var rname = /function\s+(\w+)/;
     function miniCreateClass(ctor, superClass, methods, statics) {
-        var className = ctor.name || 'IEComponent';
+        var className = ctor.name || (ctor.toString().match(rname) || ["", "Anonymous"])[1];
         var Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : function ReactInstance() {
             superClass.apply(this, arguments);
             ctor.apply(this, arguments);
         };
         Ctor.displayName = className;
-        var fn = inherit(Ctor, superClass);
-        extend(fn, methods);
+        var proto = inherit(Ctor, superClass);
+        extend(proto, methods);
+        extend(Ctor, superClass);
         if (statics) {
             extend(Ctor, statics);
         }
@@ -2938,6 +2940,11 @@
         hyperspace.appendChild(node);
         hyperspace.removeChild(node);
     }
+    function safeActiveElement() {
+        try {
+            return document.activeElement;
+        } catch (e) {}
+    }
     function insertElement(fiber) {
         var dom = fiber.stateNode,
             parent = fiber.parent;
@@ -2950,10 +2957,11 @@
             if (after === null && dom === parent.lastChild) {
                 return;
             }
-            Renderer.inserting = fiber.tag === 5 && document.activeElement;
+            Renderer.inserting = fiber.tag === 5 && safeActiveElement();
             parent.insertBefore(dom, after);
             Renderer.inserting = null;
         } catch (e) {
+            throw e;
         }
     }
     render.Render = Renderer;

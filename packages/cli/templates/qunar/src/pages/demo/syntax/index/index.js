@@ -60,10 +60,6 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/loop5/index'
                 },
                 {
-                    title: '一个页面多个相同组件(测试跳转)',
-                    url: '/pages/demo/syntax/loop6/index'
-                },
-                {
                     title: 'webview',
                     url: '/pages/demo/syntax/webview/index'
                 },
