@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-15
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-16
  * IE9+
  */
 
@@ -996,16 +996,14 @@ function dispatchEvent(e) {
     if (app && app.onCollectLogs && rbeaconType.test(eventType)) {
         app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
     }
-    if (instance) {
-        Renderer.batchedUpdates(function () {
-            try {
-                var fn = instance.$$eventCached[eventUid];
-                fn && fn.call(instance, createEvent(e, target));
-            } catch (err) {
-                console.log(err.stack);
-            }
-        }, e);
-    }
+    Renderer.batchedUpdates(function () {
+        try {
+            var fn = instance.$$eventCached[eventUid];
+            fn && fn.call(instance, createEvent(e, target));
+        } catch (err) {
+            console.log(err.stack);
+        }
+    }, e);
 }
 function createEvent(e, target) {
     var event = Object.assign({}, e);

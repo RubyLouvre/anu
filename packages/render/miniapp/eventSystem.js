@@ -35,16 +35,16 @@ export function dispatchEvent(e) {
         app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
     }
   
-    if (instance) {
-        Renderer.batchedUpdates(function () {
-            try {
-                var fn = instance.$$eventCached[eventUid];
-                fn && fn.call(instance, createEvent(e, target));
-            } catch (err) {
-                console.log(err.stack);  // eslint-disable-line
-            }
-        }, e);
-    }
+   
+    Renderer.batchedUpdates(function () {
+        try {
+            var fn = instance.$$eventCached[eventUid];
+            fn && fn.call(instance, createEvent(e, target));
+        } catch (err) {
+             console.log(err.stack);  // eslint-disable-line
+        }
+    }, e);
+    
 }
 
 
