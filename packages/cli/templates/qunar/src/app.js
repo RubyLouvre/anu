@@ -97,9 +97,9 @@ class Global extends React.Component {
         }
     };
     onCollectLogs(dataset, type, node){
-        var page = React.getCurrentPage()
-        if(!page){
-            return
+        var page = React.getCurrentPage();
+        if (!page){
+            return;
         }
         var path = page.props.path;
         var uuid = dataset.beaconUid;
