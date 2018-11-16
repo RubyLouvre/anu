@@ -1,12 +1,52 @@
+## 1.4.9(2018.11.17)
+
+1. 重构小程序dispathEvent与dispatchEventQuick的实现
+2. 重构 快应用toStyleQuick
+3. 修复miniCreateClass 不能继承父类的类成员的BUG（PC中的React内部的组件继承用到它，及小程序的各种React的toClass方法的本体就是它）
+4. 修复事件回调函数中调用e.preventDefault()后，e.defaultPrevented 仍然为 false
+5. 修复用iframe打开一个新页面 document.adctiveElement 抛出异常，导致无法渲染的BUG
+6. 修复 devtools 的两个问题
+   -  点击 Unbatch 后开发者工具变为空白。
+   -  devtools 中 Text 节点的文字显示为 undefined。
+
+## 1.4.8(2018.11.7)
+
+1. 支持编译成支付宝小程序，通过在`<anu-xx instanceUid={uuid}>`这种机制解决支付宝小程序的实例生成顺序与React实例生成顺序不一致的问题
+2. 修复快应用的文本节点不显示问题，自动为它添加<text>标签包含它
+3. 添加patchComponent机制
+4. 修复样式表中的@assets别名问题
+
+## 1.4.7(2018.10.29)
+
+1. 微信小程序的组件机制由template改成自定义组件机制实现， 解决文本节点保留换行符的问题
+2. 支持编译成百度智能小程序
+3. 支持编译成快应用
+4. 模板的开发目录改成source，生产目录视构建目标有所不同
+
+## 1.4.6(2018.10.20)
+
+
+1. 修复支付宝的事件对象不支持x,y属性的BUG ，解决方法pageX, pageY代替它们
+2. 修复支付宝的自定义组件不在json.usingComponents引用它们，就不会在组件JS 中引入Component的BUG ，解决方法，在子类的json.usingComponents添加父类的引用
+3. 修复无狀态组件的wxml, axml, swan生成错误，原因是两次进入render.exit方法，导致重复重成，第二次时jsx变成h方法，解决方法，通过modules.registerStatement是否为假值进行隔离
+4. 修复中文unicode化的问题
+5. 美化wxml, swan, awxml, ux文件，解决方法，引入 js-beautify模块
+
+
 ## 1.4.5(2018.10.15)
 
 1. React.createContext 无法通过 Provider 传入数据
 2. 修复ReactIE unstable_renderSubtreeIntoContainer BUG
+3. 支持编译成支付宝小程序
 
 ## 1.4.4(2018.10.1)
 
 1. 修改 getWinodw BUG
+2. 支持编译成微信小程序
+3. 为减少小程序的体积，render中的React.createElement会改用h变量进行替换
+3. 内置三套模板
 
+https://github.com/RubyLouvre/anu/issues/133
 
 ## 1.4.3(2018.06.14)
 1. miniCreateClass在老式IE下取不到名字默认使用IEComponent, 
