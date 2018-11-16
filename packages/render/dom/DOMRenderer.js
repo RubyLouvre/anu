@@ -102,7 +102,11 @@ export function removeElement(node) {
     hyperspace.appendChild(node);
     hyperspace.removeChild(node);
 }
-
+function safeActiveElement(){
+    try{  //在IE9中获取iframe中的activeElemet时会抛出异常
+        return document.activeElement;
+    }catch(e){}
+}
 function insertElement(fiber) {
     let { stateNode: dom, parent } = fiber;
 
@@ -118,11 +122,11 @@ function insertElement(fiber) {
             return;
         }
         //插入**元素节点**会引发焦点丢失，触发body focus事件
-        Renderer.inserting = fiber.tag === 5 && document.activeElement;
+        Renderer.inserting = fiber.tag === 5 && safeActiveElement();
         parent.insertBefore(dom, after);
         Renderer.inserting = null;
     } catch (e) {
-        //eslint-disable-line
+        throw e;
     }
 }
 

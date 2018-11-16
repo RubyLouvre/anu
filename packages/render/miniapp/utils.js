@@ -62,7 +62,7 @@ export function updateMiniApp(instance) {
 
 function updateQuickApp(quick, data) {
     for (var i in data){
-        quick[i] = data[i];
+        quick.$set(i, data[i]);
     }
 }
 

@@ -1,5 +1,5 @@
 /**
- * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-15
+ * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-16
  * IE9+
  */
 
@@ -80,15 +80,17 @@ function inherit(SubClass, SupClass) {
 try {
     var supportEval = Function('a', 'return a + 1')(2) == 3;
 } catch (e) {}
+var rname = /function\s+(\w+)/;
 function miniCreateClass(ctor, superClass, methods, statics) {
-    var className = ctor.name || 'IEComponent';
+    var className = ctor.name || (ctor.toString().match(rname) || ["", "Anonymous"])[1];
     var Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : function ReactInstance() {
         superClass.apply(this, arguments);
         ctor.apply(this, arguments);
     };
     Ctor.displayName = className;
-    var fn = inherit(Ctor, superClass);
-    extend(fn, methods);
+    var proto = inherit(Ctor, superClass);
+    extend(proto, methods);
+    extend(Ctor, superClass);
     if (statics) {
         extend(Ctor, statics);
     }
@@ -950,7 +952,7 @@ function updateMiniApp(instance) {
 }
 function updateQuickApp(quick, data) {
     for (var i in data) {
-        quick[i] = data[i];
+        quick.$set(i, data[i]);
     }
 }
 function isReferenceType(val) {
@@ -1016,16 +1018,14 @@ function dispatchEvent(e) {
     if (app && app.onCollectLogs && rbeaconType.test(eventType)) {
         app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
     }
-    if (instance) {
-        Renderer.batchedUpdates(function () {
-            try {
-                var fn = instance.$$eventCached[eventUid];
-                fn && fn.call(instance, createEvent(e, target));
-            } catch (err) {
-                console.log(err.stack);
-            }
-        }, e);
-    }
+    Renderer.batchedUpdates(function () {
+        try {
+            var fn = instance.$$eventCached[eventUid];
+            fn && fn.call(instance, createEvent(e, target));
+        } catch (err) {
+            console.log(err.stack);
+        }
+    }, e);
 }
 function createEvent(e, target) {
     var event = Object.assign({}, e);

@@ -54,11 +54,13 @@
   import React from '../../ReactQuick.js';
   var {  getApp } = React
   export default {
-    props: {
-      tabBar: Object,
-      refreshing: Boolean,
-      currentPath: String,
-      backgroundColor: String
+    data(){
+        return {
+            tabBar: {},
+            refreshing:false,
+            currentPath:"",
+            backgroundColor:"#ffffff"
+        };
     },
     onReady() {
     },

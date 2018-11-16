@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-15
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-16
  * IE9+
  */
 
@@ -80,15 +80,17 @@ function inherit(SubClass, SupClass) {
 try {
     var supportEval = Function('a', 'return a + 1')(2) == 3;
 } catch (e) {}
+var rname = /function\s+(\w+)/;
 function miniCreateClass(ctor, superClass, methods, statics) {
-    var className = ctor.name || 'IEComponent';
+    var className = ctor.name || (ctor.toString().match(rname) || ["", "Anonymous"])[1];
     var Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : function ReactInstance() {
         superClass.apply(this, arguments);
         ctor.apply(this, arguments);
     };
     Ctor.displayName = className;
-    var fn = inherit(Ctor, superClass);
-    extend(fn, methods);
+    var proto = inherit(Ctor, superClass);
+    extend(proto, methods);
+    extend(Ctor, superClass);
     if (statics) {
         extend(Ctor, statics);
     }
@@ -554,10 +556,10 @@ function createPortal(children, parent) {
 function getDataSet(obj) {
     var ret = {};
     for (var name in obj) {
-        var key = name.replace(/data(\w)(\.*)/, function (a, b, c) {
-            return toLowerCase(b) + c;
-        });
-        ret[key] = obj[name];
+        if (name.slice(0, 4) == 'data') {
+            var key = toLowerCase(name[4]) + name.slice(5);
+            ret[key] = obj[name];
+        }
     }
     return ret;
 }
@@ -573,47 +575,44 @@ function dispatchEvent(e) {
     var app = this.$app.def;
     var eventUid = dataset[eventType + 'Uid'];
     if (dataset['classUid']) {
-        console.log("请尽快升级nanachi");
+        console.log('请尽快升级nanachi');
         var key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
     }
     var fiber = instance.$$eventCached[eventUid + 'Fiber'];
     if (eventType == 'change' && fiber) {
-        if (fiber.props.value + '' == e.value) {
+        if (fiber.props.value + '' === e.value) {
             return;
         }
     }
     if (app && app.onCollectLogs && beaconType.test(eventType)) {
         app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
     }
-    if (instance) {
-        Renderer.batchedUpdates(function () {
-            try {
-                var fn = instance.$$eventCached[eventUid];
-                fn && fn.call(instance, createEvent(e, target));
-            } catch (err) {
-                console.log(err.stack);
-            }
-        }, e);
-    }
-}
-function createEvent(e, target) {
-    var event = {};
-    var fackTarget = {
-        nodeName: target._nodeName
+    var safeTarget = {
+        dataset: dataset,
+        nodeName: target._nodeName,
+        value: e.value
     };
+    Renderer.batchedUpdates(function () {
+        try {
+            var fn = instance.$$eventCached[eventUid];
+            fn && fn.call(instance, createEvent(e, safeTarget, eventType));
+        } catch (err) {
+            console.log(err.stack);
+        }
+    }, e);
+}
+function createEvent(e, target, type) {
+    var event = {};
     for (var i in e) {
-        if (i.indexOf("_") !== 0) {
+        if (i.indexOf('_') !== 0) {
             event[i] = e[i];
         }
     }
-    if (typeof e.value == 'string') {
-        fackTarget.value = e.value;
-    }
     event.stopPropagation = e.stopPropagation.bind(e);
     event.preventDefault = e.preventDefault.bind(e);
-    event.target = fackTarget;
-    event.type = e._type;
+    event.target = target;
+    event.type = type;
     event.timeStamp = new Date() - 0;
     return event;
 }
@@ -669,7 +668,7 @@ function updateMiniApp(instance) {
 }
 function updateQuickApp(quick, data) {
     for (var i in data) {
-        quick[i] = data[i];
+        quick.$set(i, data[i]);
     }
 }
 function isReferenceType(val) {
@@ -2645,19 +2644,12 @@ function registerComponent(type, name) {
     var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
     return {
-        props: {
-            props: {
-                type: Object,
-                default: {}
-            },
-            state: {
-                type: Object,
-                default: {}
-            },
-            context: {
-                type: Object,
-                default: {}
-            }
+        data: function data() {
+            return {
+                props: {},
+                state: {},
+                context: {}
+            };
         },
         onInit: function onInit() {
             usingComponents[name] = type;
