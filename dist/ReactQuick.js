@@ -141,7 +141,7 @@ var Renderer = {
     fireMiddlewares: function fireMiddlewares(begin) {
         var index = begin ? middlewares.length - 1 : 0,
             delta = begin ? -1 : 1,
-            method = begin ? 'begin' : 'end',
+            method = begin ? "begin" : "end",
             obj = void 0;
         while (obj = middlewares[index]) {
             obj[method]();
@@ -166,11 +166,11 @@ function Component(props, context) {
 Component.prototype = {
     constructor: Component,
     replaceState: function replaceState() {
-        toWarnDev('replaceState', true);
+        toWarnDev("replaceState", true);
     },
     isReactComponent: returnTrue,
     isMounted: function isMounted$$1() {
-        toWarnDev('isMounted', true);
+        toWarnDev("isMounted", true);
         return this.updater.isMounted(this);
     },
     setState: function setState(state, cb) {
@@ -180,11 +180,11 @@ Component.prototype = {
         this.updater.enqueueSetState(this, true, cb);
     },
     render: function render() {
-        throw 'must implement render';
+        throw "must implement render";
     }
 };
 
-var _typeof = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var RESERVED_PROPS = {
     key: true,
     ref: true,
@@ -383,7 +383,7 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
     }
     if (invokeCallback) {
         callback(bookKeeping, children,
-            nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
+        nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
         return 1;
     }
     var subtreeCount = 0;
@@ -425,13 +425,13 @@ var Children = {
         if (isValidElement(children)) {
             return children;
         }
-        throw new Error('expect only one child');
+        throw new Error("expect only one child");
     },
     count: function count(children) {
         if (children == null) {
             return 0;
         }
-        return traverseAllChildren(children, '', noop);
+        return traverseAllChildren(children, "", noop);
     },
     map: function map(children, func, context) {
         return proxyIt(children, func, [], context);
@@ -454,11 +454,11 @@ function K(el) {
     return el;
 }
 function mapChildren(children, prefix, func, result, context) {
-    var keyPrefix = '';
+    var keyPrefix = "";
     if (prefix != null) {
-        keyPrefix = escapeUserProvidedKey(prefix) + '/';
+        keyPrefix = escapeUserProvidedKey(prefix) + "/";
     }
-    traverseAllChildren(children, '', traverseCallback, {
+    traverseAllChildren(children, "", traverseCallback, {
         context: context,
         keyPrefix: keyPrefix,
         func: func,
@@ -468,7 +468,7 @@ function mapChildren(children, prefix, func, result, context) {
 }
 var userProvidedKeyEscapeRegex = /\/+/g;
 function escapeUserProvidedKey(text) {
-    return ('' + text).replace(userProvidedKeyEscapeRegex, '$&/');
+    return ("" + text).replace(userProvidedKeyEscapeRegex, "$&/");
 }
 function traverseCallback(bookKeeping, child, childKey) {
     var result = bookKeeping.result,
@@ -484,7 +484,7 @@ function traverseCallback(bookKeeping, child, childKey) {
     } else if (mappedChild != null) {
         if (isValidElement(mappedChild)) {
             mappedChild = extend({}, mappedChild);
-            mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + '/' : '') + childKey;
+            mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + "/" : "") + childKey;
         }
         result.push(mappedChild);
     }
@@ -573,7 +573,7 @@ function dispatchEvent(e) {
     var app = this.$app.def;
     var eventUid = dataset[eventType + 'Uid'];
     if (dataset['classUid']) {
-        console.log('请尽快升级nanachi');//eslint-disable-line
+        console.log('请尽快升级nanachi');
         var key = dataset['key'];
         eventUid += key != null ? '-' + key : '';
     }
@@ -615,7 +615,7 @@ function createEvent(e, target, type) {
     return event;
 }
 
-var _typeof$1 = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj; };
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function _uuid() {
     return (Math.random() + '').slice(-4);
 }
@@ -641,7 +641,7 @@ var pageState = {
     isReady: false
 };
 function _getCurrentPages() {
-    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
     if (typeof getCurrentPages === 'function') {
         return getCurrentPages();
     }
@@ -666,7 +666,7 @@ function updateMiniApp(instance) {
 }
 function updateQuickApp(quick, data) {
     for (var i in data) {
-        quick[i] = data[i];
+        quick.$set(i, data[i]);
     }
 }
 function isReferenceType(val) {
@@ -735,428 +735,428 @@ function toRenderProps() {
 var fetch = require('@system.fetch');
 var JSON_TYPE_STRING = 'json';
 function requestCallback(_ref) {
-    var url = _ref.url,
-        data = _ref.data,
-        header = _ref.header,
-        method = _ref.method,
-        _ref$dataType = _ref.dataType,
-        dataType = _ref$dataType === undefined ? JSON_TYPE_STRING : _ref$dataType,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    function onFetchSuccess(_ref2) {
-        var statusCode = _ref2.code,
-            data = _ref2.data,
-            headers = _ref2.header;
-        if (dataType === JSON_TYPE_STRING) {
-            try {
-                data = JSON.parse(data);
-            } catch (error) {
-                runFunction(fail, error);
-            }
-        }
-        success({
-            statusCode: statusCode,
-            data: data,
-            headers: headers
-        });
+  var url = _ref.url,
+      data = _ref.data,
+      header = _ref.header,
+      method = _ref.method,
+      _ref$dataType = _ref.dataType,
+      dataType = _ref$dataType === undefined ? JSON_TYPE_STRING : _ref$dataType,
+      success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  function onFetchSuccess(_ref2) {
+    var statusCode = _ref2.code,
+        data = _ref2.data,
+        headers = _ref2.header;
+    if (dataType === JSON_TYPE_STRING) {
+      try {
+        data = JSON.parse(data);
+      } catch (error) {
+        runFunction(fail, error);
+      }
     }
-    fetch.fetch({
-        url: url,
-        data: data,
-        header: header,
-        method: method,
-        success: onFetchSuccess,
-        fail: fail,
-        complete: complete
+    success({
+      statusCode: statusCode,
+      data: data,
+      headers: headers
     });
+  }
+  fetch.fetch({
+    url: url,
+    data: data,
+    header: header,
+    method: method,
+    success: onFetchSuccess,
+    fail: fail,
+    complete: complete
+  });
 }
 function requestPromise(_ref3) {
-    var url = _ref3.url,
-        data = _ref3.data,
-        header = _ref3.header,
-        method = _ref3.method,
-        _ref3$dataType = _ref3.dataType,
-        dataType = _ref3$dataType === undefined ? JSON_TYPE_STRING : _ref3$dataType,
-        complete = _ref3.complete;
-    return new Promise(function (resolve, reject) {
-        function onFetchSuccess(_ref4) {
-            var statusCode = _ref4.code,
-                data = _ref4.data,
-                headers = _ref4.header;
-            if (dataType === JSON_TYPE_STRING) {
-                try {
-                    data = JSON.parse(data);
-                } catch (error) {
-                    reject(error);
-                }
-            }
-            resolve({
-                statusCode: statusCode,
-                data: data,
-                headers: headers
-            });
+  var url = _ref3.url,
+      data = _ref3.data,
+      header = _ref3.header,
+      method = _ref3.method,
+      _ref3$dataType = _ref3.dataType,
+      dataType = _ref3$dataType === undefined ? JSON_TYPE_STRING : _ref3$dataType,
+      complete = _ref3.complete;
+  return new Promise(function (resolve, reject) {
+    function onFetchSuccess(_ref4) {
+      var statusCode = _ref4.code,
+          data = _ref4.data,
+          headers = _ref4.header;
+      if (dataType === JSON_TYPE_STRING) {
+        try {
+          data = JSON.parse(data);
+        } catch (error) {
+          reject(error);
         }
-        fetch.fetch({
-            url: url,
-            data: data,
-            header: header,
-            method: method,
-            success: onFetchSuccess,
-            fail: function fail(error) {
-                return reject(error);
-            },
-            complete: complete
-        });
+      }
+      resolve({
+        statusCode: statusCode,
+        data: data,
+        headers: headers
+      });
+    }
+    fetch.fetch({
+      url: url,
+      data: data,
+      header: header,
+      method: method,
+      success: onFetchSuccess,
+      fail: function fail(error) {
+        return reject(error);
+      },
+      complete: complete
     });
+  });
 }
 function request(opt) {
-    return apiRunner(opt, requestCallback, requestPromise);
+  return apiRunner(opt, requestCallback, requestPromise);
 }
 
 var request$1 = require('@system.request');
 var HTTP_OK_CODE = 200;
 function uploadFile(_ref) {
-    var url = _ref.url,
-        filePath = _ref.filePath,
-        name = _ref.name,
-        header = _ref.header,
-        formData = _ref.formData,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    var data = [];
-    Object.keys(formData).map(function (key) {
-        var value = formData[key];
-        var item = {
-            value: value,
-            name: key
-        };
-        data.push(item);
+  var url = _ref.url,
+      filePath = _ref.filePath,
+      name = _ref.name,
+      header = _ref.header,
+      formData = _ref.formData,
+      success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  var data = [];
+  Object.keys(formData).map(function (key) {
+    var value = formData[key];
+    var item = {
+      value: value,
+      name: key
+    };
+    data.push(item);
+  });
+  function successForMi(_ref2) {
+    var statusCode = _ref2.code,
+        data = _ref2.data;
+    success({
+      statusCode: statusCode,
+      data: data
     });
-    function successForMi(_ref2) {
-        var statusCode = _ref2.code,
-            data = _ref2.data;
-        success({
-            statusCode: statusCode,
-            data: data
-        });
-    }
-    request$1.upload({
-        url: url,
-        header: header,
-        data: data,
-        files: [{ uri: filePath, name: name }],
-        success: successForMi,
-        fail: fail,
-        complete: complete
-    });
+  }
+  request$1.upload({
+    url: url,
+    header: header,
+    data: data,
+    files: [{ uri: filePath, name: name }],
+    success: successForMi,
+    fail: fail,
+    complete: complete
+  });
 }
 function downloadFile(_ref3) {
-    var url = _ref3.url,
-        header = _ref3.header,
-        success = _ref3.success,
-        fail = _ref3.fail,
-        complete = _ref3.complete;
-    function downloadSuccess(_ref4) {
-        var tempFilePath = _ref4.uri;
-        success({
-            statusCode: HTTP_OK_CODE,
-            tempFilePath: tempFilePath
-        });
-    }
-    function downloadTaskStarted(_ref5) {
-        var token = _ref5.token;
-        request$1.onDownloadComplete({
-            token: token,
-            success: downloadSuccess,
-            fail: fail,
-            complete: complete
-        });
-    }
-    request$1.download({
-        url: url,
-        header: header,
-        success: downloadTaskStarted,
-        fail: fail,
-        complete: complete
+  var url = _ref3.url,
+      header = _ref3.header,
+      success = _ref3.success,
+      fail = _ref3.fail,
+      complete = _ref3.complete;
+  function downloadSuccess(_ref4) {
+    var tempFilePath = _ref4.uri;
+    success({
+      statusCode: HTTP_OK_CODE,
+      tempFilePath: tempFilePath
     });
+  }
+  function downloadTaskStarted(_ref5) {
+    var token = _ref5.token;
+    request$1.onDownloadComplete({
+      token: token,
+      success: downloadSuccess,
+      fail: fail,
+      complete: complete
+    });
+  }
+  request$1.download({
+    url: url,
+    header: header,
+    success: downloadTaskStarted,
+    fail: fail,
+    complete: complete
+  });
 }
 
-var _typeof$2 = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj; };
+var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
 function setStorage(_ref) {
-    var key = _ref.key,
-        data = _ref.data,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    var value = data;
-    if ((typeof value === 'undefined' ? 'undefined' : _typeof$2(value)) === 'object') {
-        try {
-            value = JSON.stringify(value);
-        } catch (error) {
-            runFunction(fail, error);
-        }
+  var key = _ref.key,
+      data = _ref.data,
+      success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  var value = data;
+  if ((typeof value === 'undefined' ? 'undefined' : _typeof$2(value)) === 'object') {
+    try {
+      value = JSON.stringify(value);
+    } catch (error) {
+      runFunction(fail, error);
     }
-    storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
+  }
+  storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
 }
 function getStorage(_ref2) {
-    var key = _ref2.key,
-        success = _ref2.success,
-        fail = _ref2.fail,
-        complete = _ref2.complete;
-    function dataObj(data) {
-        try {
-            data = JSON.parse(data);
-        } catch (e) {}
-        success({
-            data: data
-        });
-    }
-    storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
+  var key = _ref2.key,
+      success = _ref2.success,
+      fail = _ref2.fail,
+      complete = _ref2.complete;
+  function dataObj(data) {
+    try {
+      data = JSON.parse(data);
+    } catch (e) {}
+    success({
+      data: data
+    });
+  }
+  storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
 }
 function removeStorage(obj) {
-    storage.delete(obj);
+  storage.delete(obj);
 }
 function clearStorage(obj) {
-    storage.clear(obj);
+  storage.clear(obj);
 }
 var storageCache = {};
 function setStorageSync(key, value) {
-    return storageCache[key] = value;
+  return storageCache[key] = value;
 }
 function getStorageSync(key) {
-    return storageCache[key];
+  return storageCache[key];
 }
 function removeStorageSync(key) {
-    delete storageCache[key];
+  delete storageCache[key];
 }
 function clearStorageSync(key) {
-    storageCache = {};
+  storageCache = {};
 }
 
 var file = require('@system.file');
 var SUCCESS_MESSAGE = 'ok';
 function getSavedFileInfo(_ref) {
-    var uri = _ref.filePath,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    function gotFile(_ref2) {
-        var length = _ref2.length,
-            lastModifiedTime = _ref2.lastModifiedTime;
-        success({
-            errMsg: SUCCESS_MESSAGE,
-            size: length,
-            createTime: lastModifiedTime
-        });
-    }
-    file.get({
-        uri: uri,
-        success: gotFile,
-        fail: fail,
-        complete: complete
+  var uri = _ref.filePath,
+      success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  function gotFile(_ref2) {
+    var length = _ref2.length,
+        lastModifiedTime = _ref2.lastModifiedTime;
+    success({
+      errMsg: SUCCESS_MESSAGE,
+      size: length,
+      createTime: lastModifiedTime
     });
+  }
+  file.get({
+    uri: uri,
+    success: gotFile,
+    fail: fail,
+    complete: complete
+  });
 }
 function getSavedFileList(_ref3) {
-    var uri = _ref3.uri,
-        success = _ref3.success,
-        fali = _ref3.fali,
-        complete = _ref3.complete;
-    if (!uri) {
-        runFunction(fail, new Error('小米需要指定目录'));
-    }
-    function gotFileList(fileList) {
-        var newFileList = fileList.map(function (item) {
-            return {
-                fileList: item.uri,
-                size: item.length,
-                createTime: item.lastModifiedTime
-            };
-        });
-        success({
-            fileList: newFileList,
-            errMsg: SUCCESS_MESSAGE
-        });
-    }
-    file.list({
-        uri: uri,
-        success: gotFileList,
-        fali: fali,
-        complete: complete
+  var uri = _ref3.uri,
+      success = _ref3.success,
+      fali = _ref3.fali,
+      complete = _ref3.complete;
+  if (!uri) {
+    runFunction(fail, new Error('小米需要指定目录'));
+  }
+  function gotFileList(fileList) {
+    var newFileList = fileList.map(function (item) {
+      return {
+        fileList: item.uri,
+        size: item.length,
+        createTime: item.lastModifiedTime
+      };
     });
+    success({
+      fileList: newFileList,
+      errMsg: SUCCESS_MESSAGE
+    });
+  }
+  file.list({
+    uri: uri,
+    success: gotFileList,
+    fali: fali,
+    complete: complete
+  });
 }
 function removeSavedFile(_ref4) {
-    var uri = _ref4.filePath,
-        success = _ref4.success,
-        fail = _ref4.fail,
-        complete = _ref4.complete;
-    file.delete({
-        uri: uri,
-        success: success,
-        fail: fail,
-        complete: complete
-    });
+  var uri = _ref4.filePath,
+      success = _ref4.success,
+      fail = _ref4.fail,
+      complete = _ref4.complete;
+  file.delete({
+    uri: uri,
+    success: success,
+    fail: fail,
+    complete: complete
+  });
 }
 function saveFile(_ref5) {
-    var srcUri = _ref5.tempFilePath,
-        dstUri = _ref5.destinationFilePath,
-        success = _ref5.success,
-        fail = _ref5.fail,
-        complete = _ref5.complete;
-    if (!dstUri) {
-        runFunction(fail, new Error('小米需要指定需要指定目标路径'));
-    }
-    function gotSuccess(uri) {
-        success({
-            savedFilePath: uri
-        });
-    }
-    file.move({
-        srcUri: srcUri,
-        dstUri: dstUri,
-        success: gotSuccess,
-        fail: fail,
-        complete: complete
+  var srcUri = _ref5.tempFilePath,
+      dstUri = _ref5.destinationFilePath,
+      success = _ref5.success,
+      fail = _ref5.fail,
+      complete = _ref5.complete;
+  if (!dstUri) {
+    runFunction(fail, new Error('小米需要指定需要指定目标路径'));
+  }
+  function gotSuccess(uri) {
+    success({
+      savedFilePath: uri
     });
+  }
+  file.move({
+    srcUri: srcUri,
+    dstUri: dstUri,
+    success: gotSuccess,
+    fail: fail,
+    complete: complete
+  });
 }
 
 var clipboard = require('@system.clipboard');
 function setClipboardData(_ref) {
-    var text = _ref.data,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    clipboard.set({
-        text: text,
-        success: success || noop,
-        fail: fail || noop,
-        complete: complete || noop
-    });
+  var text = _ref.data,
+      success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  clipboard.set({
+    text: text,
+    success: success || noop,
+    fail: fail || noop,
+    complete: complete || noop
+  });
 }
 function getClipboardData(_ref2) {
-    var success = _ref2.success,
-        fail = _ref2.fail,
-        complete = _ref2.complete;
-    function gotSuccess(_ref3) {
-        var data = _ref3.text;
-        success({
-            data: data
-        });
-    }
-    clipboard.get({
-        success: gotSuccess,
-        fail: fail || noop,
-        complete: complete || noop
+  var success = _ref2.success,
+      fail = _ref2.fail,
+      complete = _ref2.complete;
+  function gotSuccess(_ref3) {
+    var data = _ref3.text;
+    success({
+      data: data
     });
+  }
+  clipboard.get({
+    success: gotSuccess,
+    fail: fail || noop,
+    complete: complete || noop
+  });
 }
 
 var network = require('@system.network');
 function getNetworkType(_ref) {
-    var success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    function networkTypeGot(_ref2) {
-        var networkType = _ref2.type;
-        success({ networkType: networkType });
-    }
-    network.getType({
-        success: networkTypeGot,
-        fail: fail,
-        complete: complete
-    });
+  var success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  function networkTypeGot(_ref2) {
+    var networkType = _ref2.type;
+    success({ networkType: networkType });
+  }
+  network.getType({
+    success: networkTypeGot,
+    fail: fail,
+    complete: complete
+  });
 }
 function onNetworkStatusChange(callback) {
-    function networkChanged(_ref3) {
-        var networkType = _ref3.type;
-        var connectedTypes = ['wifi', '4g', '3g', '2g'];
-        callback({
-            isConnected: connectedTypes.includes(networkType),
-            networkType: networkType
-        });
-    }
-    network.subscribe({ callback: networkChanged });
+  function networkChanged(_ref3) {
+    var networkType = _ref3.type;
+    var connectedTypes = ['wifi', '4g', '3g', '2g'];
+    callback({
+      isConnected: connectedTypes.includes(networkType),
+      networkType: networkType
+    });
+  }
+  network.subscribe({ callback: networkChanged });
 }
 
 var device = require('@system.device');
 function getSystemInfo(_ref) {
-    var success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    function gotSuccessInfo(_ref2) {
-        var brand = _ref2.brand,
-            manufacturer = _ref2.manufacturer,
-            model = _ref2.model,
-            product = _ref2.product,
-            osType = _ref2.osType,
-            osVersionName = _ref2.osVersionName,
-            osVersionCode = _ref2.osVersionCode,
-            platformVersionName = _ref2.platformVersionName,
-            platformVersionCode = _ref2.platformVersionCode,
-            language = _ref2.language,
-            region = _ref2.region,
-            screenWidth = _ref2.screenWidth,
-            screenHeight = _ref2.screenHeight;
-        success({
-            brand: brand,
-            model: model,
-            screenWidth: screenWidth,
-            screenHeight: screenHeight,
-            windowWidth: screenWidth,
-            windowHeight: screenHeight,
-            statusBarHeight: 0,
-            language: language,
-            version: platformVersionCode,
-            system: osVersionCode,
-            platform: platformVersionName,
-            fontSizeSetting: DEFAULT_FONT_SIZE,
-            SDKVersion: platformVersionCode
-        });
-    }
-    device.getInfo({
-        success: gotSuccessInfo,
-        fail: fail,
-        complete: complete
+  var success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  function gotSuccessInfo(_ref2) {
+    var brand = _ref2.brand,
+        manufacturer = _ref2.manufacturer,
+        model = _ref2.model,
+        product = _ref2.product,
+        osType = _ref2.osType,
+        osVersionName = _ref2.osVersionName,
+        osVersionCode = _ref2.osVersionCode,
+        platformVersionName = _ref2.platformVersionName,
+        platformVersionCode = _ref2.platformVersionCode,
+        language = _ref2.language,
+        region = _ref2.region,
+        screenWidth = _ref2.screenWidth,
+        screenHeight = _ref2.screenHeight;
+    success({
+      brand: brand,
+      model: model,
+      screenWidth: screenWidth,
+      screenHeight: screenHeight,
+      windowWidth: screenWidth,
+      windowHeight: screenHeight,
+      statusBarHeight: 0,
+      language: language,
+      version: platformVersionCode,
+      system: osVersionCode,
+      platform: platformVersionName,
+      fontSizeSetting: DEFAULT_FONT_SIZE,
+      SDKVersion: platformVersionCode
     });
+  }
+  device.getInfo({
+    success: gotSuccessInfo,
+    fail: fail,
+    complete: complete
+  });
 }
 
 var media = require('@system.media');
 var file$1 = require('@system.file');
 function chooseImage(_ref) {
-    var _ref$count = _ref.count,
-        count = _ref$count === undefined ? 1 : _ref$count,
-        _ref$sourceType = _ref.sourceType,
-        sourceType = _ref$sourceType === undefined ? [] : _ref$sourceType,
-        _success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    if (count > 1) {
-        runFunction(fail, new Error('快应用选择图片的数量不能大于1'));
-    }
-    function imagePicked(_ref2) {
-        var path = _ref2.uri;
-        file$1.get({
-            uri: path,
-            success: function success(_ref3) {
-                var size = _ref3.length;
-                var tempFilePaths = [path];
-                var tempFiles = [{ path: path, size: size }];
-                _success({
-                    tempFilePaths: tempFilePaths,
-                    tempFiles: tempFiles
-                });
-            },
-            fail: fail
+  var _ref$count = _ref.count,
+      count = _ref$count === undefined ? 1 : _ref$count,
+      _ref$sourceType = _ref.sourceType,
+      sourceType = _ref$sourceType === undefined ? [] : _ref$sourceType,
+      _success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  if (count > 1) {
+    runFunction(fail, new Error('快应用选择图片的数量不能大于1'));
+  }
+  function imagePicked(_ref2) {
+    var path = _ref2.uri;
+    file$1.get({
+      uri: path,
+      success: function success(_ref3) {
+        var size = _ref3.length;
+        var tempFilePaths = [path];
+        var tempFiles = [{ path: path, size: size }];
+        _success({
+          tempFilePaths: tempFilePaths,
+          tempFiles: tempFiles
         });
-    }
-    var pick = sourceType.length === 1 && sourceType[0] === 'camera' ? media.takePhoto : media.pickImage;
-    pick({
-        success: imagePicked,
-        fail: fail || noop,
-        complete: complete || noop,
-        cancel: fail || noop
+      },
+      fail: fail
     });
+  }
+  var pick = sourceType.length === 1 && sourceType[0] === 'camera' ? media.takePhoto : media.pickImage;
+  pick({
+    success: imagePicked,
+    fail: fail || noop,
+    complete: complete || noop,
+    cancel: fail || noop
+  });
 }
 
 function UpdateQueue() {
@@ -1178,13 +1178,13 @@ function createInstance(fiber, context) {
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = {
-            refs: {},
-            props: props,
-            context: context,
-            ref: ref,
-            __proto__: type.prototype
-        };
-    fiber.errorHook = 'constructor';
+        refs: {},
+        props: props,
+        context: context,
+        ref: ref,
+        __proto__: type.prototype
+    };
+    fiber.errorHook = "constructor";
     try {
         if (isStateless) {
             extend(instance, {
@@ -1201,7 +1201,7 @@ function createInstance(fiber, context) {
                     if (a && a.render) {
                         delete this.__isStateless;
                         for (var i in a) {
-                            instance[i == 'render' ? 'renderImpl' : i] = a[i];
+                            instance[i == "render" ? "renderImpl" : i] = a[i];
                         }
                     } else if (this.__init) {
                         this.__keep = {
@@ -1223,7 +1223,7 @@ function createInstance(fiber, context) {
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
-                throw type.name + ' doesn\'t extend React.Component';
+                throw type.name + " doesn't extend React.Component";
             }
         }
     } finally {
@@ -1243,7 +1243,7 @@ function createInstance(fiber, context) {
 
 function Fiber(vnode) {
     extend(this, vnode);
-    var type = vnode.type || 'ProxyComponent(react-hot-loader)';
+    var type = vnode.type || "ProxyComponent(react-hot-loader)";
     this.name = type.displayName || type.name || type;
     this.effectTag = 1;
 }
@@ -1307,7 +1307,7 @@ function applyCallback(host, hook, args) {
     var fiber = host._reactInternalFiber;
     fiber.errorHook = hook;
     var fn = host[hook];
-    if (hook == 'componentWillUnmount') {
+    if (hook == "componentWillUnmount") {
         host[hook] = noop;
     }
     if (fn) {
@@ -1316,13 +1316,13 @@ function applyCallback(host, hook, args) {
     return true;
 }
 function describeError(names, hook) {
-    var segments = ['**' + hook + '** method occur error '];
+    var segments = ["**" + hook + "** method occur error "];
     names.forEach(function (name, i) {
         if (names[i + 1]) {
-            segments.push('in ' + name + ' (created By ' + names[i + 1] + ')');
+            segments.push("in " + name + " (created By " + names[i + 1] + ")");
         }
     });
-    return segments.join('\n\r').trim();
+    return segments.join("\n\r").trim();
 }
 function findCatchComponent(fiber, names, hook) {
     var instance = void 0,
@@ -1360,7 +1360,7 @@ function findCatchComponent(fiber, names, hook) {
                     boundary = f;
                 }
                 if (!boundary.catchError) {
-                    if (hook == 'componentWillUnmount' || hook == 'componentDidUpdate') {
+                    if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
                         boundary.effectTag = CAPTURE;
                     } else {
                         boundary.effectTag = effectTag * CAPTURE;
@@ -1646,7 +1646,7 @@ function updateClassComponent(fiber, info) {
     Renderer.onBeforeRender(fiber);
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
-    var rendered = applyCallback(instance, 'render', []);
+    var rendered = applyCallback(instance, "render", []);
     diffChildren(fiber, rendered);
     Renderer.onAfterRender(fiber);
 }
@@ -1655,7 +1655,7 @@ function applybeforeMountHooks(fiber, instance, newProps) {
     if (instance.__useNewHooks) {
         setStateByProps(instance, fiber, newProps, instance.state);
     } else {
-        callUnsafeHook(instance, 'componentWillMount', []);
+        callUnsafeHook(instance, "componentWillMount", []);
     }
     delete fiber.setout;
     mergeStates(fiber, newProps);
@@ -1673,7 +1673,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     if (!instance.__useNewHooks) {
         if (propsChanged || contextChanged) {
             var prevState = instance.state;
-            callUnsafeHook(instance, 'componentWillReceiveProps', [newProps, newContext]);
+            callUnsafeHook(instance, "componentWillReceiveProps", [newProps, newContext]);
             if (prevState !== instance.state) {
                 fiber.memoizedState = instance.state;
             }
@@ -1692,16 +1692,16 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     } else {
         var args = [newProps, newState, newContext];
         fiber.updateQueue = UpdateQueue();
-        if (!updateQueue.isForced && !applyCallback(instance, 'shouldComponentUpdate', args)) {
+        if (!updateQueue.isForced && !applyCallback(instance, "shouldComponentUpdate", args)) {
             fiber.updateFail = true;
         } else if (!instance.__useNewHooks) {
-            callUnsafeHook(instance, 'componentWillUpdate', args);
+            callUnsafeHook(instance, "componentWillUpdate", args);
         }
     }
 }
 function callUnsafeHook(a, b, c) {
     applyCallback(a, b, c);
-    applyCallback(a, 'UNSAFE_' + b, c);
+    applyCallback(a, "UNSAFE_" + b, c);
 }
 function isSameNode(a, b) {
     if (a.type === b.type && a.key === b.key) {
@@ -1847,7 +1847,7 @@ var Refs = {
                 fiber.deleteRef = true;
             }
         } catch (e) {
-            pushError(fiber, 'ref', e);
+            pushError(fiber, "ref", e);
         }
     }
 };
@@ -1870,7 +1870,7 @@ var refStrategy = {
     }
 };
 
-var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
+var domFns = ["insertElement", "updateContent", "updateAttribute"];
 var domEffects = [PLACE, CONTENT, ATTR];
 var domRemoved = [];
 function commitDFSImpl(fiber) {
@@ -1962,10 +1962,10 @@ function commitEffects(fiber) {
                     break;
                 case HOOK:
                     if (fiber.hasMounted) {
-                        guardCallback(instance, 'componentDidUpdate', [updater.prevProps, updater.prevState, updater.snapshot]);
+                        guardCallback(instance, "componentDidUpdate", [updater.prevProps, updater.prevState, updater.snapshot]);
                     } else {
                         fiber.hasMounted = true;
-                        guardCallback(instance, 'componentDidMount', []);
+                        guardCallback(instance, "componentDidMount", []);
                     }
                     delete fiber._hydrating;
                     if (fiber.catchError) {
@@ -2036,7 +2036,7 @@ function disposeFiber(fiber, force) {
             Renderer.onDispose(fiber);
             if (fiber.hasMounted) {
                 stateNode.updater.enqueueSetState = returnFalse;
-                guardCallback(stateNode, 'componentWillUnmount', []);
+                guardCallback(stateNode, "componentWillUnmount", []);
                 delete fiber.stateNode;
             }
         }
@@ -2270,7 +2270,7 @@ function validateTag(el) {
 function createContainer(root, onlyGet, validate) {
     validate = validate || validateTag;
     if (!validate(root)) {
-        throw 'container is not a element';
+        throw "container is not a element";
     }
     root.anuProp = 2018;
     var useProp = root.anuProp === 2018;
@@ -2291,7 +2291,7 @@ function createContainer(root, onlyGet, validate) {
     var container = new Fiber({
         stateNode: root,
         tag: 5,
-        name: 'hostRoot',
+        name: "hostRoot",
         contextStack: [{}],
         containerStack: [root],
         microtasks: [],
@@ -2642,36 +2642,29 @@ function registerComponent(type, name) {
     var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
     return {
-        props: {
-            props: {
-                type: Object,
-                default: {}
-            },
-            state: {
-                type: Object,
-                default: {}
-            },
-            context: {
-                type: Object,
-                default: {}
-            }
+        data: function data() {
+            return {
+                props: {},
+                state: {},
+                context: {}
+            };
         },
         onInit: function onInit() {
             usingComponents[name] = type;
             var instance = reactInstances.shift();
             if (instance) {
-                console.log('created时为', name, '添加wx');
+                console.log("created时为", name, "添加wx");
                 instance.wx = this;
                 this.reactInstance = instance;
             } else {
-                console.log('created时为', name, '没有对应react实例');
+                console.log("created时为", name, "没有对应react实例");
                 wxInstances.push(this);
             }
         },
         onReady: function onReady() {
             if (this.reactInstance) {
                 updateMiniApp(this.reactInstance);
-                console.log('attached时更新', name);
+                console.log("attached时更新", name);
             }
         },
         onDestroy: function onDestroy() {
@@ -2691,11 +2684,11 @@ function onLoad(PageClass, path, query) {
         appendChild: noop
     };
     var pageInstance = render(
-        createElement(PageClass, {
-            path: path,
-            query: query,
-            isPageComponent: true
-        }), container);
+    createElement(PageClass, {
+        path: path,
+        query: query,
+        isPageComponent: true
+    }), container);
     callGlobalHook('onGlobalLoad');
     this.reactInstance = pageInstance;
     this.reactContainer = container;
@@ -2793,7 +2786,7 @@ var React = getWindow().React = {
         dispatchEvent: dispatchEvent
     },
     findDOMNode: function findDOMNode() {
-        console.log('小程序不支持findDOMNode');
+        console.log("小程序不支持findDOMNode");
     },
     version: '1.4.8',
     render: render$1,
