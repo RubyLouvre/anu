@@ -1,6 +1,6 @@
 import React from  '@react';
-const noop = function(){};
 import './index.scss';
+const noop = function(){};
 
 class Navigator extends React.Component{
     constructor(props){
@@ -36,7 +36,7 @@ class Navigator extends React.Component{
         });
     }
     render(){
-        return <div class={this.props.class} onTap={this.goPage.bind(this)}><text>{this.state.title}</text></div>;
+        return <div class={'anu-navigator '+this.props.class} onTap={this.goPage.bind(this)}><text>{this.state.title}</text></div>;
     }
 
 }
