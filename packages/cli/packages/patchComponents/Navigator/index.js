@@ -36,7 +36,7 @@ class Navigator extends React.Component{
         });
     }
     render(){
-        return <div class={this.props.class} onTap={this.goPage.bind(this)}><text>{this.state.title}</text></div>;
+        return <div class={'anu-navigator '+this.props.class} onTap={this.goPage.bind(this)}><text>{this.state.title}</text></div>;
     }
 
 }

@@ -18,13 +18,26 @@
   
 }
 
-.active {
-  background-color: red;
-}
-
 .default {
   background-color: #f8f8f8;
 }
+.primary {
+  background-color: #1aad19;
+}
+.warn {
+  background-color: #e64340;
+}
+.default-active{
+  background-color: darken(#f8f8f8,50%);
+}
+.primary-active{
+  background-color: lighten(#1aad19,50%);
+}
+.warn-active{
+  background-color: saturate(#e64340,70%);
+}
+
+
 .default-disabled {
   background-color: #f7f7f7;
 }
@@ -52,7 +65,6 @@
 }
 
 .default-disabled-plain, .primary-disabled-plain, .warn-disabled-plain  {
- 
   border: 1px solid rgba(0, 0, 0, 0.2);
   background-color: transparent;
 }
@@ -63,13 +75,5 @@
 
 .mini {
   padding:0 5px;
-
 }
 
-.primary {
-  background-color: #1aad19;
-}
-
-.warn {
-  background-color: #e64340;
-}

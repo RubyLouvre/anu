@@ -5,57 +5,54 @@ import "./index.scss";
 class Button extends React.Component {
     constructor(props) {
         super(props);
-        let { buttonStyle, textStyle, fontStyle } = this.handleStyle(props);
-        props.value = props.children;
-        this.state = {
-            buttonStyle,
-            textStyle,
-            fontStyle,
-            isClick: false
-        };
+        let newState = this.computeState(props, false);
+        this.state = newState;
     }
 
-    handleStyle(props) {
-        let buttonStyle = props.size + " ";
-        let textStyle = "";
-        let value;
+    computeState(props, active) {
+        let buttonArray = [props.size];
+        let textAray = [props.type]
         if (props.disabled) {
-            if (props.plain) {
-                value = props.type + "-disabled-plain";
-            } else {
-                value = props.type + "-disabled";
-            }
+            textAray.push('disabled')
         } else {
-            if (props.plain) {
-                value = props.type + "-plain";
-            } else {
-                value = props.type;
+            if (active){
+                buttonArray.push(props.type+"-active")
+            }              
+        }
+        if (props.plain) {
+            textAray.push('plain')
+        }
+        var textStyle = colorStyleMap[textAray.join("-")];
+        var buttonStyle = buttonArray.concat(textAray.join("-")).join(" ")
+        let fontStyle = fontStyleMap[props.size];
+        return {
+            value: props.children,
+            textStyle,
+            buttonStyle,
+            fontStyle
+        };
+    }
+    updateState(nextProps, active){
+        let newState = this.computeState(nextProps, active);
+        let oldState = this.state;
+        let lastState = {};
+        let diff = false
+        for(var i in oldState){
+            if(oldState[i] !== newState[i]){
+                diff = true;
+                lastState[i] = newState[i]
             }
         }
-
-        textStyle = colorStyleMap[value];
-        buttonStyle += value;
-        let fontStyle = fontStyleMap[this.props.size];
-
-        return {
-            textStyle,
-            buttonStyle,
-            fontStyle
-        };
+        if(diff){
+            this.setState(lastState)
+        }
     }
-
     componentWillReceiveProps(nextProps) {
-        let { buttonStyle, textStyle, fontStyle } = this.handleStyle(nextProps);
-        nextProps.value = nextProps.children;
-        this.setState({
-            buttonStyle,
-            textStyle,
-            fontStyle
-        });
+        this.updateState(nextProps, false)
     }
     click(e) {
         var props = this.props;
-        Array("onTap", "catchTap", "onClick", "catchClick").forEach(function(
+        Array("onTap", "catchTap", "onClick", "catchClick").forEach(function (
             name
         ) {
             var fn = props[name];
@@ -66,6 +63,14 @@ class Button extends React.Component {
                 }
             }
         });
+        if(props.disabled){
+            return;
+        }
+        this.updateState(this.props, true)
+       
+        setTimeout(function () {
+            this.updateState(this.props, false)
+        }, 150);
     }
     render() {
         return (
@@ -89,7 +94,7 @@ class Button extends React.Component {
                         fontSize: this.state.fontStyle
                     }}
                 >
-                    {this.props.value}
+                    {this.state.value}
                 </text>
             </div>
         );
