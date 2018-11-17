@@ -1,6 +1,6 @@
 import React from  '@react';
-const noop = function(){};
 import './index.scss';
+const noop = function(){};
 
 class Navigator extends React.Component{
     constructor(props){

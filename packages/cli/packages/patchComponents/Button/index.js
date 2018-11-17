@@ -68,7 +68,7 @@ class Button extends React.Component {
         }
         this.updateState(this.props, true)
        
-        setTimeout(function () {
+        setTimeout(()=> {
             this.updateState(this.props, false)
         }, 150);
     }

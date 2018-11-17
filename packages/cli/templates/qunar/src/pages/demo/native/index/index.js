@@ -1,6 +1,5 @@
 import React from '@react';
 import './index.scss';
-import Navigator from '@components/Navigator/index';
 
 /*eslint-disable*/
 class P extends React.Component {
@@ -8,10 +7,10 @@ class P extends React.Component {
         super();
         const ROOT_PATH = "/pages/demo/native";
         this.state = {
-            title: "原生组件",
+            title: "内置组件",
             array: "button,checkbox,input,slider,picker,radio,textarea,label,audio,camera,image,video"
                 .split(",")
-                .map(function(name) {
+                .map(function (name) {
                     return {
                         url: `${ROOT_PATH}/${name}/index`,
                         name: name
@@ -22,8 +21,8 @@ class P extends React.Component {
     config = {
         navigationBarTextStyle: "#fff",
         navigationBarBackgroundColor: "#0088a4",
-        navigationBarTitleText: "button demo",
-        backgroundColor: "#eeeeee",
+        navigationBarTitleText: "内置组件",
+        backgroundColor: "orange",
         backgroundTextStyle: "light"
     };
     componentWillMount() {
@@ -44,17 +43,16 @@ class P extends React.Component {
         return (
             <div class="anu-block">
                 <div class="anu-page-header">{this.state.title}</div>
-                {this.state.array.map(function(item) {
+                {this.state.array.map(function (item) {
                     return (
-                        <Navigator
-                            class="anu-item"
-                            onClick={this.gotoSome.bind(this, item.url)}
-                            open-type="navigate"
-                            hover-class="navigator-hover"
-                            url={item.url}
-                        >
-                            {item.name}
-                        </Navigator>
+                        <div class='anu-item'>
+                            <navigator
+                                onClick={this.gotoSome.bind(this, item.url)}
+                                open-type="navigate"
+                                hover-class="navigator-hover"
+                                url={item.url}
+                            > {item.name}</navigator>
+                        </div>
                     );
                 })}
             </div>

@@ -1,9 +1,10 @@
-.item {
-  padding: 10px 20px;
-  background-color: #eeeeee;
-  margin: 2px 0px;
-  width: 100%; }
-  .item text {
-    display: flex;
-    flex-direction: row;
-    justify-content: center; }
+.anu-navigator {
+  display: flex;
+  flex-direction: column;
+  justify-content:  center;
+  align-items: center;
+  width: 100%;
+  text{
+    text-align: center
+  }
+ }
