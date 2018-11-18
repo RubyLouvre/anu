@@ -164,9 +164,9 @@ module.exports = {
         //检测component导出的模块名是否与模块所在目录名一致
         if (['Page', 'App'].includes(modules.componentType)) {
             specifiers.forEach(item => {
-                if (!/\/components\//.test(source)) return;
+                if (!/^@components\/|\/components\//.test(source)) return;
                 let importedName = item.local.name;
-                let pathLevel = source.split(path.sep);
+                let pathLevel = source.split('/');
                 //component模块所在的目录名 components/a/b/index => b
                 let dirName = pathLevel[pathLevel.length - 2];
                 if (dirName == importedName) return;

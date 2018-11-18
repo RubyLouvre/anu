@@ -62,10 +62,11 @@ const getFileType = (id)=>{
 
 //跳过rollup的语法解析patchComponents中的样式插件
 let rollupfilterPatchStylePlugin = ()=>{
+    let reg = utils.isWin() ? /\\patchComponents\\/ :  /\/patchComponents\//;
     return {
         transform: function(code, id){
             if (
-                /\/patchComponents\//.test(id)
+                reg.test(id)
                 && ['.css', '.less', '.scss', '.sass'].includes(path.extname(id))
             ) {
                 return false;
@@ -272,11 +273,13 @@ class Parser {
             }
             files.forEach((filePath)=>{
                 if ( /\.(js|scss|sass|less|css)$/.test(filePath) ) return;
+                filePath = path.resolve(filePath);
                 let dist  = utils.updatePath(
                     filePath, 
                     config.sourceDir, 
                     config.buildType === 'quick' ? 'src' : config.buildDir
                 );
+                
                 fs.ensureFileSync(dist);
                 fs.copyFile(filePath, dist, (err)=>{
                     if (err ) {

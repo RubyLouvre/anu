@@ -241,7 +241,8 @@ let utils = {
             arr[arr.length - 1] = lastSegement.replace('.' + ext, '.' + newExt);
         }
         let resolvedPath = path.join.apply(path, arr);
-        if (resolvedPath[0] != '/') {
+        if (!this.isWin()) {
+            // Users/x/y => /Users/x/y;
             resolvedPath = '/' + resolvedPath;
         }
         return resolvedPath;
@@ -403,14 +404,6 @@ let utils = {
         let aliasPath = path.relative(path.dirname(file), depFile);
         return aliasPath;
     },
-    replacePath: function (sPath, segement, newSegement) {
-        let sep = path.sep;
-        if (process.platform === 'win32') {
-            segement = segement.replace(/\//g, sep);
-            newSegement = newSegement.replace(/\//g, sep);
-        }
-        return path.resolve(sPath.replace(segement, newSegement));
-    },
     updateNpmAlias(id, deps) {
         //依赖的npm模块也当alias处理
         let result = {};
@@ -560,9 +553,10 @@ let utils = {
         };
     },
     resolveStyleAlias(importer) {
+       
         //解析样式中的alias别名配置
         let aliasMap = userConfig && userConfig.alias || {};
-        let depLevel = importer.split(path.sep); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
+        let depLevel = importer.split('/'); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
         let prefix = depLevel[0]; 
         let url = '';
         //将alias以及相对路径引用解析成绝对路径
@@ -570,7 +564,7 @@ let utils = {
             url = path.join(
                 cwd, 
                 aliasMap[prefix],              
-                depLevel.slice(1).join(path.sep)   //['@path', 'x', 'y.scss'] => 'x/y.scss'
+                depLevel.slice(1).join('/')   //['@path', 'x', 'y.scss'] => 'x/y.scss'
             );
         } else {
             url = importer;
