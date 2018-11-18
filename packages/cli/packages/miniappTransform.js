@@ -95,6 +95,9 @@ function transform(sourcePath, resolvedIds, originalCode) {
                                 }
                                 let value = aliasMap[moduleName] ;
                                 value = /^\w/.test(value) ? `./${value}` : value;
+                                if ( utils.isWin() ) {
+                                    value = value.replace(/\\/g, '/');
+                                }
                                 return value;
                             }
                         }
@@ -133,6 +136,9 @@ function transform(sourcePath, resolvedIds, originalCode) {
                                 path.dirname(sourcePath),
                                 path.join(cwd, config.sourceDir, using[i])
                             );
+                            if (utils.isWin()) {
+                                importSrc = importSrc.replace(/\\/g, '/');
+                            }
                             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
                         }
                         
@@ -142,13 +148,15 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         indent: 4,
                         'wrap-line-length': 100
                     });
+                    
                     if (sourcePath.indexOf('components' ) > 0){
                         queue.push({
                             code: beautify.js(result.code.replace('console.log(nanachi)', 'export {React}')),
                              
                             path:  utils.updatePath(sourcePath, config.sourceDir, 'dist') 
                         });
-                        var componentName =  sourcePath.match(/components\/(\w+)/)[1];
+                        let reg = utils.isWin() ? /components\\(\w+)/ :  /components\/(\w+)/;
+                        var componentName =  sourcePath.match(reg)[1];
                         result.code = `import ${componentName}, { React } from './index.js';
                         export default  React.registerComponent(${componentName}, '${componentName}');`;
                     }
