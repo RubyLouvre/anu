@@ -98,10 +98,13 @@ let utils = {
     createNodeName(map, backup){
         const buildType = config.buildType;
         const patchComponents = config[buildType].patchComponents;
-        const _this = this;
+        const cache = {};
+        const self = this;
+        
         
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return function(astPath, modules){
+           
             var orig = astPath.node.name.name;
             var hasPatch = patchComponents && patchComponents[orig];
             //组件补丁
@@ -111,7 +114,10 @@ let utils = {
                 modules.importComponents[newName] = {
                     source: `/@components/${newName}/index`,
                 };
-                _this.emit('compliePatch', hasPatch);
+                if (!cache[hasPatch.name]){
+                    self.emit('compliePatch', hasPatch);
+                    cache[hasPatch.name] = true;
+                }
                 return newName;
             } 
             //如果是native组件,  组件jsx名小写

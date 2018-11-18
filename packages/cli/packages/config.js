@@ -39,6 +39,10 @@ module.exports = {
             checkbox: {
                 name: 'Checkbox',
                 href: getPatchComponentDir('Checkbox')
+            },
+            navigator: {
+                name: 'Navigator',
+                href: getPatchComponentDir('Navigator')
             }
         }
     },
