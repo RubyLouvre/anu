@@ -6,19 +6,12 @@ export function registerComponent(type, name) {
     var reactInstances = (type.reactInstances = []);
     var wxInstances = (type.wxInstances = []);
     return {
-        props: {
-            props: {
-                type: Object,
-                default: {}
-            },
-            state: {
-                type: Object,
-                default: {}
-            },
-            context: {
-                type: Object,
-                default: {}
-            }
+        data(){
+            return {
+                props: {},
+                state: {},
+                context:{}
+            };
         },
 
         onInit() {

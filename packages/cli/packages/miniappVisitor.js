@@ -575,7 +575,7 @@ module.exports = {
                 let attrs = parentPath.node.attributes;
                 let expr = attrValue.expression;
                 let nodeName = parentPath.node.name.name;
-                if (/^(?:on|catch)[A-Z]/.test(attrName)) {
+                if (/^(?:on|catch)[A-Z]/.test(attrName) && !/[A-Z]/.test(nodeName)) {
                     var prefix = attrName.charAt(0) == "o" ? "on" : "catch";
                     var eventName = attrName.replace(prefix, "");
                     var otherEventName = utils.getEventName(
@@ -593,6 +593,7 @@ module.exports = {
                     attrs.push(
                         utils.createAttribute(
                             name,
+<<<<<<< HEAD
                             utils.createDynamicAttributeValue(
                                 "e",
                                 astPath,
@@ -604,13 +605,28 @@ module.exports = {
                     //以下标签，如果绑定了事件，我们会加上data-beacon-uid，实现日志自动上传
                     if (
                         !attrs.setClassCode &&
+=======
+                            utils.createDynamicAttributeValue('e', astPath, modules.indexArr)
+                          //  "e" + utils.createUUID(astPath)
+                        )
+                    );
+                    //以下标签，如果绑定了事件，我们会加上data-beacon-uid，实现日志自动上传
+                    if (!attrs.setClassCode &&
+>>>>>>> ce9a66f78a699be2b52b575d369ac6a73b26fe12
                         !attrs.some(function(el) {
                             return el.name.name == "data-beacon-uid";
                         })
                     ) {
                         //自动添加
                         attrs.push(
+<<<<<<< HEAD
                             utils.createAttribute("data-beacon-uid", "default")
+=======
+                            utils.createAttribute(
+                                "data-beacon-uid",
+                                "default"
+                            )
+>>>>>>> ce9a66f78a699be2b52b575d369ac6a73b26fe12
                         );
                     }
                     attrs.setClassCode = true;

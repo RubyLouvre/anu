@@ -163,7 +163,7 @@ let visitor = {
                             1,
                             utils.createElement(
                                 'text',
-                                [utils.createAttribute('class', 'anu-text')],
+                                [],
                                 [astPath.node]
                             )
                         );

@@ -1,6 +1,8 @@
 import React from '@react';
 import Cat from '@components/Cat/index';
 import Fish from '@components/Fish/index';
+import './index.scss';
+
 // eslint-disable-next-line
 var type = "Cat"
 class P extends React.Component {
@@ -13,22 +15,32 @@ class P extends React.Component {
                 {
                     id: 0,
                     type: 'Cat',
-                    content: 'xxxx'
+                    content: '我的蛙儿子到现在都没回家'
                 },
                 {
                     id: 1,
-                    type: 'Cat',
-                    content: '4324343'
+                    type: 'Fish',
+                    content: '你中毒已深'
                 },
                 {
                     id: 2,
-                    type: 'Fish',
-                    content: 'sdfsdf'
+                    type: 'Cat',
+                    content: '他该不会嫌弃他母亲穷，在外面有家了吧？'
                 },
                 {
                     id: 3,
+                    type: 'Fish',
+                    content: '应该没有这种操作吧？'
+                },
+                {
+                    id: 4,
                     type: 'Cat',
-                    content: 'erewre'
+                    content: '难不成被贝爷吃了？'
+                },
+                {
+                    id: 4,
+                    type: 'Fish',
+                    content: '那一定是你没有为他买幸运铃！'
                 },
             ]
         };
@@ -62,12 +74,12 @@ class P extends React.Component {
     }
     render() {
         return (
-            <div class="page">
+            <div class="anu-block">
                 <div>循环里面交替使用两利不同的组件</div>
-                <ul>
+                <ul class="anu-block">
                     {this.state.msgList.map(function(msg) {
                         return (
-                            <li className="msg-container clearfix" key={msg.id}>
+                            <li class='anu-block' key={msg.id}>
                                 {msg.type === 'Cat'  && (
                                     <Cat id={msg.id} content={msg.content} />
                                 )}
