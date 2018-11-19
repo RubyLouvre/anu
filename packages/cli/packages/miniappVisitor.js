@@ -164,9 +164,9 @@ module.exports = {
         //检测component导出的模块名是否与模块所在目录名一致
         if (['Page', 'App'].includes(modules.componentType)) {
             specifiers.forEach(item => {
-                if (!/\/components\//.test(source)) return;
+                if (!/^@components\/|\/components\//.test(source)) return;
                 let importedName = item.local.name;
-                let pathLevel = source.split(path.sep);
+                let pathLevel = source.split('/');
                 //component模块所在的目录名 components/a/b/index => b
                 let dirName = pathLevel[pathLevel.length - 2];
                 if (dirName == importedName) return;
@@ -593,40 +593,22 @@ module.exports = {
                     attrs.push(
                         utils.createAttribute(
                             name,
-<<<<<<< HEAD
-                            utils.createDynamicAttributeValue(
-                                "e",
-                                astPath,
-                                modules.indexArr
-                            )
-                            //  "e" + utils.createUUID(astPath)
-                        )
-                    );
-                    //以下标签，如果绑定了事件，我们会加上data-beacon-uid，实现日志自动上传
-                    if (
-                        !attrs.setClassCode &&
-=======
                             utils.createDynamicAttributeValue('e', astPath, modules.indexArr)
                           //  "e" + utils.createUUID(astPath)
                         )
                     );
                     //以下标签，如果绑定了事件，我们会加上data-beacon-uid，实现日志自动上传
                     if (!attrs.setClassCode &&
->>>>>>> ce9a66f78a699be2b52b575d369ac6a73b26fe12
                         !attrs.some(function(el) {
                             return el.name.name == "data-beacon-uid";
                         })
                     ) {
                         //自动添加
                         attrs.push(
-<<<<<<< HEAD
-                            utils.createAttribute("data-beacon-uid", "default")
-=======
                             utils.createAttribute(
                                 "data-beacon-uid",
                                 "default"
                             )
->>>>>>> ce9a66f78a699be2b52b575d369ac6a73b26fe12
                         );
                     }
                     attrs.setClassCode = true;
@@ -719,11 +701,16 @@ module.exports = {
         //去掉内联元素内部的所有换行符
         if (astPath.parentPath.node.type == "JSXElement") {
             var open = astPath.parentPath.node.openingElement;
+            var value = astPath.node.value.trim();
+            if(value === ""){
+                astPath.remove()
+                return
+            }
             if (
                 /quick|wx/.test(config.buildType) &&
                 inlineElement[open.name.name]
             ) {
-                astPath.node.value = astPath.node.value.replace(/\r?\n/g, "");
+               astPath.node.value = value;
             }
         }
     },

@@ -62,10 +62,11 @@ const getFileType = (id)=>{
 
 //跳过rollup的语法解析patchComponents中的样式插件
 let rollupfilterPatchStylePlugin = ()=>{
+    let reg = utils.isWin() ? /\\patchComponents\\/ :  /\/patchComponents\//;
     return {
         transform: function(code, id){
             if (
-                /\/patchComponents\//.test(id)
+                reg.test(id)
                 && ['.css', '.less', '.scss', '.sass'].includes(path.extname(id))
             ) {
                 return false;
@@ -142,7 +143,8 @@ class Parser {
 
         //监听是否有patchComponent解析
         utils.on('compliePatch', (data)=>{
-            this.inputConfig.input = path.join(data.href, 'index.js');
+            let id =  path.join(data.href, 'index.js');
+            this.inputConfig.input = id;
             this.parse();
         });
         
@@ -170,10 +172,9 @@ class Parser {
                 if (config.buildType == 'quick'){
                     //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
                     var jsName = data.id.replace(/\.\w+$/, '.js');
-                    jsName = utils.resolvePatchComponentPath(jsName);
                     if (fs.pathExistsSync(jsName)) {
                         var cssExt = path.extname(data.id).slice(1);
-                        quickFiles[jsName] = {
+                        quickFiles[ utils.resolvePatchComponentPath(jsName) ] = {
                             cssPath: data.id,
                             cssType: cssExt === 'scss' ?  'sass' : cssExt
                         };
@@ -272,11 +273,13 @@ class Parser {
             }
             files.forEach((filePath)=>{
                 if ( /\.(js|scss|sass|less|css)$/.test(filePath) ) return;
+                filePath = path.resolve(filePath);
                 let dist  = utils.updatePath(
                     filePath, 
                     config.sourceDir, 
                     config.buildType === 'quick' ? 'src' : config.buildDir
                 );
+                
                 fs.ensureFileSync(dist);
                 fs.copyFile(filePath, dist, (err)=>{
                     if (err ) {

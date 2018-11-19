@@ -10,7 +10,7 @@ class P extends React.Component {
             title: "内置组件",
             array: "button,checkbox,input,slider,picker,radio,textarea,label,audio,camera,image,video"
                 .split(",")
-                .map(function(name) {
+                .map(function (name) {
                     return {
                         url: `${ROOT_PATH}/${name}/index`,
                         name: name
@@ -43,18 +43,15 @@ class P extends React.Component {
         return (
             <div class="anu-block">
                 <div class="anu-page-header">{this.state.title}</div>
-                {this.state.array.map(function(item) {
+                {this.state.array.map(function (item) {
                     return (
-                        <div class="anu-item">
+                        <div class='anu-item'>
                             <navigator
                                 onClick={this.gotoSome.bind(this, item.url)}
                                 open-type="navigate"
                                 hover-class="navigator-hover"
                                 url={item.url}
-                            >
-                                {" "}
-                                {item.name}
-                            </navigator>
+                            > {item.name}</navigator>
                         </div>
                     );
                 })}
