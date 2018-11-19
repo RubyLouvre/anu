@@ -701,11 +701,16 @@ module.exports = {
         //去掉内联元素内部的所有换行符
         if (astPath.parentPath.node.type == "JSXElement") {
             var open = astPath.parentPath.node.openingElement;
+            var value = astPath.node.value.trim();
+            if(value === ""){
+                astPath.remove()
+                return
+            }
             if (
                 /quick|wx/.test(config.buildType) &&
                 inlineElement[open.name.name]
             ) {
-                astPath.node.value = astPath.node.value.replace(/\r?\n/g, "");
+               astPath.node.value = value;
             }
         }
     },
