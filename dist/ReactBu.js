@@ -1,5 +1,5 @@
 /**
- * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-16
+ * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-19
  * IE9+
  */
 
@@ -2215,7 +2215,6 @@ function getEventHashCode2(name, props) {
     return props['data-' + type + '-uid'];
 }
 function getCurrentPage() {
-    console.log('------getCurrentPage-----', _getApp());
     return _getApp().page;
 }
 var Renderer$1 = createRenderer({
@@ -2411,19 +2410,19 @@ function registerComponent(type, name) {
             context: {}
         },
         created: function created() {
-            console.log("create", name);
+            console.log('create', name);
         },
         attached: function attached() {
             usingComponents[name] = type;
             var instance = reactInstances.shift();
             if (instance) {
-                console.log("attached时为", name, "添加wx");
+                console.log('attached时为', name, '添加wx');
                 instance.wx = this;
                 this.reactInstance = instance;
                 this.isUpdate = true;
                 updateMiniApp(this.reactInstance);
             } else {
-                console.log("attached时为", name, "没有对应react实例");
+                console.log('attached时为', name, '没有对应react实例');
                 wxInstances.push(this);
             }
         },

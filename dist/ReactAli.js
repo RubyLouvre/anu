@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-16
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-19
  * IE9+
  */
 
@@ -2331,7 +2331,6 @@ function getEventHashCode2(name, props) {
     return props['data-' + type + '-uid'];
 }
 function getCurrentPage() {
-    console.log('------getCurrentPage-----', _getApp());
     return _getApp().page;
 }
 var Renderer$1 = createRenderer({

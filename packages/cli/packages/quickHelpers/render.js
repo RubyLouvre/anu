@@ -66,7 +66,7 @@ exports.exit = function (astPath, type, componentName, modules) {
             var quickFile = quickFiles[modules.sourcePath];
             if (quickFile) {
                 if (modules.componentType === 'Page') {
-                    let pageWraperPath = path.relative(modules.sourcePath.replace('/index.js', ''), wrapperPath);
+                    let pageWraperPath = path.relative(path.dirname(modules.sourcePath), wrapperPath);
                     if (utils.isWin()) {
                         pageWraperPath = pageWraperPath.replace(/\\/g, '/');
                     }

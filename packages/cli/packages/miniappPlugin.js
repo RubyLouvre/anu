@@ -21,8 +21,8 @@ module.exports = function miniappPlugin() {
                 customComponents: [] //定义在page.json中usingComponents对象的自定义组件
             });
 
-            let filePath = opts.filename;
-            modules.sourcePath =  path.resolve(filePath);
+            let filePath = opts.filename; //windows: D:/x/y/z
+            modules.sourcePath =  utils.resolvePatchComponentPath(path.resolve(filePath));
             modules.current = filePath.replace(process.cwd(), '');
             if (/\/(components|patchComponents)\//.test(filePath)) {
                 modules.componentType = 'Component';
@@ -33,10 +33,9 @@ module.exports = function miniappPlugin() {
             }
             //如果是快应用
             if (config.buildType === 'quick' && modules.componentType) {
-                let resolvedSourcePath = utils.resolvePatchComponentPath(modules.sourcePath); //patchComponent路径要经过处理
-                var obj = quickFiles[resolvedSourcePath];
+                var obj = quickFiles[modules.sourcePath];
                 if (!obj) {
-                    obj = quickFiles[resolvedSourcePath] = {};
+                    obj = quickFiles[modules.sourcePath] = {};
                 }
                 obj.type = modules.componentType;
             }
