@@ -24,11 +24,11 @@ program.command('init <project-name>').description('初始化项目');
 
 program
     .command('watch:[wx|ali|bu|quick|tt]')
-    .description('监听[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用 | 头条小程序]');
+    .description('监听[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]');
 
 program
     .command('build:[wx|ali|bu|quick|tt]')
-    .description('构建[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用 | 头条小程序]');
+    .description('构建[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]');
     
 
 program.parse(process.argv);
