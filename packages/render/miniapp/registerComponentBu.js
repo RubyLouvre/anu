@@ -12,19 +12,20 @@ export function registerComponent(type, name) {
             context: {}
         },
         created() {
-            console.log("create", name);//eslint-disabled-line
+            console.log('create', name);//eslint-disabled-line
         },
         attached() {
+          
             usingComponents[name] = type;
             let instance = reactInstances.shift();
             if (instance) {
-                console.log("attached时为", name, "添加wx");//eslint-disabled-line
+                console.log('attached时为', name, '添加wx');//eslint-disabled-line
                 instance.wx = this;
                 this.reactInstance = instance;
                 this.isUpdate = true;
                 updateMiniApp(this.reactInstance);
             } else {
-                console.log("attached时为", name, "没有对应react实例");//eslint-disabled-line
+                console.log('attached时为', name, '没有对应react实例');//eslint-disabled-line
                 wxInstances.push(this);
             }
         },

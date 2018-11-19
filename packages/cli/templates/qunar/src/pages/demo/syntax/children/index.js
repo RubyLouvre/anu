@@ -1,6 +1,6 @@
 import React from '@react';
 import Dialog from '@components/Dialog/index';
-
+import './index.scss';
 class P extends React.Component {
     constructor() {
         super();
@@ -15,26 +15,31 @@ class P extends React.Component {
             show: !this.state.show
         });
     }
-    closeDialog(){
+    closeDialog() {
         this.setState({
             show: false
         });
     }
     render() {
         return (
-            <div>
+            <div class="anu-block">
                 <div>演示组件标签包含其他内容</div>
-                {this.state.show ? <Dialog>
-                    <p>{this.state.title}</p>
-                    <p>弹窗其他内容1</p>
-                    <p>弹窗其他内容2</p>
-                    <p>
-                        <button type="default" size="mini" onTap={this.closeDialog.bind(this)}>
-                        关闭
-                        </button>
-                    </p>
-                </Dialog> : null}
-
+                <div show={this.state.show} hidden={this.state.show}>
+                    <Dialog>
+                        <p>{this.state.title}</p>
+                        <p>弹窗其他内容1</p>
+                        <p>弹窗其他内容2</p>
+                        <p>
+                            <button
+                                type="default"
+                                size="mini"
+                                onTap={this.closeDialog.bind(this)}
+                            >
+                                关闭
+                            </button>
+                        </p>
+                    </Dialog>
+                </div>
                 <p>
                     <button type="primary" onTap={this.toggleDialog.bind(this)}>
                         点我
