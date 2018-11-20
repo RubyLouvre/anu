@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/anujs.svg?style=flat)](https://www.npmjs.com/package/anujs)
 [![CircleCI](https://circleci.com/gh/RubyLouvre/anu/tree/master.svg?style=svg)](https://circleci.com/gh/RubyLouvre/anu/tree/master)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/RubyLouvre/anu/pulls)
-[![Qunar.com](https://user-images.githubusercontent.com/190846/48761333-5b66df80-ece3-11e8-80e4-5df19b912dd5.png)](https://github.com/RubyLouvre/anu/pulls)
+[![Qunar.com](https://user-images.githubusercontent.com/190846/48761333-5b66df80-ece3-11e8-80e4-5df19b912dd5.png)](https://github.com/qunarcorp)
 
 
 
