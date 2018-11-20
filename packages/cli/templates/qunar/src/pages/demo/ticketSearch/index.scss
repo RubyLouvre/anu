@@ -7,13 +7,13 @@
   height: 100%;
   background-color: #feb64e;
 
-  .row {
+  .anu-line {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
   }
 
-  .col {
+  .anu-block {
     display:flex;
     flex-direction: column;
     

@@ -78,11 +78,11 @@ class P extends React.Component {
     render() {
         return (
             <div class='user-center'>
-                <div class='user-information row'>
+                <div class='user-information anu-line'>
                     <image src='https://s.qunarzz.com/wechatapp/common/images/my/unLogin.png' class='user-image' />
                     <text class='user-name'>授权登录</text>
                 </div>
-                <div class='qunar-information row'>
+                <div class='qunar-information anu-line'>
                     <div class="font-27">关注公众号</div>
                     <div class='right-content'>
                         <text class='right-message font-27'>去关注</text>
@@ -92,7 +92,7 @@ class P extends React.Component {
                 {
                     this.state.menu.map(function(item,index) {
                         return (
-                            <div onTap={this.menuItemClick.bind(this,index)} class='menu-item row' key={index}>
+                            <div onTap={this.menuItemClick.bind(this,index)} class='menu-item anu-line' key={index}>
                                 <text class={'menu-item-title' + (item.isArrow ? '': 'high-light')}>{item.title}</text>
                                 {
                                     item.isArrow

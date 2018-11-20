@@ -79,7 +79,7 @@ class P extends React.Component {
                   mode="scaleToFill"
                   src="http://picbed.qunarzz.com/image/b96f82f01ef5850d50e93ea511f618fa.png"
               />
-              <div style="{top: -15px}" className="search-container  col">
+              <div style="{top: -15px}" className="search-container  anu-block">
                   <div className="citySelector">
                       <div onTap={this.toCitySelect.bind(this,true)} className="cityTap">
                           <text  className='depCityContent'>{this.state.depCity}</text>
