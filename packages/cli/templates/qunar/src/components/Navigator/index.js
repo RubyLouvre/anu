@@ -49,3 +49,4 @@ const methodMap = {
 };
 
 export default Navigator;
+
