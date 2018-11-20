@@ -23,7 +23,10 @@ export default {
             plugins: [
                 'transform-class-properties',
                 [
-                    'transform-es2015-classes'
+                    'transform-es2015-classes',
+                    {
+                        loose: true
+                    }
                 ],
                 [
                     'module-resolver',
@@ -43,7 +46,6 @@ export default {
             banner: `运行于快应用的React by 司徒正美 Copyright ${JSON.stringify(
                 new Date()
             ).replace(/T.*|"/g, '')}
-      IE9+
       `
         }),
         cleanup(),

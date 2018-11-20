@@ -23,7 +23,10 @@ export default {
             plugins: [
                 'transform-class-properties',
                 [
-                    'transform-es2015-classes'
+                    'transform-es2015-classes',
+                    {
+                        loose: true
+                    }
                 ],
                 [
                     'module-resolver',
