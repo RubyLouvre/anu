@@ -8,14 +8,14 @@ page {
   font-size: 27rpx;
 }
 
-.row {
+.anu-line {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   flex: 1;
 }
 
-.col {
+.anu-block {
   display: flex;
   flex-direction: column;
 }

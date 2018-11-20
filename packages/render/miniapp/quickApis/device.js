@@ -1,5 +1,5 @@
 const device = require('@system.device')
-
+const DEFAULT_FONT_SIZE = 14;
 
 function getSystemInfo({
   success, fail, complete
