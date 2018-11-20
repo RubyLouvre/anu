@@ -2,7 +2,7 @@ import React from '@react';
 
 class Animal extends React.Component {
     constructor(props) {
-        super();
+        super(props);
         this.state = {
             name: props.name,
             age: props.age || 1

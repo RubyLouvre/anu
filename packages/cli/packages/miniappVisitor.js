@@ -24,9 +24,8 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-const rbeaconTag = /^(input|button|textarea|checkbox|radio|switch|navigator|text|div|view)$/i;
 if (buildType == 'quick') {
-    utils.createRegisterStatement = function (className, path, isPage) {
+    utils.createRegisterStatement = function(className, path, isPage) {
         var templateString = isPage
             ? 'className = React.registerPage(className,astPath)'
             : 'console.log(nanachi)';
@@ -165,9 +164,9 @@ module.exports = {
         //检测component导出的模块名是否与模块所在目录名一致
         if (['Page', 'App'].includes(modules.componentType)) {
             specifiers.forEach(item => {
-                if (!/\/components\//.test(source)) return;
+                if (!/^@components\/|\/components\//.test(source)) return;
                 let importedName = item.local.name;
-                let pathLevel = source.split(path.sep);
+                let pathLevel = source.split('/');
                 //component模块所在的目录名 components/a/b/index => b
                 let dirName = pathLevel[pathLevel.length - 2];
                 if (dirName == importedName) return;
@@ -238,7 +237,7 @@ module.exports = {
                 usings;
             if (keys.length) {
                 usings = json.usingComponents || (json.usingComponents = {});
-                keys.forEach(function (name) {
+                keys.forEach(function(name) {
                     usings[name] = modules.usedComponents[name];
                 });
             }
@@ -249,7 +248,7 @@ module.exports = {
                     quickConfig(json, modules, queue, utils);
                     obj.config = Object.assign({}, json);
                 }
-               // delete json.usingComponents;
+                // delete json.usingComponents;
                 if (Object.keys(json).length) {
                     var a = template("0," + JSON.stringify(json, null, 4))();
                     var keyValue = t.ObjectProperty(
@@ -304,7 +303,7 @@ module.exports = {
                     break;
                 case "{}":
                     astPath.replaceWithMultiple(
-                        astPath.node.specifiers.map(function (el) {
+                        astPath.node.specifiers.map(function(el) {
                             return utils.exportExpr(el.local.name);
                         })
                     );
@@ -357,8 +356,8 @@ module.exports = {
             astPath.remove();
         }
     },
-    MemberExpression() { },
-    AssignmentExpression() { },
+    MemberExpression() {},
+    AssignmentExpression() {},
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
@@ -472,12 +471,9 @@ module.exports = {
                 t.JSXIdentifier(nodeName)
             );
         }
-
-
-
     },
     JSXOpeningElement: {
-        enter: function (astPath, state) {
+        enter: function(astPath, state) {
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
@@ -516,21 +512,27 @@ module.exports = {
                     )
                 );
                 if (buildType == "ali") {
-                    var varString = `var a = 'i${astPath.node.start}' ${
+                    /*  var varString = `var a = 'i${astPath.node.start}' ${
                         modules.indexArr
                             ? "+" + modules.indexArr.join("+'-'+")
                             : ""
-                        }`;
+                    }`;
                     var expr = template(varString)();
+                  */
                     attributes.push(
-                        t.JSXAttribute(
-                            t.JSXIdentifier("data-instance-uid"),
-                            t.jSXExpressionContainer(expr.declarations[0].init)
+                        utils.createAttribute(
+                            "data-instance-uid",
+                            utils.createDynamicAttributeValue(
+                                "i",
+                                astPath,
+                                modules.indexArr || ["0"]
+                            )
+                            //  t.jSXExpressionContainer(expr.declarations[0].init)
                         )
                     );
                 }
 
-                if (modules.indexArr) {
+                /*  if (modules.indexArr) {
                     attributes.push(
                         utils.createAttribute(
                             "$$index",
@@ -539,7 +541,7 @@ module.exports = {
                             )
                         )
                     );
-                }
+                }*/
             } else {
                 if (nodeName != "React.useComponent") {
                     helpers.nodeName(astPath, modules);
@@ -548,7 +550,7 @@ module.exports = {
         }
     },
     JSXAttribute: {
-        enter: function (astPath, state) {
+        enter: function(astPath, state) {
             let attrName = astPath.node.name.name;
             let attrValue = astPath.node.value;
             let parentPath = astPath.parentPath;
@@ -573,7 +575,7 @@ module.exports = {
                 let attrs = parentPath.node.attributes;
                 let expr = attrValue.expression;
                 let nodeName = parentPath.node.name.name;
-                if (/^(?:on|catch)[A-Z]/.test(attrName)) {
+                if (/^(?:on|catch)[A-Z]/.test(attrName) && !/[A-Z]/.test(nodeName)) {
                     var prefix = attrName.charAt(0) == "o" ? "on" : "catch";
                     var eventName = attrName.replace(prefix, "");
                     var otherEventName = utils.getEventName(
@@ -591,46 +593,25 @@ module.exports = {
                     attrs.push(
                         utils.createAttribute(
                             name,
-                            "e" + utils.createUUID(astPath)
+                            utils.createDynamicAttributeValue('e', astPath, modules.indexArr)
+                          //  "e" + utils.createUUID(astPath)
                         )
                     );
-                    //以下标签，如果绑定了事件，我们会加上data-beacon-id，实现日志自动上传
-                    if (rbeaconTag.test(nodeName) &&
-                        /click|tap|change|blur/i.test(eventName)) {
-                        if (!attrs.some(function (el) {
-                            return el.name.name == 'data-beacon-id'
-                        })) {//自动添加
-                            var start = astPath.node.loc.start;
-                            attrs.push(
-                                utils.createAttribute(
-                                    'data-beacon-id',
-                                    nodeName + start.line+"_"+ start.column
-                                ))
-                        }
-                    } 
-                    if (!attrs.setClassCode) {
-                        attrs.setClassCode = true;
+                    //以下标签，如果绑定了事件，我们会加上data-beacon-uid，实现日志自动上传
+                    if (!attrs.setClassCode &&
+                        !attrs.some(function(el) {
+                            return el.name.name == "data-beacon-uid";
+                        })
+                    ) {
+                        //自动添加
                         attrs.push(
                             utils.createAttribute(
-                                "data-class-uid",
-                                modules.classUid
+                                "data-beacon-uid",
+                                "default"
                             )
                         );
-
-                        //如果是位于循环里，还必须加上data-key，防止事件回调乱窜
-                        if (modules.indexArr) {
-                            attrs.push(
-                                utils.createAttribute(
-                                    "data-key",
-                                    t.jSXExpressionContainer(
-                                        t.identifier(
-                                            modules.indexArr.join("+'-'+")
-                                        )
-                                    )
-                                )
-                            );
-                        }
                     }
+                    attrs.setClassCode = true;
                 } else if (attrName === "style") {
                     //将动态样式封装到React.toStyle中
                     var styleType = expr.type;
@@ -688,7 +669,7 @@ module.exports = {
                 delete astPath.parentPath.renderProps;
                 let modules = utils.getAnu(state);
                 let subComponents = {};
-                modules.is.forEach(function (a) {
+                modules.is.forEach(function(a) {
                     subComponents[a] = path.join("..", a, "index");
                 });
 
@@ -720,8 +701,16 @@ module.exports = {
         //去掉内联元素内部的所有换行符
         if (astPath.parentPath.node.type == "JSXElement") {
             var open = astPath.parentPath.node.openingElement;
-            if (/quick|wx/.test(config.buildType) && inlineElement[open.name.name]) {
-                astPath.node.value = astPath.node.value.replace(/\r?\n/g, "");
+            var value = astPath.node.value.trim();
+            if(value === ""){
+                astPath.remove()
+                return
+            }
+            if (
+                /quick|wx/.test(config.buildType) &&
+                inlineElement[open.name.name]
+            ) {
+               astPath.node.value = value;
             }
         }
     },
@@ -733,7 +722,7 @@ module.exports = {
             }
         }
     },
-    JSXClosingElement: function (astPath, state) {
+    JSXClosingElement: function(astPath, state) {
         let modules = utils.getAnu(state);
         let nodeName = astPath.node.name.name;
         nodeName = helpers.nodeName(astPath, modules) || nodeName;

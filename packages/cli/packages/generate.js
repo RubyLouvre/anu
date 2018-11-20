@@ -32,7 +32,7 @@ module.exports = ()=>{
                 if (queue.size !== sucSize) return;
                 queue.size = 0;
                 sucSize = 0;
-                //utils.spinner('').succeed('构建结束\n');
+                utils.spinner('').succeed('构建结束\n');
             })
             .catch((err)=>{
                 // eslint-disable-next-line

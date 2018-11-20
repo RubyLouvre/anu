@@ -15,10 +15,16 @@ if (typeof getApp == 'function') {
     _getApp = getApp;//esline-disabled-line;
 }
 export { _getApp };
+export function callGlobalHook(method){
+    var app = _getApp();
+    if (app && app[method]){
+        return app[method]();
+    }
+}
 export var delayMounts = [];
 export var usingComponents = [];
 export var registeredComponents = {};
-export var currentPage = {
+export var pageState = {
     isReady: false
 };
 export function _getCurrentPages() {
@@ -55,8 +61,8 @@ export function updateMiniApp(instance) {
 }
 
 function updateQuickApp(quick, data) {
-    for(var i in data){
-        quick[i] = data[i];
+    for (var i in data){
+        quick.$set(i, data[i]);
     }
 }
 

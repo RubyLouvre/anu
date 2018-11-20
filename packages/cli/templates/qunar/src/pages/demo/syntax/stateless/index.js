@@ -26,9 +26,9 @@ class P extends React.Component {
     }
     render() {
         return (
-            <div class="col">
-                <div style={this.state.styles.a}>无狀态组件</div>
-                <p>
+            <div class='anu-block'>
+                <div class='anu-page-header' style={this.state.styles.a}>无狀态组件</div>
+                <p class='anu-block'>
                     <p>输入a(绑定onInput事件)</p>
                     <input
                         type="number"
@@ -37,7 +37,7 @@ class P extends React.Component {
                         onChange={this.changeA.bind(this)}
                     />
                 </p>
-                <p>
+                <p class='anu-block'>
                     <p>输入b(绑定onChange事件)</p>
                     <input
                         type="number"

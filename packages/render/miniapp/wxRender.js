@@ -1,7 +1,7 @@
 import { isFn, noop, toLowerCase, get } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
-import { getUUID, delayMounts, updateMiniApp, currentPage } from './utils';
+import { getUUID, delayMounts, updateMiniApp, pageState, _getApp } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
@@ -10,41 +10,72 @@ function getEventHashCode(name, props, key) {
     var eventCode = props['data-' + type + '-uid'];
     return eventCode + (key != null ? '-' + key : '');
 }
-var pageInstance = null;
-export function getCurrentPage(){
-    return pageInstance;
+function getEventHashCode2(name, props) {
+    var n = name.charAt(0) == 'o' ? 2 : 5;
+    var type = toLowerCase(name.slice(n));
+    return props['data-' + type + '-uid'];
+}
+export function getCurrentPage() {
+    return _getApp().page;
 }
 export let Renderer = createRenderer({
     render: render,
     updateAttribute(fiber) {
         let { props, lastProps } = fiber;
         let classId = props['data-class-uid'];
+        let beaconId = props['data-beacon-uid'];
         let instance = fiber._owner; //clazz[instanceId];
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
         }
-
-        if (instance && classId) {
-            //保存用户创建的事件在实例上
+        if (instance) {
             var cached =
                 instance.$$eventCached || (instance.$$eventCached = {});
-            for (let name in props) {
-                if (onEvent.test(name) && isFn(props[name])) {
-                    var code = getEventHashCode(name, props, props['data-key']);
-                    cached[code] = props[name];
-                    cached[code + 'Fiber'] = fiber;
-                }
-            }
-            if (lastProps) {
-                for (let name in lastProps) {
-                    if (onEvent.test(name) && !props[name]) {
-                        code = getEventHashCode(
+            if (classId) {
+                //保存用户创建的事件在实例上
+
+                for (let name in props) {
+                    if (onEvent.test(name) && isFn(props[name])) {
+                        var code = getEventHashCode(
                             name,
-                            lastProps,
-                            lastProps['data-key']
+                            props,
+                            props['data-key']
                         );
-                        delete cached[code];
-                        delete cached[code + 'Fiber'];
+                        cached[code] = props[name];
+                        cached[code + 'Fiber'] = fiber;
+                    }
+                }
+                if (lastProps) {
+                    for (let name in lastProps) {
+                        if (onEvent.test(name) && !props[name]) {
+                            code = getEventHashCode(
+                                name,
+                                lastProps,
+                                lastProps['data-key']
+                            );
+                            delete cached[code];
+                            delete cached[code + 'Fiber'];
+                        }
+                    }
+                }
+            } else if (beaconId) {
+                for (let name in props) {
+                    if (onEvent.test(name) && isFn(props[name])) {
+                        var code = getEventHashCode2(name, props);
+                        cached[code] = props[name];
+                        cached[code + 'Fiber'] = fiber;
+                    }
+                }
+                if (lastProps) {
+                    for (let name in lastProps) {
+                        if (onEvent.test(name) && !props[name]) {
+                            code = getEventHashCode2(
+                                name,
+                                lastProps
+                            );
+                            delete cached[code];
+                            delete cached[code + 'Fiber'];
+                        }
                     }
                 }
             }
@@ -65,11 +96,12 @@ export let Renderer = createRenderer({
                 instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
                 //type[uuid] = instance;
             }
-            if (fiber.props.isPageComponent){
-                pageInstance = instance;
+            if (fiber.props.isPageComponent) {
+                _getApp().page = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
-            if (type.wxInstances) {//只处理component目录下的组件
+            if (type.wxInstances) {
+                //只处理component目录下的组件
                 //支付宝不会走这分支
                 if (!type.ali && !instance.wx && type.wxInstances.length) {
                     var wx = (instance.wx = type.wxInstances.shift());
@@ -80,7 +112,7 @@ export let Renderer = createRenderer({
                 }
             }
         }
-        if ( !currentPage.isReady &&  noMount && instance.componentDidMount) {
+        if (!pageState.isReady && noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount
@@ -123,11 +155,13 @@ export let Renderer = createRenderer({
                 //要插入最前面
                 if (dom !== children[0]) {
                     remove(children, dom);
+                    dom.parentNode = parentNode;
                     children.unshift(dom);
                 }
             } else {
                 if (dom !== children[children.length - 1]) {
                     remove(children, dom);
+                    dom.parentNode = parentNode;
                     var i = children.indexOf(before);
                     children.splice(i + 1, 0, dom);
                 }
@@ -147,6 +181,7 @@ export let Renderer = createRenderer({
         if (fiber.parent) {
             var parent = fiber.parent;
             var node = fiber.stateNode;
+            node.parentNode = null;
             remove(parent.children, node);
         }
     }

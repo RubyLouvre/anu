@@ -1,5 +1,6 @@
 import React from '@react';
 import Dog from '@components/Dog/index';
+import './index.scss';
 
 class P extends React.Component {
     constructor() {
@@ -42,11 +43,11 @@ class P extends React.Component {
 
     render() {
         return (
-            <div>
+            <div class='anu-block'>
                 <div onTap={this.changeNumbers.bind(this)}>
                     演示单重循环，点这里改变数组的个数
                 </div>
-                <div>
+                <div class='anu-block'>
                     {this.state.array.map(el => 
                         <Dog name={el.name} key={el.name} />
                     )}

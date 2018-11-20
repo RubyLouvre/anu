@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-13
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-19
  * IE9+
  */
 
@@ -80,15 +80,17 @@ function inherit(SubClass, SupClass) {
 try {
     var supportEval = Function('a', 'return a + 1')(2) == 3;
 } catch (e) {}
+var rname = /function\s+(\w+)/;
 function miniCreateClass(ctor, superClass, methods, statics) {
-    var className = ctor.name || 'IEComponent';
+    var className = ctor.name || (ctor.toString().match(rname) || ["", "Anonymous"])[1];
     var Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : function ReactInstance() {
         superClass.apply(this, arguments);
         ctor.apply(this, arguments);
     };
     Ctor.displayName = className;
-    var fn = inherit(Ctor, superClass);
-    extend(fn, methods);
+    var proto = inherit(Ctor, superClass);
+    extend(proto, methods);
+    extend(Ctor, superClass);
     if (statics) {
         extend(Ctor, statics);
     }
@@ -551,6 +553,70 @@ function createPortal(children, parent) {
     return child;
 }
 
+function getDataSet(obj) {
+    var ret = {};
+    for (var name in obj) {
+        if (name.slice(0, 4) == 'data') {
+            var key = toLowerCase(name[4]) + name.slice(5);
+            ret[key] = obj[name];
+        }
+    }
+    return ret;
+}
+var beaconType = /click|tap|change|blur|input/i;
+function dispatchEvent(e) {
+    var instance = this.reactInstance;
+    if (!instance || !instance.$$eventCached) {
+        return;
+    }
+    var eventType = toLowerCase(e._type);
+    var target = e.target;
+    var dataset = getDataSet(target._attr);
+    var app = this.$app.def;
+    var eventUid = dataset[eventType + 'Uid'];
+    if (dataset['classUid']) {
+        console.log('请尽快升级nanachi');
+        var key = dataset['key'];
+        eventUid += key != null ? '-' + key : '';
+    }
+    var fiber = instance.$$eventCached[eventUid + 'Fiber'];
+    if (eventType == 'change' && fiber) {
+        if (fiber.props.value + '' === e.value) {
+            return;
+        }
+    }
+    if (app && app.onCollectLogs && beaconType.test(eventType)) {
+        app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
+    }
+    var safeTarget = {
+        dataset: dataset,
+        nodeName: target._nodeName,
+        value: e.value
+    };
+    Renderer.batchedUpdates(function () {
+        try {
+            var fn = instance.$$eventCached[eventUid];
+            fn && fn.call(instance, createEvent(e, safeTarget, eventType));
+        } catch (err) {
+            console.log(err.stack);
+        }
+    }, e);
+}
+function createEvent(e, target, type) {
+    var event = {};
+    for (var i in e) {
+        if (i.indexOf('_') !== 0) {
+            event[i] = e[i];
+        }
+    }
+    event.stopPropagation = e.stopPropagation.bind(e);
+    event.preventDefault = e.preventDefault.bind(e);
+    event.target = target;
+    event.type = type;
+    event.timeStamp = new Date() - 0;
+    return event;
+}
+
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function _uuid() {
     return (Math.random() + '').slice(-4);
@@ -564,10 +630,16 @@ function _getApp() {
 if (typeof getApp == 'function') {
     _getApp = getApp;
 }
+function callGlobalHook(method) {
+    var app = _getApp();
+    if (app && app[method]) {
+        return app[method]();
+    }
+}
 var delayMounts = [];
 var usingComponents = [];
 var registeredComponents = {};
-var currentPage = {
+var pageState = {
     isReady: false
 };
 function _getCurrentPages() {
@@ -596,7 +668,7 @@ function updateMiniApp(instance) {
 }
 function updateQuickApp(quick, data) {
     for (var i in data) {
-        quick[i] = data[i];
+        quick.$set(i, data[i]);
     }
 }
 function isReferenceType(val) {
@@ -660,56 +732,6 @@ function safeClone(originVal) {
 }
 function toRenderProps() {
     return null;
-}
-
-function getDataSet(obj) {
-    var ret = {};
-    for (var name in obj) {
-        var key = name.replace(/data(\w)(\.*)/, function (a, b, c) {
-            return toLowerCase(b) + c;
-        });
-        ret[key] = obj[name];
-    }
-    return ret;
-}
-function dispatchEvent(e) {
-    var eventType = e._type;
-    var target = e.target;
-    var dataset = getDataSet(target._attr);
-    var app = _getApp();
-    if (dataset.beaconId && app && app.onCollectLogs) {
-        app.onCollectLogs(dataset, eventType);
-    }
-    var instance = this.reactInstance;
-    if (!instance || !instance.$$eventCached) {
-        return;
-    }
-    var eventUid = dataset[toLowerCase(eventType) + 'Uid'];
-    var key = dataset['key'];
-    eventUid += key != null ? '-' + key : '';
-    if (instance) {
-        Renderer.batchedUpdates(function () {
-            try {
-                var fn = instance.$$eventCached[eventUid];
-                fn && fn.call(instance, createEvent(e, target));
-            } catch (err) {
-                console.log(err.stack);
-            }
-        }, e);
-    }
-}
-function createEvent(e, target) {
-    var event = Object.assign({}, e);
-    if (e.detail) {
-        Object.assign(event, e.detail);
-        target.value = e.detail.value;
-    }
-    event.stopPropagation = e.stopPropagation.bind(e);
-    event.preventDefault = e.preventDefault.bind(e);
-    event.target = target;
-    event.type = e._type;
-    event.timeStamp = new Date() - 0;
-    return event;
 }
 
 var fetch = require('@system.fetch');
@@ -2302,9 +2324,13 @@ function getEventHashCode(name, props, key) {
     var eventCode = props['data-' + type + '-uid'];
     return eventCode + (key != null ? '-' + key : '');
 }
-var pageInstance = null;
+function getEventHashCode2(name, props) {
+    var n = name.charAt(0) == 'o' ? 2 : 5;
+    var type = toLowerCase(name.slice(n));
+    return props['data-' + type + '-uid'];
+}
 function getCurrentPage() {
-    return pageInstance;
+    return _getApp().page;
 }
 var Renderer$1 = createRenderer({
     render: render,
@@ -2312,25 +2338,45 @@ var Renderer$1 = createRenderer({
         var props = fiber.props,
             lastProps = fiber.lastProps;
         var classId = props['data-class-uid'];
+        var beaconId = props['data-beacon-uid'];
         var instance = fiber._owner;
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
         }
-        if (instance && classId) {
+        if (instance) {
             var cached = instance.$$eventCached || (instance.$$eventCached = {});
-            for (var name in props) {
-                if (onEvent.test(name) && isFn(props[name])) {
-                    var code = getEventHashCode(name, props, props['data-key']);
-                    cached[code] = props[name];
-                    cached[code + 'Fiber'] = fiber;
+            if (classId) {
+                for (var name in props) {
+                    if (onEvent.test(name) && isFn(props[name])) {
+                        var code = getEventHashCode(name, props, props['data-key']);
+                        cached[code] = props[name];
+                        cached[code + 'Fiber'] = fiber;
+                    }
                 }
-            }
-            if (lastProps) {
-                for (var _name in lastProps) {
-                    if (onEvent.test(_name) && !props[_name]) {
-                        code = getEventHashCode(_name, lastProps, lastProps['data-key']);
-                        delete cached[code];
-                        delete cached[code + 'Fiber'];
+                if (lastProps) {
+                    for (var _name in lastProps) {
+                        if (onEvent.test(_name) && !props[_name]) {
+                            code = getEventHashCode(_name, lastProps, lastProps['data-key']);
+                            delete cached[code];
+                            delete cached[code + 'Fiber'];
+                        }
+                    }
+                }
+            } else if (beaconId) {
+                for (var _name2 in props) {
+                    if (onEvent.test(_name2) && isFn(props[_name2])) {
+                        var code = getEventHashCode2(_name2, props);
+                        cached[code] = props[_name2];
+                        cached[code + 'Fiber'] = fiber;
+                    }
+                }
+                if (lastProps) {
+                    for (var _name3 in lastProps) {
+                        if (onEvent.test(_name3) && !props[_name3]) {
+                            code = getEventHashCode2(_name3, lastProps);
+                            delete cached[code];
+                            delete cached[code + 'Fiber'];
+                        }
                     }
                 }
             }
@@ -2349,7 +2395,7 @@ var Renderer$1 = createRenderer({
                 instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
             }
             if (fiber.props.isPageComponent) {
-                pageInstance = instance;
+                _getApp().page = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
             if (type.wxInstances) {
@@ -2362,7 +2408,7 @@ var Renderer$1 = createRenderer({
                 }
             }
         }
-        if (!currentPage.isReady && noMount && instance.componentDidMount) {
+        if (!pageState.isReady && noMount && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount
@@ -2401,11 +2447,13 @@ var Renderer$1 = createRenderer({
             if (before == null) {
                 if (dom !== children[0]) {
                     remove(children, dom);
+                    dom.parentNode = parentNode;
                     children.unshift(dom);
                 }
             } else {
                 if (dom !== children[children.length - 1]) {
                     remove(children, dom);
+                    dom.parentNode = parentNode;
                     var i = children.indexOf(before);
                     children.splice(i + 1, 0, dom);
                 }
@@ -2425,6 +2473,7 @@ var Renderer$1 = createRenderer({
         if (fiber.parent) {
             var parent = fiber.parent;
             var node = fiber.stateNode;
+            node.parentNode = null;
             remove(parent.children, node);
         }
     }
@@ -2546,8 +2595,8 @@ var api = {
             fail = _ref2.fail,
             complete = _ref2.complete;
         try {
-            var currentPage$$1 = getCurrentPage();
-            currentPage$$1.wx.$page.setTitleBar({ text: title });            runFunction(success);
+            var currentPage = getCurrentPage();
+            currentPage.wx.$page.setTitleBar({ text: title });            runFunction(success);
         } catch (error) {
             runFunction(fail, error);
         } finally {
@@ -2594,19 +2643,12 @@ function registerComponent(type, name) {
     var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
     return {
-        props: {
-            props: {
-                type: Object,
-                default: {}
-            },
-            state: {
-                type: Object,
-                default: {}
-            },
-            context: {
-                type: Object,
-                default: {}
-            }
+        data: function data() {
+            return {
+                props: {},
+                state: {},
+                context: {}
+            };
         },
         onInit: function onInit() {
             usingComponents[name] = type;
@@ -2624,8 +2666,6 @@ function registerComponent(type, name) {
             if (this.reactInstance) {
                 updateMiniApp(this.reactInstance);
                 console.log("attached时更新", name);
-            } else {
-                console.log("attached时无法更新", name);
             }
         },
         onDestroy: function onDestroy() {
@@ -2636,7 +2676,7 @@ function registerComponent(type, name) {
 }
 
 function onLoad(PageClass, path, query) {
-    currentPage.isReady = false;
+    pageState.isReady = false;
     var container = {
         type: 'page',
         props: {},
@@ -2644,11 +2684,13 @@ function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
-    var pageInstance = render(createElement(PageClass, {
+    var pageInstance = render(
+    createElement(PageClass, {
         path: path,
         query: query,
         isPageComponent: true
     }), container);
+    callGlobalHook('onGlobalLoad');
     this.reactInstance = pageInstance;
     this.reactContainer = container;
     pageInstance.wx = this;
@@ -2656,35 +2698,33 @@ function onLoad(PageClass, path, query) {
     return pageInstance;
 }
 function onReady() {
-    currentPage.isReady = true;
+    pageState.isReady = true;
     var el = void 0;
     while (el = delayMounts.pop()) {
         el.fn.call(el.instance);
         el.instance.componentDidMount = el.fn;
     }
+    callGlobalHook('onGlobalReady');
 }
 function onUnload() {
     for (var i in usingComponents) {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
-            console.log(i, "还有", a.reactInstances.length, "实例没有使用过");
             a.reactInstances.length = 0;
             a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }
-    var root = this.reactContainer;
-    var container = root._reactInternalFiber;
     var instance = this.reactInstance;
-    if (!instance) {
-        console.log('onUnload的this没有React实例');
-        return;
+    if (instance) {
+        console.log('onUnload...', instance.props.path);
+        var hook = instance.componentWillUnmount;
+        if (isFn(hook)) {
+            hook.call(instance);
+        }
     }
-    console.log('onUnload...', instance.props.path);
-    var hook = instance.componentWillUnmount;
-    if (isFn(hook)) {
-        hook.call(instance);
-    }
+    var root = this.reactContainer;
+    var container = root && root._reactInternalFiber;
     if (container) {
         Renderer.updateComponent(container.hostRoot, {
             child: null
@@ -2697,8 +2737,14 @@ function onUnload() {
             }
         }, true);
     }
+    callGlobalHook('onGlobalUnload');
 }
 
+var globalHooks = {
+    onShareAppMessage: 'onGlobalShare',
+    onShow: 'onGlobalShow',
+    onHide: 'onGlobalHide'
+};
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
     var config = {
@@ -2724,7 +2770,11 @@ function registerPage(PageClass, path) {
             var instance = this.reactInstance;
             var fn = instance[hook];
             if (isFn(fn)) {
-                return fn.apply(instance, arguments);
+                fn.apply(instance, arguments);
+            }
+            var globalHook = globalHooks[hook];
+            if (globalHook) {
+                callGlobalHook(globalHook);
             }
         };
     });

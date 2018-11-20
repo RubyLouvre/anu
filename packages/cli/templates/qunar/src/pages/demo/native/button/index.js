@@ -38,15 +38,12 @@ class P extends React.Component {
     console.log(e);
   }
 
-  click() {
-    console.log(11111);
-  }
   render() {
     return (
-      <div class="button-wrapper col">
-        <div class="item">
+      <div class="anu-block">
+        <div style="margin: 4px 0px">
           <button
-            class="item"
+            class="anu-block"
             type="default"
             loading={this.state.loading}
             disabled={this.state.disabled}
@@ -55,9 +52,9 @@ class P extends React.Component {
             default
           </button>
         </div>
-        <div class="item">
+        <div style="margin: 4px 0px">
           <button
-            class="item"
+            class="anu-block"
             type="primary"
             size="mini"
             loading={this.state.loading}
@@ -67,34 +64,31 @@ class P extends React.Component {
             primary
           </button>
         </div>
-        <div class="item">
-          <button class="item" type="warn"
+        <div style="margin: 4px 0px">
+          <button class="anu-block" type="warn"
            disabled={this.state.disabled} 
            plain={this.state.plain}
            loading={this.state.loading}
            >
             warn
           </button>
-          <button class="item" type="warn"
+          <button class="anu-block" type="warn"
            disabled={this.state.disabled} 
            plain={this.state.plain}
            >
             warn
           </button>
         </div>
-        <div class="item">
-          <button click={this.setDisabled.bind(this)} >点击设置以上按钮disabled属性</button>
+        <div style="margin: 4px 0px">
+          <button onClick={this.setDisabled.bind(this)} >点击设置以上按钮disabled属性</button>
         </div>
-        <div class="item">
-          <button click={this.setPlain.bind(this)}>点击设置以上按钮plain属性</button>
+        <div style="margin: 4px 0px">
+          <button onClick={this.setPlain.bind(this)}>点击设置以上按钮plain属性</button>
         </div>
-        <div class="item">
-          <button click={this.setLoading.bind(this)}>点击设置以上按钮loading属性</button>
+        <div style="margin: 4px 0px">
+          <button onClick={this.setLoading.bind(this)}>点击设置以上按钮loading属性</button>
         </div>
-        <div class="item">
-          <input value="xxxxx" color="rgba(1,0,0,1)" type="button"></input>
-        </div>
-
+       
         {/* <button
                     type="default"
                     size={this.state.defaultSize}

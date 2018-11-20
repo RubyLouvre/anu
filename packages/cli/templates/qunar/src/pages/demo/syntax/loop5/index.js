@@ -1,5 +1,6 @@
 import React from '@react';
 import Dog from '@components/Dog/index';
+import './index.scss';
 
 class P extends React.Component {
     constructor() {
@@ -18,7 +19,7 @@ class P extends React.Component {
 
     render() {
         return (
-            <div>
+            <div class='anu-block'>
                 <div onTap={this.add.bind(this)}>
                     点这里添加狗
                 </div>

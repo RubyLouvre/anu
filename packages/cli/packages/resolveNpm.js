@@ -15,16 +15,12 @@ const getRelativePath = (from, to)=>{
         //require('A') => require('./A');
         relativePath = `./${relativePath}`;
     }
-    if ( utils.isWin() ){
-        relativePath = relativePath.replace(/\\/g, '/');
-    }
-   
     return relativePath;
 };
 
 //处理npm文件引用其他npm模块路径
 const resolveNpmDepPath = (id, value)=>{
-    let depNpmFilePath = nodeResolve.sync(value, {
+    let importerId = nodeResolve.sync(value, {
         basedir: cwd, 
         moduleDirectory: path.join(cwd, 'node_modules'),
         packageFilter: (pkg)=>{
@@ -35,15 +31,12 @@ const resolveNpmDepPath = (id, value)=>{
         }
         
     });
-
-    let from = utils.replacePath(id, '/node_modules/', '/dist/npm/');
-    let to = utils.replacePath(depNpmFilePath, '/node_modules/', '/dist/npm/' );
-    return getRelativePath(from, to);
+    return getRelativePath(id, importerId);
 
 };
 
 const getDistPath = (id)=>{
-    return utils.replacePath(id, '/node_modules/', '/dist/npm/');
+    return utils.updatePath(id, 'node_modules', `dist${path.sep}npm`);
 };
 
 //获取当前构建的react文件名
@@ -63,7 +56,6 @@ module.exports = (file)=>{
                         let node = astPath.node;
                         let value = node.source.value;
                         /**
-                         * 1: node_modules文件中可能存在相对路径模块引用, 不需要更改路径位置.
                          * 2: react单独处理
                          */
                        
@@ -87,7 +79,7 @@ module.exports = (file)=>{
                     resolvePath(moduleName){
                         if (moduleName === 'react'){
                             //配置react别名
-                            let distNpmFile = utils.replacePath(id, '/node_modules/', '/dist/npm/');
+                            let distNpmFile = utils.updatePath(id, 'node_modules', `dist${path.sep}npm`);
                             let distReactFile = path.join(cwd, 'dist', ReactFileName);
                             return getRelativePath(distNpmFile, distReactFile);
 

@@ -75,9 +75,19 @@ let visitor = {
                     astPath.parentPath.replaceWith(template);
                 } else if (openTag.property.name === 'useComponent') {
                     let is, instanceUid;
+                    // let modules = utils.getAnu(state);
                     astPath.node.attributes.forEach(function(el) {
                         let attrName = el.name.name;
-                        let attrValue = el.value.value;
+                        if (!el.value){//如果用户只写属性名，不写属性值，默认为true
+                            el.value = { 
+                                type: 'StringLiteral',
+                                value: '{{true}}',
+                                trailingComments: [],
+                                leadingComments: [],
+                                innerComments: [] 
+                            };
+                        }
+                        let attrValue = el.value.value ;//这里要重构
                         if (/^\{\{.+\}\}/.test(attrValue)) {
                             attrValue = attrValue.slice(2, -2);
                         }
@@ -153,7 +163,7 @@ let visitor = {
                             1,
                             utils.createElement(
                                 'text',
-                                [utils.createAttribute('class', 'anu-text')],
+                                [],
                                 [astPath.node]
                             )
                         );

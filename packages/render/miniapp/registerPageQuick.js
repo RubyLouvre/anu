@@ -2,8 +2,12 @@
 import {  isFn } from 'react-core/util';
 import { dispatchEvent } from './eventSystemQuick';
 import { onLoad, onUnload, onReady } from './registerPageMethod';
-import { shareObject } from './utils';
-
+import { shareObject, callGlobalHook } from './utils';
+var globalHooks = {
+    onShareAppMessage: 'onGlobalShare',
+    onShow: 'onGlobalShow',
+    onHide: 'onGlobalHide',
+};
 export function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
     let config = {
@@ -28,9 +32,14 @@ export function registerPage(PageClass, path) {
     Array('onShow', 'onHide', 'onMenuPress').forEach(function(hook) {
         config[hook] = function() {
             let instance = this.reactInstance;
+           
             let fn = instance[hook];
             if (isFn(fn)) {
-                return fn.apply(instance, arguments);
+                fn.apply(instance, arguments);
+            }
+            let globalHook = globalHooks[hook];
+            if( globalHook ){
+                callGlobalHook(globalHook);
             }
         };
     });

@@ -6,19 +6,12 @@ export function registerComponent(type, name) {
     var reactInstances = (type.reactInstances = []);
     var wxInstances = (type.wxInstances = []);
     return {
-        props: {
-            props: {
-                type: Object,
-                default: {}
-            },
-            state: {
-                type: Object,
-                default: {}
-            },
-            context: {
-                type: Object,
-                default: {}
-            }
+        data(){
+            return {
+                props: {},
+                state: {},
+                context:{}
+            };
         },
 
         onInit() {
@@ -40,9 +33,6 @@ export function registerComponent(type, name) {
                 updateMiniApp(this.reactInstance);
                 /* eslint-disable-next-line */
                 console.log("attached时更新", name);
-            } else {
-                /* eslint-disable-next-line */
-                console.log("attached时无法更新", name);
             }
         },
         onDestroy() {

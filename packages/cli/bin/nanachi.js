@@ -4,10 +4,10 @@ const chalk = require('chalk');
 const semver = require('semver');
 const program = require('commander');
 
-if (semver.lt(process.version, '8.0.0')) {
+if (semver.lt(process.version, '8.6.0')) {
     // eslint-disable-next-line
     console.log(
-        chalk`nanachi only support {green.bold v8.0.0} or later (current v{green.bold ${
+        chalk`nanachi only support {green.bold v8.6.0} or later (current {green.bold ${
             process.version
         }}) of Node.js`
     );
@@ -24,11 +24,11 @@ program.command('init <project-name>').description('初始化项目');
 
 program
     .command('watch:[wx|ali|bu|quick|tt]')
-    .description('监听[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用 | 头条小程序]');
+    .description('监听[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]');
 
 program
     .command('build:[wx|ali|bu|quick|tt]')
-    .description('构建[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用 | 头条小程序]');
+    .description('构建[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]');
     
 
 program.parse(process.argv);

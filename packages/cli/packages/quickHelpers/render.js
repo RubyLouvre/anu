@@ -66,8 +66,12 @@ exports.exit = function (astPath, type, componentName, modules) {
             var quickFile = quickFiles[modules.sourcePath];
             if (quickFile) {
                 if (modules.componentType === 'Page') {
+                    let pageWraperPath = path.relative(path.dirname(modules.sourcePath), wrapperPath);
+                    if (utils.isWin()) {
+                        pageWraperPath = pageWraperPath.replace(/\\/g, '/');
+                    }
                     quickFile.template = `
-<import name="anu-page-wrapper" src="${path.relative(modules.sourcePath.replace('/index.js', ''), wrapperPath)}"></import>
+<import name="anu-page-wrapper" src="${pageWraperPath}"></import>
 <template>
    <anu-page-wrapper>
      ${wxml}
@@ -100,7 +104,7 @@ function handleRenderProps(wxml, componentName, modules) {
     //生成render props的模板
     dep.wxml =
         dep.wxml +
-        `<block wx:if="{{renderUid === '${componentName}'}}">${wxml}</block>`;
+        `<block if="{{renderUid === '${componentName}'}}">${wxml}</block>`;
     //生成render props的json
     var importTag = '';
     for (let i in modules.importComponents) {
@@ -118,15 +122,16 @@ ${dep.wxml}
 </template>
 <script>
 export default {
-props: {
-    renderUid: String,
-    props: Object,
-    state: Object,
-    context: Object
-},
-data: {},
-onInit: function () { },
-onDistory: function () { }
+    data: function(){
+    return {
+        renderUid: "",
+        props: {},
+        state: {},
+        context: {}
+    }
+    },
+    onInit: function () { },
+    onDistory: function () { }
 };
 </script>
         `

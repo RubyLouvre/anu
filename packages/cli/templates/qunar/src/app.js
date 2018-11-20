@@ -31,7 +31,6 @@ import './pages/demo/syntax/loop2/index';
 import './pages/demo/syntax/loop3/index';
 import './pages/demo/syntax/loop4/index';
 import './pages/demo/syntax/loop5/index';
-import './pages/demo/syntax/loop6/index';
 import './pages/demo/syntax/webview/index';
 
 
@@ -58,7 +57,7 @@ import './pages/demo/citySelect/index';
 
 import './app.scss';
 
-class Demo extends React.Component {
+class Global extends React.Component {
     config = {
         window: {
             backgroundTextStyle: 'light',
@@ -97,10 +96,23 @@ class Demo extends React.Component {
             ]
         }
     };
-    onCollectLogs(dataset){
-        var path = React.getCurrentPage().props.path;
-        var uuid = dataset.beaconId;
-        console.log(path, uuid);//eslint-disable-line
+    onCollectLogs(dataset, type, node){
+        var page = React.getCurrentPage();
+        if (!page){
+            return;
+        }
+        var path = page.props.path;
+        var uuid = dataset.beaconUid;
+        if (node){
+            var xpath = [];
+            while (node.parentNode){
+                var index = node.parentNode.children.indexOf(node);
+                xpath.unshift(index);
+                node = node.parentNode;
+            }
+            uuid =  xpath.join('/');
+        }
+        console.log("收集日志", path, type, uuid);//eslint-disable-line
     }
     onReportLogs(){
 
@@ -121,4 +133,4 @@ class Demo extends React.Component {
 //需要用react-redux的connect方法包一下，详见pages/demo/syntax/redux
 //React.applyAppStore(store);
 // eslint-disable-next-line
-export default App(new Demo());
+export default App(new Global());

@@ -1,5 +1,6 @@
 // eslint-disable-next-line
 import React from '@react';
+import './index.scss';
 import Animal from '../Animal/index';
 
 class Dog extends Animal {
@@ -9,8 +10,8 @@ class Dog extends Animal {
     }
     render() {
         return (
-            <div style={{border: '1px solid #333'}}>
-                名字：{this.state.name} 年龄：{this.state.age} 岁
+            <div style={{border: '1px solid #333'}} class='anu-block'>
+                <text>名字：{this.state.name} 年龄：{this.state.age} 岁</text>
                 <button catchTap={this.changeAge.bind(this)}>换一个年龄</button>
             </div>
         );
