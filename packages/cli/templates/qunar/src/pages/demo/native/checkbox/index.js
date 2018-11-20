@@ -42,7 +42,7 @@ class P extends React.Component {
                                     value={item.name}
                                     checked={item.checked}
                                 />
-                                {item.value}
+                                <text>{item.value}</text>
                             </label>
                         );
                     })}
