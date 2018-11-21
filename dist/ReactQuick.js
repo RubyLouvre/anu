@@ -608,9 +608,12 @@ function createEvent(e, target, type) {
             event[i] = e[i];
         }
     }
-    if (/touch/.test(type)) {
-        event.touches = e._touches;
-        event.changeTouches = e._changeTouches;
+    event.touches = e._touches;
+    event.changeTouches = e._changeTouches;
+    var touch = event.touches && event.touches[0];
+    if (touch) {
+        event.pageX = touch.pageX;
+        event.pageY = touch.pageY;
     }
     event.stopPropagation = e.stopPropagation.bind(e);
     event.preventDefault = e.preventDefault.bind(e);
