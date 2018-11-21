@@ -1,5 +1,6 @@
 <template>
   <div class="pagewrapper" style="padding-bottom: {{tabBar.list.length?'150px': '0px'}}; background-color:{{backgroundColor}};">
+   <block if="pageRefresh">
     <refresh refreshing="{{refreshing}}" @refresh="onPullDownRefresh">
       <list @scroll="onPageScroll" @scrollbottom="onReachBottom">
         <list-item type='a'>
@@ -7,10 +8,16 @@
         </list-item>
       </list>
     </refresh>
+   </block>
+   <block>
+    <div style="display: flex; flex-direction: column;">
+      <slot></slot>
+    </list-item>
+   </block>
     <div class="tabBar" if="{{tabBar.list.length}}" style="background-color:{{tabBar.backgroundColor}}">
       <div class="tab" for="(index, item) in tabBar.list" @click="onSelected(item)">
-        <image src="/{{ currentPath === item.pagePath ? item.selectedIconPath : item.iconPath }}" />
-        <text style="color:{{ currentPath === item.pagePath ? tabBar.selectedColor: tabBar.color }}">
+        <image src="/{{ pagePath === item.pagePath ? item.selectedIconPath : item.iconPath }}" />
+        <text style="color:{{ pagePath === item.pagePath ? tabBar.selectedColor: tabBar.color }}">
           {{item.text}}
         </text>
       </div>
@@ -57,9 +64,10 @@
     data(){
         return {
             tabBar: {},
-            refreshing:false,
-            currentPath:"",
-            backgroundColor:"#ffffff"
+            pagePath:"",
+            backgroundColor:"#ffffff",
+            pageRefresh: false,
+            pageRefreshing:false,
         };
     },
     onReady() {
@@ -68,6 +76,7 @@
       this.tabBar = {
         list: []
       }
+     
       setTitleAndTabs(this, this.$app._def.config);
     },
     onShow() {
@@ -120,7 +129,7 @@
       })
     },
     onSelected(item) {
-      this.currentPath = item.pagePath;
+      this.pagePath = item.pagePath;
       var page = getApp().page;
       if (page.onTabItemTap) {
         page.onTabItemTap(item)
@@ -139,9 +148,9 @@
         page.onPullDownRefresh()
         React.api.showToast({ title: 'refreshed' });
       }
-      this.refreshing = true
+      this.pageRefreshing = true
       setTimeout(() => {
-        this.refreshing = false
+        this.pageRefreshing = false
       })
     },
     onMenuPress: function () {
@@ -180,13 +189,14 @@
 
   function setTitleAndTabs(instance, appConfig) {
     var pageConfg = getApp().pageConfig;
-    instance.currentPath = getApp().pagePath.replace(/\/index$/, "")
+    instance.pagePath = getApp().pagePath.replace(/\/index$/, "")
     var mixin = Object.assign({
       navigationBarTitleText: "",
       navigationBarTextStyle: "white",
       navigationBarBackgroundColor: "#000000"
     }, appConfig, pageConfg)
     instance.backgroundColor = mixin.backgroundColor || "#ffffff"
+    instance.pageRefresh = !!mixin.enablePullDownRefresh;
     instance.$page.setTitleBar({
       text: mixin.navigationBarTitleText,
       textColor: mixin.navigationBarTextStyle,

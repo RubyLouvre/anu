@@ -5,8 +5,7 @@ const cwd = process.cwd();
 const sources = [
     'ReactWX.js',
     'ReactAli.js',
-    'ReactBu.js',
-    'ReactQuick.js',
+    'ReactBu.js'
 ]
 
 sources.forEach((item)=>{
