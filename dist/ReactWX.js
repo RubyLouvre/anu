@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-19
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-21
  * IE9+
  */
 
@@ -1016,6 +1016,7 @@ function createEvent(e, target) {
     event.stopPropagation = function () {
         console.warn("小程序不支持这方法，请使用catchXXX");
     };
+    event.nativeEvent = e;
     event.preventDefault = returnFalse;
     event.target = target;
     event.timeStamp = new Date() - 0;

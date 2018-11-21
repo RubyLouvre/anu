@@ -615,6 +615,7 @@ function createEvent(e, target, type) {
         event.pageX = touch.pageX;
         event.pageY = touch.pageY;
     }
+    event.nativeEvent = e;
     event.stopPropagation = e.stopPropagation.bind(e);
     event.preventDefault = e.preventDefault.bind(e);
     event.target = target;

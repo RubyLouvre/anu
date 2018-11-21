@@ -1,6 +1,5 @@
 /**
- * 运行于百度智能小程序的React by 司徒正美 Copyright 2018-11-19
- * IE9+
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-21
  */
 
 var arrayPush = Array.prototype.push;
@@ -1036,6 +1035,7 @@ function createEvent(e, target) {
     event.stopPropagation = function () {
         console.warn("小程序不支持这方法，请使用catchXXX");
     };
+    event.nativeEvent = e;
     event.preventDefault = returnFalse;
     event.target = target;
     event.timeStamp = new Date() - 0;
