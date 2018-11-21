@@ -19,6 +19,7 @@ module.exports = ()=>{
         config['buildType'] === 'quick'
             ?  path = utils.updatePath( path, 'dist' , 'src') //快应用打包到src下
             :  path = utils.updatePath( path, 'dist', config.buildDir);
+        
         fs.ensureFileSync(path);
         fs.writeFile(path, code)
             .then(()=>{
@@ -27,7 +28,8 @@ module.exports = ()=>{
                 console.log(
                     chalk.gray(`[${sucSize}] `) + 
                     chalk.green(`build success: ${nPath.relative(cwd, path)} `) +
-                    chalk.gray(`[${getSize(code)}KB]`)
+                    chalk.gray(`[${getSize(code)}KB]`) + 
+                    chalk.gray(new Date())
                 );
                 if (queue.size !== sucSize) return;
                 queue.size = 0;

@@ -5,9 +5,7 @@ const path = require('path');
 const rollup = require('rollup');
 const rbabel = require('rollup-plugin-babel');
 const resolve = require('rollup-plugin-node-resolve');
-const commonjs = require('rollup-plugin-commonjs');
-const rollupLess = require('rollup-plugin-less');
-const rollupScss = require('rollup-plugin-scss');
+const commonjs = require('rollup-plugin-commonjs'); 
 const alias = require('rollup-plugin-alias');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
@@ -60,17 +58,13 @@ const getFileType = (id)=>{
 
 };
 
-//跳过rollup的语法解析patchComponents中的样式插件
-let rollupfilterPatchStylePlugin = ()=>{
-    let reg = utils.isWin() ? /\\patchComponents\\/ :  /\/patchComponents\//;
+//跳过rollup对样式内容解析
+let ignoreStyleParsePlugin = ()=>{
     return {
         transform: function(code, id){
-            if (
-                reg.test(id)
-                && ['.css', '.less', '.scss', '.sass'].includes(path.extname(id))
-            ) {
-                return false;
-            }
+            let styleExtList = ['.css', '.less', '.scss', '.sass'];
+            let ext = path.extname(id);
+            if (styleExtList.includes(ext)) return false;
         }
     };
 };
@@ -104,15 +98,7 @@ class Parser {
                         ]
                     }
                 }),
-                rollupLess({
-                    output: ()=>{
-                        return '';
-                    }
-                }),
-                rollupScss(()=>{
-                    return '';
-                }),
-                rollupfilterPatchStylePlugin(),
+                ignoreStyleParsePlugin(),
                 commonjs({
                     include: [
                         path.join(cwd, 'node_modules/**')
@@ -126,9 +112,7 @@ class Parser {
                         require('babel-plugin-transform-class-properties'),
                         require('babel-plugin-transform-object-rest-spread')
                     ]
-                    
-                }),
-                
+                })
             ],
             onwarn: warning => {
                 //warning.importer 缺失依赖文件路径
@@ -181,6 +165,7 @@ class Parser {
                     }
                     return;
                 }
+
                 this.styleFiles.push({
                     id: data.id,
                     originalCode: data.originalCode
@@ -246,9 +231,9 @@ class Parser {
     updateStyleQueue(styleFiles) {
         while (styleFiles.length) {
             let data = styleFiles.shift();
-            let { id, originalCode } = data;    
+            let { id, originalCode } = data; 
             needUpdate(id, originalCode, function(){
-                styleTransform(data);   
+                styleTransform(id);   
             });
         }
     }
@@ -316,7 +301,7 @@ class Parser {
             .watch(watchDir, watchConfig)
             .on('change', (file)=>{
                 console.log(
-                    `\n更新: ${chalk.yellow(path.relative(cwd, file))}\n`
+                    `\n更新: ${chalk.yellow(path.relative(cwd, file))}`
                 );
                 this.inputConfig.input = file;
                 this.parse();
@@ -335,10 +320,10 @@ async function build(arg) {
         //快应用mege package.json 以及 生成秘钥
         utils.initQuickAppConfig();
     }
-    let spinner = utils.spinner('正在分析依赖...').start();
+    let spinner = utils.spinner(chalk.green('正在分析依赖...')).start();
     let parser = new Parser(entry);
     await parser.parse();
-    spinner.succeed('依赖分析成功');
+    spinner.succeed(chalk.green('依赖分析成功'));
     if (arg === 'watch') parser.watching();
 }
 
