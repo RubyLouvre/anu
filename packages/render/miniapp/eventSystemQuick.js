@@ -22,6 +22,7 @@ export function dispatchEvent(e) {
     const dataset = getDataSet(target._attr);
     const app = this.$app.def;
     let eventUid = dataset[eventType + 'Uid'];
+   
     if (dataset['classUid']){
         console.log('请尽快升级nanachi');//eslint-disable-line;
         const key = dataset['key'];
@@ -61,6 +62,10 @@ function createEvent(e, target, type) {
         if (i.indexOf('_') !== 0) {
             event[i] = e[i];
         }
+    }
+    if (/touch/.test(type)){
+        event.touches = e._touches;
+        event.changeTouches = e._changeTouches;
     }
     event.stopPropagation = e.stopPropagation.bind(e);
     event.preventDefault = e.preventDefault.bind(e);

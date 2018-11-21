@@ -1,6 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-19
- * IE9+
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-21
  */
 
 var arrayPush = Array.prototype.push;
@@ -609,6 +608,10 @@ function createEvent(e, target, type) {
             event[i] = e[i];
         }
     }
+    if (/touch/.test(type)) {
+        event.touches = e._touches;
+        event.changeTouches = e._changeTouches;
+    }
     event.stopPropagation = e.stopPropagation.bind(e);
     event.preventDefault = e.preventDefault.bind(e);
     event.target = target;
@@ -1082,6 +1085,7 @@ function onNetworkStatusChange(callback) {
 }
 
 var device = require('@system.device');
+var DEFAULT_FONT_SIZE = 14;
 function getSystemInfo(_ref) {
   var success = _ref.success,
       fail = _ref.fail,
