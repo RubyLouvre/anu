@@ -11,7 +11,6 @@ let quickFiles = require('./quickFiles');
 let queue = require('./queue');
 let utils = require('./utils');
 
-const styleTransform = require('./styleTransform');
 const {compileSass, compileLess}= require('./stylesTransformer/postcssTransform');
 const styleCompilerMap = {
     '.less': compileLess,
@@ -63,7 +62,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 console.log(transformFilePath, '\n', err);
             }
             //babel6无transform异步方法
-            setImmediate(() => {
+            setImmediate(async () => {
                 let babelPlugins = [
                     asyncAwaitPlugin,
                     [
@@ -175,7 +174,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         let {cssType, cssPath} = uxFile;
                         styleCompilerMap[cssType](cssPath)
                             .then((res)=>{
-                                let {code, importer} = res;
+                                let {code} = res;
                                 //当前样式文件代码要打包到ux中，样式中@import依赖打包成样式单文件
                                 ux += `
                             <style lang="${cssType}">
@@ -186,13 +185,10 @@ function transform(sourcePath, resolvedIds, originalCode) {
                                     code: ux,
                                     path:  utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux') 
                                 });
-
-                                importer.forEach((id)=>{
-                                    styleTransform(id);
-                                });
                             })
-                            .catch(()=>{
-
+                            .catch((err)=>{
+                                // eslint-disable-next-line
+                                console.log(cssPath, '\n', err);
                             });
                         return;
                     }

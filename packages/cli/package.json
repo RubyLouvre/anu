@@ -46,7 +46,7 @@
     "js-beautify": "^1.8.3-rc3",
     "less": "^3.8.1",
     "ora": "^3.0.0",
-    "postcss": "6.0.23",
+    "postcss": "^7.0.6",
     "postcss-advanced-variables": "^2.3.3",
     "postcss-color-function": "^4.0.1",
     "postcss-comment": "^2.0.0",

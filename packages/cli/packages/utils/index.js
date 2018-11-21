@@ -552,24 +552,22 @@ let utils = {
             }
         };
     },
-    resolveStyleAlias(id, importer) {
+    resolveStyleAlias(importer, basedir) {
         //解析样式中的alias别名配置
         let aliasMap = userConfig && userConfig.alias || {};
         let depLevel = importer.split('/'); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
         let prefix = depLevel[0]; 
-        let url = '';
+       
         //将alias以及相对路径引用解析成绝对路径
         if (aliasMap[prefix] ) {
-            url = path.join(
+            importer = path.join(
                 cwd, 
                 aliasMap[prefix],              
                 depLevel.slice(1).join('/')   //['@path', 'x', 'y.scss'] => 'x/y.scss'
             );
-           
-        } else {
-            url =  path.join( path.dirname(id),  importer) ;
-        }
-        return url;
+            return path.relative(basedir, importer);
+        } 
+        return importer;
     },
     getComponentOrAppOrPageReg() {
         return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');

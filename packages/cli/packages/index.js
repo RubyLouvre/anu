@@ -233,7 +233,10 @@ class Parser {
             let data = styleFiles.shift();
             let { id, originalCode } = data; 
             needUpdate(id, originalCode, function(){
-                styleTransform(id);   
+                styleTransform({
+                    id: id,
+                    originalCode: originalCode
+                });   
             });
         }
     }
