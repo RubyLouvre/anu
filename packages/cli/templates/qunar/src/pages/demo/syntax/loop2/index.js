@@ -38,7 +38,8 @@ class P extends React.Component {
                             <div class="anu-line" >
                                 {item.map(function(el) {
                                     return (
-                                        <div class="loop2-cell" onClick={this.getData.bind(this, el)}>
+                                        <div class="loop2-cell" 
+                                            onClick={this.getData.bind(this, el)}>
                                             <Fish content={el.title} />
                                         </div>
                                     );
