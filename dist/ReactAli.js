@@ -2541,10 +2541,6 @@ function registerComponent(type, name) {
                 updateMiniApp(this.reactInstance);
             }
         },
-        onMount: function onMount() {},
-        onUnmount: function onUnmount() {
-            this.reactInstance = null;
-        },
         didMount: function didMount() {
             if (hasInit) {
                 return;
@@ -2563,9 +2559,6 @@ function registerComponent(type, name) {
             }
         },
         didUnmount: function didUnmount() {
-            if (hasInit) {
-                return;
-            }
             this.reactInstance = null;
         },
         methods: {
