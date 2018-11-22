@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-20
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-22
  */
 
 var arrayPush = Array.prototype.push;
@@ -1035,6 +1035,7 @@ function createEvent(e, target) {
     event.stopPropagation = function () {
         console.warn("小程序不支持这方法，请使用catchXXX");
     };
+    event.nativeEvent = e;
     event.preventDefault = returnFalse;
     event.target = target;
     event.timeStamp = new Date() - 0;
@@ -2377,8 +2378,8 @@ function hyphen(target) {
 function transform(obj) {
     var _this = this;
     return Object.keys(obj).map(function (item) {
-        var value = obj[item].toString();
-        value = value.replace(/(\d+)px/gi, function (str, match) {
+        var value = obj[item] + '';
+        value = value.replace(/(\d+)px/g, function (str, match) {
             return _this.pxTransform(match);
         });
         return hyphen(item) + ': ' + value;
@@ -2561,7 +2562,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.4.9',
+    version: '1.4.8',
     render: render$1,
     hydrate: render$1,
     webview: webview,

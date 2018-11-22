@@ -1,6 +1,6 @@
 import { isFn } from 'react-core/util';
 import { dispatchEvent } from './eventSystem';
-import { DOMRenderer } from "../dom/DOMRenderer";
+import { DOMRenderer } from '../dom/DOMRenderer';
 import { createElement } from 'react-core/createElement';
 
 let lastInstance, pageStacks = [];
@@ -12,8 +12,8 @@ export function registerPage(PageClass, path, testObject) {
         onLoad(query) {
 
             var body = document.body;
-            var tabs = body.querySelectorAll(".anu-page-wrapper");
-            if (tabs.length < 5) {
+            var tabs = body.querySelectorAll('.anu-page-wrapper');
+            if (tabs.length < 10) {
                 var container = document.createElement('div');
                 container.className = 'anu-page-wrapper';
                 body.appendChild(container);

@@ -187,14 +187,14 @@ class P extends React.Component {
               <div class="tool-wrapper">
                   {this.state.toolData.map(function(item, index) {
                       return (
-                          <div onTap={this.fun_tip} class="tool-item col" key={index}>
+                          <div onTap={this.fun_tip} class="tool-item anu-block" key={index}>
                               <image src={item.url} />
                               <text>{item.title}</text>
                           </div>
                       );
                   })}
               </div>
-              <div class="special-offer col">
+              <div class="special-offer anu-block">
                   <text class="title">特价专区</text>
                   <swiper
                       class="special-offer-wrapper"
@@ -205,7 +205,7 @@ class P extends React.Component {
                       {this.state.specialOfferData.map(function(item, index) {
                           return (
                               <block key={index}>
-                                  <swiper-item onTap={this.fun_tip}  class="special-offer-item col">
+                                  <swiper-item onTap={this.fun_tip}  class="special-offer-item anu-block">
                                       <image src={item.url} />
                                       <text>{item.title}</text>
                                   </swiper-item>
@@ -214,29 +214,29 @@ class P extends React.Component {
                       })}
                   </swiper>
               </div>
-              <div class="activity col">
+              <div class="activity anu-block">
                   <text class="title">活动专区</text>
                   <div class="activity-wrapper">
                       <div onTap={this.fun_tip} class="left-content">
                           <image src="https://img1.qunarzz.com/order/comp/1808/c3/dda9c77c3b1d8802.png" />
-                          <div class="content col">
+                          <div class="content anu-block">
                               <text class="title">何时飞</text>
                               <text class="desc">机票趋势早知道</text>
                           </div>
                       </div>
-                      <div class="right-content col">
+                      <div class="right-content anu-block">
                           <div onTap={this.fun_tip} class="right-content-wrapper first-child">
                               <image
                                   src="https://img1.qunarzz.com/order/comp/1808/3b/fd717d94ed8b6102.jpg"
                               />
-                              <div class="content col">
+                              <div class="content anu-block">
                                   <text class="title">人格测试</text>
                                   <text class="desc">简直惊悚</text>
                               </div>
                           </div>
                           <div onTap={this.fun_tip} class="right-content-wrapper">
                               <image src="https://img1.qunarzz.com/order/comp/1806/1c/61cd118da20ec702.jpg" />
-                              <div class="content col">
+                              <div class="content anu-block">
                                   <text class="title">飞行宝贝</text>
                                   <text class="desc">榜单有礼</text>
                               </div>

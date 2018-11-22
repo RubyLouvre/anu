@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-20
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-22
  */
 
 var arrayPush = Array.prototype.push;
@@ -608,6 +608,14 @@ function createEvent(e, target, type) {
             event[i] = e[i];
         }
     }
+    event.touches = e._touches;
+    event.changeTouches = e._changeTouches;
+    var touch = event.touches && event.touches[0];
+    if (touch) {
+        event.pageX = touch.pageX;
+        event.pageY = touch.pageY;
+    }
+    event.nativeEvent = e;
     event.stopPropagation = e.stopPropagation.bind(e);
     event.preventDefault = e.preventDefault.bind(e);
     event.target = target;
@@ -1081,6 +1089,7 @@ function onNetworkStatusChange(callback) {
 }
 
 var device = require('@system.device');
+var DEFAULT_FONT_SIZE = 14;
 function getSystemInfo(_ref) {
   var success = _ref.success,
       fail = _ref.fail,
@@ -2540,6 +2549,13 @@ var api = {
         var prompt = require('@system.prompt');
         prompt.showContextMenu(obj);
     },
+    showLoading: function showLoading(obj) {
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = 1;
+        prompt.showToast(obj);
+    },
+    hideLoading: noop,
     navigateTo: createRouter('push'),
     redirectTo: createRouter('replace'),
     navigateBack: createRouter('back'),
@@ -2578,8 +2594,12 @@ var api = {
     getStorageSync: getStorageSync,
     removeStorageSync: removeStorageSync,
     clearStorageSync: clearStorageSync,
-    getSavedFileInfo: getSavedFileInfo, getSavedFileList: getSavedFileList, removeSavedFile: removeSavedFile, saveFile: saveFile,
-    setClipboardData: setClipboardData, getClipboardData: getClipboardData,
+    getSavedFileInfo: getSavedFileInfo,
+    getSavedFileList: getSavedFileList,
+    removeSavedFile: removeSavedFile,
+    saveFile: saveFile,
+    setClipboardData: setClipboardData,
+    getClipboardData: getClipboardData,
     getLocation: function getLocation(obj) {
         var geolocation = require('@system.geolocation');
         geolocation.getLocation(obj);
@@ -2595,7 +2615,8 @@ var api = {
             complete = _ref2.complete;
         try {
             var currentPage = getCurrentPage();
-            currentPage.wx.$page.setTitleBar({ text: title });            runFunction(success);
+            currentPage.wx.$page.setTitleBar({ text: title });
+            runFunction(success);
         } catch (error) {
             runFunction(fail, error);
         } finally {
@@ -2611,7 +2632,11 @@ function hyphen(target) {
 function transform(obj) {
     var ret = {};
     for (var i in obj) {
-        ret[hyphen(i)] = obj[i];
+        var value = obj[i] + '';
+        value = value.replace(/(\d+)px/gi, function (str, match) {
+            return match + 'px';
+        });
+        ret[hyphen(i)] = value;
     }
     return ret;
 }
@@ -2788,7 +2813,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.4.9',
+    version: '1.4.8',
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,
