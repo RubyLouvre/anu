@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-21
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-22
  */
 
 var arrayPush = Array.prototype.push;
@@ -2549,6 +2549,13 @@ var api = {
         var prompt = require('@system.prompt');
         prompt.showContextMenu(obj);
     },
+    showLoading: function showLoading(obj) {
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = 1;
+        prompt.showToast(obj);
+    },
+    hideLoading: noop,
     navigateTo: createRouter('push'),
     redirectTo: createRouter('replace'),
     navigateBack: createRouter('back'),
@@ -2587,8 +2594,12 @@ var api = {
     getStorageSync: getStorageSync,
     removeStorageSync: removeStorageSync,
     clearStorageSync: clearStorageSync,
-    getSavedFileInfo: getSavedFileInfo, getSavedFileList: getSavedFileList, removeSavedFile: removeSavedFile, saveFile: saveFile,
-    setClipboardData: setClipboardData, getClipboardData: getClipboardData,
+    getSavedFileInfo: getSavedFileInfo,
+    getSavedFileList: getSavedFileList,
+    removeSavedFile: removeSavedFile,
+    saveFile: saveFile,
+    setClipboardData: setClipboardData,
+    getClipboardData: getClipboardData,
     getLocation: function getLocation(obj) {
         var geolocation = require('@system.geolocation');
         geolocation.getLocation(obj);
@@ -2604,7 +2615,8 @@ var api = {
             complete = _ref2.complete;
         try {
             var currentPage = getCurrentPage();
-            currentPage.wx.$page.setTitleBar({ text: title });            runFunction(success);
+            currentPage.wx.$page.setTitleBar({ text: title });
+            runFunction(success);
         } catch (error) {
             runFunction(fail, error);
         } finally {
@@ -2620,7 +2632,11 @@ function hyphen(target) {
 function transform(obj) {
     var ret = {};
     for (var i in obj) {
-        ret[hyphen(i)] = obj[i];
+        var value = obj[i].toString();
+        value = value.replace(/(\d+)px/gi, function (str, match) {
+            return match + 'px';
+        });
+        ret[hyphen(i)] = value;
     }
     return ret;
 }

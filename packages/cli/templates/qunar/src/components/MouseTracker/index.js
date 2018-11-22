@@ -9,8 +9,8 @@ class MouseTracker extends React.Component {
   
     handleMouseMove(e) {
         this.setState({
-            x: e.x,
-            y: e.y
+            x: e.pageX,
+            y: e.pageY
         });
     }
   
