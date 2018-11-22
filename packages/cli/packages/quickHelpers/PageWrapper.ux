@@ -1,5 +1,5 @@
 <template>
-  <div class="pagewrapper" style="padding-bottom: {{tabBar.list.length?'150px': '0px'}}; background-color:{{backgroundColor}};">
+  <div style="width:100%;padding-bottom: {{tabBar.list.length?'150px': '0px'}}; background-color:{{backgroundColor}};">
    <block if="pageRefresh">
     <refresh refreshing="{{refreshing}}" @refresh="onPullDownRefresh">
       <list @scroll="onPageScroll" @scrollbottom="onReachBottom">
@@ -10,9 +10,7 @@
     </refresh>
    </block>
    <block>
-    <div style="display: flex; flex-direction: column;">
       <slot></slot>
-    </list-item>
    </block>
     <div class="tabBar" if="{{tabBar.list.length}}" style="background-color:{{tabBar.backgroundColor}}">
       <div class="tab" for="(index, item) in tabBar.list" @click="onSelected(item)">
@@ -25,13 +23,6 @@
   </div>
 </template>
 <style lang="sass">
-  .pagewrapper {
-    flex: 1;
-    flex-direction: column;
-    width: 100%;
-    background: #ffffff;
-  }
-
   .tabBar {
     position: fixed;
     bottom: 0;
@@ -70,13 +61,11 @@
             pageRefreshing:false,
         };
     },
-    onReady() {
-    },
+
     onInit() {
       this.tabBar = {
         list: []
       }
-     
       setTitleAndTabs(this, this.$app._def.config);
     },
     onShow() {

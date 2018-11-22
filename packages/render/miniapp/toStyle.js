@@ -9,8 +9,8 @@ function hyphen(target) {
 function transform(obj) {
     return Object.keys(obj)
         .map(item => {
-            let value = obj[item].toString();
-            value = value.replace(/(\d+)px/gi, (str, match) => {
+            let value = obj[item]+'';
+            value = value.replace(/(\d+)px/g, (str, match) => {
                 return this.pxTransform(match);
             });
             return hyphen(item) + ': ' + value;
@@ -32,3 +32,5 @@ export function toStyle(obj, props, key) {
 
     return obj;
 }
+
+

@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-19
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-22
  * IE9+
  */
 
@@ -1016,6 +1016,7 @@ function createEvent(e, target) {
     event.stopPropagation = function () {
         console.warn("小程序不支持这方法，请使用catchXXX");
     };
+    event.nativeEvent = e;
     event.preventDefault = returnFalse;
     event.target = target;
     event.timeStamp = new Date() - 0;
@@ -2358,8 +2359,8 @@ function hyphen(target) {
 function transform(obj) {
     var _this = this;
     return Object.keys(obj).map(function (item) {
-        var value = obj[item].toString();
-        value = value.replace(/(\d+)px/gi, function (str, match) {
+        var value = obj[item] + '';
+        value = value.replace(/(\d+)px/g, function (str, match) {
             return _this.pxTransform(match);
         });
         return hyphen(item) + ': ' + value;
