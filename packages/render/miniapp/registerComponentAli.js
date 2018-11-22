@@ -29,11 +29,6 @@ export function registerComponent(type, name) {
                 updateMiniApp(this.reactInstance);
             }
         },
-        onMount() {
-        },
-        onUnmount() {
-            this.reactInstance = null;
-        },
         didMount() {
             if (hasInit) {
                 return;
@@ -53,9 +48,6 @@ export function registerComponent(type, name) {
             //支付宝小程序的实例didMount是没有顺序的
         },
         didUnmount() {
-            if (hasInit) {
-                return;
-            }
             this.reactInstance = null;
         },
 

@@ -60,6 +60,7 @@ function createEvent(e, target) {
         // eslint-disable-next-line
         console.warn("小程序不支持这方法，请使用catchXXX");
     };
+    event.nativeEvent = e;
     event.preventDefault = returnFalse;
     event.target = target;
     event.timeStamp = new Date() - 0;

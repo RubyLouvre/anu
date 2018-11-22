@@ -1,25 +1,38 @@
 import { noop } from 'react-core/util';
 import request from './quickApis/fetch.js';
 import { uploadFile, downloadFile } from './quickApis/request.js';
-import { setStorage, getStorage, removeStorage, clearStorage, setStorageSync, getStorageSync, removeStorageSync, clearStorageSync } from './quickApis/storage.js';
-import { getSavedFileInfo, getSavedFileList, removeSavedFile, saveFile } from './quickApis/file.js';
+import {
+    setStorage,
+    getStorage,
+    removeStorage,
+    clearStorage,
+    setStorageSync,
+    getStorageSync,
+    removeStorageSync,
+    clearStorageSync
+} from './quickApis/storage.js';
+import {
+    getSavedFileInfo,
+    getSavedFileList,
+    removeSavedFile,
+    saveFile
+} from './quickApis/file.js';
 import { setClipboardData, getClipboardData } from './quickApis/clipboard.js';
 import { getNetworkType, onNetworkStatusChange } from './quickApis/network.js';
 import { getSystemInfo } from './quickApis/device.js';
 import { chooseImage } from './quickApis/media.js';
-import {getCurrentPage} from './wxRender';
-import {runFunction } from './utils';
-
+import { getCurrentPage } from './wxRender';
+import { runFunction } from './utils';
 
 function createRouter(name) {
-    return function (obj) {
+    return function(obj) {
         const router = require('@system.router');
         const params = {};
         let href = obj.url || obj.uri || '';
         let uri = href.slice(href.indexOf('/pages') + 1);
         uri = uri
-            .replace(/\?(.*)/, function (a, b) {
-                b.split('=').forEach(function (k, v) {
+            .replace(/\?(.*)/, function(a, b) {
+                b.split('=').forEach(function(k, v) {
                     params[k] = v;
                 });
                 return '';
@@ -35,11 +48,7 @@ function createRouter(name) {
     };
 }
 
-
-
-
-
-export  var api = {
+export var api = {
     // 交互
     showModal(obj) {
         // showCancel 默认值是 true
@@ -88,6 +97,14 @@ export  var api = {
         prompt.showContextMenu(obj);
     },
 
+    showLoading(obj) {
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = 1;
+        prompt.showToast(obj);
+    },
+
+    hideLoading: noop,
     // 导航
     navigateTo: createRouter('push'),
     redirectTo: createRouter('replace'),
@@ -134,8 +151,12 @@ export  var api = {
     getStorageSync,
     removeStorageSync,
     clearStorageSync,
-    getSavedFileInfo, getSavedFileList, removeSavedFile, saveFile,
-    setClipboardData, getClipboardData,
+    getSavedFileInfo,
+    getSavedFileList,
+    removeSavedFile,
+    saveFile,
+    setClipboardData,
+    getClipboardData,
     // 位置
     getLocation(obj) {
         const geolocation = require('@system.geolocation');
@@ -145,23 +166,16 @@ export  var api = {
     onNetworkStatusChange,
     getSystemInfo,
     chooseImage,
-    setNavigationBarTitle({title, success, fail, complete}) {
-      
-      try {
-        let currentPage = getCurrentPage();
-        currentPage.wx.$page.setTitleBar({ text: title });;
-        
-        runFunction(success);
-      } catch (error) {
-        runFunction(fail, error);
-      } finally {
-        runFunction(complete);
-      }
-      
+    setNavigationBarTitle({ title, success, fail, complete }) {
+        try {
+            let currentPage = getCurrentPage();
+            currentPage.wx.$page.setTitleBar({ text: title });
+
+            runFunction(success);
+        } catch (error) {
+            runFunction(fail, error);
+        } finally {
+            runFunction(complete);
+        }
     }
 };
-
-
-
-
-
