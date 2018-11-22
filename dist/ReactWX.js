@@ -2359,7 +2359,7 @@ function hyphen(target) {
 function transform(obj) {
     var _this = this;
     return Object.keys(obj).map(function (item) {
-        var value = obj[item].toString();
+        var value = obj[item] + '';
         value = value.replace(/(\d+)px/g, function (str, match) {
             return _this.pxTransform(match);
         });

@@ -9,11 +9,11 @@ function hyphen(target) {
 function transform(obj) {
     var ret = {};
     for (var i in obj){
-      let value = obj[i].toString();
-      value = value.replace(/(\d+)px/gi, (str, match) => {
-        return match + 'px';
-      });
-      ret[hyphen(i)] = value;
+        let value = obj[i]+'';
+        value = value.replace(/(\d+)px/gi, (str, match) => {
+            return match + 'px';
+        });
+        ret[hyphen(i)] = value;
     }
     return ret;
 }
