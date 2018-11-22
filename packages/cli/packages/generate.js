@@ -11,6 +11,7 @@ const getSize = (code)=>{
 };
 let sucSize = 0;
 module.exports = ()=>{
+   
     while (queue.length){
         let {code, path, type } = queue.shift();
         if (config.compress && compress[type]) {
@@ -42,4 +43,7 @@ module.exports = ()=>{
             });
         
     }
+
+
+    
 };

@@ -22,6 +22,10 @@ const compileSass = (filePath, originalCode)=>{
             removeComment,
             require('postcss-import')({
                 resolve(importer, baseDir){
+                    //如果@import的值没有文件后缀
+                    if (!/\.s[ca]ss/.test(importer)) {
+                        importer = importer + '.scss';
+                    }
                     //处理alias路径
                     return utils.resolveStyleAlias(importer, baseDir);
                 }
@@ -33,7 +37,6 @@ const compileSass = (filePath, originalCode)=>{
                 {
                     from: filePath,   
                     parser: commentParser, //兼容非标准css注释
-                    
                 }
             )
             .then((result)=>{
@@ -46,16 +49,20 @@ const compileSass = (filePath, originalCode)=>{
                 reject(err);
             });
     });
+    
 };
 
 
 const compileLess = (filePath, originalCode) => {
-    
     return new Promise((resolve, reject)=>{
         postCss([
             removeComment,
             require('postcss-import')({
                 resolve(importer, baseDir){
+                    
+                    if (!/\.less/.test(importer)) {
+                        importer = importer + '.less';
+                    }
                     return utils.resolveStyleAlias(importer, baseDir);
                 }
             })
@@ -80,7 +87,6 @@ const compileLess = (filePath, originalCode) => {
                         });
 
                     });
-        
             })
             .catch((err)=>{
                 reject(err);
