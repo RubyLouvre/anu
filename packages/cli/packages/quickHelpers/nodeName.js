@@ -22,4 +22,5 @@ let map = Object.assign({}, builtIn);
     map[el] = 'text';
 });
 map.button = 'input';
+map['web-view'] = 'web';
 module.exports = utils.createNodeName(map, 'div');
