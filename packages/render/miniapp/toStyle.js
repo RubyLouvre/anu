@@ -9,7 +9,7 @@ function hyphen(target) {
 function transform(obj) {
     return Object.keys(obj)
         .map(item => {
-            let value = obj[item].toString();
+            let value = obj[item]+'';
             value = value.replace(/(\d+)px/g, (str, match) => {
                 return this.pxTransform(match);
             });

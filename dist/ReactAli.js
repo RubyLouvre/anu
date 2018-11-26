@@ -2494,7 +2494,7 @@ function hyphen(target) {
 function transform(obj) {
     var _this = this;
     return Object.keys(obj).map(function (item) {
-        var value = obj[item].toString();
+        var value = obj[item] + '';
         value = value.replace(/(\d+)px/g, function (str, match) {
             return _this.pxTransform(match);
         });
@@ -2541,10 +2541,6 @@ function registerComponent(type, name) {
                 updateMiniApp(this.reactInstance);
             }
         },
-        onMount: function onMount() {},
-        onUnmount: function onUnmount() {
-            this.reactInstance = null;
-        },
         didMount: function didMount() {
             if (hasInit) {
                 return;
@@ -2563,9 +2559,6 @@ function registerComponent(type, name) {
             }
         },
         didUnmount: function didUnmount() {
-            if (hasInit) {
-                return;
-            }
             this.reactInstance = null;
         },
         methods: {

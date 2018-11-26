@@ -9,11 +9,11 @@ var rhyphen = /([a-z\d])([A-Z]+)/g;
 function transform(obj) {
     var ret = {};
     for (var i in obj){
-      let value = obj[i].toString();
-      value = value.replace(/(\d+)px/gi, (str, match) => {
-        return match + 'px';
-      });
-      ret[i] = value;
+        let value = obj[i]+'';
+        value = value.replace(/(\d+)px/gi, (str, match) => {
+            return match + 'px';
+        });
+        ret[i] = value;
     }
     return ret;
 }
