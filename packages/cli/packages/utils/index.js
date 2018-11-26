@@ -83,7 +83,7 @@ let utils = {
             if (buildType === 'ali') {
                 return 'Input';
             } else if (buildType === 'wx') {
-                return 'Change';
+                return 'Input';
             }
         }
         return eventName;
