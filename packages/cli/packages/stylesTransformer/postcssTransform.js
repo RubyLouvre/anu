@@ -5,16 +5,55 @@ const commentParser = require('postcss-comment');
 const validateStyle = require('../validateStyle');
 const utils = require('../utils');
 const less = require('less');
-const precss = require('precss');  //解析sass-like语法
+//const chalk = require('chalk');
 
 //postcss插件: 清除注释
-var removeComment = postCss.plugin('postcss-plugin-remove-comment', function(){
-    return function(root){
+var removeComment = postCss.plugin('postcss-plugin-remove-comment', ()=>{
+    return (root)=>{
         root.walkComments(comment => {
             comment.remove();
         });
     };
 });
+
+//解析sass darken和lighten函数
+/**
+ * darken($color: #fff, $amount: 100) => color(#fff shade(100%))
+ * lighten($color: #000, $amount: 100) => color(#000 tint(100%))
+ */
+
+var transformDarkenOrLighten = postCss.plugin('postcss-plugin-darken-lighten-fn', ()=>{
+    var ruleRegMap =  {
+        darken: (value)=>{
+            value = value.replace('darken', 'color')                //darken => color
+                .replace(/(\$color|\$amount|:|%)/g, '')    //删掉  [$color | $amount | : ]
+                .replace(/,\s*(\d+)/, function(a,b){
+                    return ' ' + `shade(${b}%)`;			//color(#ff9800, 10) => color(#ff9800 shade(10%));
+                });
+            return value;
+        },
+        lighten: (value)=>{
+            value = value.replace('lighten', 'color')             
+                .replace(/(\$color|\$amount|:|%)/g, '')  
+                .replace(/,\s*(\d+)/, function(a,b){
+                    return ' ' + `tint(${b}%)`;
+                });
+            return value;
+        }
+    };
+    return (root)=>{
+        root.walkRules((rule)=>{
+            rule.walkDecls( (decl) => {
+                let fnName =  decl.value.replace(/\(.+\)/g, '');
+                if (typeof ruleRegMap[fnName] === 'function') {
+                    decl.value = ruleRegMap[fnName](decl.value);
+                }
+            });
+        });
+    };
+});
+
+
 
 const compileSass = (filePath, originalCode)=>{
     return new Promise((resolved, reject)=>{
@@ -30,7 +69,12 @@ const compileSass = (filePath, originalCode)=>{
                     return utils.resolveStyleAlias(importer, baseDir);
                 }
             }),
-            precss()
+            transformDarkenOrLighten,
+            require('postcss-color-hsl'),
+            require('postcss-color-function'),
+            require('precss'),
+            require('postcss-automath'),     //5px + 2 => 7px
+            
         ])
             .process(
                 originalCode || fs.readFileSync(filePath).toString(),
