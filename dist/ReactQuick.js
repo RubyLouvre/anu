@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-22
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-26
  */
 
 var arrayPush = Array.prototype.push;
@@ -2625,9 +2625,10 @@ var api = {
     }
 };
 
-var rhyphen = /([a-z\d])([A-Z]+)/g;
-function hyphen(target) {
-    return target.replace(rhyphen, '$1-$2').toLowerCase();
+function camel(target) {
+    return target.replace(/\-(\w)/g, function (all, letter) {
+        return letter.toUpperCase();
+    });
 }
 function transform(obj) {
     var ret = {};
@@ -2636,7 +2637,7 @@ function transform(obj) {
         value = value.replace(/(\d+)px/gi, function (str, match) {
             return match + 'px';
         });
-        ret[hyphen(i)] = value;
+        ret[camel(i)] = value;
     }
     return ret;
 }

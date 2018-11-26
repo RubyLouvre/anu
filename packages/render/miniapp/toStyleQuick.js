@@ -1,8 +1,7 @@
 // 处理行内样式
 
-// var rhyphen = /([a-z\d])([A-Z]+)/g;
-function hyphen(target) {
-    //转换为连字符风格
+function camel(target) {
+    //转换为驼峰风格
     return target.replace(/\-(\w)/g, function(all, letter){
       return letter.toUpperCase();
     });
@@ -15,7 +14,7 @@ function transform(obj) {
         value = value.replace(/(\d+)px/gi, (str, match) => {
             return match + 'px';
         });
-        ret[hyphen(i)] = value;
+        ret[camel(i)] = value;
     }
     return ret;
 }
