@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-22
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-26
  * IE9+
  */
 
@@ -2264,10 +2264,19 @@ var Renderer$1 = createRenderer({
                 _getApp().page = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
-            if (type.wxInstances) {
-                if (!type.ali && !instance.wx && type.wxInstances.length) {
-                    var wx = instance.wx = type.wxInstances.shift();
-                    wx.reactInstance = instance;
+            var wxInstances = type.wxInstances;
+            if (wxInstances) {
+                if (!type.ali) {
+                    var uid = instance.instanceUid;
+                    for (var i = wxInstances.length - 1; i >= 0; i--) {
+                        var el = wxInstances[i];
+                        if (el.dataset.instanceUid === uid) {
+                            el.reactInstance = instance;
+                            instance.wx = el;
+                            wxInstances.splice(i, 1);
+                            break;
+                        }
+                    }
                 }
                 if (!instance.wx) {
                     type.reactInstances.push(instance);
@@ -2514,15 +2523,18 @@ function registerComponent(type, name) {
         lifetimes: {
             attached: function attached() {
                 usingComponents[name] = type;
-                var instance = reactInstances.shift();
-                if (instance) {
-                    console.log("attached时为", name, "添加wx");
-                    instance.wx = this;
-                    this.reactInstance = instance;
-                    this.isUpdate = true;
-                    updateMiniApp(this.reactInstance);
-                } else {
-                    console.log("attached时为", name, "没有对应react实例");
+                var uid = this.dataset.instanceUid;
+                for (var i = reactInstances.length - 1; i >= 0; i--) {
+                    var reactInstance = reactInstances[i];
+                    if (reactInstance.instanceUid === uid) {
+                        reactInstance.wx = this;
+                        this.reactInstance = reactInstance;
+                        updateMiniApp(reactInstance);
+                        reactInstances.splice(i, 1);
+                        break;
+                    }
+                }
+                if (!this.reactInstance) {
                     wxInstances.push(this);
                 }
             },
