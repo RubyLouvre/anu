@@ -1,5 +1,5 @@
 /*!
- * 
+ *
  * 这是用检测用户写的样式表是否符合快应用的要求
  */
 
@@ -63,15 +63,56 @@ module.exports = function validateStyle(code) {
     if (config.buildType !== 'quick') return code;
     const ast = css.parse(code);
     const rules = ast.stylesheet.rules;
-    rules.forEach(({ declarations = [] }) => {
-        R.filter(R.propEq('type', 'declaration'))(declarations).forEach(
-            declaration => {
-                replaceRPXtoPX(declaration);
-                if (visitors[declaration.property]) {
-                    visitors[declaration.property](declaration);
-                }
-            }
-        );
+
+    var extractDeclarationsFromKeyframe = R.compose(
+        R.flatten,
+        R.pluck('declarations')
+    );
+
+    function extractKeyframesRules(rule) {
+        return R.compose(
+            R.flatten,
+            extractDeclarationsFromKeyframe,
+            R.prop('keyframes')
+        )(rule);
+    }
+
+    function extractMediaRules(rule) {
+        return R.compose(
+            R.flatten,
+            R.map(extractDeclarationsFromRule),
+            R.prop('rules')
+        )(rule);
+    }
+
+    var extractDeclarationsFromRule = R.cond([
+        [R.propEq('type', 'rule'), R.prop('declarations')],
+        [R.propEq('type', 'media'), extractMediaRules],
+        [R.propEq('type', 'keyframes'), extractKeyframesRules],
+        [R.T, R.always([])]
+    ]);
+
+    var extractDeclarationsFromRules = R.compose(
+        R.flatten,
+        R.map(extractDeclarationsFromRule)
+    );
+
+    extractDeclarationsFromRules(rules).forEach(declaration => {
+        replaceRPXtoPX(declaration);
+        if (visitors[declaration.property]) {
+            visitors[declaration.property](declaration);
+        }
     });
+
+    // rules.forEach(({ declarations = [] }) => {
+    //     R.filter(R.propEq('type', 'declaration'))(declarations).forEach(
+    //         declaration => {
+    //             replaceRPXtoPX(declaration);
+    //             if (visitors[declaration.property]) {
+    //                 visitors[declaration.property](declaration);
+    //             }
+    //         }
+    //     );
+    // });
     return css.stringify(ast);
 };
