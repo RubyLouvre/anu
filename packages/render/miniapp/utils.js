@@ -15,10 +15,10 @@ if (typeof getApp == 'function') {
     _getApp = getApp;//esline-disabled-line;
 }
 export { _getApp };
-export function callGlobalHook(method){
+export function callGlobalHook(method, e){
     var app = _getApp();
     if (app && app[method]){
-        return app[method]();
+        return app[method](e);
     }
 }
 export var delayMounts = [];

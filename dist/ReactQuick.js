@@ -637,10 +637,10 @@ function _getApp() {
 if (typeof getApp == 'function') {
     _getApp = getApp;
 }
-function callGlobalHook(method) {
+function callGlobalHook(method, e) {
     var app = _getApp();
     if (app && app[method]) {
-        return app[method]();
+        return app[method](e);
     }
 }
 var delayMounts = [];
@@ -2395,9 +2395,9 @@ var Renderer$1 = createRenderer({
     },
     onBeforeRender: function onBeforeRender(fiber) {
         var type = fiber.type;
+        var instance = fiber.stateNode;
+        var noMount = !fiber.hasMounted;
         if (type.reactInstances) {
-            var noMount = !fiber.hasMounted;
-            var instance = fiber.stateNode;
             var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
             instance.instanceUid = uuid;
             if (fiber.props.isPageComponent) {
@@ -2798,15 +2798,15 @@ function registerPage(PageClass, path) {
         onDestroy: onUnload
     };
     Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
-        config[hook] = function () {
+        config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook];
             if (isFn(fn)) {
-                fn.apply(instance, arguments);
+                fn.call(instance, e);
             }
             var globalHook = globalHooks[hook];
             if (globalHook) {
-                callGlobalHook(globalHook);
+                callGlobalHook(globalHook, e);
             }
         };
     });

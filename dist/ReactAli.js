@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-26
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-27
  */
 
 var arrayPush = Array.prototype.push;
@@ -1029,10 +1029,10 @@ function _getApp() {
 if (typeof getApp == 'function') {
     _getApp = getApp;
 }
-function callGlobalHook(method) {
+function callGlobalHook(method, e) {
     var app = _getApp();
     if (app && app[method]) {
-        return app[method]();
+        return app[method](e);
     }
 }
 var delayMounts = [];
@@ -2388,24 +2388,20 @@ var Renderer$1 = createRenderer({
     },
     onBeforeRender: function onBeforeRender(fiber) {
         var type = fiber.type;
+        var instance = fiber.stateNode;
+        var noMount = !fiber.hasMounted;
         if (type.reactInstances) {
-            var noMount = !fiber.hasMounted;
-            var instance = fiber.stateNode;
-            if (!instance.instanceUid) {
-                var uuid = 'i' + getUUID();
-                instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
-            }
+            var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
+            instance.instanceUid = uuid;
             if (fiber.props.isPageComponent) {
                 _getApp().page = instance;
             }
-            instance.props.instanceUid = instance.instanceUid;
             var wxInstances = type.wxInstances;
             if (wxInstances) {
                 if (!type.ali) {
-                    var uid = instance.instanceUid;
                     for (var i = wxInstances.length - 1; i >= 0; i--) {
                         var el = wxInstances[i];
-                        if (el.dataset.instanceUid === uid) {
+                        if (el.dataset.instanceUid === uuid) {
                             el.reactInstance = instance;
                             instance.wx = el;
                             wxInstances.splice(i, 1);
@@ -2670,20 +2666,20 @@ function registerPage(PageClass, path, testObject) {
         onUnload: onUnload
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide').forEach(function (hook) {
-        config[hook] = function () {
+        config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook],
                 fired = false;
             if (isFn(fn)) {
                 fired = true;
-                var ret = fn.apply(instance, arguments);
+                var ret = fn.call(instance, e);
                 if (hook === 'onShareAppMessage') {
                     return ret;
                 }
             }
             var globalHook = globalHooks[hook];
             if (globalHook) {
-                ret = callGlobalHook(globalHook);
+                ret = callGlobalHook(globalHook, e);
                 if (hook === 'onShareAppMessage') {
                     return ret;
                 }
@@ -2691,7 +2687,7 @@ function registerPage(PageClass, path, testObject) {
             var discarded = showHideHooks[hook];
             if (!fired && instance[discarded]) {
                 console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
-                instance[discarded]();
+                instance[discarded](e);
             }
         };
     });
