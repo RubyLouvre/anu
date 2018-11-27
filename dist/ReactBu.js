@@ -913,10 +913,10 @@ function _getApp() {
 if (typeof getApp == 'function') {
     _getApp = getApp;
 }
-function callGlobalHook(method) {
+function callGlobalHook(method, e) {
     var app = _getApp();
     if (app && app[method]) {
-        return app[method]();
+        return app[method](e);
     }
 }
 var delayMounts = [];
@@ -2272,9 +2272,9 @@ var Renderer$1 = createRenderer({
     },
     onBeforeRender: function onBeforeRender(fiber) {
         var type = fiber.type;
+        var instance = fiber.stateNode;
+        var noMount = !fiber.hasMounted;
         if (type.reactInstances) {
-            var noMount = !fiber.hasMounted;
-            var instance = fiber.stateNode;
             var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
             instance.instanceUid = uuid;
             if (fiber.props.isPageComponent) {
@@ -2520,20 +2520,20 @@ function registerPage(PageClass, path, testObject) {
         onUnload: onUnload
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide').forEach(function (hook) {
-        config[hook] = function () {
+        config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook],
                 fired = false;
             if (isFn(fn)) {
                 fired = true;
-                var ret = fn.apply(instance, arguments);
+                var ret = fn.call(instance, e);
                 if (hook === 'onShareAppMessage') {
                     return ret;
                 }
             }
             var globalHook = globalHooks[hook];
             if (globalHook) {
-                ret = callGlobalHook(globalHook);
+                ret = callGlobalHook(globalHook, e);
                 if (hook === 'onShareAppMessage') {
                     return ret;
                 }
@@ -2541,7 +2541,7 @@ function registerPage(PageClass, path, testObject) {
             var discarded = showHideHooks[hook];
             if (!fired && instance[discarded]) {
                 console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
-                instance[discarded]();
+                instance[discarded](e);
             }
         };
     });

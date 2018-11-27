@@ -89,18 +89,17 @@ export let Renderer = createRenderer({
         fiber.stateNode.props = fiber.props;
     },
     onBeforeRender: function(fiber) {
-        var type = fiber.type;
+        let type = fiber.type;
+        let instance = fiber.stateNode;
+        let noMount = !fiber.hasMounted;  
         if (type.reactInstances) {
-            //var name = fiber.name;
-            var noMount = !fiber.hasMounted;
-            var instance = fiber.stateNode;
-            var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
+            let uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
             instance.instanceUid = uuid;
             if (fiber.props.isPageComponent) {
                 _getApp().page = instance;
             }
             //只处理component目录下的组件
-            var wxInstances = type.wxInstances;
+            let wxInstances = type.wxInstances;
             if (wxInstances) {
                 if (!type.ali) {
                     for (var i = wxInstances.length - 1; i >= 0; i--) {
