@@ -4,13 +4,8 @@ import { render } from "react-fiber/scheduleWork";
 import { updateMiniApp, _getApp } from "./utils";
 
 var onEvent = /(?:on|catch)[A-Z]/;
-function getEventHashCode(name, props, key) {
-    var n = name.charAt(0) == "o" ? 2 : 5;
-    var type = toLowerCase(name.slice(n));
-    var eventCode = props["data-" + type + "-uid"];
-    return eventCode + (key != null ? "-" + key : "");
-}
-function getEventHashCode2(name, props) {
+
+function getEventUid(name, props) {
     var n = name.charAt(0) == "o" ? 2 : 5;
     var type = toLowerCase(name.slice(n));
     return props["data-" + type + "-uid"];
@@ -22,60 +17,31 @@ export let Renderer = createRenderer({
     render: render,
     updateAttribute(fiber) {
         let { props, lastProps } = fiber;
-        let classId = props["data-class-uid"];
         let beaconId = props["data-beacon-uid"];
         let instance = fiber._owner; //clazz[instanceId];
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
         }
-        if (instance) {
+        if (instance && beaconId) {
             var cached =
                 instance.$$eventCached || (instance.$$eventCached = {});
-            if (classId) {
-                //保存用户创建的事件在实例上
-
-                for (let name in props) {
-                    if (onEvent.test(name) && isFn(props[name])) {
-                        let code = getEventHashCode(
-                            name,
-                            props,
-                            props["data-key"]
-                        );
-                        cached[code] = props[name];
-                        cached[code + "Fiber"] = fiber;
-                    }
+            for (let name in props) {
+                if (onEvent.test(name) && isFn(props[name])) {
+                    let code = getEventUid(name, props);
+                    cached[code] = props[name];
+                    cached[code + "Fiber"] = fiber;
                 }
-                if (lastProps) {
-                    for (let name in lastProps) {
-                        if (onEvent.test(name) && !props[name]) {
-                            let code = getEventHashCode(
-                                name,
-                                lastProps,
-                                lastProps["data-key"]
-                            );
-                            delete cached[code];
-                            delete cached[code + "Fiber"];
-                        }
-                    }
-                }
-            } else if (beaconId) {
-                for (let name in props) {
-                    if (onEvent.test(name) && isFn(props[name])) {
-                        let code = getEventHashCode2(name, props);
-                        cached[code] = props[name];
-                        cached[code + "Fiber"] = fiber;
-                    }
-                }
-                if (lastProps) {
-                    for (let name in lastProps) {
-                        if (onEvent.test(name) && !props[name]) {
-                            code = getEventHashCode2(name, lastProps);
-                            delete cached[code];
-                            delete cached[code + "Fiber"];
-                        }
+            }
+            if (lastProps) {
+                for (let name in lastProps) {
+                    if (onEvent.test(name) && !props[name]) {
+                        let code = getEventUid(name, lastProps);
+                        delete cached[code];
+                        delete cached[code + "Fiber"];
                     }
                 }
             }
+
         }
     },
 
@@ -97,14 +63,14 @@ export let Renderer = createRenderer({
     createElement(fiber) {
         return fiber.tag === 5
             ? {
-                  type: fiber.type,
-                  props: fiber.props || {},
-                  children: []
-              }
+                type: fiber.type,
+                props: fiber.props || {},
+                children: []
+            }
             : {
-                  type: fiber.type,
-                  props: fiber.props
-              };
+                type: fiber.type,
+                props: fiber.props
+            };
     },
     insertElement(fiber) {
         let dom = fiber.stateNode,

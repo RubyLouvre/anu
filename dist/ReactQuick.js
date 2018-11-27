@@ -620,7 +620,7 @@ function createEvent(e, target, type) {
     event.preventDefault = e.preventDefault.bind(e);
     event.target = target;
     event.type = type;
-    event.timeStamp = new Date() - 0;
+    event.timeStamp = Date.now();
     return event;
 }
 
@@ -2458,13 +2458,7 @@ function getContainer(p) {
 }
 
 var onEvent = /(?:on|catch)[A-Z]/;
-function getEventHashCode(name, props, key) {
-    var n = name.charAt(0) == "o" ? 2 : 5;
-    var type = toLowerCase(name.slice(n));
-    var eventCode = props["data-" + type + "-uid"];
-    return eventCode + (key != null ? "-" + key : "");
-}
-function getEventHashCode2(name, props) {
+function getEventUid(name, props) {
     var n = name.charAt(0) == "o" ? 2 : 5;
     var type = toLowerCase(name.slice(n));
     return props["data-" + type + "-uid"];
@@ -2477,46 +2471,26 @@ var Renderer$1 = createRenderer({
     updateAttribute: function updateAttribute(fiber) {
         var props = fiber.props,
             lastProps = fiber.lastProps;
-        var classId = props["data-class-uid"];
         var beaconId = props["data-beacon-uid"];
         var instance = fiber._owner;
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
         }
-        if (instance) {
+        if (instance && beaconId) {
             var cached = instance.$$eventCached || (instance.$$eventCached = {});
-            if (classId) {
-                for (var name in props) {
-                    if (onEvent.test(name) && isFn(props[name])) {
-                        var _code = getEventHashCode(name, props, props["data-key"]);
-                        cached[_code] = props[name];
-                        cached[_code + "Fiber"] = fiber;
-                    }
+            for (var name in props) {
+                if (onEvent.test(name) && isFn(props[name])) {
+                    var code = getEventUid(name, props);
+                    cached[code] = props[name];
+                    cached[code + "Fiber"] = fiber;
                 }
-                if (lastProps) {
-                    for (var _name in lastProps) {
-                        if (onEvent.test(_name) && !props[_name]) {
-                            var _code2 = getEventHashCode(_name, lastProps, lastProps["data-key"]);
-                            delete cached[_code2];
-                            delete cached[_code2 + "Fiber"];
-                        }
-                    }
-                }
-            } else if (beaconId) {
-                for (var _name2 in props) {
-                    if (onEvent.test(_name2) && isFn(props[_name2])) {
-                        var _code3 = getEventHashCode2(_name2, props);
-                        cached[_code3] = props[_name2];
-                        cached[_code3 + "Fiber"] = fiber;
-                    }
-                }
-                if (lastProps) {
-                    for (var _name3 in lastProps) {
-                        if (onEvent.test(_name3) && !props[_name3]) {
-                            code = getEventHashCode2(_name3, lastProps);
-                            delete cached[code];
-                            delete cached[code + "Fiber"];
-                        }
+            }
+            if (lastProps) {
+                for (var _name in lastProps) {
+                    if (onEvent.test(_name) && !props[_name]) {
+                        var _code = getEventUid(_name, lastProps);
+                        delete cached[_code];
+                        delete cached[_code + "Fiber"];
                     }
                 }
             }
