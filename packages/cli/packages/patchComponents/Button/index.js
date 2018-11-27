@@ -77,7 +77,7 @@ class Button extends React.Component {
             <div
                 class={"center button " + this.state.buttonStyle}
                 disabled={this.props.disabled}
-                onClick={this.click.bind(this)}
+              
                 plain={this.props.plain}
                 type={this.props.type}
                 size={this.props.size}
@@ -96,6 +96,7 @@ class Button extends React.Component {
                 >
                     {this.state.value}
                 </text>
+                <input class="mask"   onClick={this.click.bind(this)} />
             </div>
         );
     }
@@ -125,8 +126,8 @@ const colorStyleMap = {
 };
 
 const fontStyleMap = {
-    default: "18px",
-    mini: "13px"
+    default: "26px",
+    mini: "26px"
 };
 
 export default Button;
