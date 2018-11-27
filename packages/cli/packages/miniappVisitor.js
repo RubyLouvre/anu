@@ -511,7 +511,7 @@ module.exports = {
                         t.jSXExpressionContainer(t.stringLiteral(nodeName))
                     )
                 );
-                if (buildType == "ali") {
+                if (buildType == "ali" || buildType == "wx") {
                     /*  var varString = `var a = 'i${astPath.node.start}' ${
                         modules.indexArr
                             ? "+" + modules.indexArr.join("+'-'+")

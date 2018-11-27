@@ -85,7 +85,7 @@ export let Renderer = createRenderer({
     updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
     },
-    onBeforeRender: function(fiber) {
+    onBeforeRender: function (fiber) {
         var type = fiber.type;
         if (type.reactInstances) {
             //var name = fiber.name;
@@ -94,23 +94,33 @@ export let Renderer = createRenderer({
             if (!instance.instanceUid) {
                 var uuid = 'i' + getUUID();
                 instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
-                //type[uuid] = instance;
             }
             if (fiber.props.isPageComponent) {
                 _getApp().page = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
-            if (type.wxInstances) {
-                //只处理component目录下的组件
-                //支付宝不会走这分支
-                if (!type.ali && !instance.wx && type.wxInstances.length) {
-                    var wx = (instance.wx = type.wxInstances.shift());
-                    wx.reactInstance = instance;
+
+
+            //只处理component目录下的组件
+            var wxInstances = type.wxInstances;
+            if (wxInstances) {
+                if (!type.ali) {
+                    let uid = instance.instanceUid;
+                    for (var i = wxInstances.length - 1; i >= 0; i--) {
+                        var el = wxInstances[i];
+                        if (el.dataset.instanceUid === uid) {
+                            el.reactInstance = instance;
+                            instance.wx = el;
+                            wxInstances.splice(i, 1);
+                            break;
+                        }
+                    }
                 }
                 if (!instance.wx) {
                     type.reactInstances.push(instance);
                 }
             }
+
         }
         if (!pageState.isReady && noMount && instance.componentDidMount) {
             delayMounts.push({

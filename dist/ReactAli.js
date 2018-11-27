@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-22
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-26
  */
 
 var arrayPush = Array.prototype.push;
@@ -2399,10 +2399,19 @@ var Renderer$1 = createRenderer({
                 _getApp().page = instance;
             }
             instance.props.instanceUid = instance.instanceUid;
-            if (type.wxInstances) {
-                if (!type.ali && !instance.wx && type.wxInstances.length) {
-                    var wx = instance.wx = type.wxInstances.shift();
-                    wx.reactInstance = instance;
+            var wxInstances = type.wxInstances;
+            if (wxInstances) {
+                if (!type.ali) {
+                    var uid = instance.instanceUid;
+                    for (var i = wxInstances.length - 1; i >= 0; i--) {
+                        var el = wxInstances[i];
+                        if (el.dataset.instanceUid === uid) {
+                            el.reactInstance = instance;
+                            instance.wx = el;
+                            wxInstances.splice(i, 1);
+                            break;
+                        }
+                    }
                 }
                 if (!instance.wx) {
                     type.reactInstances.push(instance);
@@ -2516,10 +2525,28 @@ function toStyle(obj, props, key) {
 }
 
 function registerComponent(type, name) {
+    type.ali = true;
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
     var hasInit = false;
+    function didMount() {
+        if (hasInit) {
+            return;
+        }
+        usingComponents[name] = type;
+        var uid = this.props['data-instance-uid'];
+        for (var i = reactInstances.length - 1; i >= 0; i--) {
+            var reactInstance = reactInstances[i];
+            if (reactInstance.instanceUid === uid) {
+                reactInstance.wx = this;
+                this.reactInstance = reactInstance;
+                updateMiniApp(reactInstance);
+                reactInstances.splice(i, 1);
+                break;
+            }
+        }
+    }
     return {
         data: {
             props: {},
@@ -2541,25 +2568,15 @@ function registerComponent(type, name) {
                 updateMiniApp(this.reactInstance);
             }
         },
-        didMount: function didMount() {
-            if (hasInit) {
-                return;
-            }
-            usingComponents[name] = type;
-            var uid = this.props.instanceUid;
-            for (var i = reactInstances.length - 1; i >= 0; i--) {
-                var reactInstance = reactInstances[i];
-                if (reactInstance.instanceUid === uid) {
-                    reactInstance.wx = this;
-                    this.reactInstance = reactInstance;
-                    updateMiniApp(reactInstance);
-                    reactInstances.splice(i, 1);
-                    break;
-                }
-            }
-        },
+        didMount: didMount,
+        didUpdate: didMount,
         didUnmount: function didUnmount() {
-            this.reactInstance = null;
+            var t = this.reactInstance;
+            if (t) {
+                t.wx = null;
+                this.reactInstance = null;
+            }
+            console.log('detached...', name);
         },
         methods: {
             dispatchEvent: dispatchEvent

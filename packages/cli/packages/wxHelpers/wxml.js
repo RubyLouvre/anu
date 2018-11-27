@@ -100,10 +100,10 @@ let visitor = {
                         }
                     });
                     let attributes = [];
-                    if (config.buildType == 'ali') {
+                    if (buildType == 'ali' || buildType == 'wx') {
                         attributes.push(
                             utils.createAttribute(
-                                'instanceUid',
+                                'data-instance-uid',
                                 `{{${instanceUid}}}`
                             )
                         );
@@ -143,7 +143,7 @@ let visitor = {
     },
     JSXText: {
         exit(astPath) {
-            if (config.buildType == 'quick') {
+            if (buildType == 'quick') {
                 let parentNode = astPath.parentPath.node;
                 let parentTag = parentNode.openingElement.name.name;
                 let children = parentNode.children;

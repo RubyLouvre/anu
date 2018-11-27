@@ -15,6 +15,7 @@ export function registerComponent(type, name) {
             //微信需要lifetimes, methods
             attached: function attached() {
                 usingComponents[name] = type;
+                /*
                 let instance = reactInstances.shift();
                 if (instance) {
                     console.log("attached时为", name, "添加wx");//eslint-disabled-line
@@ -25,7 +26,22 @@ export function registerComponent(type, name) {
                 } else {
                     console.log("attached时为", name, "没有对应react实例");//eslint-disabled-line
                     wxInstances.push(this);
+                }*/
+                var uid = this.dataset.instanceUid;
+                for (var i = reactInstances.length - 1; i >= 0; i--) {
+                    var reactInstance = reactInstances[i];
+                    if (reactInstance.instanceUid === uid) {
+                        reactInstance.wx = this;
+                        this.reactInstance = reactInstance;
+                        updateMiniApp(reactInstance);
+                        reactInstances.splice(i, 1);
+                        break;
+                    }
                 }
+                if (!this.reactInstance) {
+                    wxInstances.push(this);
+                }
+
             },
             detached() {
                 let t = this.reactInstance;
@@ -34,7 +50,6 @@ export function registerComponent(type, name) {
                     this.reactInstance = null;
                 }
                 console.log('detached...', name);//eslint-disabled-line
-
             }
         },
         methods: {
