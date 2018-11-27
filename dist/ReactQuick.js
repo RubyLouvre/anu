@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-26
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-27
  */
 
 var arrayPush = Array.prototype.push;
@@ -2398,21 +2398,17 @@ var Renderer$1 = createRenderer({
         if (type.reactInstances) {
             var noMount = !fiber.hasMounted;
             var instance = fiber.stateNode;
-            if (!instance.instanceUid) {
-                var uuid = 'i' + getUUID();
-                instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
-            }
+            var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
+            instance.instanceUid = uuid;
             if (fiber.props.isPageComponent) {
                 _getApp().page = instance;
             }
-            instance.props.instanceUid = instance.instanceUid;
             var wxInstances = type.wxInstances;
             if (wxInstances) {
                 if (!type.ali) {
-                    var uid = instance.instanceUid;
                     for (var i = wxInstances.length - 1; i >= 0; i--) {
                         var el = wxInstances[i];
-                        if (el.dataset.instanceUid === uid) {
+                        if (el.dataset.instanceUid === uuid) {
                             el.reactInstance = instance;
                             instance.wx = el;
                             wxInstances.splice(i, 1);
@@ -2634,8 +2630,10 @@ var api = {
     }
 };
 
-function hyphen(target) {
-    return target.replace(/\-(\w)/g, function (all, letter) {
+var rcamel = /-(\w)/g;
+var rpx = /(\d+)px/g;
+function camel(target) {
+    return target.replace(rcamel, function (all, letter) {
         return letter.toUpperCase();
     });
 }
@@ -2643,10 +2641,10 @@ function transform(obj) {
     var ret = {};
     for (var i in obj) {
         var value = obj[i] + '';
-        value = value.replace(/(\d+)px/gi, function (str, match) {
+        value = value.replace(rpx, function (str, match) {
             return match + 'px';
         });
-        ret[hyphen(i)] = value;
+        ret[camel(i)] = value;
     }
     return ret;
 }

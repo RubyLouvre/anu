@@ -79,11 +79,12 @@ let utils = {
                 return 'Click';
             }
         }
-        if (nodeName == 'input' && eventName == 'Change') {
-            if (buildType === 'ali') {
-                return 'Input';
-            } else if (buildType === 'wx') {
-                return 'Input';
+
+        if ( eventName === 'Change') {
+            if (nodeName === 'input' || nodeName === 'textarea'  ){
+                if (buildType !== 'quick' ) {
+                    return 'Input';
+                }
             }
         }
         return eventName;
