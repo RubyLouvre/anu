@@ -100,7 +100,7 @@ let visitor = {
                         }
                     });
                     let attributes = [];
-                    if (buildType == 'ali' || buildType == 'wx') {
+                    if (buildType !== 'quick') {
                         attributes.push(
                             utils.createAttribute(
                                 'data-instance-uid',

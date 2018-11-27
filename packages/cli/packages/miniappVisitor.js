@@ -511,14 +511,8 @@ module.exports = {
                         t.jSXExpressionContainer(t.stringLiteral(nodeName))
                     )
                 );
-                if (buildType == "ali" || buildType == "wx") {
-                    /*  var varString = `var a = 'i${astPath.node.start}' ${
-                        modules.indexArr
-                            ? "+" + modules.indexArr.join("+'-'+")
-                            : ""
-                    }`;
-                    var expr = template(varString)();
-                  */
+                if (buildType != 'quick') {
+                   
                     attributes.push(
                         utils.createAttribute(
                             "data-instance-uid",
@@ -527,21 +521,10 @@ module.exports = {
                                 astPath,
                                 modules.indexArr || ["0"]
                             )
-                            //  t.jSXExpressionContainer(expr.declarations[0].init)
                         )
                     );
                 }
 
-                /*  if (modules.indexArr) {
-                    attributes.push(
-                        utils.createAttribute(
-                            "$$index",
-                            t.jSXExpressionContainer(
-                                t.identifier(modules.indexArr.join("+'-'+"))
-                            )
-                        )
-                    );
-                }*/
             } else {
                 if (nodeName != "React.useComponent") {
                     helpers.nodeName(astPath, modules);

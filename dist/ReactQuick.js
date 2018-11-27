@@ -1169,6 +1169,138 @@ function chooseImage(_ref) {
   });
 }
 
+function createRouter(name) {
+    return function (obj) {
+        var router = require('@system.router');
+        var params = {};
+        var href = obj.url || obj.uri || '';
+        var uri = href.slice(href.indexOf('/pages') + 1);
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('=').forEach(function (k, v) {
+                params[k] = v;
+            });
+            return '';
+        }).replace(/\/index$/, '');
+        if (uri.charAt(0) !== '/') {
+            uri = '/' + uri;
+        }
+        router[name]({
+            uri: uri,
+            params: params
+        });
+    };
+}
+var api = {
+    showModal: function showModal(obj) {
+        obj.showCancel = obj.showCancel === false ? false : true;
+        var buttons = [{
+            text: obj.confirmText,
+            color: obj.confirmColor
+        }];
+        if (obj.showCancel) {
+            buttons.push({
+                text: obj.cancelText,
+                color: obj.cancelColor
+            });
+        }
+        obj.buttons = obj.confirmText ? buttons : [];
+        obj.message = obj.content;
+        delete obj.content;
+        var fn = obj['success'];
+        obj['success'] = function (res) {
+            res.confirm = !res.index;
+            fn && fn(res);
+        };
+        var prompt = require('@system.prompt');
+        prompt.showDialog(obj);
+    },
+    showToast: function showToast(obj) {
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = obj.duration / 1000;
+        prompt.showToast(obj);
+    },
+    hideToast: noop,
+    showActionSheet: function showActionSheet(obj) {
+        var prompt = require('@system.prompt');
+        prompt.showContextMenu(obj);
+    },
+    showLoading: function showLoading(obj) {
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = 1;
+        prompt.showToast(obj);
+    },
+    hideLoading: noop,
+    navigateTo: createRouter('push'),
+    redirectTo: createRouter('replace'),
+    navigateBack: createRouter('back'),
+    vibrateLong: function vibrateLong() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    vibrateShort: function vibrateShort() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    share: function share(obj) {
+        var share = require('@system.share');
+        share.share(obj);
+    },
+    uploadFile: uploadFile,
+    downloadFile: downloadFile,
+    request: request,
+    scanCode: function scanCode(_ref) {
+        var success = _ref.success,
+            fail = _ref.fail,
+            complete = _ref.complete;
+        var barcode = require('@system.barcode');
+        barcode.scan({
+            success: success,
+            fail: fail,
+            cancel: fail,
+            complete: complete
+        });
+    },
+    setStorage: setStorage,
+    getStorage: getStorage,
+    removeStorage: removeStorage,
+    clearStorage: clearStorage,
+    setStorageSync: setStorageSync,
+    getStorageSync: getStorageSync,
+    removeStorageSync: removeStorageSync,
+    clearStorageSync: clearStorageSync,
+    getSavedFileInfo: getSavedFileInfo,
+    getSavedFileList: getSavedFileList,
+    removeSavedFile: removeSavedFile,
+    saveFile: saveFile,
+    setClipboardData: setClipboardData,
+    getClipboardData: getClipboardData,
+    getLocation: function getLocation(obj) {
+        var geolocation = require('@system.geolocation');
+        geolocation.getLocation(obj);
+    },
+    getNetworkType: getNetworkType,
+    onNetworkStatusChange: onNetworkStatusChange,
+    getSystemInfo: getSystemInfo,
+    chooseImage: chooseImage,
+    setNavigationBarTitle: function setNavigationBarTitle(_ref2) {
+        var title = _ref2.title,
+            success = _ref2.success,
+            fail = _ref2.fail,
+            complete = _ref2.complete;
+        try {
+            var currentPage = _getApp().page;
+            currentPage.wx.$page.setTitleBar({ text: title });
+            runFunction(success);
+        } catch (error) {
+            runFunction(fail, error);
+        } finally {
+            runFunction(complete);
+        }
+    }
+};
+
 function UpdateQueue() {
     return {
         pendingStates: [],
@@ -2327,15 +2459,15 @@ function getContainer(p) {
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
-    var n = name.charAt(0) == 'o' ? 2 : 5;
+    var n = name.charAt(0) == "o" ? 2 : 5;
     var type = toLowerCase(name.slice(n));
-    var eventCode = props['data-' + type + '-uid'];
-    return eventCode + (key != null ? '-' + key : '');
+    var eventCode = props["data-" + type + "-uid"];
+    return eventCode + (key != null ? "-" + key : "");
 }
 function getEventHashCode2(name, props) {
-    var n = name.charAt(0) == 'o' ? 2 : 5;
+    var n = name.charAt(0) == "o" ? 2 : 5;
     var type = toLowerCase(name.slice(n));
-    return props['data-' + type + '-uid'];
+    return props["data-" + type + "-uid"];
 }
 function getCurrentPage() {
     return _getApp().page;
@@ -2345,8 +2477,8 @@ var Renderer$1 = createRenderer({
     updateAttribute: function updateAttribute(fiber) {
         var props = fiber.props,
             lastProps = fiber.lastProps;
-        var classId = props['data-class-uid'];
-        var beaconId = props['data-beacon-uid'];
+        var classId = props["data-class-uid"];
+        var beaconId = props["data-beacon-uid"];
         var instance = fiber._owner;
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
@@ -2356,26 +2488,26 @@ var Renderer$1 = createRenderer({
             if (classId) {
                 for (var name in props) {
                     if (onEvent.test(name) && isFn(props[name])) {
-                        var code = getEventHashCode(name, props, props['data-key']);
-                        cached[code] = props[name];
-                        cached[code + 'Fiber'] = fiber;
+                        var _code = getEventHashCode(name, props, props["data-key"]);
+                        cached[_code] = props[name];
+                        cached[_code + "Fiber"] = fiber;
                     }
                 }
                 if (lastProps) {
                     for (var _name in lastProps) {
                         if (onEvent.test(_name) && !props[_name]) {
-                            code = getEventHashCode(_name, lastProps, lastProps['data-key']);
-                            delete cached[code];
-                            delete cached[code + 'Fiber'];
+                            var _code2 = getEventHashCode(_name, lastProps, lastProps["data-key"]);
+                            delete cached[_code2];
+                            delete cached[_code2 + "Fiber"];
                         }
                     }
                 }
             } else if (beaconId) {
                 for (var _name2 in props) {
                     if (onEvent.test(_name2) && isFn(props[_name2])) {
-                        var code = getEventHashCode2(_name2, props);
-                        cached[code] = props[_name2];
-                        cached[code + 'Fiber'] = fiber;
+                        var _code3 = getEventHashCode2(_name2, props);
+                        cached[_code3] = props[_name2];
+                        cached[_code3 + "Fiber"] = fiber;
                     }
                 }
                 if (lastProps) {
@@ -2383,7 +2515,7 @@ var Renderer$1 = createRenderer({
                         if (onEvent.test(_name3) && !props[_name3]) {
                             code = getEventHashCode2(_name3, lastProps);
                             delete cached[code];
-                            delete cached[code + 'Fiber'];
+                            delete cached[code + "Fiber"];
                         }
                     }
                 }
@@ -2392,42 +2524,6 @@ var Renderer$1 = createRenderer({
     },
     updateContent: function updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
-    },
-    onBeforeRender: function onBeforeRender(fiber) {
-        var type = fiber.type;
-        var instance = fiber.stateNode;
-        var noMount = !fiber.hasMounted;
-        if (type.reactInstances) {
-            var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
-            instance.instanceUid = uuid;
-            if (fiber.props.isPageComponent) {
-                _getApp().page = instance;
-            }
-            var wxInstances = type.wxInstances;
-            if (wxInstances) {
-                if (!type.ali) {
-                    for (var i = wxInstances.length - 1; i >= 0; i--) {
-                        var el = wxInstances[i];
-                        if (el.dataset.instanceUid === uuid) {
-                            el.reactInstance = instance;
-                            instance.wx = el;
-                            wxInstances.splice(i, 1);
-                            break;
-                        }
-                    }
-                }
-                if (!instance.wx) {
-                    type.reactInstances.push(instance);
-                }
-            }
-        }
-        if (!pageState.isReady && noMount && instance.componentDidMount) {
-            delayMounts.push({
-                instance: instance,
-                fn: instance.componentDidMount
-            });
-            instance.componentDidMount = noop;
-        }
     },
     onAfterRender: function onAfterRender(fiber) {
         updateMiniApp(fiber.stateNode);
@@ -2498,137 +2594,39 @@ function remove(children, node) {
     }
 }
 
-function createRouter(name) {
-    return function (obj) {
-        var router = require('@system.router');
-        var params = {};
-        var href = obj.url || obj.uri || '';
-        var uri = href.slice(href.indexOf('/pages') + 1);
-        uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('=').forEach(function (k, v) {
-                params[k] = v;
-            });
-            return '';
-        }).replace(/\/index$/, '');
-        if (uri.charAt(0) !== '/') {
-            uri = '/' + uri;
+function onBeforeRender(fiber) {
+    var type = fiber.type;
+    var instance = fiber.stateNode;
+    if (type.reactInstances) {
+        var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
+        instance.instanceUid = uuid;
+        if (fiber.props.isPageComponent) {
+            _getApp().page = instance;
         }
-        router[name]({
-            uri: uri,
-            params: params
-        });
-    };
-}
-var api = {
-    showModal: function showModal(obj) {
-        obj.showCancel = obj.showCancel === false ? false : true;
-        var buttons = [{
-            text: obj.confirmText,
-            color: obj.confirmColor
-        }];
-        if (obj.showCancel) {
-            buttons.push({
-                text: obj.cancelText,
-                color: obj.cancelColor
-            });
-        }
-        obj.buttons = obj.confirmText ? buttons : [];
-        obj.message = obj.content;
-        delete obj.content;
-        var fn = obj['success'];
-        obj['success'] = function (res) {
-            res.confirm = !res.index;
-            fn && fn(res);
-        };
-        var prompt = require('@system.prompt');
-        prompt.showDialog(obj);
-    },
-    showToast: function showToast(obj) {
-        var prompt = require('@system.prompt');
-        obj.message = obj.title;
-        obj.duration = obj.duration / 1000;
-        prompt.showToast(obj);
-    },
-    hideToast: noop,
-    showActionSheet: function showActionSheet(obj) {
-        var prompt = require('@system.prompt');
-        prompt.showContextMenu(obj);
-    },
-    showLoading: function showLoading(obj) {
-        var prompt = require('@system.prompt');
-        obj.message = obj.title;
-        obj.duration = 1;
-        prompt.showToast(obj);
-    },
-    hideLoading: noop,
-    navigateTo: createRouter('push'),
-    redirectTo: createRouter('replace'),
-    navigateBack: createRouter('back'),
-    vibrateLong: function vibrateLong() {
-        var vibrator = require('@system.vibrator');
-        vibrator.vibrate();
-    },
-    vibrateShort: function vibrateShort() {
-        var vibrator = require('@system.vibrator');
-        vibrator.vibrate();
-    },
-    share: function share(obj) {
-        var share = require('@system.share');
-        share.share(obj);
-    },
-    uploadFile: uploadFile,
-    downloadFile: downloadFile,
-    request: request,
-    scanCode: function scanCode(_ref) {
-        var success = _ref.success,
-            fail = _ref.fail,
-            complete = _ref.complete;
-        var barcode = require('@system.barcode');
-        barcode.scan({
-            success: success,
-            fail: fail,
-            cancel: fail,
-            complete: complete
-        });
-    },
-    setStorage: setStorage,
-    getStorage: getStorage,
-    removeStorage: removeStorage,
-    clearStorage: clearStorage,
-    setStorageSync: setStorageSync,
-    getStorageSync: getStorageSync,
-    removeStorageSync: removeStorageSync,
-    clearStorageSync: clearStorageSync,
-    getSavedFileInfo: getSavedFileInfo,
-    getSavedFileList: getSavedFileList,
-    removeSavedFile: removeSavedFile,
-    saveFile: saveFile,
-    setClipboardData: setClipboardData,
-    getClipboardData: getClipboardData,
-    getLocation: function getLocation(obj) {
-        var geolocation = require('@system.geolocation');
-        geolocation.getLocation(obj);
-    },
-    getNetworkType: getNetworkType,
-    onNetworkStatusChange: onNetworkStatusChange,
-    getSystemInfo: getSystemInfo,
-    chooseImage: chooseImage,
-    setNavigationBarTitle: function setNavigationBarTitle(_ref2) {
-        var title = _ref2.title,
-            success = _ref2.success,
-            fail = _ref2.fail,
-            complete = _ref2.complete;
-        try {
-            var currentPage = getCurrentPage();
-            currentPage.wx.$page.setTitleBar({ text: title });
-            runFunction(success);
-        } catch (error) {
-            runFunction(fail, error);
-        } finally {
-            runFunction(complete);
+        var wxInstances = type.wxInstances;
+        if (wxInstances) {
+            for (var i = wxInstances.length - 1; i >= 0; i--) {
+                var el = wxInstances[i];
+                if (el.dataset.instanceUid === uuid) {
+                    el.reactInstance = instance;
+                    instance.wx = el;
+                    wxInstances.splice(i, 1);
+                    break;
+                }
+            }
+            if (!instance.wx) {
+                type.reactInstances.push(instance);
+            }
         }
     }
-};
+    if (!pageState.isReady && instance.componentDidMount) {
+        delayMounts.push({
+            instance: instance,
+            fn: instance.componentDidMount
+        });
+        instance.componentDidMount = Date;
+    }
+}
 
 var rcamel = /-(\w)/g;
 var rpx = /(\d+)px/g;
@@ -2813,6 +2811,7 @@ function registerPage(PageClass, path) {
     return config;
 }
 
+Renderer$1.onBeforeRender = onBeforeRender;
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {
