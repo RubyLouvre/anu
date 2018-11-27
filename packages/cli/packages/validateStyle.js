@@ -61,6 +61,7 @@ const visitors = {
 
 module.exports = function validateStyle(code) {
     if (config.buildType !== 'quick') return code;
+
     const ast = css.parse(code);
     const rules = ast.stylesheet.rules;
 
@@ -85,10 +86,29 @@ module.exports = function validateStyle(code) {
         )(rule);
     }
 
+    // 验证规则类型 rule/media/keyframe/comment
+    const isType = R.curry(type => R.propEq('type', type));
+
     var extractDeclarationsFromRule = R.cond([
-        [R.propEq('type', 'rule'), R.prop('declarations')],
-        [R.propEq('type', 'media'), extractMediaRules],
-        [R.propEq('type', 'keyframes'), extractKeyframesRules],
+        // 普通规则 .class { font-size: 12px }
+        [isType('rule'), R.prop('declarations')],
+        // 媒体查询 @media (min-width: 700px) { ... }
+        [isType('media'), extractMediaRules],
+        /**
+         * @keyframes slide-in {
+            from {
+                margin-left: 100%;
+                width: 300%;
+            }
+
+            to {
+                margin-left: 0%;
+                width: 100%;
+            }
+            }
+         */
+        [isType('keyframes'), extractKeyframesRules],
+        // 其余任何情况，比如注释
         [R.T, R.always([])]
     ]);
 
@@ -104,15 +124,5 @@ module.exports = function validateStyle(code) {
         }
     });
 
-    // rules.forEach(({ declarations = [] }) => {
-    //     R.filter(R.propEq('type', 'declaration'))(declarations).forEach(
-    //         declaration => {
-    //             replaceRPXtoPX(declaration);
-    //             if (visitors[declaration.property]) {
-    //                 visitors[declaration.property](declaration);
-    //             }
-    //         }
-    //     );
-    // });
     return css.stringify(ast);
 };
