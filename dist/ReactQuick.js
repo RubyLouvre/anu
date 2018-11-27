@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-26
+ * 运行于快应用的React by 司徒正美 Copyright 2018-11-27
  */
 
 var arrayPush = Array.prototype.push;
@@ -40,12 +40,12 @@ function getWindow() {
         if (window) {
             return window;
         }
-    } catch (e) {}
+    } catch (e) {        }
     try {
         if (global) {
             return global;
         }
-    } catch (e) {}
+    } catch (e) {        }
     return fakeWindow;
 }
 function isMounted(instance) {
@@ -71,7 +71,7 @@ function inherit(SubClass, SupClass) {
     function Bridge() {}
     var orig = SubClass.prototype;
     Bridge.prototype = SupClass.prototype;
-    var fn = (SubClass.prototype = new Bridge());
+    var fn = SubClass.prototype = new Bridge();
     extend(fn, orig);
     fn.constructor = SubClass;
     return fn;
@@ -81,20 +81,11 @@ try {
 } catch (e) {}
 var rname = /function\s+(\w+)/;
 function miniCreateClass(ctor, superClass, methods, statics) {
-    var className =
-        ctor.name || (ctor.toString().match(rname) || ['', 'Anonymous'])[1];
-    var Ctor = supportEval
-        ? Function(
-            'superClass',
-            'ctor',
-            'return function ' +
-                  className +
-                  ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }'
-        )(superClass, ctor)
-        : function ReactInstance() {
-            superClass.apply(this, arguments);
-            ctor.apply(this, arguments);
-        };
+    var className = ctor.name || (ctor.toString().match(rname) || ["", "Anonymous"])[1];
+    var Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : function ReactInstance() {
+        superClass.apply(this, arguments);
+        ctor.apply(this, arguments);
+    };
     Ctor.displayName = className;
     var proto = inherit(Ctor, superClass);
     extend(proto, methods);
@@ -151,9 +142,9 @@ var Renderer = {
     fireMiddlewares: function fireMiddlewares(begin) {
         var index = begin ? middlewares.length - 1 : 0,
             delta = begin ? -1 : 1,
-            method = begin ? 'begin' : 'end',
+            method = begin ? "begin" : "end",
             obj = void 0;
-        while ((obj = middlewares[index])) {
+        while (obj = middlewares[index]) {
             obj[method]();
             index += delta;
         }
@@ -176,11 +167,11 @@ function Component(props, context) {
 Component.prototype = {
     constructor: Component,
     replaceState: function replaceState() {
-        toWarnDev('replaceState', true);
+        toWarnDev("replaceState", true);
     },
     isReactComponent: returnTrue,
     isMounted: function isMounted$$1() {
-        toWarnDev('isMounted', true);
+        toWarnDev("isMounted", true);
         return this.updater.isMounted(this);
     },
     setState: function setState(state, cb) {
@@ -190,23 +181,11 @@ Component.prototype = {
         this.updater.enqueueSetState(this, true, cb);
     },
     render: function render() {
-        throw 'must implement render';
+        throw "must implement render";
     }
 };
 
-var _typeof =
-    typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
-        ? function(obj) {
-            return typeof obj;
-        }
-        : function(obj) {
-            return obj &&
-                  typeof Symbol === 'function' &&
-                  obj.constructor === Symbol &&
-                  obj !== Symbol.prototype
-                ? 'symbol'
-                : typeof obj;
-        };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var RESERVED_PROPS = {
     key: true,
     ref: true,
@@ -217,10 +196,7 @@ function makeProps(type, config, props, children, len) {
     var defaultProps = void 0,
         propName = void 0;
     for (propName in config) {
-        if (
-            hasOwnProperty.call(config, propName) &&
-            !RESERVED_PROPS.hasOwnProperty(propName)
-        ) {
+        if (hasOwnProperty.call(config, propName) && !RESERVED_PROPS.hasOwnProperty(propName)) {
             props[propName] = config[propName];
         }
     }
@@ -246,13 +222,7 @@ function hasValidKey(config) {
     return config.key !== undefined;
 }
 function createElement(type, config) {
-    for (
-        var _len = arguments.length,
-            children = Array(_len > 2 ? _len - 2 : 0),
-            _key = 2;
-        _key < _len;
-        _key++
-    ) {
+    for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
         children[_key - 2] = arguments[_key];
     }
     var props = {},
@@ -283,13 +253,7 @@ function cloneElement(element, config) {
     var ref = element.ref;
     var tag = element.tag;
     var owner = element._owner;
-    for (
-        var _len2 = arguments.length,
-            children = Array(_len2 > 2 ? _len2 - 2 : 0),
-            _key2 = 2;
-        _key2 < _len2;
-        _key2++
-    ) {
+    for (var _len2 = arguments.length, children = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
         children[_key2 - 2] = arguments[_key2];
     }
     var argsLen = children.length;
@@ -320,13 +284,7 @@ function ReactElement(type, tag, props, key, ref, owner) {
         ret.$$typeof = REACT_ELEMENT_TYPE;
         ret.key = key || null;
         var refType = typeNumber(ref);
-        if (
-            refType === 2 ||
-            refType === 3 ||
-            refType === 4 ||
-            refType === 5 ||
-            refType === 8
-        ) {
+        if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
             if (refType < 4) {
                 ref += '';
             }
@@ -350,7 +308,7 @@ function escape(key) {
         '=': '=0',
         ':': '=2'
     };
-    var escapedString = ('' + key).replace(escapeRegex, function(match) {
+    var escapedString = ('' + key).replace(escapeRegex, function (match) {
         return escaperLookup[match];
     });
     return '$' + escapedString;
@@ -388,16 +346,10 @@ function fiberizeChildren(children, fiber) {
         traverseAllChildren(children, '', flattenCb);
     }
     flattenIndex = 0;
-    return (fiber.children = flattenObject);
+    return fiber.children = flattenObject;
 }
 function getComponentKey(component, index) {
-    if (
-        (typeof component === 'undefined'
-            ? 'undefined'
-            : _typeof(component)) === 'object' &&
-        component !== null &&
-        component.key != null
-    ) {
+    if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
         return escape(component.key);
     }
     return index.toString(36);
@@ -431,28 +383,16 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
             break;
     }
     if (invokeCallback) {
-        callback(
-            bookKeeping,
-            children,
-            nameSoFar === ''
-                ? SEPARATOR + getComponentKey(children, 0)
-                : nameSoFar,
-            childType
-        );
+        callback(bookKeeping, children,
+        nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
         return 1;
     }
     var subtreeCount = 0;
-    var nextNamePrefix =
-        nameSoFar === '' ? SEPARATOR : nameSoFar + SUBSEPARATOR;
+    var nextNamePrefix = nameSoFar === '' ? SEPARATOR : nameSoFar + SUBSEPARATOR;
     if (children.forEach) {
-        children.forEach(function(child, i) {
+        children.forEach(function (child, i) {
             var nextName = nextNamePrefix + getComponentKey(child, i);
-            subtreeCount += traverseAllChildren(
-                child,
-                nextName,
-                callback,
-                bookKeeping
-            );
+            subtreeCount += traverseAllChildren(child, nextName, callback, bookKeeping);
         });
         return subtreeCount;
     }
@@ -466,12 +406,7 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
         while (!(step = iterator.next()).done) {
             child = step.value;
             nextName = nextNamePrefix + getComponentKey(child, ii++);
-            subtreeCount += traverseAllChildren(
-                child,
-                nextName,
-                callback,
-                bookKeeping
-            );
+            subtreeCount += traverseAllChildren(child, nextName, callback, bookKeeping);
         }
         return subtreeCount;
     }
@@ -480,7 +415,7 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
 var REAL_SYMBOL = hasSymbol && Symbol.iterator;
 var FAKE_SYMBOL = '@@iterator';
 function getIteractor(a) {
-    var iteratorFn = (REAL_SYMBOL && a[REAL_SYMBOL]) || a[FAKE_SYMBOL];
+    var iteratorFn = REAL_SYMBOL && a[REAL_SYMBOL] || a[FAKE_SYMBOL];
     if (iteratorFn && iteratorFn.call) {
         return iteratorFn;
     }
@@ -491,13 +426,13 @@ var Children = {
         if (isValidElement(children)) {
             return children;
         }
-        throw new Error('expect only one child');
+        throw new Error("expect only one child");
     },
     count: function count(children) {
         if (children == null) {
             return 0;
         }
-        return traverseAllChildren(children, '', noop);
+        return traverseAllChildren(children, "", noop);
     },
     map: function map(children, func, context) {
         return proxyIt(children, func, [], context);
@@ -520,11 +455,11 @@ function K(el) {
     return el;
 }
 function mapChildren(children, prefix, func, result, context) {
-    var keyPrefix = '';
+    var keyPrefix = "";
     if (prefix != null) {
-        keyPrefix = escapeUserProvidedKey(prefix) + '/';
+        keyPrefix = escapeUserProvidedKey(prefix) + "/";
     }
-    traverseAllChildren(children, '', traverseCallback, {
+    traverseAllChildren(children, "", traverseCallback, {
         context: context,
         keyPrefix: keyPrefix,
         func: func,
@@ -534,7 +469,7 @@ function mapChildren(children, prefix, func, result, context) {
 }
 var userProvidedKeyEscapeRegex = /\/+/g;
 function escapeUserProvidedKey(text) {
-    return ('' + text).replace(userProvidedKeyEscapeRegex, '$&/');
+    return ("" + text).replace(userProvidedKeyEscapeRegex, "$&/");
 }
 function traverseCallback(bookKeeping, child, childKey) {
     var result = bookKeeping.result,
@@ -550,12 +485,7 @@ function traverseCallback(bookKeeping, child, childKey) {
     } else if (mappedChild != null) {
         if (isValidElement(mappedChild)) {
             mappedChild = extend({}, mappedChild);
-            mappedChild.key =
-                keyPrefix +
-                (mappedChild.key && (!child || child.key !== mappedChild.key)
-                    ? escapeUserProvidedKey(mappedChild.key) + '/'
-                    : '') +
-                childKey;
+            mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + "/" : "") + childKey;
         }
         result.push(mappedChild);
     }
@@ -596,41 +526,28 @@ function shallowEqual(objA, objB) {
         return false;
     }
     for (var i = 0; i < keysA.length; i++) {
-        if (
-            !hasOwnProperty.call(objB, keysA[i]) ||
-            !Object.is(objA[keysA[i]], objB[keysA[i]])
-        ) {
+        if (!hasOwnProperty.call(objB, keysA[i]) || !Object.is(objA[keysA[i]], objB[keysA[i]])) {
             return false;
         }
     }
     return true;
 }
 
-var PureComponent = miniCreateClass(
-    function PureComponent() {
-        this.isPureComponent = true;
-    },
-    Component,
-    {
-        shouldComponentUpdate: function shouldComponentUpdate(
-            nextProps,
-            nextState
-        ) {
-            var a = shallowEqual(this.props, nextProps);
-            var b = shallowEqual(this.state, nextState);
-            return !a || !b;
-        }
+var PureComponent = miniCreateClass(function PureComponent() {
+    this.isPureComponent = true;
+}, Component, {
+    shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
+        var a = shallowEqual(this.props, nextProps);
+        var b = shallowEqual(this.state, nextState);
+        return !a || !b;
     }
-);
+});
 
 function AnuPortal(props) {
     return props.children;
 }
 function createPortal(children, parent) {
-    var child = createElement(AnuPortal, {
-        children: children,
-        parent: parent
-    });
+    var child = createElement(AnuPortal, { children: children, parent: parent });
     child.isPortal = true;
     return child;
 }
@@ -675,7 +592,7 @@ function dispatchEvent(e) {
         nodeName: target._nodeName,
         value: e.value
     };
-    Renderer.batchedUpdates(function() {
+    Renderer.batchedUpdates(function () {
         try {
             var fn = instance.$$eventCached[eventUid];
             fn && fn.call(instance, createEvent(e, safeTarget, eventType));
@@ -707,19 +624,7 @@ function createEvent(e, target, type) {
     return event;
 }
 
-var _typeof$1 =
-    typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
-        ? function(obj) {
-            return typeof obj;
-        }
-        : function(obj) {
-            return obj &&
-                  typeof Symbol === 'function' &&
-                  obj.constructor === Symbol &&
-                  obj !== Symbol.prototype
-                ? 'symbol'
-                : typeof obj;
-        };
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function _uuid() {
     return (Math.random() + '').slice(-4);
 }
@@ -745,7 +650,7 @@ var pageState = {
     isReady: false
 };
 function _getCurrentPages() {
-    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
     if (typeof getCurrentPages === 'function') {
         return getCurrentPages();
     }
@@ -774,54 +679,34 @@ function updateQuickApp(quick, data) {
     }
 }
 function isReferenceType(val) {
-    return (
-        val &&
-        ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) ===
-            'object' ||
-            Object.prototype.toString.call(val) === '[object Array]')
-    );
+    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
 }
 function runFunction(fn) {
     if (typeof fn == 'function') {
-        for (
-            var _len = arguments.length,
-                args = Array(_len > 1 ? _len - 1 : 0),
-                _key = 1;
-            _key < _len;
-            _key++
-        ) {
+        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
             args[_key - 1] = arguments[_key];
         }
         fn.call.apply(fn, [null].concat(args));
     }
 }
 function functionCount() {
-    for (
-        var _len2 = arguments.length, fns = Array(_len2), _key2 = 0;
-        _key2 < _len2;
-        _key2++
-    ) {
+    for (var _len2 = arguments.length, fns = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
         fns[_key2] = arguments[_key2];
     }
-    return fns
-        .map(function(fn) {
-            return typeof fn === 'function';
-        })
-        .reduce(function(count, fn) {
-            return count + fn;
-        }, 0);
+    return fns.map(function (fn) {
+        return typeof fn === 'function';
+    }).reduce(function (count, fn) {
+        return count + fn;
+    }, 0);
 }
 function apiRunner() {
-    var arg =
-        arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var arg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var apiCallback = arguments[1];
     var apiPromise = arguments[2];
     var success = arg.success,
         fail = arg.fail,
         complete = arg.complete;
-    var handler = functionCount(success, fail, complete)
-        ? apiCallback
-        : apiPromise;
+    var handler = functionCount(success, fail, complete) ? apiCallback : apiPromise;
     arg.success = arg.success || noop;
     arg.fail = arg.fail || noop;
     arg.complete = arg.complete || noop;
@@ -859,455 +744,429 @@ function toRenderProps() {
 var fetch = require('@system.fetch');
 var JSON_TYPE_STRING = 'json';
 function requestCallback(_ref) {
-    var url = _ref.url,
-        data = _ref.data,
-        header = _ref.header,
-        method = _ref.method,
-        _ref$dataType = _ref.dataType,
-        dataType =
-            _ref$dataType === undefined ? JSON_TYPE_STRING : _ref$dataType,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    function onFetchSuccess(_ref2) {
-        var statusCode = _ref2.code,
-            data = _ref2.data,
-            headers = _ref2.header;
-        if (dataType === JSON_TYPE_STRING) {
-            try {
-                data = JSON.parse(data);
-            } catch (error) {
-                runFunction(fail, error);
-            }
-        }
-        success({
-            statusCode: statusCode,
-            data: data,
-            headers: headers
-        });
+  var url = _ref.url,
+      data = _ref.data,
+      header = _ref.header,
+      method = _ref.method,
+      _ref$dataType = _ref.dataType,
+      dataType = _ref$dataType === undefined ? JSON_TYPE_STRING : _ref$dataType,
+      success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  function onFetchSuccess(_ref2) {
+    var statusCode = _ref2.code,
+        data = _ref2.data,
+        headers = _ref2.header;
+    if (dataType === JSON_TYPE_STRING) {
+      try {
+        data = JSON.parse(data);
+      } catch (error) {
+        runFunction(fail, error);
+      }
     }
-    fetch.fetch({
-        url: url,
-        data: data,
-        header: header,
-        method: method,
-        success: onFetchSuccess,
-        fail: fail,
-        complete: complete
+    success({
+      statusCode: statusCode,
+      data: data,
+      headers: headers
     });
+  }
+  fetch.fetch({
+    url: url,
+    data: data,
+    header: header,
+    method: method,
+    success: onFetchSuccess,
+    fail: fail,
+    complete: complete
+  });
 }
 function requestPromise(_ref3) {
-    var url = _ref3.url,
-        data = _ref3.data,
-        header = _ref3.header,
-        method = _ref3.method,
-        _ref3$dataType = _ref3.dataType,
-        dataType =
-            _ref3$dataType === undefined ? JSON_TYPE_STRING : _ref3$dataType,
-        complete = _ref3.complete;
-    return new Promise(function(resolve, reject) {
-        function onFetchSuccess(_ref4) {
-            var statusCode = _ref4.code,
-                data = _ref4.data,
-                headers = _ref4.header;
-            if (dataType === JSON_TYPE_STRING) {
-                try {
-                    data = JSON.parse(data);
-                } catch (error) {
-                    reject(error);
-                }
-            }
-            resolve({
-                statusCode: statusCode,
-                data: data,
-                headers: headers
-            });
+  var url = _ref3.url,
+      data = _ref3.data,
+      header = _ref3.header,
+      method = _ref3.method,
+      _ref3$dataType = _ref3.dataType,
+      dataType = _ref3$dataType === undefined ? JSON_TYPE_STRING : _ref3$dataType,
+      complete = _ref3.complete;
+  return new Promise(function (resolve, reject) {
+    function onFetchSuccess(_ref4) {
+      var statusCode = _ref4.code,
+          data = _ref4.data,
+          headers = _ref4.header;
+      if (dataType === JSON_TYPE_STRING) {
+        try {
+          data = JSON.parse(data);
+        } catch (error) {
+          reject(error);
         }
-        fetch.fetch({
-            url: url,
-            data: data,
-            header: header,
-            method: method,
-            success: onFetchSuccess,
-            fail: function fail(error) {
-                return reject(error);
-            },
-            complete: complete
-        });
+      }
+      resolve({
+        statusCode: statusCode,
+        data: data,
+        headers: headers
+      });
+    }
+    fetch.fetch({
+      url: url,
+      data: data,
+      header: header,
+      method: method,
+      success: onFetchSuccess,
+      fail: function fail(error) {
+        return reject(error);
+      },
+      complete: complete
     });
+  });
 }
 function request(opt) {
-    return apiRunner(opt, requestCallback, requestPromise);
+  return apiRunner(opt, requestCallback, requestPromise);
 }
 
 var request$1 = require('@system.request');
 var HTTP_OK_CODE = 200;
 function uploadFile(_ref) {
-    var url = _ref.url,
-        filePath = _ref.filePath,
-        name = _ref.name,
-        header = _ref.header,
-        formData = _ref.formData,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    var data = [];
-    Object.keys(formData).map(function(key) {
-        var value = formData[key];
-        var item = {
-            value: value,
-            name: key
-        };
-        data.push(item);
+  var url = _ref.url,
+      filePath = _ref.filePath,
+      name = _ref.name,
+      header = _ref.header,
+      formData = _ref.formData,
+      success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  var data = [];
+  Object.keys(formData).map(function (key) {
+    var value = formData[key];
+    var item = {
+      value: value,
+      name: key
+    };
+    data.push(item);
+  });
+  function successForMi(_ref2) {
+    var statusCode = _ref2.code,
+        data = _ref2.data;
+    success({
+      statusCode: statusCode,
+      data: data
     });
-    function successForMi(_ref2) {
-        var statusCode = _ref2.code,
-            data = _ref2.data;
-        success({
-            statusCode: statusCode,
-            data: data
-        });
-    }
-    request$1.upload({
-        url: url,
-        header: header,
-        data: data,
-        files: [{ uri: filePath, name: name }],
-        success: successForMi,
-        fail: fail,
-        complete: complete
-    });
+  }
+  request$1.upload({
+    url: url,
+    header: header,
+    data: data,
+    files: [{ uri: filePath, name: name }],
+    success: successForMi,
+    fail: fail,
+    complete: complete
+  });
 }
 function downloadFile(_ref3) {
-    var url = _ref3.url,
-        header = _ref3.header,
-        success = _ref3.success,
-        fail = _ref3.fail,
-        complete = _ref3.complete;
-    function downloadSuccess(_ref4) {
-        var tempFilePath = _ref4.uri;
-        success({
-            statusCode: HTTP_OK_CODE,
-            tempFilePath: tempFilePath
-        });
-    }
-    function downloadTaskStarted(_ref5) {
-        var token = _ref5.token;
-        request$1.onDownloadComplete({
-            token: token,
-            success: downloadSuccess,
-            fail: fail,
-            complete: complete
-        });
-    }
-    request$1.download({
-        url: url,
-        header: header,
-        success: downloadTaskStarted,
-        fail: fail,
-        complete: complete
+  var url = _ref3.url,
+      header = _ref3.header,
+      success = _ref3.success,
+      fail = _ref3.fail,
+      complete = _ref3.complete;
+  function downloadSuccess(_ref4) {
+    var tempFilePath = _ref4.uri;
+    success({
+      statusCode: HTTP_OK_CODE,
+      tempFilePath: tempFilePath
     });
+  }
+  function downloadTaskStarted(_ref5) {
+    var token = _ref5.token;
+    request$1.onDownloadComplete({
+      token: token,
+      success: downloadSuccess,
+      fail: fail,
+      complete: complete
+    });
+  }
+  request$1.download({
+    url: url,
+    header: header,
+    success: downloadTaskStarted,
+    fail: fail,
+    complete: complete
+  });
 }
 
-var _typeof$2 =
-    typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
-        ? function(obj) {
-            return typeof obj;
-        }
-        : function(obj) {
-            return obj &&
-                  typeof Symbol === 'function' &&
-                  obj.constructor === Symbol &&
-                  obj !== Symbol.prototype
-                ? 'symbol'
-                : typeof obj;
-        };
+var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
 function setStorage(_ref) {
-    var key = _ref.key,
-        data = _ref.data,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    var value = data;
-    if (
-        (typeof value === 'undefined' ? 'undefined' : _typeof$2(value)) ===
-        'object'
-    ) {
-        try {
-            value = JSON.stringify(value);
-        } catch (error) {
-            runFunction(fail, error);
-        }
+  var key = _ref.key,
+      data = _ref.data,
+      success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  var value = data;
+  if ((typeof value === 'undefined' ? 'undefined' : _typeof$2(value)) === 'object') {
+    try {
+      value = JSON.stringify(value);
+    } catch (error) {
+      runFunction(fail, error);
     }
-    storage.set({
-        key: key,
-        value: value,
-        success: success,
-        fail: fail,
-        complete: complete
-    });
+  }
+  storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
 }
 function getStorage(_ref2) {
-    var key = _ref2.key,
-        success = _ref2.success,
-        fail = _ref2.fail,
-        complete = _ref2.complete;
-    function dataObj(data) {
-        try {
-            data = JSON.parse(data);
-        } catch (e) {}
-        success({
-            data: data
-        });
-    }
-    storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
+  var key = _ref2.key,
+      success = _ref2.success,
+      fail = _ref2.fail,
+      complete = _ref2.complete;
+  function dataObj(data) {
+    try {
+      data = JSON.parse(data);
+    } catch (e) {}
+    success({
+      data: data
+    });
+  }
+  storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
 }
 function removeStorage(obj) {
-    storage.delete(obj);
+  storage.delete(obj);
 }
 function clearStorage(obj) {
-    storage.clear(obj);
+  storage.clear(obj);
 }
 var storageCache = {};
 function setStorageSync(key, value) {
-    return (storageCache[key] = value);
+  return storageCache[key] = value;
 }
 function getStorageSync(key) {
-    return storageCache[key];
+  return storageCache[key];
 }
 function removeStorageSync(key) {
-    delete storageCache[key];
+  delete storageCache[key];
 }
 function clearStorageSync(key) {
-    storageCache = {};
+  storageCache = {};
 }
 
 var file = require('@system.file');
 var SUCCESS_MESSAGE = 'ok';
 function getSavedFileInfo(_ref) {
-    var uri = _ref.filePath,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    function gotFile(_ref2) {
-        var length = _ref2.length,
-            lastModifiedTime = _ref2.lastModifiedTime;
-        success({
-            errMsg: SUCCESS_MESSAGE,
-            size: length,
-            createTime: lastModifiedTime
-        });
-    }
-    file.get({
-        uri: uri,
-        success: gotFile,
-        fail: fail,
-        complete: complete
+  var uri = _ref.filePath,
+      success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  function gotFile(_ref2) {
+    var length = _ref2.length,
+        lastModifiedTime = _ref2.lastModifiedTime;
+    success({
+      errMsg: SUCCESS_MESSAGE,
+      size: length,
+      createTime: lastModifiedTime
     });
+  }
+  file.get({
+    uri: uri,
+    success: gotFile,
+    fail: fail,
+    complete: complete
+  });
 }
 function getSavedFileList(_ref3) {
-    var uri = _ref3.uri,
-        success = _ref3.success,
-        fali = _ref3.fali,
-        complete = _ref3.complete;
-    if (!uri) {
-        runFunction(fail, new Error('小米需要指定目录'));
-    }
-    function gotFileList(fileList) {
-        var newFileList = fileList.map(function(item) {
-            return {
-                fileList: item.uri,
-                size: item.length,
-                createTime: item.lastModifiedTime
-            };
-        });
-        success({
-            fileList: newFileList,
-            errMsg: SUCCESS_MESSAGE
-        });
-    }
-    file.list({
-        uri: uri,
-        success: gotFileList,
-        fali: fali,
-        complete: complete
+  var uri = _ref3.uri,
+      success = _ref3.success,
+      fali = _ref3.fali,
+      complete = _ref3.complete;
+  if (!uri) {
+    runFunction(fail, new Error('小米需要指定目录'));
+  }
+  function gotFileList(fileList) {
+    var newFileList = fileList.map(function (item) {
+      return {
+        fileList: item.uri,
+        size: item.length,
+        createTime: item.lastModifiedTime
+      };
     });
+    success({
+      fileList: newFileList,
+      errMsg: SUCCESS_MESSAGE
+    });
+  }
+  file.list({
+    uri: uri,
+    success: gotFileList,
+    fali: fali,
+    complete: complete
+  });
 }
 function removeSavedFile(_ref4) {
-    var uri = _ref4.filePath,
-        success = _ref4.success,
-        fail = _ref4.fail,
-        complete = _ref4.complete;
-    file.delete({
-        uri: uri,
-        success: success,
-        fail: fail,
-        complete: complete
-    });
+  var uri = _ref4.filePath,
+      success = _ref4.success,
+      fail = _ref4.fail,
+      complete = _ref4.complete;
+  file.delete({
+    uri: uri,
+    success: success,
+    fail: fail,
+    complete: complete
+  });
 }
 function saveFile(_ref5) {
-    var srcUri = _ref5.tempFilePath,
-        dstUri = _ref5.destinationFilePath,
-        success = _ref5.success,
-        fail = _ref5.fail,
-        complete = _ref5.complete;
-    if (!dstUri) {
-        runFunction(fail, new Error('小米需要指定需要指定目标路径'));
-    }
-    function gotSuccess(uri) {
-        success({
-            savedFilePath: uri
-        });
-    }
-    file.move({
-        srcUri: srcUri,
-        dstUri: dstUri,
-        success: gotSuccess,
-        fail: fail,
-        complete: complete
+  var srcUri = _ref5.tempFilePath,
+      dstUri = _ref5.destinationFilePath,
+      success = _ref5.success,
+      fail = _ref5.fail,
+      complete = _ref5.complete;
+  if (!dstUri) {
+    runFunction(fail, new Error('小米需要指定需要指定目标路径'));
+  }
+  function gotSuccess(uri) {
+    success({
+      savedFilePath: uri
     });
+  }
+  file.move({
+    srcUri: srcUri,
+    dstUri: dstUri,
+    success: gotSuccess,
+    fail: fail,
+    complete: complete
+  });
 }
 
 var clipboard = require('@system.clipboard');
 function setClipboardData(_ref) {
-    var text = _ref.data,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    clipboard.set({
-        text: text,
-        success: success || noop,
-        fail: fail || noop,
-        complete: complete || noop
-    });
+  var text = _ref.data,
+      success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  clipboard.set({
+    text: text,
+    success: success || noop,
+    fail: fail || noop,
+    complete: complete || noop
+  });
 }
 function getClipboardData(_ref2) {
-    var success = _ref2.success,
-        fail = _ref2.fail,
-        complete = _ref2.complete;
-    function gotSuccess(_ref3) {
-        var data = _ref3.text;
-        success({
-            data: data
-        });
-    }
-    clipboard.get({
-        success: gotSuccess,
-        fail: fail || noop,
-        complete: complete || noop
+  var success = _ref2.success,
+      fail = _ref2.fail,
+      complete = _ref2.complete;
+  function gotSuccess(_ref3) {
+    var data = _ref3.text;
+    success({
+      data: data
     });
+  }
+  clipboard.get({
+    success: gotSuccess,
+    fail: fail || noop,
+    complete: complete || noop
+  });
 }
 
 var network = require('@system.network');
 function getNetworkType(_ref) {
-    var success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    function networkTypeGot(_ref2) {
-        var networkType = _ref2.type;
-        success({ networkType: networkType });
-    }
-    network.getType({
-        success: networkTypeGot,
-        fail: fail,
-        complete: complete
-    });
+  var success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  function networkTypeGot(_ref2) {
+    var networkType = _ref2.type;
+    success({ networkType: networkType });
+  }
+  network.getType({
+    success: networkTypeGot,
+    fail: fail,
+    complete: complete
+  });
 }
 function onNetworkStatusChange(callback) {
-    function networkChanged(_ref3) {
-        var networkType = _ref3.type;
-        var connectedTypes = ['wifi', '4g', '3g', '2g'];
-        callback({
-            isConnected: connectedTypes.includes(networkType),
-            networkType: networkType
-        });
-    }
-    network.subscribe({ callback: networkChanged });
+  function networkChanged(_ref3) {
+    var networkType = _ref3.type;
+    var connectedTypes = ['wifi', '4g', '3g', '2g'];
+    callback({
+      isConnected: connectedTypes.includes(networkType),
+      networkType: networkType
+    });
+  }
+  network.subscribe({ callback: networkChanged });
 }
 
 var device = require('@system.device');
 var DEFAULT_FONT_SIZE = 14;
 function getSystemInfo(_ref) {
-    var success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    function gotSuccessInfo(_ref2) {
-        var brand = _ref2.brand,
-            manufacturer = _ref2.manufacturer,
-            model = _ref2.model,
-            product = _ref2.product,
-            osType = _ref2.osType,
-            osVersionName = _ref2.osVersionName,
-            osVersionCode = _ref2.osVersionCode,
-            platformVersionName = _ref2.platformVersionName,
-            platformVersionCode = _ref2.platformVersionCode,
-            language = _ref2.language,
-            region = _ref2.region,
-            screenWidth = _ref2.screenWidth,
-            screenHeight = _ref2.screenHeight;
-        success({
-            brand: brand,
-            model: model,
-            screenWidth: screenWidth,
-            screenHeight: screenHeight,
-            windowWidth: screenWidth,
-            windowHeight: screenHeight,
-            statusBarHeight: 0,
-            language: language,
-            version: platformVersionCode,
-            system: osVersionCode,
-            platform: platformVersionName,
-            fontSizeSetting: DEFAULT_FONT_SIZE,
-            SDKVersion: platformVersionCode
-        });
-    }
-    device.getInfo({
-        success: gotSuccessInfo,
-        fail: fail,
-        complete: complete
+  var success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  function gotSuccessInfo(_ref2) {
+    var brand = _ref2.brand,
+        manufacturer = _ref2.manufacturer,
+        model = _ref2.model,
+        product = _ref2.product,
+        osType = _ref2.osType,
+        osVersionName = _ref2.osVersionName,
+        osVersionCode = _ref2.osVersionCode,
+        platformVersionName = _ref2.platformVersionName,
+        platformVersionCode = _ref2.platformVersionCode,
+        language = _ref2.language,
+        region = _ref2.region,
+        screenWidth = _ref2.screenWidth,
+        screenHeight = _ref2.screenHeight;
+    success({
+      brand: brand,
+      model: model,
+      screenWidth: screenWidth,
+      screenHeight: screenHeight,
+      windowWidth: screenWidth,
+      windowHeight: screenHeight,
+      statusBarHeight: 0,
+      language: language,
+      version: platformVersionCode,
+      system: osVersionCode,
+      platform: platformVersionName,
+      fontSizeSetting: DEFAULT_FONT_SIZE,
+      SDKVersion: platformVersionCode
     });
+  }
+  device.getInfo({
+    success: gotSuccessInfo,
+    fail: fail,
+    complete: complete
+  });
 }
 
 var media = require('@system.media');
 var file$1 = require('@system.file');
 function chooseImage(_ref) {
-    var _ref$count = _ref.count,
-        count = _ref$count === undefined ? 1 : _ref$count,
-        _ref$sourceType = _ref.sourceType,
-        sourceType = _ref$sourceType === undefined ? [] : _ref$sourceType,
-        _success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    if (count > 1) {
-        runFunction(fail, new Error('快应用选择图片的数量不能大于1'));
-    }
-    function imagePicked(_ref2) {
-        var path = _ref2.uri;
-        file$1.get({
-            uri: path,
-            success: function success(_ref3) {
-                var size = _ref3.length;
-                var tempFilePaths = [path];
-                var tempFiles = [{ path: path, size: size }];
-                _success({
-                    tempFilePaths: tempFilePaths,
-                    tempFiles: tempFiles
-                });
-            },
-            fail: fail
+  var _ref$count = _ref.count,
+      count = _ref$count === undefined ? 1 : _ref$count,
+      _ref$sourceType = _ref.sourceType,
+      sourceType = _ref$sourceType === undefined ? [] : _ref$sourceType,
+      _success = _ref.success,
+      fail = _ref.fail,
+      complete = _ref.complete;
+  if (count > 1) {
+    runFunction(fail, new Error('快应用选择图片的数量不能大于1'));
+  }
+  function imagePicked(_ref2) {
+    var path = _ref2.uri;
+    file$1.get({
+      uri: path,
+      success: function success(_ref3) {
+        var size = _ref3.length;
+        var tempFilePaths = [path];
+        var tempFiles = [{ path: path, size: size }];
+        _success({
+          tempFilePaths: tempFilePaths,
+          tempFiles: tempFiles
         });
-    }
-    var pick =
-        sourceType.length === 1 && sourceType[0] === 'camera'
-            ? media.takePhoto
-            : media.pickImage;
-    pick({
-        success: imagePicked,
-        fail: fail || noop,
-        complete: complete || noop,
-        cancel: fail || noop
+      },
+      fail: fail
     });
+  }
+  var pick = sourceType.length === 1 && sourceType[0] === 'camera' ? media.takePhoto : media.pickImage;
+  pick({
+    success: imagePicked,
+    fail: fail || noop,
+    complete: complete || noop,
+    cancel: fail || noop
+  });
 }
 
 function UpdateQueue() {
@@ -1329,13 +1188,13 @@ function createInstance(fiber, context) {
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = {
-            refs: {},
-            props: props,
-            context: context,
-            ref: ref,
-            __proto__: type.prototype
-        };
-    fiber.errorHook = 'constructor';
+        refs: {},
+        props: props,
+        context: context,
+        ref: ref,
+        __proto__: type.prototype
+    };
+    fiber.errorHook = "constructor";
     try {
         if (isStateless) {
             extend(instance, {
@@ -1352,7 +1211,7 @@ function createInstance(fiber, context) {
                     if (a && a.render) {
                         delete this.__isStateless;
                         for (var i in a) {
-                            instance[i == 'render' ? 'renderImpl' : i] = a[i];
+                            instance[i == "render" ? "renderImpl" : i] = a[i];
                         }
                     } else if (this.__init) {
                         this.__keep = {
@@ -1364,7 +1223,7 @@ function createInstance(fiber, context) {
             });
             Renderer.currentOwner = instance;
             if (type.render) {
-                instance.render = function() {
+                instance.render = function () {
                     return type.render(this.props, this.ref);
                 };
             } else {
@@ -1374,7 +1233,7 @@ function createInstance(fiber, context) {
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
-                throw type.name + ' doesn\'t extend React.Component';
+                throw type.name + " doesn't extend React.Component";
             }
         }
     } finally {
@@ -1394,7 +1253,7 @@ function createInstance(fiber, context) {
 
 function Fiber(vnode) {
     extend(this, vnode);
-    var type = vnode.type || 'ProxyComponent(react-hot-loader)';
+    var type = vnode.type || "ProxyComponent(react-hot-loader)";
     this.name = type.displayName || type.name || type;
     this.effectTag = 1;
 }
@@ -1410,10 +1269,7 @@ var HOOK = 17;
 var REF = 19;
 var CALLBACK = 23;
 var CAPTURE = 29;
-var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function(
-    a,
-    b
-) {
+var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
     return a - b;
 });
 var effectLength = effectNames.length;
@@ -1423,8 +1279,7 @@ function pushError(fiber, hook, error) {
     var boundary = findCatchComponent(fiber, names, hook);
     var stack = describeError(names, hook);
     if (boundary) {
-        if (fiber.hasMounted);
-        else {
+        if (fiber.hasMounted) ; else {
             fiber.stateNode = {
                 updater: fakeObject
             };
@@ -1462,7 +1317,7 @@ function applyCallback(host, hook, args) {
     var fiber = host._reactInternalFiber;
     fiber.errorHook = hook;
     var fn = host[hook];
-    if (hook == 'componentWillUnmount') {
+    if (hook == "componentWillUnmount") {
         host[hook] = noop;
     }
     if (fn) {
@@ -1471,13 +1326,13 @@ function applyCallback(host, hook, args) {
     return true;
 }
 function describeError(names, hook) {
-    var segments = ['**' + hook + '** method occur error '];
-    names.forEach(function(name, i) {
+    var segments = ["**" + hook + "** method occur error "];
+    names.forEach(function (name, i) {
         if (names[i + 1]) {
-            segments.push('in ' + name + ' (created By ' + names[i + 1] + ')');
+            segments.push("in " + name + " (created By " + names[i + 1] + ")");
         }
     });
-    return segments.join('\n\r').trim();
+    return segments.join("\n\r").trim();
 }
 function findCatchComponent(fiber, names, hook) {
     var instance = void 0,
@@ -1515,10 +1370,7 @@ function findCatchComponent(fiber, names, hook) {
                     boundary = f;
                 }
                 if (!boundary.catchError) {
-                    if (
-                        hook == 'componentWillUnmount' ||
-                        hook == 'componentDidUpdate'
-                    ) {
+                    if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
                         boundary.effectTag = CAPTURE;
                     } else {
                         boundary.effectTag = effectTag * CAPTURE;
@@ -1576,11 +1428,7 @@ function setInsertPoints(children) {
             child.effectTag = PLACE;
             child.forwardFiber = p.insertPoint;
             p.insertPoint = child;
-            for (
-                var pp = child.return;
-                pp && pp.effectTag === NOWORK;
-                pp = pp.return
-            ) {
+            for (var pp = child.return; pp && pp.effectTag === NOWORK; pp = pp.return) {
                 pp.effectTag = WORKING;
             }
         } else {
@@ -1669,10 +1517,7 @@ function reconcileDFS(fiber, info, deadline, ENOUGH_TIME) {
                     info.contextStack.shift();
                 }
                 if (f.hasMounted && instance[gSBU]) {
-                    updater.snapshot = guardCallback(instance, gSBU, [
-                        updater.prevProps,
-                        updater.prevState
-                    ]);
+                    updater.snapshot = guardCallback(instance, gSBU, [updater.prevProps, updater.prevState]);
                 }
             }
             if (f === topWork) {
@@ -1741,7 +1586,7 @@ function mergeStates(fiber, nextProps) {
     if (fail) {
         return state;
     } else {
-        return (fiber.memoizedState = nextState);
+        return fiber.memoizedState = nextState;
     }
 }
 function updateClassComponent(fiber, info) {
@@ -1750,11 +1595,7 @@ function updateClassComponent(fiber, info) {
         props = fiber.props;
     var contextStack = info.contextStack,
         containerStack = info.containerStack;
-    var newContext = getMaskedContext(
-        instance,
-        type.contextTypes,
-        contextStack
-    );
+    var newContext = getMaskedContext(instance, type.contextTypes, contextStack);
     if (instance == null) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
@@ -1766,21 +1607,9 @@ function updateClassComponent(fiber, info) {
         var updateQueue = fiber.updateQueue;
         delete fiber.updateFail;
         if (fiber.hasMounted) {
-            applybeforeUpdateHooks(
-                fiber,
-                instance,
-                props,
-                newContext,
-                contextStack
-            );
+            applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
         } else {
-            applybeforeMountHooks(
-                fiber,
-                instance,
-                props,
-                newContext,
-                contextStack
-            );
+            applybeforeMountHooks(fiber, instance, props, newContext, contextStack);
         }
         if (fiber.memoizedState) {
             instance.state = fiber.memoizedState;
@@ -1827,7 +1656,7 @@ function updateClassComponent(fiber, info) {
     Renderer.onBeforeRender(fiber);
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
-    var rendered = applyCallback(instance, 'render', []);
+    var rendered = applyCallback(instance, "render", []);
     diffChildren(fiber, rendered);
     Renderer.onAfterRender(fiber);
 }
@@ -1836,19 +1665,13 @@ function applybeforeMountHooks(fiber, instance, newProps) {
     if (instance.__useNewHooks) {
         setStateByProps(instance, fiber, newProps, instance.state);
     } else {
-        callUnsafeHook(instance, 'componentWillMount', []);
+        callUnsafeHook(instance, "componentWillMount", []);
     }
     delete fiber.setout;
     mergeStates(fiber, newProps);
     fiber.updateQueue = UpdateQueue();
 }
-function applybeforeUpdateHooks(
-    fiber,
-    instance,
-    newProps,
-    newContext,
-    contextStack
-) {
+function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextStack) {
     var oldProps = fiber.memoizedProps;
     var oldState = fiber.memoizedState;
     var updater = instance.updater;
@@ -1860,16 +1683,13 @@ function applybeforeUpdateHooks(
     if (!instance.__useNewHooks) {
         if (propsChanged || contextChanged) {
             var prevState = instance.state;
-            callUnsafeHook(instance, 'componentWillReceiveProps', [
-                newProps,
-                newContext
-            ]);
+            callUnsafeHook(instance, "componentWillReceiveProps", [newProps, newContext]);
             if (prevState !== instance.state) {
                 fiber.memoizedState = instance.state;
             }
         }
     }
-    var newState = (instance.state = oldState);
+    var newState = instance.state = oldState;
     var updateQueue = fiber.updateQueue;
     mergeStates(fiber, newProps);
     newState = fiber.memoizedState;
@@ -1877,29 +1697,21 @@ function applybeforeUpdateHooks(
     newState = fiber.memoizedState;
     delete fiber.setout;
     fiber._hydrating = true;
-    if (
-        !propsChanged &&
-        newState === oldState &&
-        contextStack.length == 1 &&
-        !updateQueue.isForced
-    ) {
+    if (!propsChanged && newState === oldState && contextStack.length == 1 && !updateQueue.isForced) {
         fiber.updateFail = true;
     } else {
         var args = [newProps, newState, newContext];
         fiber.updateQueue = UpdateQueue();
-        if (
-            !updateQueue.isForced &&
-            !applyCallback(instance, 'shouldComponentUpdate', args)
-        ) {
+        if (!updateQueue.isForced && !applyCallback(instance, "shouldComponentUpdate", args)) {
             fiber.updateFail = true;
         } else if (!instance.__useNewHooks) {
-            callUnsafeHook(instance, 'componentWillUpdate', args);
+            callUnsafeHook(instance, "componentWillUpdate", args);
         }
     }
 }
 function callUnsafeHook(a, b, c) {
     applyCallback(a, b, c);
-    applyCallback(a, 'UNSAFE_' + b, c);
+    applyCallback(a, "UNSAFE_" + b, c);
 }
 function isSameNode(a, b) {
     if (a.type === b.type && a.key === b.key) {
@@ -1920,7 +1732,7 @@ function cloneChildren(fiber) {
     var prev = fiber.alternate;
     if (prev && prev.child) {
         var pc = prev.children;
-        var cc = (fiber.children = {});
+        var cc = fiber.children = {};
         fiber.child = prev.child;
         fiber.lastChild = prev.lastChild;
         for (var i in pc) {
@@ -2045,7 +1857,7 @@ var Refs = {
                 fiber.deleteRef = true;
             }
         } catch (e) {
-            pushError(fiber, 'ref', e);
+            pushError(fiber, "ref", e);
         }
     }
 };
@@ -2068,7 +1880,7 @@ var refStrategy = {
     }
 };
 
-var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
+var domFns = ["insertElement", "updateContent", "updateAttribute"];
 var domEffects = [PLACE, CONTENT, ATTR];
 var domRemoved = [];
 function commitDFSImpl(fiber) {
@@ -2079,7 +1891,7 @@ function commitDFSImpl(fiber) {
             delete fiber.effects;
         }
         if (fiber.effectTag % PLACE == 0) {
-            domEffects.forEach(function(effect, i) {
+            domEffects.forEach(function (effect, i) {
                 if (fiber.effectTag % effect == 0) {
                     Renderer[domFns[i]](fiber);
                     fiber.effectTag /= effect;
@@ -2121,9 +1933,9 @@ function commitDFSImpl(fiber) {
     }
 }
 function commitDFS(effects$$1) {
-    Renderer.batchedUpdates(function() {
+    Renderer.batchedUpdates(function () {
         var el;
-        while ((el = effects$$1.shift())) {
+        while (el = effects$$1.shift()) {
             if (el.effectTag === DETACH && el.caughtError) {
                 disposeFiber(el);
             } else {
@@ -2160,14 +1972,10 @@ function commitEffects(fiber) {
                     break;
                 case HOOK:
                     if (fiber.hasMounted) {
-                        guardCallback(instance, 'componentDidUpdate', [
-                            updater.prevProps,
-                            updater.prevState,
-                            updater.snapshot
-                        ]);
+                        guardCallback(instance, "componentDidUpdate", [updater.prevProps, updater.prevState, updater.snapshot]);
                     } else {
                         fiber.hasMounted = true;
-                        guardCallback(instance, 'componentDidMount', []);
+                        guardCallback(instance, "componentDidMount", []);
                     }
                     delete fiber._hydrating;
                     if (fiber.catchError) {
@@ -2181,7 +1989,7 @@ function commitEffects(fiber) {
                 case CALLBACK:
                     var queue = fiber.pendingCbs;
                     fiber._hydrating = true;
-                    queue.forEach(function(fn) {
+                    queue.forEach(function (fn) {
                         fn.call(instance);
                     });
                     delete fiber._hydrating;
@@ -2238,7 +2046,7 @@ function disposeFiber(fiber, force) {
             Renderer.onDispose(fiber);
             if (fiber.hasMounted) {
                 stateNode.updater.enqueueSetState = returnFalse;
-                guardCallback(stateNode, 'componentWillUnmount', []);
+                guardCallback(stateNode, "componentWillUnmount", []);
                 delete fiber.stateNode;
             }
         }
@@ -2249,19 +2057,15 @@ function disposeFiber(fiber, force) {
     fiber.effectTag = NOWORK;
 }
 
-var Unbatch = miniCreateClass(
-    function Unbatch(props) {
-        this.state = {
-            child: props.child
-        };
-    },
-    Component,
-    {
-        render: function render() {
-            return this.state.child;
-        }
+var Unbatch = miniCreateClass(function Unbatch(props) {
+    this.state = {
+        child: props.child
+    };
+}, Component, {
+    render: function render() {
+        return this.state.child;
     }
-);
+});
 
 var macrotasks = Renderer.macrotasks;
 var boundaries = Renderer.boundaries;
@@ -2286,18 +2090,13 @@ function render(vnode, root, callback) {
         Renderer.emptyElement(container);
     }
     var carrier = {};
-    updateComponent(
-        container.hostRoot,
-        {
-            child: vnode
-        },
-        wrapCb(callback, carrier),
-        immediateUpdate
-    );
+    updateComponent(container.hostRoot, {
+        child: vnode
+    }, wrapCb(callback, carrier), immediateUpdate);
     return carrier.instance;
 }
 function wrapCb(fn, carrier) {
-    return function() {
+    return function () {
         var fiber = get(this);
         var target = fiber.child ? fiber.child.stateNode : null;
         fn && fn.call(target);
@@ -2310,9 +2109,9 @@ function performWork(deadline) {
         macrotasks.unshift.apply(macrotasks, boundaries);
         boundaries.length = 0;
     }
-    topFibers.forEach(function(el) {
+    topFibers.forEach(function (el) {
         var microtasks = el.microtasks;
-        while ((el = microtasks.shift())) {
+        while (el = microtasks.shift()) {
             if (!el.disposed) {
                 macrotasks.push(el);
             }
@@ -2332,11 +2131,11 @@ var deadline = {
 function requestIdleCallback(fn) {
     fn(deadline);
 }
-Renderer.scheduleWork = function() {
+Renderer.scheduleWork = function () {
     performWork(deadline);
 };
 var isBatching = false;
-Renderer.batchedUpdates = function(callback, event) {
+Renderer.batchedUpdates = function (callback, event) {
     var keepbook = isBatching;
     isBatching = true;
     try {
@@ -2346,7 +2145,7 @@ Renderer.batchedUpdates = function(callback, event) {
         isBatching = keepbook;
         if (!isBatching) {
             var el = void 0;
-            while ((el = batchedtasks.shift())) {
+            while (el = batchedtasks.shift()) {
                 if (!el.disabled) {
                     macrotasks.push(el);
                 }
@@ -2422,7 +2221,7 @@ function getQueue(fiber) {
 }
 function pushChildQueue(fiber, queue) {
     var maps = {};
-    for (var i = queue.length, el; (el = queue[--i]); ) {
+    for (var i = queue.length, el; el = queue[--i];) {
         if (fiber === el) {
             queue.splice(i, 1);
             continue;
@@ -2447,7 +2246,7 @@ function pushChildQueue(fiber, queue) {
             }
         }
     }
-    hackSCU.forEach(function(el) {
+    hackSCU.forEach(function (el) {
         el.updateQueue.batching = true;
     });
     if (enqueue) {
@@ -2463,7 +2262,7 @@ function updateComponent(instance, state, callback, immediateUpdate) {
     state = isForced ? null : sn === 5 || sn === 8 ? state : null;
     if (fiber.setout) {
         immediateUpdate = false;
-    } else if ((isBatching && !immediateUpdate) || fiber._hydrating) {
+    } else if (isBatching && !immediateUpdate || fiber._hydrating) {
         pushChildQueue(fiber, batchedtasks);
     } else {
         immediateUpdate = immediateUpdate || !fiber._hydrating;
@@ -2481,7 +2280,7 @@ function validateTag(el) {
 function createContainer(root, onlyGet, validate) {
     validate = validate || validateTag;
     if (!validate(root)) {
-        throw 'container is not a element';
+        throw "container is not a element";
     }
     root.anuProp = 2018;
     var useProp = root.anuProp === 2018;
@@ -2502,7 +2301,7 @@ function createContainer(root, onlyGet, validate) {
     var container = new Fiber({
         stateNode: root,
         tag: 5,
-        name: 'hostRoot',
+        name: "hostRoot",
         contextStack: [{}],
         containerStack: [root],
         microtasks: [],
@@ -2519,7 +2318,7 @@ function getContainer(p) {
     if (p.parent) {
         return p.parent;
     }
-    while ((p = p.return)) {
+    while (p = p.return) {
         if (p.tag === 5) {
             return p.stateNode;
         }
@@ -2553,16 +2352,11 @@ var Renderer$1 = createRenderer({
             instance = get(instance)._owner;
         }
         if (instance) {
-            var cached =
-                instance.$$eventCached || (instance.$$eventCached = {});
+            var cached = instance.$$eventCached || (instance.$$eventCached = {});
             if (classId) {
                 for (var name in props) {
                     if (onEvent.test(name) && isFn(props[name])) {
-                        var code = getEventHashCode(
-                            name,
-                            props,
-                            props['data-key']
-                        );
+                        var code = getEventHashCode(name, props, props['data-key']);
                         cached[code] = props[name];
                         cached[code + 'Fiber'] = fiber;
                     }
@@ -2570,11 +2364,7 @@ var Renderer$1 = createRenderer({
                 if (lastProps) {
                     for (var _name in lastProps) {
                         if (onEvent.test(_name) && !props[_name]) {
-                            code = getEventHashCode(
-                                _name,
-                                lastProps,
-                                lastProps['data-key']
-                            );
+                            code = getEventHashCode(_name, lastProps, lastProps['data-key']);
                             delete cached[code];
                             delete cached[code + 'Fiber'];
                         }
@@ -2608,21 +2398,17 @@ var Renderer$1 = createRenderer({
         if (type.reactInstances) {
             var noMount = !fiber.hasMounted;
             var instance = fiber.stateNode;
-            if (!instance.instanceUid) {
-                var uuid = 'i' + getUUID();
-                instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
-            }
+            var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
+            instance.instanceUid = uuid;
             if (fiber.props.isPageComponent) {
                 _getApp().page = instance;
             }
-            instance.props.instanceUid = instance.instanceUid;
             var wxInstances = type.wxInstances;
             if (wxInstances) {
                 if (!type.ali) {
-                    var uid = instance.instanceUid;
                     for (var i = wxInstances.length - 1; i >= 0; i--) {
                         var el = wxInstances[i];
-                        if (el.dataset.instanceUid === uid) {
+                        if (el.dataset.instanceUid === uuid) {
                             el.reactInstance = instance;
                             instance.wx = el;
                             wxInstances.splice(i, 1);
@@ -2655,16 +2441,14 @@ var Renderer$1 = createRenderer({
         }
     },
     createElement: function createElement(fiber) {
-        return fiber.tag === 5
-            ? {
-                type: fiber.type,
-                props: fiber.props || {},
-                children: []
-            }
-            : {
-                type: fiber.type,
-                props: fiber.props
-            };
+        return fiber.tag === 5 ? {
+            type: fiber.type,
+            props: fiber.props || {},
+            children: []
+        } : {
+            type: fiber.type,
+            props: fiber.props
+        };
     },
     insertElement: function insertElement(fiber) {
         var dom = fiber.stateNode,
@@ -2715,19 +2499,17 @@ function remove(children, node) {
 }
 
 function createRouter(name) {
-    return function(obj) {
+    return function (obj) {
         var router = require('@system.router');
         var params = {};
         var href = obj.url || obj.uri || '';
         var uri = href.slice(href.indexOf('/pages') + 1);
-        uri = uri
-            .replace(/\?(.*)/, function(a, b) {
-                b.split('=').forEach(function(k, v) {
-                    params[k] = v;
-                });
-                return '';
-            })
-            .replace(/\/index$/, '');
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('=').forEach(function (k, v) {
+                params[k] = v;
+            });
+            return '';
+        }).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
@@ -2740,12 +2522,10 @@ function createRouter(name) {
 var api = {
     showModal: function showModal(obj) {
         obj.showCancel = obj.showCancel === false ? false : true;
-        var buttons = [
-            {
-                text: obj.confirmText,
-                color: obj.confirmColor
-            }
-        ];
+        var buttons = [{
+            text: obj.confirmText,
+            color: obj.confirmColor
+        }];
         if (obj.showCancel) {
             buttons.push({
                 text: obj.cancelText,
@@ -2756,7 +2536,7 @@ var api = {
         obj.message = obj.content;
         delete obj.content;
         var fn = obj['success'];
-        obj['success'] = function(res) {
+        obj['success'] = function (res) {
             res.confirm = !res.index;
             fn && fn(res);
         };
@@ -2849,10 +2629,11 @@ var api = {
         }
     }
 };
+
 var rcamel = /-(\w)/g;
 var rpx = /(\d+)px/g;
 function camel(target) {
-    return target.replace(rcamel, function(all, letter) {
+    return target.replace(rcamel, function (all, letter) {
         return letter.toUpperCase();
     });
 }
@@ -2860,7 +2641,7 @@ function transform(obj) {
     var ret = {};
     for (var i in obj) {
         var value = obj[i] + '';
-        value = value.replace(rpx, function(str, match) {
+        value = value.replace(rpx, function (str, match) {
             return match + 'px';
         });
         ret[camel(i)] = value;
@@ -2871,7 +2652,7 @@ function toStyle(obj, props, key) {
     if (props) {
         if (typeof obj == 'string') {
             var ret = {};
-            obj.split(';').forEach(function(el) {
+            obj.split(';').forEach(function (el) {
                 var index = el.indexOf(':');
                 var name = el.slice(0, index).trim();
                 var value = el.slice(index).trim();
@@ -2891,8 +2672,8 @@ function toStyle(obj, props, key) {
 
 function registerComponent(type, name) {
     registeredComponents[name] = type;
-    var reactInstances = (type.reactInstances = []);
-    var wxInstances = (type.wxInstances = []);
+    var reactInstances = type.reactInstances = [];
+    var wxInstances = type.wxInstances = [];
     return {
         data: function data() {
             return {
@@ -2905,18 +2686,18 @@ function registerComponent(type, name) {
             usingComponents[name] = type;
             var instance = reactInstances.shift();
             if (instance) {
-                console.log('created时为', name, '添加wx');
+                console.log("created时为", name, "添加wx");
                 instance.wx = this;
                 this.reactInstance = instance;
             } else {
-                console.log('created时为', name, '没有对应react实例');
+                console.log("created时为", name, "没有对应react实例");
                 wxInstances.push(this);
             }
         },
         onReady: function onReady() {
             if (this.reactInstance) {
                 updateMiniApp(this.reactInstance);
-                console.log('attached时更新', name);
+                console.log("attached时更新", name);
             }
         },
         onDestroy: function onDestroy() {
@@ -2936,13 +2717,11 @@ function onLoad(PageClass, path, query) {
         appendChild: noop
     };
     var pageInstance = render(
-        createElement(PageClass, {
-            path: path,
-            query: query,
-            isPageComponent: true
-        }),
-        container
-    );
+    createElement(PageClass, {
+        path: path,
+        query: query,
+        isPageComponent: true
+    }), container);
     callGlobalHook('onGlobalLoad');
     this.reactInstance = pageInstance;
     this.reactContainer = container;
@@ -2953,7 +2732,7 @@ function onLoad(PageClass, path, query) {
 function onReady() {
     pageState.isReady = true;
     var el = void 0;
-    while ((el = delayMounts.pop())) {
+    while (el = delayMounts.pop()) {
         el.fn.call(el.instance);
         el.instance.componentDidMount = el.fn;
     }
@@ -2979,21 +2758,16 @@ function onUnload() {
     var root = this.reactContainer;
     var container = root && root._reactInternalFiber;
     if (container) {
-        Renderer.updateComponent(
-            container.hostRoot,
-            {
-                child: null
-            },
-            function() {
-                root._reactInternalFiber = null;
-                var j = topNodes.indexOf(root);
-                if (j !== -1) {
-                    topFibers.splice(j, 1);
-                    topNodes.splice(j, 1);
-                }
-            },
-            true
-        );
+        Renderer.updateComponent(container.hostRoot, {
+            child: null
+        }, function () {
+            root._reactInternalFiber = null;
+            var j = topNodes.indexOf(root);
+            if (j !== -1) {
+                topFibers.splice(j, 1);
+                topNodes.splice(j, 1);
+            }
+        }, true);
     }
     callGlobalHook('onGlobalUnload');
 }
@@ -3013,21 +2787,18 @@ function registerPage(PageClass, path) {
         },
         dispatchEvent: dispatchEvent,
         onInit: function onInit(query) {
-            var $app = (shareObject.app = this.$app.$def || this.$app._def);
+            var $app = shareObject.app = this.$app.$def || this.$app._def;
             var instance = onLoad.call(this, PageClass, path, query);
             var pageConfig = instance.config || PageClass.config;
-            $app.pageConfig =
-                pageConfig && Object.keys(pageConfig).length
-                    ? pageConfig
-                    : null;
+            $app.pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
             $app.pagePath = path;
             $app.page = instance;
         },
         onReady: onReady,
         onDestroy: onUnload
     };
-    Array('onShow', 'onHide', 'onMenuPress').forEach(function(hook) {
-        config[hook] = function() {
+    Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
+        config[hook] = function () {
             var instance = this.reactInstance;
             var fn = instance[hook];
             if (isFn(fn)) {
@@ -3043,12 +2814,12 @@ function registerPage(PageClass, path) {
 }
 
 var render$1 = Renderer$1.render;
-var React = (getWindow().React = {
+var React = getWindow().React = {
     eventSystem: {
         dispatchEvent: dispatchEvent
     },
     findDOMNode: function findDOMNode() {
-        console.log('小程序不支持findDOMNode');
+        console.log("小程序不支持findDOMNode");
     },
     version: '1.4.8',
     render: render$1,
@@ -3083,7 +2854,7 @@ var React = (getWindow().React = {
         return app;
     },
     api: api
-});
+};
 
 export default React;
 export { Children, createElement, Component };

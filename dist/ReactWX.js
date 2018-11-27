@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-26
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-27
  * IE9+
  */
 
@@ -2256,21 +2256,17 @@ var Renderer$1 = createRenderer({
         if (type.reactInstances) {
             var noMount = !fiber.hasMounted;
             var instance = fiber.stateNode;
-            if (!instance.instanceUid) {
-                var uuid = 'i' + getUUID();
-                instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
-            }
+            var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
+            instance.instanceUid = uuid;
             if (fiber.props.isPageComponent) {
                 _getApp().page = instance;
             }
-            instance.props.instanceUid = instance.instanceUid;
             var wxInstances = type.wxInstances;
             if (wxInstances) {
                 if (!type.ali) {
-                    var uid = instance.instanceUid;
                     for (var i = wxInstances.length - 1; i >= 0; i--) {
                         var el = wxInstances[i];
-                        if (el.dataset.instanceUid === uid) {
+                        if (el.dataset.instanceUid === uuid) {
                             el.reactInstance = instance;
                             instance.wx = el;
                             wxInstances.splice(i, 1);
@@ -2523,10 +2519,10 @@ function registerComponent(type, name) {
         lifetimes: {
             attached: function attached() {
                 usingComponents[name] = type;
-                var uid = this.dataset.instanceUid;
+                var uuid = this.dataset.instanceUid;
                 for (var i = reactInstances.length - 1; i >= 0; i--) {
                     var reactInstance = reactInstances[i];
-                    if (reactInstance.instanceUid === uid) {
+                    if (reactInstance.instanceUid === uuid) {
                         reactInstance.wx = this;
                         this.reactInstance = reactInstance;
                         updateMiniApp(reactInstance);

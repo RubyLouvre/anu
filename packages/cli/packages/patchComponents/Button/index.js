@@ -11,19 +11,19 @@ class Button extends React.Component {
 
     computeState(props, active) {
         let buttonArray = [props.size];
-        let textAray = [props.type]
+        let textAray = [props.type];
         if (props.disabled) {
-            textAray.push('disabled')
+            textAray.push("disabled");
         } else {
-            if (active){
-                buttonArray.push(props.type+"-active")
-            }              
+            if (active) {
+                buttonArray.push(props.type + "-active");
+            }
         }
         if (props.plain) {
-            textAray.push('plain')
+            textAray.push("plain");
         }
         var textStyle = colorStyleMap[textAray.join("-")];
-        var buttonStyle = buttonArray.concat(textAray.join("-")).join(" ")
+        var buttonStyle = buttonArray.concat(textAray.join("-")).join(" ");
         let fontStyle = fontStyleMap[props.size];
         return {
             value: props.children,
@@ -32,27 +32,27 @@ class Button extends React.Component {
             fontStyle
         };
     }
-    updateState(nextProps, active){
+    updateState(nextProps, active) {
         let newState = this.computeState(nextProps, active);
         let oldState = this.state;
         let lastState = {};
-        let diff = false
-        for(var i in oldState){
-            if(oldState[i] !== newState[i]){
+        let diff = false;
+        for (var i in oldState) {
+            if (oldState[i] !== newState[i]) {
                 diff = true;
-                lastState[i] = newState[i]
+                lastState[i] = newState[i];
             }
         }
-        if(diff){
-            this.setState(lastState)
+        if (diff) {
+            this.setState(lastState);
         }
     }
     componentWillReceiveProps(nextProps) {
-        this.updateState(nextProps, false)
+        this.updateState(nextProps, false);
     }
     click(e) {
         var props = this.props;
-        Array("onTap", "catchTap", "onClick", "catchClick").forEach(function (
+        Array("onTap", "catchTap", "onClick", "catchClick").forEach(function(
             name
         ) {
             var fn = props[name];
@@ -63,41 +63,42 @@ class Button extends React.Component {
                 }
             }
         });
-        if(props.disabled){
+        if (props.disabled) {
             return;
         }
-        this.updateState(this.props, true)
-       
-        setTimeout(()=> {
-            this.updateState(this.props, false)
+        this.updateState(this.props, true);
+
+        setTimeout(() => {
+            this.updateState(this.props, false);
         }, 150);
     }
     render() {
         return (
-            <div
+            <stack
                 class={"center button " + this.state.buttonStyle}
                 disabled={this.props.disabled}
-              
                 plain={this.props.plain}
                 type={this.props.type}
                 size={this.props.size}
             >
-                <image
-                    show={this.props.loading}
-                    class="loading-style"
-                    src="https://s.qunarzz.com/flight_qzz/loading.gif"
-                />
+                <div>
+                    <image
+                        show={this.props.loading}
+                        class="loading-style"
+                        src="https://s.qunarzz.com/flight_qzz/loading.gif"
+                    />
 
-                <text
-                    style={{
-                        color: this.state.textStyle,
-                        fontSize: this.state.fontStyle
-                    }}
-                >
-                    {this.state.value}
-                </text>
-                <input class="mask"   onClick={this.click.bind(this)} />
-            </div>
+                    <text
+                        style={{
+                            color: this.state.textStyle,
+                            fontSize: this.state.fontStyle
+                        }}
+                    >
+                        {this.state.value}
+                    </text>
+                </div>
+                <input class="mask" type='button' onClick={this.click.bind(this)} />
+            </stack>
         );
     }
 }

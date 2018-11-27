@@ -1,7 +1,13 @@
 import { isFn, noop, toLowerCase, get } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
-import { getUUID, delayMounts, updateMiniApp, pageState, _getApp } from './utils';
+import {
+    getUUID,
+    delayMounts,
+    updateMiniApp,
+    pageState,
+    _getApp
+} from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventHashCode(name, props, key) {
@@ -69,10 +75,7 @@ export let Renderer = createRenderer({
                 if (lastProps) {
                     for (let name in lastProps) {
                         if (onEvent.test(name) && !props[name]) {
-                            code = getEventHashCode2(
-                                name,
-                                lastProps
-                            );
+                            code = getEventHashCode2(name, lastProps);
                             delete cached[code];
                             delete cached[code + 'Fiber'];
                         }
@@ -85,30 +88,24 @@ export let Renderer = createRenderer({
     updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
     },
-    onBeforeRender: function (fiber) {
+    onBeforeRender: function(fiber) {
         var type = fiber.type;
         if (type.reactInstances) {
             //var name = fiber.name;
             var noMount = !fiber.hasMounted;
             var instance = fiber.stateNode;
-            if (!instance.instanceUid) {
-                var uuid = 'i' + getUUID();
-                instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
-            }
+            var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
+            instance.instanceUid = uuid;
             if (fiber.props.isPageComponent) {
                 _getApp().page = instance;
             }
-            instance.props.instanceUid = instance.instanceUid;
-
-
             //只处理component目录下的组件
             var wxInstances = type.wxInstances;
             if (wxInstances) {
                 if (!type.ali) {
-                    let uid = instance.instanceUid;
                     for (var i = wxInstances.length - 1; i >= 0; i--) {
                         var el = wxInstances[i];
-                        if (el.dataset.instanceUid === uid) {
+                        if (el.dataset.instanceUid === uuid) {
                             el.reactInstance = instance;
                             instance.wx = el;
                             wxInstances.splice(i, 1);
@@ -120,7 +117,6 @@ export let Renderer = createRenderer({
                     type.reactInstances.push(instance);
                 }
             }
-
         }
         if (!pageState.isReady && noMount && instance.componentDidMount) {
             delayMounts.push({
