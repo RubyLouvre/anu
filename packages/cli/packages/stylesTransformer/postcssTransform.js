@@ -1,14 +1,14 @@
 /* eslint no-console: 0 */
 const fs = require('fs');
 const postCss = require('postcss');
-const commentParser = require('postcss-comment');
+//const commentParser = require('postcss-comment');
 const validateStyle = require('../validateStyle');
 const utils = require('../utils');
 const less = require('less');
 //const chalk = require('chalk');
 
 //postcss插件: 清除注释
-var removeComment = postCss.plugin('postcss-plugin-remove-comment', ()=>{
+const postCssRemoveComments = postCss.plugin('postcss-plugin-remove-comment', ()=>{
     return (root)=>{
         root.walkComments(comment => {
             comment.remove();
@@ -16,37 +16,20 @@ var removeComment = postCss.plugin('postcss-plugin-remove-comment', ()=>{
     };
 });
 
-//解析sass darken和lighten函数
 /**
- * darken($color: #fff, $amount: 100) => color(#fff shade(100%))
- * lighten($color: #000, $amount: 100) => color(#000 tint(100%))
- */
-
-var transformDarkenOrLighten = postCss.plugin('postcss-plugin-darken-lighten-fn', ()=>{
-    var ruleRegMap =  {
-        darken: (value)=>{
-            value = value.replace('darken', 'color')                //darken => color
-                .replace(/(\$color|\$amount|:|%)/g, '')    //删掉  [$color | $amount | : ]
-                .replace(/,\s*(\d+)/, function(a,b){
-                    return ' ' + `shade(${b}%)`;			//color(#ff9800, 10) => color(#ff9800 shade(10%));
-                });
-            return value;
-        },
-        lighten: (value)=>{
-            value = value.replace('lighten', 'color')             
-                .replace(/(\$color|\$amount|:|%)/g, '')  
-                .replace(/,\s*(\d+)/, function(a,b){
-                    return ' ' + `tint(${b}%)`;
-                });
-            return value;
-        }
-    };
+ * 解析sass darken和lighten函数
+ * darken($color: #fff, $amount: 10) => darken(#fff, 10%);
+ * lighten($color: #000, $amount: 100) => lighten(#000, 100%);
+ * */
+const postCssTransformDarkenOrLighten = postCss.plugin('postcss-plugin-darken-lighten-fn', ()=>{
     return (root)=>{
         root.walkRules((rule)=>{
             rule.walkDecls( (decl) => {
-                let fnName =  decl.value.replace(/\(.+\)/g, '');
-                if (typeof ruleRegMap[fnName] === 'function') {
-                    decl.value = ruleRegMap[fnName](decl.value);
+                if ( /^(darken|lighten)\b/.test(decl.value) ) {
+                    decl.value = decl.value.replace(/\$(color|amount)\s*:|%|\s/g, '')  
+                        .replace(/,(\d+)/, function(a){
+                            return a+'%';
+                        });
                 }
             });
         });
@@ -54,33 +37,33 @@ var transformDarkenOrLighten = postCss.plugin('postcss-plugin-darken-lighten-fn'
 });
 
 
-
 const compileSass = (filePath, originalCode)=>{
     return new Promise((resolved, reject)=>{
         postCss([
-            removeComment,
-            require('postcss-import')({
-                resolve(importer, baseDir){
-                    //如果@import的值没有文件后缀
-                    if (!/\.s[ca]ss/.test(importer)) {
-                        importer = importer + '.scss';
-                    }
-                    //处理alias路径
-                    return utils.resolveStyleAlias(importer, baseDir);
-                }
-            }),
-            transformDarkenOrLighten,
-            require('postcss-color-hsl'),
-            require('postcss-color-function'),
+            //require('postcss-preset-env'),
+            // require('postcss-import')({
+            //     resolve(importer, baseDir){
+            //         //如果@import的值没有文件后缀
+            //         if (!/\.s[ca]ss/.test(importer)) {
+            //             importer = importer + '.scss';
+            //         }
+            //         //处理alias路径
+            //         return utils.resolveStyleAlias(importer, baseDir);
+            //     }
+            // }),
+            require('postcss-import'),
+            postCssRemoveComments,
+            postCssTransformDarkenOrLighten,
+            require('postcss-nested-props'),  //属性嵌套
             require('precss'),
-            require('postcss-automath'),     //5px + 2 => 7px
+            require('postcss-automath')       //5px + 2 => 7px
             
         ])
             .process(
                 originalCode || fs.readFileSync(filePath).toString(),
                 {
                     from: filePath,   
-                    parser: commentParser, //兼容非标准css注释
+                    parser: require('postcss-scss')  //@each | @if | Interpolation(插值: ${})
                 }
             )
             .then((result)=>{
@@ -100,10 +83,9 @@ const compileSass = (filePath, originalCode)=>{
 const compileLess = (filePath, originalCode) => {
     return new Promise((resolve, reject)=>{
         postCss([
-            removeComment,
+            postCssRemoveComments,
             require('postcss-import')({
                 resolve(importer, baseDir){
-                    
                     if (!/\.less/.test(importer)) {
                         importer = importer + '.less';
                     }

@@ -53,12 +53,15 @@
     "postcss-color-function": "^4.0.1",
     "postcss-color-hsl": "^2.0.0",
     "postcss-comment": "^2.0.0",
+    "postcss-conditionals": "^2.1.0",
     "postcss-cssnext": "^3.1.0",
+    "postcss-each": "^0.10.0",
     "postcss-easy-import": "^3.0.0",
     "postcss-import": "^12.0.1",
     "postcss-math": "^0.0.10",
     "postcss-mixins": "^6.2.0",
     "postcss-nested": "^4.1.0",
+    "postcss-nested-props": "^2.0.0",
     "postcss-preset-env": "^6.4.0",
     "postcss-sass-color-functions": "^1.1.0",
     "postcss-scss": "^2.0.0",
@@ -72,6 +75,7 @@
     "rollup-plugin-babel": "^3.0.7",
     "rollup-plugin-commonjs": "^9.1.6",
     "rollup-plugin-node-resolve": "^3.3.0",
+    "stylus": "^0.54.5",
     "uglify-es": "^3.3.9",
     "validate-npm-package-name": "^3.0.0"
   }
