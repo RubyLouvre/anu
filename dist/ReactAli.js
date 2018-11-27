@@ -1155,7 +1155,7 @@ function createEvent(e, target) {
     event.nativeEvent = e;
     event.preventDefault = returnFalse;
     event.target = target;
-    event.timeStamp = new Date() - 0;
+    event.timeStamp = Date.now();
     var touch = e.touches && e.touches[0];
     if (touch) {
         event.pageX = touch.pageX;
@@ -2491,10 +2491,7 @@ function registerComponent(type, name) {
     var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
     var hasInit = false;
-    function didMount() {
-        if (hasInit) {
-            return;
-        }
+    function didUpdate() {
         usingComponents[name] = type;
         var uid = this.props['data-instance-uid'];
         for (var i = reactInstances.length - 1; i >= 0; i--) {
@@ -2519,18 +2516,19 @@ function registerComponent(type, name) {
             usingComponents[name] = type;
             var instance = reactInstances.shift();
             if (instance) {
-                console.log("onMount时为", name, "添加wx");
                 instance.wx = this;
                 this.reactInstance = instance;
+                updateMiniApp(this.reactInstance);
             } else {
                 wxInstances.push(this);
             }
-            if (this.reactInstance) {
-                updateMiniApp(this.reactInstance);
+        },
+        didMount: function didMount() {
+            if (!hasInit) {
+                didUpdate.call(this);
             }
         },
-        didMount: didMount,
-        didUpdate: didMount,
+        didUpdate: didUpdate,
         didUnmount: function didUnmount() {
             var t = this.reactInstance;
             if (t) {

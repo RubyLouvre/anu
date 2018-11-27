@@ -1039,7 +1039,7 @@ function createEvent(e, target) {
     event.nativeEvent = e;
     event.preventDefault = returnFalse;
     event.target = target;
-    event.timeStamp = new Date() - 0;
+    event.timeStamp = Date.now();
     var touch = e.touches && e.touches[0];
     if (touch) {
         event.pageX = touch.pageX;
