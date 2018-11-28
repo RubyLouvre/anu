@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-22
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-28
  */
 
 var arrayPush = Array.prototype.push;
@@ -901,22 +901,19 @@ var buApis = function buApis(api) {
 };
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-function _uuid() {
-    return (Math.random() + '').slice(-4);
-}
 var shareObject = {
     app: {}
 };
 function _getApp() {
     return shareObject.app;
 }
-if (typeof getApp == 'function') {
+if (typeof getApp === 'function') {
     _getApp = getApp;
 }
-function callGlobalHook(method) {
+function callGlobalHook(method, e) {
     var app = _getApp();
     if (app && app[method]) {
-        return app[method]();
+        return app[method](e);
     }
 }
 var delayMounts = [];
@@ -930,9 +927,6 @@ function _getCurrentPages() {
     if (typeof getCurrentPages === 'function') {
         return getCurrentPages();
     }
-}
-function getUUID() {
-    return _uuid() + _uuid();
 }
 function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
@@ -960,6 +954,7 @@ function isReferenceType(val) {
 function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
+    props.key = props.key || props['data-instance-uid'] || new Date() - 0;
     delete props.is;
     var args = [].slice.call(arguments, 2);
     args.unshift(clazz, props);
@@ -998,29 +993,32 @@ function dispatchEvent(e) {
     }
     var instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
+        console.log(eventType, '没有实例');
         return;
     }
     var app = _getApp();
     var target = e.currentTarget;
     var dataset = target.dataset || {};
     var eventUid = dataset[eventType + 'Uid'];
-    if (dataset['classUid']) {
-        var key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-    }
     var fiber = instance.$$eventCached[eventUid + 'Fiber'];
+    var value = Object(e.detail).value;
     if (eventType == 'change' && fiber) {
-        if (fiber.props.value + '' == e.detail.value) {
+        if (fiber.props.value + '' == value) {
             return;
         }
     }
+    var safeTarget = {
+        dataset: dataset,
+        nodeName: fiber.type,
+        value: value
+    };
     if (app && app.onCollectLogs && rbeaconType.test(eventType)) {
         app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
     }
     Renderer.batchedUpdates(function () {
         try {
             var fn = instance.$$eventCached[eventUid];
-            fn && fn.call(instance, createEvent(e, target));
+            fn && fn.call(instance, createEvent(e, safeTarget));
         } catch (err) {
             console.log(err.stack);
         }
@@ -1030,7 +1028,6 @@ function createEvent(e, target) {
     var event = Object.assign({}, e);
     if (e.detail) {
         Object.assign(event, e.detail);
-        target.value = e.detail.value;
     }
     event.stopPropagation = function () {
         console.warn("小程序不支持这方法，请使用catchXXX");
@@ -1038,10 +1035,11 @@ function createEvent(e, target) {
     event.nativeEvent = e;
     event.preventDefault = returnFalse;
     event.target = target;
-    event.timeStamp = new Date() - 0;
-    if (!('x' in event)) {
-        event.x = event.pageX;
-        event.y = event.pageY;
+    event.timeStamp = Date.now();
+    var touch = e.touches && e.touches[0];
+    if (touch) {
+        event.pageX = touch.pageX;
+        event.pageY = touch.pageY;
     }
     return event;
 }
@@ -2203,16 +2201,10 @@ function getContainer(p) {
 }
 
 var onEvent = /(?:on|catch)[A-Z]/;
-function getEventHashCode(name, props, key) {
-    var n = name.charAt(0) == 'o' ? 2 : 5;
+function getEventUid(name, props) {
+    var n = name.charAt(0) == "o" ? 2 : 5;
     var type = toLowerCase(name.slice(n));
-    var eventCode = props['data-' + type + '-uid'];
-    return eventCode + (key != null ? '-' + key : '');
-}
-function getEventHashCode2(name, props) {
-    var n = name.charAt(0) == 'o' ? 2 : 5;
-    var type = toLowerCase(name.slice(n));
-    return props['data-' + type + '-uid'];
+    return props["data-" + type + "-uid"];
 }
 function getCurrentPage() {
     return _getApp().page;
@@ -2222,46 +2214,26 @@ var Renderer$1 = createRenderer({
     updateAttribute: function updateAttribute(fiber) {
         var props = fiber.props,
             lastProps = fiber.lastProps;
-        var classId = props['data-class-uid'];
-        var beaconId = props['data-beacon-uid'];
+        var beaconId = props["data-beacon-uid"];
         var instance = fiber._owner;
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
         }
-        if (instance) {
+        if (instance && beaconId) {
             var cached = instance.$$eventCached || (instance.$$eventCached = {});
-            if (classId) {
-                for (var name in props) {
-                    if (onEvent.test(name) && isFn(props[name])) {
-                        var code = getEventHashCode(name, props, props['data-key']);
-                        cached[code] = props[name];
-                        cached[code + 'Fiber'] = fiber;
-                    }
+            for (var name in props) {
+                if (onEvent.test(name) && isFn(props[name])) {
+                    var code = getEventUid(name, props);
+                    cached[code] = props[name];
+                    cached[code + "Fiber"] = fiber;
                 }
-                if (lastProps) {
-                    for (var _name in lastProps) {
-                        if (onEvent.test(_name) && !props[_name]) {
-                            code = getEventHashCode(_name, lastProps, lastProps['data-key']);
-                            delete cached[code];
-                            delete cached[code + 'Fiber'];
-                        }
-                    }
-                }
-            } else if (beaconId) {
-                for (var _name2 in props) {
-                    if (onEvent.test(_name2) && isFn(props[_name2])) {
-                        var code = getEventHashCode2(_name2, props);
-                        cached[code] = props[_name2];
-                        cached[code + 'Fiber'] = fiber;
-                    }
-                }
-                if (lastProps) {
-                    for (var _name3 in lastProps) {
-                        if (onEvent.test(_name3) && !props[_name3]) {
-                            code = getEventHashCode2(_name3, lastProps);
-                            delete cached[code];
-                            delete cached[code + 'Fiber'];
-                        }
+            }
+            if (lastProps) {
+                for (var _name in lastProps) {
+                    if (onEvent.test(_name) && !props[_name]) {
+                        var _code = getEventUid(_name, lastProps);
+                        delete cached[_code];
+                        delete cached[_code + "Fiber"];
                     }
                 }
             }
@@ -2269,37 +2241,6 @@ var Renderer$1 = createRenderer({
     },
     updateContent: function updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
-    },
-    onBeforeRender: function onBeforeRender(fiber) {
-        var type = fiber.type;
-        if (type.reactInstances) {
-            var noMount = !fiber.hasMounted;
-            var instance = fiber.stateNode;
-            if (!instance.instanceUid) {
-                var uuid = 'i' + getUUID();
-                instance.instanceUid = fiber.props['data-instance-uid'] || uuid;
-            }
-            if (fiber.props.isPageComponent) {
-                _getApp().page = instance;
-            }
-            instance.props.instanceUid = instance.instanceUid;
-            if (type.wxInstances) {
-                if (!type.ali && !instance.wx && type.wxInstances.length) {
-                    var wx = instance.wx = type.wxInstances.shift();
-                    wx.reactInstance = instance;
-                }
-                if (!instance.wx) {
-                    type.reactInstances.push(instance);
-                }
-            }
-        }
-        if (!pageState.isReady && noMount && instance.componentDidMount) {
-            delayMounts.push({
-                instance: instance,
-                fn: instance.componentDidMount
-            });
-            instance.componentDidMount = noop;
-        }
     },
     onAfterRender: function onAfterRender(fiber) {
         updateMiniApp(fiber.stateNode);
@@ -2370,6 +2311,31 @@ function remove(children, node) {
     }
 }
 
+function onBeforeRender(fiber) {
+    var type = fiber.type;
+    var instance = fiber.stateNode;
+    if (type.reactInstances) {
+        var uuid = fiber.props['data-instance-uid'] || null;
+        if (!instance.instanceUid) {
+            instance.instanceUid = uuid;
+        }
+        if (fiber.props.isPageComponent) {
+            _getApp().page = instance;
+        }
+        var wxInstances = type.wxInstances;
+        if (wxInstances) {
+            type.reactInstances.push(instance);
+        }
+    }
+    if (!pageState.isReady && instance.componentDidMount) {
+        delayMounts.push({
+            instance: instance,
+            fn: instance.componentDidMount
+        });
+        instance.componentDidMount = Date;
+    }
+}
+
 var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
@@ -2409,25 +2375,27 @@ function registerComponent(type, name) {
             state: {},
             context: {}
         },
-        created: function created() {
-            console.log('create', name);
-        },
         attached: function attached() {
             usingComponents[name] = type;
-            var instance = reactInstances.shift();
-            if (instance) {
-                console.log('attached时为', name, '添加wx');
-                instance.wx = this;
-                this.reactInstance = instance;
-                this.isUpdate = true;
-                updateMiniApp(this.reactInstance);
-            } else {
-                console.log('attached时为', name, '没有对应react实例');
-                wxInstances.push(this);
+            var uuid = this.dataset.instanceUid || null;
+            for (var i = 0; i < reactInstances.length; i++) {
+                var reactInstance = reactInstances[i];
+                if (reactInstance.instanceUid === uuid) {
+                    reactInstance.wx = this;
+                    this.reactInstance = reactInstance;
+                    updateMiniApp(reactInstance);
+                    return reactInstances.splice(i, 1);
+                }
             }
+            wxInstances.push(this);
         },
         detached: function detached() {
-            this.reactInstance = null;
+            var t = this.reactInstance;
+            if (t) {
+                t.wx = null;
+                this.reactInstance = null;
+            }
+            console.log('detached ' + name + ' \u7EC4\u4EF6');
         },
         dispatchEvent: dispatchEvent
     };
@@ -2519,20 +2487,20 @@ function registerPage(PageClass, path, testObject) {
         onUnload: onUnload
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide').forEach(function (hook) {
-        config[hook] = function () {
+        config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook],
                 fired = false;
             if (isFn(fn)) {
                 fired = true;
-                var ret = fn.apply(instance, arguments);
+                var ret = fn.call(instance, e);
                 if (hook === 'onShareAppMessage') {
                     return ret;
                 }
             }
             var globalHook = globalHooks[hook];
             if (globalHook) {
-                ret = callGlobalHook(globalHook);
+                ret = callGlobalHook(globalHook, e);
                 if (hook === 'onShareAppMessage') {
                     return ret;
                 }
@@ -2540,7 +2508,7 @@ function registerPage(PageClass, path, testObject) {
             var discarded = showHideHooks[hook];
             if (!fired && instance[discarded]) {
                 console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
-                instance[discarded]();
+                instance[discarded](e);
             }
         };
     });
@@ -2554,6 +2522,7 @@ function registerPage(PageClass, path, testObject) {
     return config;
 }
 
+Renderer$1.onBeforeRender = onBeforeRender;
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {

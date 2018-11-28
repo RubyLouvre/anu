@@ -20,6 +20,10 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/if/index'
                 },
                 {
+                    title: '条件语句遇到组件',
+                    url: '/pages/demo/syntax/ifcom/index'
+                },
+                {
                     title: '一重循环',
                     url: '/pages/demo/syntax/loop/index'
                 },

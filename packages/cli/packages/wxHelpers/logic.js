@@ -55,7 +55,6 @@ function condition(test, consequent, alternate, modules) {
         [createAttribute('wx:if', parseExpr(test))],
         logic(consequent, modules)
     );
-
     // null就不用创建一个<block>元素了，&&表达式也不需要创建<block>元素
     if (alternate && alternate.type !== 'NullLiteral') {
         // 如果存在if分支，那么就再包一层，一共三个block,

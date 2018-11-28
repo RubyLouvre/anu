@@ -14,46 +14,48 @@ export function dispatchEvent(e) {
     }
     const instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
+        console.log(eventType,'没有实例');
         return;
     }
-   
     const app = _getApp();
     const target = e.currentTarget;
     const dataset = target.dataset || {};
-    let eventUid = dataset[eventType + 'Uid'];
-    if (dataset['classUid']){
-        const key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-    }
+    const eventUid = dataset[eventType + 'Uid'];
     const fiber = instance.$$eventCached[eventUid + 'Fiber'];
+    const value = Object(e.detail).value;
     if (eventType == 'change' && fiber) {
-        if (fiber.props.value + '' == e.detail.value) {
+        if (fiber.props.value + '' == value) {
             return;
         }
     }
-    if ( app && app.onCollectLogs && rbeaconType.test(eventType) ) {
+    let safeTarget = {
+        dataset: dataset,
+        nodeName: fiber.type,
+        value: value
+    };
+
+    if (app && app.onCollectLogs && rbeaconType.test(eventType)) {
         app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
     }
-  
-   
+
+
     Renderer.batchedUpdates(function () {
         try {
             var fn = instance.$$eventCached[eventUid];
-            fn && fn.call(instance, createEvent(e, target));
+            fn && fn.call(instance, createEvent(e, safeTarget));
         } catch (err) {
-             console.log(err.stack);  // eslint-disable-line
+            console.log(err.stack);  // eslint-disable-line
         }
     }, e);
-    
+
 }
 
 
 //创建事件对象
 function createEvent(e, target) {
-    var event = Object.assign({}, e);
+    let event = Object.assign({}, e);
     if (e.detail) {
         Object.assign(event, e.detail);
-        target.value = e.detail.value; //input.value
     }
     //需要重写的属性或方法
     event.stopPropagation = function () {
@@ -63,10 +65,11 @@ function createEvent(e, target) {
     event.nativeEvent = e;
     event.preventDefault = returnFalse;
     event.target = target;
-    event.timeStamp = new Date() - 0;
-    if (!('x' in event)) { //支付宝没有x, y
-        event.x = event.pageX;
-        event.y = event.pageY;
+    event.timeStamp = Date.now();
+    let touch = e.touches && e.touches[0];
+    if (touch) {
+        event.pageX = touch.pageX;
+        event.pageY = touch.pageY;
     }
     return event;
 }
