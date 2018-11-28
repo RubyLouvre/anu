@@ -14,19 +14,16 @@ export function registerComponent(type, name) {
 
         attached() {
             usingComponents[name] = type;
-            //https://github.com/RubyLouvre/anu/issues/531
-            var uuid = this.dataset.instanceUid;
-            for (var i = reactInstances.length - 1; i >= 0; i--) {
-                var reactInstance = reactInstances[i];
-                if (reactInstance.instanceUid === uuid) {
-                    reactInstance.wx = this;
-                    this.reactInstance = reactInstance;
-                    updateMiniApp(reactInstance);
-                    reactInstances.splice(i, 1);
-                    break;
-                }
-            }
-            if (!this.reactInstance) {
+            var instance = reactInstances.shift();
+            if (instance) {
+                /* eslint-disable-next-line */
+                console.log("created时为", name, "添加wx");
+                instance.wx = this;
+                this.reactInstance = instance;
+                updateMiniApp(instance);
+            } else {
+                /* eslint-disable-next-line */
+                console.log("created时为", name, "没有对应react实例");
                 wxInstances.push(this);
             }
         },

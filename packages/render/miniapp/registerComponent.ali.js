@@ -4,13 +4,10 @@ import { dispatchEvent } from './eventSystem';
 export function registerComponent(type, name) {
     type.ali = true;
     registeredComponents[name] = type;
-    var reactInstances = (type.reactInstances = []);
+    var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
     var hasInit = false;
-    function didMount() {
-        if (hasInit) {
-            return;
-        }
+    function didUpdate() {
         usingComponents[name] = type;
         var uid = this.props['data-instance-uid'];
         for (var i = reactInstances.length - 1; i >= 0; i--) {
@@ -30,35 +27,34 @@ export function registerComponent(type, name) {
             state: {},
             context: {}
         },
-        onInit() {
+        onInit: function onInit() {
             hasInit = true;
             usingComponents[name] = type;
             var instance = reactInstances.shift();
             if (instance) {
-                /* eslint-disable-next-line */
-                console.log("onMount时为", name, "添加wx");
                 instance.wx = this;
                 this.reactInstance = instance;
+                updateMiniApp(this.reactInstance);
             } else {
                 wxInstances.push(this);
             }
-            if (this.reactInstance) {
-                updateMiniApp(this.reactInstance);
+        },
+        didMount: function(){
+            if( !hasInit){
+                didUpdate.call(this);
             }
         },
-        didMount,
-        didUpdate: didMount,
-        didUnmount() {
-            let t = this.reactInstance;
+        didUpdate: didUpdate,
+        didUnmount: function didUnmount() {
+            var t = this.reactInstance;
             if (t) {
                 t.wx = null;
                 this.reactInstance = null;
             }
-            console.log('detached...', name);//eslint-disabled-line
+            console.log('detached...', name);
         },
-
         methods: {
-            dispatchEvent
+            dispatchEvent: dispatchEvent
         }
     };
 }
