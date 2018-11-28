@@ -14,6 +14,7 @@ export function dispatchEvent(e) {
     }
     const instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
+        console.log(eventType,'没有实例');
         return;
     }
     const app = _getApp();

@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-27
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-28
  */
 
 var arrayPush = Array.prototype.push;
@@ -998,6 +998,7 @@ function dispatchEvent(e) {
     }
     var instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
+        console.log(eventType, '没有实例');
         return;
     }
     var app = _getApp();
@@ -2319,20 +2320,23 @@ function onBeforeRender(fiber) {
     var type = fiber.type;
     var instance = fiber.stateNode;
     if (type.reactInstances) {
-        var uuid = fiber.props["data-instance-uid"] || "i" + getUUID();
+        var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
         instance.instanceUid = uuid;
         if (fiber.props.isPageComponent) {
             _getApp().page = instance;
         }
         var wxInstances = type.wxInstances;
         if (wxInstances) {
-            if (!instance.wx && wxInstances.length) {
-                var wx = instance.wx = wxInstances.shift();
-                wx.reactInstance = instance;
+            for (var i = wxInstances.length - 1; i >= 0; i--) {
+                var el = wxInstances[i];
+                if (el.dataset.instanceUid === uuid) {
+                    el.reactInstance = instance;
+                    instance.wx = el;
+                    wxInstances.splice(i, 1);
+                    break;
+                }
             }
-            if (!instance.wx) {
-                type.reactInstances.push(instance);
-            }
+            type.reactInstances.push(instance);
         }
     }
     if (!pageState.isReady && instance.componentDidMount) {
@@ -2385,14 +2389,18 @@ function registerComponent(type, name) {
         },
         attached: function attached() {
             usingComponents[name] = type;
-            var instance = reactInstances.shift();
-            if (instance) {
-                console.log("created时为", name, "添加wx");
-                instance.wx = this;
-                this.reactInstance = instance;
-                updateMiniApp(instance);
-            } else {
-                console.log("created时为", name, "没有对应react实例");
+            var uuid = this.dataset.instanceUid;
+            for (var i = reactInstances.length - 1; i >= 0; i--) {
+                var reactInstance = reactInstances[i];
+                if (reactInstance.instanceUid === uuid) {
+                    reactInstance.wx = this;
+                    this.reactInstance = reactInstance;
+                    updateMiniApp(reactInstance);
+                    reactInstances.splice(i, 1);
+                    break;
+                }
+            }
+            if (!this.reactInstance) {
                 wxInstances.push(this);
             }
         },

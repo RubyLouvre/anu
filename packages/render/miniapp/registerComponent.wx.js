@@ -17,6 +17,7 @@ export function registerComponent(type, name) {
                 usingComponents[name] = type;
                 //https://github.com/RubyLouvre/anu/issues/531
                 var uuid = this.dataset.instanceUid;
+                console.log('attached', uuid);
                 for (var i = reactInstances.length - 1; i >= 0; i--) {
                     var reactInstance = reactInstances[i];
                     if (reactInstance.instanceUid === uuid) {
@@ -37,7 +38,7 @@ export function registerComponent(type, name) {
                     t.wx = null;
                     this.reactInstance = null;
                 }
-                console.log('detached...', name);//eslint-disabled-line
+                console.log('detached...', name); //eslint-disabled-line
             }
         },
         methods: {

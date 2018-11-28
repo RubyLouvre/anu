@@ -17,13 +17,11 @@ export function onBeforeRender(fiber) {
         //只处理component目录下的组件
         let wxInstances = type.wxInstances;
         if (wxInstances) {
-            var hit = false;
             for (var i = wxInstances.length - 1; i >= 0; i--) {
                 var el = wxInstances[i];
                 if (el.dataset.instanceUid === uuid) {
                     el.reactInstance = instance;
                     instance.wx = el;
-                    hit = true;
                     wxInstances.splice(i, 1);
                     break;
                 }

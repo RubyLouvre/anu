@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-27
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-11-28
  * IE9+
  */
 
@@ -979,6 +979,7 @@ function dispatchEvent(e) {
     }
     var instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
+        console.log(eventType, '没有实例');
         return;
     }
     var app = _getApp();
@@ -2494,6 +2495,7 @@ function registerComponent(type, name) {
             attached: function attached() {
                 usingComponents[name] = type;
                 var uuid = this.dataset.instanceUid;
+                console.log('attached', uuid);
                 for (var i = reactInstances.length - 1; i >= 0; i--) {
                     var reactInstance = reactInstances[i];
                     if (reactInstance.instanceUid === uuid) {

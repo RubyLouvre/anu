@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-27
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-11-28
  */
 
 var arrayPush = Array.prototype.push;
@@ -901,7 +901,8 @@ var aliApis = function aliApis(api) {
             return api.showToast(a);
         },
         showLoading: function _(a) {
-            a.content = a.title;
+            a = a || {};
+            a.content = a.title || '加载中...';
             return api.showLoading(a);
         },
         setNavigationBarTitle: function _(a) {
@@ -1114,6 +1115,7 @@ function dispatchEvent(e) {
     }
     var instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
+        console.log(eventType, '没有实例');
         return;
     }
     var app = _getApp();
