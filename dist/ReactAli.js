@@ -1077,6 +1077,7 @@ function isReferenceType(val) {
 function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
+    props.key = props.key || props['data-instance-uid'] || new Date() - 0;
     delete props.is;
     var args = [].slice.call(arguments, 2);
     args.unshift(clazz, props);
@@ -2537,7 +2538,7 @@ function registerComponent(type, name) {
                 t.wx = null;
                 this.reactInstance = null;
             }
-            console.log('detached...', name);
+            console.log('detached ' + name + ' \u7EC4\u4EF6');
         },
         methods: {
             dispatchEvent: dispatchEvent

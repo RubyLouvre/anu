@@ -715,6 +715,7 @@ function apiRunner() {
 function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
+    props.key = props.key || props['data-instance-uid'] || new Date() - 0;
     delete props.is;
     var args = [].slice.call(arguments, 2);
     args.unshift(clazz, props);
@@ -2579,18 +2580,7 @@ function onBeforeRender(fiber) {
         }
         var wxInstances = type.wxInstances;
         if (wxInstances) {
-            for (var i = wxInstances.length - 1; i >= 0; i--) {
-                var el = wxInstances[i];
-                if (el.dataset.instanceUid === uuid) {
-                    el.reactInstance = instance;
-                    instance.wx = el;
-                    wxInstances.splice(i, 1);
-                    break;
-                }
-            }
-            if (!instance.wx) {
-                type.reactInstances.push(instance);
-            }
+            type.reactInstances.push(instance);
         }
     }
     if (!pageState.isReady && instance.componentDidMount) {
@@ -2656,24 +2646,30 @@ function registerComponent(type, name) {
         },
         onInit: function onInit() {
             usingComponents[name] = type;
-            var instance = reactInstances.shift();
-            if (instance) {
-                console.log("created时为", name, "添加wx");
-                instance.wx = this;
-                this.reactInstance = instance;
-            } else {
-                console.log("created时为", name, "没有对应react实例");
+        },
+        onReady: function onReady() {
+            var uuid = this.dataInstanceUid;
+            for (var i = 0; i < reactInstances.length; i++) {
+                var reactInstance = reactInstances[i];
+                if (reactInstance.instanceUid === uuid) {
+                    reactInstance.wx = this;
+                    this.reactInstance = reactInstance;
+                    updateMiniApp(reactInstance);
+                    reactInstances.splice(i, 1);
+                    break;
+                }
+            }
+            if (!this.reactInstance) {
                 wxInstances.push(this);
             }
         },
-        onReady: function onReady() {
-            if (this.reactInstance) {
-                updateMiniApp(this.reactInstance);
-                console.log("attached时更新", name);
-            }
-        },
         onDestroy: function onDestroy() {
-            this.reactInstance = null;
+            var t = this.reactInstance;
+            if (t) {
+                t.wx = null;
+                this.reactInstance = null;
+            }
+            console.log('detached ' + name + ' \u7EC4\u4EF6');
         },
         dispatchEvent: dispatchEvent
     };

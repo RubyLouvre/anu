@@ -40,7 +40,7 @@ export function registerComponent(type, name) {
             }
         },
         didMount: function(){
-            if( !hasInit){
+            if ( !hasInit){
                 didUpdate.call(this);
             }
         },
@@ -51,7 +51,7 @@ export function registerComponent(type, name) {
                 t.wx = null;
                 this.reactInstance = null;
             }
-            console.log('detached...', name);
+            console.log(`detached ${name} 组件`); //eslint-disabled-line
         },
         methods: {
             dispatchEvent: dispatchEvent

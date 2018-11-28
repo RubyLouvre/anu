@@ -14,8 +14,22 @@ export function registerComponent(type, name) {
 
         attached() {
             usingComponents[name] = type;
+
+            var instance = reactInstances.shift();
+            if (instance) {
+                /* eslint-disable-next-line */
+                console.log("created时为", name, "添加wx");
+                instance.wx = this;
+                this.reactInstance = instance;
+                updateMiniApp(instance);
+            } else {
+                /* eslint-disable-next-line */
+                console.log("created时为", name, "没有对应react实例");
+                wxInstances.push(this);
+            }
+            /*
             var uuid = this.dataset.instanceUid;
-            for (var i = reactInstances.length - 1; i >= 0; i--) {
+            for (var i = 0; i < reactInstances.length; i++) {
                 var reactInstance = reactInstances[i];
                 if (reactInstance.instanceUid === uuid) {
                     reactInstance.wx = this;
@@ -28,6 +42,7 @@ export function registerComponent(type, name) {
             if (!this.reactInstance) {
                 wxInstances.push(this);
             }
+            */
         },
         detached() {
             let t = this.reactInstance;
@@ -35,7 +50,7 @@ export function registerComponent(type, name) {
                 t.wx = null;
                 this.reactInstance = null;
             }
-            console.log('detached...', name);//eslint-disabled-line
+            console.log(`detached ${name} 组件`); //eslint-disabled-line
         },
         dispatchEvent
     };

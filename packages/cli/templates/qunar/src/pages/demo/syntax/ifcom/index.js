@@ -1,5 +1,7 @@
 import React from '@react';
 import Label from '@components/Label/index';
+import './index.scss';
+
 /* eslint no-console: 0 */
 
 class P extends React.Component {

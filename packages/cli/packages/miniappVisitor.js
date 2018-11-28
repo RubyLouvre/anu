@@ -503,28 +503,26 @@ module.exports = {
                 astPath.node.name.name = "React.useComponent";
 
                 // eslint-disable-next-line
-                var attributes = astPath.node.attributes;
+                var attrs = astPath.node.attributes;
                 modules.is && modules.is.push(nodeName);
-                attributes.push(
+                attrs.push(
                     t.JSXAttribute(
                         t.JSXIdentifier("is"),
                         t.jSXExpressionContainer(t.stringLiteral(nodeName))
                     )
                 );
-                if (buildType != 'quick') {
-                   
-                    attributes.push(
-                        utils.createAttribute(
-                            "data-instance-uid",
-                            utils.createDynamicAttributeValue(
-                                "i",
-                                astPath,
-                                modules.indexArr || ["0"]
-                            )
+              
+                attrs.push(
+                    utils.createAttribute(
+                        "data-instance-uid",
+                        utils.createDynamicAttributeValue(
+                            "i",
+                            astPath,
+                            modules.indexArr || ["0"]
                         )
-                    );
-                }
-
+                    )
+                );
+                
             } else {
                 if (nodeName != "React.useComponent") {
                     helpers.nodeName(astPath, modules);
@@ -558,7 +556,10 @@ module.exports = {
                 let attrs = parentPath.node.attributes;
                 let expr = attrValue.expression;
                 let nodeName = parentPath.node.name.name;
-                if (/^(?:on|catch)[A-Z]/.test(attrName) && !/[A-Z]/.test(nodeName)) {
+                if (
+                    /^(?:on|catch)[A-Z]/.test(attrName) &&
+                    !/[A-Z]/.test(nodeName)
+                ) {
                     var prefix = attrName.charAt(0) == "o" ? "on" : "catch";
                     var eventName = attrName.replace(prefix, "");
                     var otherEventName = utils.getEventName(
@@ -576,22 +577,24 @@ module.exports = {
                     attrs.push(
                         utils.createAttribute(
                             name,
-                            utils.createDynamicAttributeValue('e', astPath, modules.indexArr)
-                          //  "e" + utils.createUUID(astPath)
+                            utils.createDynamicAttributeValue(
+                                "e",
+                                astPath,
+                                modules.indexArr
+                            )
+                            //  "e" + utils.createUUID(astPath)
                         )
                     );
                     //以下标签，如果绑定了事件，我们会加上data-beacon-uid，实现日志自动上传
-                    if (!attrs.setClassCode &&
+                    if (
+                        !attrs.setClassCode &&
                         !attrs.some(function(el) {
                             return el.name.name == "data-beacon-uid";
                         })
                     ) {
                         //自动添加
                         attrs.push(
-                            utils.createAttribute(
-                                "data-beacon-uid",
-                                "default"
-                            )
+                            utils.createAttribute("data-beacon-uid", "default")
                         );
                     }
                     attrs.setClassCode = true;
@@ -685,15 +688,15 @@ module.exports = {
         if (astPath.parentPath.node.type == "JSXElement") {
             var open = astPath.parentPath.node.openingElement;
             var value = astPath.node.value.trim();
-            if(value === ""){
-                astPath.remove()
-                return
+            if (value === "") {
+                astPath.remove();
+                return;
             }
             if (
                 /quick|wx/.test(config.buildType) &&
                 inlineElement[open.name.name]
             ) {
-               astPath.node.value = value;
+                astPath.node.value = value;
             }
         }
     },

@@ -941,6 +941,7 @@ function isReferenceType(val) {
 function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
+    props.key = props.key || props['data-instance-uid'] || new Date() - 0;
     delete props.is;
     var args = [].slice.call(arguments, 2);
     args.unshift(clazz, props);
@@ -2302,7 +2303,9 @@ function onBeforeRender(fiber) {
     var instance = fiber.stateNode;
     if (type.reactInstances) {
         var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
-        instance.instanceUid = uuid;
+        if (!instance.instanceUid) {
+            instance.instanceUid = uuid;
+        }
         if (fiber.props.isPageComponent) {
             _getApp().page = instance;
         }
@@ -2495,8 +2498,7 @@ function registerComponent(type, name) {
             attached: function attached() {
                 usingComponents[name] = type;
                 var uuid = this.dataset.instanceUid;
-                console.log('attached', uuid);
-                for (var i = reactInstances.length - 1; i >= 0; i--) {
+                for (var i = 0; i < reactInstances.length; i++) {
                     var reactInstance = reactInstances[i];
                     if (reactInstance.instanceUid === uuid) {
                         reactInstance.wx = this;
@@ -2516,7 +2518,7 @@ function registerComponent(type, name) {
                     t.wx = null;
                     this.reactInstance = null;
                 }
-                console.log('detached...', name);
+                console.log('detached ' + name + ' \u7EC4\u4EF6');
             }
         },
         methods: {

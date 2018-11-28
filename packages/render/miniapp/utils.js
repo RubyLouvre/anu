@@ -103,6 +103,7 @@ export function apiRunner(arg = {}, apiCallback, apiPromise) {
 export function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
+    props.key = props.key || props['data-instance-uid'] || new Date - 0;
     delete props.is;
     var args = [].slice.call(arguments, 2);
     args.unshift(clazz, props);

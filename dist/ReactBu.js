@@ -960,6 +960,7 @@ function isReferenceType(val) {
 function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
+    props.key = props.key || props['data-instance-uid'] || new Date() - 0;
     delete props.is;
     var args = [].slice.call(arguments, 2);
     args.unshift(clazz, props);
@@ -2389,18 +2390,14 @@ function registerComponent(type, name) {
         },
         attached: function attached() {
             usingComponents[name] = type;
-            var uuid = this.dataset.instanceUid;
-            for (var i = reactInstances.length - 1; i >= 0; i--) {
-                var reactInstance = reactInstances[i];
-                if (reactInstance.instanceUid === uuid) {
-                    reactInstance.wx = this;
-                    this.reactInstance = reactInstance;
-                    updateMiniApp(reactInstance);
-                    reactInstances.splice(i, 1);
-                    break;
-                }
-            }
-            if (!this.reactInstance) {
+            var instance = reactInstances.shift();
+            if (instance) {
+                console.log("created时为", name, "添加wx");
+                instance.wx = this;
+                this.reactInstance = instance;
+                updateMiniApp(instance);
+            } else {
+                console.log("created时为", name, "没有对应react实例");
                 wxInstances.push(this);
             }
         },
@@ -2410,7 +2407,7 @@ function registerComponent(type, name) {
                 t.wx = null;
                 this.reactInstance = null;
             }
-            console.log('detached...', name);
+            console.log('detached ' + name + ' \u7EC4\u4EF6');
         },
         dispatchEvent: dispatchEvent
     };
