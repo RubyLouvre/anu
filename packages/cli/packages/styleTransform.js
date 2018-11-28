@@ -5,9 +5,10 @@ const config = require('./config');
 const utils = require('./utils');
 const exitName = config[config['buildType']].styleExt;
 const crypto = require('crypto');
-const {compileSass, compileLess}= require('./stylesTransformer/postcssTransform');
+const compileSassByPostCss = require('./stylesTransformer/postcssTransformSass');
+const compileSass = require('./stylesTransformer/transformSass');
+const compileLess = require('./stylesTransformer/transformLess');
 let cache = {};
-
 //缓存层，避免重复编译
 let needUpdate = (id, originalCode, fn) => {
     let sha1 = crypto
@@ -21,22 +22,23 @@ let needUpdate = (id, originalCode, fn) => {
 };
 
 //获取dist路径
-const getDist = (filePath) =>{
+let getDist = (filePath) =>{
     filePath = utils.resolvePatchComponentPath(filePath);
     let dist = utils.updatePath(filePath, config.sourceDir, 'dist');
     let { name, dir} =  path.parse(dist);
     return path.join(dir, `${name}.${exitName}`);
 };
 
+let hasNodeSass = utils.hasNpm('node-sass');
 const compilerMap = {
     '.less': compileLess,
     '.css':  compileLess,
-    '.sass': compileSass,
-    '.scss': compileSass
+    '.sass': hasNodeSass ? compileSass : compileSassByPostCss,
+    '.scss': hasNodeSass ? compileSass : compileSassByPostCss
 };
 
 function runCompileStyle(filePath, originalCode){
-    needUpdate(filePath, originalCode, async ()=>{
+    needUpdate(filePath, originalCode,  ()=>{
         let exitName = path.extname(filePath);
         compilerMap[exitName](filePath, originalCode)
             .then((result)=>{

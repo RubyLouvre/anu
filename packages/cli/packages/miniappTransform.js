@@ -10,15 +10,18 @@ let config = require('./config');
 let quickFiles = require('./quickFiles');
 let queue = require('./queue');
 let utils = require('./utils');
-
-const {compileSass, compileLess}= require('./stylesTransformer/postcssTransform');
+let cwd = process.cwd();
+const compileSassByPostCss = require('./stylesTransformer/postcssTransformSass');
+const compileSass = require('./stylesTransformer/transformSass');
+const compileLess = require('./stylesTransformer/transformLess');
+const hasNodeSass = utils.hasNpm('node-sass');
 const styleCompilerMap = {
     '.less': compileLess,
-    '.css': compileLess,
-    'sass': compileSass,
-    'scss': compileSass
+    '.css':  compileLess,
+    '.sass': hasNodeSass ? compileSass : compileSassByPostCss,
+    '.scss': hasNodeSass ? compileSass : compileSassByPostCss
 };
-let cwd = process.cwd();
+
 
 let componentOrAppOrPageReg = utils.getComponentOrAppOrPageReg();
 //抽离async/await语法支持，可能非App/Component/Page业务中也包含async/await语法

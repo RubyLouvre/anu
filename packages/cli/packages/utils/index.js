@@ -572,6 +572,16 @@ let utils = {
     getComponentOrAppOrPageReg() {
         return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
     },
+    hasNpm(npmName) {
+        let flag = false;
+        try {
+            nodeResolve.sync(npmName, { basedir: process.cwd()});
+            flag = true;
+        } catch (err){
+            // eslint-disable-next-line
+        }
+        return flag;
+    },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
 
