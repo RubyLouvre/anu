@@ -1,23 +1,20 @@
-import { hasOwnProperty } from 'react-core/util';
+import { hasOwnProperty, noop } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
-import { noop } from 'react-core/util';
 
-function _uuid() {
-    return (Math.random() + '').slice(-4);
-}
+
 export var shareObject = {
     app: {}
 };
 function _getApp() {
     return shareObject.app;
 }
-if (typeof getApp == 'function') {
+if (typeof getApp === 'function') {    
     _getApp = getApp;//esline-disabled-line;
 }
 export { _getApp };
-export function callGlobalHook(method, e){
+export function callGlobalHook(method, e) {
     var app = _getApp();
-    if (app && app[method]){
+    if (app && app[method]) {
         return app[method](e);
     }
 }
@@ -33,17 +30,11 @@ export function _getCurrentPages() {
         return getCurrentPages(); //eslint-disable-line
     }
 }
-export function getUUID() {
-    return _uuid() + _uuid();
-}
+
 //用于保存所有用miniCreateClass创建的类，然后在事件系统中用到
 export var classCached = {};
 
-export function newData() {
-    return {
-        components: {}
-    };
-}
+
 export function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
         return;
@@ -61,7 +52,7 @@ export function updateMiniApp(instance) {
 }
 
 function updateQuickApp(quick, data) {
-    for (var i in data){
+    for (var i in data) {
         quick.$set(i, data[i]);
     }
 }
@@ -74,9 +65,9 @@ function isReferenceType(val) {
     );
 }
 
-export function runFunction(fn, ...args) {
+export function runFunction(fn, a, b) {
     if (typeof fn == 'function') {
-        fn.call(null, ...args);
+        fn.call(null, a, b);
     }
 }
 
@@ -103,6 +94,7 @@ export function apiRunner(arg = {}, apiCallback, apiPromise) {
 export function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
+    //确保两个相邻的业务组件的数据不会串了
     props.key = props.key || props['data-instance-uid'] || new Date - 0;
     delete props.is;
     var args = [].slice.call(arguments, 2);

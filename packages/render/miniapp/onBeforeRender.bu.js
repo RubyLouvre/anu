@@ -1,9 +1,9 @@
-import { getUUID, delayMounts, pageState, _getApp } from './utils';
+import { delayMounts, pageState, _getApp } from './utils';
 export function onBeforeRender(fiber) {
     let type = fiber.type;
     let instance = fiber.stateNode;
     if (type.reactInstances) {
-        let uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
+        let uuid = fiber.props['data-instance-uid'] || null;
         if (!instance.instanceUid) {
             instance.instanceUid = uuid;
         }

@@ -1018,16 +1018,13 @@ var aliApis = function aliApis(api) {
 };
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-function _uuid() {
-    return (Math.random() + '').slice(-4);
-}
 var shareObject = {
     app: {}
 };
 function _getApp() {
     return shareObject.app;
 }
-if (typeof getApp == 'function') {
+if (typeof getApp === 'function') {
     _getApp = getApp;
 }
 function callGlobalHook(method, e) {
@@ -1047,9 +1044,6 @@ function _getCurrentPages() {
     if (typeof getCurrentPages === 'function') {
         return getCurrentPages();
     }
-}
-function getUUID() {
-    return _uuid() + _uuid();
 }
 function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
@@ -2438,7 +2432,7 @@ function onBeforeRender(fiber) {
     var type = fiber.type;
     var instance = fiber.stateNode;
     if (type.reactInstances) {
-        var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
+        var uuid = fiber.props['data-instance-uid'] || null;
         if (!instance.instanceUid) {
             instance.instanceUid = uuid;
         }
@@ -2495,17 +2489,18 @@ function registerComponent(type, name) {
     var hasInit = false;
     function didUpdate() {
         usingComponents[name] = type;
-        var uid = this.props['data-instance-uid'];
+        var uuid = this.props['data-instance-uid'] || null;
         for (var i = reactInstances.length - 1; i >= 0; i--) {
             var reactInstance = reactInstances[i];
-            if (reactInstance.instanceUid === uid) {
+            if (reactInstance.instanceUid === uuid) {
                 reactInstance.wx = this;
                 this.reactInstance = reactInstance;
                 updateMiniApp(reactInstance);
                 reactInstances.splice(i, 1);
-                break;
+                return;
             }
         }
+        wxInstances.push(this);
     }
     return {
         data: {
@@ -2515,15 +2510,7 @@ function registerComponent(type, name) {
         },
         onInit: function onInit() {
             hasInit = true;
-            usingComponents[name] = type;
-            var instance = reactInstances.shift();
-            if (instance) {
-                instance.wx = this;
-                this.reactInstance = instance;
-                updateMiniApp(this.reactInstance);
-            } else {
-                wxInstances.push(this);
-            }
+            didUpdate.call(this);
         },
         didMount: function didMount() {
             if (!hasInit) {

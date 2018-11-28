@@ -625,16 +625,13 @@ function createEvent(e, target, type) {
 }
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-function _uuid() {
-    return (Math.random() + '').slice(-4);
-}
 var shareObject = {
     app: {}
 };
 function _getApp() {
     return shareObject.app;
 }
-if (typeof getApp == 'function') {
+if (typeof getApp === 'function') {
     _getApp = getApp;
 }
 function callGlobalHook(method, e) {
@@ -654,9 +651,6 @@ function _getCurrentPages() {
     if (typeof getCurrentPages === 'function') {
         return getCurrentPages();
     }
-}
-function getUUID() {
-    return _uuid() + _uuid();
 }
 function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
@@ -681,17 +675,14 @@ function updateQuickApp(quick, data) {
 function isReferenceType(val) {
     return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
 }
-function runFunction(fn) {
+function runFunction(fn, a, b) {
     if (typeof fn == 'function') {
-        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-            args[_key - 1] = arguments[_key];
-        }
-        fn.call.apply(fn, [null].concat(args));
+        fn.call(null, a, b);
     }
 }
 function functionCount() {
-    for (var _len2 = arguments.length, fns = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-        fns[_key2] = arguments[_key2];
+    for (var _len = arguments.length, fns = Array(_len), _key = 0; _key < _len; _key++) {
+        fns[_key] = arguments[_key];
     }
     return fns.map(function (fn) {
         return typeof fn === 'function';
@@ -2573,7 +2564,7 @@ function onBeforeRender(fiber) {
     var type = fiber.type;
     var instance = fiber.stateNode;
     if (type.reactInstances) {
-        var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
+        var uuid = fiber.props['data-instance-uid'] || null;
         if (!instance.instanceUid) {
             instance.instanceUid = uuid;
         }
@@ -2650,20 +2641,17 @@ function registerComponent(type, name) {
             usingComponents[name] = type;
         },
         onReady: function onReady() {
-            var uuid = this.dataInstanceUid;
+            var uuid = this.dataInstanceUid || null;
             for (var i = 0; i < reactInstances.length; i++) {
                 var reactInstance = reactInstances[i];
                 if (reactInstance.instanceUid === uuid) {
                     reactInstance.wx = this;
                     this.reactInstance = reactInstance;
                     updateMiniApp(reactInstance);
-                    reactInstances.splice(i, 1);
-                    break;
+                    return reactInstances.splice(i, 1);
                 }
             }
-            if (!this.reactInstance) {
-                wxInstances.push(this);
-            }
+            wxInstances.push(this);
         },
         onDestroy: function onDestroy() {
             var t = this.reactInstance;

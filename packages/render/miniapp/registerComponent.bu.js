@@ -14,21 +14,17 @@ export function registerComponent(type, name) {
 
         attached() {
             usingComponents[name] = type;
-
-            var uuid = this.dataset.instanceUid;
+            var uuid = this.dataset.instanceUid || null;
             for (var i = 0; i < reactInstances.length; i++) {
                 var reactInstance = reactInstances[i];
                 if (reactInstance.instanceUid === uuid) {
                     reactInstance.wx = this;
                     this.reactInstance = reactInstance;
                     updateMiniApp(reactInstance);
-                    reactInstances.splice(i, 1);
-                    break;
+                    return reactInstances.splice(i, 1);
                 }
             }
-            if (!this.reactInstance) {
-                wxInstances.push(this);
-            }
+            wxInstances.push(this);
         },
         detached() {
             let t = this.reactInstance;

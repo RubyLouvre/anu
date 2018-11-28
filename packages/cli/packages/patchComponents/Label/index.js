@@ -40,3 +40,4 @@ class Label extends React.Component {
     }
 }
 export default Label;
+

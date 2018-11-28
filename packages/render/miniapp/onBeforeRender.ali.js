@@ -1,9 +1,9 @@
-import { getUUID, delayMounts, pageState, _getApp } from './utils';
+import { delayMounts, pageState, _getApp } from './utils';
 export function onBeforeRender(fiber) {
     let type = fiber.type;
     let instance = fiber.stateNode;
     if (type.reactInstances) {
-        let uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
+        let uuid = fiber.props['data-instance-uid'] || null;
         if (!instance.instanceUid) {
             instance.instanceUid = uuid;
         }
@@ -14,9 +14,7 @@ export function onBeforeRender(fiber) {
         //只处理component目录下的组件
         let wxInstances = type.wxInstances;
         if (wxInstances) {
-           
             type.reactInstances.push(instance);
-            
         }
     }
     if (!pageState.isReady && instance.componentDidMount) {

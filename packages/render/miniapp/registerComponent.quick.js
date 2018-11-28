@@ -6,11 +6,11 @@ export function registerComponent(type, name) {
     var reactInstances = (type.reactInstances = []);
     var wxInstances = (type.wxInstances = []);
     return {
-        data(){
+        data() {
             return {
                 props: {},
                 state: {},
-                context:{}
+                context: {}
             };
         },
 
@@ -18,20 +18,17 @@ export function registerComponent(type, name) {
             usingComponents[name] = type;
         },
         onReady() {
-            var uuid = this.dataInstanceUid;
+            var uuid = this.dataInstanceUid || null;
             for (var i = 0; i < reactInstances.length; i++) {
                 var reactInstance = reactInstances[i];
                 if (reactInstance.instanceUid === uuid) {
                     reactInstance.wx = this;
                     this.reactInstance = reactInstance;
                     updateMiniApp(reactInstance);
-                    reactInstances.splice(i, 1);
-                    break;
+                    return reactInstances.splice(i, 1);
                 }
             }
-            if (!this.reactInstance) {
-                wxInstances.push(this);
-            }
+            wxInstances.push(this);
         },
         onDestroy() {
             let t = this.reactInstance;
@@ -42,6 +39,6 @@ export function registerComponent(type, name) {
             console.log(`detached ${name} 组件`); //eslint-disabled-line
         },
         dispatchEvent
-        
+
     };
 }
