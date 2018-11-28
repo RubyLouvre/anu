@@ -30,7 +30,7 @@ if (hasNativePerformanceNow) {
         return localDate.now();
     };
 }
-]
+
 
 if (!requestAnimationFrameForReact) {
     const timeoutIds = new Map();

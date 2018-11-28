@@ -21,8 +21,9 @@ export var aliApis = function(api) {
             return api.showToast(a);
         },
         showLoading: function _(a) {
-            a.content = a.title;
-            return api.showLoading(a);
+          a = a || {}
+          a.content =  a.title || '加载中...';
+          return api.showLoading(a);
         },
         // 导航类
         setNavigationBarTitle: function _(a) {

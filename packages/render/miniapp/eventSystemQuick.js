@@ -76,6 +76,6 @@ function createEvent(e, target, type) {
     event.preventDefault = e.preventDefault.bind(e);
     event.target = target;
     event.type = type;
-    event.timeStamp = new Date() - 0;
+    event.timeStamp = Date.now();
     return event;
 }
