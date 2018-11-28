@@ -16,10 +16,10 @@ const compileSass = require('./stylesTransformer/transformSass');
 const compileLess = require('./stylesTransformer/transformLess');
 const hasNodeSass = utils.hasNpm('node-sass');
 const styleCompilerMap = {
-    '.less': compileLess,
-    '.css':  compileLess,
-    '.sass': hasNodeSass ? compileSass : compileSassByPostCss,
-    '.scss': hasNodeSass ? compileSass : compileSassByPostCss
+    'less': compileLess,
+    'css':  compileLess,
+    'sass': hasNodeSass ? compileSass : compileSassByPostCss,
+    'scss': hasNodeSass ? compileSass : compileSassByPostCss
 };
 
 

@@ -6,98 +6,93 @@ const config = require('../config');
 const utils = require('../utils');
 const exitName = config[config['buildType']].styleExt;
 
-
 //获取dist路径
 let getDist = (filePath) =>{
     filePath = utils.resolvePatchComponentPath(filePath);
     let dist = utils.updatePath(filePath, config.sourceDir, 'dist');
     let { name, dir} =  path.parse(dist);
-    return path.join(dir, `${name}.${exitName}`);
+    return path.join(dir, `${name}.${exitName || 'scss'}`);
+};
+
+
+//过滤mixins, variables, functions
+const nodeSassFilterImporter = ()=>{
+    const cssNodeExtract = require('css-node-extract');
+    const postcssSyntax = require('postcss-scss');
+    const filterFeature = ['variables', 'mixins', 'functions'];
+    return function importer(importerPath, prevPath){
+        if ( !(importerPath.endsWith('.scss') || importerPath.endsWith('.sass')) ) {
+            importerPath = importerPath + '.scss';
+        }
+        //处理alias
+        let relPath = utils.resolveStyleAlias(importerPath, path.dirname(prevPath));
+        //获取@import依赖的绝对路径
+        let abPath = path.resolve( path.dirname(prevPath), relPath);
+
+        let contents = cssNodeExtract.processSync({
+            filters: filterFeature,
+            css: fs.readFileSync(abPath).toString(),
+            postcssSyntax: postcssSyntax
+        });
+        
+        return {
+            file: importerPath,
+            contents: contents
+        };
+    };
 };
 
 let cache = {};
 const compileSass = (filePath) =>{
     const sass = require( path.join(process.cwd(), 'node_modules', 'node-sass') );
-    const cssNodeExtract = require('css-node-extract');
-    const importerDep = [];
+    cache[filePath] = true;
     return new Promise((resolve, reject)=>{
         sass.render(
             {
                 file: filePath,
                 importer: [
-                   
-                    (importerPath, prevPath)=>{
-
-                        if ( !(importerPath.endsWith('.scss') || importerPath.endsWith('.sass')) ) {
-                            importerPath = importerPath + '.scss';
-                        }
-
-                        
-                        importerPath = utils.resolveStyleAlias(importerPath, path.dirname(filePath));
-                        //收集依赖关系
-                        if (!importerDep.includes(importerPath)) {
-                            importerDep.push(importerPath);
-                        }
-                        let resolvePath = path.resolve(path.dirname(prevPath), importerPath);
-                       
-                        //提取mixins, variables, functions
-                        let contents = cssNodeExtract.processSync({
-                            filters: ['variables', 'mixins', 'functions'],
-                            css: fs.readFileSync(resolvePath).toString(),
-                            postcssSyntax: require('postcss-scss')
-                        });
-
-                        return {
-                            file: importerPath,
-                            contents: contents || ''
-                        };
-                        
-                    },
-                    
-                    
+                    nodeSassFilterImporter()
                 ]
             },
             (err, result)=>{
                 if (err) {
                     reject(err);
-                } else {
-                    cache[filePath] = true;
-                    let code = validateStyle(result.css.toString());
-                    
-                    //合并@import依赖语句
-                    let importCode = importerDep.map((file)=>{
-                        return `@import '${file.replace(/\.s[ca]ss$/, `.${exitName}`)}';`;
-                    });
-                    code = importCode.join('\n') + '\n' + code;
-
-                    resolve({
-                        code: code
-                    });
+                    return;
                 }
 
+                let code = validateStyle(result.css.toString());
+                //includedFiles第一项为entry
+                let deps = result.stats.includedFiles.slice(1);
                 
+                deps = deps.map((importerPath)=>{
+                    return utils.resolveStyleAlias(importerPath, path.dirname(filePath));
+                });
                 
+                //合并@import依赖语句
+                let importCode = deps.map((importer)=>{
+                    return `@import '${importer.replace(/\.s[ca]ss$/, `.${exitName || 'scss' }`)}';`;
+                });
+                code = importCode.join('\n') + '\n' + code;
+
+                resolve({
+                    code: code
+                });
+                
+
                 //编译@import依赖资源
-                let deps = result.stats.includedFiles;
-                if (deps.length > 1) {
-                    deps = deps.slice(1);
-                    while (deps.length) {
-                        let p = deps.shift();
-                        if (cache[p]) return;
-                        p = path.resolve(path.dirname(filePath), p);
-                        
-                        compileSass(p)
-                            .then((res)=>{
-                                queue.push({
-                                    path:  getDist(p),
-                                    code: res.code
-                                });
+                while (deps.length) {
+                    let importer = deps.shift();
+                    let abPath = path.resolve(path.dirname(filePath), importer);
+                   
+                    if (cache[abPath]) return;
+                    compileSass(abPath)
+                        .then((res)=>{
+                            queue.push({
+                                path:  getDist(abPath),
+                                code: res.code
                             });
-                      
-                    }
+                        });
                 }
-
-
                
             }
         );

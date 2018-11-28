@@ -565,8 +565,10 @@ let utils = {
                 aliasMap[prefix],              
                 depLevel.slice(1).join('/')   //['@path', 'x', 'y.scss'] => 'x/y.scss'
             );
-            return path.relative(basedir, importer);
-        } 
+            let val = path.relative(basedir, importer);
+            val = /^\w/.test(val) ? `./${val}` : val;  //相对路径加./
+            return val;
+        }
         return importer;
     },
     getComponentOrAppOrPageReg() {

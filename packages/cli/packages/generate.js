@@ -7,7 +7,8 @@ const chalk = require('chalk');
 const cwd = process.cwd();
 const compress = utils.compress();
 const getSize = (code)=>{
-    return (Buffer.byteLength(code, 'utf8')/1000).toFixed(1);
+    let size = Buffer.byteLength(code, 'utf8')/1000;
+    return size  < 0.1 ? size.toFixed(2) : size.toFixed(1);
 };
 let sucSize = 0;
 module.exports = ()=>{

@@ -29,6 +29,7 @@ let getDist = (filePath) =>{
     return path.join(dir, `${name}.${exitName}`);
 };
 
+//用户工程下是否有node-sass
 let hasNodeSass = utils.hasNpm('node-sass');
 const compilerMap = {
     '.less': compileLess,
