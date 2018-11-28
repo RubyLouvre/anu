@@ -21,7 +21,7 @@ export var aliApis = function(api) {
             return api.showToast(a);
         },
         showLoading: function _(a) {
-            a.content = a.title;
+            a.content = a.title || '加载中...';
             return api.showLoading(a);
         },
         // 导航类
