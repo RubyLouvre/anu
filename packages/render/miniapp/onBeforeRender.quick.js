@@ -5,7 +5,9 @@ export function onBeforeRender(fiber) {
     //let noMount = !fiber.hasMounted;
     if (type.reactInstances) {
         let uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
-        instance.instanceUid = uuid;
+        if (!instance.instanceUid) {
+            instance.instanceUid = uuid;
+        }
         if (fiber.props.isPageComponent) {
             _getApp().page = instance;
         }

@@ -2,7 +2,7 @@ import { registeredComponents, usingComponents, updateMiniApp } from './utils';
 import { dispatchEvent } from './eventSystem';
 
 export function registerComponent(type, name) {
-    type.ali = true;
+    // type.ali = true;
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
@@ -45,6 +45,7 @@ export function registerComponent(type, name) {
             }
         },
         didUpdate: didUpdate,
+      
         didUnmount: function didUnmount() {
             var t = this.reactInstance;
             if (t) {

@@ -2439,15 +2439,15 @@ function onBeforeRender(fiber) {
     var instance = fiber.stateNode;
     if (type.reactInstances) {
         var uuid = fiber.props['data-instance-uid'] || 'i' + getUUID();
-        instance.instanceUid = uuid;
+        if (!instance.instanceUid) {
+            instance.instanceUid = uuid;
+        }
         if (fiber.props.isPageComponent) {
             _getApp().page = instance;
         }
         var wxInstances = type.wxInstances;
         if (wxInstances) {
-            if (!instance.wx) {
-                type.reactInstances.push(instance);
-            }
+            type.reactInstances.push(instance);
         }
     }
     if (!pageState.isReady && instance.componentDidMount) {
@@ -2489,7 +2489,6 @@ function toStyle(obj, props, key) {
 }
 
 function registerComponent(type, name) {
-    type.ali = true;
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
     var wxInstances = type.wxInstances = [];
