@@ -63,11 +63,15 @@ const compileSass = (filePath) =>{
                 let code = validateStyle(result.css.toString());
                 //includedFiles第一项为entry
                 let deps = result.stats.includedFiles.slice(1);
+
+                
                 
                 deps = deps.map((importerPath)=>{
                     return utils.resolveStyleAlias(importerPath, path.dirname(filePath));
                 });
                 
+                
+
                 //合并@import依赖语句
                 let importCode = deps.map((importer)=>{
                     return `@import '${importer.replace(/\.s[ca]ss$/, `.${exitName || 'scss' }`)}';`;
@@ -79,11 +83,12 @@ const compileSass = (filePath) =>{
                 });
                 
 
+                
+
                 //编译@import依赖资源
-                while (deps.length) {
-                    let importer = deps.shift();
+                deps.forEach((dep)=>{
+                    let importer = dep;
                     let abPath = path.resolve(path.dirname(filePath), importer);
-                   
                     if (cache[abPath]) return;
                     compileSass(abPath)
                         .then((res)=>{
@@ -91,8 +96,13 @@ const compileSass = (filePath) =>{
                                 path:  getDist(abPath),
                                 code: res.code
                             });
+                        })
+                        .catch((err)=>{
+                             // eslint-disable-next-line
+                            console.log(err);
                         });
-                }
+                });
+                
                
             }
         );

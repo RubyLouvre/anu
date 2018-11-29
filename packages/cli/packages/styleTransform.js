@@ -51,6 +51,7 @@ function runCompileStyle(filePath, originalCode){
                 });
             })
             .catch((err)=>{
+                // eslint-disable-next-line
                 console.log(filePath, '\n', err);
             });
     });

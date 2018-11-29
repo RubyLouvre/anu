@@ -87,8 +87,8 @@ const renderLess = (filePath, originalCode)=>{
                 });
            
                 //编译@import依赖资源
-                while (deps.length) {
-                    let importer = deps.shift();
+                deps.forEach((dep)=>{
+                    let importer = dep;
                     let abPath = path.resolve(path.dirname(filePath), importer);
                     if (cache[abPath]) return;
                     renderLess(abPath, fs.readFileSync(abPath).toString())
@@ -97,8 +97,12 @@ const renderLess = (filePath, originalCode)=>{
                                 path:  getDist(abPath),
                                 code: res.code
                             });
-                        });
-                }
+                        })
+                        .catch((err)=>{
+                           // eslint-disable-next-line
+                           console.log(err);
+                       });
+                });
 
             })
             .catch((err)=>{
