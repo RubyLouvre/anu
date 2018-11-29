@@ -1,19 +1,21 @@
 // 处理行内样式
-
-var rhyphen = /([a-z\d])([A-Z]+)/g;
-function hyphen(target) {
-    //转换为连字符风格
-    return target.replace(rhyphen, '$1-$2').toLowerCase();
+var rcamel = /-(\w)/g;
+var rpx = /(\d+)px/g;
+function camel(target) {
+    //转换为驼峰风格
+    return target.replace(rcamel, function(all, letter){
+        return letter.toUpperCase();
+    });
 }
 
 function transform(obj) {
     var ret = {};
     for (var i in obj){
-      let value = obj[i].toString();
-      value = value.replace(/(\d+)px/gi, (str, match) => {
-        return match + 'px';
-      });
-      ret[hyphen(i)] = value;
+        let value = obj[i]+'';
+        value = value.replace(rpx, (str, match) => {
+            return match + 'px';
+        });
+        ret[camel(i)] = value;
     }
     return ret;
 }

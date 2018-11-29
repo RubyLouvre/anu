@@ -15,6 +15,9 @@ class P extends React.Component {
                 },
                 {
                     name: '狗3'
+                },
+                {
+                    name: '狗4'
                 }
             ]
         };
@@ -22,23 +25,11 @@ class P extends React.Component {
 
     changeNumbers() {
         // eslint-disable-next-line
-        console.log('change');
-        this.setState({
-            array: [
-                {
-                    name: '狗1'
-                },
-                {
-                    name: '狗3'
-                },
-                {
-                    name: '狗4'
-                },
-                {
-                    name: '狗5'
-                }
-            ]
+        var array = this.state.array.concat();
+        array.push({
+            name: '狗' + (new Date - 0)
         });
+        this.setState({ array: array });
     }
 
     render() {

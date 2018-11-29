@@ -30,16 +30,16 @@ export function registerPage(PageClass, path) {
         onDestroy: onUnload
     };
     Array('onShow', 'onHide', 'onMenuPress').forEach(function(hook) {
-        config[hook] = function() {
+        config[hook] = function(e) {
             let instance = this.reactInstance;
            
             let fn = instance[hook];
             if (isFn(fn)) {
-                fn.apply(instance, arguments);
+                fn.call(instance, e);
             }
             let globalHook = globalHooks[hook];
-            if( globalHook ){
-                callGlobalHook(globalHook);
+            if ( globalHook ){
+                callGlobalHook(globalHook, e);
             }
         };
     });

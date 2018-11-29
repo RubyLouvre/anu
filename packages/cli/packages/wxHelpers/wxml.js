@@ -75,7 +75,7 @@ let visitor = {
                     astPath.parentPath.replaceWith(template);
                 } else if (openTag.property.name === 'useComponent') {
                     let is, instanceUid;
-                    // let modules = utils.getAnu(state);
+                    let attributes = [];
                     astPath.node.attributes.forEach(function(el) {
                         let attrName = el.name.name;
                         if (!el.value){//如果用户只写属性名，不写属性值，默认为true
@@ -97,17 +97,13 @@ let visitor = {
                         }
                         if (attrName === 'data-instance-uid') {
                             instanceUid = attrValue;
+                            attributes.push(utils.createAttribute(
+                                'data-instance-uid',
+                                `{{${instanceUid}}}`
+                            ));
                         }
                     });
-                    let attributes = [];
-                    if (config.buildType == 'ali') {
-                        attributes.push(
-                            utils.createAttribute(
-                                'instanceUid',
-                                `{{${instanceUid}}}`
-                            )
-                        );
-                    }
+
                     let template = utils.createElement(
                         is,
                         attributes,
@@ -143,7 +139,7 @@ let visitor = {
     },
     JSXText: {
         exit(astPath) {
-            if (config.buildType == 'quick') {
+            if (buildType == 'quick') {
                 let parentNode = astPath.parentPath.node;
                 let parentTag = parentNode.openingElement.name.name;
                 let children = parentNode.children;
