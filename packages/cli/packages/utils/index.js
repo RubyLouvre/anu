@@ -553,27 +553,37 @@ let utils = {
             }
         };
     },
-    resolveStyleAlias(importer) {
-       
+    resolveStyleAlias(importer, basedir) {
         //解析样式中的alias别名配置
         let aliasMap = userConfig && userConfig.alias || {};
         let depLevel = importer.split('/'); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
         let prefix = depLevel[0]; 
-        let url = '';
+       
         //将alias以及相对路径引用解析成绝对路径
         if (aliasMap[prefix] ) {
-            url = path.join(
+            importer = path.join(
                 cwd, 
                 aliasMap[prefix],              
                 depLevel.slice(1).join('/')   //['@path', 'x', 'y.scss'] => 'x/y.scss'
             );
-        } else {
-            url = importer;
+            let val = path.relative(basedir, importer);
+            val = /^\w/.test(val) ? `./${val}` : val;  //相对路径加./
+            return val;
         }
-        return url;
+        return importer;
     },
     getComponentOrAppOrPageReg() {
         return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
+    },
+    hasNpm(npmName) {
+        let flag = false;
+        try {
+            nodeResolve.sync(npmName, { basedir: process.cwd()});
+            flag = true;
+        } catch (err){
+            // eslint-disable-next-line
+        }
+        return flag;
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
