@@ -98,7 +98,7 @@ const compileSass = (filePath) =>{
                             });
                         })
                         .catch((err)=>{
-                             // eslint-disable-next-line
+                            // eslint-disable-next-line
                             console.log(err);
                         });
                 });

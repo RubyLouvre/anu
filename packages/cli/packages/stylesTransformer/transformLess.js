@@ -99,9 +99,9 @@ const renderLess = (filePath, originalCode)=>{
                             });
                         })
                         .catch((err)=>{
-                           // eslint-disable-next-line
+                            // eslint-disable-next-line
                            console.log(err);
-                       });
+                        });
                 });
 
             })
