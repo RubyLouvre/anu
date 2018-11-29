@@ -77,6 +77,7 @@ module.exports = function(astPath) {
         }
         case 'LogicalExpression':
         case 'UnaryExpression':
+        case 'ConditionalExpression':
             replaceWithExpr(astPath, attrValue.replace(/^\s*this\./, ''));
             break;
         case 'MemberExpression':
@@ -121,9 +122,8 @@ module.exports = function(astPath) {
                 throwEventValue(attrName, attrValue);
             }
             break;
-        case 'ConditionalExpression':
-            replaceWithExpr(astPath, attrValue.replace(/\s*this\./, ''));
-            break;
+      
+         
         default:
             break;
     }
