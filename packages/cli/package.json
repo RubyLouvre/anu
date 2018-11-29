@@ -13,7 +13,6 @@
   "license": "MIT",
   "devDependencies": {},
   "dependencies": {
-    "autoprefixer": "^9.3.1",
     "axios": "^0.18.0",
     "babel": "^6.23.0",
     "babel-core": "^6.26.3",
@@ -49,7 +48,6 @@
     "less": "^3.8.1",
     "less-import-aliases": "^1.0.2",
     "mathjs": "^5.2.3",
-    "node-sass-filter-importer": "^5.2.0",
     "ora": "^3.0.0",
     "postcss": "^7.0.6",
     "postcss-automath": "^1.0.1",
@@ -65,7 +63,6 @@
     "rollup-plugin-babel": "^3.0.7",
     "rollup-plugin-commonjs": "^9.1.6",
     "rollup-plugin-node-resolve": "^3.3.0",
-    "stylus": "^0.54.5",
     "uglify-es": "^3.3.9",
     "validate-npm-package-name": "^3.0.0"
   }
