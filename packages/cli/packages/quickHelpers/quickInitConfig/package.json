@@ -15,7 +15,7 @@
         "babel-plugin-syntax-jsx": "^6.18.0",
         "cross-env": "^5.1.4",
         "css-what": "^2.1.0",
-        "hap-toolkit": "0.0.36",
+        "hap-toolkit": "^0.0.38",
         "koa": "^2.3.0",
         "koa-body": "^2.5.0",
         "koa-router": "^7.2.1",
@@ -25,6 +25,6 @@
         "node-sass": "^4.9.4",
         "sass-loader": "^7.1.0",
         "socket.io": "^2.1.0",
-        "webpack": "^3.11.0"
+        "webpack": "^4"
     }
 }
