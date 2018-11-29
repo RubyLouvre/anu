@@ -511,7 +511,7 @@ module.exports = {
                         t.jSXExpressionContainer(t.stringLiteral(nodeName))
                     )
                 );
-              
+
                 attrs.push(
                     utils.createAttribute(
                         "data-instance-uid",
@@ -522,7 +522,6 @@ module.exports = {
                         )
                     )
                 );
-                
             } else {
                 if (nodeName != "React.useComponent") {
                     helpers.nodeName(astPath, modules);
@@ -643,6 +642,21 @@ module.exports = {
                         parentPath.renderProps = attrValue;
                         parentPath.renderUid = uuid;
                         modules.is = [];
+                    }
+                } else if (buildType === "quick") {
+                    if (attrName == "hidden") {
+                        //在快应用下hidden={a}变成show={!a}
+                        astPath.node.name.name = "show";
+                        attrValue.expression = t.unaryExpression(
+                            "!",
+                            expr,
+                            true
+                        );
+                    } else if (nodeName == "input" && attrName == "type") {
+                        //快应用input没有idcard|digit
+                        if (/idcard|digit/.test(astPath.node.value.value)) {
+                            astPath.node.value.value = "number";
+                        }
                     }
                 }
             }
