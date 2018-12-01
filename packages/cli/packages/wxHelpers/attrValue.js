@@ -5,7 +5,7 @@ const generate = require('babel-generator').default;
 const getStyleValue = require('../utils/getStyleValue');
 const buildType = require('../config').buildType;
 
-module.exports = function(astPath) {
+module.exports = function (astPath) {
     let expr = astPath.node.expression;
     let attrName = astPath.parent.name.name;
     let isEventRegex =
@@ -13,16 +13,8 @@ module.exports = function(astPath) {
             ? /^(on|catch)/
             : /^(bind|catch)/;
     let isEvent = isEventRegex.test(attrName);
-    if (isEvent ) { //处理事件
-        let eventHandle = generate(expr).code;
-        if (!/^\s*this\./.test(eventHandle)){
-            throwEventValue(attrName, eventHandle);
-        }
-        if ( buildType == 'quick'){
-            let n = attrName.charAt(0) === 'o' ? 2 : 5;
-            astPath.parent.name.name = 'on' + attrName.slice(n).toLowerCase();
-        }
-        return bindEvent( astPath );
+    if (isEvent) { //处理事件
+        return bindEvent(astPath, attrName, expr);
     }
     //去掉里面所有this
     astPath.traverse({
@@ -67,7 +59,7 @@ module.exports = function(astPath) {
             //变成style="{{props.style4338}}"
             if (attrName === 'style') {
                 replaceWithExpr(astPath, getStyleValue(expr), true);
-            }    
+            }
             break;
         case 'BinaryExpression': { // a + b
             if (attrName === 'class' || attrName === 'className') {
@@ -77,13 +69,13 @@ module.exports = function(astPath) {
                     // class={{this.className0 + ' dynamicClassName'}} 快应用会将后者的空格吞掉
                     // 影响 class 的求值
                     let className =
-                            buildType == 'quick'
-                                ? `${toString(
-                                    expr.left
-                                )} ${toString(expr.right)}`
-                                : `${toString(
-                                    expr.left
-                                )}${toString(expr.right)}`;
+                        buildType == 'quick'
+                            ? `${toString(
+                                expr.left
+                            )} ${toString(expr.right)}`
+                            : `${toString(
+                                expr.left
+                            )}${toString(expr.right)}`;
                     astPath.replaceWith(t.stringLiteral(className));
                     return;
                 }
@@ -104,7 +96,15 @@ function replaceWithExpr(astPath, value, noBracket) {
     astPath.replaceWith(t.stringLiteral(v));
 }
 
-function bindEvent(astPath) {
+function bindEvent(astPath, attrName, expr) {
+    let eventHandle = generate(expr).code;
+    if (!/^\s*\w+\./.test(eventHandle)) {
+        throwEventValue(attrName, eventHandle);
+    }
+    if (buildType == 'quick') {
+        let n = attrName.charAt(0) === 'o' ? 2 : 5;
+        astPath.parent.name.name = 'on' + attrName.slice(n).toLowerCase();
+    }
     replaceWithExpr(astPath, 'dispatchEvent', true);
 }
 function toString(node) {
