@@ -7,8 +7,8 @@ const chalk = require('chalk');
 const cwd = process.cwd();
 const compress = utils.compress();
 const getSize = (code)=>{
-    let size = Buffer.byteLength(code, 'utf8')/1000;
-    return size  < 0.1 ? size.toFixed(2) : size.toFixed(1);
+    let Bytes = Buffer.byteLength(code, 'utf8');
+    return Bytes < 1000 ? `${Bytes} Bytes` : `${(Bytes/1000).toFixed(1)} Kb`;
 };
 let sucSize = 0;
 module.exports = ()=>{
@@ -30,8 +30,7 @@ module.exports = ()=>{
                 console.log(
                     chalk.gray(`[${sucSize}] `) + 
                     chalk.green(`build success: ${nPath.relative(cwd, path)} `) +
-                    chalk.gray(`[${getSize(code)}KB]`) + 
-                    chalk.gray(new Date())
+                    chalk.gray(`[${getSize(code)}]`)
                 );
                 if (queue.size !== sucSize) return;
                 queue.size = 0;
