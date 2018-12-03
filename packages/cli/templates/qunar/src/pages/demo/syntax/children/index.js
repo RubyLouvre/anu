@@ -5,26 +5,26 @@ class P extends React.Component {
     constructor() {
         super();
         this.state = {
-            show: false
+            hidden: true
         };
     }
 
     toggleDialog() {
         // eslint-disable-next-line
         this.setState({
-            show: !this.state.show
+            hidden: !this.state.hidden
         });
     }
     closeDialog() {
         this.setState({
-            show: false
+            hidden: true
         });
     }
     render() {
         return (
             <div class="anu-block">
                 <div>演示组件标签包含其他内容</div>
-                <div show={this.state.show} hidden={this.state.show}>
+                <div  hidden={this.state.hidden}>
                     <Dialog>
                         <p>{this.state.title}</p>
                         <p>弹窗其他内容1</p>
