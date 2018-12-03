@@ -10,9 +10,17 @@ let config = require('./config');
 let quickFiles = require('./quickFiles');
 let queue = require('./queue');
 let utils = require('./utils');
-let validateStyle = require('./validateStyle');
-let nodeSass = require('node-sass');
 let cwd = process.cwd();
+const compileSassByPostCss = require('./stylesTransformer/postcssTransformSass');
+const compileSass = require('./stylesTransformer/transformSass');
+const compileLess = require('./stylesTransformer/transformLess');
+const hasNodeSass = utils.hasNpm('node-sass');
+const styleCompilerMap = {
+    'less': compileLess,
+    'css':  compileLess,
+    'sass': hasNodeSass ? compileSass : compileSassByPostCss,
+    'scss': hasNodeSass ? compileSass : compileSassByPostCss
+};
 
 
 let componentOrAppOrPageReg = utils.getComponentOrAppOrPageReg();
@@ -57,7 +65,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 console.log(transformFilePath, '\n', err);
             }
             //babel6无transform异步方法
-            setImmediate(() => {
+            setImmediate(async () => {
                 let babelPlugins = [
                     asyncAwaitPlugin,
                     [
@@ -114,7 +122,6 @@ function transform(sourcePath, resolvedIds, originalCode) {
                     console.log(transformFilePath, '\n', err);
                 }
                 
-                
                 //处理中文转义问题
                 result.code = result.code.replace(
                     /\\?(?:\\u)([\da-f]{4})/gi,
@@ -167,22 +174,26 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         </script>`;
                     if (uxFile.cssType) {
                         //假设存在<style>
-                        let cssCode = nodeSass.renderSync({
-                            file: uxFile.cssPath,
-                            importer: function(importer){
-                                //处理scss文件中的alias配置, 返回@import引用的绝对路径
-                                importer = utils.resolveStyleAlias(importer);
-                                return {
-                                    file: importer
-                                };
-                            }
-                        }).css.toString();
-                        ux += `
-                            <style lang="${uxFile.cssType}">
-                                ${beautify.css(validateStyle(
-        cssCode
-    ))}
+                        let {cssType, cssPath} = uxFile;
+                        styleCompilerMap[cssType](cssPath)
+                            .then((res)=>{
+                                let {code} = res;
+                                //当前样式文件代码要打包到ux中，样式中@import依赖打包成样式单文件
+                                ux += `
+                            <style lang="${cssType}">
+                                ${beautify.css(code)}
                             </style>`;
+
+                                queue.push({
+                                    code: ux,
+                                    path:  utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux') 
+                                });
+                            })
+                            .catch((err)=>{
+                                // eslint-disable-next-line
+                                console.log(cssPath, '\n', err);
+                            });
+                        return;
                     }
 
                     queue.push({
