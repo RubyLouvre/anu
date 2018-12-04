@@ -72,6 +72,7 @@ let utils = {
             if (
                 buildType === 'ali' ||
                 buildType === 'wx' ||
+                buildType === 'tt' || //头条也是bindtap
                 buildType === 'bu'
             ) {
                 return 'Tap';
