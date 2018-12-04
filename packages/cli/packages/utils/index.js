@@ -507,10 +507,10 @@ let utils = {
        
         fs.ensureFileSync(babelConifgPath);
         fs.copy(babelConifgPath, babelConfigDist)
-        .catch((err)=>{
+            .catch((err)=>{
             // eslint-disable-next-line
             console.log(err);
-        });
+            });
     },
     resolvePatchComponentPath: function(filePath){
         //patchComponent路径在cli中, 需要处理成${config.sourceDir}/components/... 否则路径解析混乱

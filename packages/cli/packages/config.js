@@ -15,10 +15,10 @@ module.exports = {
         xmlExt: 'axml',
         helpers: 'aliHelpers',
         patchComponents: {
-          'rich-text': {
-            name: 'AliRichText',
-            href: getPatchComponentDir('AliRichText') //获得patchComponent路径
-        }
+            'rich-text': {
+                name: 'AliRichText',
+                href: getPatchComponentDir('AliRichText') //获得patchComponent路径
+            }
         }
     },
     bu: {
