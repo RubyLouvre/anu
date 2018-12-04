@@ -489,15 +489,28 @@ let utils = {
     initQuickAppConfig: function(){
         //merge快应用依赖的package.json配置
         this.mergeQuickAppJson();
+        let baseDir = path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig');
+
         //copy快应用秘钥
-        let signSourceDir = path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig', 'sign');
+        let signSourceDir = path.join(baseDir, 'sign');
         let signDistDir = path.join(cwd, 'sign');
+        let babelConifgPath = path.join(baseDir, 'babel.config.js');
+        let babelConfigDist = path.join(cwd, 'babel.config.js');
+        
         fs.ensureDirSync(signDistDir);
         fs.copy( signSourceDir, signDistDir)
             .catch((err)=>{
                 // eslint-disable-next-line
                 console.log(err);
             });
+
+       
+        fs.ensureFileSync(babelConifgPath);
+        fs.copy(babelConifgPath, babelConfigDist)
+        .catch((err)=>{
+            // eslint-disable-next-line
+            console.log(err);
+        });
     },
     resolvePatchComponentPath: function(filePath){
         //patchComponent路径在cli中, 需要处理成${config.sourceDir}/components/... 否则路径解析混乱
