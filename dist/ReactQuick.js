@@ -2,8 +2,6 @@
  * 运行于快应用的React by 司徒正美 Copyright 2018-12-04
  */
 
-import { api } from 'api.quick';
-
 var arrayPush = Array.prototype.push;
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 var gSBU = 'getSnapshotBeforeUpdate';
@@ -1184,7 +1182,7 @@ function createRouter(name) {
         });
     };
 }
-var api$1 = {
+var api = {
     showModal: function showModal(obj) {
         obj.showCancel = obj.showCancel === false ? false : true;
         var buttons = [{
@@ -2870,7 +2868,7 @@ var React = getWindow().React = {
         delete app.constructor;
         return app;
     },
-    api: api$1
+    api: api
 };
 
 export default React;

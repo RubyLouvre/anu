@@ -1,4 +1,4 @@
-import { api }  from 'api.quick';
+import { api }  from './api.quick';
 
 export function showMenu(instance, app){
     var appInfo = api.getSystemInfo();
