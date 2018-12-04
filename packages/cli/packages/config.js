@@ -14,7 +14,12 @@ module.exports = {
         styleExt: 'acss',
         xmlExt: 'axml',
         helpers: 'aliHelpers',
-        patchComponents: {}
+        patchComponents: {
+            'rich-text': {
+                name: 'AliRichText',
+                href: getPatchComponentDir('AliRichText') //获得patchComponent路径
+            }
+        }
     },
     bu: {
         libName: 'ReactBu',

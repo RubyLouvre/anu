@@ -25,7 +25,9 @@ const styleCompilerMap = {
 
 let componentOrAppOrPageReg = utils.getComponentOrAppOrPageReg();
 //抽离async/await语法支持，可能非App/Component/Page业务中也包含async/await语法
-const asyncAwaitPlugin  = utils.asyncAwaitHackPlugin(config.buildType);
+const asyncAwaitPlugin  = utils.asyncAwaitHackPlugin();
+//条件import
+const conditionImportPlugin =  utils.conditionImportPlugin();
 function transform(sourcePath, resolvedIds, originalCode) {
     if (/^(React)/.test( path.basename(sourcePath)) ) {
         queue.push({
@@ -50,6 +52,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
         transformFilePath,
         {
             babelrc: false,
+            comments: false,
             plugins: [
                 require('babel-plugin-syntax-jsx'),
                 require('babel-plugin-transform-decorators-legacy').default,
@@ -57,6 +60,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 require('babel-plugin-transform-es2015-template-literals'),
                 require('babel-plugin-transform-async-to-generator'),
                 ...miniAppPluginsInjectConfig,
+                conditionImportPlugin,
             ]
         },
         function(err, result) {

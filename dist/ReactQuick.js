@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-28
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-04
  */
 
 var arrayPush = Array.prototype.push;
@@ -2730,6 +2730,59 @@ function onUnload() {
     callGlobalHook('onGlobalUnload');
 }
 
+function showMenu(instance, app) {
+    var appInfo = api.getSystemInfo();
+    api.showActionSheet({
+        itemList: ['转发', '保存到桌面', '关于', '取消'],
+        success: function success(ret) {
+            switch (ret.index) {
+                case 0:
+                    var fn = instance.onShareAppMessage;
+                    var obj = fn && fn();
+                    if (obj) {
+                        api.share(obj);
+                    }
+                    fn = app.onGlobalShare;
+                    obj = fn && fn();
+                    if (obj) {
+                        api.share(obj);
+                    }
+                    break;
+                case 1:
+                    createShortcut();
+                    break;
+                case 2:
+                    api.redirectTo({
+                        url: 'pages/about/index',
+                        params: { name: appInfo.name, icon: appInfo.icon }
+                    });
+                    break;
+                case 3:
+                    break;
+            }
+        }
+    });
+}
+function createShortcut() {
+    var shortcut = require('@system.shortcut');
+    shortcut.hasInstalled({
+        success: function success(ret) {
+            if (ret) {
+                api.showToast({ message: '已创建桌面图标' });
+            } else {
+                shortcut.install({
+                    success: function success() {
+                        api.showToast({ message: '成功创建桌面图标' });
+                    },
+                    fail: function fail(errmsg, errcode) {
+                        api.showToast({ message: 'error: ' + errcode + '---' + errmsg });
+                    }
+                });
+            }
+        }
+    });
+}
+
 var globalHooks = {
     onShareAppMessage: 'onGlobalShare',
     onShow: 'onGlobalShow',
@@ -2759,7 +2812,10 @@ function registerPage(PageClass, path) {
         config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook];
-            if (isFn(fn)) {
+            if (hook === 'onMenuPress') {
+                var $app = shareObject.app = this.$app.$def || this.$app._def;
+                showMenu(instance, $app);
+            } else if (isFn(fn)) {
                 fn.call(instance, e);
             }
             var globalHook = globalHooks[hook];
