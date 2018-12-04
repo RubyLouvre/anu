@@ -472,9 +472,9 @@ let utils = {
                     let node  = astPath.node;
                     if (node.leadingComments) {
                         let targetEnvReg = new RegExp(`\\s*if\\s+(process\\.env\\.ANU_ENV\\s*={2,3}\\s*\\'(${config.buildType})\\';?)`, 'mg');
-                        let envReg = /\s*if\s+(process\.env\.ANU_ENV\s*={2,3}\s*\'(wx|ali|bu|quick)\';?)/mg;
+                        let envReg = /\s*if\s+(process\.env\.ANU_ENV\s*={2,3}\s*'(wx|ali|bu|quick)';?)/mg;
                         let leadingComments = node.leadingComments;
-                        for(let i = 0; i < leadingComments.length; i++){
+                        for (let i = 0; i < leadingComments.length; i++){
                             let commentValue = leadingComments[i].value;
                             
                             if (
@@ -544,10 +544,10 @@ let utils = {
        
         fs.ensureFileSync(babelConifgPath);
         fs.copy(babelConifgPath, babelConfigDist)
-        .catch((err)=>{
+            .catch((err)=>{
             // eslint-disable-next-line
             console.log(err);
-        });
+            });
     },
     resolvePatchComponentPath: function(filePath){
         //patchComponent路径在cli中, 需要处理成${config.sourceDir}/components/... 否则路径解析混乱
