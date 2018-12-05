@@ -1,5 +1,5 @@
 /* eslint no-console: 0 */
-
+/* eslint-disable*/
 const execSync = require('child_process').execSync;
 const t = require('babel-types');
 const fs = require('fs-extra');
