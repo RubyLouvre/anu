@@ -1,5 +1,5 @@
 /* eslint no-console: 0 */
-
+/* eslint-disable*/
 const execSync = require('child_process').execSync;
 const t = require('babel-types');
 const fs = require('fs-extra');
@@ -474,7 +474,7 @@ let utils = {
                         let targetEnvReg = new RegExp(`\\s*if\\s+(process\\.env\\.ANU_ENV\\s*={2,3}\\s*\\'(${config.buildType})\\';?)`, 'mg');
                         let envReg = /\s*if\s+(process\.env\.ANU_ENV\s*={2,3}\s*\'(wx|ali|bu|quick)\';?)/mg;
                         let leadingComments = node.leadingComments;
-                        for(let i = 0; i < leadingComments.length; i++){
+                        for (let i = 0; i < leadingComments.length; i++){
                             let commentValue = leadingComments[i].value;
                             
                             if (

@@ -26,6 +26,16 @@ Object.assign(JSONDoc.prototype, {
     }
 });
 
+function setLineStart(doc, start) {
+  let line = doc.getCurrentLine();
+  line.start = start;
+}
+function appendLine(doc, str, end) {
+  let line = doc.getCurrentLine();
+  line.content = line.content || '';
+  line.content += str.substring(line.start, end);
+}
+
 function isBlockElement(name) {
     return block_el.indexOf(name) !== -1;
 }
@@ -61,29 +71,25 @@ class AliRichText extends React.Component {
     }
 
     processData(text) {
-        var str = text.replace(/\s*style=\"[^"]*\"\s*/g, '');
+        var str = text.replace(/\s*style=\"[^"]*\"\s*/g, '').replace(/&nbsp;/ig, "");
         var doc = new JSONDoc();
         str.replace(/\<\/?\s*(\w+)\s*(src=\"([^"]*)\")?\/?>/g, function(tag, name, attr, src, start) {
             if (isImg(name)) {
+              let src = attr.match(/src\s*\=\s*\"([^"]+)\"/)[1];
                 doc.drawImg(src);
-                let line = doc.getCurrentLine();
-                line.start = start + tag.length;
+                setLineStart(doc, start + tag.length);
             } else if (isBlockElement(name)) {
                 if (!isEndTag(tag)) {
                     doc.drawLine();
                 }
-                let line = doc.getCurrentLine();
-                line.start = start + tag.length;
+                setLineStart(doc, start + tag.length);
             } else if (isBr(name)) {
+              appendLine(doc, str, start);
                 doc.drawLine();
-                let line = doc.getCurrentLine();
-                line.start = start + tag.length;
+                setLineStart(doc, start + tag.length);
             } else {
-                let line = doc.getCurrentLine();
-                line.content = line.content || '';
-                line.content = line.content.replace(/&nbsp;/gi, ' ');
-                line.content += str.substring(line.start, start);
-                line.start = start + tag.length;
+              appendLine(doc, str, start);
+              setLineStart(doc, start + tag.length);
             }
 
             return tag;
