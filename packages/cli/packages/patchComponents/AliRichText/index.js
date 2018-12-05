@@ -110,7 +110,7 @@ class AliRichText extends React.Component {
                         <div>
                             {item.src ? (
                                 <div>
-                                    <image src={item.src} mode="aspectFill" style={{width: '100%'}}/>
+                                    <image src={item.src} mode="widthFix" style={{width: '100%'}}/>
                                 </div>
                             ) : (
                                 <div class="rich-text-line">{item.content || ''}</div>
