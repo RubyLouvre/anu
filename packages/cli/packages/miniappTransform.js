@@ -68,8 +68,6 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 //eslint-disable-next-line
                 console.log(transformFilePath, '\n', err);
             }
-            //babel6无transform异步方法
-            setImmediate(async () => {
                 let babelPlugins = [
                     asyncAwaitPlugin,
                     [
@@ -212,7 +210,6 @@ function transform(sourcePath, resolvedIds, originalCode) {
                     });
 
                 }
-            });
         }
     );
 }
