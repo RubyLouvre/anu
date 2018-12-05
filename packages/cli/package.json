@@ -10,7 +10,15 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RubyLouvre/anu.git"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/RubyLouvre/anu/issues"
+  },
+  "homepage": "https://github.com/RubyLouvre/anu/tree/master/packages/cli#readme",
   "devDependencies": {},
   "dependencies": {
     "axios": "^0.18.0",
