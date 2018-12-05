@@ -19,7 +19,6 @@
     "url": "https://github.com/RubyLouvre/anu/issues"
   },
   "homepage": "https://github.com/RubyLouvre/anu/tree/master/packages/cli#readme",
-  "devDependencies": {},
   "dependencies": {
     "axios": "^0.18.0",
     "babel": "^6.23.0",
