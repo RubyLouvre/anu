@@ -1,9 +1,14 @@
 const device = require('@system.device')
 const DEFAULT_FONT_SIZE = 14;
 
-function getSystemInfo({
-  success, fail, complete
-}) {
+function getSystemInfo(options) {
+  if (!options) {
+    console.error('参数格式错误');
+    return;
+  }
+  const {
+    success, fail, complete
+  } = options;
 
   function gotSuccessInfo({
     brand,
@@ -21,7 +26,7 @@ function getSystemInfo({
     screenHeight
   }) {
 
-    success({
+    success && success({
       // 小米未提供
       // pixelRatio,
       brand,
@@ -38,7 +43,7 @@ function getSystemInfo({
       fontSizeSetting: DEFAULT_FONT_SIZE,
       SDKVersion: platformVersionCode
 
-    })
+    });
   }
 
 
@@ -50,4 +55,4 @@ function getSystemInfo({
   })
 }
 
-export{getSystemInfo }
+export{ getSystemInfo }
