@@ -49,7 +49,7 @@ page {
       color: #22a0fa;
     }
     .switch-bar {
-      width: 50rpx;
+      // width: 50rpx;
       height: 6rpx;
       border-radius: 3rpx;
       background-color: #22a0fa;
@@ -58,14 +58,16 @@ page {
 
   }
   .first-choose {
-    
-    transform: translateX(60rpx);
+    width: 110rpx;
+    transform: translateX(0rpx);
   }
   .second-choose {
-    transform: translateX(190rpx);
+    width: 80rpx;
+    transform: translateX(155rpx);
   }
   .third-choose {
-    transform: translateX(300rpx);
+    width: 80rpx;
+    transform: translateX(270rpx);
   }
   .content {
     background-color: #ffffff;
