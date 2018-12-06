@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-05
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-06
  */
 
 var arrayPush = Array.prototype.push;
@@ -1171,16 +1171,13 @@ function createShortcut() {
         success: function success(ret) {
             if (ret) {
                 api.showToast({ title: '已创建桌面图标' });
-                console.log('已创建桌面图标');
             } else {
                 shortcut.install({
                     success: function success() {
                         api.showToast({ title: '成功创建桌面图标' });
-                        console.log('成功创建桌面图标');
                     },
                     fail: function fail(errmsg, errcode) {
                         api.showToast({ title: 'error: ' + errcode + '---' + errmsg });
-                        console.log('错误', errcode, errmsg);
                     }
                 });
             }
@@ -1264,11 +1261,16 @@ var api = {
     },
     share: function share(obj) {
         var share = require('@service.share');
-        obj.shareType = obj.shareType || 0;
-        obj.targetUrl = obj.path;
-        obj.summary = obj.desc;
-        obj.imagePath = obj.imageUrl;
-        share.share(obj);
+        share.getAvailablePlatforms({
+            success: function success(data) {
+                obj.shareType = obj.shareType || 0;
+                obj.targetUrl = obj.path;
+                obj.summary = obj.desc;
+                obj.imagePath = obj.imageUrl;
+                obj.platforms = data.platforms;
+                share.share(obj);
+            }
+        });
     },
     uploadFile: uploadFile,
     downloadFile: downloadFile,
@@ -2771,7 +2773,6 @@ function showMenu(instance, app) {
                     switch (ret.index) {
                         case 0:
                             var fn = instance.onShareAppMessage;
-                            console.log(instance.onShareAppMessage);
                             var obj = fn && fn();
                             if (obj) {
                                 api.share(obj);
@@ -2787,7 +2788,7 @@ function showMenu(instance, app) {
                             break;
                         case 2:
                             api.redirectTo({
-                                url: 'pages/userCenter/index',
+                                url: 'pages/demo/userCenter/index',
                                 params: { name: appInfo.name, icon: appInfo.icon }
                             });
                             break;

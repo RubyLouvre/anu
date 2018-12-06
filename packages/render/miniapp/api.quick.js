@@ -122,11 +122,17 @@ export var api = {
     // 分享(小程序没有这个api)
     share(obj) {
         var share = require('@service.share');
-        obj.shareType = obj.shareType || 0;
-        obj.targetUrl = obj.path;
-        obj.summary = obj.desc;
-        obj.imagePath = obj.imageUrl;
-        share.share(obj);
+        share.getAvailablePlatforms({
+            success: function(data) {
+                obj.shareType = obj.shareType || 0;
+                obj.targetUrl = obj.path;
+                obj.summary = obj.desc;
+                obj.imagePath = obj.imageUrl;
+                obj.platforms = data.platforms;
+                share.share(obj);
+            }
+        });
+        
     },
 
     // 上传

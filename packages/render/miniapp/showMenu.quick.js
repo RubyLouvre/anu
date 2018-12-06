@@ -9,7 +9,6 @@ export function showMenu(instance, app){
                     switch (ret.index) {
                         case 0: //分享转发
                             var fn = instance.onShareAppMessage;
-                            console.log(instance.onShareAppMessage);
                             var obj = fn && fn();
                             if (obj){
                                 api.share(obj);
@@ -27,7 +26,7 @@ export function showMenu(instance, app){
                         case 2:
                             // 关于
                             api.redirectTo({
-                                url: 'pages/userCenter/index',
+                                url: 'pages/demo/userCenter/index',
                                 params: { name: appInfo.name, icon: appInfo.icon }
                             });
                             break;
