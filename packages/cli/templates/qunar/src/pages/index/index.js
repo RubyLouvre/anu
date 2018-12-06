@@ -157,6 +157,20 @@ class P extends React.Component {
           showCancel: false
       });
   }
+  onShareAppMessage(res) {
+    return {
+        title: '标题',
+        path: 'http://www.example.com',
+        success: function(data) {
+            React.api.showToast({ title: 'handling success'});
+            console.log('handling success')
+        },
+        fail: function(data, code) {
+            React.api.showToast({ title: `code=${code}, ${data}` });
+            console.log(`code=${code}, ${data}`)
+        }
+    }
+  }
   render() {
       return (
           <div class="page">
