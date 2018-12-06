@@ -21,6 +21,7 @@ import { setClipboardData, getClipboardData } from './quickApis/clipboard.js';
 import { getNetworkType, onNetworkStatusChange } from './quickApis/network.js';
 import { getSystemInfo } from './quickApis/device.js';
 import { chooseImage } from './quickApis/media.js';
+import { createShortcut } from './quickApis/system.js';
 import { runFunction,_getApp } from './utils';
 
 function createRouter(name) {
@@ -120,7 +121,11 @@ export var api = {
 
     // 分享(小程序没有这个api)
     share(obj) {
-        var share = require('@system.share');
+        var share = require('@service.share');
+        obj.shareType = obj.shareType || 0;
+        obj.targetUrl = obj.path;
+        obj.summary = obj.desc;
+        obj.imagePath = obj.imageUrl;
         share.share(obj);
     },
 
@@ -176,5 +181,6 @@ export var api = {
         } finally {
             runFunction(complete);
         }
-    }
+    },
+    createShortcut
 };
