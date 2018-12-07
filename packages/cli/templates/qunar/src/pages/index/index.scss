@@ -35,11 +35,11 @@
       border-top-right-radius: 5px;
     }
     .radius-bottom-left image {
-      border-bottom-right-radius:5px;
+      border-bottom-left-radius:5px;
     }
     .radius-bottom-right image {
       
-      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
     }
     .item-wrapper {
       margin-bottom: 4rpx;
@@ -82,7 +82,7 @@
         display: block;
         width: 60rpx;
         height: 60rpx;
-        // margin: 0 auto;
+        margin: 0 auto;
       }
       text {
         font-size: 22rpx;

@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-04
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-06
  */
 
 var arrayPush = Array.prototype.push;
@@ -1082,25 +1082,29 @@ function onNetworkStatusChange(callback) {
 
 var device = require('@system.device');
 var DEFAULT_FONT_SIZE = 14;
-function getSystemInfo(_ref) {
-  var success = _ref.success,
-      fail = _ref.fail,
-      complete = _ref.complete;
-  function gotSuccessInfo(_ref2) {
-    var brand = _ref2.brand,
-        manufacturer = _ref2.manufacturer,
-        model = _ref2.model,
-        product = _ref2.product,
-        osType = _ref2.osType,
-        osVersionName = _ref2.osVersionName,
-        osVersionCode = _ref2.osVersionCode,
-        platformVersionName = _ref2.platformVersionName,
-        platformVersionCode = _ref2.platformVersionCode,
-        language = _ref2.language,
-        region = _ref2.region,
-        screenWidth = _ref2.screenWidth,
-        screenHeight = _ref2.screenHeight;
-    success({
+function getSystemInfo(options) {
+  if (!options) {
+    console.error('参数格式错误');
+    return;
+  }
+  var success = options.success,
+      fail = options.fail,
+      complete = options.complete;
+  function gotSuccessInfo(_ref) {
+    var brand = _ref.brand,
+        manufacturer = _ref.manufacturer,
+        model = _ref.model,
+        product = _ref.product,
+        osType = _ref.osType,
+        osVersionName = _ref.osVersionName,
+        osVersionCode = _ref.osVersionCode,
+        platformVersionName = _ref.platformVersionName,
+        platformVersionCode = _ref.platformVersionCode,
+        language = _ref.language,
+        region = _ref.region,
+        screenWidth = _ref.screenWidth,
+        screenHeight = _ref.screenHeight;
+    success && success({
       brand: brand,
       model: model,
       screenWidth: screenWidth,
@@ -1159,6 +1163,26 @@ function chooseImage(_ref) {
     complete: complete || noop,
     cancel: fail || noop
   });
+}
+
+var shortcut = require('@system.shortcut');
+function createShortcut() {
+    shortcut.hasInstalled({
+        success: function success(ret) {
+            if (ret) {
+                api.showToast({ title: '已创建桌面图标' });
+            } else {
+                shortcut.install({
+                    success: function success() {
+                        api.showToast({ title: '成功创建桌面图标' });
+                    },
+                    fail: function fail(errmsg, errcode) {
+                        api.showToast({ title: 'error: ' + errcode + '---' + errmsg });
+                    }
+                });
+            }
+        }
+    });
 }
 
 function createRouter(name) {
@@ -1236,8 +1260,17 @@ var api = {
         vibrator.vibrate();
     },
     share: function share(obj) {
-        var share = require('@system.share');
-        share.share(obj);
+        var share = require('@service.share');
+        share.getAvailablePlatforms({
+            success: function success(data) {
+                obj.shareType = obj.shareType || 0;
+                obj.targetUrl = obj.path;
+                obj.summary = obj.desc;
+                obj.imagePath = obj.imageUrl;
+                obj.platforms = data.platforms;
+                share.share(obj);
+            }
+        });
     },
     uploadFile: uploadFile,
     downloadFile: downloadFile,
@@ -1290,7 +1323,8 @@ var api = {
         } finally {
             runFunction(complete);
         }
-    }
+    },
+    createShortcut: createShortcut
 };
 
 function UpdateQueue() {
@@ -2731,54 +2765,38 @@ function onUnload() {
 }
 
 function showMenu(instance, app) {
-    var appInfo = api.getSystemInfo();
-    api.showActionSheet({
-        itemList: ['转发', '保存到桌面', '关于', '取消'],
-        success: function success(ret) {
-            switch (ret.index) {
-                case 0:
-                    var fn = instance.onShareAppMessage;
-                    var obj = fn && fn();
-                    if (obj) {
-                        api.share(obj);
+    api.getSystemInfo({
+        success: function success(appInfo) {
+            api.showActionSheet({
+                itemList: ['转发', '保存到桌面', '关于', '取消'],
+                success: function success(ret) {
+                    switch (ret.index) {
+                        case 0:
+                            var fn = instance.onShareAppMessage;
+                            var obj = fn && fn();
+                            if (obj) {
+                                api.share(obj);
+                            }
+                            fn = app.onGlobalShare;
+                            obj = fn && fn();
+                            if (obj) {
+                                api.share(obj);
+                            }
+                            break;
+                        case 1:
+                            api.createShortcut();
+                            break;
+                        case 2:
+                            api.redirectTo({
+                                url: 'pages/demo/userCenter/index',
+                                params: { name: appInfo.name, icon: appInfo.icon }
+                            });
+                            break;
+                        case 3:
+                            break;
                     }
-                    fn = app.onGlobalShare;
-                    obj = fn && fn();
-                    if (obj) {
-                        api.share(obj);
-                    }
-                    break;
-                case 1:
-                    createShortcut();
-                    break;
-                case 2:
-                    api.redirectTo({
-                        url: 'pages/about/index',
-                        params: { name: appInfo.name, icon: appInfo.icon }
-                    });
-                    break;
-                case 3:
-                    break;
-            }
-        }
-    });
-}
-function createShortcut() {
-    var shortcut = require('@system.shortcut');
-    shortcut.hasInstalled({
-        success: function success(ret) {
-            if (ret) {
-                api.showToast({ message: '已创建桌面图标' });
-            } else {
-                shortcut.install({
-                    success: function success() {
-                        api.showToast({ message: '成功创建桌面图标' });
-                    },
-                    fail: function fail(errmsg, errcode) {
-                        api.showToast({ message: 'error: ' + errcode + '---' + errmsg });
-                    }
-                });
-            }
+                }
+            });
         }
     });
 }
