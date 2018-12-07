@@ -23,63 +23,61 @@ class P extends React.Component {
     }
 
     render() {
-        if (this.state.condition1) {
-            if (this.state.condition2) {
-                return (
-                    <div class='anu-block'>
-                        <div>Condition1 active</div>
-                        <button onTap={this.toggleCondition1.bind(this)}>
-                            Inactive Condition1
-                        </button>
-                        <div>Condition2 active</div>
-                        <button onTap={this.toggleCondition2.bind(this)}>
-                            Inactive Condition2
-                        </button>
-                    </div>
-                );
-            } else {
-                return (
-                    <div class='anu-block'>
-                        <div>Condition1 active</div>
-                        <button onTap={this.toggleCondition1.bind(this)}>
-                            Inactive Condition1
-                        </button>
-                        <div>Condition2 inactive</div>
-                        <button onTap={this.toggleCondition2.bind(this)}>
-                            Active Condition2
-                        </button>
-                    </div>
-                );
-            }
-        } else {
-            if (this.state.condition2) {
-                return (
-                    <div class='anu-block'>
-                        <div>Condition1 inactive</div>
-                        <button onTap={this.toggleCondition1.bind(this)}>
-                            Active Condition1
-                        </button>
-                        <div>Condition2 active</div>
-                        <button onTap={this.toggleCondition2.bind(this)}>
-                            Inactive Condition2
-                        </button>
-                    </div>
-                );
-            } else {
-                return (
-                    <div class='anu-block'>
-                        <div>Condition1 inactive</div>
-                        <button onTap={this.toggleCondition1.bind(this)}>
-                            Active Condition1
-                        </button>
-                        <div>Condition2 inactive</div>
-                        <button onTap={this.toggleCondition2.bind(this)}>
-                            Active Condition2
-                        </button>
-                    </div>
-                );
-            }
-        }
+        return (
+            <div>
+                {
+                    this.state.condition1 ? (
+                        this.state.condition2 ? (
+                            <div class='anu-block'>
+                                <div>Condition1 active</div>
+                                <button onTap={this.toggleCondition1.bind(this)}>
+                                    Inactive Condition1
+                                </button>
+                                <div>Condition2 active</div>
+                                <button onTap={this.toggleCondition2.bind(this)}>
+                                    Inactive Condition2
+                                </button>
+                            </div> 
+                        ) : (
+                            <div class='anu-block'>
+                                <div>Condition1 active</div>
+                                <button onTap={this.toggleCondition1.bind(this)}>
+                                    Inactive Condition1
+                                </button>
+                                <div>Condition2 inactive</div>
+                                <button onTap={this.toggleCondition2.bind(this)}>
+                                    Active Condition2
+                                </button>
+                            </div>
+                        )
+                    ) : (
+                        this.state.condition2 ? (
+                            <div class='anu-block'>
+                                <div>Condition1 inactive</div>
+                                <button onTap={this.toggleCondition1.bind(this)}>
+                                    Active Condition1
+                                </button>
+                                <div>Condition2 active</div>
+                                <button onTap={this.toggleCondition2.bind(this)}>
+                                    Inactive Condition2
+                                </button>
+                            </div>
+                        ) : (
+                            <div class='anu-block'>
+                                <div>Condition1 inactive</div>
+                                <button onTap={this.toggleCondition1.bind(this)}>
+                                    Active Condition1
+                                </button>
+                                <div>Condition2 inactive</div>
+                                <button onTap={this.toggleCondition2.bind(this)}>
+                                    Active Condition2
+                                </button>
+                            </div>
+                        )
+                    )
+                }
+            </div>
+        );
     }
 }
 
