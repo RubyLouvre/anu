@@ -13,6 +13,7 @@ export function onBeforeRender(fiber) {
         //只处理component目录下的组件
         let wxInstances = type.wxInstances;
         if (wxInstances) {
+            //必须在这里进行多一次匹配，否则组件没有数据
             for (var i = wxInstances.length - 1; i >= 0; i--) {
                 var el = wxInstances[i];
                 if (el.dataset.instanceUid === uuid) {

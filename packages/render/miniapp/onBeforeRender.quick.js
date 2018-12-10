@@ -13,7 +13,7 @@ export function onBeforeRender(fiber) {
         }
         //只处理component目录下的组件
         let wxInstances = type.wxInstances;
-        if (wxInstances) {
+        if (wxInstances && !instance.wx) { //必须过滤已绑定的组件
             type.reactInstances.push(instance);
         }
     }

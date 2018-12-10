@@ -2323,7 +2323,7 @@ function onBeforeRender(fiber) {
             _getApp().page = instance;
         }
         var wxInstances = type.wxInstances;
-        if (wxInstances) {
+        if (wxInstances && !instance.wx) {
             type.reactInstances.push(instance);
         }
     }
