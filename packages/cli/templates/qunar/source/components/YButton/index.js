@@ -1,7 +1,7 @@
 import React from '@react';
 import './index.scss';
 
-class Button extends React.Component {
+class YButton extends React.Component {
     constructor(props) {
         super(props);
         let newState = this.computeState(props, false);
@@ -102,7 +102,7 @@ class Button extends React.Component {
     }
 }
 
-Button.defaultProps = {
+YButton.defaultProps = {
     type: 'default',
     disabled: false,
     plain: false,
@@ -130,4 +130,4 @@ const fontStyleMap = {
     mini: '26px'
 };
 
-export default Button;
+export default YButton;

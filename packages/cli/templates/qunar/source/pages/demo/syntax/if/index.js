@@ -1,5 +1,5 @@
 import React from '@react';
-import XButton from '@components/XButton/index';
+import YButton from '@components/YButton/index';
 import './index.scss';
 
 class P extends React.Component {
@@ -31,48 +31,48 @@ class P extends React.Component {
                         this.state.condition2 ? (
                             <div class='anu-block'>
                                 <div>Condition1 active</div>
-                                <XButton onTap={this.toggleCondition1.bind(this)}>
+                                <YButton onTap={this.toggleCondition1.bind(this)}>
                                     Inactive Condition1
-                                </XButton>
+                                </YButton>
                                 <div>Condition2 active</div>
-                                <XButton onTap={this.toggleCondition2.bind(this)}>
+                                <YButton onTap={this.toggleCondition2.bind(this)}>
                                     Inactive Condition2
-                                </XButton>
+                                </YButton>
                             </div> 
                         ) : (
                             <div class='anu-block'>
                                 <div>Condition1 active</div>
-                                <XButton onTap={this.toggleCondition1.bind(this)}>
+                                <YButton onTap={this.toggleCondition1.bind(this)}>
                                     Inactive Condition1
-                                </XButton>
+                                </YButton>
                                 <div>Condition2 inactive</div>
-                                <XButton onTap={this.toggleCondition2.bind(this)}>
+                                <YButton onTap={this.toggleCondition2.bind(this)}>
                                     Active Condition2
-                                </XButton>
+                                </YButton>
                             </div>
                         )
                     ) : (
                         this.state.condition2 ? (
                             <div class='anu-block'>
                                 <div>Condition1 inactive</div>
-                                <XButton onTap={this.toggleCondition1.bind(this)}>
+                                <YButton onTap={this.toggleCondition1.bind(this)}>
                                     Active Condition1
-                                </XButton>
+                                </YButton>
                                 <div>Condition2 active</div>
-                                <XButton onTap={this.toggleCondition2.bind(this)}>
+                                <YButton onTap={this.toggleCondition2.bind(this)}>
                                     Inactive Condition2
-                                </XButton>
+                                </YButton>
                             </div>
                         ) : (
                             <div class='anu-block'>
                                 <div>Condition1 inactive</div>
-                                <XButton onTap={this.toggleCondition1.bind(this)}>
+                                <YButton onTap={this.toggleCondition1.bind(this)}>
                                     Active Condition1
-                                </XButton>
+                                </YButton>
                                 <div>Condition2 inactive</div>
-                                <XButton onTap={this.toggleCondition2.bind(this)}>
+                                <YButton onTap={this.toggleCondition2.bind(this)}>
                                     Active Condition2
-                                </XButton>
+                                </YButton>
                             </div>
                         )
                     )
