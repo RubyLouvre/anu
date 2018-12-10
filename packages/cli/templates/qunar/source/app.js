@@ -56,6 +56,8 @@ import './pages/demo/question/detail/index';
 import './pages/demo/cardList/index';
 import './pages/demo/citySelect/index';
 
+import './pages/about/index';
+
 import './app.scss';
 
 class Global extends React.Component {

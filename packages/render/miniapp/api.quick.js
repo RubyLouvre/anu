@@ -30,14 +30,13 @@ function createRouter(name) {
         const params = {};
         let href = obj.url || obj.uri || '';
         let uri = href.slice(href.indexOf('/pages') + 1);
-        uri = uri
-            .replace(/\?(.*)/, function(a, b) {
-                b.split('=').forEach(function(k, v) {
-                    params[k] = v;
-                });
-                return '';
-            })
-            .replace(/\/index$/, '');
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('&').forEach(function (param) {
+                param = param.split('=');
+                params[param[0]] = param[1];
+            });
+            return '';
+        }).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
@@ -124,7 +123,15 @@ export var api = {
         var share = require('@service.share');
         share.getAvailablePlatforms({
             success: function(data) {
-                obj.shareType = obj.shareType || 0;
+                let shareType = 0;
+                if (obj.path && obj.title) {
+                    shareType = 0;
+                } else if (obj.title) {
+                    shareType = 1;
+                } else if (obj.imageUrl) {
+                    shareType = 2;
+                }
+                obj.shareType = obj.shareType || shareType;
                 obj.targetUrl = obj.path;
                 obj.summary = obj.desc;
                 obj.imagePath = obj.imageUrl;
