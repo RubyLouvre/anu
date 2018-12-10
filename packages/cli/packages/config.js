@@ -2,6 +2,16 @@ const path = require('path');
 const getPatchComponentDir = (componentName)=>{
     return path.join(__dirname, 'patchComponents', componentName);
 };
+
+let userConfig = {};
+try {
+    const pkg = require( path.join(process.cwd(), 'package.json') );
+    userConfig = pkg.nanachi || pkg.mpreact || userConfig;
+} catch (err) {
+    // eslint-disable-next-line
+}
+const buildDir = userConfig.buildDir || 'dist';
+const sourceDir = userConfig.sourceDir || 'source';
 module.exports = {
     wx: {
         libName: 'ReactWX',
@@ -14,7 +24,12 @@ module.exports = {
         styleExt: 'acss',
         xmlExt: 'axml',
         helpers: 'aliHelpers',
-        patchComponents: {}
+        patchComponents: {
+            'rich-text': {
+                name: 'AliRichText',
+                href: getPatchComponentDir('AliRichText') //获得patchComponent路径
+            }
+        }
     },
     bu: {
         libName: 'ReactBu',
@@ -58,7 +73,7 @@ module.exports = {
         helpers: 'ttHelpers',
         patchComponents: {}
     },
-    buildType: 'wx',    //构建类型默认微信小程序
-    buildDir: 'dist',   //非快应用项目默认构建目录为dist
-    sourceDir: 'source' //默认生成的源码目录
+    buildType: 'wx',      //构建类型默认微信小程序
+    buildDir: buildDir,   //非快应用项目默认构建目录为dist
+    sourceDir: sourceDir  //默认生成的源码目录
 };

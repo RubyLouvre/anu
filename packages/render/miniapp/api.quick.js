@@ -21,6 +21,7 @@ import { setClipboardData, getClipboardData } from './quickApis/clipboard.js';
 import { getNetworkType, onNetworkStatusChange } from './quickApis/network.js';
 import { getSystemInfo } from './quickApis/device.js';
 import { chooseImage } from './quickApis/media.js';
+import { createShortcut } from './quickApis/system.js';
 import { runFunction,_getApp } from './utils';
 
 function createRouter(name) {
@@ -29,14 +30,13 @@ function createRouter(name) {
         const params = {};
         let href = obj.url || obj.uri || '';
         let uri = href.slice(href.indexOf('/pages') + 1);
-        uri = uri
-            .replace(/\?(.*)/, function(a, b) {
-                b.split('=').forEach(function(k, v) {
-                    params[k] = v;
-                });
-                return '';
-            })
-            .replace(/\/index$/, '');
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('&').forEach(function (param) {
+                param = param.split('=');
+                params[param[0]] = param[1];
+            });
+            return '';
+        }).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
@@ -120,8 +120,26 @@ export var api = {
 
     // 分享(小程序没有这个api)
     share(obj) {
-        var share = require('@system.share');
-        share.share(obj);
+        var share = require('@service.share');
+        share.getAvailablePlatforms({
+            success: function(data) {
+                let shareType = 0;
+                if (obj.path && obj.title) {
+                    shareType = 0;
+                } else if (obj.title) {
+                    shareType = 1;
+                } else if (obj.imageUrl) {
+                    shareType = 2;
+                }
+                obj.shareType = obj.shareType || shareType;
+                obj.targetUrl = obj.path;
+                obj.summary = obj.desc;
+                obj.imagePath = obj.imageUrl;
+                obj.platforms = data.platforms;
+                share.share(obj);
+            }
+        });
+        
     },
 
     // 上传
@@ -176,5 +194,6 @@ export var api = {
         } finally {
             runFunction(complete);
         }
-    }
+    },
+    createShortcut
 };

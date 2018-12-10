@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-11-28
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-10
  */
 
 var arrayPush = Array.prototype.push;
@@ -1082,25 +1082,29 @@ function onNetworkStatusChange(callback) {
 
 var device = require('@system.device');
 var DEFAULT_FONT_SIZE = 14;
-function getSystemInfo(_ref) {
-  var success = _ref.success,
-      fail = _ref.fail,
-      complete = _ref.complete;
-  function gotSuccessInfo(_ref2) {
-    var brand = _ref2.brand,
-        manufacturer = _ref2.manufacturer,
-        model = _ref2.model,
-        product = _ref2.product,
-        osType = _ref2.osType,
-        osVersionName = _ref2.osVersionName,
-        osVersionCode = _ref2.osVersionCode,
-        platformVersionName = _ref2.platformVersionName,
-        platformVersionCode = _ref2.platformVersionCode,
-        language = _ref2.language,
-        region = _ref2.region,
-        screenWidth = _ref2.screenWidth,
-        screenHeight = _ref2.screenHeight;
-    success({
+function getSystemInfo(options) {
+  if (!options) {
+    console.error('参数格式错误');
+    return;
+  }
+  var success = options.success,
+      fail = options.fail,
+      complete = options.complete;
+  function gotSuccessInfo(_ref) {
+    var brand = _ref.brand,
+        manufacturer = _ref.manufacturer,
+        model = _ref.model,
+        product = _ref.product,
+        osType = _ref.osType,
+        osVersionName = _ref.osVersionName,
+        osVersionCode = _ref.osVersionCode,
+        platformVersionName = _ref.platformVersionName,
+        platformVersionCode = _ref.platformVersionCode,
+        language = _ref.language,
+        region = _ref.region,
+        screenWidth = _ref.screenWidth,
+        screenHeight = _ref.screenHeight;
+    success && success({
       brand: brand,
       model: model,
       screenWidth: screenWidth,
@@ -1161,6 +1165,26 @@ function chooseImage(_ref) {
   });
 }
 
+var shortcut = require('@system.shortcut');
+function createShortcut() {
+    shortcut.hasInstalled({
+        success: function success(ret) {
+            if (ret) {
+                api.showToast({ title: '已创建桌面图标' });
+            } else {
+                shortcut.install({
+                    success: function success() {
+                        api.showToast({ title: '成功创建桌面图标' });
+                    },
+                    fail: function fail(errmsg, errcode) {
+                        api.showToast({ title: 'error: ' + errcode + '---' + errmsg });
+                    }
+                });
+            }
+        }
+    });
+}
+
 function createRouter(name) {
     return function (obj) {
         var router = require('@system.router');
@@ -1168,8 +1192,9 @@ function createRouter(name) {
         var href = obj.url || obj.uri || '';
         var uri = href.slice(href.indexOf('/pages') + 1);
         uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('=').forEach(function (k, v) {
-                params[k] = v;
+            b.split('&').forEach(function (param) {
+                param = param.split('=');
+                params[param[0]] = param[1];
             });
             return '';
         }).replace(/\/index$/, '');
@@ -1236,8 +1261,25 @@ var api = {
         vibrator.vibrate();
     },
     share: function share(obj) {
-        var share = require('@system.share');
-        share.share(obj);
+        var share = require('@service.share');
+        share.getAvailablePlatforms({
+            success: function success(data) {
+                var shareType = 0;
+                if (obj.path && obj.title) {
+                    shareType = 0;
+                } else if (obj.title) {
+                    shareType = 1;
+                } else if (obj.imageUrl) {
+                    shareType = 2;
+                }
+                obj.shareType = obj.shareType || shareType;
+                obj.targetUrl = obj.path;
+                obj.summary = obj.desc;
+                obj.imagePath = obj.imageUrl;
+                obj.platforms = data.platforms;
+                share.share(obj);
+            }
+        });
     },
     uploadFile: uploadFile,
     downloadFile: downloadFile,
@@ -1290,7 +1332,8 @@ var api = {
         } finally {
             runFunction(complete);
         }
-    }
+    },
+    createShortcut: createShortcut
 };
 
 function UpdateQueue() {
@@ -2730,12 +2773,61 @@ function onUnload() {
     callGlobalHook('onGlobalUnload');
 }
 
+function showMenu(instance, app) {
+    api.getSystemInfo({
+        success: function success(appInfo) {
+            api.showActionSheet({
+                itemList: ['转发', '保存到桌面', '关于', '取消'],
+                success: function success(ret) {
+                    switch (ret.index) {
+                        case 0:
+                            var fn = instance.onShareAppMessage;
+                            var obj = fn && fn();
+                            if (obj) {
+                                api.share(obj);
+                            }
+                            fn = app.onGlobalShare;
+                            obj = fn && fn();
+                            if (obj) {
+                                api.share(obj);
+                            }
+                            break;
+                        case 1:
+                            api.createShortcut();
+                            break;
+                        case 2:
+                            api.redirectTo({
+                                url: 'pages/about/index?brand=' + appInfo.brand + '&version=' + appInfo.version
+                            });
+                            break;
+                        case 3:
+                            break;
+                    }
+                }
+            });
+        }
+    });
+}
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 var globalHooks = {
     onShareAppMessage: 'onGlobalShare',
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
-function registerPage(PageClass, path) {
+function getUrlAndQuery(page) {
+    var path = page.path;
+    var query = {};
+    page.uri.replace(/\?(.*)/, function (a, b) {
+        b.split('&').forEach(function (param) {
+            param = param.split('=');
+            query[param[0]] = param[1];
+        });
+        return '';
+    });
+    return [path, query];
+}
+function registerPage(PageClass) {
     PageClass.reactInstances = [];
     var config = {
         private: {
@@ -2744,8 +2836,12 @@ function registerPage(PageClass, path) {
             state: Object
         },
         dispatchEvent: dispatchEvent,
-        onInit: function onInit(query) {
+        onInit: function onInit() {
             var $app = shareObject.app = this.$app.$def || this.$app._def;
+            var _getUrlAndQuery = getUrlAndQuery(this.$page),
+                _getUrlAndQuery2 = _slicedToArray(_getUrlAndQuery, 2),
+                path = _getUrlAndQuery2[0],
+                query = _getUrlAndQuery2[1];
             var instance = onLoad.call(this, PageClass, path, query);
             var pageConfig = instance.config || PageClass.config;
             $app.pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
@@ -2759,7 +2855,10 @@ function registerPage(PageClass, path) {
         config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook];
-            if (isFn(fn)) {
+            if (hook === 'onMenuPress') {
+                var $app = shareObject.app = this.$app.$def || this.$app._def;
+                showMenu(instance, $app);
+            } else if (isFn(fn)) {
                 fn.call(instance, e);
             }
             var globalHook = globalHooks[hook];

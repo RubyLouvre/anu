@@ -1,5 +1,5 @@
 /* eslint no-console: 0 */
-
+/* eslint-disable*/
 const execSync = require('child_process').execSync;
 const t = require('babel-types');
 const fs = require('fs-extra');
@@ -72,6 +72,7 @@ let utils = {
             if (
                 buildType === 'ali' ||
                 buildType === 'wx' ||
+                buildType === 'tt' || //头条也是bindtap
                 buildType === 'bu'
             ) {
                 return 'Tap';
@@ -432,34 +433,7 @@ let utils = {
             }
         });
         return result;
-    },
-    asyncAwaitHackPlugin: function(buildType){
-        let visitor = {
-            FunctionDeclaration: {
-                exit(astPath) {
-                    // //微信，百度小程序async/await语法需要插入var regeneratorRuntime = require('regenerator-runtime/runtime');
-                    let name = astPath.node.id.name;
-                    if ( !(name === '_asyncToGenerator' && ['wx', 'bu'].includes(buildType))  ) return;
-                    let root = astPath.findParent(t.isProgram);
-                    root.node.body.unshift(
-                        t.variableDeclaration('var', [
-                            t.variableDeclarator(
-                                t.identifier('regeneratorRuntime'),
-                                t.callExpression(t.identifier('require'), [
-                                    t.stringLiteral('regenerator-runtime/runtime')
-                                ])
-                            )
-                        ])
-                    );
-                }
-            }
-        };
-        return function(){
-            return {
-                visitor: visitor
-            };
-        };
-    },
+    },   
     getRegeneratorRuntimePath: function (sourcePath) {
         //小程序async/await语法依赖regenerator-runtime/runtime
         try {
@@ -489,14 +463,27 @@ let utils = {
     initQuickAppConfig: function(){
         //merge快应用依赖的package.json配置
         this.mergeQuickAppJson();
+        let baseDir = path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig');
+
         //copy快应用秘钥
-        let signSourceDir = path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig', 'sign');
+        let signSourceDir = path.join(baseDir, 'sign');
         let signDistDir = path.join(cwd, 'sign');
+        let babelConifgPath = path.join(baseDir, 'babel.config.js');
+        let babelConfigDist = path.join(cwd, 'babel.config.js');
+        
         fs.ensureDirSync(signDistDir);
         fs.copy( signSourceDir, signDistDir)
             .catch((err)=>{
                 // eslint-disable-next-line
                 console.log(err);
+            });
+
+       
+        fs.ensureFileSync(babelConifgPath);
+        fs.copy(babelConifgPath, babelConfigDist)
+            .catch((err)=>{
+            // eslint-disable-next-line
+            console.log(err);
             });
     },
     resolvePatchComponentPath: function(filePath){
@@ -553,27 +540,45 @@ let utils = {
             }
         };
     },
-    resolveStyleAlias(importer) {
-       
+    resolveStyleAlias(importer, basedir) {
         //解析样式中的alias别名配置
         let aliasMap = userConfig && userConfig.alias || {};
         let depLevel = importer.split('/'); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
         let prefix = depLevel[0]; 
-        let url = '';
+       
         //将alias以及相对路径引用解析成绝对路径
         if (aliasMap[prefix] ) {
-            url = path.join(
+            importer = path.join(
                 cwd, 
                 aliasMap[prefix],              
                 depLevel.slice(1).join('/')   //['@path', 'x', 'y.scss'] => 'x/y.scss'
             );
-        } else {
-            url = importer;
+            let val = path.relative(basedir, importer);
+            val = /^\w/.test(val) ? `./${val}` : val;  //相对路径加./
+            return val;
         }
-        return url;
+        return importer;
     },
     getComponentOrAppOrPageReg() {
         return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
+    },
+    hasNpm(npmName) {
+        let flag = false;
+        try {
+            nodeResolve.sync(npmName, { basedir: process.cwd()});
+            flag = true;
+        } catch (err){
+            // eslint-disable-next-line
+        }
+        return flag;
+    },
+    decodeChinise(code) {
+        return code.replace(
+            /\\?(?:\\u)([\da-f]{4})/gi,
+            function(a, b) {
+                return unescape(`%u${b}`);
+            }
+        );
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
