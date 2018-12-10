@@ -6,7 +6,7 @@ const getPatchComponentDir = (componentName)=>{
 let userConfig = {};
 try {
     const pkg = require( path.join(process.cwd(), 'package.json') );
-    userConfig = pkg.nanachi || pkg.mpreact;
+    userConfig = pkg.nanachi || pkg.mpreact || userConfig;
 } catch (err) {
     // eslint-disable-next-line
 }
