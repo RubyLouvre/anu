@@ -5,20 +5,12 @@ class About extends React.Component {
     constructor(){
         super();
         this.state = {
-            name: "qunar快应用",
+            name: 'qunar快应用',
             desc: '即点即用，让你省去下载安装的步骤，立即使用各类服务',
             serviceType: '工具类',
             subjectInfo: '北京趣拿软件科技有限公司',
             copyright: ''
         };
-    }
-
-    componentDidMount() {
-        console.log('props,  ', this.props);
-    }
-
-    onShow(e) {
-        console.log('e:', e);
     }
 
     render() {
@@ -45,7 +37,7 @@ class About extends React.Component {
                     <div className="detail-content">{this.state.serviceType}</div>
                 </div>
                 <div className="detail">
-                <div className="detail-title">主体信息</div>
+                    <div className="detail-title">主体信息</div>
                     <div className="detail-content">{this.state.subjectInfo}</div>
                 </div>
                 <div className="detail">
