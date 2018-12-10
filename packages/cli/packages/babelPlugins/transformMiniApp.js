@@ -1,11 +1,12 @@
 let syntaxClassProperties = require('babel-plugin-syntax-class-properties');
 let path = require('path');
 let visitor = require('./miniappVisitor');
-let config = require('./config');
-let quickFiles = require('./quickFiles');
-let utils = require('./utils/index');
+let config = require('../config');
+let quickFiles = require('../quickFiles');
+let utils = require('../utils');
+let reg = utils.getComponentOrAppOrPageReg();
 
-module.exports = function miniappPlugin() {
+let miniAppPlugin = function(){
     return {
         inherits: syntaxClassProperties,
         visitor: visitor,
@@ -41,4 +42,9 @@ module.exports = function miniappPlugin() {
             }
         }
     };
+};
+
+
+module.exports = (filePath)=>{
+    return reg.test(filePath) ? [miniAppPlugin] : [];
 };
