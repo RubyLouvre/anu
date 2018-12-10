@@ -104,7 +104,7 @@ const writeDir = appName => {
     const templates = fs.readdirSync(path.join(__dirname, '..', 'templates'));
     templates.forEach(item => {
         if (ignore.has(item) || item != TEMPLATE) return;
-        let src = path.join(ownRoot, 'templates', item, 'src');
+        let src = path.join(ownRoot, 'templates', item, 'source');
         let pkg = path.join(ownRoot, 'templates', item, 'package.json');
         let dist = path.join(appName,  config.sourceDir );
         let distPkg = path.join(appName, 'package.json');
