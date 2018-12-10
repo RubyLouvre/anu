@@ -26,8 +26,7 @@ export function showMenu(instance, app){
                         case 2:
                             // 关于
                             api.redirectTo({
-                                url: 'pages/demo/userCenter/index',
-                                params: { name: appInfo.name, icon: appInfo.icon }
+                                url: `pages/about/index?brand=${appInfo.brand}&version=${appInfo.version}`
                             });
                             break;
                         case 3:

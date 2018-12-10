@@ -1,6 +1,8 @@
 
 
 .inline-container{
+  display: flex;
+  flex-direction: column;
   .item{
     background: #f8f8f8;
     padding: 20px;
