@@ -8,12 +8,13 @@ const containsAuto = R.compose(
     pickValue
 );
 
-const throwError = () => {
-    throw new Error(
-        chalk`在快应用中无法在 margin 中使用 auto 居中，请使用 flex 布局。`
+const logWarn = () => {
+    // eslint-disable-next-line
+    console.warn(
+        chalk.yellow`在快应用中无法在 margin 中使用 auto 居中，请使用 flex 布局。`
     );
 };
 
-const validateMargin = R.when(containsAuto, throwError);
+const validateMargin = R.when(containsAuto, logWarn);
 
 module.exports = validateMargin;

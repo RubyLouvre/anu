@@ -433,71 +433,7 @@ let utils = {
             }
         });
         return result;
-    },
-    asyncAwaitHackPlugin: function(){
-        let visitor = {
-            FunctionDeclaration: {
-                exit(astPath) {
-                    // //微信，百度小程序async/await语法需要插入var regeneratorRuntime = require('regenerator-runtime/runtime');
-                    let name = astPath.node.id.name;
-                    if ( !(name === '_asyncToGenerator' && ['wx', 'bu'].includes(config.buildType))  ) return;
-                    let root = astPath.findParent(t.isProgram);
-                    root.node.body.unshift(
-                        t.variableDeclaration('var', [
-                            t.variableDeclarator(
-                                t.identifier('regeneratorRuntime'),
-                                t.callExpression(t.identifier('require'), [
-                                    t.stringLiteral('regenerator-runtime/runtime')
-                                ])
-                            )
-                        ])
-                    );
-                }
-            }
-        };
-        return function(){
-            return {
-                visitor: visitor
-            };
-        };
-    },
-    conditionImportPlugin: function(){
-        //条件import
-        /**
-         *  // if process.env.ANU_ENV === [wx|ali|bu|quick]
-         *  import ...
-         */
-        let visitor = {
-            ImportDeclaration: {
-                exit(astPath) {
-                    let node  = astPath.node;
-                    if (node.leadingComments) {
-                        let targetEnvReg = new RegExp(`\\s*if\\s+(process\\.env\\.ANU_ENV\\s*={2,3}\\s*\\'(${config.buildType})\\';?)`, 'mg');
-                        let envReg = /\s*if\s+(process\.env\.ANU_ENV\s*={2,3}\s*'(wx|ali|bu|quick)';?)/mg;
-                        let leadingComments = node.leadingComments;
-                        for (let i = 0; i < leadingComments.length; i++){
-                            let commentValue = leadingComments[i].value;
-                            
-                            if (
-                                leadingComments[i].type === 'CommentLine' //单行注释
-                                && envReg.test(commentValue)              //满足if语句
-                                && !targetEnvReg.test(commentValue)       //匹配非ANU_ENV值的import语句
-                            ) { 
-                                //移除无法匹配ANU_ENV的import语句
-                                astPath.remove();
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        };
-        return function(){
-            return {
-                visitor: visitor
-            };
-        };
-    },
+    },   
     getRegeneratorRuntimePath: function (sourcePath) {
         //小程序async/await语法依赖regenerator-runtime/runtime
         try {
@@ -635,6 +571,14 @@ let utils = {
             // eslint-disable-next-line
         }
         return flag;
+    },
+    decodeChinise(code) {
+        return code.replace(
+            /\\?(?:\\u)([\da-f]{4})/gi,
+            function(a, b) {
+                return unescape(`%u${b}`);
+            }
+        );
     },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
