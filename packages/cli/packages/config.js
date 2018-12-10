@@ -3,8 +3,13 @@ const getPatchComponentDir = (componentName)=>{
     return path.join(__dirname, 'patchComponents', componentName);
 };
 
-const pkg = require( path.join(process.cwd(), 'package.json') );
-const userConfig =  pkg.nanachi || pkg.mpreact || {};
+let userConfig = {};
+try {
+    const pkg = require( path.join(process.cwd(), 'package.json') );
+    userConfig = pkg.nanachi || pkg.mpreact;
+} catch (err) {
+    // eslint-disable-next-line
+}
 const buildDir = userConfig.buildDir || 'dist';
 const sourceDir = userConfig.sourceDir || 'source';
 module.exports = {
