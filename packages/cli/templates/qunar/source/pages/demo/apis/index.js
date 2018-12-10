@@ -33,7 +33,7 @@ class Express extends React.Component {
     console.log(111);
   }
 
-  async showModal() {
+  showModal() {
     React.api.showModal({
       title: '我是一个title',
       content: '内容是啥',
