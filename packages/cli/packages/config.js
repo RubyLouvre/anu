@@ -1,21 +1,17 @@
-
 const path = require('path');
 const getPatchComponentDir = (componentName)=>{
     return path.join(__dirname, 'patchComponents', componentName);
 };
 
-let userConfig = {
-    buildDir: 'dist',
-    sourceDir: 'source'
-};
+let userConfig = {};
 try {
     const pkg = require( path.join(process.cwd(), 'package.json') );
-    userConfig = pkg.nanachi ||  pkg.mpreact || userConfig
+    userConfig = pkg.nanachi || pkg.mpreact || userConfig;
 } catch (err) {
     // eslint-disable-next-line
 }
-const buildDir = userConfig.buildDir ;
-const sourceDir = userConfig.sourceDir;
+const buildDir = userConfig.buildDir || 'dist';
+const sourceDir = userConfig.sourceDir || 'source';
 module.exports = {
     wx: {
         libName: 'ReactWX',
