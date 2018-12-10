@@ -25,7 +25,7 @@ class P extends React.Component {
 
     render() {
         return (
-            <div>
+            <div class='anu-block xxx'>
                 {
                     this.state.condition1 ? (
                         this.state.condition2 ? (
