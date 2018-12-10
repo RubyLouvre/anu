@@ -2,17 +2,17 @@ const t = require('babel-types');
 const generate = require('babel-generator').default;
 const template = require('babel-template');
 const path = require('path');
-const queue = require('./queue');
-const utils = require('./utils');
+const queue = require('../queue');
+const utils = require('../utils');
 const fs = require('fs-extra');
 const chalk = require('chalk');
 const deps = [];
-const config = require('./config');
+const config = require('../config');
 const buildType = config['buildType'];
-const quickFiles = require('./quickFiles');
-const quickConfig = require('./quickHelpers/config');
+const quickFiles = require('../quickFiles');
+const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
-const helpers = require(`./${buildType}Helpers/index`);
+const helpers = require(`../${buildType}Helpers/index`);
 //微信的文本节点，需要处理换行符
 const inlineElement = {
     text: 1,
@@ -24,6 +24,7 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
+let cache = {};
 if (buildType == 'quick') {
     utils.createRegisterStatement = function(className, path, isPage) {
         var templateString = isPage
@@ -58,22 +59,20 @@ module.exports = {
                     if (methodName === 'onLaunch') {
                         methodName = 'onCreate';
                     }
-                    queue.push({
-                        code: fs.readFileSync(
-                            path.resolve(
-                                __dirname,
-                                './quickHelpers/PageWrapper.ux'
-                            )
-                        ),
-                        path: path.join(
-                            process.cwd(),
-                            'dist',
-                            'components',
-                            'PageWrapper',
-                            'index.ux'
-                        ),
-                        type: 'ux'
-                    });
+                    let dist = path.join( process.cwd(), 'dist', 'components', 'PageWrapper', 'index.ux');
+                    if (!cache[dist]) {
+                        queue.push({
+                            code: fs.readFileSync(
+                                path.resolve(
+                                    __dirname,
+                                    '../quickHelpers/PageWrapper.ux'
+                                )
+                            ),
+                            path: dist,
+                            type: 'ux'
+                        });
+                        cache[dist] = true;
+                    }
                 }
                 let fn = utils.createMethod(astPath, methodName);
                 modules.thisMethods.push(fn);

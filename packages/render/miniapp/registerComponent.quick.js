@@ -1,6 +1,6 @@
 
 import { registeredComponents, usingComponents, updateMiniApp } from './utils';
-import { dispatchEvent } from './eventSystemQuick';
+import { dispatchEvent } from './eventSystem.quick';
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = (type.reactInstances = []);

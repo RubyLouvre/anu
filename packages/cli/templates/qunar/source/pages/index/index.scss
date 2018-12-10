@@ -35,11 +35,11 @@
       border-top-right-radius: 5px;
     }
     .radius-bottom-left image {
-      border-bottom-right-radius:5px;
+      border-bottom-left-radius:5px;
     }
     .radius-bottom-right image {
       
-      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
     }
     .item-wrapper {
       margin-bottom: 4rpx;
@@ -74,15 +74,18 @@
   .tool-wrapper {
     display: flex;
     flex-direction: row;
+    padding: 0 10rpx;
     .tool-item {
+      display: flex;
       flex: 1;
+      flex-direction: row;
       text-align: center;
       align-items: center;
       image {
         display: block;
         width: 60rpx;
         height: 60rpx;
-        // margin: 0 auto;
+        margin: 0 auto;
       }
       text {
         font-size: 22rpx;
@@ -90,6 +93,8 @@
     }
   }
   .special-offer {
+    display: flex;
+    flex-direction: column;
     padding-left: 15rpx;
     padding-right: 15rpx;
     .title {
@@ -126,6 +131,8 @@
     }
   }
   .activity {
+    display: flex;
+    flex-direction: column;
     padding-left:15rpx;
     padding-bottom: 40rpx;
     padding-right: 15rpx;
@@ -138,6 +145,7 @@
     }
     .activity-wrapper {
       display: flex;
+      flex-direction: row;
       .left-content,
       .right-content {
         flex: 1 1 365rpx;
@@ -159,6 +167,8 @@
         }
       }
       .right-content {
+        display: flex;
+        flex-direction: column;
         .right-content-wrapper {
           display: flex;
           flex-direction: column;
@@ -175,8 +185,9 @@
           border: 1px solid #e4e3e3;
         }
         .content {
-          height: 175rpx;
-          margin-top: -175rpx;
+          height: 165rpx;
+          margin-top: -165rpx;
+          margin-left: 20rpx;
           .title {
             display: block;
             font-size: 28rpx;
@@ -190,8 +201,11 @@
         }
       }
       .content {
-        height: 360rpx;
-        margin-top: -360rpx;
+        display: flex;
+        flex-direction: column;
+        height: 350rpx;
+        margin-top: -350rpx;
+        margin-left: 20rpx;
         .title {
           display: block;
           font-size: 28rpx;
