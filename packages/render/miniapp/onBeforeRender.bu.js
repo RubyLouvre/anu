@@ -12,7 +12,7 @@ export function onBeforeRender(fiber) {
         }
         //只处理component目录下的组件
         let wxInstances = type.wxInstances;
-        if (wxInstances) {
+        if (wxInstances && !instance.wx) {
             // instance在registerComponent的dettached触发延迟？
             type.reactInstances.push(instance);
         }

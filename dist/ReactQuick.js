@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-07
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-10
  */
 
 var arrayPush = Array.prototype.push;
@@ -1192,8 +1192,9 @@ function createRouter(name) {
         var href = obj.url || obj.uri || '';
         var uri = href.slice(href.indexOf('/pages') + 1);
         uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('=').forEach(function (k, v) {
-                params[k] = v;
+            b.split('&').forEach(function (param) {
+                param = param.split('=');
+                params[param[0]] = param[1];
             });
             return '';
         }).replace(/\/index$/, '');
@@ -1263,7 +1264,15 @@ var api = {
         var share = require('@service.share');
         share.getAvailablePlatforms({
             success: function success(data) {
-                obj.shareType = obj.shareType || 0;
+                var shareType = 0;
+                if (obj.path && obj.title) {
+                    shareType = 0;
+                } else if (obj.title) {
+                    shareType = 1;
+                } else if (obj.imageUrl) {
+                    shareType = 2;
+                }
+                obj.shareType = obj.shareType || shareType;
                 obj.targetUrl = obj.path;
                 obj.summary = obj.desc;
                 obj.imagePath = obj.imageUrl;
@@ -2606,7 +2615,7 @@ function onBeforeRender(fiber) {
             _getApp().page = instance;
         }
         var wxInstances = type.wxInstances;
-        if (wxInstances) {
+        if (wxInstances && !instance.wx) {
             type.reactInstances.push(instance);
         }
     }
@@ -2788,8 +2797,7 @@ function showMenu(instance, app) {
                             break;
                         case 2:
                             api.redirectTo({
-                                url: 'pages/demo/userCenter/index',
-                                params: { name: appInfo.name, icon: appInfo.icon }
+                                url: 'pages/about/index?brand=' + appInfo.brand + '&version=' + appInfo.version
                             });
                             break;
                         case 3:
@@ -2801,12 +2809,25 @@ function showMenu(instance, app) {
     });
 }
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 var globalHooks = {
     onShareAppMessage: 'onGlobalShare',
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
-function registerPage(PageClass, path) {
+function getUrlAndQuery(page) {
+    var path = page.path;
+    var query = {};
+    page.uri.replace(/\?(.*)/, function (a, b) {
+        b.split('&').forEach(function (param) {
+            param = param.split('=');
+            query[param[0]] = param[1];
+        });
+        return '';
+    });
+    return [path, query];
+}
+function registerPage(PageClass) {
     PageClass.reactInstances = [];
     var config = {
         private: {
@@ -2815,8 +2836,12 @@ function registerPage(PageClass, path) {
             state: Object
         },
         dispatchEvent: dispatchEvent,
-        onInit: function onInit(query) {
+        onInit: function onInit() {
             var $app = shareObject.app = this.$app.$def || this.$app._def;
+            var _getUrlAndQuery = getUrlAndQuery(this.$page),
+                _getUrlAndQuery2 = _slicedToArray(_getUrlAndQuery, 2),
+                path = _getUrlAndQuery2[0],
+                query = _getUrlAndQuery2[1];
             var instance = onLoad.call(this, PageClass, path, query);
             var pageConfig = instance.config || PageClass.config;
             $app.pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;

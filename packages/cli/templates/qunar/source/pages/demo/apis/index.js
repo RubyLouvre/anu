@@ -26,13 +26,14 @@ class Express extends React.Component {
     backgroundTextStyle: 'light'
   };
 
-  componentDidMount() {}
+  componentDidMount() {
+  }
 
   click() {
     console.log(111);
   }
 
-  async showModal() {
+  showModal() {
     React.api.showModal({
       title: '我是一个title',
       content: '内容是啥',
@@ -70,22 +71,40 @@ class Express extends React.Component {
   }
   
   share() {
-    console.log('share');
-
-    if(process.env.ANU_ENV == 'quick') {
-      React.api.share({
-        type: 'text/html',
-        data: '<b>bold</b>',
-        success: function(data) {
-          console.log('handling success');
-        },
-        fail: function(data, code) {
-          console.log(`handling fail, code = ${code}`);
-        }
-      });
-    }
+    /**
+     * 快应用分享api，快应用右上角分享方式：在页面中定义onShareAppMessage函数
+     * eg:
+     * onShareAppMessage() {
+     *    return {
+     *        title: '标题',
+     *        path: 'http://www.example.com',
+     *        success: function(data) {
+     *            React.api.showToast({ title: 'handling success'});
+     *            console.log('handling success')
+     *        },
+     *        fail: function(data, code) {
+     *            React.api.showToast({ title: `code=${code}, ${data}` });
+     *            console.log(`code=${code}, ${data}`)
+     *        }
+     *    }
+     * }
+     */ 
     
+    React.api.share({
+      title: '标题',
+      imageUrl: '/assets/logo.png',
+      path: 'http://www.example.com',
+      success: function(data) {
+          React.api.showToast({ title: 'handling success'});
+          console.log('handling success')
+      },
+      fail: function(data, code) {
+          React.api.showToast({ title: `code=${code}, ${data}` });
+          console.log(`code=${code}, ${data}`)
+      }
+    });
   }
+
   upload() {
     console.log('upload');
     React.api.chooseImage({
@@ -215,6 +234,16 @@ class Express extends React.Component {
     })
   }
 
+  redirectTo() {
+    React.api.redirectTo({
+      url: '/pages/about/index?param1=hello&param2=world'
+    });
+  }
+
+  createShortcut() {
+    React.api.createShortcut();
+  }
+
   render() {
     return (
       <div class="page">
@@ -275,6 +304,15 @@ class Express extends React.Component {
           }
           <div onClick={this.setTitleBar} class="anu-item">
             <text>setTitleBar</text>
+          </div>
+          <div onClick={this.share} class="anu-item">
+            <text>分享链接</text>
+          </div>
+          <div onClick={this.createShortcut} class="anu-item">
+            <text>保存图标到桌面</text>
+          </div>
+          <div onClick={this.redirectTo} class="anu-item">
+            <text>页面跳转(redirectTo)</text>
           </div>
         </div>
       </div>
