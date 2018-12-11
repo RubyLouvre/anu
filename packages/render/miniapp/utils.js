@@ -24,6 +24,10 @@ export var registeredComponents = {};
 export var pageState = {
     isReady: false
 };
+export function getCurrentPage() {
+    console.log('getCurrentPage中的pageState.wx', pageState.wx);
+    return pageState.wx && pageState.wx.reactInstance;
+}
 export function _getCurrentPages() {
     console.warn("getCurrentPages存在严重的平台差异性，不建议再使用"); //eslint-disable-line
     if (typeof getCurrentPages === 'function') {

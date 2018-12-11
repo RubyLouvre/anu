@@ -1,23 +1,21 @@
-import { isFn, toLowerCase, get } from "react-core/util";
-import { createRenderer } from "react-core/createRenderer";
-import { render } from "react-fiber/scheduleWork";
-import { updateMiniApp, _getApp } from "./utils";
+import { isFn, toLowerCase, get } from 'react-core/util';
+import { createRenderer } from 'react-core/createRenderer';
+import { render } from 'react-fiber/scheduleWork';
+import { updateMiniApp, _getApp } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 
 function getEventUid(name, props) {
-    var n = name.charAt(0) == "o" ? 2 : 5;
+    var n = name.charAt(0) == 'o' ? 2 : 5;
     var type = toLowerCase(name.slice(n));
-    return props["data-" + type + "-uid"];
+    return props['data-' + type + '-uid'];
 }
-export function getCurrentPage() {
-    return _getApp().page;
-}
+
 export let Renderer = createRenderer({
     render: render,
     updateAttribute(fiber) {
         let { props, lastProps } = fiber;
-        let beaconId = props["data-beacon-uid"];
+        let beaconId = props['data-beacon-uid'];
         let instance = fiber._owner; //clazz[instanceId];
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
@@ -29,7 +27,7 @@ export let Renderer = createRenderer({
                 if (onEvent.test(name) && isFn(props[name])) {
                     let code = getEventUid(name, props);
                     cached[code] = props[name];
-                    cached[code + "Fiber"] = fiber;
+                    cached[code + 'Fiber'] = fiber;
                 }
             }
             if (lastProps) {
@@ -37,7 +35,7 @@ export let Renderer = createRenderer({
                     if (onEvent.test(name) && !props[name]) {
                         let code = getEventUid(name, lastProps);
                         delete cached[code];
-                        delete cached[code + "Fiber"];
+                        delete cached[code + 'Fiber'];
                     }
                 }
             }

@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-10
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-11
  */
 
 var arrayPush = Array.prototype.push;
@@ -571,13 +571,8 @@ function dispatchEvent(e) {
     var eventType = toLowerCase(e._type);
     var target = e.target;
     var dataset = getDataSet(target._attr);
-    var app = this.$app.def;
+    var app = this.$app.$def;
     var eventUid = dataset[eventType + 'Uid'];
-    if (dataset['classUid']) {
-        console.log('请尽快升级nanachi');
-        var key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-    }
     var fiber = instance.$$eventCached[eventUid + 'Fiber'];
     if (eventType == 'change' && fiber) {
         if (fiber.props.value + '' === e.value) {
@@ -646,6 +641,10 @@ var registeredComponents = {};
 var pageState = {
     isReady: false
 };
+function getCurrentPage() {
+    console.log('getCurrentPage中的pageState.wx', pageState.wx);
+    return pageState.wx && pageState.wx.reactInstance;
+}
 function _getCurrentPages() {
     console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
     if (typeof getCurrentPages === 'function') {
@@ -2494,19 +2493,16 @@ function getContainer(p) {
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventUid(name, props) {
-    var n = name.charAt(0) == "o" ? 2 : 5;
+    var n = name.charAt(0) == 'o' ? 2 : 5;
     var type = toLowerCase(name.slice(n));
-    return props["data-" + type + "-uid"];
-}
-function getCurrentPage() {
-    return _getApp().page;
+    return props['data-' + type + '-uid'];
 }
 var Renderer$1 = createRenderer({
     render: render,
     updateAttribute: function updateAttribute(fiber) {
         var props = fiber.props,
             lastProps = fiber.lastProps;
-        var beaconId = props["data-beacon-uid"];
+        var beaconId = props['data-beacon-uid'];
         var instance = fiber._owner;
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
@@ -2517,7 +2513,7 @@ var Renderer$1 = createRenderer({
                 if (onEvent.test(name) && isFn(props[name])) {
                     var code = getEventUid(name, props);
                     cached[code] = props[name];
-                    cached[code + "Fiber"] = fiber;
+                    cached[code + 'Fiber'] = fiber;
                 }
             }
             if (lastProps) {
@@ -2525,7 +2521,7 @@ var Renderer$1 = createRenderer({
                     if (onEvent.test(_name) && !props[_name]) {
                         var _code = getEventUid(_name, lastProps);
                         delete cached[_code];
-                        delete cached[_code + "Fiber"];
+                        delete cached[_code + 'Fiber'];
                     }
                 }
             }
@@ -2612,7 +2608,10 @@ function onBeforeRender(fiber) {
             instance.instanceUid = uuid;
         }
         if (fiber.props.isPageComponent) {
-            _getApp().page = instance;
+            var wx = pageState.wx;
+            console.log('获取pageState.wx', wx);
+            instance.wx = wx;
+            wx.reactInstance = instance;
         }
         var wxInstances = type.wxInstances;
         if (wxInstances && !instance.wx) {
@@ -2717,6 +2716,8 @@ function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
+    console.log('设置pageState.wx', this);
+    pageState.wx = this;
     var pageInstance = render(
     createElement(PageClass, {
         path: path,
@@ -2724,9 +2725,7 @@ function onLoad(PageClass, path, query) {
         isPageComponent: true
     }), container);
     callGlobalHook('onGlobalLoad');
-    this.reactInstance = pageInstance;
     this.reactContainer = container;
-    pageInstance.wx = this;
     updateMiniApp(pageInstance);
     return pageInstance;
 }
@@ -2809,7 +2808,6 @@ function showMenu(instance, app) {
     });
 }
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 var globalHooks = {
     onShareAppMessage: 'onGlobalShare',
     onShow: 'onGlobalShow',
@@ -2837,15 +2835,12 @@ function registerPage(PageClass) {
         },
         dispatchEvent: dispatchEvent,
         onInit: function onInit() {
-            var $app = shareObject.app = this.$app.$def || this.$app._def;
-            var _getUrlAndQuery = getUrlAndQuery(this.$page),
-                _getUrlAndQuery2 = _slicedToArray(_getUrlAndQuery, 2),
-                path = _getUrlAndQuery2[0],
-                query = _getUrlAndQuery2[1];
-            var instance = onLoad.call(this, PageClass, path, query);
+            var $app = shareObject.app = this.$app;
+            var array = getUrlAndQuery(this.$page);
+            var instance = onLoad.call(this, PageClass, array[0], array[1]);
             var pageConfig = instance.config || PageClass.config;
             $app.pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
-            $app.pagePath = path;
+            $app.pagePath = array[0];
             $app.page = instance;
         },
         onReady: onReady,
@@ -2856,7 +2851,7 @@ function registerPage(PageClass) {
             var instance = this.reactInstance;
             var fn = instance[hook];
             if (hook === 'onMenuPress') {
-                var $app = shareObject.app = this.$app.$def || this.$app._def;
+                var $app = shareObject.app = this.$app;
                 showMenu(instance, $app);
             } else if (isFn(fn)) {
                 fn.call(instance, e);

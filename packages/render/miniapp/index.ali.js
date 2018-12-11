@@ -15,11 +15,11 @@ import { injectAPIs } from './api';
 import { aliApis } from './api.ali';
 
 import { dispatchEvent, webview } from './eventSystem';
-import { Renderer, getCurrentPage } from './render.all';
+import { Renderer } from './render.all';
 import { onBeforeRender } from './onBeforeRender.ali';
 Renderer.onBeforeRender = onBeforeRender;
 import { toStyle } from './toStyle';
-import { toRenderProps,_getApp, _getCurrentPages, useComponent } from './utils';
+import { toRenderProps,_getApp, getCurrentPage, _getCurrentPages, useComponent } from './utils';
 
 import { registerComponent } from './registerComponent.ali';
 import { registerPage } from './registerPage.wx';

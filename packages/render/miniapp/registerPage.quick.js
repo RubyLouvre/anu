@@ -31,17 +31,16 @@ export function registerPage(PageClass) {
         },
         dispatchEvent,
         onInit() {
-            var $app = (shareObject.app = this.$app.$def || this.$app._def);
-            var [path, query] = getUrlAndQuery(this.$page);
-            var instance = onLoad.call(this, PageClass, path, query);
+            var $app = shareObject.app = this.$app; //.$def || this.$app._def);
+            var array = getUrlAndQuery(this.$page);
+            var instance = onLoad.call(this, PageClass, array[0], array[1]);
             // shareObject的数据不是长久的，在页面跳转时，就会丢失
-           
             var pageConfig = instance.config || PageClass.config;
             $app.pageConfig =
                 pageConfig && Object.keys(pageConfig).length
                     ? pageConfig
                     : null;
-            $app.pagePath = path;
+            $app.pagePath = array[0];
             $app.page = instance;
         },
         onReady: onReady,
@@ -52,7 +51,7 @@ export function registerPage(PageClass) {
             let instance = this.reactInstance;
             let fn = instance[hook];
             if (hook === 'onMenuPress') {
-                var $app = (shareObject.app = this.$app.$def || this.$app._def);
+                var $app = shareObject.app = this.$app;
                 showMenu(instance, $app);
             } else if (isFn(fn)) {
                 fn.call(instance, e);

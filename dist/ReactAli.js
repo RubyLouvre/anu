@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-10
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-11
  */
 
 var arrayPush = Array.prototype.push;
@@ -1039,6 +1039,10 @@ var registeredComponents = {};
 var pageState = {
     isReady: false
 };
+function getCurrentPage() {
+    console.log('getCurrentPage中的pageState.wx', pageState.wx);
+    return pageState.wx && pageState.wx.reactInstance;
+}
 function _getCurrentPages() {
     console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
     if (typeof getCurrentPages === 'function') {
@@ -2319,19 +2323,16 @@ function getContainer(p) {
 
 var onEvent = /(?:on|catch)[A-Z]/;
 function getEventUid(name, props) {
-    var n = name.charAt(0) == "o" ? 2 : 5;
+    var n = name.charAt(0) == 'o' ? 2 : 5;
     var type = toLowerCase(name.slice(n));
-    return props["data-" + type + "-uid"];
-}
-function getCurrentPage() {
-    return _getApp().page;
+    return props['data-' + type + '-uid'];
 }
 var Renderer$1 = createRenderer({
     render: render,
     updateAttribute: function updateAttribute(fiber) {
         var props = fiber.props,
             lastProps = fiber.lastProps;
-        var beaconId = props["data-beacon-uid"];
+        var beaconId = props['data-beacon-uid'];
         var instance = fiber._owner;
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
@@ -2342,7 +2343,7 @@ var Renderer$1 = createRenderer({
                 if (onEvent.test(name) && isFn(props[name])) {
                     var code = getEventUid(name, props);
                     cached[code] = props[name];
-                    cached[code + "Fiber"] = fiber;
+                    cached[code + 'Fiber'] = fiber;
                 }
             }
             if (lastProps) {
@@ -2350,7 +2351,7 @@ var Renderer$1 = createRenderer({
                     if (onEvent.test(_name) && !props[_name]) {
                         var _code = getEventUid(_name, lastProps);
                         delete cached[_code];
-                        delete cached[_code + "Fiber"];
+                        delete cached[_code + 'Fiber'];
                     }
                 }
             }
@@ -2437,7 +2438,10 @@ function onBeforeRender(fiber) {
             instance.instanceUid = uuid;
         }
         if (fiber.props.isPageComponent) {
-            _getApp().page = instance;
+            var wx = pageState.wx;
+            console.log('获取pageState.wx', wx);
+            instance.wx = wx;
+            wx.reactInstance = instance;
         }
         var wxInstances = type.wxInstances;
         if (wxInstances && !instance.wx) {
@@ -2541,6 +2545,8 @@ function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
+    console.log('设置pageState.wx', this);
+    pageState.wx = this;
     var pageInstance = render(
     createElement(PageClass, {
         path: path,
@@ -2548,9 +2554,7 @@ function onLoad(PageClass, path, query) {
         isPageComponent: true
     }), container);
     callGlobalHook('onGlobalLoad');
-    this.reactInstance = pageInstance;
     this.reactContainer = container;
-    pageInstance.wx = this;
     updateMiniApp(pageInstance);
     return pageInstance;
 }

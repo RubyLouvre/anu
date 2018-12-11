@@ -13,11 +13,11 @@ import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { dispatchEvent } from './eventSystem.quick';
 import { api } from './api.quick';
-import { Renderer, getCurrentPage } from './render.all';
+import { Renderer } from './render.all';
 import { onBeforeRender } from './onBeforeRender.quick';
 Renderer.onBeforeRender = onBeforeRender;
 import { toStyle } from './toStyle.quick';
-import { toRenderProps, shareObject, _getApp, _getCurrentPages, useComponent } from './utils';
+import { toRenderProps, shareObject, getCurrentPage, _getApp, _getCurrentPages, useComponent } from './utils';
 
 import { registerComponent } from './registerComponent.quick';
 import { registerPage } from './registerPage.quick';
