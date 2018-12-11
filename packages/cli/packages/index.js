@@ -18,6 +18,7 @@ const miniTransform = require('./miniappTransform');
 const styleTransform = require('./styleTransform');
 const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
+let pageRegExp = utils.getComponentOrAppOrPageReg();
 let cwd = process.cwd();
 let inputPath = path.join(cwd,  config.sourceDir);
 let entry = path.join(inputPath, 'app.js');
@@ -144,6 +145,16 @@ class Parser {
         this.copyAssets();
         this.copyProjectConfig();
     }
+    checkCodeLine(filePath, code, number){
+        if (code.match(/\n/g).length >= number) {
+            let id = path.relative( cwd,  filePath);
+            console.warn(
+                chalk.yellow(
+                    `\nWaning: ${id} 文件代码不能超过${number}行, 请优化.`
+                )
+            )
+        }
+    }
     moduleMap() {
         return {
             npm: (data)=>{
@@ -172,6 +183,10 @@ class Parser {
                 });
             },
             js: (data)=>{
+                if (pageRegExp.test(data.id)) {
+                    //校验文件代码行数是否超过500, 抛出警告。
+                    this.checkCodeLine(data.id, data.originalCode, 500);
+                }
                 this.jsFiles.push({
                     id: data.id,
                     originalCode: data.originalCode,
