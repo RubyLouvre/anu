@@ -2546,14 +2546,11 @@ var Renderer$1 = createRenderer({
             }
             var wxInstances = type.wxInstances;
             if (wxInstances) {
-                for (var i = wxInstances.length - 1; i >= 0; i--) {
-                    var el = wxInstances[i];
-                    if (el.dataset.instanceUid === uuid) {
-                        el.reactInstance = instance;
-                        instance.wx = el;
-                        wxInstances.splice(i, 1);
-                        break;
-                    }
+                var componentWx = wxInstances[uuid];
+                if (componentWx && componentWx.__wxExparserNodeId__) {
+                    componentWx.reactInstance = instance;
+                    instance.wx = componentWx;
+                    delete wxInstances[uuid];
                 }
                 if (!instance.wx) {
                     type.reactInstances.push(instance);
@@ -2680,7 +2677,7 @@ function toStyle(obj, props, key) {
 function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    var wxInstances = type.wxInstances = [];
+    var wxInstances = type.wxInstances = {};
     return {
         data: function data() {
             return {
@@ -2703,7 +2700,7 @@ function registerComponent(type, name) {
                     return reactInstances.splice(i, 1);
                 }
             }
-            wxInstances.push(this);
+            wxInstances[uuid] = this;
         },
         onDestroy: function onDestroy() {
             var t = this.reactInstance;
@@ -2754,7 +2751,7 @@ function onUnload() {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances.length = 0;
+            a.wxInstances = null;
         }
         delete usingComponents[i];
     }

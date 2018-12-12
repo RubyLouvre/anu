@@ -1,6 +1,6 @@
 import { isFn} from 'react-core/util';
 import { dispatchEvent } from './eventSystem';
-import { onLoad, onUnload, onReady } from './registerPageMethod';
+import { onLoad, onUnload, onReady } from './registerPage.all';
 import { callGlobalHook } from './utils';
 var globalHooks = {
     onShareAppMessage: 'onGlobalShare',
