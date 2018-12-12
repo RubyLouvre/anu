@@ -14,7 +14,8 @@ export function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
-
+    console.log('设置pageState.wx', this);
+    pageState.wx = this;
     var pageInstance = render(//生成页面的React对象
         createElement(PageClass, {
             path: path,
@@ -24,9 +25,9 @@ export function onLoad(PageClass, path, query) {
         container
     );
     callGlobalHook('onGlobalLoad');//调用全局onLoad方法
-    this.reactInstance = pageInstance;
     this.reactContainer = container;
-    pageInstance.wx = this;//保存小程序的页面对象
+    //   this.reactInstance = pageInstance;
+    //   pageInstance.wx = this;//保存小程序的页面对象
     updateMiniApp(pageInstance);//更新小程序视图
     return pageInstance;
 }

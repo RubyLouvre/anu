@@ -18,6 +18,7 @@ const miniTransform = require('./miniappTransform');
 const styleTransform = require('./styleTransform');
 const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
+let pageRegExp = utils.getComponentOrAppOrPageReg();
 let cwd = process.cwd();
 let inputPath = path.join(cwd,  config.sourceDir);
 let entry = path.join(inputPath, 'app.js');
@@ -69,6 +70,8 @@ let ignoreStyleParsePlugin = ()=>{
     };
 };
 
+
+
 //监听打包资源
 utils.on('build', ()=>{
     generate();
@@ -80,6 +83,7 @@ class Parser {
         this.jsFiles = [];
         this.styleFiles = [];
         this.npmFiles = [];
+        this.depTree = {};
         this.customAliasConfig = Object.assign(
             { resolve: ['.js','.css', '.scss', '.sass', '.less'] },
             utils.getCustomAliasConfig()
@@ -139,10 +143,32 @@ class Parser {
             const id = item.id;
             if (/commonjsHelpers/.test(id)) return;
             this.moduleMap()[getFileType(id)](item);
+            this.collectDeps(item);
         });
+
         this.transform();
         this.copyAssets();
         this.copyProjectConfig();
+    }
+    checkCodeLine(filePath, code, number){
+        if (code.match(/\n/g).length >= number) {
+            let id = path.relative( cwd,  filePath);
+            console.warn(
+                chalk.yellow(
+                    `\nWaning: ${id} 文件代码不能超过${number}行, 请优化.`
+                )
+            );
+        }
+    }
+    collectDeps(item) {
+        //搜集js的样式依赖，快应用下如果更新样式，需触发js构建ux.
+        if ( !/\.js$/.test(item.id) ) return;
+        let depsStyle = item.dependencies.filter((id)=>{
+            return isStyle(id);
+        });
+        if (depsStyle.length) {
+            this.depTree[item.id] = depsStyle;
+        }
     }
     moduleMap() {
         return {
@@ -154,6 +180,7 @@ class Parser {
             },
             css: (data)=>{
                 if (config.buildType == 'quick'){
+                    
                     //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
                     var jsName = data.id.replace(/\.\w+$/, '.js');
                     if (fs.pathExistsSync(jsName)) {
@@ -172,6 +199,10 @@ class Parser {
                 });
             },
             js: (data)=>{
+                if (pageRegExp.test(data.id)) {
+                    //校验文件代码行数是否超过500, 抛出警告。
+                    this.checkCodeLine(data.id, data.originalCode, 500);
+                }
                 this.jsFiles.push({
                     id: data.id,
                     originalCode: data.originalCode,
@@ -206,6 +237,7 @@ class Parser {
         return flag;
     }
     updateJsQueue(jsFiles) {
+        
         while (jsFiles.length) {
             let { id, originalCode, resolvedIds } = jsFiles.shift();
             if (this.checkComponentsInPages(id)) {
@@ -306,7 +338,7 @@ class Parser {
                 console.log(
                     `\n更新: ${chalk.yellow(path.relative(cwd, file))}`
                 );
-                this.inputConfig.input = file;
+                this.inputConfig.input = this.resolveWatchFile(file);
                 this.parse();
                 
             });
@@ -314,6 +346,18 @@ class Parser {
             console.error('Watcher failure', error);
             process.exit(1);
         });
+    }
+    resolveWatchFile(file) {
+        if (config.buildType !== 'quick') return file;
+        let dep = file;
+        for ( let i in this.depTree) {
+            if (this.depTree[i].includes(file)) {
+                dep = i;
+                break;
+            }
+        }
+        delete cache[dep];
+        return dep;
     }
 }
 

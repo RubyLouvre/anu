@@ -9,7 +9,10 @@ export function onBeforeRender(fiber) {
             instance.instanceUid = uuid;
         }
         if (fiber.props.isPageComponent) {
-            _getApp().page = instance;
+            let wx = pageState.wx;
+            console.log('获取pageState.wx', wx);
+            instance.wx = wx;
+            wx.reactInstance = instance;
         }
         //只处理component目录下的组件
         let wxInstances = type.wxInstances;
