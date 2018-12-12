@@ -152,7 +152,7 @@ class Parser {
                 chalk.yellow(
                     `\nWaning: ${id} 文件代码不能超过${number}行, 请优化.`
                 )
-            )
+            );
         }
     }
     moduleMap() {

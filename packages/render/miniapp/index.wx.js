@@ -17,8 +17,7 @@ import { Renderer } from './render.all';
 import { onBeforeRender } from './onBeforeRender.wx';
 Renderer.onBeforeRender = onBeforeRender;
 import { toStyle } from './toStyle';
-import { toRenderProps, getCurrentPage, _getApp, _getCurrentPages, useComponent } from './utils';
-
+import { toRenderProps, _getApp, getCurrentPage, _getCurrentPages, useComponent } from './utils';
 import { registerPage } from './registerPage.wx';
 import { registerComponent } from './registerComponent.wx';
 
