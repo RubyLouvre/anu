@@ -1,6 +1,6 @@
 // 处理行内样式
 var rcamel = /-(\w)/g;
-var rpx = /(\d+)px/g;
+var rpx = /(\d+)px/gi;
 function camel(target) {
     //转换为驼峰风格
     return target.replace(rcamel, function(all, letter){
