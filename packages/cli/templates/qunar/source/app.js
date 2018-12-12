@@ -59,7 +59,24 @@ import './pages/demo/citySelect/index';
 import './pages/about/index';
 
 import './app.scss';
-
+function getGlobalRef() {
+    return Object.getPrototypeOf(global) || global;
+}
+const globalDataCache = {};
+Object.assign(getGlobalRef(), {
+    /**
+     * API1：保存全局数据
+     */
+    setGlobalData : (key, val) => {
+        globalDataCache[key] = val;
+    },
+    /**
+     * API2：获取全局数据
+     */
+    getGlobalData : (key) => {
+        return globalDataCache[key];
+    }
+});
 class Global extends React.Component {
     config = {
         window: {
@@ -127,6 +144,11 @@ class Global extends React.Component {
         ufo: 'ufo'
     };
     onLaunch() {
+        Object.assign(getGlobalRef(), {
+            getApp: () => {
+                return this;
+            }
+        });
         // eslint-disable-next-line
         console.log('App launched');
     }
