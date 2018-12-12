@@ -62,21 +62,6 @@ import './app.scss';
 function getGlobalRef() {
     return Object.getPrototypeOf(global) || global;
 }
-const globalDataCache = {};
-Object.assign(getGlobalRef(), {
-    /**
-     * API1：保存全局数据
-     */
-    setGlobalData : (key, val) => {
-        globalDataCache[key] = val;
-    },
-    /**
-     * API2：获取全局数据
-     */
-    getGlobalData : (key) => {
-        return globalDataCache[key];
-    }
-});
 class Global extends React.Component {
     config = {
         window: {

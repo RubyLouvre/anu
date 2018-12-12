@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-11
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-12
  */
 
 var arrayPush = Array.prototype.push;
@@ -1022,6 +1022,9 @@ var shareObject = {
     app: {}
 };
 function _getApp() {
+    if (typeof getApp === 'function') {
+        return getApp();
+    }
     return shareObject.app;
 }
 if (typeof getApp === 'function') {
@@ -1036,12 +1039,10 @@ function callGlobalHook(method, e) {
 var delayMounts = [];
 var usingComponents = [];
 var registeredComponents = {};
-var pageState = {
-    isReady: false
-};
 function getCurrentPage() {
-    console.log('getCurrentPage中的pageState.wx', pageState.wx);
-    return pageState.wx && pageState.wx.reactInstance;
+    var app = _getApp();
+    console.log('getCurrentPage中的app.$$page', app.$$page);
+    return app.$$page && app.$$page.reactInstance;
 }
 function _getCurrentPages() {
     console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
@@ -2438,8 +2439,7 @@ function onBeforeRender(fiber) {
             instance.instanceUid = uuid;
         }
         if (fiber.props.isPageComponent) {
-            var wx = pageState.wx;
-            console.log('获取pageState.wx', wx);
+            var wx = _getApp().$$page;
             instance.wx = wx;
             wx.reactInstance = instance;
         }
@@ -2448,7 +2448,7 @@ function onBeforeRender(fiber) {
             type.reactInstances.push(instance);
         }
     }
-    if (!pageState.isReady && instance.componentDidMount) {
+    if (!_getApp().$$pageIsReady && instance.componentDidMount) {
         delayMounts.push({
             instance: instance,
             fn: instance.componentDidMount
@@ -2537,7 +2537,10 @@ function registerComponent(type, name) {
 }
 
 function onLoad(PageClass, path, query) {
-    pageState.isReady = false;
+    var app = _getApp();
+    app.$$pageIsReady = false;
+    app.$$page = this;
+    console.log('设置app.$app', app);
     var container = {
         type: 'page',
         props: {},
@@ -2545,8 +2548,6 @@ function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
-    console.log('设置pageState.wx', this);
-    pageState.wx = this;
     var pageInstance = render(
     createElement(PageClass, {
         path: path,
@@ -2559,7 +2560,8 @@ function onLoad(PageClass, path, query) {
     return pageInstance;
 }
 function onReady() {
-    pageState.isReady = true;
+    var app = _getApp();
+    app.$$pageIsReady = false;
     var el = void 0;
     while (el = delayMounts.pop()) {
         el.fn.call(el.instance);
