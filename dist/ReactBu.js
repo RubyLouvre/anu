@@ -896,6 +896,11 @@ var buApis = function buApis(api) {
         connectSocket: function _(a) {
             a.protocolsArray = a.protocols;
             return api.connectSocket.apply(api, arguments);
+        },
+        showLoading: function _(a) {
+            a = a || {};
+            a.title = a.title || '加载中...';
+            return api.showLoading(a);
         }
     };
 };

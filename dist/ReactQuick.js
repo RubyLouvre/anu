@@ -2628,7 +2628,7 @@ function onBeforeRender(fiber) {
 }
 
 var rcamel = /-(\w)/g;
-var rpx = /(\d+)px/g;
+var rpx = /(\d+)px/gi;
 function camel(target) {
     return target.replace(rcamel, function (all, letter) {
         return letter.toUpperCase();
