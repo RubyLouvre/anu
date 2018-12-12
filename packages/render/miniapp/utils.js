@@ -6,9 +6,13 @@ export var shareObject = {
     app: {}
 };
 function _getApp() {
+    if (typeof getApp === 'function') {    
+        return getApp();//esline-disabled-line;
+    }
     return shareObject.app;
 }
 if (typeof getApp === 'function') {    
+    //这时全局可能没有getApp
     _getApp = getApp;//esline-disabled-line;
 }
 export { _getApp };
@@ -18,6 +22,7 @@ export function callGlobalHook(method, e) {
         return app[method](e);
     }
 }
+
 export var delayMounts = [];
 export var usingComponents = [];
 export var registeredComponents = {};
@@ -25,6 +30,7 @@ export var pageState = {
     isReady: false
 };
 export function getCurrentPage() {
+    console.log(_getApp(), 'getApp');
     console.log('getCurrentPage中的pageState.wx', pageState.wx);
     return pageState.wx && pageState.wx.reactInstance;
 }

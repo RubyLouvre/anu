@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-11
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-12
  */
 
 var arrayPush = Array.prototype.push;
@@ -624,6 +624,9 @@ var shareObject = {
     app: {}
 };
 function _getApp() {
+    if (typeof getApp === 'function') {
+        return getApp();
+    }
     return shareObject.app;
 }
 if (typeof getApp === 'function') {
@@ -642,6 +645,7 @@ var pageState = {
     isReady: false
 };
 function getCurrentPage() {
+    console.log(_getApp(), 'getApp');
     console.log('getCurrentPage中的pageState.wx', pageState.wx);
     return pageState.wx && pageState.wx.reactInstance;
 }
@@ -2895,7 +2899,6 @@ var React = getWindow().React = {
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
     registerPage: registerPage,
-    shareObject: shareObject,
     toStyle: toStyle,
     appType: 'quick',
     registerApp: function registerApp(demo) {
