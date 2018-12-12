@@ -1,12 +1,15 @@
 import { Renderer } from 'react-core/createRenderer';
 import { isFn, topNodes, noop, topFibers } from 'react-core/util';
-import { delayMounts, usingComponents, pageState, updateMiniApp, callGlobalHook } from './utils';
+import { delayMounts, usingComponents, _getApp, updateMiniApp, callGlobalHook } from './utils';
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
 
 
 export function onLoad(PageClass, path, query) {
-    pageState.isReady = false;
+    var app = _getApp();
+    app.$$pageIsReady = false;
+    app.$$page = this;
+    console.log('设置app.$app', app);
     let container = {
         type: 'page',
         props: {},
@@ -14,8 +17,6 @@ export function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
-    console.log('设置pageState.wx', this);
-    pageState.wx = this;
     var pageInstance = render(//生成页面的React对象
         createElement(PageClass, {
             path: path,
@@ -33,7 +34,8 @@ export function onLoad(PageClass, path, query) {
 }
 
 export function onReady() {
-    pageState.isReady = true;
+    var app = _getApp();
+    app.$$pageIsReady = false;
     let el = void 0;
     while ((el = delayMounts.pop())) {
         el.fn.call(el.instance);

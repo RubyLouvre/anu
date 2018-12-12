@@ -26,13 +26,11 @@ export function callGlobalHook(method, e) {
 export var delayMounts = [];
 export var usingComponents = [];
 export var registeredComponents = {};
-export var pageState = {
-    isReady: false
-};
-export function getCurrentPage() {
-    console.log(_getApp(), 'getApp');
-    console.log('getCurrentPage中的pageState.wx', pageState.wx);
-    return pageState.wx && pageState.wx.reactInstance;
+
+export  function getCurrentPage() {
+    var app = _getApp();
+    console.log('getCurrentPage中的app.$$page', app.$$page);
+    return app.$$page && app.$$page.reactInstance;
 }
 export function _getCurrentPages() {
     console.warn("getCurrentPages存在严重的平台差异性，不建议再使用"); //eslint-disable-line
@@ -43,7 +41,6 @@ export function _getCurrentPages() {
 
 //用于保存所有用miniCreateClass创建的类，然后在事件系统中用到
 export var classCached = {};
-
 
 export function updateMiniApp(instance) {
     if (!instance || !instance.wx) {

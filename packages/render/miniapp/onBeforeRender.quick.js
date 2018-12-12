@@ -1,4 +1,4 @@
-import { delayMounts, pageState, _getApp } from './utils';
+import { delayMounts, _getApp } from './utils';
 export function onBeforeRender(fiber) {
     let type = fiber.type;
     let instance = fiber.stateNode;
@@ -9,8 +9,7 @@ export function onBeforeRender(fiber) {
             instance.instanceUid = uuid;
         }
         if (fiber.props.isPageComponent) {
-            let wx = pageState.wx;
-            console.log('获取pageState.wx', wx);
+            let wx = _getApp().$$page; 
             instance.wx = wx;
             wx.reactInstance = instance;
         }
@@ -20,7 +19,7 @@ export function onBeforeRender(fiber) {
             type.reactInstances.push(instance);
         }
     }
-    if (!pageState.isReady && instance.componentDidMount) {
+    if (!_getApp().$$pageIsReady && instance.componentDidMount) {
         delayMounts.push({
             instance: instance,
             fn: instance.componentDidMount
