@@ -9,7 +9,6 @@ export function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
     app.$$page = this;
-    console.log('设置app.$app', app);
     let container = {
         type: 'page',
         props: {},
@@ -35,7 +34,7 @@ export function onLoad(PageClass, path, query) {
 
 export function onReady() {
     var app = _getApp();
-    app.$$pageIsReady = false;
+    app.$$pageIsReady = true;
     let el = void 0;
     while ((el = delayMounts.pop())) {
         el.fn.call(el.instance);

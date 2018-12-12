@@ -59,9 +59,7 @@ import './pages/demo/citySelect/index';
 import './pages/about/index';
 
 import './app.scss';
-function getGlobalRef() {
-    return Object.getPrototypeOf(global) || global;
-}
+
 class Global extends React.Component {
     config = {
         window: {
@@ -101,43 +99,45 @@ class Global extends React.Component {
             ]
         }
     };
-    onCollectLogs(dataset, type, node){
+    onCollectLogs(dataset, type, node) {
         var page = React.getCurrentPage();
-        if (!page){
+        if (!page) {
             return;
         }
         var path = page.props.path;
         var uuid = dataset.beaconUid;
-        if (node){
+        if (node) {
             var xpath = [];
-            while (node.parentNode){
+            while (node.parentNode) {
                 var index = node.parentNode.children.indexOf(node);
                 xpath.unshift(index);
                 node = node.parentNode;
             }
-            uuid =  xpath.join('/');
+            uuid = xpath.join('/');
         }
         console.log("收集日志", path, type, uuid);//eslint-disable-line
     }
-    onReportLogs(){
+    onReportLogs() {
 
     }
-    onHide(){
+    onHide() {
 
     }
     globalData = {
         ufo: 'ufo'
     };
     onLaunch() {
-        Object.assign(getGlobalRef(), {
-            getApp: () => {
-                return this;
-            }
-        });
+        if (typeof global === 'object') {
+            var ref = Object.getPrototypeOf(global) || global;
+            var _this = this;
+            ref.getApp = function () {
+                return _this;
+            };
+        }
         // eslint-disable-next-line
         console.log('App launched');
     }
-    
+
 }
 //这样写相当于为每一个页面组件的外面都加上一个<Provider />，如果你想在页面上用到store里的数据，
 //需要用react-redux的connect方法包一下，详见pages/demo/syntax/redux

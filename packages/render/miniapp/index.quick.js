@@ -14,8 +14,8 @@ import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 import { dispatchEvent } from './eventSystem.quick';
 import { api } from './api.quick';
 import { Renderer } from './render.all';
-import { onBeforeRender } from './onBeforeRender.quick';
-Renderer.onBeforeRender = onBeforeRender;
+//import { onBeforeRender } from './onBeforeRender.quick';
+//Renderer.onBeforeRender = onBeforeRender;
 import { toStyle } from './toStyle.quick';
 import { toRenderProps, getCurrentPage, _getApp, _getCurrentPages, useComponent } from './utils';
 

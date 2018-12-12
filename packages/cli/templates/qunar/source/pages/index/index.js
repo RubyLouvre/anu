@@ -139,7 +139,7 @@ class P extends React.Component {
       if (url){
           React.api.navigateTo({ url });
       } else {
-          this.fun_tip();
+          this.showTip();
       }
   }
   componentDidMount() {
@@ -150,7 +150,7 @@ class P extends React.Component {
       // eslint-disable-next-line
     console.log('page will mount!');
   }
-  fun_tip() {
+  showTip() {
       React.api.showModal({
           title: '提示',
           content: '该部分仅展示，无具体功能!',
@@ -201,7 +201,7 @@ class P extends React.Component {
               <div class="tool-wrapper">
                   {this.state.toolData.map(function(item, index) {
                       return (
-                          <div onTap={this.fun_tip} class="tool-item anu-block" key={index}>
+                          <div onTap={this.showTip} class="tool-item anu-block" key={index}>
                               <image src={item.url} />
                               <text>{item.title}</text>
                           </div>
@@ -219,7 +219,7 @@ class P extends React.Component {
                       {this.state.specialOfferData.map(function(item, index) {
                           return (
                               <block key={index}>
-                                  <swiper-item onTap={this.fun_tip}  class="special-offer-item anu-block">
+                                  <swiper-item onTap={this.showTip}  class="special-offer-item anu-block">
                                       <image src={item.url} />
                                       <text>{item.title}</text>
                                   </swiper-item>
@@ -231,7 +231,7 @@ class P extends React.Component {
               <div class="activity anu-block">
                   <text class="title">活动专区</text>
                   <div class="activity-wrapper">
-                      <div onTap={this.fun_tip} class="left-content">
+                      <div onTap={this.showTip} class="left-content">
                           <image src="https://img1.qunarzz.com/order/comp/1808/c3/dda9c77c3b1d8802.png" />
                           <div class="content anu-block">
                               <text class="title">何时飞</text>
@@ -239,7 +239,7 @@ class P extends React.Component {
                           </div>
                       </div>
                       <div class="right-content anu-block">
-                          <div onTap={this.fun_tip} class="right-content-wrapper first-child">
+                          <div onTap={this.showTip} class="right-content-wrapper first-child">
                               <image
                                   src="https://img1.qunarzz.com/order/comp/1808/3b/fd717d94ed8b6102.jpg"
                               />
@@ -248,7 +248,7 @@ class P extends React.Component {
                                   <text class="desc">简直惊悚</text>
                               </div>
                           </div>
-                          <div onTap={this.fun_tip} class="right-content-wrapper">
+                          <div onTap={this.showTip} class="right-content-wrapper">
                               <image src="https://img1.qunarzz.com/order/comp/1806/1c/61cd118da20ec702.jpg" />
                               <div class="content anu-block">
                                   <text class="title">飞行宝贝</text>

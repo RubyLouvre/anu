@@ -2225,6 +2225,44 @@ var Renderer$1 = createRenderer({
     updateContent: function updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
     },
+    onBeforeRender: function onBeforeRender(fiber) {
+        var type = fiber.type;
+        var instance = fiber.stateNode;
+        var app = _getApp();
+        if (type.reactInstances) {
+            var uuid = fiber.props['data-instance-uid'] || null;
+            if (!instance.instanceUid) {
+                instance.instanceUid = uuid;
+            }
+            if (fiber.props.isPageComponent) {
+                var wx = app.$$page;
+                instance.wx = wx;
+                wx.reactInstance = instance;
+            }
+            var wxInstances = type.wxInstances;
+            if (wxInstances) {
+                for (var i = wxInstances.length - 1; i >= 0; i--) {
+                    var el = wxInstances[i];
+                    if (el.dataset.instanceUid === uuid) {
+                        el.reactInstance = instance;
+                        instance.wx = el;
+                        wxInstances.splice(i, 1);
+                        break;
+                    }
+                }
+                if (!instance.wx) {
+                    type.reactInstances.push(instance);
+                }
+            }
+        }
+        if (app.$$pageIsReady && instance.componentDidMount) {
+            delayMounts.push({
+                instance: instance,
+                fn: instance.componentDidMount
+            });
+            instance.componentDidMount = Date;
+        }
+    },
     onAfterRender: function onAfterRender(fiber) {
         updateMiniApp(fiber.stateNode);
     },
@@ -2294,44 +2332,6 @@ function remove(children, node) {
     }
 }
 
-function onBeforeRender(fiber) {
-    var type = fiber.type;
-    var instance = fiber.stateNode;
-    if (type.reactInstances) {
-        var uuid = fiber.props['data-instance-uid'] || null;
-        if (!instance.instanceUid) {
-            instance.instanceUid = uuid;
-        }
-        if (fiber.props.isPageComponent) {
-            var wx = _getApp.$$page;
-            instance.wx = wx;
-            wx.reactInstance = instance;
-        }
-        var wxInstances = type.wxInstances;
-        if (wxInstances) {
-            for (var i = wxInstances.length - 1; i >= 0; i--) {
-                var el = wxInstances[i];
-                if (el.dataset.instanceUid === uuid) {
-                    el.reactInstance = instance;
-                    instance.wx = el;
-                    wxInstances.splice(i, 1);
-                    break;
-                }
-            }
-            if (!instance.wx) {
-                type.reactInstances.push(instance);
-            }
-        }
-    }
-    if (!_getApp().$$pageIsReady && instance.componentDidMount) {
-        delayMounts.push({
-            instance: instance,
-            fn: instance.componentDidMount
-        });
-        instance.componentDidMount = Date;
-    }
-}
-
 var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
@@ -2365,7 +2365,6 @@ function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
     app.$$page = this;
-    console.log('设置app.$app', app);
     var container = {
         type: 'page',
         props: {},
@@ -2386,7 +2385,7 @@ function onLoad(PageClass, path, query) {
 }
 function onReady() {
     var app = _getApp();
-    app.$$pageIsReady = false;
+    app.$$pageIsReady = true;
     var el = void 0;
     while (el = delayMounts.pop()) {
         el.fn.call(el.instance);
@@ -2526,7 +2525,6 @@ function registerComponent(type, name) {
     return config;
 }
 
-Renderer$1.onBeforeRender = onBeforeRender;
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {

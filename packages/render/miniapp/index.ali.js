@@ -16,8 +16,8 @@ import { aliApis } from './api.ali';
 
 import { dispatchEvent, webview } from './eventSystem';
 import { Renderer } from './render.all';
-import { onBeforeRender } from './onBeforeRender.ali';
-Renderer.onBeforeRender = onBeforeRender;
+//import { onBeforeRender } from './onBeforeRender.ali';
+//Renderer.onBeforeRender = onBeforeRender;
 import { toStyle } from './toStyle';
 import {
     toRenderProps,

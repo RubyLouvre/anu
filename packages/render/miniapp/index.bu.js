@@ -16,8 +16,8 @@ import { buApis } from './api.bu';
 
 import { dispatchEvent, webview } from './eventSystem';
 import { Renderer } from './render.all';
-import { onBeforeRender } from './onBeforeRender.bu';
-Renderer.onBeforeRender = onBeforeRender;
+//import { onBeforeRender } from './onBeforeRender.bu';
+//Renderer.onBeforeRender = onBeforeRender;
 import { toStyle } from './toStyle';
 import { toRenderProps,  _getApp , getCurrentPage, _getCurrentPages, useComponent } from './utils';
 

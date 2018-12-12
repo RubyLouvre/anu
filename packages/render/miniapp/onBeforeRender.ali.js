@@ -2,6 +2,7 @@ import { delayMounts, _getApp } from './utils';
 export function onBeforeRender(fiber) {
     let type = fiber.type;
     let instance = fiber.stateNode;
+    let app = _getApp();
     if (type.reactInstances) {
         let uuid = fiber.props['data-instance-uid'] || null;
         if (!instance.instanceUid) {
@@ -9,7 +10,7 @@ export function onBeforeRender(fiber) {
         }
 
         if (fiber.props.isPageComponent) {
-            let wx = _getApp().$$page;
+            let wx = app.$$page;
             instance.wx = wx;
             wx.reactInstance = instance;
         }
@@ -19,7 +20,7 @@ export function onBeforeRender(fiber) {
             type.reactInstances.push(instance);
         }
     }
-    if (!_getApp().$$pageIsReady && instance.componentDidMount) {
+    if (!app.$$pageIsReady && instance.componentDidMount) {
         delayMounts.push({
             instance: instance,
             fn: instance.componentDidMount
