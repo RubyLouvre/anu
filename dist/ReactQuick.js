@@ -643,7 +643,6 @@ var usingComponents = [];
 var registeredComponents = {};
 function getCurrentPage() {
     var app = _getApp();
-    console.log('getCurrentPage中的app.$$page', app.$$page);
     return app.$$page && app.$$page.reactInstance;
 }
 function _getCurrentPages() {
@@ -2561,7 +2560,7 @@ var Renderer$1 = createRenderer({
                 }
             }
         }
-        if (app.$$pageIsReady && instance.componentDidMount) {
+        if (!app.$$pageIsReady && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount
@@ -2848,13 +2847,11 @@ function registerPage(PageClass) {
         dispatchEvent: dispatchEvent,
         onInit: function onInit() {
             var $app = shareObject.app = this.$app;
-            console.log(_getApp() == $app, '判定getApp() == this.$app');
             var array = getUrlAndQuery(this.$page);
             var instance = onLoad.call(this, PageClass, array[0], array[1]);
             var pageConfig = instance.config || PageClass.config;
-            $app.pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
-            $app.pagePath = array[0];
-            $app.page = instance;
+            $app.$$pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
+            $app.$$pagePath = array[0];
         },
         onReady: onReady,
         onDestroy: onUnload

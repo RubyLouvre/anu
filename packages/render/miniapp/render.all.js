@@ -78,7 +78,7 @@ export let Renderer = createRenderer({
                 }
             }
         }
-        if (app.$$pageIsReady && instance.componentDidMount) {
+        if (!app.$$pageIsReady && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount

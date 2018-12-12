@@ -1041,7 +1041,6 @@ var usingComponents = [];
 var registeredComponents = {};
 function getCurrentPage() {
     var app = _getApp();
-    console.log('getCurrentPage中的app.$$page', app.$$page);
     return app.$$page && app.$$page.reactInstance;
 }
 function _getCurrentPages() {
@@ -2391,7 +2390,7 @@ var Renderer$1 = createRenderer({
                 }
             }
         }
-        if (app.$$pageIsReady && instance.componentDidMount) {
+        if (!app.$$pageIsReady && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount

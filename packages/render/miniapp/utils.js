@@ -29,7 +29,6 @@ export var registeredComponents = {};
 
 export  function getCurrentPage() {
     var app = _getApp();
-    console.log('getCurrentPage中的app.$$page', app.$$page);
     return app.$$page && app.$$page.reactInstance;
 }
 export function _getCurrentPages() {

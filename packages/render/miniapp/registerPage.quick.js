@@ -32,17 +32,15 @@ export function registerPage(PageClass) {
         dispatchEvent,
         onInit() {
             var $app = shareObject.app = this.$app; //.$def || this.$app._def);
-            console.log(_getApp() == $app, '判定getApp() == this.$app');
             var array = getUrlAndQuery(this.$page);
             var instance = onLoad.call(this, PageClass, array[0], array[1]);
             // shareObject的数据不是长久的，在页面跳转时，就会丢失
             var pageConfig = instance.config || PageClass.config;
-            $app.pageConfig =
+            $app.$$pageConfig =
                 pageConfig && Object.keys(pageConfig).length
                     ? pageConfig
                     : null;
-            $app.pagePath = array[0];
-            $app.page = instance;
+            $app.$$pagePath = array[0];
         },
         onReady: onReady,
         onDestroy: onUnload

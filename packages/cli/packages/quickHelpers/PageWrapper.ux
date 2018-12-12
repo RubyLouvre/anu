@@ -1,17 +1,17 @@
 <template>
   <div style="width:100%;padding-bottom: {{tabBar.list.length?'150px': '0px'}}; background-color:{{backgroundColor}};">
-   <block if="pageRefresh">
-    <refresh refreshing="{{refreshing}}" @refresh="onPullDownRefresh">
-      <list @scroll="onPageScroll" @scrollbottom="onReachBottom">
-        <list-item type='a'>
-          <slot></slot>
-        </list-item>
-      </list>
-    </refresh>
-   </block>
-   <block>
+    <block if="pageRefresh">
+      <refresh refreshing="{{refreshing}}" @refresh="onPullDownRefresh">
+        <list @scroll="onPageScroll" @scrollbottom="onReachBottom">
+          <list-item type='a'>
+            <slot></slot>
+          </list-item>
+        </list>
+      </refresh>
+    </block>
+    <block>
       <slot></slot>
-   </block>
+    </block>
     <div class="tabBar" if="{{tabBar.list.length}}" style="background-color:{{tabBar.backgroundColor}}">
       <div class="tab" for="(index, item) in tabBar.list" @click="onSelected(item)">
         <image src="/{{ pagePath === item.pagePath ? item.selectedIconPath : item.iconPath }}" />
@@ -50,38 +50,38 @@
 </style>
 <script>
   import React from '../../ReactQuick.js';
-  var {  getApp } = React
+  var { getCurrentPage } = React
   export default {
-    data(){
-        return {
-            tabBar: {},
-            pagePath:"",
-            backgroundColor:"#ffffff",
-            pageRefresh: false,
-            pageRefreshing:false,
-        };
+    data() {
+      return {
+        tabBar: {},
+        pagePath: "",
+        backgroundColor: "#ffffff",
+        pageRefresh: false,
+        pageRefreshing: false,
+      };
     },
 
     onInit() {
       this.tabBar = {
         list: []
       }
-      setTitleAndTabs(this, this.$app._def.config);
+      setTitleAndTabs(this, this.$app);
     },
     onShow() {
-      setTitleAndTabs(this, this.$app._def.config);
+      setTitleAndTabs(this, this.$app);
     },
     onReachBottom() {
-      var cc = getApp().page;
-      if (cc.onReachBottom) {
-        cc.onReachBottom(e)
+      var react = getCurrentPage();
+      if (react.onReachBottom) {
+        react.onReachBottom(e)
       }
       React.api.showToast({ title: 'reach bottom' });
     },
     onPageScroll(e) {
-      var cc = getApp().page;
-      if (cc.onPageScroll) {
-        cc.onPageScroll(e)
+      var react = getCurrentPage();
+      if (react.onPageScroll) {
+        react.onPageScroll(e)
       }
     },
 
@@ -119,7 +119,7 @@
     },
     onSelected(item) {
       this.pagePath = item.pagePath;
-      var page = getApp().page;
+      var page = getCurrentPage();
       if (page.onTabItemTap) {
         page.onTabItemTap(item)
       }
@@ -128,11 +128,12 @@
       })
     },
     onPullDownRefresh() {
-      var appConfig = Object(getApp().config);
-      var pageConfig = getApp().pageConfig;
+      var app = this.$app;
+      var appConfig = Object(app.config);
+      var pageConfig = Object(app.$$pageConfig);
       var enable = "enablePullDownRefresh";
-      var isOk = pageConfig && pageConfig[enable] || appConfig[enable];
-      var page = getApp().page;
+      var isOk = pageConfig[enable] || appConfig[enable];
+      var page = getCurrentPage();
       if (isOk && page.onPullDownRefresh) {
         page.onPullDownRefresh()
         React.api.showToast({ title: 'refreshed' });
@@ -176,14 +177,13 @@
     }
   };
 
-  function setTitleAndTabs(instance, appConfig) {
-    var pageConfg = getApp().pageConfig;
-    instance.pagePath = getApp().pagePath.replace(/\/index$/, "")
+  function setTitleAndTabs(instance, app) {
+    instance.pagePath = app.$$pagePath;
     var mixin = Object.assign({
       navigationBarTitleText: "",
       navigationBarTextStyle: "white",
       navigationBarBackgroundColor: "#000000"
-    }, appConfig, pageConfg)
+    }, app.config, app.$$pageConfig);
     instance.backgroundColor = mixin.backgroundColor || "#ffffff"
     instance.pageRefresh = !!mixin.enablePullDownRefresh;
     instance.$page.setTitleBar({
