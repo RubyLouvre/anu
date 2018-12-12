@@ -91,13 +91,12 @@ module.exports = (file)=>{
         ]
     };
 
-    setImmediate(()=>{
-        let code = babel.transform(originalCode, babelConfig ).code;
-        queue.push({
-            code: code,
-            path: getDistPath(id),
-            type: 'npm'
-        });
+   
+    let code = babel.transform(originalCode, babelConfig ).code;
+    queue.push({
+        code: code,
+        path: getDistPath(id),
+        type: 'npm'
     });
 
 };
