@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-12
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-13
  */
 
 var arrayPush = Array.prototype.push;
@@ -2757,7 +2757,6 @@ function onUnload() {
     }
     var instance = this.reactInstance;
     if (instance) {
-        console.log('onUnload...', instance.props.path);
         var hook = instance.componentWillUnmount;
         if (isFn(hook)) {
             hook.call(instance);
@@ -2857,6 +2856,7 @@ function registerPage(PageClass) {
         config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook];
+            Object(_getApp().$$page).reactInstance = instance;
             if (hook === 'onMenuPress') {
                 var $app = shareObject.app = this.$app;
                 showMenu(instance, $app);

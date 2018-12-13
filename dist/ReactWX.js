@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-12-12
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-12-13
  * IE9+
  */
 
@@ -2400,7 +2400,6 @@ function onUnload() {
     }
     var instance = this.reactInstance;
     if (instance) {
-        console.log('onUnload...', instance.props.path);
         var hook = instance.componentWillUnmount;
         if (isFn(hook)) {
             hook.call(instance);
@@ -2448,6 +2447,7 @@ function registerPage(PageClass, path, testObject) {
             var instance = this.reactInstance;
             var fn = instance[hook],
                 fired = false;
+            Object(_getApp().$$page).reactInstance = instance;
             if (isFn(fn)) {
                 fired = true;
                 var ret = fn.call(instance, e);

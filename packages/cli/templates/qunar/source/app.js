@@ -1,7 +1,6 @@
 import React from '@react';
 import './pages/index/index';
 
-
 import './pages/demo/apis/index';
 import './pages/demo/apis/clipboard/index';
 import './pages/demo/apis/storage/index';
@@ -33,7 +32,6 @@ import './pages/demo/syntax/loop4/index';
 import './pages/demo/syntax/loop5/index';
 import './pages/demo/syntax/webview/index';
 
-
 import './pages/demo/syntax/extend/index';
 import './pages/demo/syntax/inlineStyle/index';
 import './pages/demo/syntax/if/index';
@@ -43,7 +41,6 @@ import './pages/demo/syntax/await/index';
 import './pages/demo/syntax/multiple/index';
 import './pages/demo/syntax/renderprops/index';
 import './pages/demo/syntax/request/index';
-
 
 import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';
@@ -69,32 +66,32 @@ class Global extends React.Component {
             navigationBarTextStyle: '#fff'
         },
         tabBar: {
-            'color': '#929292',
-            'selectedColor': '#00bcd4',
-            'borderStyle': 'black',
-            'backgroundColor': '#ffffff',
-            'list': [
+            color: '#929292',
+            selectedColor: '#00bcd4',
+            borderStyle: 'black',
+            backgroundColor: '#ffffff',
+            list: [
                 {
-                    'pagePath': 'pages/index/index',
-                    'iconPath': 'assets/image/homepage_normal.png',
-                    'selectedIconPath': 'assets/image/homepage_select.png',
-                    'text': '首页',
-                    'name': 'Home',
-                    'selected': true
+                    pagePath: 'pages/index/index',
+                    iconPath: 'assets/image/homepage_normal.png',
+                    selectedIconPath: 'assets/image/homepage_select.png',
+                    text: '首页',
+                    name: 'Home',
+                    selected: true
                 },
                 {
-                    'pagePath': 'pages/demo/question/index/index',
-                    'iconPath': 'assets/image/question_normal.png',
-                    'selectedIconPath': 'assets/image/question_select.png',
-                    'text': '问答社区',
-                    'name': 'questionAndAnswer'
+                    pagePath: 'pages/demo/question/index/index',
+                    iconPath: 'assets/image/question_normal.png',
+                    selectedIconPath: 'assets/image/question_select.png',
+                    text: '问答社区',
+                    name: 'questionAndAnswer'
                 },
                 {
-                    'pagePath': 'pages/demo/userCenter/index',
-                    'iconPath': 'assets/image/uc_normal.png',
-                    'selectedIconPath': 'assets/image/uc_select.png',
-                    'text': '我的',
-                    'name': 'My'
+                    pagePath: 'pages/demo/userCenter/index',
+                    iconPath: 'assets/image/uc_normal.png',
+                    selectedIconPath: 'assets/image/uc_select.png',
+                    text: '我的',
+                    name: 'My'
                 }
             ]
         }
@@ -115,29 +112,25 @@ class Global extends React.Component {
             }
             uuid = xpath.join('/');
         }
-        console.log("收集日志", path, type, uuid);//eslint-disable-line
-    }
-    onReportLogs() {
-
-    }
-    onHide() {
-
+        console.log("收集日志", path, type, uuid); //eslint-disable-line
     }
     globalData = {
         ufo: 'ufo'
     };
+    onGlobalShow() {
+        console.log(React.getCurrentPage().props.path, 'onGlobalShow');//eslint-disable-line
+    }
     onLaunch() {
+        //针对快应用的全局getApp补丁
         if (this.$data && typeof global === 'object') {
             var ref = Object.getPrototypeOf(global) || global;
             var _this = this;
-            ref.getApp = function () {
+            ref.getApp = function() {
                 return _this;
             };
         }
-        // eslint-disable-next-line
-        console.log('App launched');
+        console.log('App launched');//eslint-disable-line
     }
-
 }
 //这样写相当于为每一个页面组件的外面都加上一个<Provider />，如果你想在页面上用到store里的数据，
 //需要用react-redux的connect方法包一下，详见pages/demo/syntax/redux

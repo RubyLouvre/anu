@@ -55,7 +55,6 @@ export function onUnload() {
     }
     let instance = this.reactInstance;
     if (instance){
-        console.log('onUnload...',instance.props.path);//eslint-disable-line
         let hook = instance.componentWillUnmount;
         if (isFn(hook)) {
             hook.call(instance);

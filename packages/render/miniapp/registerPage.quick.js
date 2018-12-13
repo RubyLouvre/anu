@@ -1,7 +1,7 @@
 import { isFn } from 'react-core/util';
 import { dispatchEvent } from './eventSystem.quick';
 import { onLoad, onUnload, onReady } from './registerPage.all';
-import { shareObject, callGlobalHook } from './utils';
+import { shareObject, callGlobalHook,_getApp } from './utils';
 import { showMenu } from './showMenu.quick';
 var globalHooks = {
     onShareAppMessage: 'onGlobalShare',
@@ -49,6 +49,7 @@ export function registerPage(PageClass) {
         config[hook] = function(e) {
             let instance = this.reactInstance;
             let fn = instance[hook];
+            Object(_getApp().$$page).reactInstance = instance;
             if (hook === 'onMenuPress') {
                 var $app = shareObject.app = this.$app;
                 showMenu(instance, $app);
