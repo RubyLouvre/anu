@@ -4,7 +4,7 @@ import Loading from '@components/Loading/index';
 import url from '../../utils/bsurl';
 let bsurl = url.bsurl;
 import './index.less';
-import CateModal from '@components/cateModal/index';
+import CateModal from '@components/CateModal/index';
 var app = React.getApp();
 class P extends React.Component {
     constructor() {
@@ -44,6 +44,7 @@ class P extends React.Component {
                 idx: 3,
                 loading: false
             },
+            array123: [1,2,3],
             tabidx: 0
         };
     }
@@ -70,7 +71,7 @@ class P extends React.Component {
       });
       React.api.request({
           url: bsurl + 'playlist/catlist',
-          complete: function(res) {
+          success: function(res) { 
               that.setState({
                   catelist: {
                       isShow: false,
@@ -160,7 +161,7 @@ class P extends React.Component {
               offset: that.state.playlist.offset,
               type: that.state.catelist.checked.name
           },
-          complete: function(res) {
+          success: function(res) {
               that.state.playlist.loading = true;
               if (!isadd) {
                   that.state.playlist.list = res.data;
@@ -236,7 +237,7 @@ class P extends React.Component {
                       ) : (
                           <div id="rec_nav">
                               <div>
-                                  <navigator url="../fm/index">
+                                  <navigator url="../playlist/index">
                                       <div class="recn_ico">
                                           <image src="../../assets/image/cm2_discover_icn_fm-ip6@2x.png" />
                                       </div>
@@ -244,7 +245,7 @@ class P extends React.Component {
                                   </navigator>
                               </div>
                               <div>
-                                  <navigator url="../recsongs/index">
+                                  <navigator url="../playlist/index">
                                       <div class="recn_ico">{this.state.thisday}</div>
                     每日歌曲推荐
                                   </navigator>
@@ -335,7 +336,7 @@ class P extends React.Component {
                   <div class="tab_cnt" hidden={this.state.tabidx !== 1}>
                       <div class="listheader" id="plc_header">
                           {this.state.catelist.checked.name}
-                          <text onTap={this.togglePtype} id="catselectbtn">
+                          <text onTap={this.togglePtype.bind(this)} id="catselectbtn">
                 选择分类
                           </text>
                       </div>
@@ -374,7 +375,7 @@ class P extends React.Component {
                       {this.state.djcate.loading ? (
                           <div>
                               <swiper indicator-dots="true" circular="true">
-                                  {[1, 2, 3].map(function() {
+                                  {this.state.array123.map(function() {
                                       return (
                                           <swiper-item class="djcatewrap">
                                               {this.state.djcate.categories.map(function(re) {

@@ -2,6 +2,7 @@ import React from '@react';
 import './pages/home/index';
 import './pages/playlist/index';
 import './pages/playing/index';
+import './pages/recommend/index';
 import './app.less';
 import url from './utils/bsurl';
 let bsurl = url.bsurl;

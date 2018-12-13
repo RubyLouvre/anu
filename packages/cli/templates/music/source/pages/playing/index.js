@@ -3,7 +3,7 @@ import url from '../../utils/bsurl';
 let bsurl = url.bsurl;
 import common from '../../utils/util';
 import './index.less';
-import Lrc from '@components/lrc/index';
+import Lrc from '@components/Lrc/index';
 import Loading from '@components/Loading/index';
 let app = React.getApp();
 
