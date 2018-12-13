@@ -1018,14 +1018,20 @@ var aliApis = function aliApis(api) {
 };
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-var shareObject = {
-    app: {}
+var fakeApp = {
+    app: {
+        globalData: {}
+    }
 };
 function _getApp() {
     if (typeof getApp === 'function') {
-        return getApp();
+        var app = getApp();
+        if (app.globalData && app.$def) {
+            app.globalData = app.$def.globalData || {};
+        }
+        return app;
     }
-    return shareObject.app;
+    return fakeApp;
 }
 if (typeof getApp === 'function') {
     _getApp = getApp;

@@ -620,14 +620,20 @@ function createEvent(e, target, type) {
 }
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-var shareObject = {
-    app: {}
+var fakeApp = {
+    app: {
+        globalData: {}
+    }
 };
 function _getApp() {
     if (typeof getApp === 'function') {
-        return getApp();
+        var app = getApp();
+        if (app.globalData && app.$def) {
+            app.globalData = app.$def.globalData || {};
+        }
+        return app;
     }
-    return shareObject.app;
+    return fakeApp;
 }
 if (typeof getApp === 'function') {
     _getApp = getApp;
@@ -679,15 +685,14 @@ function runFunction(fn, a, b) {
         fn.call(null, a, b);
     }
 }
-function functionCount() {
-    for (var _len = arguments.length, fns = Array(_len), _key = 0; _key < _len; _key++) {
-        fns[_key] = arguments[_key];
+function functionCount(fns) {
+    var ret = 0;
+    for (var i = 0; i < fns.length; i++) {
+        if (typeof fns[i] === 'function') {
+            ret++;
+        }
     }
-    return fns.map(function (fn) {
-        return typeof fn === 'function';
-    }).reduce(function (count, fn) {
-        return count + fn;
-    }, 0);
+    return ret;
 }
 function apiRunner() {
     var arg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -2837,7 +2842,7 @@ function registerPage(PageClass) {
         },
         dispatchEvent: dispatchEvent,
         onInit: function onInit() {
-            var $app = shareObject.app = this.$app;
+            var $app = this.$app;
             var array = getUrlAndQuery(this.$page);
             var instance = onLoad.call(this, PageClass, array[0], array[1]);
             var pageConfig = instance.config || PageClass.config;
@@ -2853,8 +2858,7 @@ function registerPage(PageClass) {
             var fn = instance[hook];
             Object(_getApp().$$page).reactInstance = instance;
             if (hook === 'onMenuPress') {
-                var $app = shareObject.app = this.$app;
-                showMenu(instance, $app);
+                showMenu(instance, this.$app);
             } else if (isFn(fn)) {
                 fn.call(instance, e);
             }
