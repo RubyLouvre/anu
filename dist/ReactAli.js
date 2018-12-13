@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-13
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-13T12
  */
 
 var arrayPush = Array.prototype.push;
@@ -784,7 +784,7 @@ var RequestQueue = {
 };
 function request(options) {
     options = options || {};
-    if (typeof options === 'string') {
+    if (options + '' === options) {
         options = {
             url: options
         };
@@ -819,7 +819,7 @@ function processApis(ReactWX, facade) {
                 options = options || {};
                 var task = null;
                 var obj = Object.assign({}, options);
-                if (typeof options === 'string') {
+                if (options + '' === options) {
                     return facade[key](options);
                 }
                 var p = new Promise(function (resolve, reject) {
@@ -1017,16 +1017,15 @@ var aliApis = function aliApis(api) {
     };
 };
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var fakeApp = {
     app: {
         globalData: {}
     }
 };
 function _getApp() {
-    if (typeof getApp === 'function') {
+    if (isFn(getApp)) {
         var app = getApp();
-        if (app.globalData && app.$def) {
+        if (!app.globalData && app.$def) {
             app.globalData = app.$def.globalData || {};
         }
         return app;
@@ -1051,7 +1050,7 @@ function getCurrentPage() {
 }
 function _getCurrentPages() {
     console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
-    if (typeof getCurrentPages === 'function') {
+    if (isFn(getCurrentPages)) {
         return getCurrentPages();
     }
 }
@@ -1076,7 +1075,7 @@ function updateQuickApp(quick, data) {
     }
 }
 function isReferenceType(val) {
-    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+    return typeNumber(val) > 6;
 }
 function useComponent(props) {
     var is = props.is;
@@ -2465,7 +2464,6 @@ function remove(children, node) {
     }
 }
 
-var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
     return target.replace(rhyphen, '$1-$2').toLowerCase();
@@ -2482,7 +2480,7 @@ function transform(obj) {
 }
 function toStyle(obj, props, key) {
     if (props) {
-        if ((typeof obj === 'undefined' ? 'undefined' : _typeof$2(obj)) == 'object') {
+        if (Object(obj) == obj) {
             var str = transform.call(this, obj);
         } else {
             str = obj;

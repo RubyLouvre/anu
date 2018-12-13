@@ -22,7 +22,7 @@ function transform(obj) {
 
 export function toStyle(obj, props, key) {
     if (props) {
-        if (typeof obj == 'string' ){
+        if ( obj +"" === obj ){
             var ret = {};
             obj.split(';').forEach(function(el){
                 var index = el.indexOf(':');

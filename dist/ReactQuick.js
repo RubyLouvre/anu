@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-13
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-13T12
  */
 
 var arrayPush = Array.prototype.push;
@@ -619,16 +619,15 @@ function createEvent(e, target, type) {
     return event;
 }
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var fakeApp = {
     app: {
         globalData: {}
     }
 };
 function _getApp() {
-    if (typeof getApp === 'function') {
+    if (isFn(getApp)) {
         var app = getApp();
-        if (app.globalData && app.$def) {
+        if (!app.globalData && app.$def) {
             app.globalData = app.$def.globalData || {};
         }
         return app;
@@ -653,7 +652,7 @@ function getCurrentPage() {
 }
 function _getCurrentPages() {
     console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
-    if (typeof getCurrentPages === 'function') {
+    if (isFn(getCurrentPages)) {
         return getCurrentPages();
     }
 }
@@ -678,17 +677,17 @@ function updateQuickApp(quick, data) {
     }
 }
 function isReferenceType(val) {
-    return val && ((typeof val === 'undefined' ? 'undefined' : _typeof$1(val)) === 'object' || Object.prototype.toString.call(val) === '[object Array]');
+    return typeNumber(val) > 6;
 }
 function runFunction(fn, a, b) {
-    if (typeof fn == 'function') {
+    if (isFn(fn)) {
         fn.call(null, a, b);
     }
 }
 function functionCount(fns) {
     var ret = 0;
     for (var i = 0; i < fns.length; i++) {
-        if (typeof fns[i] === 'function') {
+        if (isFn(fns[i])) {
             ret++;
         }
     }
@@ -888,7 +887,7 @@ function downloadFile(_ref3) {
   });
 }
 
-var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
 function setStorage(_ref) {
   var key = _ref.key,
@@ -897,7 +896,7 @@ function setStorage(_ref) {
       fail = _ref.fail,
       complete = _ref.complete;
   var value = data;
-  if ((typeof value === 'undefined' ? 'undefined' : _typeof$2(value)) === 'object') {
+  if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
     try {
       value = JSON.stringify(value);
     } catch (error) {
@@ -2654,7 +2653,7 @@ function transform(obj) {
 }
 function toStyle(obj, props, key) {
     if (props) {
-        if (typeof obj == 'string') {
+        if (obj + "" === obj) {
             var ret = {};
             obj.split(';').forEach(function (el) {
                 var index = el.indexOf(':');

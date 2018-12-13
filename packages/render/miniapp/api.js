@@ -51,7 +51,7 @@ const RequestQueue = {
 
 function request(options) {
     options = options || {};
-    if (typeof options === 'string') {
+    if ( options +'' === options) {
         options = {
             url: options
         };
@@ -90,7 +90,7 @@ function processApis(ReactWX, facade) {
                 options = options || {};
                 let task = null;
                 let obj = Object.assign({}, options);
-                if (typeof options === 'string') {
+                if ( options +'' === options ) {
                     return facade[key](options);
                 }
                 const p = new Promise((resolve, reject) => {

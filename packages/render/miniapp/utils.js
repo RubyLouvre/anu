@@ -1,4 +1,4 @@
-import { hasOwnProperty, noop } from 'react-core/util';
+import { hasOwnProperty, noop, typeNumber, isFn } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 
 
@@ -8,12 +8,12 @@ var fakeApp = {
     }
 };
 function _getApp() {
-    if (typeof getApp === 'function') {   
+    if (isFn( getApp)) {   
         var app = getApp();
-        if(app.globalData && app.$def ) {
+        if(!app.globalData && app.$def ) {//快应用的数据放在$def上
             app.globalData = app.$def.globalData || {};
         }
-        return app;//esline-disabled-line;
+        return app;
     }
     return fakeApp;
 }
@@ -41,7 +41,7 @@ export  function getCurrentPage() {
 }
 export function _getCurrentPages() {
     console.warn("getCurrentPages存在严重的平台差异性，不建议再使用"); //eslint-disable-line
-    if (typeof getCurrentPages === 'function') {
+    if (isFn( getCurrentPages )) {
         return getCurrentPages(); //eslint-disable-line
     }
 }
@@ -72,15 +72,11 @@ function updateQuickApp(quick, data) {
 }
 
 function isReferenceType(val) {
-    return (
-        val &&
-        (typeof val === 'object' ||
-            Object.prototype.toString.call(val) === '[object Array]')
-    );
+    return typeNumber(val) > 6;
 }
 
 export function runFunction(fn, a, b) {
-    if (typeof fn == 'function') {
+    if (isFn( fn )) {
         fn.call(null, a, b);
     }
 }
@@ -89,7 +85,7 @@ export function runFunction(fn, a, b) {
 function functionCount(fns) {
     var ret = 0;
     for(var i = 0; i < fns.length; i++){
-        if(typeof fns[i] === 'function'){
+        if (isFn( fns[i] )) {
            ret++;
         }
     }
