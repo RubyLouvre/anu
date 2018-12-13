@@ -127,7 +127,7 @@ class Global extends React.Component {
         ufo: 'ufo'
     };
     onLaunch() {
-        if (typeof global === 'object') {
+        if (this.$data && typeof global === 'object') {
             var ref = Object.getPrototypeOf(global) || global;
             var _this = this;
             ref.getApp = function () {
