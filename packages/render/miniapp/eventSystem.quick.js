@@ -20,14 +20,8 @@ export function dispatchEvent(e) {
     const eventType = toLowerCase(e._type);
     const target = e.target;
     const dataset = getDataSet(target._attr);
-    const app = this.$app.def;
+    const app = this.$app.$def;
     let eventUid = dataset[eventType + 'Uid'];
-   
-    if (dataset['classUid']){
-        console.log('请尽快升级nanachi');//eslint-disable-line;
-        const key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-    }
     const fiber = instance.$$eventCached[eventUid + 'Fiber'];
     if (eventType == 'change' && fiber) {
         if (fiber.props.value + '' === e.value) {

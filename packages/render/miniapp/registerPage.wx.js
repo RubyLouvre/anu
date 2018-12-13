@@ -1,7 +1,7 @@
 import { isFn} from 'react-core/util';
 import { dispatchEvent } from './eventSystem';
-import { onLoad, onUnload, onReady } from './registerPageMethod';
-import { callGlobalHook } from './utils';
+import { onLoad, onUnload, onReady } from './registerPage.all';
+import { callGlobalHook,_getApp } from './utils';
 var globalHooks = {
     onShareAppMessage: 'onGlobalShare',
     onShow: 'onGlobalShow',
@@ -33,6 +33,7 @@ export function registerPage(PageClass, path, testObject) {
         config[hook] = function(e) {
             let instance = this.reactInstance;
             let fn = instance[hook], fired = false;
+            Object(_getApp().$$page).reactInstance = instance;
             if (isFn(fn)) {
                 fired = true;
                 var ret =  fn.call(instance, e);

@@ -107,7 +107,7 @@ class PlayList extends React.Component {
                                 <text>{this.state.list.playlist.subscribedCount || '收藏'}</text>
                             </div>
                             <div>
-                                <navigator url="../recommend/index?id={{list.playlist.commentThreadId}}&from=playlist">
+                                <navigator url="../recommend/index">
                                     <image src="../../assets/image/cm2_list_detail_icn_cmt@2x.png" />
                                     <text>{this.state.list.playlist.commentCount || '评论'}</text>
                                 </navigator>
@@ -128,14 +128,11 @@ class PlayList extends React.Component {
                                     <image src="../../assets/image/pl-playall.png" mode="widthFix" />
                                 </div>
 
-                                <div class="flexlist">
+                                <div>
                                     <text id="pa-count">
                     播放全部{' '}
                                         <text>
-                                            {' '}
-                      (共
-                                            {this.state.list.playlist.trackCount}
-                      首)
+                                            {' '}(共{this.state.list.playlist.trackCount}首)
                                         </text>
                                     </text>
                                 </div>

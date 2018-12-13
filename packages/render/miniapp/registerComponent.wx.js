@@ -4,7 +4,7 @@ import { dispatchEvent } from './eventSystem';
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
     let reactInstances = (type.reactInstances = []);
-    let wxInstances = (type.wxInstances = []);
+    let wxInstances = (type.wxInstances = {});
     let config = {
         data: {
             props: {},
@@ -26,7 +26,7 @@ export function registerComponent(type, name) {
                         return reactInstances.splice(i, 1);
                     }
                 }
-                wxInstances.push(this);
+                wxInstances[uuid] = this;
             },
             detached() {
                 let t = this.reactInstance;

@@ -45,7 +45,7 @@ export default {
         license({
             banner: `运行于快应用的React by 司徒正美 Copyright ${JSON.stringify(
                 new Date()
-            ).replace(/T.*|"/g, '')}
+            ).replace(/:.*|"/g, '')}
       `
         }),
         cleanup(),

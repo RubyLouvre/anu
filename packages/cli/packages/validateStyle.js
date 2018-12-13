@@ -14,6 +14,7 @@ const replaceRPXtoPX = require('./stylesTransformer/replaceRPXtoPX');
 const validateMargin = require('./stylesTransformer/validateMargin');
 const splitBorder = require('./stylesTransformer/splitBorder');
 const transformBorderRadius = require('./stylesTransformer/transformBorderRadius');
+const transformBackground = require('./stylesTransformer/transformBackground');
 
 const gtOne = R.gt(1);
 
@@ -38,10 +39,13 @@ const visitors = {
         );
         transformBorderRadius(declaration);
     },
-    background: generateConflictDeclarations(
-        'background',
-        /(background|border)-color/i
-    ),
+    'background': (declaration)=>{
+        generateConflictDeclarations(
+            'background',
+            /(background|border)-color/i
+        )(declaration);
+        transformBackground(declaration);
+    },
     'background-image'(declaration) {
         generateConflictDeclarations(
             'background-image',

@@ -1,23 +1,21 @@
-import { isFn, toLowerCase, get } from "react-core/util";
-import { createRenderer } from "react-core/createRenderer";
-import { render } from "react-fiber/scheduleWork";
-import { updateMiniApp, _getApp } from "./utils";
+import { isFn, toLowerCase, get } from 'react-core/util';
+import { createRenderer } from 'react-core/createRenderer';
+import { render } from 'react-fiber/scheduleWork';
+import { updateMiniApp, _getApp, delayMounts } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 
 function getEventUid(name, props) {
-    var n = name.charAt(0) == "o" ? 2 : 5;
+    var n = name.charAt(0) == 'o' ? 2 : 5;
     var type = toLowerCase(name.slice(n));
-    return props["data-" + type + "-uid"];
+    return props['data-' + type + '-uid'];
 }
-export function getCurrentPage() {
-    return _getApp().page;
-}
+
 export let Renderer = createRenderer({
     render: render,
     updateAttribute(fiber) {
         let { props, lastProps } = fiber;
-        let beaconId = props["data-beacon-uid"];
+        let beaconId = props['data-beacon-uid'];
         let instance = fiber._owner; //clazz[instanceId];
         if (instance && !instance.classUid) {
             instance = get(instance)._owner;
@@ -29,7 +27,7 @@ export let Renderer = createRenderer({
                 if (onEvent.test(name) && isFn(props[name])) {
                     let code = getEventUid(name, props);
                     cached[code] = props[name];
-                    cached[code + "Fiber"] = fiber;
+                    cached[code + 'Fiber'] = fiber;
                 }
             }
             if (lastProps) {
@@ -37,7 +35,7 @@ export let Renderer = createRenderer({
                     if (onEvent.test(name) && !props[name]) {
                         let code = getEventUid(name, lastProps);
                         delete cached[code];
-                        delete cached[code + "Fiber"];
+                        delete cached[code + 'Fiber'];
                     }
                 }
             }
@@ -48,6 +46,44 @@ export let Renderer = createRenderer({
     updateContent(fiber) {
         fiber.stateNode.props = fiber.props;
     },
+    onBeforeRender(fiber) {
+        let type = fiber.type;
+        let instance = fiber.stateNode;
+        let app = _getApp();
+        if (type.reactInstances) {
+            let uuid = fiber.props['data-instance-uid'] || null;
+            if (!instance.instanceUid) {
+                instance.instanceUid = uuid;
+            }
+            /* if (fiber.props.isPageComponent) {
+                let wx = app.$$page;
+                instance.wx = wx;
+                wx.reactInstance = instance;
+            }
+            */
+            //只处理component目录下的组件
+            let wxInstances = type.wxInstances;
+            if (wxInstances) {
+                //微信必须在这里进行多一次匹配，否则组件没有数据
+                let componentWx = wxInstances[uuid];
+                if (componentWx && componentWx.__wxExparserNodeId__) {
+                    componentWx.reactInstance = instance;
+                    instance.wx = componentWx;
+                    delete wxInstances[uuid];
+                }
+                if (!instance.wx) {
+                    type.reactInstances.push(instance);
+                }
+            }
+        }
+        if (!app.$$pageIsReady && instance.componentDidMount) {
+            delayMounts.push({
+                instance: instance,
+                fn: instance.componentDidMount
+            });
+            instance.componentDidMount = Date;
+        }
+    },
 
     onAfterRender(fiber) {
         updateMiniApp(fiber.stateNode);
@@ -55,7 +91,7 @@ export let Renderer = createRenderer({
     onDispose(fiber) {
         var instance = fiber.stateNode;
         var wx = instance.wx;
-        if (wx) {
+        if (wx && !fiber.props.isPageComponent) {
             wx.reactInstance = null;
             instance.wx = null;
         }

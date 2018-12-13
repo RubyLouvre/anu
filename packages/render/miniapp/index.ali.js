@@ -15,21 +15,26 @@ import { injectAPIs } from './api';
 import { aliApis } from './api.ali';
 
 import { dispatchEvent, webview } from './eventSystem';
-import { Renderer, getCurrentPage } from './render.all';
-import { onBeforeRender } from './onBeforeRender.ali';
-Renderer.onBeforeRender = onBeforeRender;
+import { Renderer } from './render.all';
+//import { onBeforeRender } from './onBeforeRender.ali';
+//Renderer.onBeforeRender = onBeforeRender;
 import { toStyle } from './toStyle';
-import { toRenderProps,_getApp, _getCurrentPages, useComponent } from './utils';
+import {
+    toRenderProps,
+    _getApp,
+    getCurrentPage,
+    _getCurrentPages,
+    useComponent
+} from './utils';
 
 import { registerComponent } from './registerComponent.ali';
 import { registerPage } from './registerPage.wx';
 
-
 let { render } = Renderer;
 
-let React =  getWindow().React = {
+let React = (getWindow().React = {
     //平台相关API
-    eventSystem:{
+    eventSystem: {
         dispatchEvent
     },
 
@@ -51,7 +56,7 @@ let React =  getWindow().React = {
     cloneElement,
     PureComponent,
     isValidElement,
-   
+
     toClass: miniCreateClass,
     toRenderProps,
     useComponent,
@@ -62,10 +67,10 @@ let React =  getWindow().React = {
     registerPage,
     toStyle,
     appType: 'ali'
-};
+});
 let apiContainer = {};
 if (typeof my != 'undefined') {
-    apiContainer = my;//eslint-disable-line
+    apiContainer = my; //eslint-disable-line
 }
 injectAPIs(React, apiContainer, aliApis);
 

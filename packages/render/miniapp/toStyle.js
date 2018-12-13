@@ -20,7 +20,7 @@ function transform(obj) {
 
 export function toStyle(obj, props, key) {
     if (props) {
-        if (typeof obj == 'object'){//clor: red;
+        if (Object( obj ) == obj ){//clor: red;
             var str = transform.call(this, obj);
         } else {
             str = obj;

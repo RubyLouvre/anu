@@ -1,16 +1,28 @@
-import { hasOwnProperty, noop } from 'react-core/util';
+import { hasOwnProperty, noop, typeNumber, isFn } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 
 
-export var shareObject = {
-    app: {}
+var fakeApp = {
+    app: {
+        globalData: {}
+    }
 };
 function _getApp() {
-    return shareObject.app;
+    if (isFn( getApp)) {   
+        var app = getApp();
+        if(!app.globalData && app.$def ) {//快应用的数据放在$def上
+            app.globalData = app.$def.globalData || {};
+        }
+        return app;
+    }
+    return fakeApp;
 }
+
 if (typeof getApp === 'function') {    
+    //这时全局可能没有getApp
     _getApp = getApp;//esline-disabled-line;
 }
+
 export { _getApp };
 export function callGlobalHook(method, e) {
     var app = _getApp();
@@ -18,22 +30,24 @@ export function callGlobalHook(method, e) {
         return app[method](e);
     }
 }
+
 export var delayMounts = [];
 export var usingComponents = [];
 export var registeredComponents = {};
-export var pageState = {
-    isReady: false
-};
+
+export  function getCurrentPage() {
+    var app = _getApp();
+    return app.$$page && app.$$page.reactInstance;
+}
 export function _getCurrentPages() {
     console.warn("getCurrentPages存在严重的平台差异性，不建议再使用"); //eslint-disable-line
-    if (typeof getCurrentPages === 'function') {
+    if (isFn( getCurrentPages )) {
         return getCurrentPages(); //eslint-disable-line
     }
 }
 
 //用于保存所有用miniCreateClass创建的类，然后在事件系统中用到
 export var classCached = {};
-
 
 export function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
@@ -58,24 +72,24 @@ function updateQuickApp(quick, data) {
 }
 
 function isReferenceType(val) {
-    return (
-        val &&
-        (typeof val === 'object' ||
-            Object.prototype.toString.call(val) === '[object Array]')
-    );
+    return typeNumber(val) > 6;
 }
 
 export function runFunction(fn, a, b) {
-    if (typeof fn == 'function') {
+    if (isFn( fn )) {
         fn.call(null, a, b);
     }
 }
 
 // 计算参数中有多少个函数
-function functionCount(...fns) {
-    return fns
-        .map(fn => typeof fn === 'function')
-        .reduce((count, fn) => count + fn, 0);
+function functionCount(fns) {
+    var ret = 0;
+    for(var i = 0; i < fns.length; i++){
+        if (isFn( fns[i] )) {
+           ret++;
+        }
+    }
+   return ret;
 }
 
 export function apiRunner(arg = {}, apiCallback, apiPromise) {
