@@ -73,6 +73,7 @@
     },
     onReachBottom() {
       var react = getCurrentPage();
+      console.log('onReachBottom',react)
       if (react.onReachBottom) {
         react.onReachBottom(e)
       }
@@ -129,7 +130,7 @@
     },
     onPullDownRefresh() {
       var app = this.$app;
-      var appConfig = Object(app.config);
+      var appConfig = Object(app.$def.config);
       var pageConfig = Object(app.$$pageConfig);
       var enable = "enablePullDownRefresh";
       var isOk = pageConfig[enable] || appConfig[enable];
@@ -183,7 +184,7 @@
       navigationBarTitleText: "",
       navigationBarTextStyle: "white",
       navigationBarBackgroundColor: "#000000"
-    }, app.config, app.$$pageConfig);
+    }, app.$def.config, app.$$pageConfig);
     instance.backgroundColor = mixin.backgroundColor || "#ffffff"
     instance.pageRefresh = !!mixin.enablePullDownRefresh;
     instance.$page.setTitleBar({

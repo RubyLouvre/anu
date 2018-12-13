@@ -2,19 +2,27 @@ import { hasOwnProperty, noop } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 
 
-export var shareObject = {
-    app: {}
+var fakeApp = {
+    app: {
+        globalData: {}
+    }
 };
 function _getApp() {
-    if (typeof getApp === 'function') {    
-        return getApp();//esline-disabled-line;
+    if (typeof getApp === 'function') {   
+        var app = getApp();
+        if(app.globalData && app.$def ) {
+            app.globalData = app.$def.globalData || {};
+        }
+        return app;//esline-disabled-line;
     }
-    return shareObject.app;
+    return fakeApp;
 }
+
 if (typeof getApp === 'function') {    
     //这时全局可能没有getApp
     _getApp = getApp;//esline-disabled-line;
 }
+
 export { _getApp };
 export function callGlobalHook(method, e) {
     var app = _getApp();
@@ -78,10 +86,14 @@ export function runFunction(fn, a, b) {
 }
 
 // 计算参数中有多少个函数
-function functionCount(...fns) {
-    return fns
-        .map(fn => typeof fn === 'function')
-        .reduce((count, fn) => count + fn, 0);
+function functionCount(fns) {
+    var ret = 0;
+    for(var i = 0; i < fns.length; i++){
+        if(typeof fns[i] === 'function'){
+           ret++;
+        }
+    }
+   return ret;
 }
 
 export function apiRunner(arg = {}, apiCallback, apiPromise) {

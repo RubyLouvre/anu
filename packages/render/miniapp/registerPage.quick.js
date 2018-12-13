@@ -1,7 +1,7 @@
 import { isFn } from 'react-core/util';
 import { dispatchEvent } from './eventSystem.quick';
 import { onLoad, onUnload, onReady } from './registerPage.all';
-import { shareObject, callGlobalHook,_getApp } from './utils';
+import { callGlobalHook,_getApp } from './utils';
 import { showMenu } from './showMenu.quick';
 var globalHooks = {
     onShareAppMessage: 'onGlobalShare',
@@ -31,10 +31,9 @@ export function registerPage(PageClass) {
         },
         dispatchEvent,
         onInit() {
-            var $app = shareObject.app = this.$app; //.$def || this.$app._def);
+            var $app = this.$app; //.$def || this.$app._def);
             var array = getUrlAndQuery(this.$page);
             var instance = onLoad.call(this, PageClass, array[0], array[1]);
-            // shareObject的数据不是长久的，在页面跳转时，就会丢失
             var pageConfig = instance.config || PageClass.config;
             $app.$$pageConfig =
                 pageConfig && Object.keys(pageConfig).length
@@ -51,8 +50,7 @@ export function registerPage(PageClass) {
             let fn = instance[hook];
             Object(_getApp().$$page).reactInstance = instance;
             if (hook === 'onMenuPress') {
-                var $app = shareObject.app = this.$app;
-                showMenu(instance, $app);
+                showMenu(instance, this.$app);
             } else if (isFn(fn)) {
                 fn.call(instance, e);
             }
