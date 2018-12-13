@@ -2257,11 +2257,6 @@ var Renderer$1 = createRenderer({
             if (!instance.instanceUid) {
                 instance.instanceUid = uuid;
             }
-            if (fiber.props.isPageComponent) {
-                var wx = app.$$page;
-                instance.wx = wx;
-                wx.reactInstance = instance;
-            }
             var wxInstances = type.wxInstances;
             if (wxInstances) {
                 var componentWx = wxInstances[uuid];
@@ -2289,7 +2284,7 @@ var Renderer$1 = createRenderer({
     onDispose: function onDispose(fiber) {
         var instance = fiber.stateNode;
         var wx = instance.wx;
-        if (wx) {
+        if (wx && !fiber.props.isPageComponent) {
             wx.reactInstance = null;
             instance.wx = null;
         }
@@ -2436,6 +2431,8 @@ function onLoad(PageClass, path, query) {
     }), container);
     callGlobalHook('onGlobalLoad');
     this.reactContainer = container;
+    this.reactInstance = pageInstance;
+    pageInstance.wx = this;
     updateMiniApp(pageInstance);
     return pageInstance;
 }
@@ -2459,11 +2456,9 @@ function onUnload() {
         delete usingComponents[i];
     }
     var instance = this.reactInstance;
-    if (instance) {
-        var hook = instance.componentWillUnmount;
-        if (isFn(hook)) {
-            hook.call(instance);
-        }
+    var hook = instance.componentWillUnmount;
+    if (isFn(hook)) {
+        hook.call(instance);
     }
     var root = this.reactContainer;
     var container = root && root._reactInternalFiber;

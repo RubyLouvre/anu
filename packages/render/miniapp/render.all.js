@@ -55,11 +55,12 @@ export let Renderer = createRenderer({
             if (!instance.instanceUid) {
                 instance.instanceUid = uuid;
             }
-            if (fiber.props.isPageComponent) {
+            /* if (fiber.props.isPageComponent) {
                 let wx = app.$$page;
                 instance.wx = wx;
                 wx.reactInstance = instance;
             }
+            */
             //只处理component目录下的组件
             let wxInstances = type.wxInstances;
             if (wxInstances) {
@@ -90,7 +91,7 @@ export let Renderer = createRenderer({
     onDispose(fiber) {
         var instance = fiber.stateNode;
         var wx = instance.wx;
-        if (wx) {
+        if (wx && !fiber.props.isPageComponent) {
             wx.reactInstance = null;
             instance.wx = null;
         }

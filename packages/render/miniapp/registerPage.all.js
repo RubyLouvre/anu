@@ -26,8 +26,8 @@ export function onLoad(PageClass, path, query) {
     );
     callGlobalHook('onGlobalLoad');//调用全局onLoad方法
     this.reactContainer = container;
-    //   this.reactInstance = pageInstance;
-    //   pageInstance.wx = this;//保存小程序的页面对象
+    this.reactInstance = pageInstance;
+    pageInstance.wx = this;//保存小程序的页面对象
     updateMiniApp(pageInstance);//更新小程序视图
     return pageInstance;
 }
@@ -54,12 +54,12 @@ export function onUnload() {
         delete usingComponents[i];
     }
     let instance = this.reactInstance;
-    if (instance){
-        let hook = instance.componentWillUnmount;
-        if (isFn(hook)) {
-            hook.call(instance);
-        }
+   
+    let hook = instance.componentWillUnmount;
+    if (isFn(hook)) {
+        hook.call(instance);
     }
+    
     let root = this.reactContainer;
     let container = root && root._reactInternalFiber;
     if (container) {
@@ -80,5 +80,6 @@ export function onUnload() {
         );
     }
     callGlobalHook('onGlobalUnload');
+    //this.reactInstance = null;
 }
 
