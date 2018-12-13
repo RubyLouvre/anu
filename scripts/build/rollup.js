@@ -23,7 +23,7 @@ export default {
         babel(),
 
         license({
-            banner: `by 司徒正美 Copyright ${JSON.stringify(new Date()).replace(/T.*|"/g,'')}
+            banner: `by 司徒正美 Copyright ${JSON.stringify(new Date()).replace(/:.*|"/g,'')}
       IE9+
       `
         }),

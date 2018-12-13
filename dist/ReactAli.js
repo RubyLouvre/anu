@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-13T12
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-13T13
  */
 
 var arrayPush = Array.prototype.push;
@@ -2581,7 +2581,7 @@ function onUnload() {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances = null;
+            a.wxInstances = {};
         }
         delete usingComponents[i];
     }
