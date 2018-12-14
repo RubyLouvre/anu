@@ -130,7 +130,7 @@ class PlayList extends React.Component {
 
                                 <div>
                                     <text id="pa-count">
-                    播放全部{' '}
+                                        播放全部{' '}
                                         <text>
                                             {' '}(共{this.state.list.playlist.trackCount}首)
                                         </text>
