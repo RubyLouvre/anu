@@ -37,9 +37,16 @@ class Demo extends React.Component {
       user: {}
   };
   onLaunch() {
-      // eslint-disable-next-line
-    console.log('App launched');
-  }
+    //针对快应用的全局getApp补丁
+    if (this.$data && typeof global === 'object') {
+        var ref = Object.getPrototypeOf(global) || global;
+        var _this = this;
+        ref.getApp = function() {
+            return _this;
+        };
+    }
+    console.log('App launched');//eslint-disable-line
+ }
   stopmusic() {
     
       React.api.pauseBackgroundAudio();
