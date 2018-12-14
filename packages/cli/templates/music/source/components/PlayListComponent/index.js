@@ -1,8 +1,8 @@
 import React from '@react';
 
 class PlayListComponent extends React.Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
     }
 
     render() {
