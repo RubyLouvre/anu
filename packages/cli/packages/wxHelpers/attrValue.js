@@ -68,7 +68,7 @@ module.exports = function (astPath) {
                     // 快应用的 bug
                     // class={{this.className0 + ' dynamicClassName'}} 快应用会将后者的空格吞掉
                     // 影响 class 的求值
-                    let className =
+                    /*  let className =
                         buildType == 'quick'
                             ? `${toString(
                                 expr.left
@@ -76,6 +76,10 @@ module.exports = function (astPath) {
                             : `${toString(
                                 expr.left
                             )}${toString(expr.right)}`;
+                            */
+                    let className = `${toString(
+                        expr.left
+                    )}${toString(expr.right)}`;
                     astPath.replaceWith(t.stringLiteral(className));
                     return;
                 }

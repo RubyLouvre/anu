@@ -48,7 +48,7 @@ export function createContext(defaultValue, calculateChangedBits) {
     };
     let Provider = miniCreateClass(
         function Provider(props) {
-            this.emitter = createEventEmitter(props.value);
+            this.emitter = createEventEmitter(props ? props.value: defaultValue);
         },
         Component,
         {

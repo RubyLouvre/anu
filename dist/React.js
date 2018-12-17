@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-12-13T13
+ * by 司徒正美 Copyright 2018-12-17T07
  * IE9+
  */
 
@@ -634,7 +634,7 @@
             off: noop
         };
         var Provider = miniCreateClass(function Provider(props) {
-            this.emitter = createEventEmitter(props.value);
+            this.emitter = createEventEmitter(props ? props.value : defaultValue);
         }, Component, {
             getChildContext: function getChildContext() {
                 return create({}, this.emitter);
@@ -2135,7 +2135,7 @@
             props = fiber.props;
         var contextStack = info.contextStack,
             containerStack = info.containerStack;
-        var newContext = getMaskedContext(instance, type.contextTypes, contextStack);
+        var newContext = getMaskedContext(instance, type.contextTypes, type.contextType, contextStack);
         if (instance == null) {
             fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
             instance = createInstance(fiber, newContext);
@@ -2287,12 +2287,13 @@
         instance.__unmaskedContext = unmaskedContext;
         instance.__maskedContext = context;
     }
-    function getMaskedContext(instance, contextTypes, contextStack) {
-        if (instance && !contextTypes) {
+    function getMaskedContext(instance, contextTypes, contextType, contextStack) {
+        var noContext = !contextTypes && !contextType;
+        if (instance && noContext) {
             return instance.context;
         }
         var context = {};
-        if (!contextTypes) {
+        if (noContext) {
             return context;
         }
         var unmaskedContext = contextStack[0];
@@ -2302,9 +2303,22 @@
                 return instance.__maskedContext;
             }
         }
-        for (var key in contextTypes) {
-            if (contextTypes.hasOwnProperty(key)) {
-                context[key] = unmaskedContext[key];
+        if (contextTypes) {
+            for (var key in contextTypes) {
+                if (contextTypes.hasOwnProperty(key)) {
+                    context[key] = unmaskedContext[key];
+                }
+            }
+        } else {
+            var has = false;
+            for (var i in unmaskedContext) {
+                var v = unmaskedContext[i];
+                context = v.get();
+                has = true;
+                break;
+            }
+            if (!has) {
+                context = new contextType.Provider().emitter.get();
             }
         }
         if (instance) {
@@ -2820,7 +2834,7 @@
     function createContainer(root, onlyGet, validate) {
         validate = validate || validateTag;
         if (!validate(root)) {
-            throw "container is not a element";
+            throw 'container is not a element';
         }
         root.anuProp = 2018;
         var useProp = root.anuProp === 2018;
@@ -2841,7 +2855,7 @@
         var container = new Fiber({
             stateNode: root,
             tag: 5,
-            name: "hostRoot",
+            name: 'hostRoot',
             contextStack: [{}],
             containerStack: [root],
             microtasks: [],
