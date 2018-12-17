@@ -33,6 +33,7 @@ export function registerComponent(type, name) {
         onDestroy() {
             let t = this.reactInstance;
             if (t) {
+                delete wxInstances[t.instanceUid];
                 t.wx = null;
                 this.reactInstance = null;
             }

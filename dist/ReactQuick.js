@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-17T08
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-17T12
  */
 
 var arrayPush = Array.prototype.push;
@@ -2717,6 +2717,7 @@ function registerComponent(type, name) {
         onDestroy: function onDestroy() {
             var t = this.reactInstance;
             if (t) {
+                delete wxInstances[t.instanceUid];
                 t.wx = null;
                 this.reactInstance = null;
             }
