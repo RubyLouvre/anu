@@ -13,20 +13,31 @@ const postCssRemoveComments = postCss.plugin('postcss-plugin-remove-comment', ()
     };
 });
 
-const postCssPluginLessVar = postCss.plugin('postcss-plugin-less-var', ()=>{
-    const variables = {};
-    return (root) => {
-        root.walkAtRules(rule => {
-            if (rule.variable) {
-                variables[rule.name] = rule.value;
-                rule.remove();
+const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
+    function findValue(node, decl) {
+        let find = false;
+        let value;
+        // 遍历variable 找出当前节点下变量定义
+        node.walkAtRules(rule => {
+            if (rule.variable && rule.name === decl.value.split('@')[1]) {
+                find = true;
+                value = rule.value;
             }
         });
-        root.walkDecls(function(decl) {
+        if (find && value) {
+            decl.value = value;
+        }
+        // 没找到或到达根节点则退出递归
+        if (!find && node.type !== 'root') {
+            findValue(node.parent, decl);
+        }
+    }
+
+    return (root) => {
+        root.walkDecls(decl => {
+            // 找出变量
             if (decl.value && decl.value.match(/(@{?[a-zA-Z0-9-_.]+}?)/g)) {
-                
-                const key = decl.value.split('@')[1];
-                decl.value = variables[key];
+                findValue(decl.parent, decl);
             }
         });
     };
@@ -48,6 +59,7 @@ const compileLessByPostCss = (filePath, originalCode)=>{
             postCssRemoveComments,
             postCssPluginLessVar,
             require('postcss-nested-props'),   //属性嵌套
+            require('precss'),
             require('postcss-automath')       //5px + 2 => 7px
             
         ])
