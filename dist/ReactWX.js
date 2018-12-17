@@ -2159,7 +2159,7 @@ function validateTag(el) {
 function createContainer(root, onlyGet, validate) {
     validate = validate || validateTag;
     if (!validate(root)) {
-        throw 'container is not a element';
+        throw "container is not a element";
     }
     root.anuProp = 2018;
     var useProp = root.anuProp === 2018;
@@ -2180,7 +2180,7 @@ function createContainer(root, onlyGet, validate) {
     var container = new Fiber({
         stateNode: root,
         tag: 5,
-        name: 'hostRoot',
+        name: "hostRoot",
         contextStack: [{}],
         containerStack: [root],
         microtasks: [],
