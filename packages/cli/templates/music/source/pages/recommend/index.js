@@ -1,6 +1,5 @@
 import React from '@react';
 import url from '../../utils/bsurl';
-let bsurl = url.bsurl;
 import './index.less';
 
 class Recommend extends React.Component {
