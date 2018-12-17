@@ -1,9 +1,5 @@
 /**
-<<<<<<< HEAD
  * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-17T06
-=======
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-14T08
->>>>>>> eb68f6906c1c280b9f30415f4a2a43b1b5340403
  */
 
 var arrayPush = Array.prototype.push;
@@ -2285,7 +2281,7 @@ function validateTag(el) {
 function createContainer(root, onlyGet, validate) {
     validate = validate || validateTag;
     if (!validate(root)) {
-        throw 'container is not a element';
+        throw "container is not a element";
     }
     root.anuProp = 2018;
     var useProp = root.anuProp === 2018;
@@ -2306,7 +2302,7 @@ function createContainer(root, onlyGet, validate) {
     var container = new Fiber({
         stateNode: root,
         tag: 5,
-        name: 'hostRoot',
+        name: "hostRoot",
         contextStack: [{}],
         containerStack: [root],
         microtasks: [],
