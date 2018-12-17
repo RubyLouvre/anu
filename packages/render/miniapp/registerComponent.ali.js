@@ -40,6 +40,7 @@ export function registerComponent(type, name) {
         didUnmount: function didUnmount() {
             var t = this.reactInstance;
             if (t) {
+                delete wxInstances[t.instanceUid];
                 t.wx = null;
                 this.reactInstance = null;
             }

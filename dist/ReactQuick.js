@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-17T07
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-17T12
  */
 
 var arrayPush = Array.prototype.push;
@@ -2464,7 +2464,7 @@ function validateTag(el) {
 function createContainer(root, onlyGet, validate) {
     validate = validate || validateTag;
     if (!validate(root)) {
-        throw 'container is not a element';
+        throw "container is not a element";
     }
     root.anuProp = 2018;
     var useProp = root.anuProp === 2018;
@@ -2485,7 +2485,7 @@ function createContainer(root, onlyGet, validate) {
     var container = new Fiber({
         stateNode: root,
         tag: 5,
-        name: 'hostRoot',
+        name: "hostRoot",
         contextStack: [{}],
         containerStack: [root],
         microtasks: [],
@@ -2563,7 +2563,6 @@ var Renderer$1 = createRenderer({
                 if (componentWx && componentWx.__wxExparserNodeId__) {
                     componentWx.reactInstance = instance;
                     instance.wx = componentWx;
-                    delete wxInstances[uuid];
                 }
                 if (!instance.wx) {
                     type.reactInstances.push(instance);
@@ -2718,6 +2717,7 @@ function registerComponent(type, name) {
         onDestroy: function onDestroy() {
             var t = this.reactInstance;
             if (t) {
+                delete wxInstances[t.instanceUid];
                 t.wx = null;
                 this.reactInstance = null;
             }
