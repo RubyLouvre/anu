@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-12-17T07
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-12-17T08
  * IE9+
  */
 
@@ -2258,7 +2258,6 @@ var Renderer$1 = createRenderer({
                 if (componentWx && componentWx.__wxExparserNodeId__) {
                     componentWx.reactInstance = instance;
                     instance.wx = componentWx;
-                    delete wxInstances[uuid];
                 }
                 if (!instance.wx) {
                     type.reactInstances.push(instance);
