@@ -48,7 +48,7 @@ export function registerPage(PageClass) {
         config[hook] = function(e) {
             let instance = this.reactInstance;
             let fn = instance[hook];
-            Object(_getApp().$$page).reactInstance = instance;
+            _getApp().$$page = this;
             if (hook === 'onMenuPress') {
                 showMenu(instance, this.$app);
             } else if (isFn(fn)) {

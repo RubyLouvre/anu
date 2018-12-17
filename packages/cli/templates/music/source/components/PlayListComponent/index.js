@@ -1,8 +1,8 @@
 import React from '@react';
 
 class PlayListComponent extends React.Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
     }
 
     render() {
@@ -16,8 +16,8 @@ class PlayListComponent extends React.Component {
                                     key={re.id}
                                     class={
                                         'songs ' +
-                    (re.id === this.props.curplay ? 'cur' : '') +
-                    (this.props.privileges[idx].st >= 0 ? '' : 'disabled')
+                                        (re.id === this.props.curplay ? 'cur' : '') +
+                                        (this.props.privileges[idx].st >= 0 ? '' : 'disabled')
                                     }
                                 >
                                     <navigator
@@ -77,9 +77,9 @@ class PlayListComponent extends React.Component {
                                     key={re.id}
                                     class={
                                         'songs ' +
-                    (re.id === this.props.curplay ? 'cur' : '') +
-                    (re.st == -1 ? 'disabled' : '') +
-                    re.id
+                                        (re.id === this.props.curplay ? 'cur' : '') +
+                                        (re.st == -1 ? 'disabled' : '') +
+                                        re.id
                                     }
                                 >
                                     <navigator
@@ -91,27 +91,25 @@ class PlayListComponent extends React.Component {
                                         }
                                         bindtap="playmusic"
                                     >
-                                        <div class="flexlist flex-center">
-                                            <div class="flexleft flexnum ">
+                                        <div class="displayFlex">
+                                            <div class="displayFlexLeft">
                                                 {re.id === this.props.curplay ? (
                                                     <image src="../../aseets/image/aal.png" style={{ width: '36rpx' }}>
-                            image
+                                                        image
                                                     </image>
                                                 ) : (
-                                                    <div>
-                                                        <text class={this.props.toplist && idx < 3 ? 'topindex' : ''}>
-                                                            {idx + 1}
-                                                        </text>
-                                                    </div>
+                                                    <text class={this.props.toplist && idx < 3 ? 'topindex' : ''}>
+                                                        {idx + 1}
+                                                    </text>
                                                 )}
                                             </div>
-                                            <div class="flexlist">
-                                                <div class="flexmain">
-                                                    <div>
+                                            <div class="displayFlexRight">
+                                                <div>
+                                                    <div class='displayFlexRightTop'>
                                                         {re.name}
                                                         {re.alia.length && <text>（{re.alia[0]}）</text>}
                                                     </div>
-                                                    <div class="relistdes">
+                                                    <div class='displayFlexRightBottom'>
                                                         {re.ar[0].name}-{re.al.name}
                                                     </div>
                                                 </div>

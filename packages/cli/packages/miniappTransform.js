@@ -32,9 +32,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 require('babel-plugin-transform-object-rest-spread'),
                 require('babel-plugin-transform-es2015-template-literals'),
                 ...require('./babelPlugins/transformMiniApp')(sourcePath),
-                require('./babelPlugins/transformIfImport'),
                 require('babel-plugin-transform-async-to-generator'),
-                
+                require('./babelPlugins/transformIfImport')
             ]
         },
         async function(err, result) {
@@ -43,8 +42,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 console.log(transformFilePath, '\n', err);
             }
             let babelPlugins = [
-                require('./babelPlugins/injectRegeneratorRuntime'),
                 ...require('./babelPlugins/transformEnv'),
+                require('./babelPlugins/injectRegeneratorRuntime'),
                 require('./babelPlugins/trasnformAlias')(
                     {
                         sourcePath: sourcePath,
