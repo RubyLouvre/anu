@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-17T06
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-17T07
  */
 
 var arrayPush = Array.prototype.push;
@@ -1596,7 +1596,7 @@ function updateClassComponent(fiber, info) {
         props = fiber.props;
     var contextStack = info.contextStack,
         containerStack = info.containerStack;
-    var newContext = getMaskedContext(instance, type.contextTypes, contextStack);
+    var newContext = getMaskedContext(instance, type.contextTypes, type.contextType, contextStack);
     if (instance == null) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
@@ -1748,12 +1748,13 @@ function cacheContext(instance, unmaskedContext, context) {
     instance.__unmaskedContext = unmaskedContext;
     instance.__maskedContext = context;
 }
-function getMaskedContext(instance, contextTypes, contextStack) {
-    if (instance && !contextTypes) {
+function getMaskedContext(instance, contextTypes, contextType, contextStack) {
+    var noContext = !contextTypes && !contextType;
+    if (instance && noContext) {
         return instance.context;
     }
     var context = {};
-    if (!contextTypes) {
+    if (noContext) {
         return context;
     }
     var unmaskedContext = contextStack[0];
@@ -1763,9 +1764,22 @@ function getMaskedContext(instance, contextTypes, contextStack) {
             return instance.__maskedContext;
         }
     }
-    for (var key in contextTypes) {
-        if (contextTypes.hasOwnProperty(key)) {
-            context[key] = unmaskedContext[key];
+    if (contextTypes) {
+        for (var key in contextTypes) {
+            if (contextTypes.hasOwnProperty(key)) {
+                context[key] = unmaskedContext[key];
+            }
+        }
+    } else {
+        var has = false;
+        for (var i in unmaskedContext) {
+            var v = unmaskedContext[i];
+            context = v.get();
+            has = true;
+            break;
+        }
+        if (!has) {
+            context = new contextType.Provider().emitter.get();
         }
     }
     if (instance) {

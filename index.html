@@ -84,9 +84,9 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      theme: themes.red,
+      theme: themes.green,
     };
-
+    console.log("变色")
     this.toggleTheme = () => {
       console.log(this.state.theme, '1111')
       this.setState(state => ({
