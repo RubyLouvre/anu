@@ -63,7 +63,6 @@ const compileSassByPostCss = (filePath, originalCode)=>{
                     return utils.resolveStyleAlias(importer, baseDir);
                 }
             }),
-            require('postcss-import'),
             postCssRemoveComments,
             postCssTransformDarkenOrLighten,
             postCssWalkAtFunction,
