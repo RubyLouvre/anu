@@ -6,6 +6,7 @@ const utils = require('./utils');
 const exitName = config[config['buildType']].styleExt;
 const crypto = require('crypto');
 const compileSassByPostCss = require('./stylesTransformer/postcssTransformSass');
+// const compileLessByPostCss = require('./stylesTransformer/postcssTransformLess');
 const compileSass = require('./stylesTransformer/transformSass');
 const compileLess = require('./stylesTransformer/transformLess');
 let cache = {};
