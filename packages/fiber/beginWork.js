@@ -71,7 +71,6 @@ export function reconcileDFS(fiber, info, deadline, ENOUGH_TIME) {
                     delete f.shiftContainer;
                     info.containerStack.shift(); // shift parent
                 }
-    
             } else {
                 let updater = instance && instance.updater;
                 if (f.shiftContext) {
@@ -168,6 +167,7 @@ export function updateClassComponent(fiber, info) {
     let newContext = getMaskedContext(
         instance,
         type.contextTypes,
+        type.contextType,
         contextStack
     );
     if (instance == null) {
@@ -224,7 +224,7 @@ export function updateClassComponent(fiber, info) {
     instance.context = newContext;
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state;
-   
+
     if (instance.getChildContext) {
         let context = instance.getChildContext();
         context = Object.assign({}, contextStack[0], context);
@@ -251,13 +251,12 @@ export function updateClassComponent(fiber, info) {
     if (fiber.catchError) {
         return;
     }
-    Renderer.onBeforeRender(fiber)
+    Renderer.onBeforeRender(fiber);
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     let rendered = applyCallback(instance, "render", []);
     diffChildren(fiber, rendered);
-    Renderer.onAfterRender(fiber)
-
+    Renderer.onAfterRender(fiber);
 }
 
 function applybeforeMountHooks(fiber, instance, newProps) {
@@ -375,12 +374,13 @@ function cacheContext(instance, unmaskedContext, context) {
     instance.__unmaskedContext = unmaskedContext;
     instance.__maskedContext = context;
 }
-function getMaskedContext(instance, contextTypes, contextStack) {
-    if (instance && !contextTypes) {
+function getMaskedContext(instance, contextTypes, contextType, contextStack) {
+    var noContext = !contextTypes && !contextType;
+    if (instance && noContext) {
         return instance.context;
     }
     let context = {};
-    if (!contextTypes) {
+    if (noContext) {
         return context;
     }
 
@@ -391,12 +391,26 @@ function getMaskedContext(instance, contextTypes, contextStack) {
             return instance.__maskedContext;
         }
     }
-
-    for (let key in contextTypes) {
-        if (contextTypes.hasOwnProperty(key)) {
-            context[key] = unmaskedContext[key];
+    if (contextTypes) {
+        //第一代context
+        for (let key in contextTypes) {
+            if (contextTypes.hasOwnProperty(key)) {
+                context[key] = unmaskedContext[key];
+            }
+        }
+    } else {//第三代
+        var has = false;
+        for (var i in unmaskedContext) {
+            var v = unmaskedContext[i];
+            context = v.get();
+            has = true;
+            break;
+        }
+        if (!has) {
+            context = new contextType.Provider().emitter.get();
         }
     }
+
     if (instance) {
         cacheContext(instance, unmaskedContext, context);
     }

@@ -123,14 +123,13 @@ class PlayList extends React.Component {
                 <div class="plist-detail page_pp">
                     {!this.state.listLoading && this.state.list.playlist.tracks.length ? (
                         <div>
-                            <div id="playall" bindtap="playall" class="flexlist flex-center">
+                            <div id="playall" bindtap="playall" class="flexlist flex-center borderBottom">
                                 <div class="flexleft flexnum">
                                     <image src="../../assets/image/pl-playall.png" mode="widthFix" />
                                 </div>
-
                                 <div>
                                     <text id="pa-count">
-                    播放全部{' '}
+                                        播放全部{' '}
                                         <text>
                                             {' '}(共{this.state.list.playlist.trackCount}首)
                                         </text>

@@ -98,10 +98,10 @@ class Playing extends React.Component {
                         />
 
                         <div id="playing-zz" hidden={this.state.showlrc}>
-                            <image src="../../assets/image/aag.png" />
+                            <image src="@assets/image/aag.png" />
                         </div>
                         <div id="playing-main" hidden={this.state.showlrc}>
-                            <image id="playingmainbg" src="../../assets/image/play.png" />
+                            <image id="playingmainbg" src="@assets/image/play.png" />
                             <image
                                 src={`${this.state.music.al.picUrl || this.state.music.album.picUrl}?param=200y200`}
                                 bindtap="loadlrc"
