@@ -21,11 +21,8 @@ let visitor = {
     }
 };
 
-module.exports  = [
-    require('babel-plugin-transform-async-to-generator'),
-    ()=>{
-        return {
-            visitor: visitor
-        };
-    }
-];
+module.exports = ()=>{
+    return {
+        visitor: visitor
+    };
+};
