@@ -4,33 +4,45 @@ import './index.scss';
 class YButton extends React.Component {
     constructor(props) {
         super(props);
-        let newState = this.computeState(props, false);
-        this.state = newState;
+        this.state = this.computeState(props, false);
+
+        this.handleClick = this.handleClick.bind(this);
+        this.onClick = this.onClick.bind(this);
     }
 
     computeState(props, active) {
-        let buttonArray = [props.size];
-        let textAray = [props.type];
-        if (props.disabled) {
-            textAray.push('disabled');
-        } else {
-            if (active) {
-                buttonArray.push(props.type + '-active');
-            }
+        const buttonClasses = ['anu-button'];
+        const labelClasses = ['anu-button__label'];
+        const loadingClasses = ['anu-button__loading'];
+        if (props.size === 'mini') {
+            buttonClasses.push('anu-button--mini');
+            labelClasses.push('anu-button__label--mini');
+            loadingClasses.push('anu-button__loading--mini');
         }
+        buttonClasses.push(`anu-button--${props.type}`);
+        labelClasses.push(`anu-button__label--${props.type}`);
         if (props.plain) {
-            textAray.push('plain');
+            buttonClasses.push(`anu-button--${props.type}-plain`);
+            labelClasses.push(`anu-button__label--${props.type}-plain`);
         }
-        var textStyle = colorStyleMap[textAray.join('-')];
-        var buttonStyle = buttonArray.concat(textAray.join('-')).join(' ');
-        let fontStyle = fontStyleMap[props.size];
+        if (props.disabled) {
+            buttonClasses.push('anu-button--disabled');
+            labelClasses.push('anu-button__label--disabled');
+        } else if (active) {
+            buttonClasses.push('anu-button--active');
+            labelClasses.push('anu-button__label--active');
+        }
+        if (!props.loading) {
+            loadingClasses.push('anu-button__loading--hidden');
+        }
         return {
             value: props.children,
-            textStyle,
-            buttonStyle,
-            fontStyle
+            loadingClasses: loadingClasses.join(' '),
+            buttonClasses: buttonClasses.join(' '),
+            labelClasses: labelClasses.join(' ')
         };
     }
+
     updateState(nextProps, active) {
         let newState = this.computeState(nextProps, active);
         let oldState = this.state;
@@ -49,7 +61,14 @@ class YButton extends React.Component {
     componentWillReceiveProps(nextProps) {
         this.updateState(nextProps, false);
     }
-    click(e) {
+    onClick(e) {
+        // 不在 XLabel 内部的时候，执行本身逻辑
+        // 在快应用下不支持事件冒泡，直接执行本身逻辑
+        if (process.env.ANU_ENV === 'quick' || !this.props.__InLabel) {
+            this.handleClick(e);
+        }
+    }
+    handleClick(e) {
         var props = this.props;
         Array('onTap', 'catchTap', 'onClick', 'catchClick').forEach(function(
             name
@@ -57,7 +76,7 @@ class YButton extends React.Component {
             var fn = props[name];
             if (fn) {
                 fn(e);
-                if (name == 'catchTap' || name == '"catchClick"') {
+                if (name == 'catchTap' || name == 'catchClick') {
                     e.stopPropagation();
                 }
             }
@@ -74,29 +93,19 @@ class YButton extends React.Component {
     render() {
         return (
             <stack
-                class={'center button ' + this.state.buttonStyle}
-                disabled={this.props.disabled}
-                plain={this.props.plain}
-                type={this.props.type}
-                size={this.props.size}
+                className={'anu-col anu-center anu-middle ' + this.state.buttonClasses}
             >
-                <div>
+                <div className="anu-row anu-middle">
                     <image
-                        show={this.props.loading}
-                        class="loading-style"
+                        className={this.state.loadingClasses}
                         src="https://s.qunarzz.com/flight_qzz/loading.gif"
                     />
 
-                    <text
-                        style={{
-                            color: this.state.textStyle,
-                            fontSize: this.state.fontStyle
-                        }}
-                    >
+                    <text className={this.state.labelClasses}>
                         {this.state.value}
                     </text>
                 </div>
-                <input class="mask" type='button' onClick={this.click.bind(this)} />
+                <input className="anu-button__mask" type='button' onClick={this.onClick} />
             </stack>
         );
     }
@@ -107,27 +116,8 @@ YButton.defaultProps = {
     disabled: false,
     plain: false,
     size: 'default',
-    loading: false
-};
-
-const colorStyleMap = {
-    default: '#000000',
-    primary: '#ffffff',
-    warn: '#ffffff',
-    'default-disabled': 'rgba(0, 0, 0, 0.3)',
-    'primary-disabled': 'rgba(255, 255, 255, 0.6)',
-    'warn-disabled': 'rgba(255, 255, 255, 0.6)',
-    'default-disabled-plain': 'rgba(0, 0, 0, 0.2)',
-    'primary-disabled-plain': 'rgba(0, 0, 0, 0.2)',
-    'warn-disabled-plain': 'rgba(0, 0, 0, 0.2)',
-    'default-plain': '#353535',
-    'primary-plain': '#1aad19',
-    'warn-plain': '#e64340'
-};
-
-const fontStyleMap = {
-    default: '26px',
-    mini: '26px'
+    loading: false,
+    __InLabel: false
 };
 
 export default YButton;

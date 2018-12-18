@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-17T12
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-18T06
  */
 
 var arrayPush = Array.prototype.push;
@@ -2183,7 +2183,7 @@ function validateTag(el) {
 function createContainer(root, onlyGet, validate) {
     validate = validate || validateTag;
     if (!validate(root)) {
-        throw "container is not a element";
+        throw 'container is not a element';
     }
     root.anuProp = 2018;
     var useProp = root.anuProp === 2018;
@@ -2204,7 +2204,7 @@ function createContainer(root, onlyGet, validate) {
     var container = new Fiber({
         stateNode: root,
         tag: 5,
-        name: "hostRoot",
+        name: 'hostRoot',
         contextStack: [{}],
         containerStack: [root],
         microtasks: [],
@@ -2278,10 +2278,17 @@ var Renderer$1 = createRenderer({
             }
             var wxInstances = type.wxInstances;
             if (wxInstances) {
-                var componentWx = wxInstances[uuid];
+                var componentWx = wxInstances[0];
                 if (componentWx && componentWx.__wxExparserNodeId__) {
-                    componentWx.reactInstance = instance;
-                    instance.wx = componentWx;
+                    for (var i = 0; i < wxInstances.length; i++) {
+                        var el = wxInstances[i];
+                        if (el.dataset.instanceUid === uuid) {
+                            el.reactInstance = instance;
+                            instance.wx = el;
+                            wxInstances.splice(i, 1);
+                            break;
+                        }
+                    }
                 }
                 if (!instance.wx) {
                     type.reactInstances.push(instance);
@@ -2468,7 +2475,7 @@ function onUnload() {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances = {};
+            a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }

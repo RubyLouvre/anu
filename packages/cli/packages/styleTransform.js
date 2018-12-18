@@ -26,8 +26,12 @@ let needUpdate = (id, originalCode, fn) => {
 let getDist = (filePath) =>{
     filePath = utils.resolvePatchComponentPath(filePath);
     let dist = utils.updatePath(filePath, config.sourceDir, 'dist');
-    let { name, dir} =  path.parse(dist);
-    return path.join(dir, `${name}.${exitName}`);
+    let { name, dir, ext} =  path.parse(dist);
+    let distPath = '';
+    config.buildType === 'h5'
+        ? distPath = path.join(dir, `${name}${ext}`)
+        : distPath = path.join(dir, `${name}.${exitName}`);
+    return distPath;
 };
 
 //用户工程下是否有node-sass
@@ -42,6 +46,16 @@ const compilerMap = {
 function runCompileStyle(filePath, originalCode){
     needUpdate(filePath, originalCode,  ()=>{
         let exitName = path.extname(filePath);
+
+        if (config.buildType === 'h5') {
+            queue.push({
+                code: originalCode,
+                path: getDist(filePath),
+                type: 'css'
+            });
+            return;
+        }
+
         compilerMap[exitName](filePath, originalCode)
             .then((result)=>{
                 let { code } = result;

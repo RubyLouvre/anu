@@ -1,0 +1,17 @@
+.anu-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.anu-col {
+  display: flex;
+  flex-direction: column;
+  flex:1;
+}
+
+.anu-center {
+  justify-content: center;
+}
+.anu-middle {
+  align-items: center;
+}

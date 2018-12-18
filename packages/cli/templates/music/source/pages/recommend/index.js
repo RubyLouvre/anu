@@ -3,16 +3,6 @@ import './index.less';
 
 class Recommend extends React.Component {
 
-    // constructor() {
-    //     super();
-    //     this.state={
-
-    //     }
-    // };
-
-    // componentWillMount() {
-
-    // }
 
     render() {
         return (
