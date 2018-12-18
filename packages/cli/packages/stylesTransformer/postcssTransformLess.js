@@ -28,6 +28,8 @@ const compileLessByPostCss = (filePath, originalCode)=>{
             }),
             postCssRemoveComments,
             require('../postcssPlugins/postCssPluginLessVar'),
+            require('../postcssPlugins/postCssPluginLessFunction'),
+            require('../postcssPlugins/postCssPluginLessMixins'),
             require('postcss-nested-props'),   //属性嵌套
             require('precss'),
             require('postcss-automath')       //5px + 2 => 7px
@@ -52,7 +54,5 @@ const compileLessByPostCss = (filePath, originalCode)=>{
     });
     
 };
-
-
 
 module.exports = compileLessByPostCss;
