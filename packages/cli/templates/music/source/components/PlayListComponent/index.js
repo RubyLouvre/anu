@@ -31,19 +31,22 @@ class PlayListComponent extends React.Component {
                                     >
                                         <div class="flexlist flex-center">
                                             <div class="flexleft flexnum ">
-                                                {
-                                                    // re.id === this.props.curplay ? (
-                                                    //     <image src="../../aseets/image/aal.png" style={{ width: '36rpx' }}>
-                                                    //         image
-                                                    //     </image>
-                                                    // ) : (
-                                                    //     <div>
+                                                {/** 
+                                                    re.id === this.props.curplay ? (
+                                                        <image src="../../aseets/image/aal.png" style={{ width: '36rpx' }}>
+                                                            image
+                                                        </image>
+                                                    ) : (
+                                                        <div>
                                                             <text class={this.props.toplist && idx < 3 ? 'topindex' : ''}>
                                                                 {idx + 1}
                                                             </text>
-                                                    //     </div>
-                                                    // )
-                                                }
+                                                        </div>
+                                                    )
+                                                */}
+                                                <text class={this.props.toplist && idx < 3 ? 'topindex' : ''}>
+                                                    {idx + 1}
+                                                </text>
                                             </div>
                                             <div class="flexlist">
                                                 <div class="flexmain">
@@ -55,17 +58,17 @@ class PlayListComponent extends React.Component {
                                                         {re.ar[0].name}-{re.al.name}
                                                     </div>
                                                 </div>
-                                                {
-                                                    // re.mv != 0 && (
-                                                    //     <div class="flexact">
-                                                    //         <div class="fa_list fa_mv">
-                                                    //             <navigator url="../mv/index?id={{re.mv}}">
-                                                    //                 <image src="../../assets/image/l0.png" mode="widthFix" />
-                                                    //             </navigator>
-                                                    //         </div>
-                                                    //     </div>
-                                                    // )
-                                                }
+                                                {/** 
+                                                    re.mv != 0 && (
+                                                        <div class="flexact">
+                                                            <div class="fa_list fa_mv">
+                                                                <navigator url="../mv/index?id={{re.mv}}">
+                                                                    <image src="../../assets/image/l0.png" mode="widthFix" />
+                                                                </navigator>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                */}
                                             </div>
                                         </div>
                                     </navigator>
@@ -97,17 +100,20 @@ class PlayListComponent extends React.Component {
                                     >
                                         <div class="displayFlex">
                                             <div class="displayFlexLeft">
-                                                {
-                                                    // re.id === this.props.curplay ? (
-                                                    //     <image src="../../aseets/image/aal.png" style={{ width: '36rpx' }}>
-                                                    //         image
-                                                    //     </image>
-                                                    // ) : (
+                                                {/**
+                                                    re.id === this.props.curplay ? (
+                                                        <image src="../../aseets/image/aal.png" style={{ width: '36rpx' }}>
+                                                            image
+                                                        </image>
+                                                    ) : (
                                                         <text class={this.props.toplist && idx < 3 ? 'topindex' : ''}>
                                                             {idx + 1}
                                                         </text>
-                                                    // )
-                                                }
+                                                    )
+                                                 */}
+                                                <text class={this.props.toplist && idx < 3 ? 'topindex' : ''}>
+                                                    {idx + 1}
+                                                </text>
                                             </div>
                                             <div class="displayFlexRight">
                                                 <div>
@@ -119,17 +125,17 @@ class PlayListComponent extends React.Component {
                                                         {re.ar[0].name}-{re.al.name}
                                                     </div>
                                                 </div>
-                                                {
-                                                    // re.mv != 0 && (
-                                                    //     <div class="flexact">
-                                                    //         <div class="fa_list fa_mv">
-                                                    //             <navigator url="../mv/index?id={{re.mv}}">
-                                                    //                 <image src="../../assets/image/l0.png" mode="widthFix" />
-                                                    //             </navigator>
-                                                    //         </div>
-                                                    //     </div>
-                                                    // )
-                                                }
+                                                {/**
+                                                    re.mv != 0 && (
+                                                        <div class="flexact">
+                                                            <div class="fa_list fa_mv">
+                                                                <navigator url="../mv/index?id={{re.mv}}">
+                                                                    <image src="../../assets/image/l0.png" mode="widthFix" />
+                                                                </navigator>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                */}
                                             </div>
                                         </div>
                                     </navigator>
