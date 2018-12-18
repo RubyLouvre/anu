@@ -3,7 +3,7 @@ const fs = require('fs');
 const postCss = require('postcss');
 const validateStyle = require('../validateStyle');
 const utils = require('../utils');
-const varReg = /@{?([a-zA-Z0-9-_.]+)}?/;
+const varReg = /@{?([a-zA-Z0-9-_.]+)}?/g;
 
 //postcss插件: 清除注释
 const postCssRemoveComments = postCss.plugin('postcss-plugin-remove-comment', ()=>{
@@ -15,33 +15,36 @@ const postCssRemoveComments = postCss.plugin('postcss-plugin-remove-comment', ()
 });
 
 const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
-    function findVar(node, decl) {
+    function findVarValue(node, v) {
         let find = false;
         let value;
         // 遍历variable 找出当前节点下变量定义
         node.walkAtRules(rule => {
-            decl.value.replace(varReg, function(a, b) {
-                if (b && b === rule.name) {
-                    find = true;
-                    value = rule.value;
-                }
-                return a;
-            });
+            if (v === rule.name) {
+                find = true;
+                value = rule.value;
+            }
         });
         if (find && value) {
-            decl.value = decl.value.replace(varReg, value);
+            return value;
         }
         // 没找到或到达根节点则退出递归
         if (!find && node.type !== 'root') {
-            findVar(node.parent, decl);
+            return findVarValue(node.parent, v);
         }
+        return null;
     }
 
     return (root) => {
         root.walkDecls(decl => {
-            // 找出变量
-            if (decl.value && decl.value.match(varReg)) {
-                findVar(decl.parent, decl);
+            // 取出变量定义
+            const variables = decl.value && decl.value.match(varReg);
+            if (variables && variables.length) {
+                for (var i = 0, length = variables.length; i < length; i++) {
+                    const key = variables[i].split("@")[1];
+                    const value = findVarValue(decl.parent, key);
+                    decl.value = decl.value.replace(variables[i], value);
+                }
             }
         });
         // 移除变量声明
