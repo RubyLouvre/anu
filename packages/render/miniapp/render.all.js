@@ -59,10 +59,17 @@ export let Renderer = createRenderer({
             let wxInstances = type.wxInstances;
             if (wxInstances) {
                 //微信必须在这里进行多一次匹配，否则组件没有数据
-                let componentWx = wxInstances[uuid];
+                let componentWx = wxInstances[0];
                 if (componentWx && componentWx.__wxExparserNodeId__) {
-                    componentWx.reactInstance = instance;
-                    instance.wx = componentWx;
+                    for (var i = 0; i < wxInstances.length; i++) {
+                        var el = wxInstances[i];
+                        if (el.dataset.instanceUid === uuid) {
+                            el.reactInstance = instance;
+                            instance.wx = el;
+                            wxInstances.splice(i, 1);
+                            break;
+                        }
+                    }
                 }
                 if (!instance.wx) {
                     type.reactInstances.push(instance);
@@ -85,13 +92,14 @@ export let Renderer = createRenderer({
         var instance = fiber.stateNode;
         var wx = instance.wx;
         if (wx && !fiber.props.isPageComponent) {
-            var reactInstances = fiber.type.reactInstances;
+            /*  var reactInstances = fiber.type.reactInstances;
             for (var i = 0; i < reactInstances.length; i++){
                 if (reactInstances[i] == instance){
                     reactInstances.splice(i, 1);
                     break;
                 }
             }
+          */
             wx.reactInstance = null;
             instance.wx = null;
         }

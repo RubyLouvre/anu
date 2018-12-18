@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-12-18T04
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-12-18T06
  * IE9+
  */
 
@@ -2254,10 +2254,17 @@ var Renderer$1 = createRenderer({
             }
             var wxInstances = type.wxInstances;
             if (wxInstances) {
-                var componentWx = wxInstances[uuid];
+                var componentWx = wxInstances[0];
                 if (componentWx && componentWx.__wxExparserNodeId__) {
-                    componentWx.reactInstance = instance;
-                    instance.wx = componentWx;
+                    for (var i = 0; i < wxInstances.length; i++) {
+                        var el = wxInstances[i];
+                        if (el.dataset.instanceUid === uuid) {
+                            el.reactInstance = instance;
+                            instance.wx = el;
+                            wxInstances.splice(i, 1);
+                            break;
+                        }
+                    }
                 }
                 if (!instance.wx) {
                     type.reactInstances.push(instance);
@@ -2279,13 +2286,6 @@ var Renderer$1 = createRenderer({
         var instance = fiber.stateNode;
         var wx = instance.wx;
         if (wx && !fiber.props.isPageComponent) {
-            var reactInstances = fiber.type.reactInstances;
-            for (var i = 0; i < reactInstances.length; i++) {
-                if (reactInstances[i] == instance) {
-                    reactInstances.splice(i, 1);
-                    break;
-                }
-            }
             wx.reactInstance = null;
             instance.wx = null;
         }
@@ -2415,7 +2415,7 @@ function onUnload() {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances = {};
+            a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }
@@ -2501,7 +2501,7 @@ function registerPage(PageClass, path, testObject) {
 function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    var wxInstances = type.wxInstances = {};
+    var wxInstances = type.wxInstances = [];
     var config = {
         data: {
             props: {},
@@ -2521,12 +2521,11 @@ function registerComponent(type, name) {
                         return reactInstances.splice(i, 1);
                     }
                 }
-                wxInstances[uuid] = this;
+                wxInstances.push(this);
             },
             detached: function detached() {
                 var t = this.reactInstance;
                 if (t) {
-                    delete wxInstances[t.instanceUid];
                     t.wx = null;
                     this.reactInstance = null;
                 }
