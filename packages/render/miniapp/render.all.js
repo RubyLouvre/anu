@@ -85,6 +85,13 @@ export let Renderer = createRenderer({
         var instance = fiber.stateNode;
         var wx = instance.wx;
         if (wx && !fiber.props.isPageComponent) {
+            var reactInstances = fiber.type.reactInstances;
+            for (var i = 0; i < reactInstances.length; i++){
+                if (reactInstances[i] == instance){
+                    reactInstances.splice(i, 1);
+                    break;
+                }
+            }
             wx.reactInstance = null;
             instance.wx = null;
         }

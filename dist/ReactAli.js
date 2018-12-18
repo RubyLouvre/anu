@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-17T12
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-18T04
  */
 
 var arrayPush = Array.prototype.push;
@@ -2295,7 +2295,7 @@ function validateTag(el) {
 function createContainer(root, onlyGet, validate) {
     validate = validate || validateTag;
     if (!validate(root)) {
-        throw "container is not a element";
+        throw 'container is not a element';
     }
     root.anuProp = 2018;
     var useProp = root.anuProp === 2018;
@@ -2316,7 +2316,7 @@ function createContainer(root, onlyGet, validate) {
     var container = new Fiber({
         stateNode: root,
         tag: 5,
-        name: "hostRoot",
+        name: 'hostRoot',
         contextStack: [{}],
         containerStack: [root],
         microtasks: [],
@@ -2415,6 +2415,13 @@ var Renderer$1 = createRenderer({
         var instance = fiber.stateNode;
         var wx = instance.wx;
         if (wx && !fiber.props.isPageComponent) {
+            var reactInstances = fiber.type.reactInstances;
+            for (var i = 0; i < reactInstances.length; i++) {
+                if (reactInstances[i] == instance) {
+                    reactInstances.splice(i, 1);
+                    break;
+                }
+            }
             wx.reactInstance = null;
             instance.wx = null;
         }
@@ -2544,7 +2551,6 @@ function registerComponent(type, name) {
         didUnmount: function didUnmount() {
             var t = this.reactInstance;
             if (t) {
-                delete wxInstances[t.instanceUid];
                 t.wx = null;
                 this.reactInstance = null;
             }
