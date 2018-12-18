@@ -77,12 +77,10 @@ function loop(callee, fn, modules) {
 
     attrs.push(createAttribute('for', forExpr));
     if (modules.key) {
-        attrs.push(createAttribute('tid', utils.genKey(modules.key)));
+        // 过一段时间再加回来
+        // attrs.push(createAttribute('tid', utils.genKey(modules.key)));
         modules.key = null;
-    } else {
-        // attrs.push(createAttribute('a:key', '*this'));
-        // console.log( fn.params[1].name);
-    }
+    } 
 
     const body = t.isBlockStatement(fn.body)
         ? fn.body.body.find(t.isReturnStatement)

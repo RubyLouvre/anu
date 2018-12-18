@@ -26,6 +26,7 @@ const inlineElement = {
 };
 let cache = {};
 if (buildType == 'quick') {
+    //快应用不需要放到Component/Page方法中
     utils.createRegisterStatement = function(className, path, isPage) {
         var templateString = isPage
             ? 'className = React.registerPage(className,astPath)'
@@ -59,7 +60,13 @@ module.exports = {
                     if (methodName === 'onLaunch') {
                         methodName = 'onCreate';
                     }
-                    let dist = path.join( process.cwd(), 'dist', 'components', 'PageWrapper', 'index.ux');
+                    let dist = path.join(
+                        process.cwd(),
+                        'dist',
+                        'components',
+                        'PageWrapper',
+                        'index.ux'
+                    );
                     if (!cache[dist]) {
                         queue.push({
                             code: fs.readFileSync(
@@ -149,9 +156,10 @@ module.exports = {
         let specifiers = node.specifiers;
 
         if (modules.componentType === 'App') {
+            //收集页面上的依赖，构成app.json的pages数组或manifest.json中routes数组
             if (/\/pages\//.test(source)) {
-                modules['appRoute'] = modules['appRoute'] || [];
-                modules['appRoute'].push(source.replace(/^\.\//, ''));
+                var pages = modules.pages || (modules.pages = []);
+                pages.push(source.replace(/^\.\//, ''));
                 astPath.remove(); //移除分析依赖用的引用
             }
         }
@@ -226,8 +234,8 @@ module.exports = {
             var json = modules.config;
             //将app.js中的import语句变成pages数组
             if (modules.componentType === "App") {
-                json.pages = modules["appRoute"];
-                delete modules["appRoute"];
+                json.pages = modules.pages;
+                delete modules.pages;
             }
 
             helpers.configName(json, modules.componentType);
