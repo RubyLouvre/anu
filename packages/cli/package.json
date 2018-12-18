@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "cli tool for nanachi",
   "bin": {
-    "mpreact": "./bin/index.js",
     "nanachi": "./bin/nanachi.js"
   },
   "scripts": {
