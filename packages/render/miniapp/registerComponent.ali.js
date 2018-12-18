@@ -4,7 +4,7 @@ import { dispatchEvent } from './eventSystem';
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    var wxInstances = type.wxInstances = {};
+    type.wxInstances = {};
     var hasInit = false;
     function didUpdate() {
         usingComponents[name] = type;
@@ -15,11 +15,9 @@ export function registerComponent(type, name) {
                 reactInstance.wx = this;
                 this.reactInstance = reactInstance;
                 updateMiniApp(reactInstance);
-                reactInstances.splice(i, 1);
-                return;
+                return reactInstances.splice(i, 1);
             }
         }
-        wxInstances[uuid] = this;
     }
     return {
         data: {

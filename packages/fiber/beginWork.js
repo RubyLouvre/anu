@@ -164,6 +164,7 @@ function mergeStates(fiber, nextProps) {
 export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     let { contextStack, containerStack } = info;
+   
     let newContext = getMaskedContext(
         instance,
         type.contextTypes,
@@ -175,9 +176,8 @@ export function updateClassComponent(fiber, info) {
         instance = createInstance(fiber, newContext);
         cacheContext(instance, contextStack[0], newContext);
     }
-
+    let isStateful = !instance.__isStateless;
     instance._reactInternalFiber = fiber; //更新rIF
-    const isStateful = !instance.__isStateless;
     if (isStateful) {
         //有狀态组件
         let updateQueue = fiber.updateQueue;

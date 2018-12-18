@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-18T06
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-18T15
  */
 
 var arrayPush = Array.prototype.push;
@@ -1490,8 +1490,8 @@ function updateClassComponent(fiber, info) {
         instance = createInstance(fiber, newContext);
         cacheContext(instance, contextStack[0], newContext);
     }
-    instance._reactInternalFiber = fiber;
     var isStateful = !instance.__isStateless;
+    instance._reactInternalFiber = fiber;
     if (isStateful) {
         var updateQueue = fiber.updateQueue;
         delete fiber.updateFail;
@@ -2282,7 +2282,7 @@ var Renderer$1 = createRenderer({
                 if (componentWx && componentWx.__wxExparserNodeId__) {
                     for (var i = 0; i < wxInstances.length; i++) {
                         var el = wxInstances[i];
-                        if (el.dataset.instanceUid === uuid) {
+                        if (!el.disposed && el.dataset.instanceUid === uuid) {
                             el.reactInstance = instance;
                             instance.wx = el;
                             wxInstances.splice(i, 1);
@@ -2305,14 +2305,6 @@ var Renderer$1 = createRenderer({
     },
     onAfterRender: function onAfterRender(fiber) {
         updateMiniApp(fiber.stateNode);
-    },
-    onDispose: function onDispose(fiber) {
-        var instance = fiber.stateNode;
-        var wx = instance.wx;
-        if (wx && !fiber.props.isPageComponent) {
-            wx.reactInstance = null;
-            instance.wx = null;
-        }
     },
     createElement: function createElement(fiber) {
         return fiber.tag === 5 ? {
@@ -2403,7 +2395,7 @@ function toStyle(obj, props, key) {
 function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    var wxInstances = type.wxInstances = {};
+    type.wxInstances = {};
     return {
         data: {
             props: {},
@@ -2422,7 +2414,6 @@ function registerComponent(type, name) {
                     return reactInstances.splice(i, 1);
                 }
             }
-            wxInstances[uuid] = this;
         },
         detached: function detached() {
             var t = this.reactInstance;

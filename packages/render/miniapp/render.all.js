@@ -63,7 +63,7 @@ export let Renderer = createRenderer({
                 if (componentWx && componentWx.__wxExparserNodeId__) {
                     for (var i = 0; i < wxInstances.length; i++) {
                         var el = wxInstances[i];
-                        if (el.dataset.instanceUid === uuid) {
+                        if (!el.disposed && el.dataset.instanceUid === uuid ) {
                             el.reactInstance = instance;
                             instance.wx = el;
                             wxInstances.splice(i, 1);
@@ -87,22 +87,6 @@ export let Renderer = createRenderer({
 
     onAfterRender(fiber) {
         updateMiniApp(fiber.stateNode);
-    },
-    onDispose(fiber) {
-        var instance = fiber.stateNode;
-        var wx = instance.wx;
-        if (wx && !fiber.props.isPageComponent) {
-            /*  var reactInstances = fiber.type.reactInstances;
-            for (var i = 0; i < reactInstances.length; i++){
-                if (reactInstances[i] == instance){
-                    reactInstances.splice(i, 1);
-                    break;
-                }
-            }
-          */
-            wx.reactInstance = null;
-            instance.wx = null;
-        }
     },
     createElement(fiber) {
         return fiber.tag === 5
