@@ -17,18 +17,21 @@ if (semver.lt(process.version, '8.6.0')) {
 program
     .name('nanachi')
     .usage('<command>')
-    .version(require('../package.json').version, '-v, --version');
+    .version(require('../package.json').version, '-v, --version')
+    .option('-b, --beta', 'sync React lib')
     
 
 program.command('init <project-name>').description('初始化项目');
 
 program
     .command('watch:[wx|ali|bu|quick|tt]')
-    .description('监听[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]');
+    .description('监听[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]')
+    .option('--beta', '同步React');
 
 program
     .command('build:[wx|ali|bu|quick|tt]')
-    .description('构建[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]');
+    .description('构建[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]')
+    .option('--beta', '同步React');
     
 
 program.parse(process.argv);
@@ -36,6 +39,10 @@ if (program.args.length === 0) program.help();
 
 const config = require('../packages/config');
 const args = program.args;
+const option = program.rawArgs[program.rawArgs.length-1];
+
+
+
 function getBuildType(args) {
     let type = args[0].split(':')[1];
     type = !type ? 'wx' : type.toLowerCase();
@@ -62,12 +69,7 @@ let buildType = getBuildType(args);
 if (!config[buildType]) {
     let type = args[0].split(':');
     console.log(chalk.red('请检查命令是否正确'));
-    console.log(chalk.green(`1.微信小程序:        nanachi ${type[0]}`));
-    console.log(chalk.green(`2.百度智能小程序:     nanachi ${type[0]}:bu`));
-    console.log(chalk.green(`3.支付宝小程序:       nanachi ${type[0]}:ali`));
-    console.log(chalk.green(`4.快应用:            nanachi ${type[0]}:quick`));
-    console.log(chalk.green(`5.头条小程序:         nanachi ${type[0]}:tt`));
-
+    console.log(chalk.green(`nanachi ${type[0]}:[wx|bu|ali|quick|tt]`));
     process.exit(1);
 }
 
@@ -91,10 +93,10 @@ if(
 
 switch (command) {
     case 'watch':
-        require('../packages/index')('watch', buildType);
+        require('../packages/index')('watch', { buildType, option });
         break;
     case 'build':
-        require('../packages/index')('build', buildType);
+        require('../packages/index')('build', { buildType, option });
         break;
     case 'init':
         require('../packages/init')(args[1]);

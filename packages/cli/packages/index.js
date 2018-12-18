@@ -361,8 +361,9 @@ class Parser {
     }
 }
 
-async function build(arg) {
-    await utils.asyncReact();  //同步react
+async function build(arg, opts) {
+    let { option } = opts;
+    await utils.asyncReact(option);  //同步react
     if (config['buildType'] === 'quick') {
         //快应用mege package.json 以及 生成秘钥
         utils.initQuickAppConfig();
