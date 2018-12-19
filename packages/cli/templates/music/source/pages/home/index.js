@@ -90,7 +90,9 @@ class P extends React.Component {
           });
       });
   }
-
+  djradiotype(){
+      console.log("djradiotype"); //eslint-disable-line
+  }
   personalized() {
       let result = [];
       let arr = ['personalized', 'personalized/newsong', 'personalized/mv', 'personalized/djprogram'];
@@ -380,7 +382,7 @@ class P extends React.Component {
                                           <swiper-item class="djcatewrap">
                                               {this.state.djcate.categories.map(function(re) {
                                                   return (
-                                                      <div bindtap="djradiotype" class="djcatelist">
+                                                      <div onTap={this.djradiotype.bind(this)} class="djcatelist">
                                                           <image
                                                               src={`${re.pic56x56Url}`}
                                                               class="slide-image"
