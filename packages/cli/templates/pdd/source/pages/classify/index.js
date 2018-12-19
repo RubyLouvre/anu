@@ -1,5 +1,5 @@
 import React from '@react';
-import './index.less';
+import './index.scss';
 import NavRight from '@components/NavRight/index';
 class Classify extends React.Component {
     constructor() {
@@ -21,7 +21,7 @@ class Classify extends React.Component {
         navigationBarTitleText: '分类',
         navigationBarBackgroundColor: '#292929',
         backgroundColor: '#F2F2F2',
-        enablePullDownRefresh: true
+        // enablePullDownRefresh: true
     };
 
     componentWillMount() {
@@ -69,8 +69,8 @@ class Classify extends React.Component {
 
     render() {
         return (
-            <div className="chat-container">
-                <div className="nav_left">
+            <div className="chat-container anu-row">
+                <div className="nav_left anu-col">
                     {this.state.navLeftItems.map(function(item, index) {
                         return (
                             <div

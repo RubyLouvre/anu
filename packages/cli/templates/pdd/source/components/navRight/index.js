@@ -16,12 +16,24 @@ class NavRight extends React.Component {
         this.props.scrollLeftTab(index);
     }
 
+    goto(url) {
+        if (url){
+            React.api.navigateTo({ url });
+        } else {
+            React.api.showModal({
+                title: '提示',
+                content: '该部分仅展示，无具体功能!',
+                showCancel: false
+            });
+        }
+    }
+
     render() {
         return (
             <div className="nav_right">
-                {this.props.data.length > 0 && this.props.data[this.props.index].tree.nodes ? (
+                {this.props.data && this.props.data.length > 0 && this.props.data[this.props.index].tree.nodes ? (
                     <scroll-view
-                        class="scroll-view"
+                        class="scroll-view anu-col"
                         scroll-y={true}
                         scroll-into-view={this.props.toView}
                         scroll-with-animation={true}
@@ -30,20 +42,17 @@ class NavRight extends React.Component {
                     >
                         {this.props.data.map(function(item) {
                             return (
-                                <div key={item.id} class="nav_right_content" id={'index' + item.id}>
+                                <div key={item.id} class="nav_right_content anu-row" id={'index' + item.id}>
                                     <div class="nav_right_title">{item.tree.desc}</div>
                                     {item.tree.nodes.map(function(item) {
                                         return (
-                                            <div className="nav_right_items" key={item.desc}>
-                                                <navigator
-                                                    url={
-                                                        '../list/index?brand=' +
-                            item.desc +
-                            '&typeid=' +
-                            this.props.data[this.props.index].id
+                                            <div className="nav_right_items col" key={item.desc}>
+                                                <div
+                                                    onClick={
+                                                        this.goto.bind(this, '../list/index?brand=' + item.desc + '&typeid=' + this.props.data[this.props.index].id)
                                                     }
                                                 >
-                                                    <div className="right_items">
+                                                    <div className="right_items anu-col">
                                                         {item.logo ? (
                                                             <image src={item.logo} />
                                                         ) : (
@@ -51,7 +60,7 @@ class NavRight extends React.Component {
                                                         )}
                                                         {item.desc && <text>{item.desc}</text>}
                                                     </div>
-                                                </navigator>
+                                                </div>
                                             </div>
                                         );
                                     })}

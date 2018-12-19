@@ -48,7 +48,7 @@ class MY extends React.Component {
       navigationBarTitleText: '我的',
       navigationBarBackgroundColor: '#292929',
       backgroundColor: '#F2F2F2',
-      enablePullDownRefresh: true
+    //   enablePullDownRefresh: true
   };
 
   componentWillMount() {
@@ -71,7 +71,7 @@ class MY extends React.Component {
   }
 
   getUserInfo(e) {
-    
+
       this.setState({
           userInfo: e.userInfo,
           show: false
@@ -80,7 +80,7 @@ class MY extends React.Component {
 
   render() {
       return (
-          <div className="chat-container">
+          <div className="chat-container anu-col">
               <div className="userinfo">
                   {this.state.show ? (
                       <button open-type="getUserInfo" onGetuserInfo={this.getUserInfo}>
@@ -97,7 +97,7 @@ class MY extends React.Component {
                       </div>
                   )}
               </div>
-              <div className="info_list">
+              <div className="info_list anu-col">
                   {this.state.userListInfo.map(function(item) {
                       return (
                           <div className="weui_cell" key={item.text} onTap={this.show.bind(this, item.text)}>

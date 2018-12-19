@@ -1,4 +1,6 @@
 import React from '@react';
+import './index.scss';
+
 class PageIndex extends React.Component {
     constructor() {
         super();
@@ -15,15 +17,22 @@ class PageIndex extends React.Component {
             ]
         };
     }
-  swiperchange = e => {
-      // eslint-disable-next-line
-      console.log(e);
-  };
 
-  
+    goto(url) {
+        if (url){
+            React.api.navigateTo({ url });
+        } else {
+            React.api.showModal({
+                title: '提示',
+                content: '该部分仅展示，无具体功能!',
+                showCancel: false
+            });
+        }
+    }
+
   render() {
       return (
-          <div className="chat-container ">
+          <div className="chat-container anu-col">
               <div>
                   <swiper
                       className="swiper_box"
@@ -52,9 +61,9 @@ class PageIndex extends React.Component {
                       {this.props.indexPageIcons.map(function(item) {
                           return (
                               <div class="venues_item" key={item.bizIndex}>
-                                  <navigator url={'../pages/brand/index?id='+item.bizIndex}>
+                                  <div onClick={this.goto.bind(this, '../pages/brand/index?id='+item.bizIndex)}>
                                       <image src={item.logoSrc} className="slide-image-2"/>
-                                  </navigator>
+                                  </div>
                               </div>
                           );
                       })}
@@ -69,9 +78,9 @@ class PageIndex extends React.Component {
                       {this.props.choiceItems.map(function(item) {
                           return (
                               <div class="venues_item" key={item.bizIndex}>
-                                  <navigator url={'../pages/details/index?id='+item.bizIndex}>
+                                  <div onClick={this.goto.bind(this, '../pages/brand/index?id='+item.bizIndex)}>
                                       <image src={item.logoSrc} className="slide-image-1"/>
-                                  </navigator>
+                                  </div>
                               </div>
                           );
                       })}

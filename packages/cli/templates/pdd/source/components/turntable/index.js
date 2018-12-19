@@ -1,4 +1,6 @@
 import React from '@react';
+import './index.scss';
+
 class TurnTable extends React.Component {
     constructor(props) {
         super();
@@ -81,7 +83,7 @@ class TurnTable extends React.Component {
             html = [],
             turnNum = 1 / len; // 文字旋转 turn 值
 
-        var ctx = React.api.createContext();
+        var ctx = React.api.createCanvasContext('lotteryCanvas');
         for (var i = 0; i < len; i++) {
             // 保存当前状态
             ctx.save();
@@ -126,12 +128,13 @@ class TurnTable extends React.Component {
     }
     render() {
         return (
-            <div class="canvas-container">
+            <div class="canvas-container anu-col">
                 <div animation={this.state.animationData} class="canvas-content">
                     <canvas
-                        style="width: 300px; height: 300px;"
+                        style={{ width: '300px', height: '300px' }}
                         class="canvas-element"
                         canvas-id="lotteryCanvas"
+                        id="lotteryCanvas"
                     />
 
                     <div class="canvas-line">
