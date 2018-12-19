@@ -1,0 +1,8 @@
+{
+    "license": "MIT",
+    "version": "1.0.0",
+    "name": "pdd",
+    "dependencies": {
+        "regenerator-runtime": "^0.12.1"
+    }
+}
