@@ -78,7 +78,7 @@ const postCssPluginLessExtend = postCss.plugin('postCssPluginLessExtend', () => 
                         if (decl.extend) {
                             const selectors = parseExtendSelector(':' + decl.value);
                             selectors.forEach(selector => {
-                                extendSelector.to = extendSelector.to.concat(selector.to)
+                                extendSelector.to = extendSelector.to.concat(selector.to);
                             });
                         }
                     });
