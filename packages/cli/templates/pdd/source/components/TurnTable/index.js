@@ -79,9 +79,15 @@ class TurnTable extends React.Component {
         var len = config.length,
             rotateDeg = 360 / len / 2 + 90,
             html = [],
+            ctx,
             turnNum = 1 / len; // 文字旋转 turn 值
-
-        var ctx = React.api.createContext();
+        if (this.wx.$element){
+            var nativeCanvas = this.wx.$element('lotteryCanvas');
+            ctx =  nativeCanvas.createContext();
+        } else {
+            ctx =  React.api.createCanvasContext('lotteryCanvas');
+        }
+        // var ctx = React.api.createContext();
         for (var i = 0; i < len; i++) {
             // 保存当前状态
             ctx.save();
@@ -120,6 +126,7 @@ class TurnTable extends React.Component {
                 award: config[i].name
             });
         }
+        ctx.draw();
         this.setState({
             awardsList: html
         });
@@ -132,6 +139,7 @@ class TurnTable extends React.Component {
                         style="width: 300px; height: 300px;"
                         class="canvas-element"
                         canvas-id="lotteryCanvas"
+                        id='lotteryCanvas'
                     />
 
                     <div class="canvas-line">
