@@ -92,7 +92,7 @@ class P extends React.Component {
                 {
                     this.state.menu.map(function(item,index) {
                         return (
-                            <div onTap={this.menuItemClick.bind(this,index)} class='menu-item anu-line' key={index}>
+                            <div onTap={this.menuItemClick.bind(this,index)} class='menu-item anu-line' >
                                 <text class={'menu-item-title' + (item.isArrow ? '': 'high-light')}>{item.title}</text>
                                 {
                                     item.isArrow

@@ -47,9 +47,9 @@ class P extends React.Component {
                   </div>
               </div>
               <div class="scenic-content col">
-                  {this.state.data.map(function(item, index) {
+                  {this.state.data.map(function(item) {
                       return (
-                          <div class="item col" key={index}>
+                          <div class="item col" >
                               <div class="title-wrapper">
                                   <div class="mark" />
                                   <text class="title">{item.title}</text>
