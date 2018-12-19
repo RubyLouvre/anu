@@ -1,7 +1,7 @@
 import React from '@react';
 // eslint-disable-next-line
 var now = Date.now();
-class RightNav extends React.Component {
+class NavRight extends React.Component {
     constructor() {
         super();
         this.state = {
@@ -68,4 +68,4 @@ class RightNav extends React.Component {
     }
 }
 
-export default RightNav;
+export default NavRight;

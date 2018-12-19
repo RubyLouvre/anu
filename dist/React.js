@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-12-18
+ * by 司徒正美 Copyright 2018-12-19
  * IE9+
  */
 
@@ -2141,8 +2141,8 @@
             instance = createInstance(fiber, newContext);
             cacheContext(instance, contextStack[0], newContext);
         }
-        instance._reactInternalFiber = fiber;
         var isStateful = !instance.__isStateless;
+        instance._reactInternalFiber = fiber;
         if (isStateful) {
             var updateQueue = fiber.updateQueue;
             delete fiber.updateFail;

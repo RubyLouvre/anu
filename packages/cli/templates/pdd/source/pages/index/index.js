@@ -1,5 +1,5 @@
 import React from '@react';
-import PageIndex from '@components/pageIndex/index';
+import PageIndex from '@components/PageIndex/index';
 // import Dog from '@components/Dog/index'
 import './index.less';
 

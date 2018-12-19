@@ -1,6 +1,6 @@
 import React from '@react';
 
-import './pages/index';
+import './pages/index/index';
 
 import './pages/my/index';
 import './pages/classify/index';
@@ -27,7 +27,7 @@ class Demo extends React.Component {
           backgroundColor: '#292929',
           list: [
               {
-                  pagePath: 'pages/index',
+                  pagePath: 'pages/index/index',
                   iconPath: 'assets/images/footer-icon-01.png',
                   selectedIconPath: 'assets/images/footer-icon-01-active.png',
                   text: '微商城'
