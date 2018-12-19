@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-18T15
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-19T08
  */
 
 var arrayPush = Array.prototype.push;
@@ -573,14 +573,17 @@ function dispatchEvent(e) {
     var dataset = getDataSet(target._attr);
     var app = this.$app.$def;
     var eventUid = dataset[eventType + 'Uid'];
-    var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-    if (eventType == 'change' && fiber) {
+    var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
+        props: {},
+        type: 'unknown'
+    };
+    if (eventType == 'change') {
         if (fiber.props.value + '' === e.value) {
             return;
         }
     }
     if (app && app.onCollectLogs && beaconType.test(eventType)) {
-        app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
+        app.onCollectLogs(dataset, eventType, fiber.stateNode);
     }
     var safeTarget = {
         dataset: dataset,
@@ -684,10 +687,10 @@ function runFunction(fn, a, b) {
         fn.call(null, a, b);
     }
 }
-function functionCount(fns) {
+function functionCount() {
     var ret = 0;
-    for (var i = 0; i < fns.length; i++) {
-        if (isFn(fns[i])) {
+    for (var i = 0; i < arguments.length; i++) {
+        if (isFn(arguments[i])) {
             ret++;
         }
     }

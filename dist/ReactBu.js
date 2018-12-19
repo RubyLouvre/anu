@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-18T15
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-19T06
  */
 
 var arrayPush = Array.prototype.push;
@@ -1014,20 +1014,23 @@ function dispatchEvent(e) {
     var target = e.currentTarget;
     var dataset = target.dataset || {};
     var eventUid = dataset[eventType + 'Uid'];
-    var fiber = instance.$$eventCached[eventUid + 'Fiber'];
+    var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
+        props: {},
+        type: 'unknown'
+    };
     var value = Object(e.detail).value;
-    if (eventType == 'change' && fiber) {
+    if (eventType == 'change') {
         if (fiber.props.value + '' == value) {
             return;
         }
     }
     var safeTarget = {
         dataset: dataset,
-        nodeName: fiber.type,
+        nodeName: target.tagName || fiber.type,
         value: value
     };
     if (app && app.onCollectLogs && rbeaconType.test(eventType)) {
-        app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
+        app.onCollectLogs(dataset, eventType, fiber.stateNode);
     }
     Renderer.batchedUpdates(function () {
         try {

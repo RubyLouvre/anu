@@ -1,8 +1,8 @@
 import React from '@react';
 import './index.scss';
 // eslint-disable-next-line
-import Dialog from '@components/dialog/index';
-import TurnTable from '../../components/turntable/index';
+import Dialog from '@components/Dialog/index';
+import TurnTable from '@components/TurnTable/index';
 class Cart extends React.Component {
     constructor() {
         super();

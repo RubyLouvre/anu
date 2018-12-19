@@ -4,10 +4,10 @@ import { Renderer } from 'react-core/createRenderer';
 function getDataSet(obj) {
     let ret = {};
     for (let name in obj) {
-        if (name.slice(0, 4) == 'data'){
+        if (name.slice(0, 4) == 'data') {
             var key = toLowerCase(name[4]) + name.slice(5);
             ret[key] = obj[name];
-        }       
+        }
     }
     return ret;
 }
@@ -22,22 +22,25 @@ export function dispatchEvent(e) {
     const dataset = getDataSet(target._attr);
     const app = this.$app.$def;
     let eventUid = dataset[eventType + 'Uid'];
-    const fiber = instance.$$eventCached[eventUid + 'Fiber'];
-    if (eventType == 'change' && fiber) {
+    const fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
+        props: {},
+        type: 'unknown'
+    };
+    if (eventType == 'change') {
         if (fiber.props.value + '' === e.value) {
             return;
         }
     }
-    if ( app && app.onCollectLogs && beaconType.test(eventType) ) {
-        app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
+    if (app && app.onCollectLogs && beaconType.test(eventType)) {
+        app.onCollectLogs(dataset, eventType, fiber.stateNode);
     }
     var safeTarget = {
         dataset: dataset,
         nodeName: target._nodeName,
         value: e.value
     };
-   
-    Renderer.batchedUpdates(function () {
+
+    Renderer.batchedUpdates(function() {
         try {
             var fn = instance.$$eventCached[eventUid];
             fn && fn.call(instance, createEvent(e, safeTarget, eventType));
@@ -45,7 +48,6 @@ export function dispatchEvent(e) {
             console.log(err.stack); // eslint-disable-line
         }
     }, e);
-    
 }
 
 export const webview = {};
@@ -57,11 +59,11 @@ function createEvent(e, target, type) {
             event[i] = e[i];
         }
     }
-   
+
     event.touches = e._touches;
     event.changeTouches = e._changeTouches;
     var touch = event.touches && event.touches[0];
-    if (touch){
+    if (touch) {
         event.pageX = touch.pageX;
         event.pageY = touch.pageY;
     }
