@@ -18,7 +18,7 @@ program
     .name('nanachi')
     .usage('<command>')
     .version(require('../package.json').version, '-v, --version')
-    .option('-b, --beta', 'sync React lib')
+    .option('-b, --beta', 'sync React lib');
     
 
 program.command('init <project-name>').description('初始化项目');

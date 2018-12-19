@@ -82,10 +82,10 @@ export function runFunction(fn, a, b) {
 }
 
 // 计算参数中有多少个函数
-function functionCount(fns) {
+function functionCount() {
     var ret = 0;
-    for(var i = 0; i < fns.length; i++){
-        if (isFn( fns[i] )) {
+    for(var i = 0; i < arguments.length; i++){
+        if (isFn( arguments[i] )) {
            ret++;
         }
     }

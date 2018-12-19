@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-19T06
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-19T08
  */
 
 var arrayPush = Array.prototype.push;
@@ -687,10 +687,10 @@ function runFunction(fn, a, b) {
         fn.call(null, a, b);
     }
 }
-function functionCount(fns) {
+function functionCount() {
     var ret = 0;
-    for (var i = 0; i < fns.length; i++) {
-        if (isFn(fns[i])) {
+    for (var i = 0; i < arguments.length; i++) {
+        if (isFn(arguments[i])) {
             ret++;
         }
     }
