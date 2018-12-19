@@ -40,9 +40,9 @@ class P extends React.Component {
     
       return (
           <div class="page">
-              {this.state.data.map(function(item, index) {
+              {this.state.data.map(function(item) {
                   return (
-                      <div onTap={this.fun_tip.bind(this)} class="strategy-item col" key={index}>
+                      <div onTap={this.fun_tip.bind(this)} class="strategy-item col" >
                           <image class="big-image" src={item.bigImage} />
                           <div class="strategy-item-content">
                               <div class="col">

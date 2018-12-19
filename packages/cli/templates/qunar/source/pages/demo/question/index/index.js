@@ -119,9 +119,9 @@ class P extends React.Component {
                   )}
                   {(this.state.navBtnActiveIndex === 1 || this.state.navBtnActiveIndex === 2) && (
                       <div class="all-question col">
-                          {this.state.data.map(function(item, index) {
+                          {this.state.data.map(function(item) {
                               return (
-                                  <div onTap={this.questionDetail.bind(this)} class="question-item col" key={index}>
+                                  <div onTap={this.questionDetail.bind(this)} class="question-item col" >
                                       <div class="quest-title"> 
                                           {item.isRemark && (
                                               <text

@@ -52,7 +52,7 @@ class P extends React.Component{
                         this.state.data.map(function(item,index) {
                             return (
                                 index%2 === 0  &&
-                                <div key={index} class='item'>
+                                <div class='item'>
                                     <image src={item.image} />
                                     <text>{item.text}</text>
                                 </div>
@@ -65,7 +65,7 @@ class P extends React.Component{
                         this.state.data.map(function(item,index) {
                             return (
                                 index%2 !== 0  &&
-                                <div key={index} class='item'>
+                                <div class='item'>
                                     <image  src={item.image} />
                                     <text>{item.text}</text>
                                 </div>
