@@ -19,7 +19,7 @@ const compileLessByPostCss = (filePath, originalCode)=>{
             require('postcss-import')({
                 resolve(importer, baseDir){
                     //如果@import的值没有文件后缀
-                    if (!/\.less/.test(importer)) {
+                    if (!/\.less$/.test(importer)) {
                         importer = importer + '.less';
                     }
                     //处理alias路径
