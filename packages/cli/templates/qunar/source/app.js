@@ -4,6 +4,13 @@ import './pages/index/index';
 import './pages/demo/apis/index';
 import './pages/demo/apis/clipboard/index';
 import './pages/demo/apis/storage/index';
+import './pages/demo/apis/canvas/index';
+import './pages/demo/apis/canvas/strokeStyle/index';
+import './pages/demo/apis/canvas/textBaseline/index';
+import './pages/demo/apis/canvas/rect/index';
+import './pages/demo/apis/canvas/fillStyle/index';
+import './pages/demo/apis/canvas/arc/index';
+import './pages/demo/apis/canvas/globalAlpha/index';
 
 import './pages/demo/native/index/index';
 import './pages/demo/native/button/index';
