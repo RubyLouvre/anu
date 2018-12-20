@@ -56,7 +56,7 @@ const compileSassByPostCss = (filePath, originalCode)=>{
             require('postcss-import')({
                 resolve(importer, baseDir){
                     //如果@import的值没有文件后缀
-                    if (!/\.s[ca]ss/.test(importer)) {
+                    if (!/\.s[ca]ss$/.test(importer)) {
                         importer = importer + '.scss';
                     }
                     //处理alias路径
