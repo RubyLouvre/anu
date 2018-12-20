@@ -1,7 +1,14 @@
+const utils = require('../utils');
+
 module.exports = function mapPropName(astPath, attrName, parentName) {
     let attrNameNode = astPath.node.name;
-    if (parentName == 'canvas' && attrName == 'id'){
-        attrNameNode.name = 'canvas-id';
+    if (parentName === 'canvas' && attrName === 'id'){
+        if (!astPath.addCanvas){//这里执行了两次，需要排查
+            astPath.addCanvas = true;
+            astPath.container.push(
+                utils.createAttribute('canvas-id',astPath.node.value )
+            );
+        }
         return;
     }
     if (/^catch[A-Z]/.test(attrName)) {

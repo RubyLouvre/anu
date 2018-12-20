@@ -134,7 +134,7 @@ let visitor = {
             astPath.remove();
             return;
         }
-        attrNameHelper(astPath, attrName, astPath.parentPath.node.name);
+        attrNameHelper(astPath, attrName, astPath.parentPath.node.name.name);
     },
     JSXText: {
         exit(astPath) {
