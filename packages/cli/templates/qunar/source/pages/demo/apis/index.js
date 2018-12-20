@@ -285,6 +285,12 @@ class Express extends React.Component {
           >
             <text>剪切板</text>
           </div>
+          <div
+            onClick={this.gotoSome.bind(this, '../../../pages/demo/apis/canvas/index')}
+            class="anu-item"
+          >
+            <text>画板</text>
+          </div>
           <div onClick={this.getLocation} class="anu-item">
             <text>获取地理位置</text>
           </div>

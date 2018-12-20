@@ -23,6 +23,7 @@ import { getSystemInfo } from './quickApis/device.js';
 import { chooseImage } from './quickApis/media.js';
 import { createShortcut } from './quickApis/system.js';
 import { runFunction,_getApp } from './utils';
+import {createCanvasContext} from './quickApis/canvas.js'
 
 function createRouter(name) {
     return function(obj) {
@@ -195,5 +196,6 @@ export var api = {
             runFunction(complete);
         }
     },
-    createShortcut
+    createShortcut,
+    createCanvasContext
 };
