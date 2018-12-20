@@ -1,23 +1,35 @@
 import { Renderer } from 'react-core/createRenderer';
-function setter(a){      
-    Renderer.updateComponent(this, {
-        value: a
-    });
+function setter(count, value) {
+    var state = {};
+    console.log(count, value, 'count')
+    state[count] = value;
+    Renderer.updateComponent(this, state);
 }
+var dispatcherCount = 0;
+export function resetCount() {
+    dispatcherCount = 0;
+}
+
 export var dispatcher = {
-    useState: function(a){
-        var instance = Renderer.currentOwner;
-        var fn =  setter.bind(instance);
-        var fiber = instance._reactInternalFiber;
-        if (fiber && fiber.updateQueue){
-            var pendings = fiber.updateQueue.pendingStates;
+    useState: function (initValue) {
+        let instance = Renderer.currentOwner;
+        let count = dispatcherCount;//决定是处理第几个useState
+        let fn = setter.bind(instance, count);
+        let fiber = instance._reactInternalFiber;
+        let pendings = fiber.updateQueue.pendingStates;
+        dispatcherCount++;
+        if (fiber.hasMounted) {
             var newState = {};
-            pendings.forEach(function(el){
-                newState.value = el.value;
+            pendings.forEach(function (state) {
+                Object.assign(newState, state);
             });
-            fiber.updateQueue.pendingStates = [newState];
-            return [newState.value, fn];
+            pendings[0] = newState;
+            pendings.length = 1;
+            return [newState[count], fn];
         }
-        return [a, fn];
+        let state = {};
+        state[count] = initValue;
+        pendings.push(state);
+        return [initValue, fn];
     }
 };

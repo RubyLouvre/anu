@@ -1,8 +1,8 @@
 
-import { Renderer } from './createRenderer';
+import { dispatcher } from 'react-fiber/dispatcher';
 
 function resolveDispatcher(){
-    return Renderer.currentOwner.dispatcher;
+    return dispatcher;
 }
 
 export function useState(initValue) {

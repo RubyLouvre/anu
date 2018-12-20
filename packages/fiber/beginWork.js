@@ -20,7 +20,7 @@ import {
     pushError,
     applyCallback
 } from './ErrorBoundary';
-
+import { resetCount } from './dispatcher';
 import { getInsertPoint, setInsertPoints } from './insertPoint';
 
 /**
@@ -216,7 +216,7 @@ export function updateClassComponent(fiber, info) {
         //无狀态组件中的传送门组件
         containerStack.unshift(fiber.parent);
         fiber.shiftContainer = true;
-    } 
+    }
     //存放它上面的所有context的并集
     //instance.unmaskedContext = contextStack[0];
     //设置新context, props, state
@@ -230,7 +230,7 @@ export function updateClassComponent(fiber, info) {
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
-    if (fiber.parent &&  fiber.dirty) { //原来这里有 && fiber.hasMounted
+    if (fiber.parent && fiber.hasMounted && fiber.dirty) {
         fiber.parent.insertPoint = getInsertPoint(fiber);
     }
     if (isStateful) {
@@ -254,6 +254,7 @@ export function updateClassComponent(fiber, info) {
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     let rendered = applyCallback(instance, 'render', []);
+    resetCount();
     diffChildren(fiber, rendered);
     Renderer.onAfterRender(fiber);
 }

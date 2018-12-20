@@ -45,7 +45,8 @@
      };
 var useState = React.useState
 function Example() {
-  const [count, setCount] = useState(0);
+  var [count, setCount] = useState(0);
+  var [text, onChange] = useState('');
   console.log(count, '更新Example')
   return (
     <quoteblock>
@@ -53,6 +54,10 @@ function Example() {
       <button onClick={() => setCount(count + 1)}>
         Click me
       </button>
+      <input  value={text} onChange={function(e){
+         onChange(e.target.value)
+      }} />
+      <span>{text.length} characters</span>
     </quoteblock>
   );
 }
