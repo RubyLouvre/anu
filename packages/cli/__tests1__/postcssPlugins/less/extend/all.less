@@ -1,0 +1,11 @@
+.a.b.test,
+.test.c {
+  color: orange;
+}
+.test {
+  &:hover {
+    color: green;
+  }
+}
+
+.replacement:extend(.test all) {}
