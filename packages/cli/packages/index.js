@@ -179,8 +179,17 @@ class Parser {
                 });
             },
             css: (data)=>{
+                let importComponentStyleInPage =  this.checkStyleImport(data);
+                if (importComponentStyleInPage.length) {
+                    console.log(
+                        chalk.red(
+                            `\nError: ${data.id} 文件中不能@import 组件(components)样式, 该文件忽略编译. 组件样式请在组件中引用.`
+                        )
+                    );
+                    return;
+                }
+
                 if (config.buildType == 'quick'){
-                    
                     //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
                     var jsName = data.id.replace(/\.\w+$/, '.js');
                     if (fs.pathExistsSync(jsName)) {
@@ -235,6 +244,13 @@ class Parser {
             flag = true;
         }
         return flag;
+    }
+    checkStyleImport (data){
+        let importList = data.originalCode.match(/^(?:@import)\s+([^;]+)/igm) || [];
+        importList = importList.filter((importer)=>{
+            return /[/|@]components\//.test(importer);
+        });
+        return importList;
     }
     updateJsQueue(jsFiles) {
         
@@ -361,8 +377,9 @@ class Parser {
     }
 }
 
-async function build(arg) {
-    await utils.asyncReact();  //同步react
+async function build(arg, opts) {
+    let { option } = opts;
+    await utils.asyncReact(option);  //同步react
     if (config['buildType'] === 'quick') {
         //快应用mege package.json 以及 生成秘钥
         utils.initQuickAppConfig();

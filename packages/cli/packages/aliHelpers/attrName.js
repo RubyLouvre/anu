@@ -1,8 +1,7 @@
 
-module.exports = function mapPropName(astPath) {
-    var nameNode = astPath.node.name;
-    var orig = nameNode.name;
-    if (orig === 'className') {
-        nameNode.name = 'class';
+module.exports = function mapPropName(astPath, attrName) {
+    var attrNameNode = astPath.node.name;
+    if (attrName === 'className') {
+        attrNameNode.name = 'class';
     }
 };

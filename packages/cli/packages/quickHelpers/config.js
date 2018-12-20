@@ -111,10 +111,15 @@ module.exports = function quickConfig(config, modules, queue){
             }
               
         };
-        config.pages.forEach(function(el){
-            manifest.router.pages[el.slice(0, -6)] = {
+        config.pages.forEach(function(el ,index){
+            var path = el.slice(0, -6);
+            manifest.router.pages[path] = {
                 component: 'index'
             };
+            //设置首页
+            if (index === 0){
+                manifest.router.entry = path;
+            } 
         });
         var display = manifest.display ;
         var win = config.window || {};

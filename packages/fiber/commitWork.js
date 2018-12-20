@@ -65,6 +65,7 @@ function commitDFSImpl(fiber) {
         while (f) {
             if (f.effectTag === WORKING) {
                 f.effectTag = NOWORK;
+                f.hasMounted = true;//做react hooks新时新加的
             } else if (f.effectTag > WORKING) {
                 commitEffects(f);
                 if (f.capturedValues) {

@@ -318,32 +318,33 @@ let utils = {
             })
         );
     },
-    async getReactLibPath() {
-        let reactPath = '';
+    async getReactLibPath(option) {
+        let isBeta = ['-b', '--beta'].includes(option);
         let React = this.getReactLibName();
-        console.log('getReactLibPath', React);
-        let srcPath = path.join(cwd, config.sourceDir, React);
-        try {
-            reactPath = nodeResolve.sync(srcPath, {
-                basedir: cwd,
-                moduleDirectory: path.join(cwd, config.sourceDir)
-            });
-        } catch (err) {
+        let reactTargetPath = path.join(cwd, config.sourceDir, React); 
+        if (isBeta) {
             let spinner = this.spinner(`正在下载最新的${React}`);
             spinner.start();
             let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/branch3/dist/${React}`;
             let ReactLib = await axios.get(remoteUrl);
-            fs.ensureFileSync(srcPath);
-            fs.writeFileSync(srcPath, ReactLib.data);
+            fs.ensureFileSync(reactTargetPath);
+            fs.writeFileSync(reactTargetPath, ReactLib.data);
             spinner.succeed(`下载${React}成功`);
-            reactPath = path.join(cwd, config.sourceDir, React);
+        } else {
+            try {
+                nodeResolve.sync(reactTargetPath, {
+                    basedir: cwd,
+                    moduleDirectory: path.join(cwd, config.sourceDir)
+                });
+            } catch (err) {
+                let ReactLibPath = path.join(__dirname, '..', '..', 'lib', `${React}`);
+                fs.copyFileSync( ReactLibPath, reactTargetPath);
+            }
         }
-        return reactPath;
+        return reactTargetPath;
     },
-
-    async asyncReact() {
-        await this.getReactLibPath();
-
+    async asyncReact(option) {
+        await this.getReactLibPath(option);
         let ReactLibName = this.getReactLibName();
         let map = this.getReactMap();
         Object.keys(map).forEach(key => {

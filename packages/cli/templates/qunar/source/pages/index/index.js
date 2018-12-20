@@ -180,11 +180,10 @@ class P extends React.Component {
                   src="https://s.qunarzz.com/wechatapp/home/banner0510-002.png"
               />
               <div class="nav-wrapper c-flex">
-                  {this.state.indexPageIcons.map(function(item, index) {
+                  {this.state.indexPageIcons.map(function(item) {
                       return (
                           <div
                               class={'item-wrapper  ' + item.class}
-                              key={index}
                               onTap={this.gotoSome.bind(this, item.url)}
                           >
                               <image src={item.logoSrc} class="itemBgc" />
@@ -201,7 +200,7 @@ class P extends React.Component {
               <div class="tool-wrapper">
                   {this.state.toolData.map(function(item, index) {
                       return (
-                          <div onTap={this.showTip} class="tool-item anu-block" key={index}>
+                          <div onTap={this.showTip} class="tool-item anu-block" >
                               <image src={item.url} />
                               <text>{item.title}</text>
                           </div>
@@ -218,12 +217,10 @@ class P extends React.Component {
                   >
                       {this.state.specialOfferData.map(function(item, index) {
                           return (
-                              <block key={index}>
                                   <swiper-item onTap={this.showTip}  class="special-offer-item anu-block">
                                       <image src={item.url} />
                                       <text>{item.title}</text>
                                   </swiper-item>
-                              </block>
                           );
                       })}
                   </swiper>

@@ -55,21 +55,21 @@ export let Renderer = createRenderer({
             if (!instance.instanceUid) {
                 instance.instanceUid = uuid;
             }
-            /* if (fiber.props.isPageComponent) {
-                let wx = app.$$page;
-                instance.wx = wx;
-                wx.reactInstance = instance;
-            }
-            */
             //只处理component目录下的组件
             let wxInstances = type.wxInstances;
             if (wxInstances) {
                 //微信必须在这里进行多一次匹配，否则组件没有数据
-                let componentWx = wxInstances[uuid];
+                let componentWx = wxInstances[0];
                 if (componentWx && componentWx.__wxExparserNodeId__) {
-                    componentWx.reactInstance = instance;
-                    instance.wx = componentWx;
-                    delete wxInstances[uuid];
+                    for (var i = 0; i < wxInstances.length; i++) {
+                        var el = wxInstances[i];
+                        if (!el.disposed && el.dataset.instanceUid === uuid ) {
+                            el.reactInstance = instance;
+                            instance.wx = el;
+                            wxInstances.splice(i, 1);
+                            break;
+                        }
+                    }
                 }
                 if (!instance.wx) {
                     type.reactInstances.push(instance);
@@ -87,14 +87,6 @@ export let Renderer = createRenderer({
 
     onAfterRender(fiber) {
         updateMiniApp(fiber.stateNode);
-    },
-    onDispose(fiber) {
-        var instance = fiber.stateNode;
-        var wx = instance.wx;
-        if (wx && !fiber.props.isPageComponent) {
-            wx.reactInstance = null;
-            instance.wx = null;
-        }
     },
     createElement(fiber) {
         return fiber.tag === 5

@@ -4,7 +4,7 @@ import { dispatchEvent } from './eventSystem.quick';
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = (type.reactInstances = []);
-    var wxInstances = (type.wxInstances = {});
+    type.wxInstances = {};
     return {
         data() {
             return {
@@ -28,10 +28,10 @@ export function registerComponent(type, name) {
                     return reactInstances.splice(i, 1);
                 }
             }
-            wxInstances[uuid] = this;
         },
         onDestroy() {
             let t = this.reactInstance;
+            this.disposed = true;
             if (t) {
                 t.wx = null;
                 this.reactInstance = null;

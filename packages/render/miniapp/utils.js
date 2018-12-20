@@ -10,7 +10,7 @@ var fakeApp = {
 function _getApp() {
     if (isFn( getApp)) {   
         var app = getApp();
-        if(!app.globalData && app.$def ) {//快应用的数据放在$def上
+        if (!app.globalData && app.$def ) {//快应用的数据放在$def上
             app.globalData = app.$def.globalData || {};
         }
         return app;
@@ -82,14 +82,14 @@ export function runFunction(fn, a, b) {
 }
 
 // 计算参数中有多少个函数
-function functionCount(fns) {
+function functionCount() {
     var ret = 0;
-    for(var i = 0; i < fns.length; i++){
-        if (isFn( fns[i] )) {
-           ret++;
+    for (var i = 0; i < arguments.length; i++){
+        if (isFn( arguments[i] )) {
+            ret++;
         }
     }
-   return ret;
+    return ret;
 }
 
 export function apiRunner(arg = {}, apiCallback, apiPromise) {

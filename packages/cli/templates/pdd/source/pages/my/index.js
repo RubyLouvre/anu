@@ -1,7 +1,6 @@
 import React from '@react';
 import './index.scss';
 // eslint-disable-next-line
-var app = getApp();
 class MY extends React.Component {
     constructor() {
         super();

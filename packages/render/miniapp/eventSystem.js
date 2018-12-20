@@ -21,21 +21,24 @@ export function dispatchEvent(e) {
     const target = e.currentTarget;
     const dataset = target.dataset || {};
     const eventUid = dataset[eventType + 'Uid'];
-    const fiber = instance.$$eventCached[eventUid + 'Fiber'];
+    const fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
+        props: {},
+        type: 'unknown'
+    };
     const value = Object(e.detail).value;
-    if (eventType == 'change' && fiber) {
+    if (eventType == 'change') {
         if (fiber.props.value + '' == value) {
             return;
         }
     }
     let safeTarget = {
         dataset: dataset,
-        nodeName: fiber.type,
+        nodeName: target.tagName || fiber.type,
         value: value
     };
 
     if (app && app.onCollectLogs && rbeaconType.test(eventType)) {
-        app.onCollectLogs(dataset, eventType, fiber && fiber.stateNode);
+        app.onCollectLogs(dataset, eventType, fiber.stateNode);
     }
 
 

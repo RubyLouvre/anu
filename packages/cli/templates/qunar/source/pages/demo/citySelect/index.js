@@ -69,9 +69,9 @@ class P extends React.Component {
                     this.state.isSearch
                         ? <div class = 'search-container'>
                             {
-                                this.state.searchResult.map(function(item,index) {
+                                this.state.searchResult.map(function(item) {
                                     return (
-                                        <div class='search-result-item' key={index}>{item}</div>
+                                        <div class='search-result-item' >{item}</div>
                                     );
                                 })
                             }
@@ -85,7 +85,7 @@ class P extends React.Component {
                                             <div class='city-item'>
                                                 {
                                                     item.data.map(function(item,index){
-                                                        return  <div onTap={this.itemClick.bind(this,item)} class={'item '+ ((index+1)%4 === 0 ? 'no-margin-left' : '')} key={index}>{item}</div>;
+                                                        return  <div onTap={this.itemClick.bind(this,item)} class={'item '+ ((index+1)%4 === 0 ? 'no-margin-left' : '')} >{item}</div>;
                                                     })
                                                 }
                                             </div>
