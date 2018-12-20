@@ -82,7 +82,7 @@ const askTemplate = () => {
         },
         {
             name: '默认模板',
-            value: 'init'
+            value: 'helloNanachi'
         }
     ];
     q.push({
