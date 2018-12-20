@@ -100,11 +100,10 @@ class P extends React.Component {
                     <span style={this.state.color}>{this.state.state}</span>
                 </div>
                 <scroll-view>
-                    {this.state.modes.map(function(mode, index) {
+                    {this.state.modes.map(function(mode) {
                         return (
-                            <div style="font-size: 32rpx;" key={index}>
+                            <div style="font-size: 32rpx;" >
                                 <button
-                                    key={index}
                                     style="color: #999;"
                                     onTap={this.changeType.bind(
                                         this,

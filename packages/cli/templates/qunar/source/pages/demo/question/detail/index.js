@@ -57,9 +57,9 @@ class P extends React.Component {
                     </div>
                 </div>
                 {
-                    this.state.answer.map(function(item,index) {
+                    this.state.answer.map(function(item) {
                         return (
-                            <div class='answer-wrapper' key={index}>
+                            <div class='answer-wrapper' >
                                 <div class='user-wrapper'>
                                     <image src={item.userImage} />
                                     <div class='name-time'>
