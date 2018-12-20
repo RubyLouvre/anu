@@ -1,6 +1,7 @@
-import { returnFalse, isMounted, extend, gDSFP, gSBU } from "react-core/util";
-import { Component } from "react-core/Component";
-import { Renderer } from "react-core/createRenderer";
+import { returnFalse, isMounted, extend, gDSFP, gSBU } from 'react-core/util';
+import { Component } from 'react-core/Component';
+import { Renderer } from 'react-core/createRenderer';
+import { dispatcher } from './dispatcher';
 
 export function UpdateQueue() {
     return {
@@ -22,11 +23,14 @@ export function createInstance(fiber, context) {
             props,
             context,
             ref,
+            _reactInternalFiber: fiber,
             __proto__: type.prototype
         };
-    fiber.errorHook = "constructor";
+    fiber.errorHook = 'constructor';
     try {
         if (isStateless) {
+            Renderer.currentOwner = instance;
+            instance.dispatcher = dispatcher;
             extend(instance, {
                 __isStateless: true,
                 __init: true,
@@ -43,7 +47,7 @@ export function createInstance(fiber, context) {
                         // 返回一带render方法的纯对象，说明这是带lifycycle hook的无狀态组件
                         // 需要对象里的hook复制到instance中
                         for (let i in a) {
-                            instance[i == "render" ? "renderImpl" : i] = a[i];
+                            instance[i == 'render' ? 'renderImpl' : i] = a[i];
                         }
                     } else if (this.__init) {
                         this.__keep = {

@@ -27,6 +27,7 @@ export function registerComponent(type, name) {
         },
         detached() {
             let t = this.reactInstance;
+            this.disposed = true;
             if (t) {
                 t.wx = null;
                 this.reactInstance = null;
