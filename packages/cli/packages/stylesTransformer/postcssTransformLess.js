@@ -30,9 +30,9 @@ const compileLessByPostCss = (filePath, originalCode)=>{
             require('../postcssPlugins/postCssPluginLessVar'),
             require('../postcssPlugins/postCssPluginLessFunction'),
             require('../postcssPlugins/postCssPluginLessMixins'),
+            require('postcss-automath'),       //5px + 2 => 7px
             require('postcss-nested-props'),   //属性嵌套
             require('precss'),
-            require('postcss-automath'),       //5px + 2 => 7px
             require('../postcssPlugins/postCssPluginLessExtend')
         ])
             .process(

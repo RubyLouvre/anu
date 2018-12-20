@@ -3,18 +3,18 @@ const varReg = /@{?([a-zA-Z0-9-_."']+)}?/g;
 const removeQuoteReg = /^["|'](.*)["|']$/;
 
 const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
-    function findVarValue(node, v) {
+    function findVarValue(node, key) {
         // 去掉变量定义首尾引号
-        v = v.replace(removeQuoteReg, function(a, b){
+        key = key.replace(removeQuoteReg, function(a, b){
             return b;
         });
         let find = false;
         let value;
         // 遍历variable 找出当前节点下变量定义
-        node.walkAtRules(rule => {
-            if (v === rule.name) {
+        node.each(node => {
+            if (node.variable && key === node.name) {
                 find = true;
-                value = rule.value;
+                value = node.value;
             }
         });
         if (find && value) {
@@ -22,7 +22,7 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
         }
         // 没找到或到达根节点则退出递归
         if (!find && node.type !== 'root') {
-            return findVarValue(node.parent, v);
+            return findVarValue(node.parent, key);
         }
         return null;
     }
@@ -33,7 +33,6 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
         if (variables && variables.length) {
             for (var i = 0, length = variables.length; i < length; i++) {
                 const key = variables[i].split('@')[1];
-                
                 const value = findVarValue(decl.parent, key);
                 variable = variable.replace(variables[i], value);
             }
