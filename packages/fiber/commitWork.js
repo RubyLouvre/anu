@@ -10,6 +10,7 @@ import {
     HOOK,
     REF,
     CALLBACK,
+    EFFECT,
     CAPTURE,
     effectLength,
     effectNames
@@ -39,7 +40,7 @@ function commitDFSImpl(fiber) {
         }
         if (fiber.effectTag % PLACE == 0) {
             // DOM节点插入或移除
-            domEffects.forEach(function(effect, i) {
+            domEffects.forEach(function (effect, i) {
                 if (fiber.effectTag % effect == 0) {
                     Renderer[domFns[i]](fiber);
                     fiber.effectTag /= effect;
@@ -85,7 +86,7 @@ function commitDFSImpl(fiber) {
     }
 }
 export function commitDFS(effects) {
-    Renderer.batchedUpdates(function() {
+    Renderer.batchedUpdates(function () {
         var el;
         while ((el = effects.shift())) {
             //处理retry组件
@@ -149,6 +150,15 @@ export function commitEffects(fiber) {
                         return;
                     }
                     break;
+                case EFFECT:
+                    var effects = fiber.updateQueue.effects;
+                    effects.forEach(function (fn) {
+                        try {
+                            fn();
+                        } catch (e) { /** */}
+                    });
+                    effects.length = 0;
+                    break;
                 case REF:
                     Refs.fireRef(fiber, instance);
                     break;
@@ -156,7 +166,7 @@ export function commitEffects(fiber) {
                     //ReactDOM.render/forceUpdate/setState callback
                     var queue = fiber.pendingCbs;
                     fiber._hydrating = true; //setState回调里再执行setState
-                    queue.forEach(function(fn) {
+                    queue.forEach(function (fn) {
                         fn.call(instance);
                     });
                     delete fiber._hydrating;

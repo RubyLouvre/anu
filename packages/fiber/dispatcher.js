@@ -1,7 +1,7 @@
 import { Renderer } from 'react-core/createRenderer';
+import { EFFECT } from './effectTag'
 function setter(count, value) {
     var state = {};
-    console.log(count, value, 'count')
     state[count] = value;
     Renderer.updateComponent(this, state);
 }
@@ -11,7 +11,7 @@ export function resetCount() {
 }
 
 export var dispatcher = {
-    useState: function (initValue) {
+    useState(initValue) {
         let instance = Renderer.currentOwner;
         let count = dispatcherCount;//决定是处理第几个useState
         let fn = setter.bind(instance, count);
@@ -31,5 +31,23 @@ export var dispatcher = {
         state[count] = initValue;
         pendings.push(state);
         return [initValue, fn];
+    },
+    useContext(contextType) {
+        return new contextType.Provider().emitter.get();
+    },
+    useCallback(callback) {
+        let instance = Renderer.currentOwner;
+        let fiber = instance._reactInternalFiber;
+        Renderer.updateComponent(instance, null, callback);
+        return [callback, fiber.updateQueue.pendingCbs];
+    },
+    useEffect(callback) {
+        let instance = Renderer.currentOwner;
+        let fiber = instance._reactInternalFiber;
+        if (fiber.effectTag % EFFECT === 0) {
+            fiber.effectTag *= EFFECT;
+        }
+        fiber.updateQueue.effects.push(callback);
     }
 };
+//https://reactjs.org/docs/hooks-reference.html
