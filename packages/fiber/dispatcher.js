@@ -1,34 +1,32 @@
 import { Renderer } from 'react-core/createRenderer';
 import { EFFECT } from './effectTag'
-function setter(count, value) {
+function setter(cursor, value) {
     var state = {};
-    state[count] = value;
+    state[cursor] = value;
     Renderer.updateComponent(this, state);
 }
-var dispatcherCount = 0;
-export function resetCount() {
-    dispatcherCount = 0;
+var hookCursor = 0;
+export function resetCursor() {
+    hookCursor = 0;
 }
 
 export var dispatcher = {
     useState(initValue) {
         let instance = Renderer.currentOwner;
-        let count = dispatcherCount;//决定是处理第几个useState
-        let fn = setter.bind(instance, count);
+        let cursor = hookCursor;//决定是处理第几个useState
+        let fn = setter.bind(instance, cursor);
         let fiber = instance._reactInternalFiber;
         let pendings = fiber.updateQueue.pendingStates;
-        dispatcherCount++;
+        hookCursor++;
         if (fiber.hasMounted) {
             var newState = {};
-            pendings.forEach(function (state) {
-                Object.assign(newState, state);
-            });
-            pendings[0] = newState;
+            pendings.unshift(newState);
+            Object.assign.apply(null, pendings);
             pendings.length = 1;
-            return [newState[count], fn];
+            return [newState[cursor], fn];
         }
         let state = {};
-        state[count] = initValue;
+        state[cursor] = initValue;
         pendings.push(state);
         return [initValue, fn];
     },
