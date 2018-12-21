@@ -45,7 +45,7 @@ export default {
         license({
             banner: `运行于支付宝小程序的React by 司徒正美 Copyright ${JSON.stringify(
                 new Date()
-            ).replace(/:.*|"/g, '')}
+            ).replace(/T.*|"/g, '')}
       `
         }),
         cleanup(),

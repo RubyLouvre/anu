@@ -1,10 +1,10 @@
-import { extend, typeNumber, isFn, gDSFP, gSBU } from "react-core/util";
-import { fiberizeChildren } from "react-core/createElement";
-import { AnuPortal } from "react-core/createPortal";
+import { extend, typeNumber, isFn, gDSFP, gSBU } from 'react-core/util';
+import { fiberizeChildren } from 'react-core/createElement';
+import { AnuPortal } from 'react-core/createPortal';
 
-import { Renderer } from "react-core/createRenderer";
-import { createInstance, UpdateQueue } from "./createInstance";
-import { Fiber } from "./Fiber";
+import { Renderer } from 'react-core/createRenderer';
+import { createInstance, UpdateQueue } from './createInstance';
+import { Fiber } from './Fiber';
 import {
     PLACE,
     ATTR,
@@ -13,15 +13,15 @@ import {
     REF,
     CALLBACK,
     WORKING
-} from "./effectTag";
+} from './effectTag';
 import {
     guardCallback,
     detachFiber,
     pushError,
     applyCallback
-} from "./ErrorBoundary";
-
-import { getInsertPoint, setInsertPoints } from "./insertPoint";
+} from './ErrorBoundary';
+import { resetCursor } from './dispatcher';
+import { getInsertPoint, setInsertPoints } from './insertPoint';
 
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
@@ -164,7 +164,6 @@ function mergeStates(fiber, nextProps) {
 export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     let { contextStack, containerStack } = info;
-   
     let newContext = getMaskedContext(
         instance,
         type.contextTypes,
@@ -231,11 +230,11 @@ export function updateClassComponent(fiber, info) {
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
-
+    if (fiber.parent && fiber.hasMounted && fiber.dirty) {
+        fiber.parent.insertPoint = getInsertPoint(fiber);
+    }
     if (isStateful) {
-        if (fiber.parent && fiber.hasMounted && fiber.dirty) {
-            fiber.parent.insertPoint = getInsertPoint(fiber);
-        }
+        //上面设置fiber.parent.insertPoint的if分支原来是放这里
         if (fiber.updateFail) {
             cloneChildren(fiber);
             fiber._hydrating = false;
@@ -244,7 +243,7 @@ export function updateClassComponent(fiber, info) {
 
         delete fiber.dirty;
         fiber.effectTag *= HOOK;
-    } else {
+    } else if (fiber.effectTag == 1){
         fiber.effectTag = WORKING;
     }
 
@@ -254,7 +253,8 @@ export function updateClassComponent(fiber, info) {
     Renderer.onBeforeRender(fiber);
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
-    let rendered = applyCallback(instance, "render", []);
+    let rendered = applyCallback(instance, 'render', []);
+    resetCursor();
     diffChildren(fiber, rendered);
     Renderer.onAfterRender(fiber);
 }
@@ -264,7 +264,7 @@ function applybeforeMountHooks(fiber, instance, newProps) {
     if (instance.__useNewHooks) {
         setStateByProps(instance, fiber, newProps, instance.state);
     } else {
-        callUnsafeHook(instance, "componentWillMount", []);
+        callUnsafeHook(instance, 'componentWillMount', []);
     }
     delete fiber.setout;
     mergeStates(fiber, newProps);
@@ -290,7 +290,7 @@ function applybeforeUpdateHooks(
     if (!instance.__useNewHooks) {
         if (propsChanged || contextChanged) {
             let prevState = instance.state;
-            callUnsafeHook(instance, "componentWillReceiveProps", [
+            callUnsafeHook(instance, 'componentWillReceiveProps', [
                 newProps,
                 newContext
             ]);
@@ -323,18 +323,18 @@ function applybeforeUpdateHooks(
 
         if (
             !updateQueue.isForced &&
-            !applyCallback(instance, "shouldComponentUpdate", args)
+            !applyCallback(instance, 'shouldComponentUpdate', args)
         ) {
             fiber.updateFail = true;
         } else if (!instance.__useNewHooks) {
-            callUnsafeHook(instance, "componentWillUpdate", args);
+            callUnsafeHook(instance, 'componentWillUpdate', args);
         }
     }
 }
 
 function callUnsafeHook(a, b, c) {
     applyCallback(a, b, c);
-    applyCallback(a, "UNSAFE_" + b, c);
+    applyCallback(a, 'UNSAFE_' + b, c);
 }
 
 function isSameNode(a, b) {
