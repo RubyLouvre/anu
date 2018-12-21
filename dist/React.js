@@ -723,10 +723,9 @@
     });
     var effectLength = effectNames.length;
 
-    function setter(cursor, getter, value) {
-        var state = {};
-        state[cursor] = getter(cursor, value);
-        Renderer.updateComponent(this.stateNode, state);
+    function setter(compute, cursor, value) {
+        this.updateQueue[cursor] = compute(cursor, value);
+        Renderer.updateComponent(this.stateNode, true);
     }
     var hookCursor = 0;
     function resetCursor() {
@@ -737,35 +736,30 @@
             return new contextType.Provider().emitter.get();
         },
         useReducer: function useReducer(reducer, initValue, initAction) {
-            var cursor = hookCursor;
             var fiber = getCurrentFiber();
-            var pendings = fiber.updateQueue.pendingStates;
-            var getter = reducer ? function (index, action) {
-                return reducer(pendings[0][index], action || { type: Math.random });
-            } : function (index, value) {
-                var oldValue = pendings[0][index];
-                return typeof value == 'function' ? value(oldValue) : value;
-            };
-            var dispatch = setter.bind(fiber, cursor, getter);
-            hookCursor++;
-            if (fiber.hasMounted) {
-                var newState = {};
-                pendings.unshift(newState);
-                Object.assign.apply(null, pendings);
-                pendings.length = 1;
-                return [newState[cursor], dispatch];
-            }
-            var state = {};
-            state[cursor] = initAction ? reducer(initValue, initAction) : initValue;
-            pendings.push(state);
-            return [state[cursor], dispatch];
-        },
-        useCallbackOrMeno: function useCallbackOrMeno(callback, inputs, isMeno) {
-            var nextInputs = Array.isArray(inputs) ? inputs : [callback];
-            var fiber = getCurrentFiber();
-            var key = hookCursor + 'CM';
+            var key = hookCursor + 'Hook';
             var updateQueue = fiber.updateQueue;
             hookCursor++;
+            var compute = reducer ? function (cursor, action) {
+                return reducer(updateQueue[cursor], action || { type: Math.random() });
+            } : function (cursor, value) {
+                var novel = updateQueue[cursor];
+                return typeof value == 'function' ? value(novel) : value;
+            };
+            var dispatch = setter.bind(fiber, compute, key);
+            if (key in updateQueue) {
+                delete updateQueue.isForced;
+                return [updateQueue[key], dispatch];
+            }
+            var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
+            return [value, dispatch];
+        },
+        useCallbackOrMeno: function useCallbackOrMeno(callback, inputs, isMeno) {
+            var fiber = getCurrentFiber();
+            var key = hookCursor + 'Hook';
+            var updateQueue = fiber.updateQueue;
+            hookCursor++;
+            var nextInputs = Array.isArray(inputs) ? inputs : [callback];
             var prevState = updateQueue[key];
             if (prevState) {
                 var prevInputs = prevState[1];
@@ -778,15 +772,14 @@
             return value;
         },
         useRef: function useRef(initValue) {
-            var key = hookCursor + 'Ref';
             var fiber = getCurrentFiber();
+            var key = hookCursor + 'Hook';
             var updateQueue = fiber.updateQueue;
             hookCursor++;
-            if (fiber.hasMounted) {
+            if (key in updateQueue) {
                 return updateQueue[key];
             }
-            var ref = updateQueue[key] = { current: initValue };
-            return ref;
+            return updateQueue[key] = { current: initValue };
         },
         useEffect: function useEffect(callback) {
             var fiber = getCurrentFiber();
