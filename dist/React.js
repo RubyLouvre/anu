@@ -754,7 +754,7 @@
             var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
             return [value, dispatch];
         },
-        useCallbackOrMeno: function useCallbackOrMeno(callback, inputs, isMeno) {
+        useCallbackOrMemo: function useCallbackOrMemo(callback, inputs, isMeno) {
             var fiber = getCurrentFiber();
             var key = hookCursor + 'Hook';
             var updateQueue = fiber.updateQueue;
@@ -810,6 +810,9 @@
     }
     function useCallback(callback, inputs) {
         return dispatcher.useCallbackOrMeno(callback, inputs);
+    }
+    function useMemo(create, inputs) {
+        return dispatcher.useCallbackOrMemo(create, inputs, true);
     }
     function useRef(initValue) {
         return dispatcher.useRef(initValue);
@@ -3204,6 +3207,7 @@
             useEffect: useEffect,
             useReducer: useReducer,
             useCallback: useCallback,
+            useMemo: useMemo,
             useRef: useRef,
             createElement: createElement,
             cloneElement: cloneElement,
