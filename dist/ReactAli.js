@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-19T06
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-20T15
  */
 
 var arrayPush = Array.prototype.push;
@@ -81,7 +81,7 @@ try {
 } catch (e) {}
 var rname = /function\s+(\w+)/;
 function miniCreateClass(ctor, superClass, methods, statics) {
-    var className = ctor.name || (ctor.toString().match(rname) || ["", "Anonymous"])[1];
+    var className = ctor.name || (ctor.toString().match(rname) || ['', 'Anonymous'])[1];
     var Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : function ReactInstance() {
         superClass.apply(this, arguments);
         ctor.apply(this, arguments);
@@ -1196,11 +1196,14 @@ function createInstance(fiber, context) {
         props: props,
         context: context,
         ref: ref,
+        _reactInternalFiber: fiber,
         __proto__: type.prototype
     };
-    fiber.errorHook = "constructor";
+    fiber.updateQueue = UpdateQueue();
+    fiber.errorHook = 'constructor';
     try {
         if (isStateless) {
+            Renderer.currentOwner = instance;
             extend(instance, {
                 __isStateless: true,
                 __init: true,
@@ -1215,7 +1218,7 @@ function createInstance(fiber, context) {
                     if (a && a.render) {
                         delete this.__isStateless;
                         for (var i in a) {
-                            instance[i == "render" ? "renderImpl" : i] = a[i];
+                            instance[i == 'render' ? 'renderImpl' : i] = a[i];
                         }
                     } else if (this.__init) {
                         this.__keep = {
@@ -1237,13 +1240,12 @@ function createInstance(fiber, context) {
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
-                throw type.name + " doesn't extend React.Component";
+                throw type.name + ' doesn\'t extend React.Component';
             }
         }
     } finally {
         Renderer.currentOwner = lastOwn;
         fiber.stateNode = instance;
-        fiber.updateQueue = UpdateQueue();
         instance._reactInternalFiber = fiber;
         instance.updater = updater;
         instance.context = context;
@@ -1640,10 +1642,10 @@ function updateClassComponent(fiber, info) {
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
+    if (fiber.parent && fiber.hasMounted && fiber.dirty) {
+        fiber.parent.insertPoint = getInsertPoint(fiber);
+    }
     if (isStateful) {
-        if (fiber.parent && fiber.hasMounted && fiber.dirty) {
-            fiber.parent.insertPoint = getInsertPoint(fiber);
-        }
         if (fiber.updateFail) {
             cloneChildren(fiber);
             fiber._hydrating = false;
@@ -1660,7 +1662,7 @@ function updateClassComponent(fiber, info) {
     Renderer.onBeforeRender(fiber);
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
-    var rendered = applyCallback(instance, "render", []);
+    var rendered = applyCallback(instance, 'render', []);
     diffChildren(fiber, rendered);
     Renderer.onAfterRender(fiber);
 }
@@ -1669,7 +1671,7 @@ function applybeforeMountHooks(fiber, instance, newProps) {
     if (instance.__useNewHooks) {
         setStateByProps(instance, fiber, newProps, instance.state);
     } else {
-        callUnsafeHook(instance, "componentWillMount", []);
+        callUnsafeHook(instance, 'componentWillMount', []);
     }
     delete fiber.setout;
     mergeStates(fiber, newProps);
@@ -1687,7 +1689,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     if (!instance.__useNewHooks) {
         if (propsChanged || contextChanged) {
             var prevState = instance.state;
-            callUnsafeHook(instance, "componentWillReceiveProps", [newProps, newContext]);
+            callUnsafeHook(instance, 'componentWillReceiveProps', [newProps, newContext]);
             if (prevState !== instance.state) {
                 fiber.memoizedState = instance.state;
             }
@@ -1706,16 +1708,16 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     } else {
         var args = [newProps, newState, newContext];
         fiber.updateQueue = UpdateQueue();
-        if (!updateQueue.isForced && !applyCallback(instance, "shouldComponentUpdate", args)) {
+        if (!updateQueue.isForced && !applyCallback(instance, 'shouldComponentUpdate', args)) {
             fiber.updateFail = true;
         } else if (!instance.__useNewHooks) {
-            callUnsafeHook(instance, "componentWillUpdate", args);
+            callUnsafeHook(instance, 'componentWillUpdate', args);
         }
     }
 }
 function callUnsafeHook(a, b, c) {
     applyCallback(a, b, c);
-    applyCallback(a, "UNSAFE_" + b, c);
+    applyCallback(a, 'UNSAFE_' + b, c);
 }
 function isSameNode(a, b) {
     if (a.type === b.type && a.key === b.key) {
@@ -1933,6 +1935,7 @@ function commitDFSImpl(fiber) {
         while (f) {
             if (f.effectTag === WORKING) {
                 f.effectTag = NOWORK;
+                f.hasMounted = true;
             } else if (f.effectTag > WORKING) {
                 commitEffects(f);
                 if (f.capturedValues) {
@@ -2543,6 +2546,7 @@ function registerComponent(type, name) {
         didUpdate: didUpdate,
         didUnmount: function didUnmount() {
             var t = this.reactInstance;
+            this.disposed = true;
             if (t) {
                 t.wx = null;
                 this.reactInstance = null;
