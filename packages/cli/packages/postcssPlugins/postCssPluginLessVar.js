@@ -3,28 +3,28 @@ const varReg = /@{?([a-zA-Z0-9-_."']+)}?/g;
 const removeQuoteReg = /^["|'](.*)["|']$/;
 
 const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
-    function findVarValue(node, v) {
+    function findVarValue(node, key) {
+        let result = "";
         // 去掉变量定义首尾引号
-        v = v.replace(removeQuoteReg, function(a, b){
-            return b;
-        });
+        key = key.replace(removeQuoteReg, '$1');
         let find = false;
         let value;
         // 遍历variable 找出当前节点下变量定义
-        node.walkAtRules(rule => {
-            if (v === rule.name) {
+        node.each(node => {
+            if (node.variable && key === node.name) {
                 find = true;
-                value = rule.value;
+                value = node.value;
             }
         });
         if (find && value) {
-            return value;
+            result = value;
         }
         // 没找到或到达根节点则退出递归
         if (!find && node.type !== 'root') {
-            return findVarValue(node.parent, v);
+            result = findVarValue(node.parent, key);
         }
-        return null;
+
+        return result.replace(removeQuoteReg, '$1');
     }
 
     function parseVariable(variable, decl) {
@@ -32,10 +32,14 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
 
         if (variables && variables.length) {
             for (var i = 0, length = variables.length; i < length; i++) {
-                const key = variables[i].split('@')[1];
-                
+                let key;
+                variables[i].replace(varReg, function(a, b) {
+                    key = b;
+                });
                 const value = findVarValue(decl.parent, key);
                 variable = variable.replace(variables[i], value);
+                // 添加标识，是由variable转换来的
+                decl.isVar = true;
             }
         }
         if (variable && variable.match(varReg)) {
@@ -45,14 +49,28 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
     }
 
     return (root) => {
+        // 解析变量声明
         root.walkDecls(decl => {
-            // 取出变量定义
+            // 转换变量的key
+            decl.prop = parseVariable(decl.prop, decl);
+            // 转换变量的value
             decl.value = parseVariable(decl.value, decl);
         });
-        // 移除变量声明
-        root.walkAtRules(rule => {
-            if (rule.variable) {
-                rule.remove();
+        // 解析插值变量
+        root.walkRules(rule => {
+            rule.selector = parseVariable(rule.selector, rule);
+        });
+        
+        root.walkAtRules(atrule => {
+            // import语句
+            if (atrule.import) {
+                atrule.params = parseVariable(atrule.params, atrule);
+            }
+        });
+        root.walkAtRules(atrule => {
+            // 移除变量声明
+            if (atrule.variable) {
+                atrule.remove();
             }
         });
     };

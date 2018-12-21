@@ -1,0 +1,13 @@
+.big-division,
+.big-bag,
+.big-bucket {
+  color: red;
+}
+.bag,
+.big-bag {
+  color: yellow;
+}
+.bucket,
+.big-bucket {
+  color: green;
+}
