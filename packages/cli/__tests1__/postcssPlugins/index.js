@@ -25,12 +25,14 @@ async function readDir(dir) {
             readDir(childPath);
         } else {
             const code = fs.readFileSync(childPath, 'utf-8');
+            output(code, 'origin');
             exec(`lessc ${childPath}`, function(err, stdout) {
+                output(stdout, 'less');
                 fs.writeFileSync(childPath.replace(/\/less(\/?)/, '/css$1').replace(/\.less$/, '.css'), stdout, 'utf-8');
             });
             const compiledCode = await compileLess(code, childPath);
             if (compiledCode && compiledCode.css) {
-                console.log("compiledCode", compiledCode.css);
+                output(compiledCode.css, 'postcss');
                 fs.writeFileSync(childPath.replace(/\/less(\/?)/, '/postcss$1').replace(/\.less$/, '.css'), compiledCode.css, 'utf-8');
             }
         }
@@ -38,13 +40,15 @@ async function readDir(dir) {
 }
 
 async function readFile(filepath) {
-    const code = fs.readFileSync(filepath);
+    const code = fs.readFileSync(filepath, 'utf-8');
+    output(code, 'origin');
     exec(`lessc ${filepath}`, function(err, stdout) {
+        output(stdout, 'less');
         fs.writeFileSync(filepath.replace(/\/less(\/?)/, '/css$1').replace(/\.less$/, '.css'), stdout, 'utf-8');
     });
     const compiledCode = await compileLess(code, filepath);
     if (compiledCode && compiledCode.css) {
-        console.log("compiledCode", compiledCode.css);
+        output(compiledCode.css, 'postcss');
         fs.writeFileSync(filepath.replace(/\/less(\/?)/, '/postcss$1').replace(/\.less$/, '.css'), compiledCode.css, 'utf-8');
     }
 }
@@ -65,10 +69,10 @@ function compileLess(code, dir) {
         require('../postcssPlugins/postCssPluginLessMixins'),
         require('../postcssPlugins/postCssPluginLessFunction'),
         require('postcss-automath'),      //5px + 2 => 7px
-        require('postcss-nested-props'),   //属性嵌套
-        require('precss'),
+        // require('postcss-nested-props'),   //属性嵌套
+        require('postcss-nested'), // 嵌套
         require('../postcssPlugins/postCssPluginLessExtend'),
-        require('../postcssPlugins/postCssPluginRemoveComments')
+        require('../postcssPlugins/postCssPluginRemoveCommentsAndEmptyRule')
     ]).process(
         code,
         {
@@ -76,7 +80,14 @@ function compileLess(code, dir) {
             syntax: require('postcss-less')
         }
     ).catch((e) => {
-        
+        console.log(e);
     })
+}
+
+function output(str, mode) {
+    console.log('--------------------------------');
+    console.log(`${mode}::::::::::`);
+    console.log(str);
+    console.log('--------------------------------')
 }
 

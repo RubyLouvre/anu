@@ -64,17 +64,21 @@ const postCssPluginLessExtend = postCss.plugin('postCssPluginLessExtend', () => 
 
     return (root) => {
         root.walk((node) => {
-            // console.log(node);
             if (node.extend && (node.selector || node.parent.selector)) {
                 if (!node.selector) {
                     node = node.parent;
+                    // 如果父节点也是extend类型，该extend属性已经解析过
+                    if (node.extend) {
+                        return;
+                    }
                 }
                 // 获取extend选择器
                 // 解析.a:extend(.b) { color: red }形式
                 const extendSelectors = parseExtendSelector(node.selector);
                 node.selector = node.selector.replace(removeExtendReg, '');
-                // 遍历extend选择器
+                
                 extendSelectors.forEach(extendSelector => {
+                    // 遍历node 取出&:extend(.d)形式，放入extendSelector对象中
                     node.walkDecls((decl) => {
                         if (decl.extend) {
                             const selectors = parseExtendSelector(':' + decl.value);
@@ -88,19 +92,28 @@ const postCssPluginLessExtend = postCss.plugin('postCssPluginLessExtend', () => 
                         if (isAll) {
                             selector = selector.replace(isAllReg, '');
                         }
-                        root.each((node) => {
-                            if (node.type === 'rule') {
-                                if (isAll) {
-                                    if (parseSelector(node.selector).find(s => (s.match(selector)))) {
-                                        node.selector += `, ${parseSelector(node.selector).map((s) => (s.replace(new RegExp(selector, 'g'), extendSelector.from)))}`;
-                                    }
-                                } else {
-                                    if (parseSelector(node.selector).find(s => (s === selector))) {
-                                        node.selector += `, ${extendSelector.from}`;
+                        // 从父节点查找要extend的规则
+                        node.parent.each((node) => {
+                            // 如果遇到@media，向下一级查找
+                            if (node.type === 'atrule' && !node.hasOwnProperty('variable') && node.name === 'media') {
+                                node.each((child) => {
+                                    findRule(child);
+                                });
+                            }
+                            function findRule(n) {
+                                if (n.type === 'rule') {
+                                    if (isAll) {
+                                        if (parseSelector(n.selector).find(s => (s.match(selector)))) {
+                                            n.selector += `, ${parseSelector(n.selector).map((s) => (s.replace(new RegExp(selector, 'g'), extendSelector.from)))}`;
+                                        }
+                                    } else {
+                                        if (parseSelector(n.selector).find(s => (s === selector))) {
+                                            n.selector += `, ${extendSelector.from}`;
+                                        }
                                     }
                                 }
                             }
-                            
+                            findRule(node);
                         });
                     });
                 });
