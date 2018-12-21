@@ -723,8 +723,11 @@
     });
     var effectLength = effectNames.length;
 
-    function setter(cursor, value) {
+    function setter(cursor, getter, value) {
         var state = {};
+        if (getter) {
+            value = getter(cursor, value);
+        }
         state[cursor] = value;
         Renderer.updateComponent(this, state);
     }
@@ -732,34 +735,64 @@
     function resetCursor() {
         hookCursor = 0;
     }
+    function useReducer(reducer, initValue, initAction) {
+        var instance = Renderer.currentOwner;
+        var cursor = hookCursor;
+        var fiber = instance._reactInternalFiber;
+        var pendings = fiber.updateQueue.pendingStates;
+        var getter = reducer ? function (i, action) {
+            return reducer(pendings[0][i], action || { type: Math.random });
+        } : null;
+        var dispatch = setter.bind(instance, cursor, getter);
+        hookCursor++;
+        if (fiber.hasMounted) {
+            var newState = {};
+            pendings.unshift(newState);
+            Object.assign.apply(null, pendings);
+            pendings.length = 1;
+            return [newState[cursor], dispatch];
+        }
+        var state = {};
+        state[cursor] = initAction ? reducer(initValue, initAction) : initValue;
+        pendings.push(state);
+        return [state[cursor], dispatch];
+    }
     var dispatcher = {
-        useState: function useState(initValue) {
-            var instance = Renderer.currentOwner;
-            var cursor = hookCursor;
-            var fn = setter.bind(instance, cursor);
-            var fiber = instance._reactInternalFiber;
-            var pendings = fiber.updateQueue.pendingStates;
-            hookCursor++;
-            if (fiber.hasMounted) {
-                var newState = {};
-                pendings.unshift(newState);
-                Object.assign.apply(null, pendings);
-                pendings.length = 1;
-                return [newState[cursor], fn];
-            }
-            var state = {};
-            state[cursor] = initValue;
-            pendings.push(state);
-            return [initValue, fn];
-        },
         useContext: function useContext(contextType) {
             return new contextType.Provider().emitter.get();
         },
-        useCallback: function useCallback(callback) {
+        useReducer: useReducer,
+        useCallback: function useCallback(callback, args) {
             var instance = Renderer.currentOwner;
             var fiber = instance._reactInternalFiber;
-            Renderer.updateComponent(instance, null, callback);
-            return [callback, fiber.updateQueue.pendingCbs];
+            var key = hookCursor + 'Cb',
+                fn = void 0;
+            var updateQueue = fiber.updateQueue;
+            hookCursor++;
+            if (fiber.hasMounted) {
+                fn = updateQueue[key];
+            } else {
+                if (Array.isArray(args) && args.length) {
+                    fn = callback.bind(null, args);
+                } else {
+                    fn = callback;
+                }
+                updateQueue[key] = fn;
+            }
+            Renderer.updateComponent(instance, null, fn);
+            return [fn, fiber.updateQueue.pendingCbs];
+        },
+        useRef: function useRef(initValue) {
+            var instance = Renderer.currentOwner;
+            var key = hookCursor + 'Ref';
+            var fiber = instance._reactInternalFiber;
+            var updateQueue = fiber.updateQueue;
+            hookCursor++;
+            if (fiber.hasMounted) {
+                return updateQueue[key];
+            }
+            var ref = updateQueue[key] = { current: initValue };
+            return ref;
         },
         useEffect: function useEffect(callback) {
             var instance = Renderer.currentOwner;
@@ -772,10 +805,19 @@
     };
 
     function useState(initValue) {
-        return dispatcher.useState(initValue);
+        return dispatcher.useReducer(null, initValue);
     }
     function useEffect(initValue) {
         return dispatcher.useEffect(initValue);
+    }
+    function useCallback(initValue) {
+        return dispatcher.useCallback(initValue);
+    }
+    function useRef(initValue) {
+        return dispatcher.useRef(initValue);
+    }
+    function useReducer$1(reducer, initValue, initAction) {
+        return dispatcher.useReducer(reducer, initValue, initAction);
     }
 
     function findHostInstance(fiber) {
@@ -2472,7 +2514,7 @@
                     fiber.deleteRef = true;
                 }
             } catch (e) {
-                pushError(fiber, "ref", e);
+                pushError(fiber, 'ref', e);
             }
         }
     };
@@ -3164,6 +3206,9 @@
             forwardRef: forwardRef,
             useState: useState,
             useEffect: useEffect,
+            useReducer: useReducer$1,
+            useCallback: useCallback,
+            useRef: useRef,
             createElement: createElement,
             cloneElement: cloneElement,
             PureComponent: PureComponent,

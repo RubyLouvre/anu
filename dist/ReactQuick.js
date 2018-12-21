@@ -2072,7 +2072,7 @@ var Refs = {
                 fiber.deleteRef = true;
             }
         } catch (e) {
-            pushError(fiber, "ref", e);
+            pushError(fiber, 'ref', e);
         }
     }
 };
