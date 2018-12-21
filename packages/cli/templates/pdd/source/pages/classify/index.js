@@ -11,7 +11,8 @@ class Classify extends React.Component {
             curIndex: 0,
             toView: 'index12',
             scrollTop: 0,
-            itemHeight: 288
+            itemHeight: 264,
+            windowHeight: 0
         };
     }
 
@@ -41,7 +42,15 @@ class Classify extends React.Component {
                 });
             }
         });
+        React.api.getSystemInfo({
+            success: (data) => {
+                this.setState({
+                    windowHeight: data.windowHeight
+                });
+            }
+        });
     }
+
 
     switchRightTab(id, index) {
         let height = this.state.itemHeight;
@@ -53,8 +62,7 @@ class Classify extends React.Component {
         });
     }
     scrollLeftTab(index) {
-        // eslint-disable-next-line
-        console.log("index12", index);
+        //eslint-disable-next-line
         let id = this.state.navLeftItems[index].id;
         let height = this.state.itemHeight;
         if (index !== this.state.curIndex) {
@@ -69,38 +77,42 @@ class Classify extends React.Component {
 
     render() {
         return (
-            <div className="chat-container anu-row">
-                <div className="nav_left anu-col">
-                    {this.state.navLeftItems.map(function(item, index) {
-                        return (
-                            <div
-                                key={item.id}
-                                className={
-                                    'nav_left_items ' +
-                                    (this.state.curIndex === index
-                                        ? 'active'
-                                        : '')
-                                }
-                                onTap={this.switchRightTab.bind(
-                                    this,
-                                    item.id,
-                                    index
-                                )}
-                            >
-                                {item.desc}
-                            </div>
-                        );
-                    })}
+            <div className="chat-container anu-row" style={{ height: this.state.windowHeight - 620 }}>
+                <div className="nav_left">
+                    <div className="anu-col">
+                        {this.state.navLeftItems.map(function(item, index) {
+                            return (
+                                <div
+                                    key={item.id}
+                                    className={
+                                        'nav_left_items ' +
+                                        (this.state.curIndex === index
+                                            ? 'active'
+                                            : '')
+                                    }
+                                    onTap={this.switchRightTab.bind(
+                                        this,
+                                        item.id,
+                                        index
+                                    )}
+                                >
+                                    {item.desc}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
-                <NavRight
-                    data={this.state.navRightItems}
-                    id={this.state.curNav}
-                    index={this.state.curIndex}
-                    toView={this.state.toView}
-                    scrollLeftTab={this.scrollLeftTab.bind(this)}
-                    scrollTop={this.state.scrollTop}
-                    itemHeight={this.state.itemHeight}
-                />
+                <div className="nav_right_wrapper">
+                    <NavRight
+                        data={this.state.navRightItems}
+                        id={this.state.curNav}
+                        index={this.state.curIndex}
+                        toView={this.state.toView}
+                        scrollLeftTab={this.scrollLeftTab.bind(this)}
+                        scrollTop={this.state.scrollTop}
+                        itemHeight={this.state.itemHeight}
+                    />
+                </div>
             </div>
         );
     }

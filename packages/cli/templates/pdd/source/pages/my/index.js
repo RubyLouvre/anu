@@ -101,15 +101,19 @@ class MY extends React.Component {
                   {this.state.userListInfo.map(function(item) {
                       return (
                           <div className="weui_cell" key={item.text} onTap={this.show.bind(this, item.text)}>
-                              <div className="weui_cell_hd">
-                                  <image src={item.icon} />
+                              <div>
+                                <div className="weui_cell_hd">
+                                    <image src={item.icon} />
+                                </div>
+                                <div class="weui_cell_bd">
+                                    <div class="weui_cell_bd_p"> {item.text} </div>
+                                </div>
                               </div>
-                              <div class="weui_cell_bd">
-                                  <div class="weui_cell_bd_p"> {item.text} </div>
-                              </div>
-                              {item.isunread && <div className="badge">{item.unreadNum}</div>}
-                              <div class="with_arrow">
-                                  <image src="../../assets/images/icon-arrowdown.png" />
+                              <div>
+                                {item.isunread && <div className="badge">{item.unreadNum}</div>}
+                                <div class="with_arrow">
+                                    <image src="../../assets/images/icon-arrowdown.png" />
+                                </div>
                               </div>
                           </div>
                       );

@@ -86,7 +86,7 @@ class PageIndex extends React.Component {
                       })}
                   </div>
               </div>
-              <loading hidden={this.props.loadingHidden}>加载中...</loading>
+              {/* <loading hidden={this.props.loadingHidden}>加载中...</loading> */}
           </div>
       );
   }

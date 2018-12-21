@@ -1,7 +1,7 @@
 import React from '@react';
 import './index.scss';
 // eslint-disable-next-line
-import Dialog from '@components/Dialog/index';
+// import Dialog from '@components/Dialog/index';
 import TurnTable from '@components/TurnTable/index';
 class Cart extends React.Component {
     constructor() {
@@ -19,7 +19,7 @@ class Cart extends React.Component {
       navigationBarTitleText: '购物车',
       navigationBarBackgroundColor: '#292929',
       backgroundColor: '#F2F2F2',
-    //   enablePullDownRefresh: true
+      enablePullDownRefresh: true
   };
 
   tap() {
@@ -48,7 +48,7 @@ class Cart extends React.Component {
 
   render() {
       return (
-          <div className="cart-container anu-col">
+          <div className="cart-container">
               <div>
                   <image src={this.state.cartImg} onTap={this.tap} className="cart-image" />
                   <view>{this.state.tipWords}</view>
@@ -62,7 +62,7 @@ class Cart extends React.Component {
               <div hidden={this.state.visible}>
                   <div className="ys-mask" onTap={this.onCanel} />
                   <div className="ys-dialog">
-                      <div className="anu-col">
+                      <div>
                           <image src='../../assets/images/lottery_draw_log.png' class='lottery_draw_log' />
                           <TurnTable onOk={this.onOk.bind(this)} />
                       </div>

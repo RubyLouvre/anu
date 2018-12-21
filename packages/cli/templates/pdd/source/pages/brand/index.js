@@ -61,7 +61,7 @@ class Brand extends React.Component {
                               }
                             >
                                 <image src={item.pic} className="pic" />
-                                <div className="right_cont">
+                                <div className="right_cont anu-col">
                                     <span className="name">{item.chinesename}</span>
                                     <span className="brief">{item.brief}</span>
                                     <span className="price">￥{item.minprice}元/件起</span>

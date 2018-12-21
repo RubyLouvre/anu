@@ -4,7 +4,11 @@ page {
   height: 100%;
 }
 .chat-container {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
   background-color: #fff;
@@ -18,6 +22,9 @@ page {
   text-align: center;
 }
 .nav_left .nav_left_items {
+  display: flex;
+  justify-content: center;
+  align-content: center;
   height: 30px;
   line-height: 30px;
   padding: 6px 0;
@@ -27,44 +34,7 @@ page {
 .nav_left .nav_left_items.active {
   background: #fff;
 }
-.nav_right {
-  position: absolute;
-  top: 0;
-  right: 0;
-  flex: 1;
+.nav_right_wrapper {
+  height:100%;
   width: 75%;
-  height: 100%;
-  padding: 10px;
-  background: #fff;
-  box-sizing: border-box;
-  .nav_right_content {
-      overflow: hidden;
-  }
-
-  .nav_right_title {
-    line-height: 30px;
-    padding: 6px 0;
-    font-size: 14px;
-    margin-left: 8px;
-  }
-  .scroll-view {
-      height: 100%;
-  }
-}
-.nav_right .nav_right_items {
-  float: left;
-  width: 33.33%;
-  text-align: center;
-  margin-bottom: 8px;
-}
-.nav_right .nav_right_items image {
-  width: 50px;
-  height: 50px;
-}
-.nav_right .nav_right_items text {
-  display: block;
-  font-size: 10px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
