@@ -760,7 +760,7 @@
             pendings.push(state);
             return [state[cursor], dispatch];
         },
-        useCallbackOrMeno: function useCallbackOrMeno(callback, inputs, isMeno) {
+        useCallbackOrMemo: function useCallbackOrMemo(callback, inputs, isMemo) {
             var nextInputs = Array.isArray(inputs) ? inputs : [callback];
             var fiber = getCurrentFiber();
             var key = hookCursor + 'CM';
@@ -773,7 +773,7 @@
                     return prevState[0];
                 }
             }
-            var value = isMeno ? callback() : callback;
+            var value = isMemo ? callback() : callback;
             updateQueue[key] = [value, nextInputs];
             return value;
         },
@@ -817,7 +817,10 @@
         return dispatcher.useEffect(initValue);
     }
     function useCallback(callback, inputs) {
-        return dispatcher.useCallbackOrMeno(callback, inputs);
+        return dispatcher.useCallbackOrMemo(callback, inputs);
+    }
+    function useMemo(create, inputs) {
+        return dispatcher.useCallbackOrMemo(create, inputs, true);
     }
     function useRef(initValue) {
         return dispatcher.useRef(initValue);
@@ -3214,6 +3217,7 @@
             useEffect: useEffect,
             useReducer: useReducer,
             useCallback: useCallback,
+            useMemo: useMemo,
             useRef: useRef,
             createElement: createElement,
             cloneElement: cloneElement,

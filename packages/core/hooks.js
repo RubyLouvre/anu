@@ -8,10 +8,10 @@ export function useEffect(initValue) {
     return dispatcher.useEffect(initValue);
 }
 export function useCallback(callback, inputs) {
-    return dispatcher.useCallbackOrMeno(callback, inputs);
+    return dispatcher.useCallbackOrMemo(callback, inputs);
 }
-export function useMeno(create, inputs) {
-    return dispatcher.useCallbackOrMeno(create, inputs, true);
+export function useMemo(create, inputs) {
+    return dispatcher.useCallbackOrMemo(create, inputs, true);
 }
 export function useRef(initValue) {
     return dispatcher.useRef(initValue);

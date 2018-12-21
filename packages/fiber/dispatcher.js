@@ -39,7 +39,7 @@ export var dispatcher = {
         pendings.push(state);
         return [ state[cursor], dispatch];
     },
-    useCallbackOrMeno(callback, inputs, isMeno) {//ok
+    useCallbackOrMemo(callback, inputs, isMemo) {//ok
         var nextInputs = Array.isArray(inputs) ? inputs : [callback];
         let fiber = getCurrentFiber();
         let key = hookCursor +'CM';
@@ -52,7 +52,7 @@ export var dispatcher = {
                 return prevState[0];
             }
         }
-        var value = isMeno ? callback(): callback;
+        var value = isMemo ? callback(): callback;
         updateQueue[key] = [value, nextInputs];
         return value;
     },
