@@ -1,0 +1,5 @@
+.big-block {
+  -webkit-box-shadow: 2px 5px 1px #000;
+  -moz-box-shadow: 2px 5px 1px #000;
+  box-shadow: 2px 5px 1px #000;
+}

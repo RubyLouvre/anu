@@ -20,7 +20,7 @@ import {
     pushError,
     applyCallback
 } from './ErrorBoundary';
-import { resetCount } from './dispatcher';
+import { resetCursor } from './dispatcher';
 import { getInsertPoint, setInsertPoints } from './insertPoint';
 
 /**
@@ -243,7 +243,7 @@ export function updateClassComponent(fiber, info) {
 
         delete fiber.dirty;
         fiber.effectTag *= HOOK;
-    } else {
+    } else if (fiber.effectTag == 1){
         fiber.effectTag = WORKING;
     }
 
@@ -254,7 +254,7 @@ export function updateClassComponent(fiber, info) {
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     let rendered = applyCallback(instance, 'render', []);
-    resetCount();
+    resetCursor();
     diffChildren(fiber, rendered);
     Renderer.onAfterRender(fiber);
 }

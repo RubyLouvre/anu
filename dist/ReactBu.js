@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-20T15
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-21
  */
 
 var arrayPush = Array.prototype.push;
@@ -175,10 +175,10 @@ Component.prototype = {
         return this.updater.isMounted(this);
     },
     setState: function setState(state, cb) {
-        this.updater.enqueueSetState(this, state, cb);
+        this.updater.enqueueSetState(get(this), state, cb);
     },
     forceUpdate: function forceUpdate(cb) {
-        this.updater.enqueueSetState(this, true, cb);
+        this.updater.enqueueSetState(get(this), true, cb);
     },
     render: function render() {
         throw "must implement render";
@@ -1064,7 +1064,9 @@ function createEvent(e, target) {
 function UpdateQueue() {
     return {
         pendingStates: [],
-        pendingCbs: []
+        pendingCbs: [],
+        effects: [],
+        uneffects: []
     };
 }
 function createInstance(fiber, context) {
@@ -1162,8 +1164,9 @@ var DETACH = 13;
 var HOOK = 17;
 var REF = 19;
 var CALLBACK = 23;
-var CAPTURE = 29;
-var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
+var EFFECT = 29;
+var CAPTURE = 31;
+var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, EFFECT, CAPTURE].sort(function (a, b) {
     return a - b;
 });
 var effectLength = effectNames.length;
@@ -1541,7 +1544,7 @@ function updateClassComponent(fiber, info) {
         }
         delete fiber.dirty;
         fiber.effectTag *= HOOK;
-    } else {
+    } else if (fiber.effectTag == 1) {
         fiber.effectTag = WORKING;
     }
     if (fiber.catchError) {
@@ -1765,7 +1768,7 @@ var Refs = {
                 fiber.deleteRef = true;
             }
         } catch (e) {
-            pushError(fiber, "ref", e);
+            pushError(fiber, 'ref', e);
         }
     }
 };
@@ -1788,7 +1791,7 @@ var refStrategy = {
     }
 };
 
-var domFns = ["insertElement", "updateContent", "updateAttribute"];
+var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
 var domEffects = [PLACE, CONTENT, ATTR];
 var domRemoved = [];
 function commitDFSImpl(fiber) {
@@ -1826,6 +1829,7 @@ function commitDFSImpl(fiber) {
                 f.hasMounted = true;
             } else if (f.effectTag > WORKING) {
                 commitEffects(f);
+                f.hasMounted = true;
                 if (f.capturedValues) {
                     f.effectTag = CAPTURE;
                 }
@@ -1880,17 +1884,23 @@ function commitEffects(fiber) {
                     Renderer.updateControlled(fiber);
                     break;
                 case HOOK:
-                    if (fiber.hasMounted) {
-                        guardCallback(instance, "componentDidUpdate", [updater.prevProps, updater.prevState, updater.snapshot]);
+                    if (instance.__isStateless) {
+                        var uneffects = fiber.updateQueue.uneffects;
+                        uneffects.length = 0;
+                        safeEach(fiber.updateQueue.effects, uneffects);
+                    } else if (fiber.hasMounted) {
+                        guardCallback(instance, 'componentDidUpdate', [updater.prevProps, updater.prevState, updater.snapshot]);
                     } else {
                         fiber.hasMounted = true;
-                        guardCallback(instance, "componentDidMount", []);
+                        guardCallback(instance, 'componentDidMount', []);
                     }
                     delete fiber._hydrating;
                     if (fiber.catchError) {
                         fiber.effectTag = amount;
                         return;
                     }
+                    break;
+                case EFFECT:
                     break;
                 case REF:
                     Refs.fireRef(fiber, instance);
@@ -1939,13 +1949,25 @@ function disposeFibers(fiber) {
     delete fiber.oldChildren;
     fiber.children = {};
 }
+function safeEach(effects$$1, others) {
+    effects$$1.forEach(function (fn) {
+        try {
+            var f = fn();
+            if (others && typeof f === 'function') {
+                others.push(f);
+            }
+        } catch (e) {      }
+    });
+    effects$$1.length = 0;
+}
 function disposeFiber(fiber, force) {
     var stateNode = fiber.stateNode,
         effectTag = fiber.effectTag;
     if (!stateNode) {
         return;
     }
-    if (!stateNode.__isStateless && fiber.ref) {
+    var isStateless = stateNode.__isStateless;
+    if (!isStateless && fiber.ref) {
         Refs.fireRef(fiber, null);
     }
     if (effectTag % DETACH == 0 || force === true) {
@@ -1954,8 +1976,11 @@ function disposeFiber(fiber, force) {
         } else {
             Renderer.onDispose(fiber);
             if (fiber.hasMounted) {
+                if (isStateless) {
+                    safeEach(fiber.updateQueue.uneffects);
+                }
                 stateNode.updater.enqueueSetState = returnFalse;
-                guardCallback(stateNode, "componentWillUnmount", []);
+                guardCallback(stateNode, 'componentWillUnmount', []);
                 delete fiber.stateNode;
             }
         }
@@ -1999,7 +2024,7 @@ function render(vnode, root, callback) {
         Renderer.emptyElement(container);
     }
     var carrier = {};
-    updateComponent(container.hostRoot, {
+    updateComponent(container.child, {
         child: vnode
     }, wrapCb(callback, carrier), immediateUpdate);
     return carrier.instance;
@@ -2162,8 +2187,7 @@ function pushChildQueue(fiber, queue) {
         queue.push(fiber);
     }
 }
-function updateComponent(instance, state, callback, immediateUpdate) {
-    var fiber = get(instance);
+function updateComponent(fiber, state, callback, immediateUpdate) {
     fiber.dirty = true;
     var sn = typeNumber(state);
     var isForced = state === true;
