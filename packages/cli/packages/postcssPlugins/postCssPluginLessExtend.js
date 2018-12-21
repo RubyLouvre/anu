@@ -64,6 +64,7 @@ const postCssPluginLessExtend = postCss.plugin('postCssPluginLessExtend', () => 
 
     return (root) => {
         root.walk((node) => {
+            // console.log(node);
             if (node.extend && (node.selector || node.parent.selector)) {
                 if (!node.selector) {
                     node = node.parent;
@@ -78,7 +79,7 @@ const postCssPluginLessExtend = postCss.plugin('postCssPluginLessExtend', () => 
                         if (decl.extend) {
                             const selectors = parseExtendSelector(':' + decl.value);
                             selectors.forEach(selector => {
-                                extendSelector.to = extendSelector.to.concat(selector.to);
+                                extendSelector.to = extendSelector.to.concat(selector.to)
                             });
                         }
                     });
@@ -87,15 +88,16 @@ const postCssPluginLessExtend = postCss.plugin('postCssPluginLessExtend', () => 
                         if (isAll) {
                             selector = selector.replace(isAllReg, '');
                         }
-                        root.walkRules((rule) => {
-                            if (isAll) {
-                                const matchedRule = parseSelector(rule.selector).find(s => (s.match(selector)));
-                                if (matchedRule) {
-                                    rule.selector += `, ${matchedRule.replace(selector, extendSelector.from)}`;
-                                }
-                            } else {
-                                if (parseSelector(rule.selector).find(s => (s === selector))) {
-                                    rule.selector += `, ${extendSelector.from}`;
+                        root.each((node) => {
+                            if (node.type === 'rule') {
+                                if (isAll) {
+                                    if (parseSelector(node.selector).find(s => (s.match(selector)))) {
+                                        node.selector += `, ${parseSelector(node.selector).map((s) => (s.replace(new RegExp(selector, 'g'), extendSelector.from)))}`;
+                                    }
+                                } else {
+                                    if (parseSelector(node.selector).find(s => (s === selector))) {
+                                        node.selector += `, ${extendSelector.from}`;
+                                    }
                                 }
                             }
                             
