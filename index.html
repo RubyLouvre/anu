@@ -8,9 +8,8 @@
 <script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
   <script src="./react-dom.development.js"></script>
 -->
-
  <script src="./dist/React.js"></script>
-
+ 
 	<script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
@@ -44,18 +43,54 @@ var container = document.getElementById('root');
           }
       };
 };
-var {useState,useCallback} = React;
-var last
-function App (){
-    const [count, dispatch] = useState(5);
-    var increment = useCallback(() => {
-      dispatch(p => p + 1 )
-    }, [])
-    console.log(last, increment === last )
-     last = increment;
-      return <div> 
-              <button type='button' onClick={increment}>{ count }</button>
-            </div>
+var {useState, useEffect, useRef} = React;
+function Example() {
+    const [count, setCount] = useState(0);
+    const [text, setText] = useState('');
+    var a = useRef("xxx")
+    useEffect(() => {
+      console.log(a, '方法内部')
+       document.title = `You clicked ${count} times`;
+       return () =>{
+        document.title = `remove`;
+       }
+     });
+    console.log(count, '更新Example')
+    return (
+      <quoteblock>
+        <p>You clicked {count} times</p>
+        <button onClick={() => setCount(count + 1)}>
+          Click me
+        </button>
+        <input ref={a} value={text} onChange={function(e){
+          setText(e.target.value)
+        }} />
+        <span>共{text.length}个字符</span>
+      </quoteblock>
+    );
+}
+class App extends React.Component{
+    state = {
+      aaa: 1
+    }
+    onClick(){
+      this.setState(function(s){
+        return {
+          aaa: s.aaa +1
+        }
+      })
+    }
+    componentDidMount(){
+      console.log("app mount")
+    }
+    componentDidUpdate(){
+      console.log("app update")
+    }
+    render(){
+      return <div>{this.state.aaa < 10 ? <Example />: null}
+              <h1 onClick={this.onClick.bind(this)}>{ this.state.aaa}</h1>
+        </div>
+    }
 }
 ReactDOM.render(<App />, container)
 	

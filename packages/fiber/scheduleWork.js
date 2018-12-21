@@ -42,7 +42,7 @@ export function render(vnode, root, callback) {
     }
     let carrier = {};
     updateComponent(
-        container.hostRoot,
+        container.child,
         {
             child: vnode
         },
@@ -244,8 +244,7 @@ function pushChildQueue(fiber, queue) {
     }
 }
 //setState的实现
-function updateComponent(instance, state, callback, immediateUpdate) {
-    let fiber = get(instance);
+function updateComponent(fiber, state, callback, immediateUpdate) {
     fiber.dirty = true;
 
     let sn = typeNumber(state);

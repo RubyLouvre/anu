@@ -1,8 +1,9 @@
 import { Renderer } from 'react-core/createRenderer';
 import { HOOK } from './effectTag';
+import { get } from 'react-core/util';
 function setter(compute, cursor, value) {
     this.updateQueue[cursor] = compute(cursor, value);
-    Renderer.updateComponent(this.stateNode, true);
+    Renderer.updateComponent(this, true);
 }
 var hookCursor = 0;
 export function resetCursor() {
@@ -74,8 +75,7 @@ export var dispatcher = {
 };
 //https://reactjs.org/docs/hooks-reference.html
 function getCurrentFiber() {
-    let instance = Renderer.currentOwner;
-    return instance._reactInternalFiber;
+    return get(Renderer.currentOwner);
 }
 
 function areHookInputsEqual(arr1, arr2) {

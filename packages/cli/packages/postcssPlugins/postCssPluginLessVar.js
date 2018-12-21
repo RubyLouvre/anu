@@ -4,7 +4,7 @@ const removeQuoteReg = /^["|'](.*)["|']$/;
 
 const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
     function findVarValue(node, key) {
-        let result = "";
+        let result = '';
         // 去掉变量定义首尾引号
         key = key.replace(removeQuoteReg, '$1');
         let find = false;

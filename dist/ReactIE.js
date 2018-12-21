@@ -206,10 +206,10 @@
             return this.updater.isMounted(this);
         },
         setState: function setState(state, cb) {
-            this.updater.enqueueSetState(this, state, cb);
+            this.updater.enqueueSetState(get(this), state, cb);
         },
         forceUpdate: function forceUpdate(cb) {
-            this.updater.enqueueSetState(this, true, cb);
+            this.updater.enqueueSetState(get(this), true, cb);
         },
         render: function render() {
             throw "must implement render";
@@ -2672,7 +2672,7 @@
             Renderer.emptyElement(container);
         }
         var carrier = {};
-        updateComponent(container.hostRoot, {
+        updateComponent(container.child, {
             child: vnode
         }, wrapCb(callback, carrier), immediateUpdate);
         return carrier.instance;
@@ -2835,8 +2835,7 @@
             queue.push(fiber);
         }
     }
-    function updateComponent(instance, state, callback, immediateUpdate) {
-        var fiber = get(instance);
+    function updateComponent(fiber, state, callback, immediateUpdate) {
         fiber.dirty = true;
         var sn = typeNumber(state);
         var isForced = state === true;

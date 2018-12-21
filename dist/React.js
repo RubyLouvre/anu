@@ -206,10 +206,10 @@
             return this.updater.isMounted(this);
         },
         setState: function setState(state, cb) {
-            this.updater.enqueueSetState(this, state, cb);
+            this.updater.enqueueSetState(get(this), state, cb);
         },
         forceUpdate: function forceUpdate(cb) {
-            this.updater.enqueueSetState(this, true, cb);
+            this.updater.enqueueSetState(get(this), true, cb);
         },
         render: function render() {
             throw "must implement render";
@@ -725,7 +725,7 @@
 
     function setter(compute, cursor, value) {
         this.updateQueue[cursor] = compute(cursor, value);
-        Renderer.updateComponent(this.stateNode, true);
+        Renderer.updateComponent(this, true);
     }
     var hookCursor = 0;
     function resetCursor() {
@@ -790,8 +790,7 @@
         }
     };
     function getCurrentFiber() {
-        var instance = Renderer.currentOwner;
-        return instance._reactInternalFiber;
+        return get(Renderer.currentOwner);
     }
     function areHookInputsEqual(arr1, arr2) {
         for (var i = 0; i < arr1.length; i++) {
@@ -2769,7 +2768,7 @@
             Renderer.emptyElement(container);
         }
         var carrier = {};
-        updateComponent(container.hostRoot, {
+        updateComponent(container.child, {
             child: vnode
         }, wrapCb(callback, carrier), immediateUpdate);
         return carrier.instance;
@@ -2932,8 +2931,7 @@
             queue.push(fiber);
         }
     }
-    function updateComponent(instance, state, callback, immediateUpdate) {
-        var fiber = get(instance);
+    function updateComponent(fiber, state, callback, immediateUpdate) {
         fiber.dirty = true;
         var sn = typeNumber(state);
         var isForced = state === true;
