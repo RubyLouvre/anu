@@ -47,12 +47,14 @@ function checkBuildType(type) {
   return 'wx';
 }
 
-function transform(code, buildType) {
+function transform(code, buildType, cb) {
   code = baseCode(code);
   config['buildType'] = checkBuildType(buildType);
   console.log('type', config.buildType)
-
-  let s = require('../packages/cli/packages/babelPlugins/miniappVisitor');
+  let p = '../packages/cli/packages/babelPlugins/miniappVisitor';
+  // 清缓存
+  delete require.cache[require.resolve(p)];
+  let s = require(p);
   babel.transform(
     code,
     {
@@ -87,23 +89,25 @@ function transform(code, buildType) {
           };
         }
       ]
-    }
+    },
+   
   );
+  cb && cb()
 }
 
 // 获取xml 数据
-function getXml() {
-  console.log('queue', queue.length)
-  while(queue.length) {
-    let {code, path, type } = queue.shift();
+// function getXml() {
+//   console.log('queue', queue)
+//   while(queue.length) {
+//     let {code, path, type } = queue.shift();
+//     // console.log('code', code)
+//     if(!type) {
+//       return code
+//     } 
 
-    if(!type) {
-      return code
-    } 
-
-    return ''
-  }
-}
+//     return ''
+//   }
+// }
 
 let code = `return (
   <View>{this.state.array.map(function(item) {
@@ -114,9 +118,20 @@ let code = `return (
 // 定义执行平台
 
 // console.log('======',config.buildType)
-transform(code);
-transform(code, 'bu');
+// transform(code, 'wx', ()=>{
+//   console.log('1111', queue);
+//   //queue = [];
+
+  
+// });
+
+transform(code, 'bu', ()=>{
+  console.log('queue', queue);
+});
 
 
-console.log('1=====',getXml());
-console.log('2=====',getXml());
+
+
+
+// console.log('1=====',getXml());
+// console.log('2=====',getXml());

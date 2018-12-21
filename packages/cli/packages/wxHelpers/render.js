@@ -104,6 +104,7 @@ exports.exit = function(astPath, type, componentName, modules) {
             using['anu-' + parentClass.toLowerCase()] =
                 '/components/' + parentClass + '/index';
         }
+
         queue.push({
             path: utils.updatePath(
                 modules.sourcePath,
