@@ -4,10 +4,9 @@ const removeQuoteReg = /^["|'](.*)["|']$/;
 
 const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
     function findVarValue(node, key) {
+        let result;
         // 去掉变量定义首尾引号
-        key = key.replace(removeQuoteReg, function(a, b){
-            return b;
-        });
+        key = key.replace(removeQuoteReg, '$1');
         let find = false;
         let value;
         // 遍历variable 找出当前节点下变量定义
@@ -22,9 +21,9 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
         }
         // 没找到或到达根节点则退出递归
         if (!find && node.type !== 'root') {
-            return findVarValue(node.parent, key);
+            result = findVarValue(node.parent, key);
         }
-        return null;
+        return result.replace(removeQuoteReg, '$1');
     }
 
     function parseVariable(variable, decl) {
