@@ -51,7 +51,9 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
     return (root) => {
         // 解析变量声明
         root.walkDecls(decl => {
-            // 取出变量定义
+            // 转换变量的key
+            decl.prop = parseVariable(decl.prop, decl);
+            // 转换变量的value
             decl.value = parseVariable(decl.value, decl);
         });
         // 解析插值变量
