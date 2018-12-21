@@ -9,6 +9,7 @@ const chalk = require('chalk');
 const deps = [];
 const config = require('../config');
 const buildType = config['buildType'];
+console.log('buildType', buildType)
 const quickFiles = require('../quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
