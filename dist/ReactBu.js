@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-21T06
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-21
  */
 
 var arrayPush = Array.prototype.push;
@@ -1768,7 +1768,7 @@ var Refs = {
                 fiber.deleteRef = true;
             }
         } catch (e) {
-            pushError(fiber, "ref", e);
+            pushError(fiber, 'ref', e);
         }
     }
 };
