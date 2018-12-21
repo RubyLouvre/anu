@@ -4,7 +4,7 @@ const removeQuoteReg = /^["|'](.*)["|']$/;
 
 const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
     function findVarValue(node, key) {
-        let result;
+        let result = "";
         // 去掉变量定义首尾引号
         key = key.replace(removeQuoteReg, '$1');
         let find = false;
@@ -17,12 +17,13 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
             }
         });
         if (find && value) {
-            return value;
+            result = value;
         }
         // 没找到或到达根节点则退出递归
         if (!find && node.type !== 'root') {
             result = findVarValue(node.parent, key);
         }
+
         return result.replace(removeQuoteReg, '$1');
     }
 
@@ -57,10 +58,17 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
         root.walkRules(rule => {
             rule.selector = parseVariable(rule.selector, rule);
         });
-        // 移除变量声明
-        root.walkAtRules(rule => {
-            if (rule.variable) {
-                rule.remove();
+        
+        root.walkAtRules(atrule => {
+            // import语句
+            if (atrule.import) {
+                atrule.params = parseVariable(atrule.params, atrule);
+            }
+        });
+        root.walkAtRules(atrule => {
+            // 移除变量声明
+            if (atrule.variable) {
+                atrule.remove();
             }
         });
     };
