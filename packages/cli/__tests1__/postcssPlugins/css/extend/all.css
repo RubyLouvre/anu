@@ -8,3 +8,6 @@
 .replacement:hover {
   color: green;
 }
+.replacement {
+  color: red;
+}

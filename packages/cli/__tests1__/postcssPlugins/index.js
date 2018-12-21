@@ -55,24 +55,25 @@ async function readFile(filepath) {
 
 function compileLess(code, dir) {
     return postCss([
-        require('postcss-import')({
-            resolve(importer, baseDir){
-                //如果@import的值没有文件后缀
-                if (!/\.less$/.test(importer)) {
-                    importer = importer + '.less';
-                }
-                //处理alias路径
-                return utils.resolveStyleAlias(importer, baseDir);
-            }
-        }),
+        require('postcss-nested'), // 嵌套
+        // require('postcss-import')({
+        //     resolve(importer, baseDir){
+        //         //如果@import的值没有文件后缀
+        //         if (!/\.less$/.test(importer)) {
+        //             importer = importer + '.less';
+        //         }
+        //         //处理alias路径
+        //         return utils.resolveStyleAlias(importer, baseDir);
+        //     }
+        // }),
         require('../postcssPlugins/postCssPluginLessVar'),
         require('../postcssPlugins/postCssPluginLessMixins'),
         require('../postcssPlugins/postCssPluginLessFunction'),
+        require('../postcssPlugins/postCssPluginLessMerge'),
         require('postcss-automath'),      //5px + 2 => 7px
         // require('postcss-nested-props'),   //属性嵌套
-        require('postcss-nested'), // 嵌套
         require('../postcssPlugins/postCssPluginLessExtend'),
-        require('../postcssPlugins/postCssPluginRemoveCommentsAndEmptyRule')
+        require('../postcssPlugins/postCssPluginRemoveCommentsAndEmptyRule'),
     ]).process(
         code,
         {
