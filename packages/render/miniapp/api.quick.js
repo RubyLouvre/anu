@@ -22,11 +22,13 @@ import { getNetworkType, onNetworkStatusChange } from './quickApis/network.js';
 import { getSystemInfo } from './quickApis/device.js';
 import { chooseImage } from './quickApis/media.js';
 import { createShortcut } from './quickApis/system.js';
-import { runFunction,_getApp } from './utils';
-import {createCanvasContext} from './quickApis/canvas.js'
+import { runFunction, _getApp } from './utils';
+import { showToast } from './quickApis/showToast';
+
+import { createCanvasContext } from './quickApis/canvas.js';
 
 function createRouter(name) {
-    return function(obj) {
+    return function (obj) {
         const router = require('@system.router');
         const params = {};
         let href = obj.url || obj.uri || '';
@@ -85,12 +87,7 @@ export var api = {
         var prompt = require('@system.prompt');
         prompt.showDialog(obj);
     },
-    showToast(obj) {
-        var prompt = require('@system.prompt');
-        obj.message = obj.title;
-        obj.duration = obj.duration / 1000;
-        prompt.showToast(obj);
-    },
+    showToast: showToast,
     hideToast: noop,
     showActionSheet(obj) {
         var prompt = require('@system.prompt');
@@ -123,7 +120,7 @@ export var api = {
     share(obj) {
         var share = require('@service.share');
         share.getAvailablePlatforms({
-            success: function(data) {
+            success: function (data) {
                 let shareType = 0;
                 if (obj.path && obj.title) {
                     shareType = 0;
@@ -140,7 +137,7 @@ export var api = {
                 share.share(obj);
             }
         });
-        
+
     },
 
     // 上传

@@ -1171,19 +1171,26 @@ function chooseImage(_ref) {
   });
 }
 
+function showToast(obj) {
+    var prompt = require('@system.prompt');
+    obj.message = obj.title;
+    obj.duration = obj.duration / 1000;
+    prompt.showToast(obj);
+}
+
 var shortcut = require('@system.shortcut');
 function createShortcut() {
     shortcut.hasInstalled({
         success: function success(ret) {
             if (ret) {
-                api.showToast({ title: '已创建桌面图标' });
+                showToast({ title: '已创建桌面图标' });
             } else {
                 shortcut.install({
                     success: function success() {
-                        api.showToast({ title: '成功创建桌面图标' });
+                        showToast({ title: '成功创建桌面图标' });
                     },
                     fail: function fail(errmsg, errcode) {
-                        api.showToast({ title: 'error: ' + errcode + '---' + errmsg });
+                        showToast({ title: 'error: ' + errcode + '---' + errmsg });
                     }
                 });
             }
@@ -1259,12 +1266,7 @@ var api = {
         var prompt = require('@system.prompt');
         prompt.showDialog(obj);
     },
-    showToast: function showToast(obj) {
-        var prompt = require('@system.prompt');
-        obj.message = obj.title;
-        obj.duration = obj.duration / 1000;
-        prompt.showToast(obj);
-    },
+    showToast: showToast,
     hideToast: noop,
     showActionSheet: function showActionSheet(obj) {
         var prompt = require('@system.prompt');

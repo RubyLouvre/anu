@@ -1,18 +1,18 @@
-import { api }  from '../api.quick';
+import { showToast }  from './showToast';
 const shortcut = require('@system.shortcut');
 
 function createShortcut () {
     shortcut.hasInstalled({
         success: function (ret) {
             if (ret) {
-                api.showToast({ title: '已创建桌面图标' });
+                showToast({ title: '已创建桌面图标' });
             } else {
                 shortcut.install({
                     success: function () {
-                        api.showToast({ title: '成功创建桌面图标' });
+                        showToast({ title: '成功创建桌面图标' });
                     },
                     fail: function (errmsg, errcode) {
-                        api.showToast({ title: 'error: ' + errcode + '---' + errmsg });
+                        showToast({ title: 'error: ' + errcode + '---' + errmsg });
                     }
                 });
             }
