@@ -725,67 +725,61 @@
 
     function setter(cursor, getter, value) {
         var state = {};
-        if (getter) {
-            value = getter(cursor, value);
-        }
-        state[cursor] = value;
-        Renderer.updateComponent(this, state);
+        state[cursor] = getter(cursor, value);
+        Renderer.updateComponent(this.stateNode, state);
     }
     var hookCursor = 0;
     function resetCursor() {
         hookCursor = 0;
     }
-    function useReducer(reducer, initValue, initAction) {
-        var instance = Renderer.currentOwner;
-        var cursor = hookCursor;
-        var fiber = instance._reactInternalFiber;
-        var pendings = fiber.updateQueue.pendingStates;
-        var getter = reducer ? function (i, action) {
-            return reducer(pendings[0][i], action || { type: Math.random });
-        } : null;
-        var dispatch = setter.bind(instance, cursor, getter);
-        hookCursor++;
-        if (fiber.hasMounted) {
-            var newState = {};
-            pendings.unshift(newState);
-            Object.assign.apply(null, pendings);
-            pendings.length = 1;
-            return [newState[cursor], dispatch];
-        }
-        var state = {};
-        state[cursor] = initAction ? reducer(initValue, initAction) : initValue;
-        pendings.push(state);
-        return [state[cursor], dispatch];
-    }
     var dispatcher = {
         useContext: function useContext(contextType) {
             return new contextType.Provider().emitter.get();
         },
-        useReducer: useReducer,
-        useCallback: function useCallback(callback, args) {
-            var instance = Renderer.currentOwner;
-            var fiber = instance._reactInternalFiber;
-            var key = hookCursor + 'Cb',
-                fn = void 0;
-            var updateQueue = fiber.updateQueue;
+        useReducer: function useReducer(reducer, initValue, initAction) {
+            var cursor = hookCursor;
+            var fiber = getCurrentFiber();
+            var pendings = fiber.updateQueue.pendingStates;
+            var getter = reducer ? function (index, action) {
+                return reducer(pendings[0][index], action || { type: Math.random });
+            } : function (index, value) {
+                var oldValue = pendings[0][index];
+                return typeof value == 'function' ? value(oldValue) : value;
+            };
+            var dispatch = setter.bind(fiber, cursor, getter);
             hookCursor++;
             if (fiber.hasMounted) {
-                fn = updateQueue[key];
-            } else {
-                if (Array.isArray(args) && args.length) {
-                    fn = callback.bind(null, args);
-                } else {
-                    fn = callback;
-                }
-                updateQueue[key] = fn;
+                var newState = {};
+                pendings.unshift(newState);
+                Object.assign.apply(null, pendings);
+                pendings.length = 1;
+                return [newState[cursor], dispatch];
             }
-            Renderer.updateComponent(instance, null, fn);
-            return [fn, fiber.updateQueue.pendingCbs];
+            var state = {};
+            state[cursor] = initAction ? reducer(initValue, initAction) : initValue;
+            pendings.push(state);
+            return [state[cursor], dispatch];
+        },
+        useCallbackOrMeno: function useCallbackOrMeno(callback, inputs, isMeno) {
+            var nextInputs = Array.isArray(inputs) ? inputs : [callback];
+            var fiber = getCurrentFiber();
+            var key = hookCursor + 'CM';
+            var updateQueue = fiber.updateQueue;
+            hookCursor++;
+            var prevState = updateQueue[key];
+            if (prevState) {
+                var prevInputs = prevState[1];
+                if (areHookInputsEqual(nextInputs, prevInputs)) {
+                    return prevState[0];
+                }
+            }
+            var value = isMeno ? callback() : callback;
+            updateQueue[key] = [value, nextInputs];
+            return value;
         },
         useRef: function useRef(initValue) {
-            var instance = Renderer.currentOwner;
             var key = hookCursor + 'Ref';
-            var fiber = instance._reactInternalFiber;
+            var fiber = getCurrentFiber();
             var updateQueue = fiber.updateQueue;
             hookCursor++;
             if (fiber.hasMounted) {
@@ -795,14 +789,26 @@
             return ref;
         },
         useEffect: function useEffect(callback) {
-            var instance = Renderer.currentOwner;
-            var fiber = instance._reactInternalFiber;
+            var fiber = getCurrentFiber();
             if (fiber.effectTag % HOOK) {
                 fiber.effectTag *= HOOK;
             }
             fiber.updateQueue.effects.push(callback);
         }
     };
+    function getCurrentFiber() {
+        var instance = Renderer.currentOwner;
+        return instance._reactInternalFiber;
+    }
+    function areHookInputsEqual(arr1, arr2) {
+        for (var i = 0; i < arr1.length; i++) {
+            if (Object.is(arr1[i], arr2[i])) {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
 
     function useState(initValue) {
         return dispatcher.useReducer(null, initValue);
@@ -810,13 +816,13 @@
     function useEffect(initValue) {
         return dispatcher.useEffect(initValue);
     }
-    function useCallback(initValue) {
-        return dispatcher.useCallback(initValue);
+    function useCallback(callback, inputs) {
+        return dispatcher.useCallbackOrMeno(callback, inputs);
     }
     function useRef(initValue) {
         return dispatcher.useRef(initValue);
     }
-    function useReducer$1(reducer, initValue, initAction) {
+    function useReducer(reducer, initValue, initAction) {
         return dispatcher.useReducer(reducer, initValue, initAction);
     }
 
@@ -3206,7 +3212,7 @@
             forwardRef: forwardRef,
             useState: useState,
             useEffect: useEffect,
-            useReducer: useReducer$1,
+            useReducer: useReducer,
             useCallback: useCallback,
             useRef: useRef,
             createElement: createElement,

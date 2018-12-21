@@ -7,8 +7,11 @@ export function useState(initValue) {
 export function useEffect(initValue) {
     return dispatcher.useEffect(initValue);
 }
-export function useCallback(initValue) {
-    return dispatcher.useCallback(initValue);
+export function useCallback(callback, inputs) {
+    return dispatcher.useCallbackOrMeno(callback, inputs);
+}
+export function useMeno(create, inputs) {
+    return dispatcher.useCallbackOrMeno(create, inputs, true);
 }
 export function useRef(initValue) {
     return dispatcher.useRef(initValue);
