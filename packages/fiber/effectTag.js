@@ -14,7 +14,7 @@ export const CAPTURE = 31; //出错
 //上面的副作用的功能与位置可能变化频繁，我们需确保它们从小到大排列
 // PLACE, CONTENT, ATTR,
 export const effectNames = [  DUPLEX, HOOK,
-    REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
+    REF, DETACH, CALLBACK, EFFECT,CAPTURE].sort(function (a, b) {
     return a - b;
 });
 export const effectLength = effectNames.length;

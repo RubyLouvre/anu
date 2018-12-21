@@ -243,7 +243,7 @@ export function updateClassComponent(fiber, info) {
 
         delete fiber.dirty;
         fiber.effectTag *= HOOK;
-    } else {
+    } else if (fiber.effectTag == 1){
         fiber.effectTag = WORKING;
     }
 

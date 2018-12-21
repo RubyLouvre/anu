@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-12-20
+ * by 司徒正美 Copyright 2018-12-21
  * IE9+
  */
 
@@ -706,46 +706,76 @@
         };
     }
 
-    function setter(count, value) {
+    var NOWORK = 1;
+    var WORKING = 2;
+    var PLACE = 3;
+    var CONTENT = 5;
+    var ATTR = 7;
+    var DUPLEX = 11;
+    var DETACH = 13;
+    var HOOK = 17;
+    var REF = 19;
+    var CALLBACK = 23;
+    var EFFECT = 29;
+    var CAPTURE = 31;
+    var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, EFFECT, CAPTURE].sort(function (a, b) {
+        return a - b;
+    });
+    var effectLength = effectNames.length;
+
+    function setter(cursor, value) {
         var state = {};
-        console.log(count, value, 'count');
-        state[count] = value;
+        state[cursor] = value;
         Renderer.updateComponent(this, state);
     }
-    var dispatcherCount = 0;
-    function resetCount() {
-        dispatcherCount = 0;
+    var hookCursor = 0;
+    function resetCursor() {
+        hookCursor = 0;
     }
     var dispatcher = {
         useState: function useState(initValue) {
             var instance = Renderer.currentOwner;
-            var count = dispatcherCount;
-            var fn = setter.bind(instance, count);
+            var cursor = hookCursor;
+            var fn = setter.bind(instance, cursor);
             var fiber = instance._reactInternalFiber;
             var pendings = fiber.updateQueue.pendingStates;
-            dispatcherCount++;
+            hookCursor++;
             if (fiber.hasMounted) {
                 var newState = {};
-                pendings.forEach(function (state) {
-                    Object.assign(newState, state);
-                });
-                pendings[0] = newState;
+                pendings.unshift(newState);
+                Object.assign.apply(null, pendings);
                 pendings.length = 1;
-                return [newState[count], fn];
+                return [newState[cursor], fn];
             }
             var state = {};
-            state[count] = initValue;
+            state[cursor] = initValue;
             pendings.push(state);
             return [initValue, fn];
+        },
+        useContext: function useContext(contextType) {
+            return new contextType.Provider().emitter.get();
+        },
+        useCallback: function useCallback(callback) {
+            var instance = Renderer.currentOwner;
+            var fiber = instance._reactInternalFiber;
+            Renderer.updateComponent(instance, null, callback);
+            return [callback, fiber.updateQueue.pendingCbs];
+        },
+        useEffect: function useEffect(callback) {
+            var instance = Renderer.currentOwner;
+            var fiber = instance._reactInternalFiber;
+            if (fiber.effectTag % HOOK) {
+                fiber.effectTag *= HOOK;
+            }
+            fiber.updateQueue.effects.push(callback);
         }
     };
 
-    function resolveDispatcher() {
-        return dispatcher;
-    }
     function useState(initValue) {
-        var dispatcher$$1 = resolveDispatcher();
-        return dispatcher$$1.useState(initValue);
+        return dispatcher.useState(initValue);
+    }
+    function useEffect(initValue) {
+        return dispatcher.useEffect(initValue);
     }
 
     function findHostInstance(fiber) {
@@ -1498,22 +1528,6 @@
         SyntheticEvent: SyntheticEvent
     };
 
-    var NOWORK = 1;
-    var WORKING = 2;
-    var PLACE = 3;
-    var CONTENT = 5;
-    var ATTR = 7;
-    var DUPLEX = 11;
-    var DETACH = 13;
-    var HOOK = 17;
-    var REF = 19;
-    var CALLBACK = 23;
-    var CAPTURE = 29;
-    var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
-        return a - b;
-    });
-    var effectLength = effectNames.length;
-
     var isSpecialAttr = {
         style: 1,
         autoFocus: 1,
@@ -1770,7 +1784,9 @@
     function UpdateQueue() {
         return {
             pendingStates: [],
-            pendingCbs: []
+            pendingCbs: [],
+            effects: [],
+            uneffects: []
         };
     }
     function createInstance(fiber, context) {
@@ -2231,7 +2247,7 @@
             }
             delete fiber.dirty;
             fiber.effectTag *= HOOK;
-        } else {
+        } else if (fiber.effectTag == 1) {
             fiber.effectTag = WORKING;
         }
         if (fiber.catchError) {
@@ -2241,7 +2257,7 @@
         fiber._hydrating = true;
         Renderer.currentOwner = instance;
         var rendered = applyCallback(instance, 'render', []);
-        resetCount();
+        resetCursor();
         diffChildren(fiber, rendered);
         Renderer.onAfterRender(fiber);
     }
@@ -2479,7 +2495,7 @@
         }
     };
 
-    var domFns = ["insertElement", "updateContent", "updateAttribute"];
+    var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
     var domEffects = [PLACE, CONTENT, ATTR];
     var domRemoved = [];
     function commitDFSImpl(fiber) {
@@ -2517,6 +2533,7 @@
                     f.hasMounted = true;
                 } else if (f.effectTag > WORKING) {
                     commitEffects(f);
+                    f.hasMounted = true;
                     if (f.capturedValues) {
                         f.effectTag = CAPTURE;
                     }
@@ -2571,17 +2588,23 @@
                         Renderer.updateControlled(fiber);
                         break;
                     case HOOK:
-                        if (fiber.hasMounted) {
-                            guardCallback(instance, "componentDidUpdate", [updater.prevProps, updater.prevState, updater.snapshot]);
+                        if (instance.__isStateless) {
+                            var uneffects = fiber.updateQueue.uneffects;
+                            uneffects.length = 0;
+                            safeEach(fiber.updateQueue.effects, uneffects);
+                        } else if (fiber.hasMounted) {
+                            guardCallback(instance, 'componentDidUpdate', [updater.prevProps, updater.prevState, updater.snapshot]);
                         } else {
                             fiber.hasMounted = true;
-                            guardCallback(instance, "componentDidMount", []);
+                            guardCallback(instance, 'componentDidMount', []);
                         }
                         delete fiber._hydrating;
                         if (fiber.catchError) {
                             fiber.effectTag = amount;
                             return;
                         }
+                        break;
+                    case EFFECT:
                         break;
                     case REF:
                         Refs.fireRef(fiber, instance);
@@ -2630,13 +2653,25 @@
         delete fiber.oldChildren;
         fiber.children = {};
     }
+    function safeEach(effects$$1, others) {
+        effects$$1.forEach(function (fn) {
+            try {
+                var f = fn();
+                if (others && typeof f === 'function') {
+                    others.push(f);
+                }
+            } catch (e) {      }
+        });
+        effects$$1.length = 0;
+    }
     function disposeFiber(fiber, force) {
         var stateNode = fiber.stateNode,
             effectTag = fiber.effectTag;
         if (!stateNode) {
             return;
         }
-        if (!stateNode.__isStateless && fiber.ref) {
+        var isStateless = stateNode.__isStateless;
+        if (!isStateless && fiber.ref) {
             Refs.fireRef(fiber, null);
         }
         if (effectTag % DETACH == 0 || force === true) {
@@ -2645,8 +2680,11 @@
             } else {
                 Renderer.onDispose(fiber);
                 if (fiber.hasMounted) {
+                    if (isStateless) {
+                        safeEach(fiber.updateQueue.uneffects);
+                    }
                     stateNode.updater.enqueueSetState = returnFalse;
-                    guardCallback(stateNode, "componentWillUnmount", []);
+                    guardCallback(stateNode, 'componentWillUnmount', []);
                     delete fiber.stateNode;
                 }
             }
@@ -3125,6 +3163,7 @@
             createRef: createRef,
             forwardRef: forwardRef,
             useState: useState,
+            useEffect: useEffect,
             createElement: createElement,
             cloneElement: cloneElement,
             PureComponent: PureComponent,
