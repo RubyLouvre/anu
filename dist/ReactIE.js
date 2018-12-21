@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-12-20
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-12-21
  */
 
 (function (global, factory) {
@@ -1466,8 +1466,9 @@
     var HOOK = 17;
     var REF = 19;
     var CALLBACK = 23;
-    var CAPTURE = 29;
-    var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
+    var EFFECT = 29;
+    var CAPTURE = 31;
+    var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, EFFECT, CAPTURE].sort(function (a, b) {
         return a - b;
     });
     var effectLength = effectNames.length;
@@ -1728,7 +1729,9 @@
     function UpdateQueue() {
         return {
             pendingStates: [],
-            pendingCbs: []
+            pendingCbs: [],
+            effects: [],
+            uneffects: []
         };
     }
     function createInstance(fiber, context) {
@@ -2189,7 +2192,7 @@
             }
             delete fiber.dirty;
             fiber.effectTag *= HOOK;
-        } else {
+        } else if (fiber.effectTag == 1) {
             fiber.effectTag = WORKING;
         }
         if (fiber.catchError) {
@@ -2436,7 +2439,7 @@
         }
     };
 
-    var domFns = ["insertElement", "updateContent", "updateAttribute"];
+    var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
     var domEffects = [PLACE, CONTENT, ATTR];
     var domRemoved = [];
     function commitDFSImpl(fiber) {
@@ -2474,6 +2477,7 @@
                     f.hasMounted = true;
                 } else if (f.effectTag > WORKING) {
                     commitEffects(f);
+                    f.hasMounted = true;
                     if (f.capturedValues) {
                         f.effectTag = CAPTURE;
                     }
@@ -2528,17 +2532,23 @@
                         Renderer.updateControlled(fiber);
                         break;
                     case HOOK:
-                        if (fiber.hasMounted) {
-                            guardCallback(instance, "componentDidUpdate", [updater.prevProps, updater.prevState, updater.snapshot]);
+                        if (instance.__isStateless) {
+                            var uneffects = fiber.updateQueue.uneffects;
+                            uneffects.length = 0;
+                            safeEach(fiber.updateQueue.effects, uneffects);
+                        } else if (fiber.hasMounted) {
+                            guardCallback(instance, 'componentDidUpdate', [updater.prevProps, updater.prevState, updater.snapshot]);
                         } else {
                             fiber.hasMounted = true;
-                            guardCallback(instance, "componentDidMount", []);
+                            guardCallback(instance, 'componentDidMount', []);
                         }
                         delete fiber._hydrating;
                         if (fiber.catchError) {
                             fiber.effectTag = amount;
                             return;
                         }
+                        break;
+                    case EFFECT:
                         break;
                     case REF:
                         Refs.fireRef(fiber, instance);
@@ -2587,13 +2597,25 @@
         delete fiber.oldChildren;
         fiber.children = {};
     }
+    function safeEach(effects$$1, others) {
+        effects$$1.forEach(function (fn) {
+            try {
+                var f = fn();
+                if (others && typeof f === 'function') {
+                    others.push(f);
+                }
+            } catch (e) {      }
+        });
+        effects$$1.length = 0;
+    }
     function disposeFiber(fiber, force) {
         var stateNode = fiber.stateNode,
             effectTag = fiber.effectTag;
         if (!stateNode) {
             return;
         }
-        if (!stateNode.__isStateless && fiber.ref) {
+        var isStateless = stateNode.__isStateless;
+        if (!isStateless && fiber.ref) {
             Refs.fireRef(fiber, null);
         }
         if (effectTag % DETACH == 0 || force === true) {
@@ -2602,8 +2624,11 @@
             } else {
                 Renderer.onDispose(fiber);
                 if (fiber.hasMounted) {
+                    if (isStateless) {
+                        safeEach(fiber.updateQueue.uneffects);
+                    }
                     stateNode.updater.enqueueSetState = returnFalse;
-                    guardCallback(stateNode, "componentWillUnmount", []);
+                    guardCallback(stateNode, 'componentWillUnmount', []);
                     delete fiber.stateNode;
                 }
             }

@@ -1,5 +1,5 @@
 import { Renderer } from 'react-core/createRenderer';
-import { EFFECT } from './effectTag'
+import { HOOK } from './effectTag';
 function setter(cursor, value) {
     var state = {};
     state[cursor] = value;
@@ -42,8 +42,8 @@ export var dispatcher = {
     useEffect(callback) {
         let instance = Renderer.currentOwner;
         let fiber = instance._reactInternalFiber;
-        if (fiber.effectTag % EFFECT === 0) {
-            fiber.effectTag *= EFFECT;
+        if (fiber.effectTag % HOOK) {
+            fiber.effectTag *= HOOK;
         }
         fiber.updateQueue.effects.push(callback);
     }

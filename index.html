@@ -4,12 +4,12 @@
 <head>
 	<meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-
-<!---	<script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
-  <script src="./react-dom.development.js"></script>-->
-
+<!--
+<script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
+  <script src="./react-dom.development.js"></script>
+-->
  <script src="./dist/React.js"></script>
-
+ 
 	<script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
@@ -21,66 +21,81 @@
 	</div>
 	<script type='text/babel'>
         
-        var container = document.getElementById('root');
-          var div = container;
-          if (!window.ReactDOM) {
-              window.ReactDOM = React;
+var container = document.getElementById('root');
+  var div = container;
+  if (!window.ReactDOM) {
+      window.ReactDOM = React;
+  }
+  var expect = function(a) {
+      return {
+          toBe: function(b) {
+              console.log(a, 'vs', b, a === b);
+          },
+          toEqual(b) {
+              console.log(a, 'vs', b, a + '' === b + '');
+          },
+          toThrow(){
+              try{
+                  a()
+              }catch(e){
+                  console.log(e,"catch")
+              }
           }
-          var expect = function(a) {
-              return {
-                  toBe: function(b) {
-                      console.log(a, 'vs', b, a === b);
-                  },
-                  toEqual(b) {
-                      console.log(a, 'vs', b, a + '' === b + '');
-                  },
-                  toThrow(){
-                      try{
-                          a()
-                      }catch(e){
-                          console.log(e,"catch")
-                      }
-                  }
-              };
-     };
-var useState = React.useState
+      };
+};
+var {useState, useEffect} = React;
 function Example() {
-  var [count, setCount] = useState(0);
-  var [text, onChange] = useState('');
-  console.log(count, '更新Example')
-  return (
-    <quoteblock>
-      <p>You clicked {count} times</p>
-      <button onClick={() => setCount(count + 1)}>
-        Click me
-      </button>
-      <input  value={text} onChange={function(e){
-         onChange(e.target.value)
-      }} />
-      <span>{text.length} characters</span>
-    </quoteblock>
-  );
+    const [count, setCount] = useState(0);
+    const [text, setText] = useState('');
+    useEffect(() => {
+       document.title = `You clicked ${count} times`;
+       return () =>{
+        document.title = `remove`;
+       }
+     });
+     useEffect(() => {
+       
+       return () =>{
+         console.log("unmount")
+       
+       }
+     });
+    console.log(count, '更新Example')
+    return (
+      <quoteblock>
+        <p>You clicked {count} times</p>
+        <button onClick={() => setCount(count + 1)}>
+          Click me
+        </button>
+        <input  value={text} onChange={function(e){
+          setText(e.target.value)
+        }} />
+        <span>共{text.length}个字符</span>
+      </quoteblock>
+    );
 }
 class App extends React.Component{
-  state = {
-    aaa: 1
-  }
-  onClick(){
-    this.setState({
-      aaa: Math.random()
-    })
-  }
-  componentDidMount(){
-    console.log("app mount")
-  }
-  componentDidUpdate(){
-    console.log("app update")
-  }
-  render(){
-    return <div><Example />
-            <h1 onClick={this.onClick.bind(this)}>{ this.state.aaa}</h1>
-      </div>
-  }
+    state = {
+      aaa: 1
+    }
+    onClick(){
+      this.setState(function(s){
+        return {
+          aaa: s.aaa +1
+        }
+      })
+    }
+    componentDidMount(){
+      console.log("app mount")
+    }
+    componentDidUpdate(){
+      console.log("app update")
+    }
+    render(){
+      return <div>{this.state.aaa < 10 ? <Example />: null}
+              <h1 onClick={this.onClick.bind(this)}>{ this.state.aaa}</h1>
+        </div>
+    }
 }
 ReactDOM.render(<App />, container)
 	
