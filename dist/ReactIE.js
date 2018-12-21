@@ -1949,6 +1949,85 @@
         }
     }
 
+    function setter(compute, cursor, value) {
+        this.updateQueue[cursor] = compute(cursor, value);
+        Renderer.updateComponent(this, true);
+    }
+    var hookCursor = 0;
+    function resetCursor() {
+        hookCursor = 0;
+    }
+    var dispatcher = {
+        useContext: function useContext(contextType) {
+            return new contextType.Provider().emitter.get();
+        },
+        useReducer: function useReducer(reducer, initValue, initAction) {
+            var fiber = getCurrentFiber();
+            var key = hookCursor + 'Hook';
+            var updateQueue = fiber.updateQueue;
+            hookCursor++;
+            var compute = reducer ? function (cursor, action) {
+                return reducer(updateQueue[cursor], action || { type: Math.random() });
+            } : function (cursor, value) {
+                var novel = updateQueue[cursor];
+                return typeof value == 'function' ? value(novel) : value;
+            };
+            var dispatch = setter.bind(fiber, compute, key);
+            if (key in updateQueue) {
+                delete updateQueue.isForced;
+                return [updateQueue[key], dispatch];
+            }
+            var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
+            return [value, dispatch];
+        },
+        useCallbackOrMemo: function useCallbackOrMemo(callback, inputs, isMeno) {
+            var fiber = getCurrentFiber();
+            var key = hookCursor + 'Hook';
+            var updateQueue = fiber.updateQueue;
+            hookCursor++;
+            var nextInputs = Array.isArray(inputs) ? inputs : [callback];
+            var prevState = updateQueue[key];
+            if (prevState) {
+                var prevInputs = prevState[1];
+                if (areHookInputsEqual(nextInputs, prevInputs)) {
+                    return prevState[0];
+                }
+            }
+            var value = isMeno ? callback() : callback;
+            updateQueue[key] = [value, nextInputs];
+            return value;
+        },
+        useRef: function useRef(initValue) {
+            var fiber = getCurrentFiber();
+            var key = hookCursor + 'Hook';
+            var updateQueue = fiber.updateQueue;
+            hookCursor++;
+            if (key in updateQueue) {
+                return updateQueue[key];
+            }
+            return updateQueue[key] = { current: initValue };
+        },
+        useEffect: function useEffect(callback) {
+            var fiber = getCurrentFiber();
+            if (fiber.effectTag % HOOK) {
+                fiber.effectTag *= HOOK;
+            }
+            fiber.updateQueue.effects.push(callback);
+        }
+    };
+    function getCurrentFiber() {
+        return get(Renderer.currentOwner);
+    }
+    function areHookInputsEqual(arr1, arr2) {
+        for (var i = 0; i < arr1.length; i++) {
+            if (Object.is(arr1[i], arr2[i])) {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
     function getInsertPoint(fiber) {
         var parent = fiber.parent;
         while (fiber) {
@@ -2202,6 +2281,7 @@
         fiber._hydrating = true;
         Renderer.currentOwner = instance;
         var rendered = applyCallback(instance, 'render', []);
+        resetCursor();
         diffChildren(fiber, rendered);
         Renderer.onAfterRender(fiber);
     }
@@ -3028,7 +3108,6 @@
         },
         unstable_renderSubtreeIntoContainer: function unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
             var container = createContainer(root),
-                context = container.contextStack[0],
                 fiber = get(instance),
                 backup = void 0;
             do {
@@ -3047,9 +3126,9 @@
         },
         unmountComponentAtNode: function unmountComponentAtNode(root) {
             var container = createContainer(root, true);
-            var instance = container && container.hostRoot;
-            if (instance) {
-                Renderer.updateComponent(instance, {
+            var fiber = Object(container).child;
+            if (fiber) {
+                Renderer.updateComponent(fiber, {
                     child: null
                 }, function () {
                     removeTop(root);
@@ -3076,6 +3155,25 @@
             topNodes.splice(j, 1);
         }
         dom._reactInternalFiber = null;
+    }
+
+    function useState(initValue) {
+        return dispatcher.useReducer(null, initValue);
+    }
+    function useEffect(initValue) {
+        return dispatcher.useEffect(initValue);
+    }
+    function useCallback(callback, inputs) {
+        return dispatcher.useCallbackOrMeno(callback, inputs);
+    }
+    function useMemo(create, inputs) {
+        return dispatcher.useCallbackOrMemo(create, inputs, true);
+    }
+    function useRef(initValue) {
+        return dispatcher.useRef(initValue);
+    }
+    function useReducer(reducer, initValue, initAction) {
+        return dispatcher.useReducer(reducer, initValue, initAction);
     }
 
     var noCheck = false;
@@ -3229,6 +3327,12 @@
             Component: Component,
             createRef: createRef,
             forwardRef: forwardRef,
+            useState: useState,
+            useReducer: useReducer,
+            useEffect: useEffect,
+            useCallback: useCallback,
+            useMemo: useMemo,
+            useRef: useRef,
             createElement: createElement,
             cloneElement: cloneElement,
             PureComponent: PureComponent,

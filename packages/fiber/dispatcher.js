@@ -36,7 +36,7 @@ export var dispatcher = {
         let value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
     },
-    useCallbackOrMeno(callback, inputs, isMeno) {//ok
+    useCallbackOrMemo(callback, inputs, isMeno) {//ok
         let fiber = getCurrentFiber();
         let key = hookCursor + 'Hook';
         let updateQueue = fiber.updateQueue;

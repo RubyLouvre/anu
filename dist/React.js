@@ -754,7 +754,7 @@
             var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
             return [value, dispatch];
         },
-        useCallbackOrMeno: function useCallbackOrMeno(callback, inputs, isMeno) {
+        useCallbackOrMemo: function useCallbackOrMemo(callback, inputs, isMeno) {
             var fiber = getCurrentFiber();
             var key = hookCursor + 'Hook';
             var updateQueue = fiber.updateQueue;
@@ -810,6 +810,9 @@
     }
     function useCallback(callback, inputs) {
         return dispatcher.useCallbackOrMeno(callback, inputs);
+    }
+    function useMemo(create, inputs) {
+        return dispatcher.useCallbackOrMemo(create, inputs, true);
     }
     function useRef(initValue) {
         return dispatcher.useRef(initValue);
@@ -3124,7 +3127,6 @@
         },
         unstable_renderSubtreeIntoContainer: function unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
             var container = createContainer(root),
-                context = container.contextStack[0],
                 fiber = get(instance),
                 backup = void 0;
             do {
@@ -3143,9 +3145,9 @@
         },
         unmountComponentAtNode: function unmountComponentAtNode(root) {
             var container = createContainer(root, true);
-            var instance = container && container.hostRoot;
-            if (instance) {
-                Renderer.updateComponent(instance, {
+            var fiber = Object(container).child;
+            if (fiber) {
+                Renderer.updateComponent(fiber, {
                     child: null
                 }, function () {
                     removeTop(root);
@@ -3205,6 +3207,7 @@
             useEffect: useEffect,
             useReducer: useReducer,
             useCallback: useCallback,
+            useMemo: useMemo,
             useRef: useRef,
             createElement: createElement,
             cloneElement: cloneElement,
