@@ -32,9 +32,14 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
 
         if (variables && variables.length) {
             for (var i = 0, length = variables.length; i < length; i++) {
-                const key = variables[i].split('@')[1];
+                let key;
+                variables[i].replace(varReg, function(a, b) {
+                    key = b;
+                });
                 const value = findVarValue(decl.parent, key);
                 variable = variable.replace(variables[i], value);
+                // 添加标识，是由variable转换来的
+                decl.isVar = true;
             }
         }
         if (variable && variable.match(varReg)) {
@@ -44,9 +49,14 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
     }
 
     return (root) => {
+        // 解析变量声明
         root.walkDecls(decl => {
             // 取出变量定义
             decl.value = parseVariable(decl.value, decl);
+        });
+        // 解析插值变量
+        root.walkRules(rule => {
+            rule.selector = parseVariable(rule.selector, rule);
         });
         // 移除变量声明
         root.walkAtRules(rule => {

@@ -5,7 +5,7 @@ const postCss = require('postcss');
 const parser = require('postcss-selector-parser');
 
 const isAllReg = /\sall$/;
-const removeExtendReg = /:extend\(.*?\)/g;
+const removeExtendReg = /:extend\(.*\)/g; // :extend只能放在最后，所以匹配从:extend到最后一个括号
 
 const postCssPluginLessExtend = postCss.plugin('postCssPluginLessExtend', () => {
 
@@ -31,7 +31,7 @@ const postCssPluginLessExtend = postCss.plugin('postCssPluginLessExtend', () => 
      * extend selector转换器
      * .a:extend(.b, .c), .d:extend(.e), .f => [{from: .a, to: [.b, .c]}, {from: .d, to: [.e]}]
      */
-    function parseExtendSelector(css) {
+    function parseExtendSelector(css, isVar) {
         const result = [];
         parser((selector) => {
             if (selector.nodes && selector.nodes.length) {
@@ -45,7 +45,10 @@ const postCssPluginLessExtend = postCss.plugin('postCssPluginLessExtend', () => 
                             if (pseudo.nodes && pseudo.nodes.length) {
                                 for (var i = 0, length = pseudo.nodes.length; i < length; i++) {
                                     const selector = pseudo.nodes[i].toString();
-                                    pseudos.push(selector);
+                                    // extend(@{variable})情况要忽略
+                                    if (!isVar) {
+                                        pseudos.push(selector);
+                                    }
                                 }
                             }
                         }
@@ -74,14 +77,14 @@ const postCssPluginLessExtend = postCss.plugin('postCssPluginLessExtend', () => 
                 }
                 // 获取extend选择器
                 // 解析.a:extend(.b) { color: red }形式
-                const extendSelectors = parseExtendSelector(node.selector);
+                const extendSelectors = parseExtendSelector(node.selector, node.isVar);
                 node.selector = node.selector.replace(removeExtendReg, '');
                 
                 extendSelectors.forEach(extendSelector => {
                     // 遍历node 取出&:extend(.d)形式，放入extendSelector对象中
                     node.walkDecls((decl) => {
                         if (decl.extend) {
-                            const selectors = parseExtendSelector(':' + decl.value);
+                            const selectors = parseExtendSelector(':' + decl.value, node.isVar);
                             selectors.forEach(selector => {
                                 extendSelector.to = extendSelector.to.concat(selector.to);
                             });
