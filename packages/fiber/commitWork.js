@@ -1,4 +1,4 @@
-import { emptyObject, returnFalse } from "react-core/util";
+import { emptyObject, returnFalse } from 'react-core/util';
 import {
     NOWORK,
     WORKING,
@@ -10,21 +10,22 @@ import {
     HOOK,
     REF,
     CALLBACK,
+    EFFECT,
     CAPTURE,
     effectLength,
     effectNames
-} from "./effectTag";
-import { guardCallback, removeFormBoundaries } from "./ErrorBoundary";
-import { fakeObject } from "react-core/Component";
-import { Renderer } from "react-core/createRenderer";
-import { Refs } from "./Refs";
+} from './effectTag';
+import { guardCallback, removeFormBoundaries } from './ErrorBoundary';
+import { fakeObject } from 'react-core/Component';
+import { Renderer } from 'react-core/createRenderer';
+import { Refs } from './Refs';
 
 /**
  * COMMIT阶段也做成深度调先遍历
  * @param {*} fiber
  * @param {*} topFiber
  */
-var domFns = ["insertElement", "updateContent", "updateAttribute"];
+var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
 var domEffects = [PLACE, CONTENT, ATTR];
 var domRemoved = [];
 
@@ -39,7 +40,7 @@ function commitDFSImpl(fiber) {
         }
         if (fiber.effectTag % PLACE == 0) {
             // DOM节点插入或移除
-            domEffects.forEach(function(effect, i) {
+            domEffects.forEach(function (effect, i) {
                 if (fiber.effectTag % effect == 0) {
                     Renderer[domFns[i]](fiber);
                     fiber.effectTag /= effect;
@@ -65,8 +66,10 @@ function commitDFSImpl(fiber) {
         while (f) {
             if (f.effectTag === WORKING) {
                 f.effectTag = NOWORK;
+                f.hasMounted = true;//做react hooks新时新加的
             } else if (f.effectTag > WORKING) {
                 commitEffects(f);
+                f.hasMounted = true;
                 if (f.capturedValues) {
                     f.effectTag = CAPTURE;
                 }
@@ -84,7 +87,7 @@ function commitDFSImpl(fiber) {
     }
 }
 export function commitDFS(effects) {
-    Renderer.batchedUpdates(function() {
+    Renderer.batchedUpdates(function () {
         var el;
         while ((el = effects.shift())) {
             //处理retry组件
@@ -131,15 +134,19 @@ export function commitEffects(fiber) {
                     Renderer.updateControlled(fiber);
                     break;
                 case HOOK:
-                    if (fiber.hasMounted) {
-                        guardCallback(instance, "componentDidUpdate", [
+                    if (instance.__isStateless ){
+                        var uneffects = fiber.updateQueue.uneffects;
+                        uneffects.length = 0;
+                        safeEach(fiber.updateQueue.effects, uneffects);
+                    } else if (fiber.hasMounted) {
+                        guardCallback(instance, 'componentDidUpdate', [
                             updater.prevProps,
                             updater.prevState,
                             updater.snapshot
                         ]);
                     } else {
                         fiber.hasMounted = true;
-                        guardCallback(instance, "componentDidMount", []);
+                        guardCallback(instance, 'componentDidMount', []);
                     }
                     delete fiber._hydrating;
                     //这里发现错误，说明它的下方组件出现错误，不能延迟到下一个生命周期
@@ -148,6 +155,9 @@ export function commitEffects(fiber) {
                         return;
                     }
                     break;
+                case EFFECT:
+                    
+                    break;
                 case REF:
                     Refs.fireRef(fiber, instance);
                     break;
@@ -155,7 +165,7 @@ export function commitEffects(fiber) {
                     //ReactDOM.render/forceUpdate/setState callback
                     var queue = fiber.pendingCbs;
                     fiber._hydrating = true; //setState回调里再执行setState
-                    queue.forEach(function(fn) {
+                    queue.forEach(function (fn) {
                         fn.call(instance);
                     });
                     delete fiber._hydrating;
@@ -198,23 +208,37 @@ export function disposeFibers(fiber) {
     delete fiber.oldChildren;
     fiber.children = {};
 }
-
+function safeEach(effects, others){
+    effects.forEach(function (fn) {
+        try {
+            var f = fn();
+            if (others && typeof f === 'function'){
+                others.push(f);
+            }
+        } catch (e) { /** */}
+    });
+    effects.length = 0;
+}
 function disposeFiber(fiber, force) {
     let { stateNode, effectTag } = fiber;
     if (!stateNode) {
         return;
     }
-    if (!stateNode.__isStateless && fiber.ref) {
+    let isStateless = stateNode.__isStateless;
+    if (!isStateless && fiber.ref) {
         Refs.fireRef(fiber, null);
     }
     if (effectTag % DETACH == 0 || force === true) {
         if (fiber.tag > 3) {
             domRemoved.push(fiber);
         } else {
-            Renderer.onDispose(fiber)
+            Renderer.onDispose(fiber);
             if (fiber.hasMounted) {
+                if (isStateless){
+                    safeEach(fiber.updateQueue.uneffects);
+                }
                 stateNode.updater.enqueueSetState = returnFalse;
-                guardCallback(stateNode, "componentWillUnmount", []);
+                guardCallback(stateNode, 'componentWillUnmount', []);
                 delete fiber.stateNode;
             }
         }

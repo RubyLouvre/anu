@@ -1,4 +1,4 @@
-import { PLACE, WORKING, NOWORK } from "./effectTag";
+import { PLACE, WORKING, NOWORK } from './effectTag';
 
 //查找它后面的节点
 export function getInsertPoint(fiber) {

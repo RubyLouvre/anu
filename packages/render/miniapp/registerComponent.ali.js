@@ -37,6 +37,7 @@ export function registerComponent(type, name) {
         didUpdate: didUpdate,
         didUnmount: function didUnmount() {
             var t = this.reactInstance;
+            this.disposed = true;
             if (t) {
                 t.wx = null;
                 this.reactInstance = null;

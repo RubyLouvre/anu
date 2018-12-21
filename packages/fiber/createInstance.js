@@ -1,11 +1,13 @@
-import { returnFalse, isMounted, extend, gDSFP, gSBU } from "react-core/util";
-import { Component } from "react-core/Component";
-import { Renderer } from "react-core/createRenderer";
+import { returnFalse, isMounted, extend, gDSFP, gSBU } from 'react-core/util';
+import { Component } from 'react-core/Component';
+import { Renderer } from 'react-core/createRenderer';
 
 export function UpdateQueue() {
     return {
         pendingStates: [],
-        pendingCbs: []
+        pendingCbs: [],
+        effects: [],
+        uneffects:[],
     };
 }
 export function createInstance(fiber, context) {
@@ -22,11 +24,14 @@ export function createInstance(fiber, context) {
             props,
             context,
             ref,
+            _reactInternalFiber: fiber,
             __proto__: type.prototype
         };
-    fiber.errorHook = "constructor";
+    fiber.updateQueue = UpdateQueue();
+    fiber.errorHook = 'constructor';
     try {
         if (isStateless) {
+            Renderer.currentOwner = instance;
             extend(instance, {
                 __isStateless: true,
                 __init: true,
@@ -43,7 +48,7 @@ export function createInstance(fiber, context) {
                         // 返回一带render方法的纯对象，说明这是带lifycycle hook的无狀态组件
                         // 需要对象里的hook复制到instance中
                         for (let i in a) {
-                            instance[i == "render" ? "renderImpl" : i] = a[i];
+                            instance[i == 'render' ? 'renderImpl' : i] = a[i];
                         }
                     } else if (this.__init) {
                         this.__keep = {
@@ -57,7 +62,7 @@ export function createInstance(fiber, context) {
             Renderer.currentOwner = instance;
             if (type.render) {
                 //forwardRef函数形式只会执行一次，对象形式执行多次
-                instance.render = function() {
+                instance.render = function () {
                     return type.render(this.props, this.ref);
                 };
             } else {
@@ -74,7 +79,7 @@ export function createInstance(fiber, context) {
     } finally {
         Renderer.currentOwner = lastOwn;
         fiber.stateNode = instance;
-        fiber.updateQueue = UpdateQueue();
+        // fiber.updateQueue = UpdateQueue();
         instance._reactInternalFiber = fiber;
         instance.updater = updater;
         instance.context = context;
