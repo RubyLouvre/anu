@@ -36,13 +36,13 @@ export var dispatcher = {
         let value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
     },
-    useCallbackOrMemo(callback, inputs, isMeno) {//ok
+    useCallbackOrMemo(create, inputs, isMemo) {//ok
         let fiber = getCurrentFiber();
         let key = hookCursor + 'Hook';
         let updateQueue = fiber.updateQueue;
         hookCursor++;
 
-        let nextInputs = Array.isArray(inputs) ? inputs : [callback];
+        let nextInputs = Array.isArray(inputs) ? inputs : [create];
         let prevState = updateQueue[key];
         if (prevState) {
             let prevInputs = prevState[1];
@@ -51,7 +51,7 @@ export var dispatcher = {
             }
         }
 
-        let value = isMeno ? callback() : callback;
+        let value = isMemo ? create() : create;
         updateQueue[key] = [value, nextInputs];
         return value;
     },
@@ -65,14 +65,36 @@ export var dispatcher = {
         }
         return updateQueue[key] = { current: initValue };
     },
-    useEffect(callback) {//ok
+    useEffect(create, inputs) {//ok
         let fiber = getCurrentFiber();
+        let cb = dispatcher.useCallbackOrMemo(create, inputs);
         if (fiber.effectTag % HOOK) {
             fiber.effectTag *= HOOK;
         }
-        fiber.updateQueue.effects.push(callback);
+        fiber.updateQueue.effects.push(cb);
+    },
+    useImperativeMethods(ref, create, inputs) {
+        const nextInputs = Array.isArray(inputs) ? inputs.concat([ref])
+            : [ref, create];
+        dispatcher.useEffect(() => {
+            if (typeof ref === 'function') {
+                const refCallback = ref;
+                const inst = create();
+                refCallback(inst);
+                return () => refCallback(null);
+            } else if (ref !== null && ref !== undefined) {
+                const refObject = ref;
+                const inst = create();
+                refObject.current = inst;
+                return () => {
+                    refObject.current = null;
+                };
+            }
+        }, nextInputs);
     }
 };
+
+
 //https://reactjs.org/docs/hooks-reference.html
 function getCurrentFiber() {
     return get(Renderer.currentOwner);

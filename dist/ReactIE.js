@@ -1980,12 +1980,12 @@
             var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
             return [value, dispatch];
         },
-        useCallbackOrMemo: function useCallbackOrMemo(callback, inputs, isMeno) {
+        useCallbackOrMemo: function useCallbackOrMemo(create, inputs, isMemo) {
             var fiber = getCurrentFiber();
             var key = hookCursor + 'Hook';
             var updateQueue = fiber.updateQueue;
             hookCursor++;
-            var nextInputs = Array.isArray(inputs) ? inputs : [callback];
+            var nextInputs = Array.isArray(inputs) ? inputs : [create];
             var prevState = updateQueue[key];
             if (prevState) {
                 var prevInputs = prevState[1];
@@ -1993,7 +1993,7 @@
                     return prevState[0];
                 }
             }
-            var value = isMeno ? callback() : callback;
+            var value = isMemo ? create() : create;
             updateQueue[key] = [value, nextInputs];
             return value;
         },
@@ -2007,12 +2007,33 @@
             }
             return updateQueue[key] = { current: initValue };
         },
-        useEffect: function useEffect(callback) {
+        useEffect: function useEffect(create, inputs) {
             var fiber = getCurrentFiber();
+            var cb = dispatcher.useCallbackOrMemo(create, inputs);
             if (fiber.effectTag % HOOK) {
                 fiber.effectTag *= HOOK;
             }
-            fiber.updateQueue.effects.push(callback);
+            fiber.updateQueue.effects.push(cb);
+        },
+        useImperativeMethods: function useImperativeMethods(ref, create, inputs) {
+            var nextInputs = Array.isArray(inputs) ? inputs.concat([ref]) : [ref, create];
+            dispatcher.useEffect(function () {
+                if (typeof ref === 'function') {
+                    var refCallback = ref;
+                    var inst = create();
+                    refCallback(inst);
+                    return function () {
+                        return refCallback(null);
+                    };
+                } else if (ref !== null && ref !== undefined) {
+                    var refObject = ref;
+                    var _inst = create();
+                    refObject.current = _inst;
+                    return function () {
+                        refObject.current = null;
+                    };
+                }
+            }, nextInputs);
         }
     };
     function getCurrentFiber() {
