@@ -1,5 +1,4 @@
 import { Renderer } from 'react-core/createRenderer';
-import { HOOK } from './effectTag';
 import { get } from 'react-core/util';
 function setter(compute, cursor, value) {
     this.updateQueue[cursor] = compute(cursor, value);
@@ -65,13 +64,16 @@ export var dispatcher = {
         }
         return updateQueue[key] = { current: initValue };
     },
-    useEffect(create, inputs) {//ok
+    useEffect(create, inputs, EffectTag, createList, destoryList) {//ok
         let fiber = getCurrentFiber();
         let cb = dispatcher.useCallbackOrMemo(create, inputs);
-        if (fiber.effectTag % HOOK) {
-            fiber.effectTag *= HOOK;
+        if (fiber.effectTag % EffectTag) {
+            fiber.effectTag *= EffectTag;
         }
-        fiber.updateQueue.effects.push(cb);
+        let updateQueue = fiber.updateQueue;
+        let list = updateQueue[createList] ||  (updateQueue[createList] = []);
+        updateQueue[destoryList] ||  (updateQueue[destoryList] = []);
+        list.push(cb);
     },
     useImperativeMethods(ref, create, inputs) {
         const nextInputs = Array.isArray(inputs) ? inputs.concat([ref])

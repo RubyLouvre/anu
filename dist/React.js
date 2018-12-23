@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2018-12-21
+ * by 司徒正美 Copyright 2018-12-23
  * IE9+
  */
 
@@ -706,23 +706,6 @@
         };
     }
 
-    var NOWORK = 1;
-    var WORKING = 2;
-    var PLACE = 3;
-    var CONTENT = 5;
-    var ATTR = 7;
-    var DUPLEX = 11;
-    var DETACH = 13;
-    var HOOK = 17;
-    var REF = 19;
-    var CALLBACK = 23;
-    var EFFECT = 29;
-    var CAPTURE = 31;
-    var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, EFFECT, CAPTURE].sort(function (a, b) {
-        return a - b;
-    });
-    var effectLength = effectNames.length;
-
     function setter(compute, cursor, value) {
         this.updateQueue[cursor] = compute(cursor, value);
         Renderer.updateComponent(this, true);
@@ -781,13 +764,16 @@
             }
             return updateQueue[key] = { current: initValue };
         },
-        useEffect: function useEffect(create, inputs) {
+        useEffect: function useEffect(create, inputs, EffectTag, createList, destoryList) {
             var fiber = getCurrentFiber();
             var cb = dispatcher.useCallbackOrMemo(create, inputs);
-            if (fiber.effectTag % HOOK) {
-                fiber.effectTag *= HOOK;
+            if (fiber.effectTag % EffectTag) {
+                fiber.effectTag *= EffectTag;
             }
-            fiber.updateQueue.effects.push(cb);
+            var updateQueue = fiber.updateQueue;
+            var list = updateQueue[createList] || (updateQueue[createList] = []);
+            updateQueue[destoryList] || (updateQueue[destoryList] = []);
+            list.push(cb);
         },
         useImperativeMethods: function useImperativeMethods(ref, create, inputs) {
             var nextInputs = Array.isArray(inputs) ? inputs.concat([ref]) : [ref, create];
@@ -823,11 +809,28 @@
         return true;
     }
 
+    var NOWORK = 1;
+    var WORKING = 2;
+    var PLACE = 3;
+    var CONTENT = 5;
+    var ATTR = 7;
+    var DUPLEX = 11;
+    var DETACH = 13;
+    var HOOK = 17;
+    var REF = 19;
+    var CALLBACK = 23;
+    var PASSIVE = 29;
+    var CAPTURE = 31;
+    var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, PASSIVE, CAPTURE].sort(function (a, b) {
+        return a - b;
+    });
+    var effectLength = effectNames.length;
+
     function useState(initValue) {
         return dispatcher.useReducer(null, initValue);
     }
-    function useEffect(initValue) {
-        return dispatcher.useEffect(initValue);
+    function useEffect(initValue, inputs) {
+        return dispatcher.useEffect(initValue, inputs, PASSIVE, 'passive', 'unpassive');
     }
     function useCallback(callback, inputs) {
         return dispatcher.useCallbackOrMeno(callback, inputs);
@@ -1848,9 +1851,7 @@
     function UpdateQueue() {
         return {
             pendingStates: [],
-            pendingCbs: [],
-            effects: [],
-            uneffects: []
+            pendingCbs: []
         };
     }
     function createInstance(fiber, context) {
@@ -2562,6 +2563,7 @@
     var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
     var domEffects = [PLACE, CONTENT, ATTR];
     var domRemoved = [];
+    var passiveFibers = [];
     function commitDFSImpl(fiber) {
         var topFiber = fiber;
         outerLoop: while (true) {
@@ -2622,6 +2624,12 @@
                 } else {
                     commitDFSImpl(el);
                 }
+                if (passiveFibers.length) {
+                    passiveFibers.forEach(function (fiber) {
+                        safeInvokeHooks(fiber.updateQueue, 'passive', 'unpassive');
+                    });
+                    passiveFibers.length = 0;
+                }
                 if (domRemoved.length) {
                     domRemoved.forEach(Renderer.removeElement);
                     domRemoved.length = 0;
@@ -2653,9 +2661,7 @@
                         break;
                     case HOOK:
                         if (instance.__isStateless) {
-                            var uneffects = fiber.updateQueue.uneffects;
-                            uneffects.length = 0;
-                            safeEach(fiber.updateQueue.effects, uneffects);
+                            safeInvokeHooks(fiber.updateQueue, 'layout', 'unlayout');
                         } else if (fiber.hasMounted) {
                             guardCallback(instance, 'componentDidUpdate', [updater.prevProps, updater.prevState, updater.snapshot]);
                         } else {
@@ -2668,7 +2674,8 @@
                             return;
                         }
                         break;
-                    case EFFECT:
+                    case PASSIVE:
+                        passiveFibers.push(fiber);
                         break;
                     case REF:
                         Refs.fireRef(fiber, instance);
@@ -2717,16 +2724,23 @@
         delete fiber.oldChildren;
         fiber.children = {};
     }
-    function safeEach(effects$$1, others) {
-        effects$$1.forEach(function (fn) {
+    function safeInvokeHooks(upateQueue, create, destory) {
+        var uneffects = upateQueue[destory],
+            effects$$1 = upateQueue[create],
+            fn;
+        while (fn = uneffects.shift()) {
+            try {
+                fn();
+            } catch (e) {      }
+        }
+        while (fn = effects$$1.shift()) {
             try {
                 var f = fn();
-                if (others && typeof f === 'function') {
-                    others.push(f);
+                if (typeof f === 'function') {
+                    uneffects.push(f);
                 }
             } catch (e) {      }
-        });
-        effects$$1.length = 0;
+        }
     }
     function disposeFiber(fiber, force) {
         var stateNode = fiber.stateNode,
@@ -2745,7 +2759,8 @@
                 Renderer.onDispose(fiber);
                 if (fiber.hasMounted) {
                     if (isStateless) {
-                        safeEach(fiber.updateQueue.uneffects);
+                        safeInvokeHooks(fiber.updateQueue, 'layout', 'unlayout');
+                        safeInvokeHooks(fiber.updateQueue, 'passive', 'unpassive');
                     }
                     stateNode.updater.enqueueSetState = returnFalse;
                     guardCallback(stateNode, 'componentWillUnmount', []);
