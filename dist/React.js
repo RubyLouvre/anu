@@ -829,20 +829,20 @@
     function useState(initValue) {
         return dispatcher.useReducer(null, initValue);
     }
-    function useEffect(initValue, inputs) {
-        return dispatcher.useEffect(initValue, inputs, PASSIVE, 'passive', 'unpassive');
+    function useReducer(reducer, initValue, initAction) {
+        return dispatcher.useReducer(reducer, initValue, initAction);
     }
-    function useCallback(callback, inputs) {
-        return dispatcher.useCallbackOrMeno(callback, inputs);
+    function useEffect(create, inputs) {
+        return dispatcher.useEffect(create, inputs, PASSIVE, 'passive', 'unpassive');
+    }
+    function useCallback(create, inputs) {
+        return dispatcher.useCallbackOrMeno(create, inputs);
     }
     function useMemo(create, inputs) {
         return dispatcher.useCallbackOrMemo(create, inputs, true);
     }
     function useRef(initValue) {
         return dispatcher.useRef(initValue);
-    }
-    function useReducer(reducer, initValue, initAction) {
-        return dispatcher.useReducer(reducer, initValue, initAction);
     }
 
     function findHostInstance(fiber) {
