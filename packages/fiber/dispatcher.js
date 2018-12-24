@@ -1,9 +1,8 @@
 import { Renderer } from 'react-core/createRenderer';
-import { HOOK } from './effectTag';
-function setter(cursor, value) {
-    var state = {};
-    state[cursor] = value;
-    Renderer.updateComponent(this, state);
+import { get } from 'react-core/util';
+function setter(compute, cursor, value) {
+    this.updateQueue[cursor] = compute(cursor, value);
+    Renderer.updateComponent(this, true);
 }
 var hookCursor = 0;
 export function resetCursor() {
@@ -11,41 +10,104 @@ export function resetCursor() {
 }
 
 export var dispatcher = {
-    useState(initValue) {
-        let instance = Renderer.currentOwner;
-        let cursor = hookCursor;//决定是处理第几个useState
-        let fn = setter.bind(instance, cursor);
-        let fiber = instance._reactInternalFiber;
-        let pendings = fiber.updateQueue.pendingStates;
-        hookCursor++;
-        if (fiber.hasMounted) {
-            var newState = {};
-            pendings.unshift(newState);
-            Object.assign.apply(null, pendings);
-            pendings.length = 1;
-            return [newState[cursor], fn];
-        }
-        let state = {};
-        state[cursor] = initValue;
-        pendings.push(state);
-        return [initValue, fn];
-    },
-    useContext(contextType) {
+    useContext(contextType) {//这个实现并不正确
         return new contextType.Provider().emitter.get();
     },
-    useCallback(callback) {
-        let instance = Renderer.currentOwner;
-        let fiber = instance._reactInternalFiber;
-        Renderer.updateComponent(instance, null, callback);
-        return [callback, fiber.updateQueue.pendingCbs];
-    },
-    useEffect(callback) {
-        let instance = Renderer.currentOwner;
-        let fiber = instance._reactInternalFiber;
-        if (fiber.effectTag % HOOK) {
-            fiber.effectTag *= HOOK;
+    useReducer(reducer, initValue, initAction) {//ok
+        let fiber = getCurrentFiber();
+        let key = hookCursor + 'Hook';
+        let updateQueue = fiber.updateQueue;
+        hookCursor++;
+        //compute用于放在dispatch中计算新值
+        let compute = reducer ? function (cursor, action) {
+            return reducer(updateQueue[cursor], action || { type: Math.random() });
+        } : function (cursor, value) {
+            let novel = updateQueue[cursor];
+            return typeof value == 'function' ? value(novel) : value;
+        };
+        let dispatch = setter.bind(fiber, compute, key);
+
+        if (key in updateQueue) {
+            delete updateQueue.isForced;
+            return [updateQueue[key], dispatch];
         }
-        fiber.updateQueue.effects.push(callback);
+
+        let value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
+        return [value, dispatch];
+    },
+    useCallbackOrMemo(create, inputs, isMemo) {//ok
+        let fiber = getCurrentFiber();
+        let key = hookCursor + 'Hook';
+        let updateQueue = fiber.updateQueue;
+        hookCursor++;
+
+        let nextInputs = Array.isArray(inputs) ? inputs : [create];
+        let prevState = updateQueue[key];
+        if (prevState) {
+            let prevInputs = prevState[1];
+            if (areHookInputsEqual(nextInputs, prevInputs)) {
+                return prevState[0];
+            }
+        }
+
+        let value = isMemo ? create() : create;
+        updateQueue[key] = [value, nextInputs];
+        return value;
+    },
+    useRef(initValue) {//ok
+        let fiber = getCurrentFiber();
+        let key = hookCursor + 'Hook';
+        let updateQueue = fiber.updateQueue;
+        hookCursor++;
+        if (key in updateQueue) {
+            return updateQueue[key];
+        }
+        return updateQueue[key] = { current: initValue };
+    },
+    useEffect(create, inputs, EffectTag, createList, destoryList) {//ok
+        let fiber = getCurrentFiber();
+        let cb = dispatcher.useCallbackOrMemo(create, inputs);
+        if (fiber.effectTag % EffectTag) {
+            fiber.effectTag *= EffectTag;
+        }
+        let updateQueue = fiber.updateQueue;
+        let list = updateQueue[createList] ||  (updateQueue[createList] = []);
+        updateQueue[destoryList] ||  (updateQueue[destoryList] = []);
+        list.push(cb);
+    },
+    useImperativeMethods(ref, create, inputs) {
+        const nextInputs = Array.isArray(inputs) ? inputs.concat([ref])
+            : [ref, create];
+        dispatcher.useEffect(() => {
+            if (typeof ref === 'function') {
+                const refCallback = ref;
+                const inst = create();
+                refCallback(inst);
+                return () => refCallback(null);
+            } else if (ref !== null && ref !== undefined) {
+                const refObject = ref;
+                const inst = create();
+                refObject.current = inst;
+                return () => {
+                    refObject.current = null;
+                };
+            }
+        }, nextInputs);
     }
 };
+
+
 //https://reactjs.org/docs/hooks-reference.html
+function getCurrentFiber() {
+    return get(Renderer.currentOwner);
+}
+
+function areHookInputsEqual(arr1, arr2) {
+    for (var i = 0; i < arr1.length; i++) {
+        if (Object.is(arr1[i], arr2[i])) {
+            continue;
+        }
+        return false;
+    }
+    return true;
+}

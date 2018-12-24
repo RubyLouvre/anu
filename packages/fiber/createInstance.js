@@ -5,9 +5,7 @@ import { Renderer } from 'react-core/createRenderer';
 export function UpdateQueue() {
     return {
         pendingStates: [],
-        pendingCbs: [],
-        effects: [],
-        uneffects:[],
+        pendingCbs: []
     };
 }
 export function createInstance(fiber, context) {

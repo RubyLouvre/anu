@@ -15,6 +15,8 @@ import { Fragment, getWindow } from "react-core/util";
 
 import { findDOMNode } from "./findDOMNode";
 import { DOMRenderer } from "./DOMRenderer";
+import { useState, useReducer, useEffect, useCallback, useMemo, useRef } from 'react-core/hooks';
+
 import "./compat";
 let win = getWindow();
 let prevReact = win.React;
@@ -48,7 +50,12 @@ if (prevReact && prevReact.eventSystem) {
         Component,
         createRef,
         forwardRef,
-        // createClass,
+        useState, 
+        useReducer, 
+        useEffect, 
+        useCallback, 
+        useMemo, 
+        useRef,
         createElement,
         cloneElement,
         PureComponent,

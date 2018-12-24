@@ -20,7 +20,7 @@ yarn global add nanachi-cli
 1. nanachi init `<project-name> ` 创建工程<br />
 2. `cd <project-name> && npm i ` 安装依赖<br />
 3. `nanachi watch:[wx|bu|ali|quick]` 监听构建小程序<br />
-4. `nanachi build:[[wx|bu|ali|quick]]` 构建小程序<br />
+4. `nanachi build:[wx|bu|ali|quick]` 构建小程序<br />
 5. 用微信开发工具打开当中的dist目录，自己在source目录中进行开发<br />
 
 注意：快应用下构建结束后，需要执行以下三步骤
