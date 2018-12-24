@@ -124,11 +124,7 @@ let visitor = {
             if (t.isStringLiteral(node)) {
                 value = node.value;
             } else {
-                if (/\./.test(node.expression.value)) {
-                    value = '*this';
-                } else {
-                    value = `{{${generate(node.expression).code}}}`;
-                }
+                value = generate(node.expression).code;
             }
             modules.key = value;
             astPath.remove();

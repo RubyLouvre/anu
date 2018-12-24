@@ -155,10 +155,7 @@ let utils = {
     },
     genKey(key) {
         key = key + '';
-        if (/\{\{/.test(key)) {
-            key = key.slice(2, -2);
-        }
-        return key.indexOf('.') > 0 ? key.split('.').pop() : '{{index}}';
+        return key.indexOf('.') > 0 ? key.split('.').pop() : '*this';
     },
     getAnu(state) {
         return state.file.opts.anu;
