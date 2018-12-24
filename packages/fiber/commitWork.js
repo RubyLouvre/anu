@@ -10,7 +10,7 @@ import {
     HOOK,
     REF,
     CALLBACK,
-    EFFECT,
+    PASSIVE,
     CAPTURE,
     effectLength,
     effectNames
@@ -28,7 +28,7 @@ import { Refs } from './Refs';
 var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
 var domEffects = [PLACE, CONTENT, ATTR];
 var domRemoved = [];
-
+var passiveFibers = []
 function commitDFSImpl(fiber) {
     let topFiber = fiber;
     outerLoop: while (true) {
@@ -96,6 +96,12 @@ export function commitDFS(effects) {
             } else {
                 commitDFSImpl(el);
             }
+            if (passiveFibers.length) {
+                passiveFibers.forEach(function (fiber) {
+                    safeInvokeHooks(fiber.updateQueue, 'passive', 'unpassive');
+                });
+                passiveFibers.length = 0;
+            }
             if (domRemoved.length) {
                 domRemoved.forEach(Renderer.removeElement);
                 domRemoved.length = 0;
@@ -134,10 +140,8 @@ export function commitEffects(fiber) {
                     Renderer.updateControlled(fiber);
                     break;
                 case HOOK:
-                    if (instance.__isStateless ){
-                        var uneffects = fiber.updateQueue.uneffects;
-                        uneffects.length = 0;
-                        safeEach(fiber.updateQueue.effects, uneffects);
+                    if (instance.__isStateless) {
+                        safeInvokeHooks(fiber.updateQueue, 'layout', 'unlayout');
                     } else if (fiber.hasMounted) {
                         guardCallback(instance, 'componentDidUpdate', [
                             updater.prevProps,
@@ -155,8 +159,8 @@ export function commitEffects(fiber) {
                         return;
                     }
                     break;
-                case EFFECT:
-                    
+                case PASSIVE:
+                    passiveFibers.push(fiber);
                     break;
                 case REF:
                     Refs.fireRef(fiber, instance);
@@ -208,16 +212,22 @@ export function disposeFibers(fiber) {
     delete fiber.oldChildren;
     fiber.children = {};
 }
-function safeEach(effects, others){
-    effects.forEach(function (fn) {
+function safeInvokeHooks(upateQueue, create, destory) {
+    var uneffects = upateQueue[destory],
+        effects = upateQueue[create], fn;
+    while ((fn = uneffects.shift())) {
+        try {
+            fn();
+        } catch (e) { /** */ }
+    }
+    while ((fn = effects.shift())) {
         try {
             var f = fn();
-            if (others && typeof f === 'function'){
-                others.push(f);
+            if (typeof f === 'function') {
+                uneffects.push(f);
             }
-        } catch (e) { /** */}
-    });
-    effects.length = 0;
+        } catch (e) { /** */ }
+    }
 }
 function disposeFiber(fiber, force) {
     let { stateNode, effectTag } = fiber;
@@ -234,8 +244,9 @@ function disposeFiber(fiber, force) {
         } else {
             Renderer.onDispose(fiber);
             if (fiber.hasMounted) {
-                if (isStateless){
-                    safeEach(fiber.updateQueue.uneffects);
+                if (isStateless) {
+                    safeInvokeHooks(fiber.updateQueue, 'layout', 'unlayout');
+                    safeInvokeHooks(fiber.updateQueue, 'passive', 'unpassive');
                 }
                 stateNode.updater.enqueueSetState = returnFalse;
                 guardCallback(stateNode, 'componentWillUnmount', []);

@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-21
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-23
  */
 
 var arrayPush = Array.prototype.push;
@@ -175,10 +175,10 @@ Component.prototype = {
         return this.updater.isMounted(this);
     },
     setState: function setState(state, cb) {
-        this.updater.enqueueSetState(this, state, cb);
+        this.updater.enqueueSetState(get(this), state, cb);
     },
     forceUpdate: function forceUpdate(cb) {
-        this.updater.enqueueSetState(this, true, cb);
+        this.updater.enqueueSetState(get(this), true, cb);
     },
     render: function render() {
         throw "must implement render";
@@ -1171,19 +1171,26 @@ function chooseImage(_ref) {
   });
 }
 
+function showToast(obj) {
+    var prompt = require('@system.prompt');
+    obj.message = obj.title;
+    obj.duration = obj.duration / 1000;
+    prompt.showToast(obj);
+}
+
 var shortcut = require('@system.shortcut');
 function createShortcut() {
     shortcut.hasInstalled({
         success: function success(ret) {
             if (ret) {
-                api.showToast({ title: '已创建桌面图标' });
+                showToast({ title: '已创建桌面图标' });
             } else {
                 shortcut.install({
                     success: function success() {
-                        api.showToast({ title: '成功创建桌面图标' });
+                        showToast({ title: '成功创建桌面图标' });
                     },
                     fail: function fail(errmsg, errcode) {
-                        api.showToast({ title: 'error: ' + errcode + '---' + errmsg });
+                        showToast({ title: 'error: ' + errcode + '---' + errmsg });
                     }
                 });
             }
@@ -1259,12 +1266,7 @@ var api = {
         var prompt = require('@system.prompt');
         prompt.showDialog(obj);
     },
-    showToast: function showToast(obj) {
-        var prompt = require('@system.prompt');
-        obj.message = obj.title;
-        obj.duration = obj.duration / 1000;
-        prompt.showToast(obj);
-    },
+    showToast: showToast,
     hideToast: noop,
     showActionSheet: function showActionSheet(obj) {
         var prompt = require('@system.prompt');
@@ -1368,9 +1370,7 @@ var api = {
 function UpdateQueue() {
     return {
         pendingStates: [],
-        pendingCbs: [],
-        effects: [],
-        uneffects: []
+        pendingCbs: []
     };
 }
 function createInstance(fiber, context) {
@@ -1468,9 +1468,9 @@ var DETACH = 13;
 var HOOK = 17;
 var REF = 19;
 var CALLBACK = 23;
-var EFFECT = 29;
+var PASSIVE = 29;
 var CAPTURE = 31;
-var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, EFFECT, CAPTURE].sort(function (a, b) {
+var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, PASSIVE, CAPTURE].sort(function (a, b) {
     return a - b;
 });
 var effectLength = effectNames.length;
@@ -2098,6 +2098,7 @@ var refStrategy = {
 var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
 var domEffects = [PLACE, CONTENT, ATTR];
 var domRemoved = [];
+var passiveFibers = [];
 function commitDFSImpl(fiber) {
     var topFiber = fiber;
     outerLoop: while (true) {
@@ -2158,6 +2159,12 @@ function commitDFS(effects$$1) {
             } else {
                 commitDFSImpl(el);
             }
+            if (passiveFibers.length) {
+                passiveFibers.forEach(function (fiber) {
+                    safeInvokeHooks(fiber.updateQueue, 'passive', 'unpassive');
+                });
+                passiveFibers.length = 0;
+            }
             if (domRemoved.length) {
                 domRemoved.forEach(Renderer.removeElement);
                 domRemoved.length = 0;
@@ -2189,9 +2196,7 @@ function commitEffects(fiber) {
                     break;
                 case HOOK:
                     if (instance.__isStateless) {
-                        var uneffects = fiber.updateQueue.uneffects;
-                        uneffects.length = 0;
-                        safeEach(fiber.updateQueue.effects, uneffects);
+                        safeInvokeHooks(fiber.updateQueue, 'layout', 'unlayout');
                     } else if (fiber.hasMounted) {
                         guardCallback(instance, 'componentDidUpdate', [updater.prevProps, updater.prevState, updater.snapshot]);
                     } else {
@@ -2204,7 +2209,8 @@ function commitEffects(fiber) {
                         return;
                     }
                     break;
-                case EFFECT:
+                case PASSIVE:
+                    passiveFibers.push(fiber);
                     break;
                 case REF:
                     Refs.fireRef(fiber, instance);
@@ -2253,16 +2259,23 @@ function disposeFibers(fiber) {
     delete fiber.oldChildren;
     fiber.children = {};
 }
-function safeEach(effects$$1, others) {
-    effects$$1.forEach(function (fn) {
+function safeInvokeHooks(upateQueue, create, destory) {
+    var uneffects = upateQueue[destory],
+        effects$$1 = upateQueue[create],
+        fn;
+    while (fn = uneffects.shift()) {
+        try {
+            fn();
+        } catch (e) {      }
+    }
+    while (fn = effects$$1.shift()) {
         try {
             var f = fn();
-            if (others && typeof f === 'function') {
-                others.push(f);
+            if (typeof f === 'function') {
+                uneffects.push(f);
             }
         } catch (e) {      }
-    });
-    effects$$1.length = 0;
+    }
 }
 function disposeFiber(fiber, force) {
     var stateNode = fiber.stateNode,
@@ -2281,7 +2294,8 @@ function disposeFiber(fiber, force) {
             Renderer.onDispose(fiber);
             if (fiber.hasMounted) {
                 if (isStateless) {
-                    safeEach(fiber.updateQueue.uneffects);
+                    safeInvokeHooks(fiber.updateQueue, 'layout', 'unlayout');
+                    safeInvokeHooks(fiber.updateQueue, 'passive', 'unpassive');
                 }
                 stateNode.updater.enqueueSetState = returnFalse;
                 guardCallback(stateNode, 'componentWillUnmount', []);
@@ -2328,7 +2342,7 @@ function render(vnode, root, callback) {
         Renderer.emptyElement(container);
     }
     var carrier = {};
-    updateComponent(container.hostRoot, {
+    updateComponent(container.child, {
         child: vnode
     }, wrapCb(callback, carrier), immediateUpdate);
     return carrier.instance;
@@ -2491,8 +2505,7 @@ function pushChildQueue(fiber, queue) {
         queue.push(fiber);
     }
 }
-function updateComponent(instance, state, callback, immediateUpdate) {
-    var fiber = get(instance);
+function updateComponent(fiber, state, callback, immediateUpdate) {
     fiber.dirty = true;
     var sn = typeNumber(state);
     var isForced = state === true;
