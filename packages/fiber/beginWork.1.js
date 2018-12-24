@@ -164,8 +164,8 @@ function mergeStates(fiber, nextProps) {
 export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     let { contextStack, containerStack } = info;
-    let Provider = type.contextType;
-    let newContext = Provider ? Provider() :
+    let getContext = type.contextType;
+    let newContext = getContext ? getContext() :
       getMaskedContext(
         instance,
         type.contextTypes,
@@ -175,8 +175,8 @@ export function updateClassComponent(fiber, info) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
 
         instance = createInstance(fiber, newContext);
-        if(Provider && Provider.list){
-            Provider.list.push(instance)
+        if(getContext){
+            getContext.subscribers.push(instance)
         }
         cacheContext(instance, contextStack[0], newContext);
     }
