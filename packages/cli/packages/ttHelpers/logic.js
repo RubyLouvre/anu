@@ -81,7 +81,7 @@ function loop(callee, fn, modules) {
 
         modules.key = null;
     } else {
-         attrs.push(createAttribute('tt:key', '*this'));
+        attrs.push(createAttribute('tt:key', '*this'));
         // console.log( fn.params[1].name);
     }
 

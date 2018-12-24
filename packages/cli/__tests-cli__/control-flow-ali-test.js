@@ -2,8 +2,8 @@ const { transform, getXml } = require('./utils/utils');
 const prettifyXml = require('prettify-xml');
 
 describe('if statement', () => {
-  test('if 简单情况-ali', () => {
-    let code = ` 
+    test('if 简单情况-ali', () => {
+        let code = ` 
   if (this.state.tasks !== null) {
     return <view class='page-body'>tasks</view>
   }
@@ -11,11 +11,11 @@ describe('if statement', () => {
       <div class="page-body"><span>Hello world!</span></div>
    )
  `;
-    transform(code, 'ali');
-    let templateAli = getXml();
-    expect(prettifyXml(templateAli)).toMatch(
-      prettifyXml(
-        `<block a:if="{{state.tasks !== null}}">
+        transform(code, 'ali');
+        let templateAli = getXml();
+        expect(prettifyXml(templateAli)).toMatch(
+            prettifyXml(
+                `<block a:if="{{state.tasks !== null}}">
               <view class="page-body">tasks</view>
             </block>
             <block a:else="true">
@@ -23,12 +23,12 @@ describe('if statement', () => {
                 <text>Hello world!</text>
               </view>
             </block>`
-      )
-    );
-  });
+            )
+        );
+    });
 
-  test('if-eles ali', () => {
-    let code = `
+    test('if-eles ali', () => {
+        let code = `
     if (this.state.tasks !== null) {
       return <view class="page-body">tasks</view>;
     } else if (this.state.task.length === 0) {
@@ -45,11 +45,11 @@ describe('if statement', () => {
       );
     }
     `;
-    transform(code, 'ali');
-    let templateWX = getXml();
-    expect(prettifyXml(templateWX)).toMatch(
-      prettifyXml(
-        `<block a:if="{{state.tasks !== null}}">
+        transform(code, 'ali');
+        let templateWX = getXml();
+        expect(prettifyXml(templateWX)).toMatch(
+            prettifyXml(
+                `<block a:if="{{state.tasks !== null}}">
         <view class="page-body">tasks</view>
       </block>
       <block a:else="true">
@@ -64,9 +64,9 @@ describe('if statement', () => {
           </view>
         </block>
       </block>`
-      )
-    );
-  })
+            )
+        );
+    });
 
 
 
