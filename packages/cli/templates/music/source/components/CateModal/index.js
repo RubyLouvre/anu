@@ -1,4 +1,5 @@
 import React from '@react';
+import './index.scss'
 
 class CateModal extends React.Component {
     constructor() {
@@ -31,10 +32,11 @@ class CateModal extends React.Component {
                     onTap={this.cateselect}
                     class={
                         'cl_list ' +
-            (this.props.catelist.checked.name == this.props.catelist.res.all.name ? 'checked' : '')
+                            (this.props.catelist && this.props.catelist.checked.name == this.props.catelist.res.all.name ?
+                                'checked' : '')
                     }
                 >
-                    {this.props.catelist.checked.name == this.props.catelist.res.all.name && (
+                    {this.props.catelist && this.props.catelist.checked.name == this.props.catelist.res.all.name && (
                         <span>{this.props.catelist.res.all.name}</span>
                     )}
                 </div>
@@ -49,11 +51,11 @@ class CateModal extends React.Component {
                                 return (
                                     <div
                                         class={
-                                            'cl_list ' + (this.props.catelist.checked.name === re.name ? 'checked' : '')
+                                            'cl_list ' + (this.props.catelist && this.props.catelist.checked.name === re.name ? 'checked' : '')
                                         }
                                     >
                                         {re.hot && <text class="cl_ico_hot cl_ico" />}
-                                        {this.props.catelist.checked.name === re.name && (
+                                        {this.props.catelist && this.props.catelist.checked.name === re.name && (
                                             <text class="cl_ico_checked cl_ico" />
                                         )}
                                         {re.name}

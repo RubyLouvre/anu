@@ -3,7 +3,7 @@ import React from '@react';
 import Loading from '@components/Loading/index';
 import url from '../../utils/bsurl';
 let bsurl = url.bsurl;
-import './index.less';
+import './index.scss';
 import CateModal from '@components/CateModal/index';
 var app = React.getApp();
 class P extends React.Component {
@@ -62,7 +62,7 @@ class P extends React.Component {
       //banner，
       React.api.request({
           url: bsurl + 'banner',
-          data: { cookie: app.globalData.cookie },
+          data: { cookie: app.globalData && app.globalData.cookie },
           success: function(res) {
               that.setState({
                   banner: res.data.banners
@@ -71,7 +71,7 @@ class P extends React.Component {
       });
       React.api.request({
           url: bsurl + 'playlist/catlist',
-          success: function(res) { 
+          success: function(res) {
               that.setState({
                   catelist: {
                       isShow: false,
@@ -100,7 +100,7 @@ class P extends React.Component {
           result[i] = new Promise((resolve, reject) => {
               React.api.request({
                   url: bsurl + arr[i],
-                  data: { cookie: app.globalData.cookie },
+                  data: { cookie: app.globalData && app.globalData.cookie },
                   success: function(res) {
                       resolve(res.data.result);
                   },
@@ -161,7 +161,7 @@ class P extends React.Component {
           data: {
               limit: that.state.playlist.limit,
               offset: that.state.playlist.offset,
-              type: that.state.catelist.checked.name
+              type: that.state.catelist &&this.state.catelist.checked && that.state.catelist.checked.name
           },
           success: function(res) {
               that.state.playlist.loading = true;
@@ -189,39 +189,39 @@ class P extends React.Component {
 
   render() {
       return (
-          <div>
+          <div class="anu-col">
               <div id="header" class="tab">
                   <div
-                      class={'tab-item ' + (this.state.rec.idx === this.state.tabidx ? 'tbi-cur' : '')}
+                      class={this.state.tabidx === 0 ? 'tab-item tbi-cur' : 'tab-item'}
                       onTap={this.switchTab.bind(this, 0)}
                   >
                       <text class="tbi-text">个性推荐</text>
                   </div>
                   <div
-                      class={'tab-item ' + (this.state.playlist.idx === this.state.tabidx ? 'tbi-cur' : '')}
+                      class={this.state.tabidx === 1 ? 'tab-item tbi-cur' : 'tab-item'}
                       onTap={this.switchTab.bind(this, 1)}
                   >
                       <text class="tbi-text">歌单</text>
                   </div>
                   <div
-                      class={'tab-item ' + (this.state.djlist.idx === this.state.tabidx ? 'tbi-cur' : '')}
+                      class={this.state.tabidx === 2 ? 'tab-item tbi-cur' : 'tab-item'}
                       onTap={this.switchTab.bind(this, 2)}
                   >
                       <text class="tbi-text">主播电台</text>
                   </div>
                   <div
-                      class={'tab-item ' + (this.state.sort.idx === this.state.tabidx ? 'tbi-cur' : '')}
+                      class={this.state.tabidx === 3 ? 'tab-item tbi-cur' : 'tab-item'}
                       onTap={this.switchTab.bind(this, 3)}
                   >
                       <text class="tbi-text">排行榜</text>
                   </div>
-                  <navigator url="../search/index" class="tab-item" id="lastsearch">
+                  <div url="../search/index" class="tab-item" id="lastsearch">
                       <icon type="search" size="18" color="#666" />
-                  </navigator>
+                  </div>
               </div>
               <div id="main" class="page_pp">
                   {/* 个性推荐 */}
-                  <div class="tab_cnt" hidden={this.state.tabidx !== 0}>
+                  <div class={this.state.tabidx !== 0 ? 'tab_cnt hidden' : 'tab_cnt'}>
                       <swiper indicator-dots="true" autoplay="true" circular="true">
                           {this.state.banner.map(function(item) {
                               return (
@@ -239,56 +239,57 @@ class P extends React.Component {
                       ) : (
                           <div id="rec_nav">
                               <div>
-                                  <navigator url="../playlist/index">
+                                  <div className="anu-col anu-center anu-middle" url="../playlist/index">
                                       <div class="recn_ico">
                                           <image src="../../assets/image/cm2_discover_icn_fm-ip6@2x.png" />
                                       </div>
                     私人FM
-                                  </navigator>
+                                  </div>
                               </div>
                               <div>
-                                  <navigator url="../playlist/index">
+                                  <div className="anu-col anu-center anu-middle" url="../playlist/index">
                                       <div class="recn_ico">{this.state.thisday}</div>
                     每日歌曲推荐
-                                  </navigator>
+                                  </div>
                               </div>
                               <div>
-                                  <navigator url="../playlist/index?pid=3778678">
+                                  <div className="anu-col anu-center anu-middle" url="../playlist/index?pid=3778678">
                                       <div class="recn_ico">
                                           <image src="../../assets/image/cm2_discover_icn_upbill-ip6@2x.png" />
                                       </div>
                     云音乐热歌榜
-                                  </navigator>
+                                  </div>
                               </div>
                           </div>
                       )}
                       {/* playlist */}
                       <div class="st_title">
+                        <div>
                           <image
                               width="30"
                               mode="widthFix"
                               src="../../assets/image/cm2_discover_icn_recmd@2x.png"
                           />
-              推荐歌单
-                          <div class="rbtn" bindtap="switchtab" data-t="1">
-                更多>
-                          </div>
+                          <span>推荐歌单</span>
+                        </div>
+                        <div class="rbtn" bindtap="switchtab" data-t="1">更多></div>
                       </div>
                       {this.state.rec.loading && (
                           <div class="flex-boxlist">
                               {this.state.rec.re[0].map(function(item) {
                                   return (
                                       <div class="tl_cnt">
-                                          <navigator url={`../playlist/index?pid=${item.id}&from=toplist`}>
+                                          <div className="anu-col">
+                                          {/* <div className="anu-col" url={`../playlist/index?pid=${item.id}&from=toplist`}> */}
                                               <div class="cover">
-                                                  <image src={`${item.picUrl}?param=200y200`} class="music_cover" />
+                                                  <image className="music_cover" src={item.picUrl + '?param=200y200'} />
                                                   <div class="img_playcount">
                                                       <image src="../../assets/image/p0.png" />
                                                       {item.playCount}
                                                   </div>
                                               </div>
                                               <text class="name">{item.name}</text>
-                                          </navigator>
+                                          </div>
                                       </div>
                                   );
                               })}
@@ -296,28 +297,27 @@ class P extends React.Component {
                       )}
                       {/* newsongs */}
                       <div class="st_title">
+                        <div>
                           <image
                               width="30"
                               mode="widthFix"
                               src="../../assets/image/cm2_discover_icn_newest@2x.png"
                           />
-              最新音乐
-                          <div class="rbtn" bindtap="switchtab" data-t="1">
-                更多>
-                          </div>
+                          <span>最新音乐</span>
+                        </div>
+                        <div class="rbtn" bindtap="switchtab" data-t="1">更多></div>
                       </div>
                       {this.state.rec.loading && (
                           <div class="flex-boxlist">
                               {this.state.rec.re[1].map(function(re, index) {
                                   return (
                                       <div class="tl_cnt" key={re.id}>
+                                        <div className="anu-col">
                                           {index < 6 && (
-                                              <navigator
-                                                  url={`../playing/index?id=${re.id}&br=${re.song.privilege.maxbr}`}
-                                              >
-                                                  <div class="cover">
+                                              <div class="cover" url={'../playing/index?id=' + re.id + '&br=' + re.song.privilege.maxbr}>
+                                                  <div class="anu-col">
                                                       <image
-                                                          src={`${re.song.album.picUrl}?param=200y200`}
+                                                          src={re.song.album.picUrl + '?param=200y200'}
                                                           class="music_cover"
                                                       />
                                                       <text>{re.playcount}</text>
@@ -326,21 +326,20 @@ class P extends React.Component {
                                                       <div>{re.name}</div>
                                                       <div class="tli_des">{re.song.artists[0].name}</div>
                                                   </div>
-                                              </navigator>
+                                              </div>
                                           )}
-                                      </div>
+                                          </div>
+                                        </div>
                                   );
                               })}
                           </div>
                       )}
                   </div>
                   {/* 歌单 */}
-                  <div class="tab_cnt" hidden={this.state.tabidx !== 1}>
-                      <div class="listheader" id="plc_header">
-                          {this.state.catelist.checked.name}
-                          <text onTap={this.togglePtype.bind(this)} id="catselectbtn">
-                选择分类
-                          </text>
+                  <div class={this.state.tabidx !== 1 ? 'tab_cnt hidden' : 'tab_cnt'}>
+                      <div class="st_title" id="plc_header">
+                          {this.state.catelist &&this.state.catelist.checked && this.state.catelist.checked.name}
+                          <text onTap={this.togglePtype.bind(this)} id="catselectbtn">选择分类</text>
                       </div>
 
                       {this.state.playlist.loading && (
@@ -348,7 +347,7 @@ class P extends React.Component {
                               {this.state.playlist.list.playlists.map(function(item) {
                                   return (
                                       <div class="tl_cnt cateplaylist" key={item.id}>
-                                          <navigator url={'../playlist/index?pid=' + item.id + '&from=toplist'}>
+                                          <div class="anu-col" url={'../playlist/index?pid=' + item.id + '&from=toplist'}>
                                               <div class="cover">
                                                   <image src={item.coverImgUrl + '?param=200y200'} class="music_cover" />
                                                   <div class="img_creator">
@@ -364,7 +363,7 @@ class P extends React.Component {
                                                   </div>
                                               </div>
                                               <span class="name">{item.name}</span>
-                                          </navigator>
+                                          </div>
                                       </div>
                                   );
                               })}
@@ -373,7 +372,7 @@ class P extends React.Component {
                       {(!this.state.playlist.loading || this.state.playlist.list.more) && <Loading />}
                   </div>
                   {/* 主播电台 */}
-                  <div class="tab_cnt" hidden={this.state.tabidx !== 2}>
+                  <div class={this.state.tabidx !== 2 ? 'tab_cnt hidden' : 'tab_cnt'}>
                       {this.state.djcate.loading ? (
                           <div>
                               <swiper indicator-dots="true" circular="true">
@@ -382,9 +381,9 @@ class P extends React.Component {
                                           <swiper-item class="djcatewrap">
                                               {this.state.djcate.categories.map(function(re) {
                                                   return (
-                                                      <div onTap={this.djradiotype.bind(this)} class="djcatelist">
+                                                      <div onTap={this.djradiotype.bind(this)} class="djcatelist anu-col">
                                                           <image
-                                                              src={`${re.pic56x56Url}`}
+                                                              src={re.pic56x56Url}
                                                               class="slide-image"
                                                               width="56"
                                                               height="56"
@@ -403,23 +402,23 @@ class P extends React.Component {
                       )}
                   </div>
                   {/* 排行榜 */}
-                  <div class="tab_cnt" hidden={this.state.tabidx !== 3}>
+                  <div class={this.state.tabidx !== 3 ? 'tab_cnt hidden' : 'tab_cnt'}>
                       {this.state.sort.loading ? (
-                          <div>
+                          <div class="anu-col">
                               <div class="listheader">云音乐官方榜</div>
-                              <div class="flex-boxlist flex sortlist">
+                              <div class="anu-col sortlist">
                                   {this.state.sort.list.map(function(item) {
                                       return (
-                                          <navigator
-                                              url={`../playlist/index?pid=${item.id}&from=toplist`}
+                                          <div
+                                              url={'../playlist/index?pid=' + item.id + '&from=toplist'}
                                               key={item.id}
                                           >
                                               <div class=" flexlist ">
-                                                  <div class="cover flexleft fl-image">
-                                                      <image class="album_cover" src={`${item.coverImgUrl}?param=200y200`} />
+                                                  <div class="cover flexleft fl-image anu-col">
+                                                      <image src={item.coverImgUrl + '?param=200y200'} class="album_cover" />
                                                       <text>{item.updateFrequency}</text>
                                                   </div>
-                                                  <div class="flexlist tl_info">
+                                                  <div class="tl_info anu-col">
                                                       {item.tracks.map(function(r, idx) {
                                                           return (
                                                               <div class="sort_fl_list " key={idx}>
@@ -429,7 +428,7 @@ class P extends React.Component {
                                                       })}
                                                   </div>
                                               </div>
-                                          </navigator>
+                                          </div>
                                       );
                                   })}
                               </div>
@@ -441,11 +440,10 @@ class P extends React.Component {
               </div>
               {/* 选择分类 */}
               <scroll-view
-                  class="cat-modal"
                   id="catewrap"
                   scroll-into-view="c2"
                   scroll-y="true"
-                  hidden={this.state.cateisShow}
+                  class={this.state.cateisShow ? 'cat-modal hidden' : 'cat-modal'}
               >
                   {!this.state.cateisShow && (
                       <CateModal
