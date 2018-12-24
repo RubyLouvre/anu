@@ -835,8 +835,13 @@
     function useEffect(create, inputs) {
         return dispatcher.useEffect(create, inputs, PASSIVE, 'passive', 'unpassive');
     }
+<<<<<<< HEAD
+    function useCallback(callback, inputs) {
+        return dispatcher.useCallbackOrMemo(callback, inputs);
+=======
     function useCallback(create, inputs) {
         return dispatcher.useCallbackOrMeno(create, inputs);
+>>>>>>> 075b7315828560e42f21a25e129a09355e9412cf
     }
     function useMemo(create, inputs) {
         return dispatcher.useCallbackOrMemo(create, inputs, true);
