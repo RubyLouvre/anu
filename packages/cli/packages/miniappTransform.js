@@ -40,6 +40,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
             if (err) {
                 //eslint-disable-next-line
                 console.log(transformFilePath, '\n', err);
+                process.exit(1);
             }
             let babelPlugins = [
                 ...require('./babelPlugins/transformEnv'),
@@ -60,6 +61,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
             } catch (err) {
                 //eslint-disable-next-line
                 console.log(transformFilePath, '\n', err);
+                process.exit(1);
             }
             //处理中文转义问题
             result.code = utils.decodeChinise(result.code);
