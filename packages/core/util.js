@@ -100,10 +100,10 @@ try {
 let rname = /function\s+(\w+)/;
 export function miniCreateClass(ctor, superClass, methods, statics) {
     let className = ctor.name || (ctor.toString().match(rname) ||['','Anonymous'])[1];
-    let Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : 
+    let Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n   superClass.apply(this, arguments); \n   return ctor.apply(this, arguments);\n      }')(superClass, ctor) : 
         function ReactInstance() {
             superClass.apply(this, arguments);
-            ctor.apply(this, arguments);
+            return ctor.apply(this, arguments);
         };
     Ctor.displayName = className;
     let proto = inherit(Ctor, superClass);
