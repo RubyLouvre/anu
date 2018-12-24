@@ -153,7 +153,6 @@ export let DOMRenderer = createRenderer({
     unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
         //看root上面有没有根虚拟DOM，没有就创建
         let container = createContainer(root),
-            context = container.contextStack[0],
             fiber = get(instance),
             backup;
         do {
@@ -176,10 +175,10 @@ export let DOMRenderer = createRenderer({
     // [Top API] ReactDOM.unmountComponentAtNode
     unmountComponentAtNode(root) {
         let container = createContainer(root, true);
-        let instance = container && container.hostRoot;
-        if (instance) {
+        let fiber = Object(container).child;
+        if (fiber) {
             Renderer.updateComponent(
-                instance,
+                fiber,
                 {
                     child: null
                 },
