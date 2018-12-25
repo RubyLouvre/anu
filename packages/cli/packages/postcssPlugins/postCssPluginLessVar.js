@@ -24,7 +24,7 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
             result = findVarValue(node.parent, key);
         }
 
-        return result.replace(removeQuoteReg, '$1');
+        return result;
     }
 
     function parseVariable(variable, decl) {
@@ -64,13 +64,7 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
         root.walkAtRules(atrule => {
             // import语句
             if (atrule.import) {
-                atrule.params = parseVariable(atrule.params, atrule);
-            }
-        });
-        root.walkAtRules(atrule => {
-            // 移除变量声明
-            if (atrule.variable) {
-                atrule.remove();
+                atrule.filename = atrule.params = parseVariable(atrule.params, atrule);
             }
         });
     };

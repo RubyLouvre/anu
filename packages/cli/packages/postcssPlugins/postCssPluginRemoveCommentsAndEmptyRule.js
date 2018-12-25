@@ -12,6 +12,12 @@ const postCssPluginRemoveCommentsAndEmptyRule = postCss.plugin('postcss-plugin-r
                 rule.remove();
             }
         });
+        // 移除变量声明
+        root.walk(node => {
+            if (node.variable) {
+                node.remove();
+            }
+        });
     };
 });
 
