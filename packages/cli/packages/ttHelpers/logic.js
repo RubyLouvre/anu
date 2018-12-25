@@ -77,11 +77,11 @@ function loop(callee, fn, modules) {
     attrs.push(createAttribute(prefix+'for-item', fn.params[0].name));
     attrs.push(createAttribute(prefix+'for-index', fn.params[1].name));
     if (modules.key) {
-        //  attrs.push(createAttribute('tt:key', utils.genKey(modules.key)));
+        attrs.push(createAttribute('tt:key', utils.genKey(modules.key)));
 
         modules.key = null;
     } else {
-        // attrs.push(createAttribute('tt:key', '*this'));
+        attrs.push(createAttribute('tt:key', '*this'));
         // console.log( fn.params[1].name);
     }
 

@@ -3,8 +3,6 @@ const syntaxJSX = require('babel-plugin-syntax-jsx');
 const babel = require('babel-core');
 const t = require('babel-types');
 const generate = require('babel-generator').default;
-
-
 const utils = require('../utils');
 const config = require('../config');
 const buildType = config.buildType;
