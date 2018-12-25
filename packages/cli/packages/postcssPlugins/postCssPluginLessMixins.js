@@ -1,6 +1,6 @@
 const postCss = require('postcss');
-const reg = /[a-zA-Z0-9-_.]+\(.*\)$/;
-const mixinVarReg = /\s*(@[a-zA-Z0-9-_."']+):\s*([a-zA-Z0-9-_."']+)/;
+const reg = /[a-zA-Z0-9-_.]+\s*\(.*\)$/;
+const mixinVarReg = /\s*(@[a-zA-Z0-9-_."']+):\s*(.+)/;
 
 /**
  * 要放在postCssPluginLessVar前使用
@@ -11,7 +11,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
         var find = false;
         var nodes = [];
         function extractVar(variable, obj) {
-            const varReg = /(@{?[a-zA-Z0-9-_."']+}?)/g;
+            const varReg = /(@{?[a-zA-Z0-9-_."']+}?)/g
             const variables = variable && variable.match(varReg);
 
             if (variables && variables.length) {
@@ -35,7 +35,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
                     find = true;
                     rule.walkDecls(decl => {
                         decl.value = extractVar(decl.value, match);
-                    });
+                    })
                     nodes = nodes.concat(rule.nodes);
                 }
             }
@@ -48,7 +48,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
 
     function matchMixinRule(mixinParams, mixinIncludeParams) {
         const res = {};
-        if (mixinIncludeParams === null && mixinParams === null) {
+        if (mixinIncludeParams.length === 0 && mixinParams === null) {
             return res;
         }
         if (mixinIncludeParams && mixinParams) {
@@ -111,14 +111,14 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
             return {
                 key,
                 value
-            };
+            }
         });
     }
 
     function getMixinIncludeParams(str) {
         str = str.replace(/^\(|\)$/g, ''); // 去掉首尾括号
         if (!str) {
-            return null;
+            return [];
         }
         // 存在分号则参数以分号分割，否则以逗号分割
         if (str.indexOf(';') !== -1) {
@@ -136,7 +136,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
             return {
                 key,
                 value
-            };
+            }
         });
     }
 
