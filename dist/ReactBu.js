@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-21
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-25
  */
 
 var arrayPush = Array.prototype.push;
@@ -1164,9 +1164,9 @@ var DETACH = 13;
 var HOOK = 17;
 var REF = 19;
 var CALLBACK = 23;
-var EFFECT = 29;
+var PASSIVE = 29;
 var CAPTURE = 31;
-var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, EFFECT, CAPTURE].sort(function (a, b) {
+var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, PASSIVE, CAPTURE].sort(function (a, b) {
     return a - b;
 });
 var effectLength = effectNames.length;
@@ -1492,11 +1492,18 @@ function updateClassComponent(fiber, info) {
         props = fiber.props;
     var contextStack = info.contextStack,
         containerStack = info.containerStack;
-    var newContext = getMaskedContext(instance, type.contextTypes, type.contextType, contextStack);
+    var getContext = type.contextType;
+    var unmaskedContext = contextStack[0];
+    var isStaticContextType = isFn(type.contextType);
+    var newContext = isStaticContextType ? getContext(fiber) : getMaskedContext(instance, type.contextTypes, unmaskedContext);
     if (instance == null) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
-        cacheContext(instance, contextStack[0], newContext);
+    }
+    if (isStaticContextType) {
+        getContext.subscribers.push(instance);
+    } else {
+        cacheContext(instance, unmaskedContext, newContext);
     }
     var isStateful = !instance.__isStateless;
     instance._reactInternalFiber = fiber;
@@ -1506,7 +1513,7 @@ function updateClassComponent(fiber, info) {
         if (fiber.hasMounted) {
             applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
         } else {
-            applybeforeMountHooks(fiber, instance, props, newContext, contextStack);
+            applybeforeMountHooks(fiber, instance, props);
         }
         if (fiber.memoizedState) {
             instance.state = fiber.memoizedState;
@@ -1529,7 +1536,7 @@ function updateClassComponent(fiber, info) {
     fiber.memoizedState = instance.state;
     if (instance.getChildContext) {
         var context = instance.getChildContext();
-        context = Object.assign({}, contextStack[0], context);
+        context = Object.assign({}, unmaskedContext, context);
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
@@ -1560,7 +1567,7 @@ function updateClassComponent(fiber, info) {
 function applybeforeMountHooks(fiber, instance, newProps) {
     fiber.setout = true;
     if (instance.__useNewHooks) {
-        setStateByProps(instance, fiber, newProps, instance.state);
+        setStateByProps(fiber, newProps, instance.state);
     } else {
         callUnsafeHook(instance, 'componentWillMount', []);
     }
@@ -1590,7 +1597,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     var updateQueue = fiber.updateQueue;
     mergeStates(fiber, newProps);
     newState = fiber.memoizedState;
-    setStateByProps(instance, fiber, newProps, newState);
+    setStateByProps(fiber, newProps, newState);
     newState = fiber.memoizedState;
     delete fiber.setout;
     fiber._hydrating = true;
@@ -1615,7 +1622,7 @@ function isSameNode(a, b) {
         return true;
     }
 }
-function setStateByProps(instance, fiber, nextProps, prevState) {
+function setStateByProps(fiber, nextProps, prevState) {
     fiber.errorHook = gDSFP;
     var fn = fiber.type[gDSFP];
     if (fn) {
@@ -1644,42 +1651,25 @@ function cacheContext(instance, unmaskedContext, context) {
     instance.__unmaskedContext = unmaskedContext;
     instance.__maskedContext = context;
 }
-function getMaskedContext(instance, contextTypes, contextType, contextStack) {
-    var noContext = !contextTypes && !contextType;
-    if (instance && noContext) {
-        return instance.context;
-    }
-    var context = {};
-    if (noContext) {
-        return context;
-    }
-    var unmaskedContext = contextStack[0];
+function getMaskedContext(instance, contextTypes, unmaskedContext) {
+    var noContext = !contextTypes;
     if (instance) {
+        if (noContext) {
+            return instance.context;
+        }
         var cachedUnmasked = instance.__unmaskedContext;
         if (cachedUnmasked === unmaskedContext) {
             return instance.__maskedContext;
         }
     }
-    if (contextTypes) {
-        for (var key in contextTypes) {
-            if (contextTypes.hasOwnProperty(key)) {
-                context[key] = unmaskedContext[key];
-            }
-        }
-    } else {
-        var has = false;
-        for (var i in unmaskedContext) {
-            var v = unmaskedContext[i];
-            context = v.get();
-            has = true;
-            break;
-        }
-        if (!has) {
-            context = new contextType.Provider().emitter.get();
-        }
+    var context = {};
+    if (noContext) {
+        return context;
     }
-    if (instance) {
-        cacheContext(instance, unmaskedContext, context);
+    for (var key in contextTypes) {
+        if (contextTypes.hasOwnProperty(key)) {
+            context[key] = unmaskedContext[key];
+        }
     }
     return context;
 }
@@ -1794,6 +1784,7 @@ var refStrategy = {
 var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
 var domEffects = [PLACE, CONTENT, ATTR];
 var domRemoved = [];
+var passiveFibers = [];
 function commitDFSImpl(fiber) {
     var topFiber = fiber;
     outerLoop: while (true) {
@@ -1854,6 +1845,12 @@ function commitDFS(effects$$1) {
             } else {
                 commitDFSImpl(el);
             }
+            if (passiveFibers.length) {
+                passiveFibers.forEach(function (fiber) {
+                    safeInvokeHooks(fiber.updateQueue, 'passive', 'unpassive');
+                });
+                passiveFibers.length = 0;
+            }
             if (domRemoved.length) {
                 domRemoved.forEach(Renderer.removeElement);
                 domRemoved.length = 0;
@@ -1885,9 +1882,7 @@ function commitEffects(fiber) {
                     break;
                 case HOOK:
                     if (instance.__isStateless) {
-                        var uneffects = fiber.updateQueue.uneffects;
-                        uneffects.length = 0;
-                        safeEach(fiber.updateQueue.effects, uneffects);
+                        safeInvokeHooks(fiber.updateQueue, 'layout', 'unlayout');
                     } else if (fiber.hasMounted) {
                         guardCallback(instance, 'componentDidUpdate', [updater.prevProps, updater.prevState, updater.snapshot]);
                     } else {
@@ -1900,7 +1895,8 @@ function commitEffects(fiber) {
                         return;
                     }
                     break;
-                case EFFECT:
+                case PASSIVE:
+                    passiveFibers.push(fiber);
                     break;
                 case REF:
                     Refs.fireRef(fiber, instance);
@@ -1949,16 +1945,26 @@ function disposeFibers(fiber) {
     delete fiber.oldChildren;
     fiber.children = {};
 }
-function safeEach(effects$$1, others) {
-    effects$$1.forEach(function (fn) {
+function safeInvokeHooks(upateQueue, create, destory) {
+    var uneffects = upateQueue[destory],
+        effects$$1 = upateQueue[create],
+        fn;
+    if (!uneffects) {
+        return;
+    }
+    while (fn = uneffects.shift()) {
+        try {
+            fn();
+        } catch (e) {      }
+    }
+    while (fn = effects$$1.shift()) {
         try {
             var f = fn();
-            if (others && typeof f === 'function') {
-                others.push(f);
+            if (typeof f === 'function') {
+                uneffects.push(f);
             }
         } catch (e) {      }
-    });
-    effects$$1.length = 0;
+    }
 }
 function disposeFiber(fiber, force) {
     var stateNode = fiber.stateNode,
@@ -1977,7 +1983,8 @@ function disposeFiber(fiber, force) {
             Renderer.onDispose(fiber);
             if (fiber.hasMounted) {
                 if (isStateless) {
-                    safeEach(fiber.updateQueue.uneffects);
+                    safeInvokeHooks(fiber.updateQueue, 'layout', 'unlayout');
+                    safeInvokeHooks(fiber.updateQueue, 'passive', 'unpassive');
                 }
                 stateNode.updater.enqueueSetState = returnFalse;
                 guardCallback(stateNode, 'componentWillUnmount', []);

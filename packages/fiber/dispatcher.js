@@ -1,5 +1,4 @@
 import { Renderer } from 'react-core/createRenderer';
-import { HOOK } from './effectTag';
 import { get } from 'react-core/util';
 function setter(compute, cursor, value) {
     this.updateQueue[cursor] = compute(cursor, value);
@@ -36,13 +35,13 @@ export var dispatcher = {
         let value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
     },
-    useCallbackOrMemo(callback, inputs, isMeno) {//ok
+    useCallbackOrMemo(create, inputs, isMemo) {//ok
         let fiber = getCurrentFiber();
         let key = hookCursor + 'Hook';
         let updateQueue = fiber.updateQueue;
         hookCursor++;
 
-        let nextInputs = Array.isArray(inputs) ? inputs : [callback];
+        let nextInputs = Array.isArray(inputs) ? inputs : [create];
         let prevState = updateQueue[key];
         if (prevState) {
             let prevInputs = prevState[1];
@@ -51,7 +50,7 @@ export var dispatcher = {
             }
         }
 
-        let value = isMeno ? callback() : callback;
+        let value = isMemo ? create() : create;
         updateQueue[key] = [value, nextInputs];
         return value;
     },
@@ -65,14 +64,39 @@ export var dispatcher = {
         }
         return updateQueue[key] = { current: initValue };
     },
-    useEffect(callback) {//ok
+    useEffect(create, inputs, EffectTag, createList, destoryList) {//ok
         let fiber = getCurrentFiber();
-        if (fiber.effectTag % HOOK) {
-            fiber.effectTag *= HOOK;
+        let cb = dispatcher.useCallbackOrMemo(create, inputs);
+        if (fiber.effectTag % EffectTag) {
+            fiber.effectTag *= EffectTag;
         }
-        fiber.updateQueue.effects.push(callback);
+        let updateQueue = fiber.updateQueue;
+        let list = updateQueue[createList] ||  (updateQueue[createList] = []);
+        updateQueue[destoryList] ||  (updateQueue[destoryList] = []);
+        list.push(cb);
+    },
+    useImperativeMethods(ref, create, inputs) {
+        const nextInputs = Array.isArray(inputs) ? inputs.concat([ref])
+            : [ref, create];
+        dispatcher.useEffect(() => {
+            if (typeof ref === 'function') {
+                const refCallback = ref;
+                const inst = create();
+                refCallback(inst);
+                return () => refCallback(null);
+            } else if (ref !== null && ref !== undefined) {
+                const refObject = ref;
+                const inst = create();
+                refObject.current = inst;
+                return () => {
+                    refObject.current = null;
+                };
+            }
+        }, nextInputs);
     }
 };
+
+
 //https://reactjs.org/docs/hooks-reference.html
 function getCurrentFiber() {
     return get(Renderer.currentOwner);
