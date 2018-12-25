@@ -55,8 +55,8 @@ async function readFile(filepath) {
 
 function compileLess(code, dir) {
     return postCss([
-        require('../postcssPlugins/postCssPluginLessVar'),
         require('../postcssPlugins/postCssPluginLessMixins'),
+        require('../postcssPlugins/postCssPluginLessVar'),
         require('postcss-import')({
             resolve(importer, baseDir){
                 //如果@import的值没有文件后缀
