@@ -6,12 +6,13 @@ const postCssPluginRemoveCommentsAndEmptyRule = postCss.plugin('postcss-plugin-r
         root.walkComments(comment => {
             comment.remove();
         });
-        // 移除空声明
+        // 移除空声明或变量声明
         root.walkRules(rule => {
-            if (rule.nodes && rule.nodes.length === 0) {
+            if (rule.nodes && rule.nodes.length === 0 || rule.variable) {
                 rule.remove();
             }
         });
+        
     };
 });
 

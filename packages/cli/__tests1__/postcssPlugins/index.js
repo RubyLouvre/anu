@@ -55,19 +55,19 @@ async function readFile(filepath) {
 
 function compileLess(code, dir) {
     return postCss([
-        require('postcss-nested'), // 嵌套
-        // require('postcss-import')({
-        //     resolve(importer, baseDir){
-        //         //如果@import的值没有文件后缀
-        //         if (!/\.less$/.test(importer)) {
-        //             importer = importer + '.less';
-        //         }
-        //         //处理alias路径
-        //         return utils.resolveStyleAlias(importer, baseDir);
-        //     }
-        // }),
         require('../postcssPlugins/postCssPluginLessVar'),
         require('../postcssPlugins/postCssPluginLessMixins'),
+        require('postcss-import')({
+            resolve(importer, baseDir){
+                //如果@import的值没有文件后缀
+                if (!/\.less$/.test(importer)) {
+                    importer = importer + '.less';
+                }
+                //处理alias路径
+                return utils.resolveStyleAlias(importer, baseDir);
+            }
+        }),
+        require('postcss-nested'), // 嵌套
         require('../postcssPlugins/postCssPluginLessFunction'),
         require('../postcssPlugins/postCssPluginLessMerge'),
         require('postcss-automath'),      //5px + 2 => 7px
