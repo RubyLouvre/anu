@@ -165,7 +165,7 @@ export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     let { contextStack, containerStack } = info;
     let getContext = type.contextType;
-    let unmaskedContext = containerStack[0];
+    let unmaskedContext = contextStack[0];
     //如果这是React16.7的static ContextType
     let isStaticContextType = isFn(type.contextType);
     let newContext = isStaticContextType ? getContext(fiber): getMaskedContext(
@@ -173,11 +173,10 @@ export function updateClassComponent(fiber, info) {
         type.contextTypes,
         unmaskedContext
     );
-        
     if (instance == null) {
-        fiber.parent = type === AnuPortal ? props.parent : unmaskedContext;
+        fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
-    } 
+    }
     if (isStaticContextType){
         getContext.subscribers.push(instance);
     } else {
@@ -291,7 +290,7 @@ function applybeforeUpdateHooks(
     updater.prevState = oldState;
     let propsChanged = oldProps !== newProps;
     fiber.setout = true;
-    //这是废弃的API
+
     if (!instance.__useNewHooks) {
         let contextChanged = instance.context !== newContext;
         if (propsChanged || contextChanged) {
@@ -349,7 +348,7 @@ function isSameNode(a, b) {
     }
 }
 
-function setStateByProps( fiber, nextProps, prevState) {
+function setStateByProps(fiber, nextProps, prevState) {
     fiber.errorHook = gDSFP;
     let fn = fiber.type[gDSFP];
     if (fn) {
@@ -380,7 +379,6 @@ function cacheContext(instance, unmaskedContext, context) {
     instance.__unmaskedContext = unmaskedContext;
     instance.__maskedContext = context;
 }
-
 function getMaskedContext(instance, contextTypes, unmaskedContext) {
     var noContext = !contextTypes;
     if (instance){
@@ -403,6 +401,7 @@ function getMaskedContext(instance, contextTypes, unmaskedContext) {
     }
     return context;
 }
+
 
 /**
  * 转换vnode为fiber

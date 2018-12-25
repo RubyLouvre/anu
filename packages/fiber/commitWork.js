@@ -28,7 +28,7 @@ import { Refs } from './Refs';
 var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
 var domEffects = [PLACE, CONTENT, ATTR];
 var domRemoved = [];
-var passiveFibers = []
+var passiveFibers = [];
 function commitDFSImpl(fiber) {
     let topFiber = fiber;
     outerLoop: while (true) {
@@ -215,6 +215,9 @@ export function disposeFibers(fiber) {
 function safeInvokeHooks(upateQueue, create, destory) {
     var uneffects = upateQueue[destory],
         effects = upateQueue[create], fn;
+    if (!uneffects){
+        return;
+    }
     while ((fn = uneffects.shift())) {
         try {
             fn();

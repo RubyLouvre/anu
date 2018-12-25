@@ -1,5 +1,5 @@
 import { Renderer } from 'react-core/createRenderer';
-import { isFn, topNodes, noop, topFibers } from 'react-core/util';
+import { topNodes, noop, topFibers } from 'react-core/util';
 import { delayMounts, usingComponents, _getApp, updateMiniApp, callGlobalHook } from './utils';
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
@@ -52,15 +52,7 @@ export function onUnload() {
             a.wxInstances.length = 0;//不能为null
         }
         delete usingComponents[i];
-    }
-    let instance = this.reactInstance;
-   
-    let hook = instance.componentWillUnmount;
-    if (isFn(hook)) {
-        hook.call(instance);
-        instance.componentWillUnmount = null;
-    }
-    
+    }   
     let root = this.reactContainer;
     let container = root && root._reactInternalFiber;
     if (container) {

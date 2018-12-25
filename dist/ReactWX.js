@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-12-23
+ * 运行于微信小程序的React by 司徒正美 Copyright 2018-12-25
  * IE9+
  */
 
@@ -1040,7 +1040,9 @@ function createEvent(e, target) {
 function UpdateQueue() {
     return {
         pendingStates: [],
-        pendingCbs: []
+        pendingCbs: [],
+        effects: [],
+        uneffects: []
     };
 }
 function createInstance(fiber, context) {
@@ -1466,11 +1468,18 @@ function updateClassComponent(fiber, info) {
         props = fiber.props;
     var contextStack = info.contextStack,
         containerStack = info.containerStack;
-    var newContext = getMaskedContext(instance, type.contextTypes, type.contextType, contextStack);
+    var getContext = type.contextType;
+    var unmaskedContext = contextStack[0];
+    var isStaticContextType = isFn(type.contextType);
+    var newContext = isStaticContextType ? getContext(fiber) : getMaskedContext(instance, type.contextTypes, unmaskedContext);
     if (instance == null) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
-        cacheContext(instance, contextStack[0], newContext);
+    }
+    if (isStaticContextType) {
+        getContext.subscribers.push(instance);
+    } else {
+        cacheContext(instance, unmaskedContext, newContext);
     }
     var isStateful = !instance.__isStateless;
     instance._reactInternalFiber = fiber;
@@ -1480,7 +1489,7 @@ function updateClassComponent(fiber, info) {
         if (fiber.hasMounted) {
             applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
         } else {
-            applybeforeMountHooks(fiber, instance, props, newContext, contextStack);
+            applybeforeMountHooks(fiber, instance, props);
         }
         if (fiber.memoizedState) {
             instance.state = fiber.memoizedState;
@@ -1503,7 +1512,7 @@ function updateClassComponent(fiber, info) {
     fiber.memoizedState = instance.state;
     if (instance.getChildContext) {
         var context = instance.getChildContext();
-        context = Object.assign({}, contextStack[0], context);
+        context = Object.assign({}, unmaskedContext, context);
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
@@ -1534,7 +1543,7 @@ function updateClassComponent(fiber, info) {
 function applybeforeMountHooks(fiber, instance, newProps) {
     fiber.setout = true;
     if (instance.__useNewHooks) {
-        setStateByProps(instance, fiber, newProps, instance.state);
+        setStateByProps(fiber, newProps, instance.state);
     } else {
         callUnsafeHook(instance, 'componentWillMount', []);
     }
@@ -1549,9 +1558,9 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     updater.prevProps = oldProps;
     updater.prevState = oldState;
     var propsChanged = oldProps !== newProps;
-    var contextChanged = instance.context !== newContext;
     fiber.setout = true;
     if (!instance.__useNewHooks) {
+        var contextChanged = instance.context !== newContext;
         if (propsChanged || contextChanged) {
             var prevState = instance.state;
             callUnsafeHook(instance, 'componentWillReceiveProps', [newProps, newContext]);
@@ -1564,7 +1573,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     var updateQueue = fiber.updateQueue;
     mergeStates(fiber, newProps);
     newState = fiber.memoizedState;
-    setStateByProps(instance, fiber, newProps, newState);
+    setStateByProps(fiber, newProps, newState);
     newState = fiber.memoizedState;
     delete fiber.setout;
     fiber._hydrating = true;
@@ -1589,7 +1598,7 @@ function isSameNode(a, b) {
         return true;
     }
 }
-function setStateByProps(instance, fiber, nextProps, prevState) {
+function setStateByProps(fiber, nextProps, prevState) {
     fiber.errorHook = gDSFP;
     var fn = fiber.type[gDSFP];
     if (fn) {
@@ -1618,42 +1627,25 @@ function cacheContext(instance, unmaskedContext, context) {
     instance.__unmaskedContext = unmaskedContext;
     instance.__maskedContext = context;
 }
-function getMaskedContext(instance, contextTypes, contextType, contextStack) {
-    var noContext = !contextTypes && !contextType;
-    if (instance && noContext) {
-        return instance.context;
-    }
-    var context = {};
-    if (noContext) {
-        return context;
-    }
-    var unmaskedContext = contextStack[0];
+function getMaskedContext(instance, contextTypes, unmaskedContext) {
+    var noContext = !contextTypes;
     if (instance) {
+        if (noContext) {
+            return instance.context;
+        }
         var cachedUnmasked = instance.__unmaskedContext;
         if (cachedUnmasked === unmaskedContext) {
             return instance.__maskedContext;
         }
     }
-    if (contextTypes) {
-        for (var key in contextTypes) {
-            if (contextTypes.hasOwnProperty(key)) {
-                context[key] = unmaskedContext[key];
-            }
-        }
-    } else {
-        var has = false;
-        for (var i in unmaskedContext) {
-            var v = unmaskedContext[i];
-            context = v.get();
-            has = true;
-            break;
-        }
-        if (!has) {
-            context = new contextType.Provider().emitter.get();
-        }
+    var context = {};
+    if (noContext) {
+        return context;
     }
-    if (instance) {
-        cacheContext(instance, unmaskedContext, context);
+    for (var key in contextTypes) {
+        if (contextTypes.hasOwnProperty(key)) {
+            context[key] = unmaskedContext[key];
+        }
     }
     return context;
 }
@@ -1933,6 +1925,9 @@ function safeInvokeHooks(upateQueue, create, destory) {
     var uneffects = upateQueue[destory],
         effects$$1 = upateQueue[create],
         fn;
+    if (!uneffects) {
+        return;
+    }
     while (fn = uneffects.shift()) {
         try {
             fn();
@@ -2452,11 +2447,6 @@ function onUnload() {
             a.wxInstances.length = 0;
         }
         delete usingComponents[i];
-    }
-    var instance = this.reactInstance;
-    var hook = instance.componentWillUnmount;
-    if (isFn(hook)) {
-        hook.call(instance);
     }
     var root = this.reactContainer;
     var container = root && root._reactInternalFiber;
