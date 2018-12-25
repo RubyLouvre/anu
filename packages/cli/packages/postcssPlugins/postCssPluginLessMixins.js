@@ -11,7 +11,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
         var find = false;
         var nodes = [];
         function extractVar(variable, obj) {
-            const varReg = /(@{?[a-zA-Z0-9-_."']+}?)/g
+            const varReg = /(@{?[a-zA-Z0-9-_."']+}?)/g;
             const variables = variable && variable.match(varReg);
 
             if (variables && variables.length) {
@@ -35,7 +35,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
                     find = true;
                     rule.walkDecls(decl => {
                         decl.value = extractVar(decl.value, match);
-                    })
+                    });
                     nodes = nodes.concat(rule.nodes);
                 }
             }
@@ -111,7 +111,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
             return {
                 key,
                 value
-            }
+            };
         });
     }
 
@@ -136,7 +136,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
             return {
                 key,
                 value
-            }
+            };
         });
     }
 
