@@ -42,6 +42,7 @@ let map = {
         return importTag;
     },
     getJsCode: function(code){
+        if (!code) return '';
         code = beautify.js(code);
         return `<script>\n${code}\n</script>`;
     },
