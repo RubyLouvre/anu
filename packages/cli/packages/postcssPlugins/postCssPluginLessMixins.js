@@ -32,6 +32,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
             if (rule.selector.match(mixinReg)) {
                 const match = matchMixinRule(getMixinParams(rule.selector), params);
                 if (match) {
+                    match['@arguments'] = getMixinParams(rule.selector).map(p => match[p.key] || p.value).join(' ');
                     find = true;
                     rule.walk(decl => {
                         if (decl.value) {
