@@ -1,5 +1,6 @@
-import { miniCreateClass, isFn } from './util';
+import { miniCreateClass, isFn, get } from './util';
 import { Component } from './Component';
+import { Renderer } from './createRenderer';
 
 
 const MAX_NUMBER = 1073741823;
@@ -31,11 +32,13 @@ export function createContext(defaultValue, calculateChangedBits) {
                     changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
                     changedBits |= 0;
                     if (changedBits !== 0) {
-                        instance.subscribers.forEach(function (instance) {
-                            instance.setState({
-                                value: newValue
-                            });
-                            instance.forceUpdate();
+                        instance.subscribers.forEach(function (fiber) {
+                            if (fiber.setState){
+                                fiber.setState( {value: newValue} );
+                                fiber = get(fiber);
+                            }
+                            Renderer.updateComponent(fiber, true);
+
                         });
                     }
                 }

@@ -176,10 +176,11 @@ export function updateClassComponent(fiber, info) {
     if (instance == null) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
+        if (isStaticContextType){
+            getContext.subscribers.push(instance);
+        }
     }
-    if (isStaticContextType){
-        getContext.subscribers.push(instance);
-    } else {
+    if (!isStaticContextType){
         cacheContext(instance, unmaskedContext, newContext);
     }
     let isStateful = !instance.__isStateless;
@@ -289,10 +290,10 @@ function applybeforeUpdateHooks(
     updater.prevProps = oldProps;
     updater.prevState = oldState;
     let propsChanged = oldProps !== newProps;
-    let contextChanged = instance.context !== newContext;
     fiber.setout = true;
 
     if (!instance.__useNewHooks) {
+        let contextChanged = instance.context !== newContext;
         if (propsChanged || contextChanged) {
             let prevState = instance.state;
             callUnsafeHook(instance, 'componentWillReceiveProps', [

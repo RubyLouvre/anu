@@ -622,11 +622,12 @@
                         changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
                         changedBits |= 0;
                         if (changedBits !== 0) {
-                            instance.subscribers.forEach(function (instance) {
-                                instance.setState({
-                                    value: newValue
-                                });
-                                instance.forceUpdate();
+                            instance.subscribers.forEach(function (fiber) {
+                                if (fiber.setState) {
+                                    fiber.setState({ value: newValue });
+                                    fiber = get(fiber);
+                                }
+                                Renderer.updateComponent(fiber, true);
                             });
                         }
                     }
@@ -1689,9 +1690,7 @@
     function UpdateQueue() {
         return {
             pendingStates: [],
-            pendingCbs: [],
-            effects: [],
-            uneffects: []
+            pendingCbs: []
         };
     }
     function createInstance(fiber, context) {
@@ -1918,8 +1917,17 @@
         hookCursor = 0;
     }
     var dispatcher = {
-        useContext: function useContext(contextType) {
-            return new contextType.Provider().emitter.get();
+        useContext: function useContext(getContext) {
+            if (isFn(getContext)) {
+                var fiber = getCurrentFiber();
+                var context = getContext(fiber);
+                var list = getContext.subscribers;
+                if (list.indexOf(fiber) === -1) {
+                    list.push(fiber);
+                }
+                return context;
+            }
+            return null;
         },
         useReducer: function useReducer(reducer, initValue, initAction) {
             var fiber = getCurrentFiber();
@@ -2210,10 +2218,11 @@
         if (instance == null) {
             fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
             instance = createInstance(fiber, newContext);
+            if (isStaticContextType) {
+                getContext.subscribers.push(instance);
+            }
         }
-        if (isStaticContextType) {
-            getContext.subscribers.push(instance);
-        } else {
+        if (!isStaticContextType) {
             cacheContext(instance, unmaskedContext, newContext);
         }
         var isStateful = !instance.__isStateless;
@@ -2294,9 +2303,9 @@
         updater.prevProps = oldProps;
         updater.prevState = oldState;
         var propsChanged = oldProps !== newProps;
-        var contextChanged = instance.context !== newContext;
         fiber.setout = true;
         if (!instance.__useNewHooks) {
+            var contextChanged = instance.context !== newContext;
             if (propsChanged || contextChanged) {
                 var prevState = instance.state;
                 callUnsafeHook(instance, 'componentWillReceiveProps', [newProps, newContext]);
@@ -3157,6 +3166,9 @@
     function useEffect(create, inputs) {
         return dispatcher.useEffect(create, inputs, PASSIVE, 'passive', 'unpassive');
     }
+    function useLayoutEffect(create, inputs) {
+        return dispatcher.useEffect(create, inputs, HOOK, 'layout', 'unlayout');
+    }
     function useCallback(create, inputs) {
         return dispatcher.useCallbackOrMeno(create, inputs);
     }
@@ -3165,6 +3177,12 @@
     }
     function useRef(initValue) {
         return dispatcher.useRef(initValue);
+    }
+    function useContext(initValue) {
+        return dispatcher.useContext(initValue);
+    }
+    function useImperativeMethods(ref, create, inputs) {
+        return dispatcher.useImperativeMethods(ref, create, inputs);
     }
 
     var noCheck = false;
@@ -3306,7 +3324,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: "1.4.9",
+            version: '1.4.9',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,
@@ -3318,12 +3336,8 @@
             Component: Component,
             createRef: createRef,
             forwardRef: forwardRef,
-            useState: useState,
-            useReducer: useReducer,
-            useEffect: useEffect,
-            useCallback: useCallback,
-            useMemo: useMemo,
-            useRef: useRef,
+            useState: useState, useReducer: useReducer, useEffect: useEffect, useLayoutEffect: useLayoutEffect, useCallback: useCallback,
+            useMemo: useMemo, useRef: useRef, useContext: useContext, useImperativeMethods: useImperativeMethods,
             createElement: createElement,
             cloneElement: cloneElement,
             PureComponent: PureComponent,

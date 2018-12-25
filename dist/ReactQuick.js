@@ -1370,9 +1370,7 @@ var api = {
 function UpdateQueue() {
     return {
         pendingStates: [],
-        pendingCbs: [],
-        effects: [],
-        uneffects: []
+        pendingCbs: []
     };
 }
 function createInstance(fiber, context) {
@@ -1805,10 +1803,11 @@ function updateClassComponent(fiber, info) {
     if (instance == null) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
+        if (isStaticContextType) {
+            getContext.subscribers.push(instance);
+        }
     }
-    if (isStaticContextType) {
-        getContext.subscribers.push(instance);
-    } else {
+    if (!isStaticContextType) {
         cacheContext(instance, unmaskedContext, newContext);
     }
     var isStateful = !instance.__isStateless;
@@ -1888,9 +1887,9 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     updater.prevProps = oldProps;
     updater.prevState = oldState;
     var propsChanged = oldProps !== newProps;
-    var contextChanged = instance.context !== newContext;
     fiber.setout = true;
     if (!instance.__useNewHooks) {
+        var contextChanged = instance.context !== newContext;
         if (propsChanged || contextChanged) {
             var prevState = instance.state;
             callUnsafeHook(instance, 'componentWillReceiveProps', [newProps, newContext]);
@@ -2829,11 +2828,6 @@ function onUnload() {
             a.wxInstances.length = 0;
         }
         delete usingComponents[i];
-    }
-    var instance = this.reactInstance;
-    var hook = instance.componentWillUnmount;
-    if (isFn(hook)) {
-        hook.call(instance);
     }
     var root = this.reactContainer;
     var container = root && root._reactInternalFiber;

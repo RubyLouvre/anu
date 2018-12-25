@@ -1,5 +1,5 @@
 import { Renderer } from 'react-core/createRenderer';
-import { get } from 'react-core/util';
+import { get, isFn } from 'react-core/util';
 function setter(compute, cursor, value) {
     this.updateQueue[cursor] = compute(cursor, value);
     Renderer.updateComponent(this, true);
@@ -10,8 +10,17 @@ export function resetCursor() {
 }
 
 export var dispatcher = {
-    useContext(contextType) {//这个实现并不正确
-        return new contextType.Provider().emitter.get();
+    useContext(getContext) {//这个实现并不正确
+        if (isFn(getContext)){
+            let fiber = getCurrentFiber();
+            let context = getContext(fiber);
+            let list = getContext.subscribers;
+            if (list.indexOf(fiber) === -1){
+                list.push(fiber);
+            }
+            return context;
+        }
+        return null;
     },
     useReducer(reducer, initValue, initAction) {//ok
         let fiber = getCurrentFiber();
@@ -96,8 +105,6 @@ export var dispatcher = {
     }
 };
 
-
-//https://reactjs.org/docs/hooks-reference.html
 function getCurrentFiber() {
     return get(Renderer.currentOwner);
 }
