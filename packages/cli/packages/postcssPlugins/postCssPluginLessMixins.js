@@ -33,8 +33,10 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
                 const match = matchMixinRule(getMixinParams(rule.selector), params);
                 if (match) {
                     find = true;
-                    rule.walkDecls(decl => {
-                        decl.value = extractVar(decl.value, match);
+                    rule.walk(decl => {
+                        if (decl.value) {
+                            decl.value = extractVar(decl.value, match);
+                        }
                     });
                     nodes = nodes.concat(rule.nodes);
                 }
@@ -148,7 +150,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
                 for (var i = 0, length = nodes.length; i < length; i++) {
                     // 遍历找出的mixin定义节点，替换当前mixin，并传入important参数
                     const clonedNode = nodes[i].clone({mixin: false, important: atrule.important});
-                    atrule.after(clonedNode);
+                    atrule.before(clonedNode);
                 }
             }
         });
@@ -158,7 +160,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
                 node.remove();
             }
             // 删除带括号的mixin定义语句
-            if (node.selector && node.selector.match(reg)) {
+            if (node.selector && node.selector.match(reg) && !node.selector.match(/:extend/)) {
                 node.remove();
             }
         });
