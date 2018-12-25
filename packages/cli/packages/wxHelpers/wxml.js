@@ -3,12 +3,9 @@ const syntaxJSX = require('babel-plugin-syntax-jsx');
 const babel = require('babel-core');
 const t = require('babel-types');
 const generate = require('babel-generator').default;
-
-
 const utils = require('../utils');
 const config = require('../config');
 const buildType = config.buildType;
-console.log('wxmlbuildType', buildType);
 const attrNameHelper = require(`../${buildType}Helpers/attrName`);
 const attrValueHelper = require(`../${buildType}Helpers/attrValue`);
 const logicHelper = require(`../${buildType}Helpers/logic`);

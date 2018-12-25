@@ -1,8 +1,8 @@
-const { transform, getXml } = require('./utils/utils');
+const {  getXml } = require('./utils/utils');
 const prettifyXml = require('prettify-xml');
 
 describe('if statement', () => {
-    test('if 简单情况-bu', () => {
+    test('if 简单情况-bu', async () => {
         let code = ` 
     if (this.state.tasks !== null) {
       return <view class='page-body'>tasks</view>
@@ -11,8 +11,8 @@ describe('if statement', () => {
         <div class="page-body"><span>Hello world!</span></div>
      )
    `;
-        transform(code, 'bu');
-        let templateBu = getXml();
+        
+        let templateBu = await getXml(code, 'bu');
         expect(prettifyXml(templateBu)).toMatch(
             prettifyXml(
                 `<block s-if="state.tasks !== null">
@@ -27,7 +27,7 @@ describe('if statement', () => {
         );
     });
 
-    test('if-eles bu', () => {
+    test('if-eles bu', async () => {
         let code = `
     if (this.state.tasks !== null) {
       return <view class="page-body">tasks</view>;
@@ -45,8 +45,8 @@ describe('if statement', () => {
       );
     }
     `;
-        transform(code, 'bu');
-        let templateWX = getXml();
+        
+        let templateWX = await getXml(code, 'bu');
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<block s-if="state.tasks !== null">
@@ -64,6 +64,89 @@ describe('if statement', () => {
               </view>
           </block>
         </block>`
+            )
+        );
+    });
+});
+
+describe('逻辑表达式-二元', () => {
+    test('二元表达式-简单情况-bu', async () => {
+        let code = 'return <div>{this.state.show && <div>hello word</div>}</div>;';
+        let templateWX = await getXml(code, 'bu');
+        expect(prettifyXml(templateWX)).toMatch(
+            prettifyXml(
+                `<view>
+        <block s-if="state.show">
+          <view>hello word</view>
+        </block>
+      </view>`
+            )
+        );
+    });
+
+    test('二元表达式-多重-bu', async () => {
+        let code = 'return <div>{(this.state.show && this.state.isOk) &&<div>hello word</div>}</div> ;';
+        let templateWX = await getXml(code, 'bu');
+        expect(prettifyXml(templateWX)).toMatch(
+            prettifyXml(
+                `<view>
+        <block s-if="state.show && state.isOk">
+          <view>hello word</view>
+        </block>
+      </view>`
+            )
+        );
+    });
+});
+
+describe('逻辑表达式-三元', () => {
+    test('三元表达式-简单情况-bu', async () => {
+        let code = 'return <div>{this.state.show ? <div>hello word</div>: <div>hello nanachi</div>}</div> ;';
+        let templateWX = await getXml(code, 'bu');
+        expect(prettifyXml(templateWX)).toMatch(
+            prettifyXml(
+                `<view>
+        <block s-if="state.show">
+          <view>hello word</view>
+        </block>
+        <block s-elif="true">
+          <view>hello nanachi</view>
+        </block>
+      </view>`
+            )
+        );
+    });
+
+    test('三元表达式-多重-bu', async () => {
+        let code = `return (
+      <div>
+        {this.state.show ? (
+          this.state.isOk ? (
+            <div>hello word</div>
+          ) : (
+            <div>hello</div>
+          )
+        ) : (
+          <div>nanachi</div>
+        )}
+      </div>
+    );`;
+        let templateWX = await getXml(code, 'bu');
+        expect(prettifyXml(templateWX)).toMatch(
+            prettifyXml(
+                `<view>
+        <block s-if="state.show">
+          <block s-if="state.isOk">
+            <view>hello word</view>
+          </block>
+          <block s-elif="true">
+            <view>hello</view>
+          </block>
+        </block>
+        <block s-elif="true">
+          <view>nanachi</view>
+        </block>
+      </view>`
             )
         );
     });

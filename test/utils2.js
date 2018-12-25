@@ -50,81 +50,80 @@ function checkBuildType(type) {
   return 'wx';
 }
 
-let id =   path.join(process.cwd(), 'source', 'a.js');
+function transform(code, buildType) {
+  return new Promise(async (resolve, reject) => {
+    code = baseCode(code);
+    config['buildType'] = checkBuildType(buildType);
+    let id = '';
+    if (buildType == 'quick') {
+      id = path.join(process.cwd(), 'source', 'a.js');
+      quickFiles[id] = {};
+    }
 
-async function transform(code, buildType) {
-  code = baseCode(code);
-  config['buildType'] = checkBuildType(buildType);
+    let result = babel.transform(code, {
+      babelrc: false,
+      comments: false,
+      plugins: [
+        require('babel-plugin-syntax-jsx'),
+        require('babel-plugin-transform-decorators-legacy').default,
+        require('babel-plugin-transform-object-rest-spread'),
+        require('babel-plugin-transform-es2015-template-literals'),
+        require('babel-plugin-transform-async-to-generator'),
 
-  let p = '../packages/cli/packages/babelPlugins/miniappVisitor';
-  // 清缓存
-  delete require.cache[require.resolve(p)];
-  let s = require(p);
-  let result = babel.transform(code, {
-    babelrc: false,
-    comments: false,
-    plugins: [
-      require('babel-plugin-syntax-jsx'),
-      require('babel-plugin-transform-decorators-legacy').default,
-      require('babel-plugin-transform-object-rest-spread'),
-      require('babel-plugin-transform-es2015-template-literals'),
-      require('babel-plugin-transform-async-to-generator'),
+        () => {
+          return {
+            visitor: require('../packages/cli/packages/babelPlugins/miniappVisitor'),
+            manipulateOptions(opts) {
+              //解析每个文件前执行一次
+              var modules = (opts.anu = {
+                thisMethods: [],
+                staticMethods: [],
+                thisProperties: [],
+                config: {}, //用于生成对象
+                importComponents: {}, //import xxx form path进来的组件
+                usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
+                customComponents: [] //定义在page.json中usingComponents对象的自定义组件
+              });
+              modules.sourcePath = id;
+            }
+          };
+        }
+      ]
+    });
 
-      () => {
-        return {
-          visitor: s,
-          manipulateOptions(opts) {
-            //解析每个文件前执行一次
-            var modules = (opts.anu = {
-              thisMethods: [],
-              staticMethods: [],
-              thisProperties: [],
-              config: {}, //用于生成对象
-              importComponents: {}, //import xxx form path进来的组件
-              usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
-              customComponents: [] //定义在page.json中usingComponents对象的自定义组件
-            });
-            modules.sourcePath = './a.js';
-          }
-        };
-      }
-    ]
+    result.code = '';
+
+    if (buildType === 'quick') {
+      let queueData = {
+        code: await mergeUx({
+          sourcePath: id,
+          result: result
+        })
+      };
+      queue.push(queueData);
+    }
+
+    resolve(1);
   });
-
-
-
-
-
-  
-
-  if (buildType === 'quick') {
-   
-    let queueData = {
-      code: await mergeUx({
-        sourcePath: id,
-        result: result
-      }),
-
-      type: 'ux'
-    };
-    
-
-    queue.push(queueData);
-  }
 }
 
 //获取xml 数据
-function getXml() {
-  console.log('queue', queue);
-  while (queue.length) {
-    let { code, path, type } = queue.shift();
-    // console.log('code', code)
-    if (!type) {
-      return code;
-    }
+async function getXml(code, buildType) {
+  await transform(code, buildType);
 
-    return '';
-  }
+  return new Promise((resolve, reject) => {
+    while (queue.length) {
+      let { code, type } = queue.shift();
+      // console.log('code', code)
+      if (!type) {
+        resolve(code);
+      }
+
+      resolve('');
+    }
+    resolve('');
+  });
+
 }
 
 let code = `return (
@@ -139,12 +138,31 @@ let code = `return (
 
 // 定义执行平台
 
-
-
 // console.log('======',config.buildType)
-transform(code, 'quick');
+// transform();
 
-console.log(getXml());
+// getXml(code, 'wx').then((res) => {
+//   console.log('res',res)
+// });
+
+//  function aaa() {
+//    getXml(code, 'wx').then(res => {
+//      console.log(res)
+//      return res
+//   })
+ 
+// }
+
+// console.log(aaa());
+
+async function demo() {
+  let result = await getXml(code, 'tt');
+  console.log(result);
+  return result
+}
+// console.log(demo());
+demo()
+
 
 // console.log('1=====',getXml());
 // console.log('2=====',getXml());
