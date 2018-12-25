@@ -164,20 +164,15 @@ function mergeStates(fiber, nextProps) {
 export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     let { contextStack, containerStack } = info;
-    let getContext = type.contextType;
-    let newContext = getContext ? getContext() :
-      getMaskedContext(
+    let newContext = getMaskedContext(
         instance,
         type.contextTypes,
+        type.contextType,
         contextStack
     );
     if (instance == null) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
-
         instance = createInstance(fiber, newContext);
-        if(getContext){
-            getContext.subscribers.push(instance)
-        }
         cacheContext(instance, contextStack[0], newContext);
     }
     let isStateful = !instance.__isStateless;
@@ -379,8 +374,8 @@ function cacheContext(instance, unmaskedContext, context) {
     instance.__unmaskedContext = unmaskedContext;
     instance.__maskedContext = context;
 }
-function getMaskedContext(instance, contextTypes, contextStack) {
-    var noContext = !contextTypes;
+function getMaskedContext(instance, contextTypes, contextType, contextStack) {
+    var noContext = !contextTypes && !contextType;
     if (instance && noContext) {
         return instance.context;
     }
@@ -396,13 +391,25 @@ function getMaskedContext(instance, contextTypes, contextStack) {
             return instance.__maskedContext;
         }
     }
+    if (contextTypes) {
         //第一代context
-    for (let key in contextTypes) {
-        if (contextTypes.hasOwnProperty(key)) {
-            context[key] = unmaskedContext[key];
+        for (let key in contextTypes) {
+            if (contextTypes.hasOwnProperty(key)) {
+                context[key] = unmaskedContext[key];
+            }
+        }
+    } else {//第三代
+        var has = false;
+        for (var i in unmaskedContext) {
+            var v = unmaskedContext[i];
+            context = v.get();
+            has = true;
+            break;
+        }
+        if (!has) {
+            context = new contextType.Provider().emitter.get();
         }
     }
-
 
     if (instance) {
         cacheContext(instance, unmaskedContext, context);

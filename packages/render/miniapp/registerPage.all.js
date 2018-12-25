@@ -58,6 +58,7 @@ export function onUnload() {
     let hook = instance.componentWillUnmount;
     if (isFn(hook)) {
         hook.call(instance);
+        instance.componentWillUnmount = null;
     }
     
     let root = this.reactContainer;
