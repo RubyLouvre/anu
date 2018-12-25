@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-12-23
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-12-25
  */
 
 (function (global, factory) {
@@ -593,51 +593,22 @@
         return child;
     }
 
-    var uuid = 1;
-    function gud() {
-        return uuid++;
-    }
     var MAX_NUMBER = 1073741823;
-    function createEventEmitter(value) {
-        var handlers = [];
-        return {
-            on: function on(handler) {
-                handlers.push(handler);
-            },
-            off: function off(handler) {
-                handlers = handlers.filter(function (h) {
-                    return h !== handler;
-                });
-            },
-            get: function get$$1() {
-                return value;
-            },
-            set: function set(newValue, changedBits) {
-                value = newValue;
-                handlers.forEach(function (handler) {
-                    return handler(value, changedBits);
-                });
-            }
-        };
-    }
     function createContext(defaultValue, calculateChangedBits) {
-        var contextProp = '__create-react-context-' + gud() + '__';
-        function create(obj, value) {
-            obj[contextProp] = value;
-            return obj;
+        if (calculateChangedBits == void 0) {
+            calculateChangedBits = null;
         }
-        var backup = {
-            get: function get$$1() {
-                return defaultValue;
-            },
-            on: noop,
-            off: noop
+        var instance = {
+            value: defaultValue,
+            subscribers: []
         };
         var Provider = miniCreateClass(function Provider(props) {
-            this.emitter = createEventEmitter(props ? props.value : defaultValue);
+            this.value = props.value;
+            getContext.subscribers = this.subscribers = [];
+            instance = this;
         }, Component, {
-            getChildContext: function getChildContext() {
-                return create({}, this.emitter);
+            componentWillUnmount: function componentWillUnmount() {
+                this.subscribers.length = 0;
             },
             UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
                 if (this.props.value !== nextProps.value) {
@@ -647,10 +618,16 @@
                     if (Object.is(oldValue, newValue)) {
                         changedBits = 0;
                     } else {
+                        this.value = newValue;
                         changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
                         changedBits |= 0;
                         if (changedBits !== 0) {
-                            this.emitter.set(nextProps.value, changedBits);
+                            instance.subscribers.forEach(function (instance) {
+                                instance.setState({
+                                    value: newValue
+                                });
+                                instance.forceUpdate();
+                            });
                         }
                     }
                 }
@@ -658,52 +635,35 @@
             render: function render() {
                 return this.props.children;
             }
-        }, {
-            childContextTypes: create({}, PropTypes.object.isRequired)
         });
-        function connect(instance) {
-            return instance.context[contextProp] || backup;
-        }
         var Consumer = miniCreateClass(function Consumer() {
-            var _this = this;
+            instance.subscribers.push(this);
             this.observedBits = 0;
             this.state = {
-                value: this.getValue()
-            };
-            this.onUpdate = function (newValue, changedBits) {
-                var observedBits = _this.observedBits | 0;
-                if ((observedBits & changedBits) !== 0) {
-                    _this.setState({
-                        value: _this.getValue()
-                    });
-                }
+                value: instance.value
             };
         }, Component, {
-            UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
-                var observedBits = nextProps.observedBits;
-                this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
-            },
-            getValue: function getValue() {
-                return connect(this).get();
-            },
-            componentDidMount: function componentDidMount() {
-                connect(this).on(this.onUpdate);
-                var observedBits = this.props.observedBits;
-                this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
-            },
             componentWillUnmount: function componentWillUnmount() {
-                connect(this).off(this.onUpdate);
+                var i = instance.subscribers.indexOf(this);
+                instance.subscribers.splice(i, 1);
             },
             render: function render() {
                 return this.props.children(this.state.value);
             }
-        }, {
-            contextTypes: create({}, PropTypes.object)
         });
-        return {
-            Provider: Provider,
-            Consumer: Consumer
-        };
+        function getContext(fiber) {
+            while (fiber.return) {
+                if (fiber.name == 'Provider') {
+                    return instance.value;
+                }
+                fiber = fiber.return;
+            }
+            return defaultValue;
+        }
+        getContext.subscribers = [];
+        getContext.Provider = Provider;
+        getContext.Consumer = Consumer;
+        return getContext;
     }
 
     function findHostInstance(fiber) {
@@ -1729,7 +1689,9 @@
     function UpdateQueue() {
         return {
             pendingStates: [],
-            pendingCbs: []
+            pendingCbs: [],
+            effects: [],
+            uneffects: []
         };
     }
     function createInstance(fiber, context) {
@@ -2241,11 +2203,18 @@
             props = fiber.props;
         var contextStack = info.contextStack,
             containerStack = info.containerStack;
-        var newContext = getMaskedContext(instance, type.contextTypes, type.contextType, contextStack);
+        var getContext = type.contextType;
+        var unmaskedContext = contextStack[0];
+        var isStaticContextType = isFn(type.contextType);
+        var newContext = isStaticContextType ? getContext(fiber) : getMaskedContext(instance, type.contextTypes, unmaskedContext);
         if (instance == null) {
             fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
             instance = createInstance(fiber, newContext);
-            cacheContext(instance, contextStack[0], newContext);
+        }
+        if (isStaticContextType) {
+            getContext.subscribers.push(instance);
+        } else {
+            cacheContext(instance, unmaskedContext, newContext);
         }
         var isStateful = !instance.__isStateless;
         instance._reactInternalFiber = fiber;
@@ -2255,7 +2224,7 @@
             if (fiber.hasMounted) {
                 applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
             } else {
-                applybeforeMountHooks(fiber, instance, props, newContext, contextStack);
+                applybeforeMountHooks(fiber, instance, props);
             }
             if (fiber.memoizedState) {
                 instance.state = fiber.memoizedState;
@@ -2278,7 +2247,7 @@
         fiber.memoizedState = instance.state;
         if (instance.getChildContext) {
             var context = instance.getChildContext();
-            context = Object.assign({}, contextStack[0], context);
+            context = Object.assign({}, unmaskedContext, context);
             fiber.shiftContext = true;
             contextStack.unshift(context);
         }
@@ -2310,7 +2279,7 @@
     function applybeforeMountHooks(fiber, instance, newProps) {
         fiber.setout = true;
         if (instance.__useNewHooks) {
-            setStateByProps(instance, fiber, newProps, instance.state);
+            setStateByProps(fiber, newProps, instance.state);
         } else {
             callUnsafeHook(instance, 'componentWillMount', []);
         }
@@ -2325,9 +2294,9 @@
         updater.prevProps = oldProps;
         updater.prevState = oldState;
         var propsChanged = oldProps !== newProps;
-        var contextChanged = instance.context !== newContext;
         fiber.setout = true;
         if (!instance.__useNewHooks) {
+            var contextChanged = instance.context !== newContext;
             if (propsChanged || contextChanged) {
                 var prevState = instance.state;
                 callUnsafeHook(instance, 'componentWillReceiveProps', [newProps, newContext]);
@@ -2340,7 +2309,7 @@
         var updateQueue = fiber.updateQueue;
         mergeStates(fiber, newProps);
         newState = fiber.memoizedState;
-        setStateByProps(instance, fiber, newProps, newState);
+        setStateByProps(fiber, newProps, newState);
         newState = fiber.memoizedState;
         delete fiber.setout;
         fiber._hydrating = true;
@@ -2365,7 +2334,7 @@
             return true;
         }
     }
-    function setStateByProps(instance, fiber, nextProps, prevState) {
+    function setStateByProps(fiber, nextProps, prevState) {
         fiber.errorHook = gDSFP;
         var fn = fiber.type[gDSFP];
         if (fn) {
@@ -2394,42 +2363,25 @@
         instance.__unmaskedContext = unmaskedContext;
         instance.__maskedContext = context;
     }
-    function getMaskedContext(instance, contextTypes, contextType, contextStack) {
-        var noContext = !contextTypes && !contextType;
-        if (instance && noContext) {
-            return instance.context;
-        }
-        var context = {};
-        if (noContext) {
-            return context;
-        }
-        var unmaskedContext = contextStack[0];
+    function getMaskedContext(instance, contextTypes, unmaskedContext) {
+        var noContext = !contextTypes;
         if (instance) {
+            if (noContext) {
+                return instance.context;
+            }
             var cachedUnmasked = instance.__unmaskedContext;
             if (cachedUnmasked === unmaskedContext) {
                 return instance.__maskedContext;
             }
         }
-        if (contextTypes) {
-            for (var key in contextTypes) {
-                if (contextTypes.hasOwnProperty(key)) {
-                    context[key] = unmaskedContext[key];
-                }
-            }
-        } else {
-            var has = false;
-            for (var i in unmaskedContext) {
-                var v = unmaskedContext[i];
-                context = v.get();
-                has = true;
-                break;
-            }
-            if (!has) {
-                context = new contextType.Provider().emitter.get();
-            }
+        var context = {};
+        if (noContext) {
+            return context;
         }
-        if (instance) {
-            cacheContext(instance, unmaskedContext, context);
+        for (var key in contextTypes) {
+            if (contextTypes.hasOwnProperty(key)) {
+                context[key] = unmaskedContext[key];
+            }
         }
         return context;
     }
@@ -2709,6 +2661,9 @@
         var uneffects = upateQueue[destory],
             effects$$1 = upateQueue[create],
             fn;
+        if (!uneffects) {
+            return;
+        }
         while (fn = uneffects.shift()) {
             try {
                 fn();

@@ -96,8 +96,6 @@ export var dispatcher = {
     }
 };
 
-
-//https://reactjs.org/docs/hooks-reference.html
 function getCurrentFiber() {
     return get(Renderer.currentOwner);
 }

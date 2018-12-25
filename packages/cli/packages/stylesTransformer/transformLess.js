@@ -101,6 +101,7 @@ const renderLess = (filePath, originalCode)=>{
                         .catch((err)=>{
                             // eslint-disable-next-line
                            console.log(err);
+                            process.exit(1);
                         });
                 });
 
