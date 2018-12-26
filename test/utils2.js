@@ -127,13 +127,7 @@ async function getXml(code, buildType) {
 }
 
 let code = `return (
-  <div>
-    {
-      this.state.array.map(function(item) {
-        return <div key={item}>{item.item}</div>
-      })
-    }
-  </div>
+ <input type="idcard"/>
 )`;
 
 // 定义执行平台
@@ -156,7 +150,7 @@ let code = `return (
 // console.log(aaa());
 
 async function demo() {
-  let result = await getXml(code, 'tt');
+  let result = await getXml(code, 'quick');
   console.log(result);
   return result
 }

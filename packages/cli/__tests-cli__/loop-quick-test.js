@@ -1,5 +1,6 @@
 const { getXml } = require('./utils/utils');
 const prettifyXml = require('prettify-xml');
+const BUILD_TYPE = 'quick';
 
 describe('loop 简单情况', () => {
     test('loop 简单情况-quick', async () => {
@@ -15,7 +16,7 @@ describe('loop 简单情况', () => {
     )
     `;
     
-        let templateWX = await getXml(code, 'quick');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<template>
@@ -41,7 +42,7 @@ describe('loop 简单情况', () => {
     )
     `;
     
-        let templateWX = await getXml(code, 'quick');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<template>
@@ -68,7 +69,7 @@ describe('loop 简单情况', () => {
     )
     `;
     
-        let templateWX = await getXml(code, 'quick');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<template>
@@ -95,7 +96,7 @@ describe('loop 简单情况', () => {
       )
       `;
     
-        let templateWX = await getXml(code, 'quick');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<template>
@@ -124,7 +125,7 @@ describe('loop 简单情况', () => {
       )
       `;
 
-        let templateWX = await getXml(code, 'quick');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<template>
@@ -153,7 +154,7 @@ describe('loop 简单情况', () => {
       )
       `;
 
-        let templateWX = await getXml(code, 'quick');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<template>
@@ -186,7 +187,7 @@ describe('loop 简单情况', () => {
       </div>
     );
     `;
-        let templateWX = await getXml(code, 'quick');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<template>
@@ -221,7 +222,7 @@ describe('loop 简单情况', () => {
       </div>
     );
     `;
-        let templateWX = await getXml(code, 'quick');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<template>

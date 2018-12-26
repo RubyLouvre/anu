@@ -1,6 +1,8 @@
 const { getXml } = require('./utils/utils');
 const prettifyXml = require('prettify-xml');
 
+const BUILD_TYPE = 'wx';
+
 describe('if statement', () => {
     test('if 简单情况-wx', async () => {
         let code = ` 
@@ -11,7 +13,7 @@ describe('if statement', () => {
         <div class="page-body"><span>Hello world!</span></div>
      )
    `;
-        let templateWX = await getXml(code, 'wx');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<block wx:if="{{state.tasks !== null}}">
@@ -44,7 +46,7 @@ describe('if statement', () => {
       );
     }
     `;
-        let templateWX = await getXml(code, 'wx');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<block wx:if="{{state.tasks !== null}}">
@@ -70,7 +72,7 @@ describe('if statement', () => {
 describe('逻辑表达式-二元', () => {
     test('二元表达式-简单情况-wx', async () => {
         let code = 'return <div>{this.state.show && <div>hello word</div>}</div>;';
-        let templateWX = await getXml(code, 'wx');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
@@ -83,7 +85,7 @@ describe('逻辑表达式-二元', () => {
     });
     test('二元表达式-多重-wx', async () => {
         let code = 'return <div>{(this.state.show && this.state.isOk) &&<div>hello word</div>}</div> ;';
-        let templateWX = await getXml(code, 'wx');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
@@ -99,7 +101,7 @@ describe('逻辑表达式-二元', () => {
 describe('逻辑表达式-三元', () => {
     test('三元表达式-简单情况-wx', async () => {
         let code = 'return <div>{this.state.show ? <div>hello word</div>: <div>hello nanachi</div>}</div> ;';
-        let templateWX = await getXml(code, 'wx');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
@@ -127,7 +129,7 @@ describe('逻辑表达式-三元', () => {
         )}
       </div>
     );`;
-        let templateWX = await getXml(code, 'wx');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
