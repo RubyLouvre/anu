@@ -97,18 +97,18 @@ describe('逻辑表达式-二元', () => {
         );
     });
     test('二元表达式-多重2-wx', async () => {
-      let code = 'return <div>{(this.state.show || this.state.isOk) &&<div>hello word</div>}</div> ;';
-      let templateWX = await getXml(code, BUILD_TYPE);
-      expect(prettifyXml(templateWX)).toMatch(
-          prettifyXml(
-              `<view>
+        let code = 'return <div>{(this.state.show || this.state.isOk) &&<div>hello word</div>}</div> ;';
+        let templateWX = await getXml(code, BUILD_TYPE);
+        expect(prettifyXml(templateWX)).toMatch(
+            prettifyXml(
+                `<view>
       <block wx:if="{{state.show || state.isOk}}">
         <view>hello word</view>
       </block>
     </view>`
-          )
-      );
-  });
+            )
+        );
+    });
 });
 
 describe('逻辑表达式-三元', () => {
