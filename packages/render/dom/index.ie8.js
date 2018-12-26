@@ -1,23 +1,23 @@
-import { Children } from "react-core/Children";
-import { PropTypes } from "react-core/PropTypes";
-import { Component } from "react-core/Component";
-import { PureComponent } from "react-core/PureComponent";
-import { createRef, forwardRef } from "react-core/createRef";
-import { createPortal } from "react-core/createPortal";
-import { createContext } from "react-core/createContext";
+import { Children } from 'react-core/Children';
+import { PropTypes } from 'react-core/PropTypes';
+import { Component } from 'react-core/Component';
+import { PureComponent } from 'react-core/PureComponent';
+import { createRef, forwardRef } from 'react-core/createRef';
+import { createPortal } from 'react-core/createPortal';
+import { createContext } from 'react-core/createContext';
 import {
     createElement,
     cloneElement,
     isValidElement,
     createFactory
-} from "react-core/createElement";
-import { Fragment, getWindow } from "react-core/util";
+} from 'react-core/createElement';
+import { Fragment, getWindow } from 'react-core/util';
 
-import { findDOMNode } from "./findDOMNode";
-import { DOMRenderer } from "./DOMRenderer";
-import { useState, useReducer, useEffect, useCallback, useMemo, useRef } from 'react-core/hooks';
+import { findDOMNode } from './findDOMNode';
+import { DOMRenderer } from './DOMRenderer';
+import { useState, useReducer, useEffect, useCallback, useMemo, useRef, useContext } from 'react-core/hooks';
 
-import "./compat";
+import './compat';
 let win = getWindow();
 let prevReact = win.React;
 let React;
@@ -38,7 +38,7 @@ if (prevReact && prevReact.eventSystem) {
         unmountComponentAtNode,
         unstable_renderSubtreeIntoContainer,
         //fiber底层API
-        version: "VERSION",
+        version: 'VERSION',
         render: render,
         hydrate: render,
         unstable_batchedUpdates: DOMRenderer.batchedUpdates,
@@ -53,6 +53,7 @@ if (prevReact && prevReact.eventSystem) {
         useState, 
         useReducer, 
         useEffect, 
+        useContext,
         useCallback, 
         useMemo, 
         useRef,

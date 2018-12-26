@@ -622,11 +622,12 @@
                         changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
                         changedBits |= 0;
                         if (changedBits !== 0) {
-                            instance.subscribers.forEach(function (instance) {
-                                instance.setState({
-                                    value: newValue
-                                });
-                                instance.forceUpdate();
+                            instance.subscribers.forEach(function (fiber) {
+                                if (fiber.setState) {
+                                    fiber.setState({ value: newValue });
+                                    fiber = get(fiber);
+                                }
+                                Renderer.updateComponent(fiber, true);
                             });
                         }
                     }
@@ -1689,9 +1690,7 @@
     function UpdateQueue() {
         return {
             pendingStates: [],
-            pendingCbs: [],
-            effects: [],
-            uneffects: []
+            pendingCbs: []
         };
     }
     function createInstance(fiber, context) {
@@ -1918,8 +1917,17 @@
         hookCursor = 0;
     }
     var dispatcher = {
-        useContext: function useContext(contextType) {
-            return new contextType.Provider().emitter.get();
+        useContext: function useContext(getContext) {
+            if (isFn(getContext)) {
+                var fiber = getCurrentFiber();
+                var context = getContext(fiber);
+                var list = getContext.subscribers;
+                if (list.indexOf(fiber) === -1) {
+                    list.push(fiber);
+                }
+                return context;
+            }
+            return null;
         },
         useReducer: function useReducer(reducer, initValue, initAction) {
             var fiber = getCurrentFiber();
@@ -2210,10 +2218,11 @@
         if (instance == null) {
             fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
             instance = createInstance(fiber, newContext);
+            if (isStaticContextType) {
+                getContext.subscribers.push(instance);
+            }
         }
-        if (isStaticContextType) {
-            getContext.subscribers.push(instance);
-        } else {
+        if (!isStaticContextType) {
             cacheContext(instance, unmaskedContext, newContext);
         }
         var isStateful = !instance.__isStateless;
@@ -3166,6 +3175,9 @@
     function useRef(initValue) {
         return dispatcher.useRef(initValue);
     }
+    function useContext(initValue) {
+        return dispatcher.useContext(initValue);
+    }
 
     var noCheck = false;
     function setSelectValue(e) {
@@ -3306,7 +3318,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: "1.4.8",
+            version: '1.4.8',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,
@@ -3321,6 +3333,7 @@
             useState: useState,
             useReducer: useReducer,
             useEffect: useEffect,
+            useContext: useContext,
             useCallback: useCallback,
             useMemo: useMemo,
             useRef: useRef,

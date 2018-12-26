@@ -1064,9 +1064,7 @@ function createEvent(e, target) {
 function UpdateQueue() {
     return {
         pendingStates: [],
-        pendingCbs: [],
-        effects: [],
-        uneffects: []
+        pendingCbs: []
     };
 }
 function createInstance(fiber, context) {
@@ -1499,10 +1497,11 @@ function updateClassComponent(fiber, info) {
     if (instance == null) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
+        if (isStaticContextType) {
+            getContext.subscribers.push(instance);
+        }
     }
-    if (isStaticContextType) {
-        getContext.subscribers.push(instance);
-    } else {
+    if (!isStaticContextType) {
         cacheContext(instance, unmaskedContext, newContext);
     }
     var isStateful = !instance.__isStateless;

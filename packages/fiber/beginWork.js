@@ -176,10 +176,11 @@ export function updateClassComponent(fiber, info) {
     if (instance == null) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
+        if (isStaticContextType){
+            getContext.subscribers.push(instance);
+        }
     }
-    if (isStaticContextType){
-        getContext.subscribers.push(instance);
-    } else {
+    if (!isStaticContextType){
         cacheContext(instance, unmaskedContext, newContext);
     }
     let isStateful = !instance.__isStateless;
