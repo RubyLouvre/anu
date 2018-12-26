@@ -4,18 +4,11 @@ const postCss = require('postcss');
 const validateStyle = require('../validateStyle');
 const utils = require('../utils');
 
-//postcss插件: 清除注释
-const postCssRemoveComments = postCss.plugin('postcss-plugin-remove-comment', ()=>{
-    return (root)=>{
-        root.walkComments(comment => {
-            comment.remove();
-        });
-    };
-});
-
 const compileLessByPostCss = (filePath, originalCode)=>{
     return new Promise((resolved, reject)=>{
         postCss([
+            require('../postcssPlugins/postCssPluginLessMixins'),
+            require('../postcssPlugins/postCssPluginLessVar'),
             require('postcss-import')({
                 resolve(importer, baseDir){
                     //如果@import的值没有文件后缀
@@ -26,14 +19,13 @@ const compileLessByPostCss = (filePath, originalCode)=>{
                     return utils.resolveStyleAlias(importer, baseDir);
                 }
             }),
-            postCssRemoveComments,
-            require('../postcssPlugins/postCssPluginLessVar'),
+            require('postcss-nested'), // 嵌套
             require('../postcssPlugins/postCssPluginLessFunction'),
-            require('../postcssPlugins/postCssPluginLessMixins'),
-            require('postcss-automath'),       //5px + 2 => 7px
-            require('postcss-nested-props'),   //属性嵌套
-            require('precss'),
-            require('../postcssPlugins/postCssPluginLessExtend')
+            require('../postcssPlugins/postCssPluginLessMerge'),
+            require('postcss-automath'),      //5px + 2 => 7px
+            // require('postcss-nested-props'),   //属性嵌套
+            require('../postcssPlugins/postCssPluginLessExtend'),
+            require('../postcssPlugins/postCssPluginRemoveCommentsAndEmptyRule'),
         ])
             .process(
                 originalCode || fs.readFileSync(filePath).toString(),

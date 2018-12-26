@@ -659,12 +659,7 @@ module.exports = {
                             expr,
                             true
                         );
-                    } else if (nodeName == "input" && attrName == "type") {
-                        //快应用input没有idcard|digit
-                        if (/idcard|digit/.test(astPath.node.value.value)) {
-                            astPath.node.value.value = "number";
-                        }
-                    }
+                    } 
                 }
             }
         },
