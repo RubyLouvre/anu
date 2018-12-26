@@ -66,3 +66,15 @@ describe('事件模版 -ali', () => {
     });
 
 });
+
+describe('slot', () => {
+  test('slot 测试-ali', async () => {
+    let code = `return (<div>
+    {this.props.children}
+  </div>);`;
+    let template = await getXml(code, BUILD_TYPE);
+    expect(prettifyXml(template)).toMatch(
+      prettifyXml(`<view><slot /></view>`)
+    );
+  });
+});
