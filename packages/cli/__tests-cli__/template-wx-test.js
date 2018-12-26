@@ -74,13 +74,13 @@ describe('事件模版 -wx', () => {
 });
 
 describe('slot', () => {
-  test('slot 测试-wx', async () => {
-    let code = `return (<div>
+    test('slot 测试-wx', async () => {
+        let code = `return (<div>
     {this.props.children}
   </div>);`;
-    let template = await getXml(code, BUILD_TYPE);
-    expect(prettifyXml(template)).toMatch(
-      prettifyXml(`<view><slot /></view>`)
-    );
-  });
+        let template = await getXml(code, BUILD_TYPE);
+        expect(prettifyXml(template)).toMatch(
+            prettifyXml('<view><slot /></view>')
+        );
+    });
 });

@@ -99,20 +99,20 @@ describe('逻辑表达式-二元', () => {
         );
     });
     test('二元表达式-多重2-quick', async () => {
-      let code = 'return <div>{(this.state.show || this.state.isOk) && <div>hello word</div>}</div>;';
-      let templateWX = await getXml(code, BUILD_TYPE);
-      expect(prettifyXml(templateWX)).toMatch(
-          prettifyXml(
-              `<template>
+        let code = 'return <div>{(this.state.show || this.state.isOk) && <div>hello word</div>}</div>;';
+        let templateWX = await getXml(code, BUILD_TYPE);
+        expect(prettifyXml(templateWX)).toMatch(
+            prettifyXml(
+                `<template>
           <div>
               <block if="{{state.show || state.isOk}}">
                   <div><text>hello word</text></div>
               </block>
           </div>
   </template>`
-          )
-      );
-  });
+            )
+        );
+    });
 });
 
 describe('逻辑表达式-三元', () => {
