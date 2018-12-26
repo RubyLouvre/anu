@@ -8,11 +8,16 @@ class P extends React.Component {
         this.state = {
             status: ''
         };
+        this.bindFns();
+    }
+    bindFns(){
+        this.tapHander = this.tapHander.bind(this);
+        this.say = this.say.bind(this);
     }
     say(){
-        return new Promise((resolve)=>{
+        return new Promise((rel)=>{
             setTimeout(()=>{
-                resolve('屌爆了!!');
+                rel('hello nanachi');
             }, 2000);
         });
     }
