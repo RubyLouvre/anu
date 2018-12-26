@@ -1,6 +1,6 @@
 const { getXml } = require('./utils/utils');
 const prettifyXml = require('prettify-xml');
-const BUILD_TYPE = 'ali'
+const BUILD_TYPE = 'ali';
 
 describe('属性模版测试 -ali', () => {
   
@@ -38,31 +38,31 @@ describe('属性模版测试 -ali', () => {
 });
 
 describe('事件模版 -ali', () => {
-  test('点击事件1 -ali', async () => {
-    let code =`return <div onTap={this.tap.bind(this)}>hello world</div>;`
+    test('点击事件1 -ali', async () => {
+        let code ='return <div onTap={this.tap.bind(this)}>hello world</div>;';
 
-    let template = await getXml(code, BUILD_TYPE);
-    expect(prettifyXml(template)).toMatch(
-      prettifyXml('<view onTap="dispatchEvent" data-tap-uid="e8_19" data-beacon-uid="default">hello world</view>')
-  );
-  })
-  test('点击事件2 -ali', async () => {
-    let code =`return <div catchTap={this.tap.bind(this)}>hello world</div>;`
+        let template = await getXml(code, BUILD_TYPE);
+        expect(prettifyXml(template)).toMatch(
+            prettifyXml('<view onTap="dispatchEvent" data-tap-uid="e8_19" data-beacon-uid="default">hello world</view>')
+        );
+    });
+    test('点击事件2 -ali', async () => {
+        let code ='return <div catchTap={this.tap.bind(this)}>hello world</div>;';
 
-    let template = await getXml(code, BUILD_TYPE);
-    expect(prettifyXml(template)).toMatch(
-      prettifyXml('<view catchTap="dispatchEvent" data-tap-uid="e8_19" data-beacon-uid="default">hello world</view>')
-  );
-  })
+        let template = await getXml(code, BUILD_TYPE);
+        expect(prettifyXml(template)).toMatch(
+            prettifyXml('<view catchTap="dispatchEvent" data-tap-uid="e8_19" data-beacon-uid="default">hello world</view>')
+        );
+    });
 
-  test('input change 事件 -ali', async () => {
-    let code = `return <input type="idcard" onChange={this.change.bind(this)} />`
+    test('input change 事件 -ali', async () => {
+        let code = 'return <input type="idcard" onChange={this.change.bind(this)} />';
 
-    let template = await getXml(code, BUILD_TYPE);
-    expect(prettifyXml(template)).toMatch(
-      prettifyXml('<input type="idcard" onInput="dispatchEvent" data-input-uid="e8_35" data-beacon-uid="default" />')
-  );
+        let template = await getXml(code, BUILD_TYPE);
+        expect(prettifyXml(template)).toMatch(
+            prettifyXml('<input type="idcard" onInput="dispatchEvent" data-input-uid="e8_35" data-beacon-uid="default" />')
+        );
 
-  })
+    });
 
-})
+});

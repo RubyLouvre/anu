@@ -1,6 +1,6 @@
 const { getXml } = require('./utils/utils');
 const prettifyXml = require('prettify-xml');
-const BUILD_TYPE = 'tt'
+const BUILD_TYPE = 'tt';
 
 describe('if statement', () => {
     test('if 简单情况-tt', async () => {

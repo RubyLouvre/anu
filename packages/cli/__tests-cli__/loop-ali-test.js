@@ -1,6 +1,6 @@
 const {  getXml } = require('./utils/utils');
 const prettifyXml = require('prettify-xml');
-const BUILD_TYPE = 'ali'
+const BUILD_TYPE = 'ali';
 
 describe('loop 简单情况', () => {
     test('loop 简单情况-ali', async () => {

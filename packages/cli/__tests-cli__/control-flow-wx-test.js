@@ -1,7 +1,7 @@
 const { getXml } = require('./utils/utils');
 const prettifyXml = require('prettify-xml');
 
-const BUILD_TYPE = 'wx'
+const BUILD_TYPE = 'wx';
 
 describe('if statement', () => {
     test('if 简单情况-wx', async () => {
