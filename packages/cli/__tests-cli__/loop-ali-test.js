@@ -1,5 +1,6 @@
 const {  getXml } = require('./utils/utils');
 const prettifyXml = require('prettify-xml');
+const BUILD_TYPE = 'ali'
 
 describe('loop 简单情况', () => {
     test('loop 简单情况-ali', async () => {
@@ -15,7 +16,7 @@ describe('loop 简单情况', () => {
     )
     `;
         
-        let templateAli = await getXml(code, 'ali');
+        let templateAli = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateAli)).toMatch(
             prettifyXml(
                 `<view>
@@ -39,7 +40,7 @@ describe('loop 简单情况', () => {
     )
     `;
         
-        let templateAli = await getXml(code, 'ali');
+        let templateAli = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateAli)).toMatch(
             prettifyXml(
                 `<view>
@@ -64,7 +65,7 @@ describe('loop 简单情况', () => {
     )
     `;
         
-        let templateAli = await getXml(code, 'ali');
+        let templateAli = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateAli)).toMatch(
             prettifyXml(
                 `<view>
@@ -92,7 +93,7 @@ describe('loop 简单情况', () => {
         </div>
       );
       `;
-        let templateWX = await getXml(code, 'ali');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
@@ -121,7 +122,7 @@ describe('loop 简单情况', () => {
         )
         `;
   
-        let templateWX = await getXml(code, 'wx');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
@@ -148,7 +149,7 @@ describe('loop 简单情况', () => {
         )
         `;
   
-        let templateWX = await getXml(code, 'ali');
+        let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
@@ -178,7 +179,7 @@ describe('loop 简单情况', () => {
         </div>
       );
       `;
-        let templatett = await getXml(code, 'ali');
+        let templatett = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templatett)).toMatch(
             prettifyXml(
                 `<view>
