@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-25
+ * 运行于快应用的React by 司徒正美 Copyright 2018-12-27
  */
 
 var arrayPush = Array.prototype.push;
@@ -2832,7 +2832,7 @@ function onUnload() {
     var root = this.reactContainer;
     var container = root && root._reactInternalFiber;
     if (container) {
-        Renderer.updateComponent(container.hostRoot, {
+        Renderer.updateComponent(container.child, {
             child: null
         }, function () {
             root._reactInternalFiber = null;
