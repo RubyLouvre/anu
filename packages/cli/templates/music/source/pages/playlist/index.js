@@ -2,8 +2,9 @@ import React from '@react';
 import url from '../../utils/bsurl';
 let bsurl = url.bsurl;
 import id2Url from '../../utils/base64md5';
-import './index.less';
+import './index.scss';
 import Loading from '@components/Loading/index';
+import TNavigator from '@components/TNavigator/index';
 import PlayListComponent from '@components/PlayListComponent/index';
 class PlayList extends React.Component {
     constructor() {
@@ -64,66 +65,76 @@ class PlayList extends React.Component {
     render() {
         return (
             <div>
+            <div class="anu-col">
                 {!this.state.listLoading && (
-                    <div id="plist-header">
+                    <stack id="plist-header" class="anu-col">
                         <div
                             class="blurbg"
-                            style={{ backgroundImage: `url(${this.state.cover})` }}
+                            style={{ backgroundImage: 'url(' + this.state.cover + ')' }}
                             id="plh-filterbg"
                         />
-                        <div id="plh-main">
-                            <div id="plh-cover">
-                                <image class="music_cover" src={this.state.cover} />
-                                <div class="img_playcount">
-                                    <image
-                                        src="../../assets/image/p0.png"
-                                        style={{ width: '24rpx', height: '24rpx' }}
-                                    />
-                                    {this.state.list.playlist.playCount}
+                        <div class="anu-col">
+                            <div id="plh-main">
+                                <div id="plh-cover">
+                                    <div class="anu-col">
+                                        <image class="music_cover" src={this.state.cover} />
+                                        <div class="img_playcount">
+                                            <image
+                                                src="../../assets/image/p0.png"
+                                                style={{ width: '24rpx', height: '24rpx' }}
+                                            />
+                                            {this.state.list.playlist.playCount}
+                                        </div>
+                                        <div id="plh-playinfo" bindtap="plinfo">
+                                            <image src="../../assets/image/cm2_list_detail_icn_infor@2x.png" />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div id="plh-playinfo" bindtap="plinfo">
-                                    <image src="../../assets/image/cm2_list_detail_icn_infor@2x.png" />
+                                <div id="plh-cnt" class="anu-row">
+                                    <text id="music_h_name">{this.state.list.playlist.name || ' '}</text>
+                                    <div>
+                                        <image
+                                            id="user_ava"
+                                            class="user_avator"
+                                            src={this.state.list.playlist.creator.avatarUrl}
+                                        />
+                                        <text>{this.state.list.playlist.creator.nickname || ' '} </text>
+                                        <image
+                                            src="../../assets/image/cm2_list_detail_icn_arr@2x.png"
+                                            style={{ width: '16rpx', height: '24rpx' }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                            <div id="plh-cnt">
-                                <text id="music_h_name">{this.state.list.playlist.name || ' '}</text>
-                                <div>
-                                    <image
-                                        id="user_ava"
-                                        class="user_avator"
-                                        src={this.state.list.playlist.creator.avatarUrl}
-                                    />
-                                    <text>{this.state.list.playlist.creator.nickname || ' '} </text>
-                                    <image
-                                        src="../../assets/image/cm2_list_detail_icn_arr@2x.png"
-                                        style={{ width: '16rpx', height: '24rpx' }}
-                                    />
+                            <div id="plh_action">
+                                <div class="action-item">
+                                    <div class="anu-col anu-center anu-middle">
+                                        <image src="../../assets/image/cm2_list_detail_icn_fav_new@2x.png" />
+                                        <text>{this.state.list.playlist.subscribedCount || '收藏'}</text>
+                                    </div>
+                                </div>
+                                <div class="action-item">
+                                    <TNavigator url="../recommend/index">
+                                        <div class="anu-col anu-center anu-middle">
+                                            <image src="../../assets/image/cm2_list_detail_icn_cmt@2x.png" />
+                                            <text>{this.state.list.playlist.commentCount || '评论'}</text>
+                                        </div>
+                                    </TNavigator>
+                                </div>
+                                <div class="action-item">
+                                    <div class="anu-col anu-center anu-middle">
+                                        <image src="../../assets/image/cm2_list_detail_icn_share@2x.png" />
+                                        <text>{this.state.list.playlist.shareCount || '分享'}</text>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div id="plh_action">
-                            <div>
-                                <image src="../../assets/image/cm2_list_detail_icn_fav_new@2x.png" />
-                                <text>{this.state.list.playlist.subscribedCount || '收藏'}</text>
-                            </div>
-                            <div>
-                                <navigator url="../recommend/index">
-                                    <image src="../../assets/image/cm2_list_detail_icn_cmt@2x.png" />
-                                    <text>{this.state.list.playlist.commentCount || '评论'}</text>
-                                </navigator>
-                            </div>
-
-                            <div>
-                                <image src="../../assets/image/cm2_list_detail_icn_share@2x.png" />
-                                <text>{this.state.list.playlist.shareCount || '分享'}</text>
-                            </div>
-                        </div>
-                    </div>
+                    </stack>
                 )}
                 <div class="plist-detail page_pp">
                     {!this.state.listLoading && this.state.list.playlist.tracks.length ? (
-                        <div>
-                            <div id="playall" bindtap="playall" class="flexlist flex-center borderBottom">
+                        <div class="anu-col">
+                            <div id="playall" bindtap="playall" class="anu-row flexlist flex-center borderBottom">
                                 <div class="flexleft flexnum">
                                     <image src="../../assets/image/pl-playall.png" mode="widthFix" />
                                 </div>
@@ -147,6 +158,7 @@ class PlayList extends React.Component {
                         <Loading />
                     )}
                 </div>
+            </div>
             </div>
         );
     }

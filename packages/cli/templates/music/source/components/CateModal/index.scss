@@ -6,8 +6,8 @@
     margin-bottom: 20rpx;
     overflow: hidden;
     padding-bottom: 2rpx;
-    display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
 
 .cl_list {
@@ -57,4 +57,7 @@
     right: 0;
     bottom: 0;
     background-size: 48rpx 48rpx;
+}
+.close {
+    height: 60rpx;
 }

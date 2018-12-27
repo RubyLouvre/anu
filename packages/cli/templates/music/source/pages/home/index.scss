@@ -1,4 +1,6 @@
 @import '../../common/style/common.scss';
+@import '../../common/style/cover.scss';
+@import '../../common/style/text.scss';
 
 .tab {
   display: flex;
@@ -55,31 +57,17 @@
 .tl_cnt {
   flex-shrink: 0;
   flex-grow: 0;
-  width: 50%;
+  width: 33.333333%;
   padding: 5px;
   box-sizing: border-box;
-  .cover {
-    padding-top:100%;
-    display: flex;
-    position: relative;
-    flex-direction: column;
-    .music_cover {
-      width: 100%;
-      position:absolute;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      top:0;
-      left:0;
-      bottom: 0;
-      right: 0;
-      height: auto;
-    }
+  .navigator {
+    width: 100%;
   }
-  text {
-    font-size: 26rpx;
-    color: #666;
-  }
+
+}
+
+.cateplaylist {
+  width: 50%;
 }
 
 .cover .img_creator {
@@ -132,17 +120,9 @@
 
 
 .img_playcount {
-  position: absolute;
-  right: 0;
-  top: 0;
   color: #fff;
-  z-index: 1;
   font-size: 24rpx;
-  padding: 8rpx 15rpx 8rpx 40rpx;
-  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
-  max-width: 70%;
-  text-align: right;
-  min-width: 30%;
+
 }
 .img_playcount image {
   vertical-align: baseline;
@@ -301,25 +281,94 @@ swiper image {
   margin-top: 20rpx;
 }
 
-.flexlist .cover {
-  width: 230rpx;
-  height: 230rpx;
-  padding: 0;
-  flex-grow: 0;
-  flex-shrink: 0;
-  flex-basis: 230rpx;
-  margin: 10rpx 20rpx 10rpx 10rpx;
-}
 .sort_fl_list {
   line-height: 2;
 }
-.sortlist .flexlist {
-  display: flex;
-  flex-direction: row;
-  flex-flow: wrap;
-  align-content: center;
-}
+
 
 .cat-modal {
     height: 100%;
+}
+
+.listheader {
+  margin: 25rpx 15rpx 10rpx;
+  overflow: hidden;
+}
+.listheader:before {
+  display: inline-block;
+  width: 5rpx;
+  background-color: red;
+  height: 0.8em;
+  content: '';
+  vertical-align: middle;
+  margin-right: 15rpx;
+  border-radius: 10rpx;
+}
+
+
+.play-count {
+  padding: 8rpx 8rpx 8rpx 0;
+  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
+  image {
+    margin-right: 10rpx;
+    width: 24rpx;
+    height: 24rpx;
+  }
+  &, text {
+    color: #fff;
+    font-size: 24rpx;
+  }
+}
+
+
+.cover {
+  width: 100%;
+  padding-top:100%;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+}
+
+/// 电台
+
+.broadcasting {
+  .item {
+    text-align: center;
+    font-size: 24rpx;
+    height: 145rpx;
+    image {
+      width: 80rpx;
+      height: 80rpx;
+      margin-top: 20rpx;
+    }
+  }
+}
+
+
+/// 排行榜
+.ranking {
+  .music-cover {
+    width: 230rpx;
+    height: 230rpx;
+    padding: 0;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 230rpx;
+    margin: 10rpx 20rpx 10rpx 10rpx;
+    image {
+      width: 100%;
+      height: 100%;
+    }
+    text {
+      color: #fff;
+    }
+  }
+  .music-info {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+    flex-shrink: 0;
+    padding-right: 10rpx;
+    box-sizing: border-box;
+  }
 }

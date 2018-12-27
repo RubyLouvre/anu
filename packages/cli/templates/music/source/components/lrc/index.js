@@ -14,7 +14,7 @@ class Lrc extends React.Component {
                     id="lrcwrap"
                     style={{ transform: `translateY(-${(this.props.lrcindex * 100) / (6)}%)` }}
                 >
-                    {this.props.lrc.nolyric && <div class="notext">纯音乐，无歌词</div>}
+                    {this.props && this.props.lrc && this.props.lrc.nolyric && <div class="notext">纯音乐，无歌词</div>}
                     <div>
                         <text> </text>
                     </div>
