@@ -1,6 +1,7 @@
 let utils = require('../utils');
 let fs = require('fs');
 let path = require('path');
+let config = require('../config');
 let queue = require('../queue');
 let cache = {};
 
@@ -24,11 +25,17 @@ module.exports = (metaData)=>{
                 //针对async/await语法依赖的npm路径做处理
                 if (/regenerator-runtime\/runtime/.test(moduleName)) {
                     let regeneratorRuntimePath = utils.getRegeneratorRuntimePath(sourcePath);
-                    let dist  = utils.updatePath(regeneratorRuntimePath, 'node_modules', 'dist' + path.sep + 'npm');
+                    let distDir = config['buildType'] === 'quick' ? 'src': 'dist';
+                    let dist  = utils.updatePath(
+                        regeneratorRuntimePath, 
+                        'node_modules', 
+                        distDir + path.sep + 'npm'
+                    );
                     Object.assign(
                         aliasMap,
                         utils.updateNpmAlias(sourcePath, { 'regenerator-runtime/runtime': regeneratorRuntimePath } )
                     );
+                    
 
                     if (!cache[dist]) {
                         queue.push({
