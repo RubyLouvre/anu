@@ -1,5 +1,6 @@
 const postCss = require('postcss');
 const varReg = /@{?([a-zA-Z0-9-_."']+)}?/g;
+const insertVarReg = /@{([a-zA-Z0-9-_."']+)}/g;
 const removeQuoteReg = /^["|'](.*)["|']$/;
 
 const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
@@ -31,13 +32,14 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
         return result;
     }
 
-    function parseVariable(variable, decl) {
-        const variables = variable && variable.match(varReg);
+    function parseVariable(variable, decl, isInsertVal) {
+        const reg = isInsertVal ? insertVarReg : varReg;
+        const variables = variable && variable.match(reg);
 
         if (variables && variables.length) {
             for (var i = 0, length = variables.length; i < length; i++) {
                 let key;
-                variables[i].replace(varReg, function(a, b) {
+                variables[i].replace(reg, function(a, b) {
                     key = b;
                 });
                 const { value, important } = findVarValue(decl.parent, key);
@@ -47,7 +49,7 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
                 if (important) { decl.important = important; }
             }
         }
-        if (variable && variable.match(varReg)) {
+        if (variable && variable.match(reg)) {
             variable = parseVariable(variable, decl);
         }
         return variable;
@@ -63,10 +65,14 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
         });
         // 解析插值变量
         root.walkRules(rule => {
-            rule.selector = parseVariable(rule.selector, rule);
+            rule.selector = parseVariable(rule.selector, rule, true);
         });
         
         root.walkAtRules(atrule => {
+            // 解析charset、namespace、keyframes...
+            if (!atrule.variable) {
+                atrule.params = parseVariable(atrule.params, atrule);
+            }
             // import语句
             if (atrule.import) {
                 atrule.filename = atrule.params = parseVariable(atrule.params, atrule);

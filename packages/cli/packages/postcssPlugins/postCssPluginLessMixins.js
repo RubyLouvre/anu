@@ -3,24 +3,24 @@ const reg = /[a-zA-Z0-9-_.]+\s*\(.*\)$/;
 const mixinVarReg = /\s*(@[a-zA-Z0-9-_."']+):\s*(.+)/;
 
 /**
- * 要放在postCssPluginLessVar前使用
+ * 要放在postCssPluginLessVar前使用，因为要解析mixin传入的变量
  */
 const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => {
     function findMixins(node, mixinName, params) {
-        const mixinReg = new RegExp(mixinName + '\\s*(?:\\(.*\\))?$');
+        const mixinReg = new RegExp(`^${mixinName.replace(/\./g, '\\.')}\\s*(?:\\(.*\\))?$`);
         var find = false;
         var nodes = [];
         function extractVar(variable, obj) {
-            const varReg = /(@{?[a-zA-Z0-9-_."']+}?)/g;
+            const varReg = /(@{[a-zA-Z0-9-_."']+})|(@[a-zA-Z0-9-_."']+)/g;
             const variables = variable && variable.match(varReg);
 
             if (variables && variables.length) {
                 for (var i = 0, length = variables.length; i < length; i++) {
-                    let key;
+                    let key = '';
                     variables[i].replace(varReg, function(a, b) {
-                        key = b;
+                        key = b || '';
                     });
-                    variable = variable.replace(variables[i], obj[key]);
+                    variable = variable.replace(variables[i], obj[key.replace(/{|}/g, '')]) || '';
                 }
             }
             if (variable && variable.match(varReg)) {
@@ -30,7 +30,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
         }
         node.walkRules((rule) => {
             if (rule.selector.match(mixinReg)) {
-                const mixinParams = getMixinParams(rule.selector)
+                const mixinParams = getMixinParams(rule.selector);
                 const match = matchMixinRule(mixinParams, params);
                 if (match) {
                     if (mixinParams) {
@@ -40,6 +40,12 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
                     rule.walk(decl => {
                         if (decl.value) {
                             decl.value = extractVar(decl.value, match);
+                        }
+                        if (decl.selector) {
+                            decl.selector = extractVar(decl.selector, match);
+                        }
+                        if (decl.params) {
+                            decl.params = extractVar(decl.params, match);
                         }
                     });
                     nodes = nodes.concat(rule.nodes);
@@ -67,7 +73,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
         }) || [];
         
         let num = 0;
-        for (var index = 0, length = mixinParams.length; index < length; index++) {
+        for (var index = 0, length = mixinParams && mixinParams.length || 0; index < length; index++) {
             const p = mixinParams[index];
             if (p.key) {
                 // match规则实现
@@ -110,6 +116,7 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
         return str.map(s => {
             s = s.trim();
             let key = s, value;
+            
             s.replace(mixinVarReg, function(a, b, c) {
                 key = b;
                 value = c;
