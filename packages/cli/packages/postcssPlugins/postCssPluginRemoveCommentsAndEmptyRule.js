@@ -18,6 +18,9 @@ const postCssPluginRemoveCommentsAndEmptyRule = postCss.plugin('postcss-plugin-r
                 node.remove();
             }
         });
+        root.walkRules(rule => {
+            rule.selector = rule.selector.replace(/\n/g, ' ');
+        });
     };
 });
 
