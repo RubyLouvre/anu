@@ -148,8 +148,8 @@ export function injectAPIs(ReactWX, facade, override) {
     }
 
     if (override){
-       var obj = override(facade)
-       Object.assign(ReactWX.api, obj);
+        var obj = override(facade);
+        Object.assign(ReactWX.api, obj);
     }
     RequestQueue.facade = facade;
     ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
