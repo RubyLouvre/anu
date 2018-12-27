@@ -1,4 +1,5 @@
 import React from '@react';
+import './index.scss';
 class TurnTable extends React.Component {
     constructor(props) {
         super();
@@ -81,12 +82,8 @@ class TurnTable extends React.Component {
             html = [],
             ctx,
             turnNum = 1 / len; // 文字旋转 turn 值
-        if (this.wx.$element){
-            var nativeCanvas = this.wx.$element('lotteryCanvas');
-            ctx =  nativeCanvas.createContext();
-        } else {
-            ctx =  React.api.createCanvasContext('lotteryCanvas');
-        }
+
+        ctx =  React.api.createCanvasContext('lotteryCanvas', this);
         // var ctx = React.api.createContext();
         for (var i = 0; i < len; i++) {
             // 保存当前状态

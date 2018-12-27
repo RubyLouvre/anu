@@ -1,0 +1,39 @@
+@import '../../common/style/common.scss';
+
+.nav_right {
+    height: 100%;
+    padding: 10px;
+    background: #fff;
+    box-sizing: border-box;
+    .nav_right_content {
+        overflow: hidden;
+    }
+
+    .nav_right_title {
+      line-height: 30px;
+      padding: 6px 0;
+      font-size: 14px;
+      margin-left: 8px;
+    }
+    .scroll-view {
+        height: 100%;
+        overflow: auto;
+    }
+  }
+  .nav_right .nav_right_items {
+    float: left;
+    width: 33.33%;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .nav_right .nav_right_items image {
+    width: 50px;
+    height: 50px;
+  }
+  .nav_right .nav_right_items text {
+    display: block;
+    font-size: 10px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }

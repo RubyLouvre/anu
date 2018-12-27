@@ -1,4 +1,6 @@
 import React from '@react';
+import './index.scss';
+import TNavigator from '@components/TNavigator/index';
 
 class PlayListComponent extends React.Component {
     constructor(props) {
@@ -9,7 +11,7 @@ class PlayListComponent extends React.Component {
         return (
             <div>
                 {this.props.privileges ? (
-                    <div>
+                    <div class="anu-col">
                         {this.props.list.map(function(re, idx) {
                             return (
                                 <div
@@ -20,7 +22,7 @@ class PlayListComponent extends React.Component {
                                         (this.props.privileges[idx].st >= 0 ? '' : 'disabled')
                                     }
                                 >
-                                    <navigator
+                                    <TNavigator
                                         hover-class={this.props.privileges[idx].st < 0 ? 'none' : ''}
                                         url={
                                             this.props.privileges[idx].st >= 0
@@ -31,7 +33,7 @@ class PlayListComponent extends React.Component {
                                     >
                                         <div class="flexlist flex-center">
                                             <div class="flexleft flexnum ">
-                                                {/** 
+                                                {/**
                                                     re.id === this.props.curplay ? (
                                                         <image src="../../aseets/image/aal.png" style={{ width: '36rpx' }}>
                                                             image
@@ -58,26 +60,26 @@ class PlayListComponent extends React.Component {
                                                         {re.ar[0].name}-{re.al.name}
                                                     </div>
                                                 </div>
-                                                {/** 
+                                                {/**
                                                     re.mv != 0 && (
                                                         <div class="flexact">
                                                             <div class="fa_list fa_mv">
-                                                                <navigator url="../mv/index?id={{re.mv}}">
+                                                                <TNavigator url="../mv/index?id={{re.mv}}">
                                                                     <image src="../../assets/image/l0.png" mode="widthFix" />
-                                                                </navigator>
+                                                                </TNavigator>
                                                             </div>
                                                         </div>
                                                     )
                                                 */}
                                             </div>
                                         </div>
-                                    </navigator>
+                                    </TNavigator>
                                 </div>
                             );
                         })}
                     </div>
                 ) : (
-                    <div>
+                    <div class="anu-col">
                         {this.props.list.map(function(re, idx) {
                             return (
                                 <div
@@ -89,7 +91,7 @@ class PlayListComponent extends React.Component {
                                         re.id
                                     }
                                 >
-                                    <navigator
+                                    <TNavigator
                                         hover-class={re.st == -1 ? 'none' : ''}
                                         url={
                                             re.st != -1
@@ -116,7 +118,7 @@ class PlayListComponent extends React.Component {
                                                 </text>
                                             </div>
                                             <div class="displayFlexRight">
-                                                <div>
+                                                <div class="anu-col">
                                                     <div class='displayFlexRightTop'>
                                                         {re.name}
                                                         {re.alia.length && <text>（{re.alia[0]}）</text>}
@@ -129,16 +131,16 @@ class PlayListComponent extends React.Component {
                                                     re.mv != 0 && (
                                                         <div class="flexact">
                                                             <div class="fa_list fa_mv">
-                                                                <navigator url="../mv/index?id={{re.mv}}">
+                                                                <TNavigator url="../mv/index?id={{re.mv}}">
                                                                     <image src="../../assets/image/l0.png" mode="widthFix" />
-                                                                </navigator>
+                                                                </TNavigator>
                                                             </div>
                                                         </div>
                                                     )
                                                 */}
                                             </div>
                                         </div>
-                                    </navigator>
+                                    </TNavigator>
                                 </div>
                             );
                         })}
