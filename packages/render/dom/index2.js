@@ -489,3 +489,217 @@ function performWork(minExpirationTime: ExpirationTime, isYieldy: boolean) {
     // Clean-up.
     // finishRendering();
 }
+var isRendering = false;
+var cancelTimeout = clearTimeout;
+function performWorkOnRoot(
+    root,
+    expirationTime,
+    isYieldy,
+) {
+
+  
+    isRendering = true;
+
+    // Flush async work.
+    let finishedWork = root.finishedWork;
+    if (finishedWork !== null) {
+        // This root is already complete. We can commit it.
+        completeRoot(root, finishedWork, expirationTime);
+    } else {
+        root.finishedWork = null;
+        // If this root previously suspended, clear its existing timeout, since
+        // we're about to try rendering again.
+        const timeoutHandle = root.timeoutHandle;
+        if (timeoutHandle !== noTimeout) {
+            root.timeoutHandle = noTimeout;
+            // $FlowFixMe Complains noTimeout is not a TimeoutID, despite the check above
+            cancelTimeout(timeoutHandle);
+        }
+        renderRoot(root, isYieldy);
+        finishedWork = root.finishedWork;
+        if (finishedWork !== null) {
+            // We've completed the root. Check the if we should yield one more time
+            // before committing.
+            if ( !isYieldy ){
+                completeRoot(root, finishedWork, expirationTime);
+                isRendering = false;
+                return;
+            }
+
+            if (!shouldYieldToRenderer()) {
+                // Still time left. Commit the root.
+                completeRoot(root, finishedWork, expirationTime);
+            } else {
+                // There's no time left. Mark this root as complete. We'll come
+                // back and commit it later.
+                root.finishedWork = finishedWork;
+            }
+        }
+        
+    }
+  
+    isRendering = false;
+}
+  
+
+
+function renderRoot(root: FiberRoot, isYieldy: boolean): void {
+    invariant(
+        !isWorking,
+        'renderRoot was called recursively. This error is likely caused ' +
+        'by a bug in React. Please file an issue.',
+    );
+  
+    flushPassiveEffects();
+  
+    isWorking = true;
+
+    const expirationTime = root.nextExpirationTimeToWorkOn;
+  
+  
+    nextUnitOfWork = createAlternate(
+        nextRoot.current,
+        null,
+        nextRenderExpirationTime,
+    );
+    root.pendingCommitExpirationTime = NoWork;
+  
+     
+    
+  
+  
+    let didFatal = false;
+  
+  
+    do {
+        try {
+            workLoop(isYieldy);
+        } catch (thrownValue) {
+            resetContextDependences();
+            resetHooks();
+  
+            // Reset in case completion throws.
+            // This is only used in DEV and when replaying is on.
+            let mayReplay;
+     
+  
+            if (nextUnitOfWork === null) {
+                // This is a fatal error.
+                didFatal = true;
+                onUncaughtError(thrownValue);
+            } else {
+         
+  
+      
+  
+                const sourceFiber: Fiber = nextUnitOfWork;
+                let returnFiber = sourceFiber.return;
+                if (returnFiber === null) {
+                    // This is the root. The root could capture its own errors. However,
+                    // we don't know if it errors before or after we pushed the host
+                    // context. This information is needed to avoid a stack mismatch.
+                    // Because we're not sure, treat this as a fatal error. We could track
+                    // which phase it fails in, but doesn't seem worth it. At least
+                    // for now.
+                    didFatal = true;
+                    onUncaughtError(thrownValue);
+                } else {
+                    throwException(
+                        root,
+                        returnFiber,
+                        sourceFiber,
+                        thrownValue,
+                        nextRenderExpirationTime,
+                    );
+                    nextUnitOfWork = completeUnitOfWork(sourceFiber);
+                    continue;
+                }
+            }
+        }
+        break;
+    } while (true);
+  
+
+    // We're done performing work. Time to clean up.
+    isWorking = false;
+    ReactCurrentOwner.currentDispatcher = null;
+    resetContextDependences();
+    resetHooks();
+  
+    // Yield back to main thread.
+    if (didFatal) {
+        const didCompleteRoot = false;
+        interruptedBy = null;
+ 
+        // `nextRoot` points to the in-progress root. A non-null value indicates
+        // that we're in the middle of an async render. Set it to null to indicate
+        // there's no more work to be done in the current batch.
+        nextRoot = null;
+        onFatal(root);
+        return;
+    }
+  
+
+  
+    // We completed the whole tree.
+    const didCompleteRoot = true;
+    stopWorkLoopTimer(interruptedBy, didCompleteRoot);
+    const rootWorkInProgress = root.current.alternate;
+    invariant(
+        rootWorkInProgress !== null,
+        'Finished root should have a work-in-progress. This error is likely ' +
+        'caused by a bug in React. Please file an issue.',
+    );
+  
+    // `nextRoot` points to the in-progress root. A non-null value indicates
+    // that we're in the middle of an async render. Set it to null to indicate
+    // there's no more work to be done in the current batch.
+    nextRoot = null;
+    interruptedBy = null;
+  
+    if (nextRenderDidError) {
+        // There was an error
+        if (hasLowerPriorityWork(root, expirationTime)) {
+        // There's lower priority work. If so, it may have the effect of fixing
+        // the exception that was just thrown. Exit without committing. This is
+        // similar to a suspend, but without a timeout because we're not waiting
+        // for a promise to resolve. React will restart at the lower
+        // priority level.
+            markSuspendedPriorityLevel(root, expirationTime);
+            const suspendedExpirationTime = expirationTime;
+            const rootExpirationTime = root.expirationTime;
+            onSuspend(
+                root,
+                rootWorkInProgress,
+                suspendedExpirationTime,
+                rootExpirationTime,
+                -1, // Indicates no timeout
+            );
+            return;
+        } else if (
+        // There's no lower priority work, but we're rendering asynchronously.
+        // Synchronsouly attempt to render the same level one more time. This is
+        // similar to a suspend, but without a timeout because we're not waiting
+        // for a promise to resolve.
+            !root.didError &&
+        isYieldy
+        ) {
+            root.didError = true;
+            const suspendedExpirationTime = (root.nextExpirationTimeToWorkOn = expirationTime);
+            const rootExpirationTime = (root.expirationTime = Sync);
+            onSuspend(
+                root,
+                rootWorkInProgress,
+                suspendedExpirationTime,
+                rootExpirationTime,
+                -1, // Indicates no timeout
+            );
+            return;
+        }
+    }
+  
+   
+    // Ready to commit.
+    onComplete(root, rootWorkInProgress, expirationTime);
+}
+  
