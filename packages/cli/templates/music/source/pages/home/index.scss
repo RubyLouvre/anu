@@ -1,0 +1,374 @@
+@import '../../common/style/common.scss';
+@import '../../common/style/cover.scss';
+@import '../../common/style/text.scss';
+
+.tab {
+  display: flex;
+  flex-direction: row;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tab .tab-item {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  flex: auto;
+  word-break: keep-all;
+  font-size: 30rpx;
+}
+.tab .tab-item .tbi-text {
+  display: inline-block;
+  padding: 0 0.3em;
+  vertical-align: top;
+  line-height: 76rpx;
+  height: 77rpx;
+}
+.tab .tab-item .tbi-des {
+  display: inline;
+  color: #999;
+  border-bottom: none;
+  font-size: 24rpx;
+  line-height: 1;
+  padding-left: 0.5em;
+}
+.tab .tbi-cur .tbi-text {
+  color: #d33a31;
+  margin-bottom: -1rpx;
+  border-bottom: 4rpx solid #d33a31;
+}
+
+.tab_cnt {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.flex-boxlist {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0 5px;
+  box-sizing: border-box;
+}
+
+.tl_cnt {
+  flex-shrink: 0;
+  flex-grow: 0;
+  width: 33.333333%;
+  padding: 5px;
+  box-sizing: border-box;
+  .navigator {
+    width: 100%;
+  }
+
+}
+
+.cateplaylist {
+  width: 50%;
+}
+
+.cover .img_creator {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  line-height: 32rpx;
+  color: #fff;
+  z-index: 2;
+  width: 100%;
+  padding: 40rpx 10rpx 10rpx;
+  font-size: 24rpx;
+  box-sizing: border-box;
+  background-image: linear-gradient(rgba(255, 255, 255, 0), rgba(0, 0, 0, 0.2));
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cover .img_creator image {
+  margin: 0 5rpx;
+}
+
+.hidden {
+  display: none;
+}
+
+.st_title {
+  overflow: hidden;
+  margin: 10rpx 15rpx 0 15rpx;
+  padding: 10rpx;
+  padding-left: 0;
+  line-height: 36rpx;
+  font-size: 28rpx;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.st_title image {
+  width: 36rpx;
+  height: auto;
+  margin-right: 0.3em;
+  vertical-align: middle;
+  font-size: 28rpx;
+}
+.st_title .rbtn {
+  float: right;
+  color: #999;
+  font-size: 24rpx;
+}
+
+
+.img_playcount {
+  color: #fff;
+  font-size: 24rpx;
+
+}
+.img_playcount image {
+  vertical-align: baseline;
+  margin-right: 10rpx;
+  position: relative;
+  width: 24rpx;
+  height: 24rpx;
+}
+
+
+
+
+
+.tl_info {
+  font-size: 26rpx;
+  line-height: 1.6;
+  overflow:hidden;
+  flex-shrink: 0;
+}
+.tl_info view {
+  word-break: keep-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tl_info .tli_des {
+  color: #888;
+  font-size: 24rpx;
+}
+
+
+.album_cover {
+  width: 100%;
+  height: 100%;
+}
+
+#header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, .8);
+  -webkit-backdrop-filter: blur(15px); /* Safari for macOS & iOS*/
+  backdrop-filter: blur(15px); /* Google Chrome */
+}
+#lastsearch {
+  line-height: 1;
+  padding-top: 20rpx;
+  flex: 0 0 80rpx;
+}
+swiper,
+swiper image {
+  width: 750rpx;
+  height: 290rpx;
+}
+#main {
+  min-height: 1200rpx;
+  padding-top: 80rpx;
+}
+#rec_nav {
+  display: flex;
+  text-align: center;
+  justify-content: space-around;
+  width: 100%;
+  border-bottom: 1rpx solid #eee;
+  margin-top: 10px;
+}
+#rec_nav view {
+  flex: 1;
+  position: relative;
+}
+#rec_nav navigator {
+  padding: 25rpx 0;
+  font-size: 26rpx;
+}
+.recn_ico {
+  width: 110rpx;
+  height: 110rpx;
+  line-height: 110rpx;
+  font-size: 56rpx;
+  color: #bb2c08;
+  border: 1px solid #bb2c08;
+  border-radius: 50%;
+  margin: 0 auto 20rpx;
+  font-weight: 300;
+}
+.recn_ico image {
+  width: 110rpx;
+  height: 110rpx;
+}
+
+
+#album_loading {
+  text-align: center;
+  margin: 120rpx auto 0;
+  color: #999;
+  font-size: 28rpx;
+}
+#album_loading image {
+  width: 88rpx;
+  height: 88rpx;
+  animation: circle infinite 1.5s linear;
+  display: block;
+  margin: 40rpx auto;
+  border-radius: 50%;
+  border: 1rpx solid #999;
+}
+
+#catewrap {
+  padding: 0 15rpx;
+  box-sizing: border-box;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  background-color: #fff;
+  overflow: auto;
+}
+
+
+.checked {
+  border-color: #bb2c08;
+  z-index: 2;
+}
+
+#catselectbtn {
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAMAAACecocUAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAACdQTFRFiIiI+/z9vr6/xcXGnJyd9PX28/T1n5+fnp6ejIyMm5ub7e7v3t/gBUeqYAAAAEBJREFUeNpiYAABZgYI4GZj42LmYmPjBrJZGRlZmFkYGVnR2Bzs7JzMnOzsHAwMTCDAAyZRxHHqRTYfYS9AgAEAaTABl1/qO3QAAAAASUVORK5CYII=);
+  border: 1rpx solid #eee;
+  color: #999;
+  font-size: 24rpx;
+  padding: 8rpx 20rpx 8rpx 40rpx;
+  background-position: 10rpx center;
+  float: right;
+   background-repeat: no-repeat;
+   border-radius: 3rpx;
+}
+#plc_header {
+  border: none;
+}
+
+.djcatewrap {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.djcatelist {
+  text-align: center;
+  font-size: 24rpx;
+  height: 145rpx;
+}
+.djcatelist image {
+  width: 80rpx;
+  height: 80rpx;
+  margin-top: 20rpx;
+}
+
+.sort_fl_list {
+  line-height: 2;
+}
+
+
+.cat-modal {
+    height: 100%;
+}
+
+.listheader {
+  margin: 25rpx 15rpx 10rpx;
+  overflow: hidden;
+}
+.listheader:before {
+  display: inline-block;
+  width: 5rpx;
+  background-color: red;
+  height: 0.8em;
+  content: '';
+  vertical-align: middle;
+  margin-right: 15rpx;
+  border-radius: 10rpx;
+}
+
+
+.play-count {
+  padding: 8rpx 8rpx 8rpx 0;
+  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
+  image {
+    margin-right: 10rpx;
+    width: 24rpx;
+    height: 24rpx;
+  }
+  &, text {
+    color: #fff;
+    font-size: 24rpx;
+  }
+}
+
+
+.cover {
+  width: 100%;
+  padding-top:100%;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+}
+
+/// 电台
+
+.broadcasting {
+  .item {
+    text-align: center;
+    font-size: 24rpx;
+    height: 145rpx;
+    image {
+      width: 80rpx;
+      height: 80rpx;
+      margin-top: 20rpx;
+    }
+  }
+}
+
+
+/// 排行榜
+.ranking {
+  .music-cover {
+    width: 230rpx;
+    height: 230rpx;
+    padding: 0;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 230rpx;
+    margin: 10rpx 20rpx 10rpx 10rpx;
+    image {
+      width: 100%;
+      height: 100%;
+    }
+    text {
+      color: #fff;
+    }
+  }
+  .music-info {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-grow: 1;
+    flex-shrink: 0;
+    padding-right: 10rpx;
+    box-sizing: border-box;
+  }
+}

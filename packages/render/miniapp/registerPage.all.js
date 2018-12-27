@@ -57,7 +57,7 @@ export function onUnload() {
     let container = root && root._reactInternalFiber;
     if (container) {
         Renderer.updateComponent(
-            container.hostRoot,
+            container.child,
             {
                 child: null
             },

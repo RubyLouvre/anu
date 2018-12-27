@@ -1,0 +1,38 @@
+.music-cover {
+    position: relative;
+}
+
+.music-cover__image {
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    width: 100%;
+    height: auto;
+}
+
+.music-cover__content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.music-cover__top {
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.music-cover__main {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+.music-cover__bottom {
+    flex-grow: 0;
+    flex-shrink: 0;
+}

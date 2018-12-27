@@ -1,0 +1,43 @@
+@import '../../common/style/common.scss';
+
+.swiper_box {
+    width: 100%;
+    height: 320px;
+}
+.swiper_box .slide-image{
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+    overflow: hidden;
+}
+
+.venues_box {
+    width: 100%;
+    overflow: auto;
+    padding: 0 10rpx;
+    box-sizing: border-box;
+}
+
+.venues_list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.venues_item {
+    width: 49%;
+    height: 140px;
+    margin: 0 0.5%;
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+
+.slide-image-2 {
+    width: 100%;
+    height: 100%;
+}
+
+.slide-image-1 {
+    width: 100%;
+    height: 100%;
+}

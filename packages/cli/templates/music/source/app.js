@@ -48,7 +48,7 @@ class Demo extends React.Component {
     console.log('App launched');//eslint-disable-line
   }
   stopmusic() {
-    
+
       React.api.pauseBackgroundAudio();
   }
 
@@ -99,7 +99,7 @@ class Demo extends React.Component {
           dataUrl: m.url,
           title: m.name,
           success: function() {
-              
+
               if (seek != undefined) {
                   React.api.seekBackgroundAudio({ position: seek });
               }
