@@ -30,9 +30,12 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
         }
         node.walkRules((rule) => {
             if (rule.selector.match(mixinReg)) {
-                const match = matchMixinRule(getMixinParams(rule.selector), params);
+                const mixinParams = getMixinParams(rule.selector)
+                const match = matchMixinRule(mixinParams, params);
                 if (match) {
-                    match['@arguments'] = getMixinParams(rule.selector).map(p => match[p.key] || p.value).join(' ');
+                    if (mixinParams) {
+                        match['@arguments'] = mixinParams.map(p => match[p.key] || p.value).join(' ');
+                    }
                     find = true;
                     rule.walk(decl => {
                         if (decl.value) {

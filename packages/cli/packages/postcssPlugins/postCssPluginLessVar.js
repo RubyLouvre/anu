@@ -4,7 +4,7 @@ const removeQuoteReg = /^["|'](.*)["|']$/;
 
 const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
     function findVarValue(node, key) {
-        let result = '';
+        let result = { important: false };
         // 去掉变量定义首尾引号
         key = key.replace(removeQuoteReg, '$1');
         let find = false;
@@ -13,11 +13,15 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
         node.each(node => {
             if (node.variable && key === node.name) {
                 find = true;
-                value = node.value;
+                value = node.value.trim();
             }
         });
         if (find && value) {
-            result = value;
+            value = value.replace(/\s*!important$/, function() {
+                result.important = true;
+                return '';
+            });
+            result.value = value;
         }
         // 没找到或到达根节点则退出递归
         if (!find && node.type !== 'root') {
@@ -36,10 +40,11 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
                 variables[i].replace(varReg, function(a, b) {
                     key = b;
                 });
-                const value = findVarValue(decl.parent, key);
+                const { value, important } = findVarValue(decl.parent, key);
                 variable = variable.replace(variables[i], value);
                 // 添加标识，是由variable转换来的
                 decl.isVar = true;
+                if (important) { decl.important = important; }
             }
         }
         if (variable && variable.match(varReg)) {
