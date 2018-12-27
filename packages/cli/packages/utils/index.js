@@ -384,12 +384,11 @@ let utils = {
     return defaultAlias;
   },
   resolveNpmAliasPath(id, depFile) {
-    let distJs = id.replace(new RegExp('/' + config.sourceDir + '/'), '/dist/');
-    let distNpm = depFile.replace(/\/node_modules\//, '/dist/npm/');
-
+    let distJs = utils.updatePath( id, config.sourceDir, 'dist');
+    let distNpm = utils.updatePath(depFile, 'node_modules', `dist${path.sep}npm`)
     //根据被依赖文件和依赖文件，求相对路径
     let aliasPath = path.relative(path.dirname(distJs), distNpm);
-
+    aliasPath = aliasPath.replace(/\\/g, '/');
     return aliasPath;
   },
   resolveCustomAliasPath(file, depFile) {
