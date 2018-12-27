@@ -234,11 +234,13 @@ class Express extends React.Component {
     })
   }
 
-  redirectTo() {
-    React.api.redirectTo({
-      url: '/pages/about/index?param1=hello&param2=world'
-    });
+  showToast() {
+    React.api.showToast({
+      title: 'showToast'
+    })
   }
+
+ 
 
   createShortcut() {
     React.api.createShortcut();
@@ -250,6 +252,9 @@ class Express extends React.Component {
         <div class="anu-block">
           <div onClick={this.showModal} class="anu-item">
             <text>showModal</text>
+          </div>
+          <div onClick={this.showToast} class="anu-item">
+            <text>showToast</text>
           </div>
           <div onClick={this.showContextMenu} class="anu-item">
             <text>显示上下文菜单</text>
@@ -298,7 +303,7 @@ class Express extends React.Component {
             <text>获取网络类型</text>
           </div>
           <div onClick={this.getSystemInfo} class="anu-item">
-            <text>获取系统信息</text>
+            <text>获取系统信息(getSystemInfo)</text>
           </div>
           <div onClick={this.chooseImage} class="anu-item">
             <text>选择图片</text>
@@ -317,9 +322,13 @@ class Express extends React.Component {
           <div onClick={this.createShortcut} class="anu-item">
             <text>保存图标到桌面</text>
           </div>
-          <div onClick={this.redirectTo} class="anu-item">
-            <text>页面跳转(redirectTo)</text>
+          <div
+            onClick={this.gotoSome.bind(this, '../../../pages/demo/apis/route/index')}
+            class="anu-item"
+          >
+            <text>路由</text>
           </div>
+          
         </div>
       </div>
     );

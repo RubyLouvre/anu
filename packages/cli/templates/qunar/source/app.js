@@ -11,6 +11,7 @@ import './pages/demo/apis/canvas/rect/index';
 import './pages/demo/apis/canvas/fillStyle/index';
 import './pages/demo/apis/canvas/arc/index';
 import './pages/demo/apis/canvas/globalAlpha/index';
+import './pages/demo/apis/route/index';
 
 import './pages/demo/native/index/index';
 import './pages/demo/native/button/index';

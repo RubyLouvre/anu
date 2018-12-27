@@ -56,9 +56,9 @@ class Brand extends React.Component {
                     return (
                         <div className="brand_item">
                             <div
-                              onClick={
-                                  this.goto.bind(this, '../list/index?brand=' + 11 + '&typeid=' + 12)
-                              }
+                                onClick={
+                                    this.goto.bind(this, '../list/index?brand=' + 11 + '&typeid=' + 12)
+                                }
                             >
                                 <image src={item.pic} className="pic" />
                                 <div className="right_cont anu-col">
@@ -70,8 +70,8 @@ class Brand extends React.Component {
                         </div>
                     ) ;
                 })}
-          </div>
-      );
+            </div>
+        );
     }
 }
 

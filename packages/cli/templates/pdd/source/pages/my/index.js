@@ -48,7 +48,7 @@ class MY extends React.Component {
       navigationBarTitleText: '我的',
       navigationBarBackgroundColor: '#292929',
       backgroundColor: '#F2F2F2',
-    //   enablePullDownRefresh: true
+      //   enablePullDownRefresh: true
   };
 
   componentWillMount() {
@@ -102,18 +102,18 @@ class MY extends React.Component {
                       return (
                           <div className="weui_cell" key={item.text} onTap={this.show.bind(this, item.text)}>
                               <div>
-                                <div className="weui_cell_hd">
-                                    <image src={item.icon} />
-                                </div>
-                                <div class="weui_cell_bd">
-                                    <div class="weui_cell_bd_p"> {item.text} </div>
-                                </div>
+                                  <div className="weui_cell_hd">
+                                      <image src={item.icon} />
+                                  </div>
+                                  <div class="weui_cell_bd">
+                                      <div class="weui_cell_bd_p"> {item.text} </div>
+                                  </div>
                               </div>
                               <div>
-                                {item.isunread && <div className="badge">{item.unreadNum}</div>}
-                                <div class="with_arrow">
-                                    <image src="../../assets/images/icon-arrowdown.png" />
-                                </div>
+                                  {item.isunread && <div className="badge">{item.unreadNum}</div>}
+                                  <div class="with_arrow">
+                                      <image src="../../assets/images/icon-arrowdown.png" />
+                                  </div>
                               </div>
                           </div>
                       );

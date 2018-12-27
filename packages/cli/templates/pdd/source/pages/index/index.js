@@ -89,6 +89,6 @@ class P extends React.Component {
             </div>
         );
     }
-    }
+}
 
 export default P;
