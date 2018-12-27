@@ -272,12 +272,12 @@ class P extends React.Component {
                         {/* playlist */}
                         <div class="st_title">
                             <div>
-                            <image
-                                width="30"
-                                mode="widthFix"
-                                src="../../assets/image/cm2_discover_icn_recmd@2x.png"
-                            />
-                            <span>推荐歌单</span>
+                                <image
+                                    width="30"
+                                    mode="widthFix"
+                                    src="../../assets/image/cm2_discover_icn_recmd@2x.png"
+                                />
+                                <span>推荐歌单</span>
                             </div>
                             <div class="rbtn" bindtap="switchtab" data-t="1">更多></div>
                         </div>
@@ -309,12 +309,12 @@ class P extends React.Component {
                         {/* newsongs */}
                         <div class="st_title">
                             <div>
-                            <image
-                                width="30"
-                                mode="widthFix"
-                                src="../../assets/image/cm2_discover_icn_newest@2x.png"
-                            />
-                            <span>最新音乐</span>
+                                <image
+                                    width="30"
+                                    mode="widthFix"
+                                    src="../../assets/image/cm2_discover_icn_newest@2x.png"
+                                />
+                                <span>最新音乐</span>
                             </div>
                             <div class="rbtn" bindtap="switchtab" data-t="1">更多></div>
                         </div>
@@ -324,25 +324,25 @@ class P extends React.Component {
                                     return (
                                         <div class="tl_cnt" key={re.id}>
                                             <div className="anu-col">
-                                            {index < 6 && (
-                                                <TNavigator url={'/pages/playing/index?id=' + re.id + '&br=' + re.song.privilege.maxbr}>
-                                                    <div class="anu-col">
-                                                        <div class="cover music-cover">
-                                                            <image
-                                                                src={re.song.album.picUrl + '?param=200y200'}
-                                                                class="music_cover music-cover__image"
-                                                            />
-                                                        </div>
+                                                {index < 6 && (
+                                                    <TNavigator url={'/pages/playing/index?id=' + re.id + '&br=' + re.song.privilege.maxbr}>
                                                         <div class="anu-col">
-                                                            <text>{re.playcount}</text>
-                                                            <div class="music-info anu-col">
-                                                                <div>{re.name}</div>
-                                                                <div>{re.song.artists[0].name}</div>
+                                                            <div class="cover music-cover">
+                                                                <image
+                                                                    src={re.song.album.picUrl + '?param=200y200'}
+                                                                    class="music_cover music-cover__image"
+                                                                />
+                                                            </div>
+                                                            <div class="anu-col">
+                                                                <text>{re.playcount}</text>
+                                                                <div class="music-info anu-col">
+                                                                    <div>{re.name}</div>
+                                                                    <div>{re.song.artists[0].name}</div>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </TNavigator>
-                                            )}
+                                                    </TNavigator>
+                                                )}
                                             </div>
                                         </div>
                                     );
@@ -415,44 +415,44 @@ class P extends React.Component {
                         )}
                     </div>
                     {/* 排行榜 */}
-                        <div class={this.state.tabidx !== 3 ? 'tab_cnt hidden' : 'tab_cnt'}>
-                            {this.state.sort.loading ? (
-                                <div class="anu-col ranking">
-                                    <div class="listheader">云音乐官方榜</div>
-                                    <div class="anu-col">
-                                        {this.state.sort.list.map(function(item) {
-                                            return (
-                                                <TNavigator url={'/pages/playlist/index?pid=' + item.id + '&from=toplist'}>
-                                                    <div class="anu-row">
-                                                        <stack class="music-cover anu-col">
-                                                            <image src={item.coverImgUrl + '?param=200y200'} class="cover__image" />
-                                                            <div class="music-cover__content">
-                                                                <div class="music-cover__top"></div>
-                                                                <div class="music-cover__main"></div>
-                                                                <div class="music-cover__bottom">
-                                                                    <text class="music-info">{item.updateFrequency}</text>
-                                                                </div>
+                    <div class={this.state.tabidx !== 3 ? 'tab_cnt hidden' : 'tab_cnt'}>
+                        {this.state.sort.loading ? (
+                            <div class="anu-col ranking">
+                                <div class="listheader">云音乐官方榜</div>
+                                <div class="anu-col">
+                                    {this.state.sort.list.map(function(item) {
+                                        return (
+                                            <TNavigator url={'/pages/playlist/index?pid=' + item.id + '&from=toplist'}>
+                                                <div class="anu-row">
+                                                    <stack class="music-cover anu-col">
+                                                        <image src={item.coverImgUrl + '?param=200y200'} class="cover__image" />
+                                                        <div class="music-cover__content">
+                                                            <div class="music-cover__top"></div>
+                                                            <div class="music-cover__main"></div>
+                                                            <div class="music-cover__bottom">
+                                                                <text class="music-info">{item.updateFrequency}</text>
                                                             </div>
-                                                        </stack>
-                                                        <div class="music-info anu-col">
-                                                            {item.tracks.map(function(r, idx) {
-                                                                return (
-                                                                    <div key={idx}>
-                                                                        <text>{idx + 1}．{r.first} - {r.second}</text>
-                                                                    </div>
-                                                                );
-                                                            })}
                                                         </div>
+                                                    </stack>
+                                                    <div class="music-info anu-col">
+                                                        {item.tracks.map(function(r, idx) {
+                                                            return (
+                                                                <div key={idx}>
+                                                                    <text>{idx + 1}．{r.first} - {r.second}</text>
+                                                                </div>
+                                                            );
+                                                        })}
                                                     </div>
-                                                </TNavigator>
-                                            );
-                                        })}
-                                    </div>
+                                                </div>
+                                            </TNavigator>
+                                        );
+                                    })}
                                 </div>
-                            ) : (
-                                <Loading />
-                            )}
-                        </div>
+                            </div>
+                        ) : (
+                            <Loading />
+                        )}
+                    </div>
                 </div>
                 {/* 选择分类 */}
                 <scroll-view

@@ -7,7 +7,7 @@ class TNavigator extends React.Component {
     }
 
     goto(url) {
-        console.log('url', url);
+        // console.log('url', url);
         if (url){
             React.api.navigateTo({ url });
         } else {

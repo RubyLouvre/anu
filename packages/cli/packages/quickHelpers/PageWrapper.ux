@@ -1,7 +1,7 @@
 <template>
   <div style="width:100%;padding-bottom: {{tabBar.list.length?'150px': '0px'}}; background-color:{{backgroundColor}};">
     <block if="pageRefresh">
-      <refresh refreshing="{{refreshing}}" @refresh="onPullDownRefresh">
+      <refresh refreshing="{{pageRefreshing}}" @refresh="onPullDownRefresh">
         <list @scroll="onPageScroll" @scrollbottom="onReachBottom">
           <list-item type='a'>
             <slot></slot>
@@ -9,7 +9,7 @@
         </list>
       </refresh>
     </block>
-    <block>
+    <block elif="true">
       <slot></slot>
     </block>
     <div class="tabBar" if="{{tabBar.list.length}}" style="background-color:{{tabBar.backgroundColor}}">
@@ -142,7 +142,7 @@
       this.pageRefreshing = true
       setTimeout(() => {
         this.pageRefreshing = false
-      })
+      }, 3000)
     },
     onMenuPress: function () {
       React.api.showActionSheet({
