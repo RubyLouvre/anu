@@ -15,6 +15,7 @@ const crypto = require('crypto');
 const config = require('./config');
 const quickFiles = require('./quickFiles');
 const miniTransform = require('./miniappTransform');
+
 const styleTransform = require('./styleTransform');
 const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
@@ -83,14 +84,14 @@ class Parser {
         this.styleFiles = [];
         this.npmFiles = [];
         this.depTree = {};
-        
         this.collectError = {
             //样式@import引用错误, 如page中引用component样式
             styleImportError: [],
             //page or component js代码是否超过500行
             jsCodeLineNumberError: [],
             //page中是否包含了component目录
-            componentInPageError: []
+            componentInPageError: [],
+            jsxError: []
         };
         
         this.customAliasConfig = Object.assign(
@@ -123,7 +124,8 @@ class Parser {
                     presets: [require('babel-preset-react')],
                     plugins: [
                         require('babel-plugin-transform-class-properties'),
-                        require('babel-plugin-transform-object-rest-spread')
+                        require('babel-plugin-transform-object-rest-spread'),
+                        ...require('./babelPlugins/validateJsx')(this.collectError)
                     ]
                 })
             ],
