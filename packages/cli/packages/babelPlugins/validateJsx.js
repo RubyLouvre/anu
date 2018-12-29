@@ -37,7 +37,7 @@ const visitor = {
                 collectError.jsxError.push({
                     id: fileId,
                     level: 'error',
-                    msg: `jsx属性插值无法调用非事件绑定函数函数.\nat ${fileId}:${line}:${column}\n ${g(astPath.node).code}\n`,
+                    msg: `jsx属性插值无法调用非事件绑定函数.\nat ${fileId}:${line}:${column}\n ${g(astPath.node).code}\n`,
                    
                 });
                 return;
@@ -70,7 +70,7 @@ module.exports = (errorStack)=>{
             }
         ];
     } else {
-        return []
+        return [];
     }
     
     
