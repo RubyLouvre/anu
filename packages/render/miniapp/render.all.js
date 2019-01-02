@@ -59,7 +59,7 @@ export let Renderer = createRenderer({
             let wxInstances = type.wxInstances;
             if (wxInstances) {
                 //微信必须在这里进行多一次匹配，否则组件没有数据
-                let componentWx = wxInstances[0];
+                /*  let componentWx = wxInstances[0];
                 if (componentWx && componentWx.__wxExparserNodeId__) {
                     for (var i = 0; i < wxInstances.length; i++) {
                         var el = wxInstances[i];
@@ -71,6 +71,7 @@ export let Renderer = createRenderer({
                         }
                     }
                 }
+                */
                 if (!instance.wx) {
                     instance.$$page = Object(_getApp()).$$page;
                     type.reactInstances.push(instance);

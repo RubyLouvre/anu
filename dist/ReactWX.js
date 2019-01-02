@@ -2290,18 +2290,6 @@ var Renderer$1 = createRenderer({
             }
             var wxInstances = type.wxInstances;
             if (wxInstances) {
-                var componentWx = wxInstances[0];
-                if (componentWx && componentWx.__wxExparserNodeId__) {
-                    for (var i = 0; i < wxInstances.length; i++) {
-                        var el = wxInstances[i];
-                        if (!el.disposed && el.dataset.instanceUid === uuid) {
-                            el.reactInstance = instance;
-                            instance.wx = el;
-                            wxInstances.splice(i, 1);
-                            break;
-                        }
-                    }
-                }
                 if (!instance.wx) {
                     instance.$$page = Object(_getApp()).$$page;
                     type.reactInstances.push(instance);
@@ -2522,10 +2510,11 @@ function registerPage(PageClass, path, testObject) {
     return config;
 }
 
+var defer = typeof Promise == 'function' ? Promise.resolve().then.bind(Promise.resolve()) : setTimeout;
 function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    var wxInstances = type.wxInstances = [];
+    type.wxInstances = {};
     var config = {
         data: {
             props: {},
@@ -2534,18 +2523,20 @@ function registerComponent(type, name) {
         },
         lifetimes: {
             attached: function attached() {
+                var _this = this;
                 usingComponents[name] = type;
-                var uuid = this.dataset.instanceUid || null;
-                for (var i = 0; i < reactInstances.length; i++) {
-                    var reactInstance = reactInstances[i];
-                    if (reactInstance.instanceUid === uuid) {
-                        reactInstance.wx = this;
-                        this.reactInstance = reactInstance;
-                        updateMiniApp(reactInstance);
-                        return reactInstances.splice(i, 1);
+                defer(function () {
+                    var uuid = _this.dataset.instanceUid || null;
+                    for (var i = 0; i < reactInstances.length; i++) {
+                        var reactInstance = reactInstances[i];
+                        if (reactInstance.instanceUid === uuid) {
+                            reactInstance.wx = _this;
+                            _this.reactInstance = reactInstance;
+                            updateMiniApp(reactInstance);
+                            return reactInstances.splice(i, 1);
+                        }
                     }
-                }
-                wxInstances.push(this);
+                });
             },
             detached: function detached() {
                 var t = this.reactInstance;
