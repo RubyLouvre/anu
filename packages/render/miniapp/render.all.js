@@ -72,6 +72,7 @@ export let Renderer = createRenderer({
                     }
                 }
                 if (!instance.wx) {
+                    instance.$$page = Object(_getApp()).$$page;
                     type.reactInstances.push(instance);
                 }
             }
