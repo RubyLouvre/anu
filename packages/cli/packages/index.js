@@ -420,6 +420,7 @@ class Parser {
 
 async function build(arg, opts) {
     let { option } = opts;
+    removeDist();
     await utils.asyncReact(option);  //同步react
     if (config['buildType'] === 'quick') {
         //快应用mege package.json 以及 生成秘钥
@@ -429,7 +430,6 @@ async function build(arg, opts) {
     let parser = new Parser(entry);
     await parser.parse();
     spinner.succeed(chalk.green('依赖分析成功'));
-    removeDist();
     if (arg === 'watch') parser.watching();
 }
 
