@@ -98,9 +98,9 @@ class Parser {
             //page or component js代码是否超过500行
             jsCodeLineNumberError: [],
             //page中是否包含了component目录
-            componentInPageError: []
+            componentInPageError: [],
+            jsxError: []
         };
-        
         this.customAliasConfig = Object.assign(
             { resolve: ['.js','.css', '.scss', '.sass', '.less'] },
             utils.getCustomAliasConfig()
@@ -131,7 +131,8 @@ class Parser {
                     presets: [require('babel-preset-react')],
                     plugins: [
                         require('babel-plugin-transform-class-properties'),
-                        require('babel-plugin-transform-object-rest-spread')
+                        require('babel-plugin-transform-object-rest-spread'),
+                        ...require('./babelPlugins/validateJsx')(this.collectError)
                     ]
                 })
             ],
