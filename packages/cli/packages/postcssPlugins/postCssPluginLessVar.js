@@ -12,7 +12,7 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
         let value;
         // 遍历variable 找出当前节点下变量定义
         node.each(node => {
-            if (node.variable && key === node.name) {
+            if (node.variable && key === node.name.replace(/\s*:$/, '')) {
                 find = true;
                 value = node.value.trim();
             }
@@ -57,11 +57,20 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
 
     return (root) => {
         // 解析变量声明
+        root.walkAtRules(decl => {
+            if (decl.mixinVariable) {
+                // 转换变量的value
+                decl.value = parseVariable(decl.value, decl);
+            }
+        });
+        // 解析变量声明
         root.walkDecls(decl => {
-            // 转换变量的key
-            decl.prop = parseVariable(decl.prop, decl);
-            // 转换变量的value
-            decl.value = parseVariable(decl.value, decl);
+            if (!decl.mixinVariable) {
+                // 转换变量的key
+                decl.prop = parseVariable(decl.prop, decl);
+                // 转换变量的value
+                decl.value = parseVariable(decl.value, decl);
+            }
         });
         // 解析插值变量
         root.walkRules(rule => {

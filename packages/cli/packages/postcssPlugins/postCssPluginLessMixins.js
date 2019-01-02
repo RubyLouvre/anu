@@ -10,24 +10,6 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
         const mixinReg = new RegExp(`^${mixinName.replace(/\./g, '\\.')}\\s*(?:\\(.*\\))?$`);
         var find = false;
         var nodes = [];
-        function extractVar(variable, obj) {
-            const varReg = /(@{[a-zA-Z0-9-_."']+})|(@[a-zA-Z0-9-_."']+)/g;
-            const variables = variable && variable.match(varReg);
-
-            if (variables && variables.length) {
-                for (var i = 0, length = variables.length; i < length; i++) {
-                    let key = '';
-                    variables[i].replace(varReg, function(a, b) {
-                        key = b || '';
-                    });
-                    variable = variable.replace(variables[i], obj[key.replace(/{|}/g, '')]) || '';
-                }
-            }
-            if (variable && variable.match(varReg)) {
-                variable = extractVar(variable, obj);
-            }
-            return variable;
-        }
         node.walkRules((rule) => {
             if (rule.selector.match(mixinReg)) {
                 const mixinParams = getMixinParams(rule.selector);
@@ -37,18 +19,10 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
                         match['@arguments'] = mixinParams.map(p => match[p.key] || p.value).join(' ');
                     }
                     find = true;
-                    rule.walk(decl => {
-                        if (decl.value) {
-                            decl.value = extractVar(decl.value, match);
-                        }
-                        if (decl.selector) {
-                            decl.selector = extractVar(decl.selector, match);
-                        }
-                        if (decl.params) {
-                            decl.params = extractVar(decl.params, match);
-                        }
-                    });
                     nodes = nodes.concat(rule.nodes);
+                    for (var key in match) {
+                        nodes = nodes.concat(postCss.atRule({name: key.replace(/^@/, '') + ":", value: match[key], params: match[key], variable: true, mixinVariable: true}));
+                    }
                 }
             }
         });
