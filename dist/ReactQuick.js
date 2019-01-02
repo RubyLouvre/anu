@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-27
+ * 运行于快应用的React by 司徒正美 Copyright 2019-01-02
  */
 
 var arrayPush = Array.prototype.push;
@@ -2669,6 +2669,7 @@ var Renderer$1 = createRenderer({
                     }
                 }
                 if (!instance.wx) {
+                    instance.$$page = Object(_getApp()).$$page;
                     type.reactInstances.push(instance);
                 }
             }

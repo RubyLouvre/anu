@@ -1,4 +1,4 @@
-import { registeredComponents, usingComponents, updateMiniApp } from './utils';
+import { registeredComponents, usingComponents, updateMiniApp, _getApp } from './utils';
 import { dispatchEvent } from './eventSystem';
 
 export function registerComponent(type, name) {
@@ -15,9 +15,10 @@ export function registerComponent(type, name) {
         attached() {
             usingComponents[name] = type;
             var uuid = this.dataset.instanceUid || null;
+            var page = Object(_getApp()).$$page;
             for (var i = 0; i < reactInstances.length; i++) {
                 var reactInstance = reactInstances[i];
-                if (reactInstance.instanceUid === uuid) {
+                if (reactInstance.$$page === page && reactInstance.instanceUid === uuid) {
                     reactInstance.wx = this;
                     this.reactInstance = reactInstance;
                     updateMiniApp(reactInstance);

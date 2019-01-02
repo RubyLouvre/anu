@@ -15,6 +15,7 @@ const crypto = require('crypto');
 const config = require('./config');
 const quickFiles = require('./quickFiles');
 const miniTransform = require('./miniappTransform');
+
 const styleTransform = require('./styleTransform');
 const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
@@ -30,6 +31,15 @@ let needUpdate = (id, code, fn) => {
     if (!cache[id] || cache[id] != sha1) {
         cache[id] = sha1;
         fn();
+    }
+};
+
+let removeDist = ()=>{
+    let distPath = path.join(cwd, config.buildDir);
+    try {
+        fs.removeSync(distPath);
+    } catch (err) {
+        console.log(err);
     }
 };
 
@@ -70,7 +80,6 @@ let ignoreStyleParsePlugin = ()=>{
 };
 
 
-
 //监听打包资源
 utils.on('build', ()=>{
     generate();
@@ -83,16 +92,15 @@ class Parser {
         this.styleFiles = [];
         this.npmFiles = [];
         this.depTree = {};
-        
         this.collectError = {
             //样式@import引用错误, 如page中引用component样式
             styleImportError: [],
             //page or component js代码是否超过500行
             jsCodeLineNumberError: [],
             //page中是否包含了component目录
-            componentInPageError: []
+            componentInPageError: [],
+            jsxError: []
         };
-        
         this.customAliasConfig = Object.assign(
             { resolve: ['.js','.css', '.scss', '.sass', '.less'] },
             utils.getCustomAliasConfig()
@@ -123,7 +131,8 @@ class Parser {
                     presets: [require('babel-preset-react')],
                     plugins: [
                         require('babel-plugin-transform-class-properties'),
-                        require('babel-plugin-transform-object-rest-spread')
+                        require('babel-plugin-transform-object-rest-spread'),
+                        ...require('./babelPlugins/validateJsx')(this.collectError)
                     ]
                 })
             ],
@@ -411,6 +420,7 @@ class Parser {
 
 async function build(arg, opts) {
     let { option } = opts;
+    removeDist();
     await utils.asyncReact(option);  //同步react
     if (config['buildType'] === 'quick') {
         //快应用mege package.json 以及 生成秘钥
