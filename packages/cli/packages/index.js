@@ -15,6 +15,7 @@ const crypto = require('crypto');
 const config = require('./config');
 const quickFiles = require('./quickFiles');
 const miniTransform = require('./miniappTransform');
+
 const styleTransform = require('./styleTransform');
 const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
@@ -30,6 +31,15 @@ let needUpdate = (id, code, fn) => {
     if (!cache[id] || cache[id] != sha1) {
         cache[id] = sha1;
         fn();
+    }
+};
+
+let removeDist = ()=>{
+    let distPath = path.join(cwd, config.buildDir);
+    try {
+        fs.removeSync(distPath);
+    } catch (err) {
+        console.log(err);
     }
 };
 
@@ -70,7 +80,6 @@ let ignoreStyleParsePlugin = ()=>{
 };
 
 
-
 //监听打包资源
 utils.on('build', ()=>{
     generate();
@@ -83,7 +92,6 @@ class Parser {
         this.styleFiles = [];
         this.npmFiles = [];
         this.depTree = {};
-        
         this.collectError = {
             //样式@import引用错误, 如page中引用component样式
             styleImportError: [],
@@ -420,6 +428,7 @@ async function build(arg, opts) {
     let parser = new Parser(entry);
     await parser.parse();
     spinner.succeed(chalk.green('依赖分析成功'));
+    removeDist();
     if (arg === 'watch') parser.watching();
 }
 
