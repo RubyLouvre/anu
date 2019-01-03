@@ -12,7 +12,7 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
         let value;
         // 遍历variable 找出当前节点下变量定义
         node.each(node => {
-            if (node.variable && key === node.name.replace(/\s*:$/, '')) {
+            if (node.variable && key === node.name) {
                 find = true;
                 value = node.value.trim();
             }
