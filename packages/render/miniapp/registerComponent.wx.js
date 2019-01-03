@@ -5,7 +5,7 @@ const defer = typeof Promise=='function' ? Promise.resolve().then.bind(Promise.r
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
     let reactInstances = (type.reactInstances = []);
-    type.wxInstances = {};
+    type.wxInstances = [];
     let config = {
         data: {
             props: {},
@@ -30,7 +30,7 @@ export function registerComponent(type, name) {
                         }
                     }
                 });
-              
+                //wxInstances.push(this);
             },
             detached() {
                 let t = this.reactInstance;

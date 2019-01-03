@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-01-02
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-01-03
  * IE9+
  */
 
@@ -2514,7 +2514,7 @@ var defer = typeof Promise == 'function' ? Promise.resolve().then.bind(Promise.r
 function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    type.wxInstances = {};
+    type.wxInstances = [];
     var config = {
         data: {
             props: {},
