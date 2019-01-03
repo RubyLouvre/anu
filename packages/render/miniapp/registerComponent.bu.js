@@ -3,7 +3,7 @@ import { dispatchEvent } from './eventSystem';
 
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
-    var reactInstances = type.reactInstances = [];
+    let reactInstances = type.reactInstances = [];
     type.wxInstances = {};
     return {
         data: {
@@ -16,6 +16,7 @@ export function registerComponent(type, name) {
             usingComponents[name] = type;
             var uuid = this.dataset.instanceUid || null;
             var page = Object(_getApp()).$$page;
+            console.log(name, reactInstances.length);
             for (var i = 0; i < reactInstances.length; i++) {
                 var reactInstance = reactInstances[i];
                 if (reactInstance.$$page === page && reactInstance.instanceUid === uuid) {
@@ -25,6 +26,7 @@ export function registerComponent(type, name) {
                     return reactInstances.splice(i, 1);
                 }
             }
+            //wxInstances.push(this);
         },
         detached() {
             let t = this.reactInstance;
