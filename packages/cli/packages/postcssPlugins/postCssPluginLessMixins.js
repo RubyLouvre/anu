@@ -2,35 +2,78 @@ const postCss = require('postcss');
 const reg = /[a-zA-Z0-9-_.]+\s*\(.*\)$/;
 const mixinVarReg = /\s*(@[a-zA-Z0-9-_."']+):\s*(.+)/;
 
+const varReg = /@{?([a-zA-Z0-9-_."']+)}?/g;
+const insertVarReg = /@{([a-zA-Z0-9-_."']+)}/g;
+const removeQuoteReg = /^["|'](.*)["|']$/;
+
 /**
  * 要放在postCssPluginLessVar前使用，因为要解析mixin传入的变量
  */
 const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => {
+    function findVarValue(node, key, mixinParams) {
+        let result = { important: false };
+        // 去掉变量定义首尾引号
+        key = key.replace(removeQuoteReg, '$1');
+        let find = false;
+        let value;
+        if (mixinParams && mixinParams['@' + key]) {
+            return {
+                value: mixinParams['@' + key]
+            };
+        }
+        // 遍历variable 找出当前节点下变量定义
+        node.each(node => {
+            if (node.variable && key === node.name) {
+                find = true;
+                value = node.value.trim();
+            }
+        });
+        if (find && value) {
+            value = value.replace(/\s*!important$/, function() {
+                result.important = true;
+                return '';
+            });
+            result.value = value;
+        }
+        // 没找到或到达根节点则退出递归
+        if (!find && node.type !== 'root') {
+            result = findVarValue(node.parent, key);
+        }
+
+        return result;
+    }
+
+    function parseVariable(variable, decl, isInsertVal, mixinParams) {
+        const reg = isInsertVal ? insertVarReg : varReg;
+        const variables = variable && variable.match(reg);
+
+        if (variables && variables.length) {
+            for (var i = 0, length = variables.length; i < length; i++) {
+                let key;
+                variables[i].replace(reg, function(a, b) {
+                    key = b;
+                });
+                const { value, important } = findVarValue(decl.parent, key, mixinParams);
+                variable = variable.replace(variables[i], value);
+                // 添加标识，是由variable转换来的
+                decl.isVar = true;
+                if (important) { decl.important = important; }
+            }
+        }
+        if (variable && variable.match(reg)) {
+            variable = parseVariable(variable, decl, mixinParams);
+        }
+        return variable;
+    }
     function findMixins(node, mixinName, params) {
         const mixinReg = new RegExp(`^${mixinName.replace(/\./g, '\\.')}\\s*(?:\\(.*\\))?$`);
         var find = false;
         var nodes = [];
-        function extractVar(variable, obj) {
-            const varReg = /(@{[a-zA-Z0-9-_."']+})|(@[a-zA-Z0-9-_."']+)/g;
-            const variables = variable && variable.match(varReg);
-
-            if (variables && variables.length) {
-                for (var i = 0, length = variables.length; i < length; i++) {
-                    let key = '';
-                    variables[i].replace(varReg, function(a, b) {
-                        key = b || '';
-                    });
-                    variable = variable.replace(variables[i], obj[key.replace(/{|}/g, '')]) || '';
-                }
-            }
-            if (variable && variable.match(varReg)) {
-                variable = extractVar(variable, obj);
-            }
-            return variable;
-        }
         node.walkRules((rule) => {
             if (rule.selector.match(mixinReg)) {
-                const mixinParams = getMixinParams(rule.selector);
+                // eslint-disable-next-line
+                const [p, state] = rule.selector.split('when');
+                const mixinParams = getMixinParams(p);
                 const match = matchMixinRule(mixinParams, params);
                 if (match) {
                     if (mixinParams) {
@@ -39,13 +82,13 @@ const postCssPluginLessMixins = postCss.plugin('postCssPluginLessMixins', () => 
                     find = true;
                     rule.walk(decl => {
                         if (decl.value) {
-                            decl.value = extractVar(decl.value, match);
+                            decl.value = parseVariable(decl.value, decl, false, match);
                         }
                         if (decl.selector) {
-                            decl.selector = extractVar(decl.selector, match);
+                            decl.selector = parseVariable(decl.selector, decl, false, match);
                         }
                         if (decl.params) {
-                            decl.params = extractVar(decl.params, match);
+                            decl.params = parseVariable(decl.params, decl, false, match);
                         }
                     });
                     nodes = nodes.concat(rule.nodes);
