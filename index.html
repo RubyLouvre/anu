@@ -44,6 +44,13 @@
 };
 var {useState,useCallback} = React;
 var last
+var LazyComponent = React.lazy(function(){
+ return new Promise(function(resolve){
+    setTimeout(function(){
+      resolve()
+    }, 1500)
+  })
+})
 function App (){
     const [count, dispatch] = useState(5);
     function increment(){
@@ -53,7 +60,7 @@ function App (){
       return <div> 
              <p>{count}</p>   <strong>{count}</strong>
              <React.Suspense fallback={<div>Loading...</div>}>
-        1111
+             222
       </React.Suspense>
               <button type='button' onClick={increment}><span>{ count }</span></button>
             </div>
