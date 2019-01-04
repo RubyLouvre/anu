@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width">
+     <script src="./react.development.js"></script>
+     <script src="./react-dom.development.js"></script>
+<!---
+ <script src="./dist/React.js"></script>
+-->
+	<script type='text/javascript' src="./lib/babel.js"></script>
+
+</head>
+
+<body>
+
+	<div id='root' class="root">
+
+	</div>
+	<script type='text/babel'>
+        
+var container = document.getElementById('root');
+  var div = container;
+  if (!window.ReactDOM) {
+      window.ReactDOM = React;
+  }
+  var expect = function(a) {
+      return {
+          toBe: function(b) {
+              console.log(a, 'vs', b, a === b);
+          },
+          toEqual(b) {
+              console.log(a, 'vs', b, a + '' === b + '');
+          },
+          toThrow(){
+              try{
+                  a()
+              }catch(e){
+                  console.log(e,"catch")
+              }
+          }
+      };
+};
+var {useState,useCallback} = React;
+var last
+function App (){
+    const [count, dispatch] = useState(5);
+    function increment(){
+      dispatch(p => p + 1 )
+    }
+     last = increment;
+      return <div> 
+             <p>{count}</p>   <strong>{count}</strong>
+             <React.Suspense fallback={<div>Loading...</div>}>
+        1111
+      </React.Suspense>
+              <button type='button' onClick={increment}><span>{ count }</span></button>
+            </div>
+}
+ReactDOM.render(<App />, container)
+	
+    </script>
+</html>
