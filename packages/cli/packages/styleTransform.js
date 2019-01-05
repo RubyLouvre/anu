@@ -1,94 +1,78 @@
+/* eslint no-console: 0 */
 const path = require('path');
-const cwd = process.cwd();
 const queue = require('./queue');
-const fs = require('fs-extra');
 const config = require('./config');
 const utils = require('./utils');
-
-const isLess = (filePath)=>{
-    return /\.less$/.test(filePath);
-};
-const isCss = (filePath)=>{
-    return /\.css$/.test(filePath);
-};
-const isSass = (filePath)=>{
-    return /\.(scss|sass)$/.test(filePath);
-};
-const getDist = (filePath) =>{
-    let { name, dir } = path.parse(filePath);
-    let relativePath = path.relative( path.join(cwd, 'src'), dir);
-    let distDir = path.join(cwd, 'dist', relativePath);
-    let styleExt = config[config['buildType']].styleExt; //获取构建的样式文件后缀名
-    let distFilePath = path.join(distDir, `${name}.${styleExt}` );
-    return distFilePath;
-};
-
-var less = require('less');
-const compileLess = (filePath)=>{
-    var content = fs.readFileSync(filePath, 'utf-8').toString();
-    less.render(
-        content,
-        {
-            filename: filePath,
-            compress: true
-        }
-    )
-        .then(res => {
-            let code = res.css;
-            queue.push({
-                code: code,
-                path: getDist(filePath),
-                type: 'css'
-            });
-            utils.emit('build');
-       
-
-        })
-        .catch(err => {
-            if (err){
-            // eslint-disable-next-line
-            console.log(err);
-            }
-        });
-    
-};
-
-const renderSass = (filePath)=>{
-    let sass = require(path.join(cwd, 'node_modules', 'node-sass'));
-    sass.render(
-        {
-            file: filePath
-        },
-        (err, res) => {
-            if (err) throw err;
-            let code = res.css.toString();
-            queue.push({
-                code: code,
-                path: getDist(filePath),
-                type: 'css'
-            });
-            utils.emit('build');
-        }
-    );
-};
-const compileSass = (filePath)=>{
-    try {
-        require( path.join(cwd, 'node_modules', 'node-sass', 'package.json') );
-        renderSass(filePath);
-    } catch (err){
-        utils.installer('node-sass')
-            .then(()=>{
-                renderSass(filePath);
-            });
+const exitName = config[config['buildType']].styleExt;
+const crypto = require('crypto');
+const compileSassByPostCss = require('./stylesTransformer/postcssTransformSass');
+// const compileLessByPostCss = require('./stylesTransformer/postcssTransformLess');
+const compileSass = require('./stylesTransformer/transformSass');
+const compileLess = require('./stylesTransformer/transformLess');
+let cache = {};
+//缓存层，避免重复编译
+let needUpdate = (id, originalCode, fn) => {
+    let sha1 = crypto
+        .createHash('sha1')
+        .update(originalCode)
+        .digest('hex');
+    if (!cache[id] || cache[id] != sha1) {
+        cache[id] = sha1;
+        fn();
     }
 };
 
+//获取dist路径
+let getDist = (filePath) =>{
+    filePath = utils.resolvePatchComponentPath(filePath);
+    let dist = utils.updatePath(filePath, config.sourceDir, 'dist');
+    let { name, dir, ext} =  path.parse(dist);
+    let distPath = '';
+    config.buildType === 'h5'
+        ? distPath = path.join(dir, `${name}${ext}`)
+        : distPath = path.join(dir, `${name}.${exitName}`);
+    return distPath;
+};
 
-module.exports = (filePath)=>{
-    if (isLess(filePath) || isCss(filePath)){
-        compileLess(filePath);
-    } else if (isSass(filePath)){
-        compileSass(filePath);
-    }
+//用户工程下是否有node-sass
+let hasNodeSass = utils.hasNpm('node-sass');
+const compilerMap = {
+    '.less': compileLess,
+    '.css':  compileLess,
+    '.sass': hasNodeSass ? compileSass : compileSassByPostCss,
+    '.scss': hasNodeSass ? compileSass : compileSassByPostCss
+};
 
+function runCompileStyle(filePath, originalCode){
+    needUpdate(filePath, originalCode,  ()=>{
+        let exitName = path.extname(filePath);
+
+        if (config.buildType === 'h5') {
+            queue.push({
+                code: originalCode,
+                path: getDist(filePath),
+                type: 'css'
+            });
+            return;
+        }
+
+        compilerMap[exitName](filePath, originalCode)
+            .then((result)=>{
+                let { code } = result;
+                queue.push({
+                    code: code,
+                    path: getDist(filePath),
+                    type: 'css'
+                });
+            })
+            .catch((err)=>{
+                // eslint-disable-next-line
+                console.log(filePath, '\n', err);
+            });
+    });
+}
+
+module.exports =  (data) => {
+    let {id, originalCode} = data;
+    runCompileStyle(id, originalCode);
 };

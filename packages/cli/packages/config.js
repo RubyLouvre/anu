@@ -1,34 +1,79 @@
-module.exports = Object.assign(module.exports, {
+const path = require('path');
+const getPatchComponentDir = (componentName)=>{
+    return path.join(__dirname, 'patchComponents', componentName);
+};
+
+let userConfig = {};
+try {
+    const pkg = require( path.join(process.cwd(), 'package.json') );
+    userConfig = pkg.nanachi || pkg.mpreact || userConfig;
+} catch (err) {
+    // eslint-disable-next-line
+}
+const buildDir = userConfig.buildDir || 'dist';
+const sourceDir = userConfig.sourceDir || 'source';
+module.exports = {
     wx: {
-        support: true,
         libName: 'ReactWX',
         styleExt: 'wxss',
-        jsExt: 'js',
         xmlExt: 'wxml',
-        notSopportResText: '',
         helpers: 'wxHelpers'
     },
     ali: {
-        support: true,
         libName: 'ReactAli',
         styleExt: 'acss',
-        jsExt: 'js',
         xmlExt: 'axml',
-        notSopportResText: '支付宝小程序正在努力支持中, 请静候佳音',
-        helpers: 'aliHelpers'
+        helpers: 'aliHelpers',
+        patchComponents: {
+            'rich-text': {
+                name: 'AliRichText',
+                href: getPatchComponentDir('AliRichText') //获得patchComponent路径
+            }
+        }
     },
     bu: {
-        support: true,
-        jsExt: 'js',
+        libName: 'ReactBu',
         styleExt: 'css',
-        notSopportResText: '百度小程序正在努力支持中, 请静候佳音',
-        helpers: 'buHelpers'
+        xmlExt: 'swan',
+        helpers: 'buHelpers',
+        patchComponents: {}
     },
     quick: {
-        support: false,
+        libName: 'ReactWX',
         jsExt: 'ux',
-        notSopportResText: '快应用正在努力支持中, 请静候佳音',
-        buHelpers: 'quickHelpers'
+        helpers: 'quickHelpers',
+        patchComponents: {
+            button: {
+                name: 'Button',
+                href: getPatchComponentDir('Button') //获得patchComponent路径
+            },
+            radio: {
+                name: 'Radio',
+                href: getPatchComponentDir('Radio')
+            },
+            checkbox: {
+                name: 'Checkbox',
+                href: getPatchComponentDir('Checkbox')
+            },
+            label: {
+                name: 'Label',
+                href: getPatchComponentDir('Label')
+            },
+            navigator: {
+                name: 'Navigator',
+                href: getPatchComponentDir('Navigator')
+            }
+        }
     },
-    buildType: 'wx'   //构建类型默认微信小程序
-});
+    tt: {
+        libName: 'ReactWX',
+        jsExt: 'js',
+        styleExt: 'ttss',
+        xmlExt: 'ttml',
+        helpers: 'ttHelpers',
+        patchComponents: {}
+    },
+    buildType: 'wx',      //构建类型默认微信小程序
+    buildDir: buildDir,   //非快应用项目默认构建目录为dist
+    sourceDir: sourceDir  //默认生成的源码目录
+};

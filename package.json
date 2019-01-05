@@ -1,29 +1,29 @@
 {
   "name": "anujs",
-  "version": "1.4.7",
+  "version": "1.4.9",
   "description": "a React16-compact mini framework",
   "main": "dist/React.js",
   "scripts": {
-    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js &&rollup -c ./scripts/build/rollup.ali.js  &&rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.wx.js && npm run syncReactMini",
+    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.ali.js  &&rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.wx.js && rollup -c ./scripts/build/rollup.quick.js",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
     "sync": "node ./scripts/build/syncAntd.js",
-    "syncReactMini": "node ./scripts/build/syncReactMini.js",
     "buildIE": "webpack --config ./scripts/build/buildIE.js",
-    "precommit": "lint-staged"
+    "precommit": "eslint packages/cli/"
   },
   "lint-staged": {
     "linters": {
-      "packages/cli/packages/**/*.js": [
+      "packages/cli/**/*.js": [
         "eslint --fix",
         "git add"
       ]
     },
     "ignore": [
-      "**/dist/*.js",
+      "__tests1__/**/*",
       "**/node_modules/**/*",
       "**/ReactWX.js",
-      "**/__tests__/**/*"
+      "**/__tests__/**/*",
+      "**/lib/**/*"
     ]
   },
   "repository": {
@@ -102,7 +102,9 @@
     "wt": "^1.2.0"
   },
   "dependencies": {
-    "@rematch/core": "^1.0.0-alpha.9"
+    "@rematch/core": "^1.0.0-alpha.9",
+    "css": "^2.2.4",
+    "semver": "^5.5.1"
   },
   "mpreact": {
     "alias": {

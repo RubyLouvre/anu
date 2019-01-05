@@ -1,13 +1,18 @@
-import { typeNumber, toWarnDev, hasSymbol, Fragment, REACT_ELEMENT_TYPE, hasOwnProperty } from "./util";
-import { Renderer } from "./createRenderer";
-import { Component } from "./Component";
-
+import {
+    typeNumber,
+    toWarnDev,
+    hasSymbol,
+    REACT_ELEMENT_TYPE,
+    hasOwnProperty
+} from './util';
+import { Renderer } from './createRenderer';
+import { Component } from './Component';
 
 const RESERVED_PROPS = {
     key: true,
     ref: true,
     __self: true,
-    __source: true,
+    __source: true
 };
 
 function makeProps(type, config, props, children, len) {
@@ -36,7 +41,6 @@ function makeProps(type, config, props, children, len) {
     }
 
     return props;
-
 }
 function hasValidRef(config) {
     return config.ref !== undefined;
@@ -62,22 +66,21 @@ export function createElement(type, config, ...children) {
         argsLen = children.length;
     if (type && type.call) {
         tag = type.prototype && type.prototype.render ? 2 : 1;
-    } else if (type + "" !== type) {
-        toWarnDev("React.createElement: type is invalid.");
+    } else if (type + '' !== type) {
+        toWarnDev('React.createElement: type is invalid.');
     }
     if (config != null) {
         if (hasValidRef(config)) {
             ref = config.ref;
         }
         if (hasValidKey(config)) {
-            key = "" + config.key;
+            key = '' + config.key;
         }
     }
     props = makeProps(type, config || {}, props, children, argsLen);
 
     return ReactElement(type, tag, props, key, ref, Renderer.currentOwner);
 }
-
 
 export function cloneElement(element, config, ...children) {
     // Original props are copied
@@ -98,7 +101,7 @@ export function cloneElement(element, config, ...children) {
             owner = Renderer.currentOwner;
         }
         if (hasValidKey(config)) {
-            key = "" + config.key;
+            key = '' + config.key;
         }
     }
 
@@ -106,7 +109,6 @@ export function cloneElement(element, config, ...children) {
 
     return ReactElement(type, tag, props, key, ref, owner);
 }
-
 
 export function createFactory(type) {
     //  console.warn('createFactory is deprecated');
@@ -125,10 +127,16 @@ function ReactElement(type, tag, props, key, ref, owner) {
         ret.$$typeof = REACT_ELEMENT_TYPE;
         ret.key = key || null;
         let refType = typeNumber(ref);
-        if (refType === 2 || refType === 3 || refType === 4 || refType === 5 || refType === 8) {
+        if (
+            refType === 2 ||
+            refType === 3 ||
+            refType === 4 ||
+            refType === 5 ||
+            refType === 8
+        ) {
             //boolean number, string, function,object
             if (refType < 4) {
-                ref += "";
+                ref += '';
             }
             ret.ref = ref;
         } else {
@@ -139,22 +147,21 @@ function ReactElement(type, tag, props, key, ref, owner) {
     return ret;
 }
 
-
 export function isValidElement(vnode) {
     return !!vnode && vnode.$$typeof === REACT_ELEMENT_TYPE;
 }
 
 export function createVText(text) {
-    return ReactElement("#text", 6,   text + "" );
+    return ReactElement('#text', 6, text + '');
 }
 
 function escape(key) {
     const escapeRegex = /[=:]/g;
     const escaperLookup = {
         '=': '=0',
-        ':': '=2',
+        ':': '=2'
     };
-    const escapedString = ('' + key).replace(escapeRegex, function (match) {
+    const escapedString = ('' + key).replace(escapeRegex, function(match) {
         return escaperLookup[match];
     });
 
@@ -165,7 +172,7 @@ let lastText, flattenIndex, flattenObject;
 function flattenCb(context, child, key, childType) {
     if (child === null) {
         lastText = null;
-        return
+        return;
     }
     if (childType === 3 || childType === 4) {
         if (lastText) {
@@ -179,7 +186,7 @@ function flattenCb(context, child, key, childType) {
     if (!flattenObject[key]) {
         flattenObject[key] = child;
     } else {
-        key = "." + flattenIndex;
+        key = '.' + flattenIndex;
         flattenObject[key] = child;
     }
     flattenIndex++;
@@ -189,8 +196,8 @@ export function fiberizeChildren(children, fiber) {
     flattenObject = {};
     flattenIndex = 0;
     if (children !== void 666) {
-        lastText = null;//c 为fiber.props.children
-        traverseAllChildren(children, "", flattenCb);
+        lastText = null; //c 为fiber.props.children
+        traverseAllChildren(children, '', flattenCb);
     }
     flattenIndex = 0;
     return (fiber.children = flattenObject);
@@ -211,36 +218,41 @@ function getComponentKey(component, index) {
     return index.toString(36);
 }
 
-const SEPARATOR = "."
+const SEPARATOR = '.';
 const SUBSEPARATOR = ':';
 
 //operateChildren有着复杂的逻辑，如果第一层是可遍历对象，那么
-export function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
-    let childType = typeNumber(children)
+export function traverseAllChildren(
+    children,
+    nameSoFar,
+    callback,
+    bookKeeping
+) {
+    let childType = typeNumber(children);
     let invokeCallback = false;
     switch (childType) {
-        case 0://undefined
-        case 1://null
-        case 2://boolean
-        case 5://function
-        case 6://symbol
-            children = null
-            invokeCallback = true
-            break
-        case 3://string 
-        case 4://number
-            invokeCallback = true
-            break
+        case 0: //undefined
+        case 1: //null
+        case 2: //boolean
+        case 5: //function
+        case 6: //symbol
+            children = null;
+            invokeCallback = true;
+            break;
+        case 3: //string
+        case 4: //number
+            invokeCallback = true;
+            break;
         // 7 array
-        case 8://object
+        case 8: //object
             if (children.$$typeof || children instanceof Component) {
-                invokeCallback = true
-            } else if (children.hasOwnProperty("toString")) {
-                children = children + ""
-                invokeCallback = true
+                invokeCallback = true;
+            } else if (children.hasOwnProperty('toString')) {
+                children = children + '';
+                invokeCallback = true;
                 childType = 3;
             }
-            break
+            break;
     }
 
     if (invokeCallback) {
@@ -249,7 +261,9 @@ export function traverseAllChildren(children, nameSoFar, callback, bookKeeping) 
             children,
             // If it's the only child, treat the name as if it was wrapped in an array
             // so that it's consistent if the number of children grows.
-            nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar,
+            nameSoFar === ''
+                ? SEPARATOR + getComponentKey(children, 0)
+                : nameSoFar,
             childType
         );
         return 1;
@@ -260,7 +274,7 @@ export function traverseAllChildren(children, nameSoFar, callback, bookKeeping) 
         nameSoFar === '' ? SEPARATOR : nameSoFar + SUBSEPARATOR;
     if (children.forEach) {
         //数组，Map, Set
-        children.forEach(function (child, i) {
+        children.forEach(function(child, i) {
             let nextName = nextNamePrefix + getComponentKey(child, i);
             subtreeCount += traverseAllChildren(
                 child,
@@ -269,24 +283,32 @@ export function traverseAllChildren(children, nameSoFar, callback, bookKeeping) 
                 bookKeeping
             );
         });
-        return subtreeCount
+        return subtreeCount;
     }
-    const iteratorFn = getIteractor(children)
+    const iteratorFn = getIteractor(children);
     if (iteratorFn) {
-        iterator = iteratorFn.call(children);
-        var ii = 0,
-            step;
+        let iterator = iteratorFn.call(children),
+            child,
+            ii = 0,
+            step,
+            nextName;
+
         while (!(step = iterator.next()).done) {
             child = step.value;
             nextName = nextNamePrefix + getComponentKey(child, ii++);
-            subtreeCount += traverseAllChildren(child, nextName, callback, bookKeeping);
+            subtreeCount += traverseAllChildren(
+                child,
+                nextName,
+                callback,
+                bookKeeping
+            );
         }
-        return subtreeCount
+        return subtreeCount;
     }
-    throw "children: type is invalid.";
+    throw 'children: type is invalid.';
 }
 let REAL_SYMBOL = hasSymbol && Symbol.iterator;
-let FAKE_SYMBOL = "@@iterator";
+let FAKE_SYMBOL = '@@iterator';
 function getIteractor(a) {
     let iteratorFn = (REAL_SYMBOL && a[REAL_SYMBOL]) || a[FAKE_SYMBOL];
     if (iteratorFn && iteratorFn.call) {

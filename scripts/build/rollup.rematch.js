@@ -27,7 +27,7 @@ export default {
         babel(),
 
         license({
-            banner: "Rematch的anujs适配版 文档见这里 https://reach.tech/router"
+            banner: "Rematch的anujs适配版 文档见这里 https://rematch.gitbooks.io/rematch"
         }),
         cleanup(),
         replace({

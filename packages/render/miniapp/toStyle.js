@@ -9,8 +9,8 @@ function hyphen(target) {
 function transform(obj) {
     return Object.keys(obj)
         .map(item => {
-            let value = obj[item].toString();
-            value = value.replace(/(\d+)px/gi, (str, match) => {
+            let value = obj[item]+'';
+            value = value.replace(/(\d+)px/g, (str, match) => {
                 return this.pxTransform(match);
             });
             return hyphen(item) + ': ' + value;
@@ -20,11 +20,17 @@ function transform(obj) {
 
 export function toStyle(obj, props, key) {
     if (props) {
-        var str = transform.call(this, obj);
+        if (Object( obj ) == obj ){//clor: red;
+            var str = transform.call(this, obj);
+        } else {
+            str = obj;
+        }
         props[key] = str;
     } else {
-        console.warn('props 为空');
+        console.warn('toStyle生成样式失败，key为',key);//eslint-disable-line
     }
 
     return obj;
 }
+
+

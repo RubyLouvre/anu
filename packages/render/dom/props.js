@@ -270,7 +270,7 @@ export let actionStrategy = {
             // 将xlinkHref 转换为 xlink:href
             dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
         } else {
-            dom[method](nameRes, val || "");
+            dom[method](nameRes, typeNumber(val) !== 3 && !val ? "" : val);
         }
     },
     booleanAttr: function(dom, name, val) {

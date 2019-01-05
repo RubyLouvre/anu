@@ -50,11 +50,13 @@ export function getWindow() {
         if (window){
             return window;
         }
+    /* istanbul ignore next  */
     } catch (e) {/*kill*/}
     try {
         if (global){
             return global;
         }
+    /* istanbul ignore next  */
     } catch (e) {/*kill*/}
     return fakeWindow;
 }
@@ -93,26 +95,21 @@ export function inherit(SubClass, SupClass) {
 try {
     //微信小程序不支持Function
     var supportEval = Function('a', 'return a + 1')(2) == 3;
+    /* istanbul ignore next  */
 } catch (e) {}
+let rname = /function\s+(\w+)/;
 export function miniCreateClass(ctor, superClass, methods, statics) {
-    let className = ctor.name || 'IEComponent';
-    let Ctor = supportEval
-        ? Function(
-            'superClass',
-            'ctor',
-            `return function ${className} (props, context) {
-            superClass.apply(this, arguments); 
-            ctor.apply(this, arguments);
-      }`
-        )(superClass, ctor)
-        : function ReactInstance() {
+    let className = ctor.name || (ctor.toString().match(rname) ||['','Anonymous'])[1];
+    let Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : 
+        function ReactInstance() {
             superClass.apply(this, arguments);
             ctor.apply(this, arguments);
         };
     Ctor.displayName = className;
-    var fn = inherit(Ctor, superClass);
-    extend(fn, methods);
-    if (statics) {
+    let proto = inherit(Ctor, superClass);
+    extend(proto, methods);
+    extend(Ctor, superClass);//继承父类的静态成员
+    if (statics) {//添加自己的静态成员
         extend(Ctor, statics);
     }
     return Ctor;

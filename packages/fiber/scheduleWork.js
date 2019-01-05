@@ -1,6 +1,6 @@
-import { reconcileDFS } from "./beginWork";
-import { commitDFS } from "./commitWork";
-import { Renderer } from "react-core/createRenderer";
+import { reconcileDFS } from './beginWork';
+import { commitDFS } from './commitWork';
+import { Renderer } from 'react-core/createRenderer';
 import {
     effects,
     isMounted,
@@ -11,11 +11,11 @@ import {
     topNodes,
     typeNumber,
     topFibers
-} from "react-core/util";
-import { Unbatch } from "./unbatch";
-import { Fiber } from "./Fiber";
+} from 'react-core/util';
+import { Unbatch } from './unbatch';
+import { Fiber } from './Fiber';
 
-import { createInstance } from "./createInstance";
+import { createInstance } from './createInstance';
 const macrotasks = Renderer.macrotasks;
 let boundaries = Renderer.boundaries;
 const batchedtasks = [];
@@ -42,7 +42,7 @@ export function render(vnode, root, callback) {
     }
     let carrier = {};
     updateComponent(
-        container.hostRoot,
+        container.child,
         {
             child: vnode
         },
@@ -244,8 +244,7 @@ function pushChildQueue(fiber, queue) {
     }
 }
 //setState的实现
-function updateComponent(instance, state, callback, immediateUpdate) {
-    let fiber = get(instance);
+function updateComponent(fiber, state, callback, immediateUpdate) {
     fiber.dirty = true;
 
     let sn = typeNumber(state);
@@ -301,7 +300,7 @@ export function createContainer(root, onlyGet, validate) {
     let container = new Fiber({
         stateNode: root,
         tag: 5,
-        name: "hostRoot",
+        name: 'hostRoot',
         //contextStack的对象 总是它的后面的元素的并集 ［dUcUbUa, cUbUa, bUa, a, {}］
         contextStack: [{}],
         containerStack: [root],

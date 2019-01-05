@@ -1,0 +1,5 @@
+div pre,
+pre:hover,
+.some-class {
+  color: yellow;
+}

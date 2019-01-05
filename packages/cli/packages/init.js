@@ -1,55 +1,43 @@
+/*!
+输出命令行提示与选择模板
+*/
+
+/* eslint no-console: 0 */
+
 const validateProjectName = require('validate-npm-package-name');
 const chalk = require('chalk');
 const fs = require('fs-extra');
 const path = require('path');
-const Handlebars = require('handlebars');
 const inquirer = require('inquirer');
 const ownRoot = path.join(__dirname, '..');
+const config = require('./config');
 const exists = fs.existsSync;
 
 const ignore = new Set(['.DS_Store', '.git', '.gitignore']);
-
-
-const pkgJsonTemplate = {
-    license: 'MIT',
-    version: '1.0.0',
-    name: '{{appName}}',
-    mpreact: {
-        alias: {
-            '@react': 'src/ReactWX.js',
-            '@components': 'src/components'
-        }
-    },
-    devDependencies : {
-        'babel-plugin-transform-async-to-generator': '^6.24.1',
-        'babel-plugin-transform-class-properties': '^6.24.1',
-        'babel-plugin-transform-decorators-legacy': '^1.3.5',
-        'babel-plugin-transform-es2015-classes': '^6.24.1',
-        'babel-plugin-transform-es2015-modules-commonjs': '^6.26.2',
-        'babel-plugin-transform-object-rest-spread': '^6.26.0',
-        'babel-plugin-transform-es2015-template-literals': '^6.22.0',
-        'babel-plugin-transform-node-env-inline': '^0.4.3',
-        'babel-plugin-module-resolver': '^3.1.1',
-        'babel-plugin-transform-react-jsx': '^6.24.1',
-        'babel-preset-react': '^6.24.1'
-    },
-    dependencies: {}
-};
 let TEMPLATE = '';
 const init = appName => {
     checkNameIsOk(appName)
-        .then(()=>{
+        .then(() => {
             return askTemplate();
         })
-        .then((res) => {
+        .then(res => {
             TEMPLATE = res.template;
             writeDir(appName);
-            
         })
         .catch(err => {
-            // eslint-disable-next-line
             console.log(err);
         });
+};
+
+const projectConfigJson = {
+    'appid': 'touristappid',
+    'setting': {
+        'urlCheck': true,
+        'es6': true,
+        'postcss': true,
+        'minified': true,
+        'newFeature': true
+    }
 };
 
 const checkNameIsOk = appName => {
@@ -58,9 +46,7 @@ const checkNameIsOk = appName => {
         let baseName = path.basename(absoluteAppNamePath);
         const checkNameResult = validateProjectName(baseName);
         if (!checkNameResult.validForNewPackages) {
-            // eslint-disable-next-line
             console.log();
-            // eslint-disable-next-line
             console.log(
                 chalk.bold.red(
                     `命名规范遵循npm package命名规范\nERR_MSG : ${
@@ -68,7 +54,6 @@ const checkNameIsOk = appName => {
                     }`
                 )
             );
-            // eslint-disable-next-line
             console.log();
             process.exit(1);
         } else {
@@ -80,8 +65,7 @@ const checkNameIsOk = appName => {
     });
 };
 
-
-const askTemplate = ()=>{
+const askTemplate = () => {
     const q = [];
     const list = [
         {
@@ -92,12 +76,14 @@ const askTemplate = ()=>{
             name: '网易云音乐',
             value: 'music'
         },
-       
         {
             name: '拼多多',
             value: 'pdd'
+        },
+        {
+            name: '默认模板',
+            value: 'helloNanachi'
         }
-        
     ];
     q.push({
         type: 'list',
@@ -108,75 +94,69 @@ const askTemplate = ()=>{
     return inquirer.prompt(q);
 };
 
-// eslint-disable-next-line
-const writePkgJson = appName => {
-    let template = Handlebars.compile(JSON.stringify(pkgJsonTemplate));
-    let data = {
-        appName: path.basename(appName)
-    };
-    let result = JSON.parse(template(data));
-    // if (useYarn){
-    //     //yarn add pkg@version --dev
-    //     delete result.devDependencies;
-    // }
-    
-    fs.writeFileSync(
-        path.join(appName, 'package.json'),
-        JSON.stringify(result, null, 4)
-    );
-};
-
 const writeDir = appName => {
     if (exists(appName)) {
-        // eslint-disable-next-line
         console.log();
-        // eslint-disable-next-line
         console.log(chalk.bold.red(`目录 ${appName} 已存在,请检查!`));
-        // eslint-disable-next-line
         console.log();
         process.exit(1);
     }
 
-    //复制模板
+    // 复制模板
     fs.ensureDirSync(appName);
-    const templates = fs.readdirSync(
-        path.join(__dirname, '..', 'templates')
-    );
+    const templates = fs.readdirSync(path.join(__dirname, '..', 'templates'));
     templates.forEach(item => {
-        if (ignore.has(item) || item !=  TEMPLATE) return;
-        let src = path.join(ownRoot, 'templates', item, 'src');
+        if (ignore.has(item) || item != TEMPLATE) return;
+        let src = path.join(ownRoot, 'templates', item, 'source');
         let pkg = path.join(ownRoot, 'templates', item, 'package.json');
-        let dist = path.join(appName, 'src');
+        let dist = path.join(appName,  config.sourceDir );
         let distPkg = path.join(appName, 'package.json');
         fs.copySync(src, dist);
         fs.copySync(pkg, distPkg);
     });
 
-    // eslint-disable-next-line
+    //写入project.config.json
+    let pathLevel = appName.split(path.sep);
+    let projectname = pathLevel[pathLevel.length-1];
+    projectConfigJson['projectname'] = projectname;
+    let projectConfigJsonDist = path.join( appName, config.sourceDir , 'project.config.json');
+    fs.ensureFileSync( projectConfigJsonDist );
+    fs.writeFile(projectConfigJsonDist, JSON.stringify(projectConfigJson, null, 4), (err)=>{
+        if (err) {
+            console.log(err);
+        }
+    });
+
     console.log(
         `\n项目 ${chalk.green(appName)} 创建成功, 路径: ${chalk.green(
             appName
         )}\n`
     );
 
-    /* eslint-disable */
-    console.log(chalk.green('mpreact watch'));
-    console.log(`  实时构建项目, \n
-                   \t或使用mpreact watch:ali 构建支付宝小程序\n
-                   \t或使用mpreact watch:bu 构建百度智能小程序`)
+    console.log(chalk.green('nanachi watch'));
+    console.log(`  实时构建项目, 
+                   \t或使用nanachi watch:ali 构建支付宝小程序
+                   \t或使用nanachi watch:tt 构建头条小程序
+                   \t或使用nanachi watch:quick 构建快应用
+                   \t或使用nanachi watch:bu 构建百度智能小程序`);
     console.log();
-    console.log(chalk.green('mpreact build'));
-    console.log(`  构建项目(构建出错的情况下，修复后需要强制全量构建), \n
-                   \t或使用mpreact build:ali 构建支付宝小程序\n
-                   \t或使用mpreact build:bu 构建百度智能小程序`)
+    console.log(chalk.green('nanachi build'));
+    console.log(`  构建项目(构建出错的情况下，修复后需要强制全量构建), 
+                   \t或使用nanachi build:ali 构建支付宝小程序
+                   \t或使用nanachi build:tt 构建头条小程序
+                   \t或使用nanachi build:quick 构建快应用
+                   \t或使用nanachi build:bu 构建百度智能小程序`);
     console.log();
-    console.log(chalk.magenta('请敲入下面两行命令，享受您的开发之旅'+ chalk.magenta.bold('(npm i可改成yarn)')));
+    console.log(
+        chalk.magenta(
+            '请敲入下面两行命令，享受您的开发之旅' +
+                chalk.magenta.bold('(npm i可改成yarn)')
+        )
+    );
     console.log();
     console.log(`  cd ${appName} && npm i `);
-    console.log('  mpreact watch');
+    console.log('  nanachi watch');
     console.log();
-   
 };
-
 
 module.exports = init;

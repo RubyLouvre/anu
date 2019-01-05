@@ -1,10 +1,10 @@
-import { extend, typeNumber, isFn, gDSFP, gSBU } from "react-core/util";
-import { fiberizeChildren } from "react-core/createElement";
-import { AnuPortal } from "react-core/createPortal";
+import { extend, typeNumber, isFn, gDSFP, gSBU } from 'react-core/util';
+import { fiberizeChildren } from 'react-core/createElement';
+import { AnuPortal } from 'react-core/createPortal';
 
-import { Renderer } from "react-core/createRenderer";
-import { createInstance, UpdateQueue } from "./createInstance";
-import { Fiber } from "./Fiber";
+import { Renderer } from 'react-core/createRenderer';
+import { createInstance, UpdateQueue } from './createInstance';
+import { Fiber } from './Fiber';
 import {
     PLACE,
     ATTR,
@@ -13,15 +13,15 @@ import {
     REF,
     CALLBACK,
     WORKING
-} from "./effectTag";
+} from './effectTag';
 import {
     guardCallback,
     detachFiber,
     pushError,
     applyCallback
-} from "./ErrorBoundary";
-
-import { getInsertPoint, setInsertPoints } from "./insertPoint";
+} from './ErrorBoundary';
+import { resetCursor } from './dispatcher';
+import { getInsertPoint, setInsertPoints } from './insertPoint';
 
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
@@ -71,7 +71,6 @@ export function reconcileDFS(fiber, info, deadline, ENOUGH_TIME) {
                     delete f.shiftContainer;
                     info.containerStack.shift(); // shift parent
                 }
-    
             } else {
                 let updater = instance && instance.updater;
                 if (f.shiftContext) {
@@ -165,19 +164,27 @@ function mergeStates(fiber, nextProps) {
 export function updateClassComponent(fiber, info) {
     let { type, stateNode: instance, props } = fiber;
     let { contextStack, containerStack } = info;
-    let newContext = getMaskedContext(
+    let getContext = type.contextType;
+    let unmaskedContext = contextStack[0];
+    //如果这是React16.7的static ContextType
+    let isStaticContextType = isFn(type.contextType);
+    let newContext = isStaticContextType ? getContext(fiber): getMaskedContext(
         instance,
         type.contextTypes,
-        contextStack
+        unmaskedContext
     );
     if (instance == null) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
-        cacheContext(instance, contextStack[0], newContext);
+        if (isStaticContextType){
+            getContext.subscribers.push(instance);
+        }
     }
-
+    if (!isStaticContextType){
+        cacheContext(instance, unmaskedContext, newContext);
+    }
+    let isStateful = !instance.__isStateless;
     instance._reactInternalFiber = fiber; //更新rIF
-    const isStateful = !instance.__isStateless;
     if (isStateful) {
         //有狀态组件
         let updateQueue = fiber.updateQueue;
@@ -195,9 +202,7 @@ export function updateClassComponent(fiber, info) {
             applybeforeMountHooks(
                 fiber,
                 instance,
-                props,
-                newContext,
-                contextStack
+                props
             );
         }
 
@@ -224,18 +229,18 @@ export function updateClassComponent(fiber, info) {
     instance.context = newContext;
     fiber.memoizedProps = instance.props = props;
     fiber.memoizedState = instance.state;
-   
+
     if (instance.getChildContext) {
         let context = instance.getChildContext();
-        context = Object.assign({}, contextStack[0], context);
+        context = Object.assign({}, unmaskedContext, context);
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
-
+    if (fiber.parent && fiber.hasMounted && fiber.dirty) {
+        fiber.parent.insertPoint = getInsertPoint(fiber);
+    }
     if (isStateful) {
-        if (fiber.parent && fiber.hasMounted && fiber.dirty) {
-            fiber.parent.insertPoint = getInsertPoint(fiber);
-        }
+        //上面设置fiber.parent.insertPoint的if分支原来是放这里
         if (fiber.updateFail) {
             cloneChildren(fiber);
             fiber._hydrating = false;
@@ -244,26 +249,28 @@ export function updateClassComponent(fiber, info) {
 
         delete fiber.dirty;
         fiber.effectTag *= HOOK;
-    } else {
+    } else if (fiber.effectTag == 1){
         fiber.effectTag = WORKING;
     }
 
     if (fiber.catchError) {
         return;
     }
-    Renderer.onUpdate(fiber)
+    Renderer.onBeforeRender(fiber);
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
-    let rendered = applyCallback(instance, "render", []);
+    let rendered = applyCallback(instance, 'render', []);
+    resetCursor();
     diffChildren(fiber, rendered);
+    Renderer.onAfterRender(fiber);
 }
 
 function applybeforeMountHooks(fiber, instance, newProps) {
     fiber.setout = true;
     if (instance.__useNewHooks) {
-        setStateByProps(instance, fiber, newProps, instance.state);
+        setStateByProps(fiber, newProps, instance.state);
     } else {
-        callUnsafeHook(instance, "componentWillMount", []);
+        callUnsafeHook(instance, 'componentWillMount', []);
     }
     delete fiber.setout;
     mergeStates(fiber, newProps);
@@ -283,13 +290,13 @@ function applybeforeUpdateHooks(
     updater.prevProps = oldProps;
     updater.prevState = oldState;
     let propsChanged = oldProps !== newProps;
-    let contextChanged = instance.context !== newContext;
     fiber.setout = true;
 
     if (!instance.__useNewHooks) {
+        let contextChanged = instance.context !== newContext;
         if (propsChanged || contextChanged) {
             let prevState = instance.state;
-            callUnsafeHook(instance, "componentWillReceiveProps", [
+            callUnsafeHook(instance, 'componentWillReceiveProps', [
                 newProps,
                 newContext
             ]);
@@ -304,7 +311,7 @@ function applybeforeUpdateHooks(
     mergeStates(fiber, newProps);
     newState = fiber.memoizedState;
 
-    setStateByProps(instance, fiber, newProps, newState);
+    setStateByProps(fiber, newProps, newState);
     newState = fiber.memoizedState;
 
     delete fiber.setout;
@@ -322,18 +329,18 @@ function applybeforeUpdateHooks(
 
         if (
             !updateQueue.isForced &&
-            !applyCallback(instance, "shouldComponentUpdate", args)
+            !applyCallback(instance, 'shouldComponentUpdate', args)
         ) {
             fiber.updateFail = true;
         } else if (!instance.__useNewHooks) {
-            callUnsafeHook(instance, "componentWillUpdate", args);
+            callUnsafeHook(instance, 'componentWillUpdate', args);
         }
     }
 }
 
 function callUnsafeHook(a, b, c) {
     applyCallback(a, b, c);
-    applyCallback(a, "UNSAFE_" + b, c);
+    applyCallback(a, 'UNSAFE_' + b, c);
 }
 
 function isSameNode(a, b) {
@@ -342,7 +349,7 @@ function isSameNode(a, b) {
     }
 }
 
-function setStateByProps(instance, fiber, nextProps, prevState) {
+function setStateByProps(fiber, nextProps, prevState) {
     fiber.errorHook = gDSFP;
     let fn = fiber.type[gDSFP];
     if (fn) {
@@ -373,33 +380,29 @@ function cacheContext(instance, unmaskedContext, context) {
     instance.__unmaskedContext = unmaskedContext;
     instance.__maskedContext = context;
 }
-function getMaskedContext(instance, contextTypes, contextStack) {
-    if (instance && !contextTypes) {
-        return instance.context;
-    }
-    let context = {};
-    if (!contextTypes) {
-        return context;
-    }
-
-    let unmaskedContext = contextStack[0];
-    if (instance) {
+function getMaskedContext(instance, contextTypes, unmaskedContext) {
+    var noContext = !contextTypes;
+    if (instance){
+        if (noContext){
+            return instance.context;
+        }
         var cachedUnmasked = instance.__unmaskedContext;
         if (cachedUnmasked === unmaskedContext) {
             return instance.__maskedContext;
         }
+    } 
+    let context = {};
+    if (noContext) {
+        return context;
     }
-
     for (let key in contextTypes) {
         if (contextTypes.hasOwnProperty(key)) {
             context[key] = unmaskedContext[key];
         }
     }
-    if (instance) {
-        cacheContext(instance, unmaskedContext, context);
-    }
     return context;
 }
+
 
 /**
  * 转换vnode为fiber

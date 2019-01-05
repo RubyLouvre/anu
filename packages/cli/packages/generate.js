@@ -1,28 +1,46 @@
 const queue = require('./queue');
 const fs = require('fs-extra');
 const utils = require('./utils');
+const config = require('./config');
 const nPath = require('path');
 const chalk = require('chalk');
 const cwd = process.cwd();
-
-const print = (prefix, msg) => {
-    // eslint-disable-next-line
-    console.log(chalk.green(`${prefix} ${msg}`));
+const compress = utils.compress();
+const getSize = (code)=>{
+    let Bytes = Buffer.byteLength(code, 'utf8');
+    return Bytes < 1000 ? `${Bytes} Bytes` : `${(Bytes/1000).toFixed(1)} Kb`;
 };
-
+let sucSize = 0;
 module.exports = ()=>{
-    utils.on('build', ()=>{
-        while (queue.length){
-            let {code, path } = queue.shift();
-            fs.ensureFileSync(path);
-            fs.writeFile(path, code, err => {
-                if (err){
-                    print('build fail:', nPath.relative(cwd, path));
-                } else {
-                    print('build success:', nPath.relative(cwd, path));
-                }
-            });
-        }
-    });
    
+    while (queue.length){
+        let {code, path, type } = queue.shift();
+        if (config.compress && compress[type]) {
+            code = compress[type](code);
+        }
+        config['buildType'] === 'quick'
+            ?  path = utils.updatePath( path, 'dist' , 'src') //快应用打包到src下
+            :  path = utils.updatePath( path, 'dist', config.buildDir);
+        
+        fs.ensureFileSync(path);
+        fs.writeFile(path, code)
+            .then(()=>{
+                sucSize++;
+                // eslint-disable-next-line
+                console.log(
+                    chalk.gray(`[${sucSize}] `) + 
+                    chalk.green(`build success: ${nPath.relative(cwd, path)} `) +
+                    chalk.gray(`[${getSize(code)}]`)
+                );
+                if (queue.size !== sucSize) return;
+                queue.size = 0;
+                sucSize = 0;
+                utils.spinner('').succeed('构建结束\n');
+            })
+            .catch((err)=>{
+                // eslint-disable-next-line
+                console.log(err, '\n', chalk.red(`build fail: ${nPath.relative(cwd, path)} `));
+            });
+        
+    }
 };

@@ -1,4 +1,5 @@
 import { onAndSyncApis, noPromiseApis, otherApis } from './apiList';
+import { isFn } from 'react-core/util';
 
 function initPxTransform() {
     var wxConfig = this.api;
@@ -50,11 +51,12 @@ const RequestQueue = {
 
 function request(options) {
     options = options || {};
-    if (typeof options === 'string') {
+    if ( options +'' === options) {
         options = {
             url: options
         };
     }
+    options.headers = options.headers || options.header;
     const originSuccess = options['success'];
     const originFail = options['fail'];
     const originComplete = options['complete'];
@@ -88,7 +90,7 @@ function processApis(ReactWX, facade) {
                 options = options || {};
                 let task = null;
                 let obj = Object.assign({}, options);
-                if (typeof options === 'string') {
+                if ( options +'' === options ) {
                     return facade[key](options);
                 }
                 const p = new Promise((resolve, reject) => {
@@ -106,7 +108,12 @@ function processApis(ReactWX, facade) {
                             }
                         };
                     });
-                    task = facade[key](obj);
+                    if (!isFn(facade[key])){
+                        console.warn('平台未不支持',key, '方法');
+                    } else {
+                        task = facade[key](obj);
+                    }
+                   
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
                     p.progress = cb => {
@@ -140,16 +147,9 @@ export function injectAPIs(ReactWX, facade, override) {
     ReactWX.api = {};
     processApis(ReactWX, facade);
     ReactWX.api.request = request;
-    if (typeof getCurrentPages == 'function') {
-        ReactWX.getCurrentPages = getCurrentPages;
-    }
-    if (typeof getApp == 'function') {
-        ReactWX.getApp = getApp;
-    }
-
     if (override){
-       var obj = override(facade)
-       Object.assign(ReactWX.api, obj);
+        var obj = override(facade);
+        Object.assign(ReactWX.api, obj);
     }
     RequestQueue.facade = facade;
     ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();

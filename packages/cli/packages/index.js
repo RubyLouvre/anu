@@ -1,319 +1,343 @@
+/* eslint no-console: 0 */
+
 const chalk = require('chalk');
 const path = require('path');
 const rollup = require('rollup');
 const rbabel = require('rollup-plugin-babel');
 const resolve = require('rollup-plugin-node-resolve');
-const commonjs = require('rollup-plugin-commonjs');
-const rollupLess = require('rollup-plugin-less');
-const rollupSass = require('rollup-plugin-sass');
+const commonjs = require('rollup-plugin-commonjs'); 
 const alias = require('rollup-plugin-alias');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
+const glob = require('glob');
 const utils = require('./utils');
-// eslint-disable-next-line
-const isComponentOrAppOrPage = new RegExp( utils.sepForRegex  + '(?:pages|app|components)'  );
 const crypto = require('crypto');
-const miniTransform = require('./miniTransform');
+const config = require('./config');
+const quickFiles = require('./quickFiles');
+const miniTransform = require('./miniappTransform');
 const styleTransform = require('./styleTransform');
 const resolveNpm = require('./resolveNpm');
 const generate = require('./generate');
-const config = require('./config');
+let pageRegExp = utils.getComponentOrAppOrPageReg();
 let cwd = process.cwd();
-let inputPath = path.join(cwd, 'src');
+let inputPath = path.join(cwd,  config.sourceDir);
 let entry = path.join(inputPath, 'app.js');
 let cache = {};
-
-// eslint-disable-next-line
-let libNames = (()=>{
-    var list = [];
-    Object.keys(config).forEach((key)=>{
-        let libName = config[key]['libName'];
-        if (libName){
-            list.push(libName);
-        }
-    });
-    return list;
-})();
-
-
-let needUpdate = (id, code)=>{
-    let sha1 = crypto.createHash('sha1').update(code).digest('hex');
-    return new Promise((resolve, reject)=>{
-        if (!cache[id] || cache[id] != sha1){
-            cache[id] = sha1;
-            resolve(1);
-        } else {
-            reject(0);
-        }
-        
-    });
-    
+let needUpdate = (id, code, fn) => {
+    let sha1 = crypto
+        .createHash('sha1')
+        .update(code)
+        .digest('hex');
+    if (!cache[id] || cache[id] != sha1) {
+        cache[id] = sha1;
+        fn();
+    }
 };
 
-
-
-const isNpm = (path)=>{
+const isNpm = path => {
     return /\/node_modules\//.test(path);
 };
-const isStyle = (path)=>{
+const isStyle = path => {
     return /\.(?:less|scss|sass)$/.test(path);
 };
-
-const isJs = (path)=>{
+const isJs = path => {
     return /\.js$/.test(path);
 };
+const isJson = path => {
+    return /\.json$/.test(path);
+};
+const getFileType = (id)=>{
+    if ( isNpm(id) ) {
+        return 'npm';
+    } else if (isStyle(id)){
+        return 'css';
+    } else if (isJs(id)) {
+        return 'js';
+    } else if (isJson(id)){
+        return 'json';
+    }
 
-//const missNpmModule = [];
+};
 
-// function getExecutedOrder(list) {
-//     let ret = [];
-//     let loaded = {};
-//     let fakeUrl = Math.random() + '.js';
-//     let allDeps = {};
+//跳过rollup对样式内容解析
+let ignoreStyleParsePlugin = ()=>{
+    return {
+        transform: function(code, id){
+            let styleExtList = ['.css', '.less', '.scss', '.sass'];
+            let ext = path.extname(id);
+            if (styleExtList.includes(ext)) return false;
+        }
+    };
+};
 
-//     function sortOrder(list, parent) {
-//         let needCheck = 0, delayFiles = [], again = false;
-//         let n = list.length;
-//         for (let i = 0; i < n; i++) {
-//             let el = list[i];
-//             if (!el) {//i--变成undefined
-//                 continue;
-//             }
-//             if (typeof el != 'object') {
-//                 if (allDeps[el]) { //如果它是字符串，变成｛id, deps｝
-//                     el = allDeps[el]; //转换成对象
-//                 } else {
-//                     if (el.slice(-3) !== '.js') {//如果是.less, .scss
-//                         needCheck++;
-//                         ret.push(el);
-//                         loaded[el] = true;
-//                         list.splice(i, 1);
-//                         i--;
-//                         continue;
-//                     } else {
-//                         again = true;
-//                         continue;
-//                     }
-//                 }
-//             } else {
-//                 allDeps[el.id] = el;
-//             }
-//             if (loaded[el.id]) {
-//                 needCheck++;
-//                 loaded[el.id] = true;
-//                 list.splice(i, 1);
-//                 i--;
-//             } else {
-//                 if (el.deps.length) {
-//                     delayFiles.push(el);
-//                 } else {
-//                     //如果没有依赖
-//                     if (el.id !== fakeUrl && !loaded[el.id]) {
-//                         loaded[el.id] = true;
-//                         ret.push(el.id);
-//                     }
-//                     list.splice(i, 1);
-//                     i--;
-//                     needCheck++;
-//                 }
-//             }
-//         }
-//         if (again) { //保存所有数字都能从allDeps拿到数据
-//             sortOrder(list, parent);
-//         }
-//         if (needCheck === n) {
-//             if (parent.id !== fakeUrl && !loaded[parent.id]) {
-//                 loaded[parent.id] = true;
-//                 ret.push(parent.id);
-//             }
-//         }
-//         if (needCheck && delayFiles.length) {
-//             delayFiles.forEach(function (el) {
-//                 sortOrder(el.deps, el);
-//             });
-//         }
-//         if (needCheck && list.length) {
-//             sortOrder(list, parent);
-//         }
-//     }
-//     sortOrder(list, { id: fakeUrl });
-//     if (list.length){
-//         // eslint-disable-next-line
-//         console.warn('发生循环依赖，导致无法解析，请查看以下文件', list);
-//     }
-//     return ret;
-// }
-utils.asyncReact();
+
+
+//监听打包资源
+utils.on('build', ()=>{
+    generate();
+});
+
 class Parser {
     constructor(entry) {
         this.entry = entry;
-        this.isWatching = false;
         this.jsFiles = [];
         this.styleFiles = [];
         this.npmFiles = [];
-        this.customAliasConfig = utils.getCustomAliasConfig();
+        this.depTree = {};
+        this.customAliasConfig = Object.assign(
+            { resolve: ['.js','.css', '.scss', '.sass', '.less'] },
+            utils.getCustomAliasConfig()
+        );
         this.inputConfig = {
             input: this.entry,
+            treeshake: false,
             plugins: [
-                alias( this.customAliasConfig ),  //搜集依赖时候，能找到对应的alias配置路径
+                alias(this.customAliasConfig), //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
                     jail: path.join(cwd), //从项目根目录中搜索npm模块, 防止向父级查找
+                    preferBuiltins: false,
                     customResolveOptions: {
-                        moduleDirectory: path.join(cwd, 'node_modules')
+                        moduleDirectory: [
+                            path.join(cwd, 'node_modules'),
+                        ]
                     }
                 }),
+                ignoreStyleParsePlugin(),
                 commonjs({
-                    include: 'node_modules/**'
-                }),
-                rollupLess({
-                    output: function(code) {
-                        return code;
-                    }
-                }),
-                rollupSass({
-                    output: function(code) {
-                        return code;
-                    }
+                    include: [
+                        path.join(cwd, 'node_modules/**')
+                    ]
                 }),
                 rbabel({
                     babelrc: false,
-                    runtimeHelpers: true,
-                    presets: ['react'],
-                    externalHelpers: false,
+                    only: ['**/*.js'],
+                    presets: [require('babel-preset-react')],
                     plugins: [
-                        'transform-class-properties',
-                        'transform-object-rest-spread',
-                        'transform-es2015-template-literals',
+                        require('babel-plugin-transform-class-properties'),
+                        require('babel-plugin-transform-object-rest-spread')
                     ]
                 })
             ],
-            onwarn: (warning)=>{
-                
+            onwarn: warning => {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
-                if (warning.code === 'UNRESOLVED_IMPORT'){
-                    if (this.customAliasConfig[warning.source.split('/')[0]]) return;
-                    // eslint-disable-next-line
-                    console.log(chalk.red(`缺少${warning.source}, 请检查`));
+                if (warning.code === 'UNRESOLVED_IMPORT') {
+                    if (this.customAliasConfig[warning.source.split(path.sep)[0]]) return;
+                    console.log(chalk.red(`缺少模块: ${warning.source}, 请检查`));
                 }
+            }
+            
+        };
+
+        //监听是否有patchComponent解析
+        utils.on('compliePatch', (data)=>{
+            let id =  path.join(data.href, 'index.js');
+            this.inputConfig.input = id;
+            this.parse();
+        });
+        
+    }
+    async parse() {
+        let bundle = await rollup.rollup(this.inputConfig);
+        bundle.modules.forEach(item => {
+            const id = item.id;
+            if (/commonjsHelpers/.test(id)) return;
+            this.moduleMap()[getFileType(id)](item);
+            this.collectDeps(item);
+        });
+
+        this.transform();
+        this.copyAssets();
+        this.copyProjectConfig();
+    }
+    checkCodeLine(filePath, code, number){
+        if (code.match(/\n/g).length >= number) {
+            let id = path.relative( cwd,  filePath);
+            console.warn(
+                chalk.yellow(
+                    `\nWaning: ${id} 文件代码不能超过${number}行, 请优化.`
+                )
+            );
+        }
+    }
+    collectDeps(item) {
+        //搜集js的样式依赖，快应用下如果更新样式，需触发js构建ux.
+        if ( !/\.js$/.test(item.id) ) return;
+        let depsStyle = item.dependencies.filter((id)=>{
+            return isStyle(id);
+        });
+        if (depsStyle.length) {
+            this.depTree[item.id] = depsStyle;
+        }
+    }
+    moduleMap() {
+        return {
+            npm: (data)=>{
+                this.npmFiles.push({
+                    id: data.id,
+                    originalCode: data.originalCode
+                });
+            },
+            css: (data)=>{
+                let importComponentStyleInPage =  this.checkStyleImport(data);
+                if (importComponentStyleInPage.length) {
+                    console.log(
+                        chalk.red(
+                            `\nError: ${data.id} 文件中不能@import 组件(components)样式, 该文件忽略编译. 组件样式请在组件中引用.`
+                        )
+                    );
+                    return;
+                }
+
+                if (config.buildType == 'quick'){
+                    //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
+                    var jsName = data.id.replace(/\.\w+$/, '.js');
+                    if (fs.pathExistsSync(jsName)) {
+                        var cssExt = path.extname(data.id).slice(1);
+                        quickFiles[ utils.resolvePatchComponentPath(jsName) ] = {
+                            cssPath: data.id,
+                            cssType: cssExt === 'scss' ?  'sass' : cssExt
+                        };
+                    }
+                    return;
+                }
+
+                this.styleFiles.push({
+                    id: data.id,
+                    originalCode: data.originalCode
+                });
+            },
+            js: (data)=>{
+                if (pageRegExp.test(data.id)) {
+                    //校验文件代码行数是否超过500, 抛出警告。
+                    this.checkCodeLine(data.id, data.originalCode, 500);
+                }
+                this.jsFiles.push({
+                    id: data.id,
+                    originalCode: data.originalCode,
+                    resolvedIds: this.filterNpmModule(data.resolvedIds) //处理路径alias配置
+                });
             }
         };
     }
-    async parse() {
-        const bundle = await rollup.rollup(this.inputConfig);
-        bundle.modules.forEach((item)=> {
-            const id = item.id;
-            if (/commonjsHelpers/.test(id)){
-                return;
-            } 
-            if (isNpm(id)){
-                this.npmFiles.push({
-                    id: id,
-                    originalCode: item.originalCode
-                });
-                return;
-            }
-            if (isStyle(id)){
-                this.styleFiles.push({
-                    id: id,
-                    originalCode: item.originalCode
-                });
-                return;
-            }
-
-            if (isJs(id)){
-                this.jsFiles.push({
-                    id: id,
-                    originalCode: item.originalCode,
-                    resolvedIds: this.filterNpmModule(item.resolvedIds) //处理路径alias配置
-                });
-            }
-
-           
-        });
-      
-        this.transform();
-        this.copyAssets();
-        generate();
-    }
-    filterNpmModule(resolvedIds){
+    filterNpmModule(resolvedIds) {
+        //判定路径是否以字母开头
         let result = {};
-        Object.keys(resolvedIds).forEach((key)=>{
-            if (utils.isNpm(key)){
+        Object.keys(resolvedIds).forEach(key => {
+            if (utils.isNpm(key)) {
                 result[key] = resolvedIds[key];
             }
         });
         return result;
     }
-    transform(){
+    transform() {
         this.updateJsQueue(this.jsFiles);
         this.updateStyleQueue(this.styleFiles);
         this.updateNpmQueue(this.npmFiles);
     }
-    updateJsQueue(jsFiles){
-        while (jsFiles.length){
-            let {id, originalCode, resolvedIds} = jsFiles.shift();
-            needUpdate(id, originalCode)
-                .then(()=>{
-                    miniTransform.transform(id, resolvedIds);
-                })
-                .catch(()=>{
-                
-                });
+    checkComponentsInPages(id) {
+        let flag = false;
+        let pathAray = utils.isWin() ? id.split('\\') :  id.split('/'); //分割目录
+        let componentsPos = pathAray.indexOf('components');
+        let pagesPos = pathAray.indexOf('pages');
+        if (componentsPos != -1 && pagesPos!=-1 && componentsPos > pagesPos ) {
+            flag = true;
         }
+        return flag;
     }
-    updateStyleQueue(styleFiles){
-        while (styleFiles.length){
-            let {id, originalCode} = styleFiles.shift();
-            needUpdate(id, originalCode)
-                .then(()=>{
-                    styleTransform(id);
-                })
-                .catch(()=>{
-
-                });
-        }
-      
+    checkStyleImport (data){
+        let importList = data.originalCode.match(/^(?:@import)\s+([^;]+)/igm) || [];
+        importList = importList.filter((importer)=>{
+            return /[/|@]components\//.test(importer);
+        });
+        return importList;
     }
-    updateNpmQueue(npmFiles){
-        while (npmFiles.length){
-            let item = npmFiles.shift();
-            //rollup处理commonjs模块时候，会在id加上commonjs-proxy:前缀
-            if (/commonjs-proxy:/.test(item.id)){
-                item.id = item.id.split(':')[1];
-                item.moduleType = 'cjs';
-            } else {
-                item.moduleType = 'es';
+    updateJsQueue(jsFiles) {
+        
+        while (jsFiles.length) {
+            let { id, originalCode, resolvedIds } = jsFiles.shift();
+            if (this.checkComponentsInPages(id)) {
+                // eslint-disable-next-line
+                console.log(
+                    chalk.red(
+                        JSON.stringify(
+                            {
+                                path: id,
+                                msg: 'components目录不能存在于pages目录下, 请检查'
+                            },
+                            null,
+                            4
+                        )
+                    )
+                );
             }
-            //处理所有npm模块中其他依赖
-            needUpdate(item.id, item.originalCode)
-                .then(()=>{
-                    resolveNpm(item);
-                })
-                .catch(()=>{
-                
-                });
-            
+            needUpdate(id, originalCode, function(){
+                miniTransform(id, resolvedIds, originalCode);
+            });
         }
-       
     }
-    copyAssets(){
-        //to do 差异化copy
+    updateStyleQueue(styleFiles) {
+        while (styleFiles.length) {
+            let data = styleFiles.shift();
+            let { id, originalCode } = data; 
+            needUpdate(id, originalCode, function(){
+                styleTransform({
+                    id: id,
+                    originalCode: originalCode
+                });   
+            });
+        }
+    }
+    updateNpmQueue(npmFiles) {
+        while (npmFiles.length) {
+            let item = npmFiles.shift();
+            // rollup 处理 commonjs 模块时候，会在 id 加上 commonjs-proxy: 前缀
+            if (/commonjs-proxy:/.test(item.id)) item.id = item.id.split(':')[1];
+            needUpdate(item.id, item.originalCode, function(){
+                resolveNpm(item);
+            });
+        }
+    }
+    copyAssets() {
         const dir = 'assets';
         const inputDir = path.join(inputPath, dir);
-        const distDir = path.join(path.join(cwd, 'dist'), dir);
-        if (!fs.pathExistsSync(inputDir)) return;
-        fs.ensureDirSync(distDir);
-        fs.copy(
-            inputDir,
-            distDir,
-            (err)=>{
-                if (err){
-                    // eslint-disable-next-line
-                    console.error(err);
-                } 
+        //拷贝assets下非js, css, sass, scss, less文件
+        glob(inputDir + '/**', {nodir: true}, (err, files)=>{
+            if (err) {
+                console.log(err);
+                return;
             }
-        );
+            files.forEach((filePath)=>{
+                if ( /\.(js|scss|sass|less|css)$/.test(filePath) ) return;
+                filePath = path.resolve(filePath);
+                let dist  = utils.updatePath(
+                    filePath, 
+                    config.sourceDir, 
+                    config.buildType === 'quick' ? 'src' : config.buildDir
+                );
+                
+                fs.ensureFileSync(dist);
+                fs.copyFile(filePath, dist, (err)=>{
+                    if (err ) {
+                        console.log(err);
+                    }
+                });
+            });
+        });
+
+    }
+    copyProjectConfig() {
+        //copy project.config.json
+        if ( ['ali', 'bu', 'quick'].includes( config.buildType) ) return;
+        let fileName = 'project.config.json';
+        let dist = path.join(cwd, config.buildDir, fileName);
+        let src = path.join(cwd, config.sourceDir, fileName);
+        fs.ensureFileSync(dist);
+        fs.copyFile( src, dist, (err)=>{
+            if (err) {
+                console.log(err);
+            }
+        });
     }
     watching() {
         let watchDir = path.dirname(this.entry);
@@ -324,46 +348,47 @@ class Parser {
                 pollInterval: 100
             }
         };
-        this.isWatching = true;
         const watcher = chokidar
             .watch(watchDir, watchConfig)
-            .on('all', (event, file) => {
-                if (event === 'change') {
-                    // eslint-disable-next-line
-                    console.log(
-                        `\nupdated: ${chalk.yellow(path.relative(cwd, file))}\n`
-                    );
-                    this.inputConfig.input = file;
-                    this.parse();
-
-                }
+            .on('change', (file)=>{
+                console.log(
+                    `\n更新: ${chalk.yellow(path.relative(cwd, file))}`
+                );
+                this.inputConfig.input = this.resolveWatchFile(file);
+                this.parse();
+                
             });
-
         watcher.on('error', error => {
-            // eslint-disable-next-line
             console.error('Watcher failure', error);
             process.exit(1);
         });
     }
+    resolveWatchFile(file) {
+        if (config.buildType !== 'quick') return file;
+        let dep = file;
+        for ( let i in this.depTree) {
+            if (this.depTree[i].includes(file)) {
+                dep = i;
+                break;
+            }
+        }
+        delete cache[dep];
+        return dep;
+    }
 }
 
-// eslint-disable-next-line
-async function build(arg, buildType) {
-    if (arg === 'watch'){
-        // eslint-disable-next-line
-        console.log(chalk.green('watching files...'));
-    } else if (arg === 'build'){
-        // eslint-disable-next-line
-        console.log(chalk.green('compile files...'));
-    } else {
-        // eslint-disable-next-line
+async function build(arg, opts) {
+    let { option } = opts;
+    await utils.asyncReact(option);  //同步react
+    if (config['buildType'] === 'quick') {
+        //快应用mege package.json 以及 生成秘钥
+        utils.initQuickAppConfig();
     }
-    
-    const parser = new Parser(entry);
+    let spinner = utils.spinner(chalk.green('正在分析依赖...')).start();
+    let parser = new Parser(entry);
     await parser.parse();
-    if (arg === 'watch') {
-        parser.watching();
-    }
+    spinner.succeed(chalk.green('依赖分析成功'));
+    if (arg === 'watch') parser.watching();
 }
 
 module.exports = build;

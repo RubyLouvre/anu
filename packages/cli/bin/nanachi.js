@@ -1,80 +1,106 @@
 #!/usr/bin/env node
 'use strict';
-if ( Number(process.version.match(/v(\d+)/)[1]) < 8) {
+const chalk = require('chalk');
+const semver = require('semver');
+const program = require('commander');
+
+if (semver.lt(process.version, '8.6.0')) {
     // eslint-disable-next-line
-    console.log( `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold(7)}`);
+    console.log(
+        chalk`nanachi only support {green.bold v8.6.0} or later (current {green.bold ${
+            process.version
+        }}) of Node.js`
+    );
     process.exit(1);
 }
-const chalk = require('chalk');
-const config = require('../packages/config');
 
-const program = require('commander');
-function getBuildType(args){
-    let argList = args[0].split(':');
-    let type = argList[1];
+program
+    .name('nanachi')
+    .usage('<command>')
+    .version(require('../package.json').version, '-v, --version')
+    .option('-b, --beta', 'sync React lib');
+    
+
+program.command('init <project-name>').description('初始化项目');
+
+program
+    .command('watch:[wx|ali|bu|quick|tt]')
+    .description('监听[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]')
+    .option('--beta', '同步React');
+
+program
+    .command('build:[wx|ali|bu|quick|tt]')
+    .description('构建[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]')
+    .option('--beta', '同步React');
+    
+
+program.parse(process.argv);
+if (program.args.length === 0) program.help();
+
+const config = require('../packages/config');
+const args = program.args;
+const option = program.rawArgs[program.rawArgs.length-1];
+
+
+
+function getBuildType(args) {
+    let type = args[0].split(':')[1];
     type = !type ? 'wx' : type.toLowerCase();
     return type;
 }
-program
-    .name('nanachi')
-    .version(require('../package.json').version, '-v, --version')
-    .parse(process.argv);
-let args = program.args;
-
 
 /* eslint-disable */
 if (args[0] === 'init' && typeof args[1] === 'undefined') {
     console.error('请指定项目名称');
     console.log(
-        `  ${chalk.cyan(program.name())} ${chalk.green('<project-name>')}\n`
+        `  ${chalk.cyan(program.name())} init ${chalk.green(
+            '<project-name>'
+        )}\n`
     );
     console.log('例如:\n');
     console.log(
-        `  ${chalk.cyan(program.name())} ${chalk.green('nanachi-app')}`
+        `  ${chalk.cyan(program.name())} init ${chalk.green('nanachi-app')}`
     );
     process.exit(1);
 }
 
-
 let buildType = getBuildType(args);
-
-if(!config[buildType]){
+/* eslint-disable */
+if (!config[buildType]) {
     let type = args[0].split(':');
-    console.log(
-        chalk.red('请检查命令是否正确')
-    )
-    console.log(chalk.green(`1.微信小程序:        nanachi ${type[0]}`))
-    console.log(chalk.green(`2.百度智能小程序:    nanachi ${type[0]}:bu`));
-    console.log(chalk.green(`3.支付宝小程序:      nanachi ${type[0]}:ali`));
-    console.log(chalk.green(`4.快应用:            nanachi ${type[0]}:quick`));
+    console.log(chalk.red('请检查命令是否正确'));
+    console.log(chalk.green(`nanachi ${type[0]}:[wx|bu|ali|quick|tt]`));
     process.exit(1);
 }
-if(!config[buildType].support ){
-    console.log(
-        chalk.red(config[buildType].notSopportResText)
-    )
-    process.exit(1);
-}
+
+process.env.ANU_ENV = buildType;
+
+
 config['buildType'] = buildType;
 
-
-
-let commond = args[0];
-if(/\:/.test(commond)){
+let command = args[0];
+if (/\:/.test(command)) {
     //<watch|build>:
-    commond = commond.split(':')[0];
+    command = command.split(':')[0];
 }
-    
-switch(commond){
+
+if(
+    program.rawArgs[program.rawArgs.length-1] == '-c' ||
+    program.rawArgs[program.rawArgs.length-1] == '--compress'
+){
+    config['compress'] = true;
+}
+
+switch (command) {
     case 'watch':
-        require('../packages/index')('watch', buildType);
+        require('../packages/index')('watch', { buildType, option });
         break;
     case 'build':
-        require('../packages/index')('build', buildType);
+        require('../packages/index')('build', { buildType, option });
         break;
     case 'init':
         require('../packages/init')(args[1]);
-        break;  
+        break;
     default:
-        console.log(chalk.green('初始化项目: nanachi init <project-name>'));      
+        console.log(chalk.green('初始化项目: nanachi init <project-name>'));
 }

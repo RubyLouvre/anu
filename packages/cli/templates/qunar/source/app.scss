@@ -1,0 +1,30 @@
+
+
+.c-flex {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.c-flex__item {
+  flex: 1;
+}
+
+.page-guide-text {
+  color: #333;
+  text-align: center;
+  padding: 10px;
+}
+
+
+.page_hd {
+  text-align: center;
+  padding: 10px;
+  font-weight: bold;
+}
+
+.btn {
+  background-color: #0088a4;
+  color: #fff;
+  margin-bottom: 10px;
+}

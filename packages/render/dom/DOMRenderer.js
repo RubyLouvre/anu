@@ -1,23 +1,22 @@
-import { diffProps } from "./props";
-import { document, NAMESPACE } from "./browser";
+import { diffProps } from './props';
+import { document, NAMESPACE } from './browser';
 import {
     get,
     noop,
-    extend,
     emptyObject,
     topNodes,
     topFibers
-} from "react-core/util";
-import { Renderer, createRenderer } from "react-core/createRenderer";
-import { render, createContainer } from "react-fiber/scheduleWork";
-import { duplexAction, fireDuplex } from "./duplex";
+} from 'react-core/util';
+import { Renderer, createRenderer } from 'react-core/createRenderer';
+import { render, createContainer } from 'react-fiber/scheduleWork';
+import { duplexAction, fireDuplex } from './duplex';
 
 const reuseTextNodes = []; //文本节点不能加属性，样式与事件，重用没有副作用
 export function createElement(vnode) {
     let p = vnode.return;
     let { type, props, ns } = vnode;
     switch (type) {
-        case "#text":
+        case '#text':
             //只重复利用文本节点
             var node = reuseTextNodes.pop();
             if (node) {
@@ -25,28 +24,28 @@ export function createElement(vnode) {
                 return node;
             }
             return document.createTextNode(props);
-        case "#comment":
+        case '#comment':
             return document.createComment(props);
 
-        case "svg":
+        case 'svg':
             ns = NAMESPACE.svg;
             break;
-        case "math":
+        case 'math':
             ns = NAMESPACE.math;
             break;
 
         default:
             do {
                 var s =
-                    p.name == "AnuPortal"
+                    p.name == 'AnuPortal'
                         ? p.props.parent
                         : p.tag === 5
                             ? p.stateNode
                             : null;
                 if (s) {
                     ns = s.namespaceURI;
-                    if (p.type === "foreignObject" || ns === NAMESPACE.xhtml) {
-                        ns = "";
+                    if (p.type === 'foreignObject' || ns === NAMESPACE.xhtml) {
+                        ns = '';
                     }
                     break;
                 }
@@ -68,7 +67,7 @@ export function createElement(vnode) {
     if (inputType && elem.uniqueID) {
         try {
             elem = document.createElement(
-                "<" + type + " type='" + inputType + "'/>"
+                '<' + type + ' type=\'' + inputType + '\'/>'
             );
         } catch (e2) {
             /*skip*/
@@ -77,7 +76,7 @@ export function createElement(vnode) {
     return elem;
 }
 
-let hyperspace = document.createElement("div");
+let hyperspace = document.createElement('div');
 
 function emptyElement(node) {
     while (node.firstChild) {
@@ -103,7 +102,11 @@ export function removeElement(node) {
     hyperspace.appendChild(node);
     hyperspace.removeChild(node);
 }
-
+function safeActiveElement(){
+    try{  //在IE9中获取iframe中的activeElemet时会抛出异常
+        return document.activeElement;
+    }catch(e){}
+}
 function insertElement(fiber) {
     let { stateNode: dom, parent } = fiber;
 
@@ -119,7 +122,7 @@ function insertElement(fiber) {
             return;
         }
         //插入**元素节点**会引发焦点丢失，触发body focus事件
-        Renderer.inserting = fiber.tag === 5 && document.activeElement;
+        Renderer.inserting = fiber.tag === 5 && safeActiveElement();
         parent.insertBefore(dom, after);
         Renderer.inserting = null;
     } catch (e) {
@@ -150,12 +153,11 @@ export let DOMRenderer = createRenderer({
     unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
         //看root上面有没有根虚拟DOM，没有就创建
         let container = createContainer(root),
-            context = container.contextStack[0],
             fiber = get(instance),
             backup;
         do {
             var inst = fiber.stateNode;
-            if (inst.getChildContext) {
+            if (inst && inst.getChildContext) {
                 backup = mergeContext(container, inst.getChildContext());
                 break;
             } else {
@@ -173,10 +175,10 @@ export let DOMRenderer = createRenderer({
     // [Top API] ReactDOM.unmountComponentAtNode
     unmountComponentAtNode(root) {
         let container = createContainer(root, true);
-        let instance = container && container.hostRoot;
-        if (instance) {
+        let fiber = Object(container).child;
+        if (fiber) {
             Renderer.updateComponent(
-                instance,
+                fiber,
                 {
                     child: null
                 },

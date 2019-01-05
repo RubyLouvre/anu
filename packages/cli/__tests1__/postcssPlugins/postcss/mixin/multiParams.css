@@ -1,0 +1,17 @@
+.border-radius(: 5px) {
+  -webkit-border-radius: ;
+  -moz-border-radius: ;
+  border-radius: ;
+}
+.mixin(; : 2) {
+  color-2: ;
+  padding-2: ;
+}
+.mixin(; ; : 2) {
+  color-3: ;
+  padding-3: ;
+  margin:    ;
+}
+.some .selector div {
+  color-1: ;
+}

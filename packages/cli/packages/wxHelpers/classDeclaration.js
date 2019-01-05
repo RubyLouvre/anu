@@ -6,21 +6,21 @@ const utils = require('../utils');
 module.exports = {
     enter(astPath, state) {
         //重置数据
-        var modules = utils.getAnu(state);
+        let modules = utils.getAnu(state);
         modules.className = astPath.node.id.name;
         modules.parentName = generate(astPath.node.superClass).code || 'Object';
         modules.classUid = 'c' + utils.createUUID(astPath);
     },
     exit(astPath, state) {
         // 将类表式变成函数调用
-        var modules = utils.getAnu(state);
+        let modules = utils.getAnu(state);
         if (!modules.ctorFn) {
             modules.ctorFn = template('function x(){b}')({
                 x: t.identifier(modules.className),
                 b: modules.thisProperties
             });
         }
-        var parent = astPath.parentPath.parentPath;
+        let parent = astPath.parentPath.parentPath;
         parent.insertBefore(modules.ctorFn);
         //用于绑定事件
         modules.thisMethods.push(
@@ -49,26 +49,18 @@ module.exports = {
             }
         }
         if (modules.componentType === 'Page') {
-            // 动态生成Page组件的Page(React.toPage(className,astPath))调用
-            // Page(React.toPage(PPP, "pages/demo/stateless/aaa"));
-            var createPage = template('Page(React.toPage(className,astPath))')(
-                {
-                    className: t.identifier(modules.className),
-                    astPath: t.stringLiteral(
-                        modules.current
-                            .replace(/.+pages/, 'pages')
-                            .replace(/\.js$/, '')
-                    )
-                }
+            modules.registerStatement = utils.createRegisterStatement(
+                modules.className,
+                modules.current
+                    .replace(/.+pages/, 'pages')
+                    .replace(/\.js$/, ''),
+                true
             );
-            modules.createPage = createPage;
-            /*  var p = astPath;
-            //好像不能上升到根节点Program，只能上升到VariableDeclaration
-            while (p.type != 'VariableDeclaration') {
-                p = p.parentPath;
-            }
-            p.insertAfter(createPage);
-            */
+        } else if (modules.componentType === 'Component') {
+            modules.registerStatement = utils.createRegisterStatement(
+                modules.className,
+                modules.className
+            );
         }
     }
 };

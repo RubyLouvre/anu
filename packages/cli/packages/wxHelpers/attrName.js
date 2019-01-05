@@ -1,13 +1,23 @@
-module.exports = function mapPropName(astPath) {
-    var nameNode = astPath.node.name;
-    var orig = nameNode.name;
-    if (/^catch[A-Z]/.test(orig)) {
-        nameNode.name = 'catch' + orig.slice(5).toLowerCase();
-    } else if (/^on[A-Z]/.test(orig)) {
-        nameNode.name = 'bind' + orig.slice(2).toLowerCase();
+const utils = require('../utils');
+
+module.exports = function mapPropName(astPath, attrName, parentName) {
+    let attrNameNode = astPath.node.name;
+    if (parentName === 'canvas' && attrName === 'id'){
+        if (!astPath.addCanvas){//这里执行了两次，需要排查
+            astPath.addCanvas = true;
+            astPath.container.push(
+                utils.createAttribute('canvas-id',astPath.node.value )
+            );
+        }
+        return;
+    }
+    if (/^catch[A-Z]/.test(attrName)) {
+        attrNameNode.name = 'catch' + attrName.slice(5).toLowerCase();
+    } else if (/^on[A-Z]/.test(attrName)) {
+        attrNameNode.name = 'bind' + attrName.slice(2).toLowerCase();
     } else {
-        if (orig === 'className') {
-            nameNode.name = 'class';
+        if (attrName === 'className') {
+            attrNameNode.name = 'class';
         }
     }
 };
