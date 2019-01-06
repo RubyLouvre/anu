@@ -37,6 +37,7 @@ source： https://bundlephobia.com/
 * https://github.com/magicapple/anujs-webpack4-ie7-8
 * https://gitee.com/menhal/React_IE8_boilerplate
 * https://github.com/meeteason/react-webpack-ie6-boilerplate
+* https://github.com/ambit-tsai/reactie (React Stack in IE8)
 
 ### License
 
