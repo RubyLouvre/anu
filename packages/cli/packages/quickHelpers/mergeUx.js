@@ -26,6 +26,24 @@ function beautifyUx(code){
     });
 }
 
+
+function isNodeModulePath(fileId){
+    let isWin = utils.isWin();
+    let reg = isWin ? /\\node_modules\\/ : /\/node_modules\//;
+    return reg.test(fileId);
+}
+
+function fixPath(fileId, dep){
+    if (!isNodeModulePath(fileId)) {
+        return path.join(cwd, config.sourceDir, dep);
+    }
+    // /Users/qitmac000524/work/schnee-ui/node_modules/schnee-ui/components/XPicker/index.js ==> schnee-ui
+    let libName =  path.relative( path.join(cwd, 'node_modules') , fileId).split(path.sep)[0];
+    return path.join(cwd, 'node_modules', libName, dep); 
+}
+
+
+
 let map = {
     getImportTag: function(uxFile, sourcePath){
         //假设存在<import>
@@ -34,7 +52,7 @@ let map = {
         Object.keys(using).forEach((i)=>{
             let importSrc = path.relative(
                 path.dirname(sourcePath),
-                path.join(cwd, config.sourceDir, using[i])
+                fixPath(sourcePath, using[i])
             );
             importSrc = utils.isWin() ? importSrc.replace(/\\/g, '/'): importSrc;
             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
