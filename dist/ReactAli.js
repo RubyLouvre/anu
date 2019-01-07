@@ -2427,11 +2427,7 @@ var Renderer$1 = createRenderer({
             var wxInstances = type.wxInstances;
             if (wxInstances) {
                 if (!instance.wx) {
-                    if (typeof getCurrentPages == 'function') {
-                        var v = getCurrentPages();
-                        var v1 = v[v.length - 1];
-                        instance.$$page = v1.route;
-                    }
+                    instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
                 }
             }
@@ -2585,6 +2581,7 @@ function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
     app.$$page = this;
+    app.$$pagePath = path;
     var container = {
         type: 'page',
         props: {},
@@ -2666,7 +2663,10 @@ function registerPage(PageClass, path, testObject) {
             var instance = this.reactInstance;
             var fn = instance[hook],
                 fired = false;
-            _getApp().$$page = this;
+            if (hook === 'onShow') {
+                _getApp().$$page = this;
+                _getApp().$$pagePath = instance.props.path;
+            }
             if (isFn(fn)) {
                 fired = true;
                 var ret = fn.call(instance, e);

@@ -9,6 +9,7 @@ export function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
     app.$$page = this;
+    app.$$pagePath = path;
     let container = {
         type: 'page',
         props: {},

@@ -33,7 +33,10 @@ export function registerPage(PageClass, path, testObject) {
         config[hook] = function(e) {
             let instance = this.reactInstance;
             let fn = instance[hook], fired = false;
-            _getApp().$$page = this;
+            if (hook === 'onShow'){
+                _getApp().$$page = this;
+                _getApp().$$pagePath = instance.props.path;
+            }
             if (isFn(fn)) {
                 fired = true;
                 var ret =  fn.call(instance, e);

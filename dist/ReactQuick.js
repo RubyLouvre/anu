@@ -2657,11 +2657,7 @@ var Renderer$1 = createRenderer({
             var wxInstances = type.wxInstances;
             if (wxInstances) {
                 if (!instance.wx) {
-                    if (typeof getCurrentPages == 'function') {
-                        var v = getCurrentPages();
-                        var v1 = v[v.length - 1];
-                        instance.$$page = v1.route;
-                    }
+                    instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
                 }
             }
@@ -2818,6 +2814,7 @@ function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
     app.$$page = this;
+    app.$$pagePath = path;
     var container = {
         type: 'page',
         props: {},
@@ -2942,7 +2939,6 @@ function registerPage(PageClass) {
             var instance = onLoad.call(this, PageClass, array[0], array[1]);
             var pageConfig = instance.config || PageClass.config;
             $app.$$pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
-            $app.$$pagePath = array[0];
         },
         onReady: onReady,
         onDestroy: onUnload
@@ -2951,7 +2947,10 @@ function registerPage(PageClass) {
         config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook];
-            _getApp().$$page = this;
+            if (hook === 'onShow') {
+                _getApp().$$page = instance.wx;
+                _getApp().$$pagePath = instance.props.path;
+            }
             if (hook === 'onMenuPress') {
                 showMenu(instance, this.$app);
             } else if (isFn(fn)) {
