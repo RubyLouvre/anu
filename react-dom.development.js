@@ -16688,7 +16688,7 @@
         // We only have the top Fiber that was inserted but we need recurse down its
         // children to find all the terminal nodes.
         var node = finishedWork;
-        console.log("before",before, parent)
+        console.log("before",before, parent,finishedWork)
         while (true) {
             if (node.tag === HostComponent || node.tag === HostText) {
                 console.log(getFiberName(node), '!!!!');
