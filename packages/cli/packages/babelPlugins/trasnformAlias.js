@@ -12,16 +12,12 @@ let compatiblePath = (value)=>{
 };
 module.exports = (metaData)=>{
     let {sourcePath, resolvedIds} = metaData;
-    let aliasMap = Object.assign(
-        utils.updateCustomAlias(sourcePath, resolvedIds),
-        utils.updateNpmAlias(sourcePath, resolvedIds)
-    );
-   
+    let aliasMap = utils.resolveAliasPath(sourcePath, resolvedIds);
     return [
         require('babel-plugin-module-resolver'),        //计算别名配置以及处理npm路径计算
         {
             resolvePath(moduleName) {
-                if (!utils.isNpm(moduleName)) return;
+                if ( /^\/|\./.test(moduleName) ) return;
                 //针对async/await语法依赖的npm路径做处理
                 if (/regenerator-runtime\/runtime/.test(moduleName)) {
                     let regeneratorRuntimePath = utils.getRegeneratorRuntimePath(sourcePath);
@@ -33,10 +29,9 @@ module.exports = (metaData)=>{
                     );
                     Object.assign(
                         aliasMap,
-                        utils.updateNpmAlias(sourcePath, { 'regenerator-runtime/runtime': regeneratorRuntimePath } )
+                        utils.resolveAliasPath(sourcePath, { 'regenerator-runtime/runtime': regeneratorRuntimePath } )
                     );
                     
-
                     if (!cache[dist]) {
                         queue.push({
                             code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
@@ -45,7 +40,6 @@ module.exports = (metaData)=>{
                         });
                         cache[dist] = true;
                     }
-                    
                 }
                 let value = compatiblePath(aliasMap[moduleName]);
                 return value;

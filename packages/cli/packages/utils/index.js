@@ -102,34 +102,48 @@ let utils = {
     );
   },
   createNodeName(map, backup) {
-    const buildType = config.buildType;
-    const patchComponents = config[buildType].patchComponents;
+    const patchNode = config[config.buildType].jsxPatchNode || {};
+    const UIName = 'schnee-ui';
     const cache = {};
-    const self = this;
-
     //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
-    return function(astPath, modules) {
+    return (astPath, modules)=>{
       var orig = astPath.node.name.name;
-      var hasPatch = patchComponents && patchComponents[orig];
-      //组件补丁
-      if (hasPatch) {
-        var newName = hasPatch.name;
-        astPath.node.name.name = newName; //{Button: {name :'Button', href:''}}
-        modules.importComponents[newName] = {
-          source: `/@components/${newName}/index`
-        };
-        if (!cache[hasPatch.name]) {
-          self.emit('compliePatch', hasPatch);
-          cache[hasPatch.name] = true;
-        }
-        return newName;
-      }
-      //如果是native组件,  组件jsx名小写
-      if (orig.toLowerCase() !== orig) {
+      var fileId = modules.sourcePath;
+      var isPatchNode =  patchNode[fileId] && patchNode[fileId].includes(orig);
+      var prefix = 'X';
+      var patchName = '';
+      //组件名肯定大写开头
+      if (/^[A-Z]/.test(orig)) {
         return orig;
       }
+      //schnee-ui补丁
+      if (isPatchNode) {
+        if (/\-/.test(orig)) {
+           //'rich-text' ==> RichText;
+           patchName = orig.split('-').map((el)=>{
+              return el.replace(/^[a-z]/, (match)=>{
+                return match.toUpperCase()
+              })
+           }).join('');
+           patchName = prefix + patchName;
+        } else {
+           //button ==> XButton
+           patchName = prefix + orig.charAt(0).toUpperCase() + orig.substring(1);
+        }
+        modules.importComponents[patchName] = { source: UIName };
+        
+        if (!cache[orig]) {
+          let patchPath = path.join(cwd, 'node_modules', UIName, 'components', patchName , 'index.js');
+          this.emit('compliePatch', patchPath);  //再次经过编译
+          cache[orig] = true;
+        }
+        return patchName;
+      }
+
       return (astPath.node.name.name = map[orig] || backup);
-    };
+
+      
+    }
   },
   createAttribute(name, value) {
     return t.JSXAttribute(
@@ -201,8 +215,16 @@ let utils = {
     });
   },
   isNpm(name) {
-    if (!name || typeof name !== 'string') return false;
-    return !/^\/|\./.test(name);
+    // ./
+    if ( /^\/|\./.test(name) ) {
+      return false;
+    }
+    //非自定义alias, @components ...
+    let aliasKeys = Object.keys(this.getAliasConfig());
+    if (aliasKeys.includes( name.split('/')[0])) {
+      return false;
+    }
+    return true;
   },
   createRegisterStatement(className, path, isPage) {
     var templateString = isPage
@@ -259,7 +281,7 @@ let utils = {
       console.log(chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`));
       let bin = '';
       let options = [];
-      if (this.useYarn()) {
+      if (false) { //todo: yarn待调
         bin = 'yarn';
         options.push('add', npmName, dev === 'dev' ? '--dev' : '--save');
       } else if (this.useCnpm()) {
@@ -366,58 +388,41 @@ let utils = {
     let buildType = config.buildType;
     return this.getReactMap()[buildType];
   },
-  getCustomAliasConfig() {
+  getAliasConfig() {
     let React = this.getReactLibName();
-    let defaultAlias = {
-      react: path.join(cwd, `${config.sourceDir}/${React}`),
-      '@react': path.join(cwd, `${config.sourceDir}/${React}`),
-      '@components': path.join(cwd, `${config.sourceDir}/components`)
-    };
-    let pkgAlias = userConfig.alias ? userConfig.alias : {};
+    let userAlias = userConfig.alias ? userConfig.alias : {};
+    let ret = {}
 
-    Object.keys(pkgAlias).forEach(aliasKey => {
-      //@components, @react无法自定义配置
-      if (!defaultAlias[aliasKey]) {
-        defaultAlias[aliasKey] = path.join(cwd, pkgAlias[aliasKey]);
-      }
+    //用户自定义的alias配置设置成绝对路径
+    Object.keys(userAlias).forEach((key)=>{
+        ret[key] = path.join(cwd, userAlias[key])
     });
+
+    let defaultAlias = {
+        'react': path.join(cwd, `${config.sourceDir}/${React}`),
+        '@react': path.join(cwd, `${config.sourceDir}/${React}`),
+        '@components': path.join(cwd, `${config.sourceDir}/components`),
+        ...ret
+    }
     return defaultAlias;
   },
-  resolveNpmAliasPath(id, depFile) {
-    let distJs = utils.updatePath( id, config.sourceDir, 'dist');
-    let distNpm = utils.updatePath(depFile, 'node_modules', `dist${path.sep}npm`)
-    //根据被依赖文件和依赖文件，求相对路径
-    let aliasPath = path.relative(path.dirname(distJs), distNpm);
-    aliasPath = aliasPath.replace(/\\/g, '/');
-    return aliasPath;
+  resolveDistPath(filePath){
+    let dist = config.buildType === 'quick' ? 'src': (config.buildDir || 'dist');
+    let sep = path.sep;
+    filePath = utils.updatePath(filePath, 'dist', dist); //待优化
+    return /\/node_modules\//.test(filePath)
+    ? utils.updatePath(filePath, 'node_modules', `${dist}${sep}npm`)
+    : utils.updatePath(filePath, config.sourceDir, dist);
   },
-  resolveCustomAliasPath(file, depFile) {
-    let aliasPath = path.relative(path.dirname(file), depFile);
-    return aliasPath;
-  },
-  updateNpmAlias(id, deps) {
-    //依赖的npm模块也当alias处理
-    let result = {};
-    let aliasConfig = Object.keys(this.getCustomAliasConfig()).join('|');
-    let reg = new RegExp(`^(${aliasConfig})`);
-    Object.keys(deps).forEach(depKey => {
-      if (!this.isBuildInLibs(depKey) && this.isNpm(depKey) && !reg.test(depKey)) {
-        result[depKey] = this.resolveNpmAliasPath(id, deps[depKey]);
-      }
-    });
-    return result;
-  },
-  updateCustomAlias(id, deps) {
-    //自定义alias是以@react和@components开头
-    let aliasConfig = Object.keys(this.getCustomAliasConfig()).join('|');
-    let reg = new RegExp(`^(${aliasConfig})`); // /^(@react|@components|...)/
-    let result = {};
-    Object.keys(deps).forEach(depKey => {
-      if (reg.test(depKey)) {
-        result[depKey] = this.resolveCustomAliasPath(id, deps[depKey]);
-      }
-    });
-    return result;
+  resolveAliasPath(id, deps){
+     let ret = {};
+     Object.keys(deps).forEach( (depKey)=>{
+        ret[depKey] = path.relative( 
+          path.dirname(this.resolveDistPath(id)),
+          this.resolveDistPath(deps[depKey])
+         )
+     });
+     return ret;
   },
   getRegeneratorRuntimePath: function(sourcePath) {
     //小程序async/await语法依赖regenerator-runtime/runtime
@@ -475,21 +480,6 @@ let utils = {
       // eslint-disable-next-line
       console.log(err);
     });
-  },
-  resolvePatchComponentPath: function(filePath) {
-    //patchComponent路径在cli中, 需要处理成${config.sourceDir}/components/... 否则路径解析混乱
-    let isPatchComponentReg = utils.isWin() ? /\\patchComponents\\/ : /\/patchComponents\//;
-    if (isPatchComponentReg.test(filePath)) {
-      let dirLevel = path.dirname(filePath).split(path.sep);
-      filePath = path.join(
-        cwd,
-        config.sourceDir,
-        'components',
-        dirLevel[dirLevel.length - 1],
-        path.basename(filePath)
-      );
-    }
-    return filePath;
   },
   cleanDir: function() {
     let fileList = ['package-lock.json', 'yarn.lock'];

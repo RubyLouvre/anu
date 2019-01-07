@@ -1,8 +1,4 @@
 const path = require('path');
-const getPatchComponentDir = (componentName)=>{
-    return path.join(__dirname, 'patchComponents', componentName);
-};
-
 let userConfig = {};
 try {
     const pkg = require( path.join(process.cwd(), 'package.json') );
@@ -17,53 +13,36 @@ module.exports = {
         libName: 'ReactWX',
         styleExt: 'wxss',
         xmlExt: 'wxml',
-        helpers: 'wxHelpers'
+        helpers: 'wxHelpers',
+        patchComponents: []
     },
     ali: {
         libName: 'ReactAli',
         styleExt: 'acss',
         xmlExt: 'axml',
         helpers: 'aliHelpers',
-        patchComponents: {
-            'rich-text': {
-                name: 'AliRichText',
-                href: getPatchComponentDir('AliRichText') //获得patchComponent路径
-            }
-        }
+        patchComponents: [
+            'rich-text'
+        ]
     },
     bu: {
         libName: 'ReactBu',
         styleExt: 'css',
         xmlExt: 'swan',
         helpers: 'buHelpers',
-        patchComponents: {}
+        patchComponents: []
     },
     quick: {
         libName: 'ReactWX',
         jsExt: 'ux',
         helpers: 'quickHelpers',
-        patchComponents: {
-            button: {
-                name: 'Button',
-                href: getPatchComponentDir('Button') //获得patchComponent路径
-            },
-            radio: {
-                name: 'Radio',
-                href: getPatchComponentDir('Radio')
-            },
-            checkbox: {
-                name: 'Checkbox',
-                href: getPatchComponentDir('Checkbox')
-            },
-            label: {
-                name: 'Label',
-                href: getPatchComponentDir('Label')
-            },
-            navigator: {
-                name: 'Navigator',
-                href: getPatchComponentDir('Navigator')
-            }
-        }
+        patchComponents: [
+            'button',
+            'radio',
+            'checkbox',
+            'label',
+            'navigator'
+        ]
     },
     tt: {
         libName: 'ReactWX',
@@ -71,7 +50,7 @@ module.exports = {
         styleExt: 'ttss',
         xmlExt: 'ttml',
         helpers: 'ttHelpers',
-        patchComponents: {}
+        patchComponents: []
     },
     buildType: 'wx',      //构建类型默认微信小程序
     buildDir: buildDir,   //非快应用项目默认构建目录为dist
