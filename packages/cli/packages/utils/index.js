@@ -139,11 +139,32 @@ let utils = {
         }
         return patchName;
       }
-
       return (astPath.node.name.name = map[orig] || backup);
-
-      
     }
+  },
+  getUsedComponentsPath(bag, nodeName, modules) {
+      let isNpm = this.isNpm(bag.source);
+      let sourcePath = modules.sourcePath;
+      let isNodeModulePathReg = this.isWin() ? /\\node_modules\\/ : /\/node_modules\//;
+
+      //引用的npm ui库 
+      //import { xxx } from 'schnee-ui';
+      if (isNpm) {
+          return '/npm/' + bag.source + '/components/' + nodeName + '/index';
+      }
+      //在ui components中可能存在相对引用其他components
+      //如果XPicker中存在 import XOverlay from '../XOverlay/index';
+      if ( 
+        isNodeModulePathReg.test(sourcePath)
+        && /^\./.test(bag.source)
+      ) {
+        //获取用组件的绝对路径 ==> /path/xxx/node_modules/schnee-ui/components/XOverlay/index
+        let importerAbPath = path.join( path.dirname(modules.sourcePath), bag.source);
+        // ==>/npm/schnee-ui/components/XOverlay/index
+        return '/npm/' + importerAbPath.split( `${path.sep}node_modules${path.sep}` )[1]
+      }
+
+      return `/components/${nodeName}/index`;
   },
   createAttribute(name, value) {
     return t.JSXAttribute(

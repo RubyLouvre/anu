@@ -476,13 +476,9 @@ module.exports = {
                 } catch (err) {
                     // eslint-disable-next-line
                 }
-                
-               
-                let useComponentsPath = `/components/${nodeName}/index`;
-                if ( utils.isNpm(bag.source)) {
-                    //components来自node_modules
-                    useComponentsPath = '/npm/' + bag.source + useComponentsPath;
-                }
+
+                let useComponentsPath = utils.getUsedComponentsPath(bag, nodeName, modules);
+
                 modules.usedComponents['anu-' + nodeName.toLowerCase()] = useComponentsPath;
                 astPath.node.name.name = 'React.useComponent';
 
