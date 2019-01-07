@@ -49,8 +49,15 @@ var LazyComponent = React.lazy(function(){
     setTimeout(function(){
       resolve()
     }, 1500)
+  }).then(function(){
+      return {
+          default: function Aaa(){
+            return <div>xxxx</div>
+          }
+      }
   })
 })
+
 function App (){
     const [count, dispatch] = useState(5);
     function increment(){
@@ -58,13 +65,14 @@ function App (){
     }
      last = increment;
       return <div> 
-             <p>{count}</p>   <strong>{count}</strong>
+             <p title="111">{count}</p>   <strong>{count}</strong>
              <React.Suspense fallback={<div>Loading...</div>}>
              222
       </React.Suspense>
               <button type='button' onClick={increment}><span>{ count }</span></button>
             </div>
 }
+
 ReactDOM.render(<App />, container)
 	
     </script>
