@@ -12,16 +12,15 @@ const getSize = (code)=>{
 };
 let sucSize = 0;
 module.exports = ()=>{
-   
     while (queue.length){
         let {code, path, type } = queue.shift();
         if (config.compress && compress[type]) {
             code = compress[type](code);
         }
-        config['buildType'] === 'quick'
-            ?  path = utils.updatePath( path, 'dist' , 'src') //快应用打包到src下
-            :  path = utils.updatePath( path, 'dist', config.buildDir);
         
+        path = utils.resolveDistPath(path);
+
+       
         fs.ensureFileSync(path);
         fs.writeFile(path, code)
             .then(()=>{

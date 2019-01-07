@@ -1,5 +1,4 @@
 let syntaxClassProperties = require('babel-plugin-syntax-class-properties');
-let path = require('path');
 let visitor = require('./miniappVisitor');
 let config = require('../config');
 let quickFiles = require('../quickFiles');
@@ -23,9 +22,11 @@ let miniAppPlugin = function(){
             });
 
             let filePath = opts.filename; //windows: D:/x/y/z
-            modules.sourcePath =  utils.resolvePatchComponentPath(path.resolve(filePath));
+            modules.sourcePath = filePath;
             modules.current = filePath.replace(process.cwd(), '');
-            if (/\/(components|patchComponents)\//.test(filePath)) {
+            if (
+                /\/components\//.test(filePath)                
+            ) {
                 modules.componentType = 'Component';
             } else if (/\/pages\//.test(filePath)) {
                 modules.componentType = 'Page';
