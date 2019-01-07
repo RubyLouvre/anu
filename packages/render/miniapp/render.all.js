@@ -1,7 +1,7 @@
 import { isFn, toLowerCase, get } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
-import { updateMiniApp, _getApp, delayMounts } from './utils';
+import { updateMiniApp, _getApp, delayMounts, getCurrentPage } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 
@@ -73,7 +73,12 @@ export let Renderer = createRenderer({
                 }
             */
                 if (!instance.wx) {
-                    instance.$$page = Object(_getApp()).$$page;
+                    if(typeof getCurrentPages == 'function'){
+                        var v = getCurrentPages();
+                        var v1 = v[v.length - 1];
+                        instance.$$page = v1.route;
+                    }
+                   // instance.$$page = Object(_getApp()).$$page;
                     type.reactInstances.push(instance);
                 }
             }
