@@ -171,6 +171,9 @@ function enqueueUpdate (fiber, update) {
   var queue1 = fiber.updateQueue || createUpdateQueue(fiber.memoizedState)
   queue1.push(update)
 }
+var isWorking = false
+var isCommitting = false
+var nextRoot = null
 
 function scheduleWork (fiber, expirationTime) {
   var root = scheduleWorkToRoot(fiber, expirationTime)
@@ -183,4 +186,41 @@ function scheduleWork (fiber, expirationTime) {
     var rootExpirationTime = root.expirationTime
     requestWork(root, rootExpirationTime)
   }
+}
+
+function scheduleWorkToRoot (fiber, expirationTime) {
+
+  // Update the source fiber's expiration time
+  if (fiber.expirationTime < expirationTime) {
+    fiber.expirationTime = expirationTime
+  }
+  var alternate = fiber.alternate
+  if (alternate && alternate.expirationTime < expirationTime) {
+    alternate.expirationTime = expirationTime
+  }
+  // Walk the parent path to the root and update the child expiration time.
+  var node = fiber.return
+  var root = null
+  if (node && fiber.tag === HostRoot) {
+    root = fiber.stateNode
+  } else {
+    while (node ) {
+      alternate = node.alternate
+      if (node.childExpirationTime < expirationTime) {
+        node.childExpirationTime = expirationTime
+        if (alternate && alternate.childExpirationTime < expirationTime) {
+          alternate.childExpirationTime = expirationTime
+        }
+      } else if (alternate && alternate.childExpirationTime < expirationTime) {
+        alternate.childExpirationTime = expirationTime
+      }
+      if (node.return && node.tag === HostRoot) {
+        root = node.stateNode
+        break
+      }
+      node = node.return
+    }
+  }
+
+  return root
 }
