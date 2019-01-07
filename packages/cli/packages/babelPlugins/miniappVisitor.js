@@ -5,7 +5,6 @@ const path = require('path');
 const queue = require('../queue');
 const utils = require('../utils');
 const fs = require('fs-extra');
-const chalk = require('chalk');
 const deps = [];
 const config = require('../config');
 const buildType = config['buildType'];
@@ -166,38 +165,6 @@ module.exports = {
 
         if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
             astPath.remove();
-        }
-
-        //检测component导出的模块名是否与模块所在目录名一致
-        if (['Page', 'App'].includes(modules.componentType)) {
-            specifiers.forEach(item => {
-                if (!/^@components\/|\/components\//.test(source)) return;
-                let importedName = item.local.name;
-                let pathLevel = source.split('/');
-                //component模块所在的目录名 components/a/b/index => b
-                let dirName = pathLevel[pathLevel.length - 2];
-                if (dirName == importedName) return;
-                /* eslint-disable */
-                console.log(chalk.red(`error at: ${modules.sourcePath}`));
-                console.log(chalk.red(`imported: ${importedName}`));
-                console.log(chalk.red(`value:    ${source}`));
-                console.log(
-                    chalk.red(
-                        "info: 引用的component组件名需与所在的目录名保持一致, 例如：import Loading from @components/Loading/index"
-                    )
-                );
-                console.log();
-            });
-        }
-
-        if (
-            modules.componentType === "Component" &&
-            path.basename(modules.sourcePath) != "index.js"
-        ) {
-            /* eslint-disable */
-            console.log(chalk.red(`error at: ${modules.sourcePath}`));
-            console.log(chalk.red("info: components文件名需定义成index.js"));
-            console.log();
         }
 
         specifiers.forEach(item => {
