@@ -224,3 +224,76 @@ function scheduleWorkToRoot (fiber, expirationTime) {
 
   return root
 }
+
+var roots = []
+
+function addRootToSchedule (root, expirationTime) {
+  for (var i = 0, el; el = roots[i++];) {
+    if (el === root) {
+      // 提高优先级
+      if (expirationTime > root.expirationTime) {
+        root.expirationTime = expirationTime
+      }
+      return
+    }
+  }
+  roots.push(root)
+}
+
+function requestWork (root, expirationTime) {
+  addRootToSchedule(root, expirationTime)
+  if (isRendering) {
+    // Prevent reentrancy. Remaining work will be scheduled at the end of
+    // the currently rendering batch.
+    return
+  }
+  if (isBatchingUpdates) {
+    // Flush work at the end of the batch.
+    if (isUnbatchingUpdates) {
+      // ...unless we're inside unbatchedUpdates, in which case we should
+      // flush it now.
+      nextFlushedRoot = root
+      nextFlushedExpirationTime = Sync
+      performWorkOnRoot(root, Sync, false)
+    }
+    return
+  }
+
+  // TODO: Get rid of Sync and use current time?
+  if (expirationTime === Sync) {
+    performSyncWork()
+  } else {
+    //  scheduleCallbackWithExpirationTime(root, expirationTime)
+  }
+}
+function performSyncWork () {
+  performWorkOnRoot(root, Sync, false)
+}
+
+function performWorkOnRoot (root, expirationTime, isYieldy) {
+  isRendering = true
+  var finishedWork = root.finishedWork
+
+  if (finishedWork !== null) {
+    // This root is already complete. We can commit it.
+    commitRoot(root, finishedWork, expirationTime)
+  } else {
+    root.finishedWork = null
+    // If this root previously suspended, clear its existing timeout, since
+    // we're about to try rendering again.
+    var timeoutHandle = root.timeoutHandle
+    if (timeoutHandle !== noTimeout) {
+      root.timeoutHandle = noTimeout
+      // $FlowFixMe Complains noTimeout is not a TimeoutID, despite the check above
+      clearTimeout(timeoutHandle)
+    }
+    renderRoot(root, isYieldy)
+    finishedWork = root.finishedWork
+    if (finishedWork !== null) {
+      // We've completed the root. Commit it.
+      commitRoot(root, finishedWork, expirationTime)
+    }
+  }
+
+  isRendering = false
+}
