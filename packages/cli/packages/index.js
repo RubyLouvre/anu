@@ -99,7 +99,9 @@ class Parser {
             jsCodeLineNumberError: [],
             //page中是否包含了component目录
             componentInPageError: [],
-            jsxError: []
+            jsxError: [],
+            // 引用的组件是否符合规范
+            componentsStandardError: []
         };
         this.customAliasConfig = Object.assign(
             { resolve: ['.js','.css', '.scss', '.sass', '.less'] },
@@ -219,6 +221,8 @@ class Parser {
                 //校验pages目录中是否包含components目录
                 this.checkComponentsInPages(data.id);
 
+                this.checkImportComponent(data);
+
                 this.jsFiles.push({
                     id: data.id,
                     originalCode: data.originalCode,
@@ -227,6 +231,25 @@ class Parser {
             }
         };
     }
+
+    checkImportComponent(item){
+        // const path = item.id;
+        const componentsDir = path.join(cwd, config.sourceDir, 'components');
+        // 如果是 components 中的组件需要校验
+        if (item.id.indexOf(componentsDir) === 0) {
+            const restComponentsPath = item.id.replace(componentsDir, '');
+            if (!/^(\/|\\)[A-Z][a-zA-Z0-9]*(\/|\\)index\.js/.test(restComponentsPath)) {
+                this.collectError.componentsStandardError.push({
+                    id: item.id,
+                    level: 'error',
+                    msg: item.id.replace(`${cwd}${path.sep}`, '')
+                        + '\n组件名必须首字母大写\nimport [组件名] from \'@components/[组件名]/[此处必须index]\''
+                        + '\neg. import Loading from \'@components/Loading/index\'\n'
+                });
+            }
+        }
+    }
+    
     filterNpmModule(resolvedIds) {
         //判定路径是否以字母开头
         let result = {};
