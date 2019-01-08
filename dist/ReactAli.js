@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-07
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -1067,6 +1067,18 @@ function updateMiniApp(instance) {
         instance.wx.setData(data);
     } else {
         updateQuickApp(instance.wx, data);
+    }
+}
+function refreshMatchedApp(reactInstances, wx, uuid) {
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = reactInstances.length - 1; i >= 0; i--) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
     }
 }
 function updateQuickApp(quick, data) {
@@ -2537,15 +2549,7 @@ function registerComponent(type, name) {
     function didUpdate() {
         usingComponents[name] = type;
         var uuid = this.props['data-instance-uid'] || null;
-        for (var i = reactInstances.length - 1; i >= 0; i--) {
-            var reactInstance = reactInstances[i];
-            if (reactInstance.instanceUid === uuid) {
-                reactInstance.wx = this;
-                this.reactInstance = reactInstance;
-                updateMiniApp(reactInstance);
-                return reactInstances.splice(i, 1);
-            }
-        }
+        refreshMatchedApp(reactInstances, this, uuid);
     }
     return {
         data: {

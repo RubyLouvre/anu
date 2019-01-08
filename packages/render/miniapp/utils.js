@@ -64,7 +64,18 @@ export function updateMiniApp(instance) {
         updateQuickApp(instance.wx, data);
     }
 }
-
+export function refreshMatchedApp(reactInstances, wx, uuid) {
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = reactInstances.length - 1; i >= 0; i--) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
+    }
+}
 function updateQuickApp(quick, data) {
     for (var i in data) {
         quick.$set(i, data[i]);

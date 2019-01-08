@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-01-07T09
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-01-08T06
  * IE9+
  */
 
@@ -931,6 +931,18 @@ function updateMiniApp(instance) {
         instance.wx.setData(data);
     } else {
         updateQuickApp(instance.wx, data);
+    }
+}
+function refreshMatchedApp(reactInstances, wx, uuid) {
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = reactInstances.length - 1; i >= 0; i--) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
     }
 }
 function updateQuickApp(quick, data) {
@@ -2527,19 +2539,11 @@ function registerComponent(type, name) {
         },
         lifetimes: {
             attached: function attached() {
-                var _this = this;
-                usingComponents[name] = type;
+                var wx = this;
                 defer(function () {
-                    var uuid = _this.dataset.instanceUid || null;
-                    for (var i = 0; i < reactInstances.length; i++) {
-                        var reactInstance = reactInstances[i];
-                        if (reactInstance.instanceUid === uuid) {
-                            reactInstance.wx = _this;
-                            _this.reactInstance = reactInstance;
-                            updateMiniApp(reactInstance);
-                            return reactInstances.splice(i, 1);
-                        }
-                    }
+                    usingComponents[name] = type;
+                    var uuid = wx.dataset.instanceUid || null;
+                    refreshMatchedApp(reactInstances, wx, uuid);
                 });
             },
             detached: function detached() {

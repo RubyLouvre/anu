@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-01-07
+ * 运行于快应用的React by 司徒正美 Copyright 2019-01-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -674,6 +674,18 @@ function updateMiniApp(instance) {
         updateQuickApp(instance.wx, data);
     }
 }
+function refreshMatchedApp(reactInstances, wx, uuid) {
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = reactInstances.length - 1; i >= 0; i--) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
+    }
+}
 function updateQuickApp(quick, data) {
     for (var i in data) {
         quick.$set(i, data[i]);
@@ -1244,163 +1256,163 @@ function createCanvasContext(id, obj) {
 }
 
 function createRouter(name) {
-  return function (obj) {
-    var router = require('@system.router');
-    var params = {};
-    var href = obj ? obj.url || obj.uri || '' : '';
-    var uri = href.slice(href.indexOf('/pages') + 1);
-    uri = uri.replace(/\?(.*)/, function (a, b) {
-      b.split('&').forEach(function (param) {
-        param = param.split('=');
-        params[param[0]] = param[1];
-      });
-      return '';
-    }).replace(/\/index$/, '');
-    if (uri.charAt(0) !== '/') {
-      uri = '/' + uri;
-    }
-    router[name]({
-      uri: uri,
-      params: params
-    });
-  };
+    return function (obj) {
+        var router = require('@system.router');
+        var params = {};
+        var href = obj ? obj.url || obj.uri || '' : '';
+        var uri = href.slice(href.indexOf('/pages') + 1);
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('&').forEach(function (param) {
+                param = param.split('=');
+                params[param[0]] = param[1];
+            });
+            return '';
+        }).replace(/\/index$/, '');
+        if (uri.charAt(0) !== '/') {
+            uri = '/' + uri;
+        }
+        router[name]({
+            uri: uri,
+            params: params
+        });
+    };
 }
 var api = {
-  showModal: function showModal(obj) {
-    obj.showCancel = obj.showCancel === false ? false : true;
-    var buttons = [{
-      text: obj.confirmText,
-      color: obj.confirmColor
-    }];
-    if (obj.showCancel) {
-      buttons.push({
-        text: obj.cancelText,
-        color: obj.cancelColor
-      });
-    }
-    obj.buttons = obj.confirmText ? buttons : [];
-    obj.message = obj.content;
-    delete obj.content;
-    var fn = obj['success'];
-    obj['success'] = function (res) {
-      res.confirm = !res.index;
-      fn && fn(res);
-    };
-    var prompt = require('@system.prompt');
-    prompt.showDialog(obj);
-  },
-  showToast: showToast,
-  hideToast: noop,
-  showActionSheet: function showActionSheet(obj) {
-    var prompt = require('@system.prompt');
-    prompt.showContextMenu(obj);
-  },
-  showLoading: function showLoading(obj) {
-    var prompt = require('@system.prompt');
-    obj.message = obj.title;
-    obj.duration = 1;
-    prompt.showToast(obj);
-  },
-  hideLoading: noop,
-  navigateTo: createRouter('push'),
-  redirectTo: createRouter('replace'),
-  navigateBack: createRouter('back'),
-  vibrateLong: function vibrateLong() {
-    var vibrator = require('@system.vibrator');
-    vibrator.vibrate();
-  },
-  vibrateShort: function vibrateShort() {
-    var vibrator = require('@system.vibrator');
-    vibrator.vibrate();
-  },
-  share: function share(obj) {
-    var share = require('@service.share');
-    share.getAvailablePlatforms({
-      success: function success(data) {
-        var shareType = 0;
-        if (obj.path && obj.title) {
-          shareType = 0;
-        } else if (obj.title) {
-          shareType = 1;
-        } else if (obj.imageUrl) {
-          shareType = 2;
+    showModal: function showModal(obj) {
+        obj.showCancel = obj.showCancel === false ? false : true;
+        var buttons = [{
+            text: obj.confirmText,
+            color: obj.confirmColor
+        }];
+        if (obj.showCancel) {
+            buttons.push({
+                text: obj.cancelText,
+                color: obj.cancelColor
+            });
         }
-        obj.shareType = obj.shareType || shareType;
-        obj.targetUrl = obj.path;
-        obj.summary = obj.desc;
-        obj.imagePath = obj.imageUrl;
-        obj.platforms = data.platforms;
-        share.share(obj);
-      }
-    });
-  },
-  uploadFile: uploadFile,
-  downloadFile: downloadFile,
-  request: request,
-  scanCode: function scanCode(_ref) {
-    var success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    var barcode = require('@system.barcode');
-    barcode.scan({
-      success: success,
-      fail: fail,
-      cancel: fail,
-      complete: complete
-    });
-  },
-  setStorage: setStorage,
-  getStorage: getStorage,
-  removeStorage: removeStorage,
-  clearStorage: clearStorage,
-  setStorageSync: setStorageSync,
-  getStorageSync: getStorageSync,
-  removeStorageSync: removeStorageSync,
-  clearStorageSync: clearStorageSync,
-  getSavedFileInfo: getSavedFileInfo,
-  getSavedFileList: getSavedFileList,
-  removeSavedFile: removeSavedFile,
-  saveFile: saveFile,
-  setClipboardData: setClipboardData,
-  getClipboardData: getClipboardData,
-  getLocation: function getLocation(obj) {
-    var geolocation = require('@system.geolocation');
-    geolocation.getLocation(obj);
-  },
-  getNetworkType: getNetworkType,
-  onNetworkStatusChange: onNetworkStatusChange,
-  getSystemInfo: getSystemInfo,
-  chooseImage: chooseImage,
-  setNavigationBarTitle: function setNavigationBarTitle(_ref2) {
-    var title = _ref2.title,
-        success = _ref2.success,
-        fail = _ref2.fail,
-        complete = _ref2.complete;
-    try {
-      var currentPage = _getApp().$$page;
-      currentPage.$page.setTitleBar({ text: title });
-      runFunction(success);
-    } catch (error) {
-      runFunction(fail, error);
-    } finally {
-      runFunction(complete);
+        obj.buttons = obj.confirmText ? buttons : [];
+        obj.message = obj.content;
+        delete obj.content;
+        var fn = obj['success'];
+        obj['success'] = function (res) {
+            res.confirm = !res.index;
+            fn && fn(res);
+        };
+        var prompt = require('@system.prompt');
+        prompt.showDialog(obj);
+    },
+    showToast: showToast,
+    hideToast: noop,
+    showActionSheet: function showActionSheet(obj) {
+        var prompt = require('@system.prompt');
+        prompt.showContextMenu(obj);
+    },
+    showLoading: function showLoading(obj) {
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = 1;
+        prompt.showToast(obj);
+    },
+    hideLoading: noop,
+    navigateTo: createRouter('push'),
+    redirectTo: createRouter('replace'),
+    navigateBack: createRouter('back'),
+    vibrateLong: function vibrateLong() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    vibrateShort: function vibrateShort() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    share: function share(obj) {
+        var share = require('@service.share');
+        share.getAvailablePlatforms({
+            success: function success(data) {
+                var shareType = 0;
+                if (obj.path && obj.title) {
+                    shareType = 0;
+                } else if (obj.title) {
+                    shareType = 1;
+                } else if (obj.imageUrl) {
+                    shareType = 2;
+                }
+                obj.shareType = obj.shareType || shareType;
+                obj.targetUrl = obj.path;
+                obj.summary = obj.desc;
+                obj.imagePath = obj.imageUrl;
+                obj.platforms = data.platforms;
+                share.share(obj);
+            }
+        });
+    },
+    uploadFile: uploadFile,
+    downloadFile: downloadFile,
+    request: request,
+    scanCode: function scanCode(_ref) {
+        var success = _ref.success,
+            fail = _ref.fail,
+            complete = _ref.complete;
+        var barcode = require('@system.barcode');
+        barcode.scan({
+            success: success,
+            fail: fail,
+            cancel: fail,
+            complete: complete
+        });
+    },
+    setStorage: setStorage,
+    getStorage: getStorage,
+    removeStorage: removeStorage,
+    clearStorage: clearStorage,
+    setStorageSync: setStorageSync,
+    getStorageSync: getStorageSync,
+    removeStorageSync: removeStorageSync,
+    clearStorageSync: clearStorageSync,
+    getSavedFileInfo: getSavedFileInfo,
+    getSavedFileList: getSavedFileList,
+    removeSavedFile: removeSavedFile,
+    saveFile: saveFile,
+    setClipboardData: setClipboardData,
+    getClipboardData: getClipboardData,
+    getLocation: function getLocation(obj) {
+        var geolocation = require('@system.geolocation');
+        geolocation.getLocation(obj);
+    },
+    getNetworkType: getNetworkType,
+    onNetworkStatusChange: onNetworkStatusChange,
+    getSystemInfo: getSystemInfo,
+    chooseImage: chooseImage,
+    setNavigationBarTitle: function setNavigationBarTitle(_ref2) {
+        var title = _ref2.title,
+            success = _ref2.success,
+            fail = _ref2.fail,
+            complete = _ref2.complete;
+        try {
+            var currentPage = _getApp().$$page;
+            currentPage.$page.setTitleBar({ text: title });
+            runFunction(success);
+        } catch (error) {
+            runFunction(fail, error);
+        } finally {
+            runFunction(complete);
+        }
+    },
+    createShortcut: createShortcut,
+    createCanvasContext: createCanvasContext,
+    stopPullDownRefresh: function stopPullDownRefresh(obj) {
+        obj = obj || {};
+        var success = obj.success || noop,
+            fail = obj.fail || noop,
+            complete = obj.complete || noop;
+        try {
+            runFunction(success);
+        } catch (error) {
+            runFunction(fail, error);
+        } finally {
+            runFunction(complete);
+        }
     }
-  },
-  createShortcut: createShortcut,
-  createCanvasContext: createCanvasContext,
-  stopPullDownRefresh: function stopPullDownRefresh(obj) {
-    obj = obj || {};
-    var success = obj.success || noop,
-        fail = obj.fail || noop,
-        complete = obj.complete || noop;
-    try {
-      runFunction(success);
-    } catch (error) {
-      runFunction(fail, error);
-    } finally {
-      runFunction(complete);
-    }
-  }
 };
 
 function UpdateQueue() {
@@ -2788,15 +2800,7 @@ function registerComponent(type, name) {
         },
         onReady: function onReady() {
             var uuid = this.dataInstanceUid || null;
-            for (var i = 0; i < reactInstances.length; i++) {
-                var reactInstance = reactInstances[i];
-                if (reactInstance.instanceUid === uuid) {
-                    reactInstance.wx = this;
-                    this.reactInstance = reactInstance;
-                    updateMiniApp(reactInstance);
-                    return reactInstances.splice(i, 1);
-                }
-            }
+            refreshMatchedApp(reactInstances, this, uuid);
         },
         onDestroy: function onDestroy() {
             var t = this.reactInstance;

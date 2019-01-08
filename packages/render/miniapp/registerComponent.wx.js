@@ -1,4 +1,4 @@
-import { registeredComponents, usingComponents, updateMiniApp } from './utils';
+import { registeredComponents, usingComponents, refreshMatchedApp } from './utils';
 import { dispatchEvent } from './eventSystem';
 const defer = typeof Promise=='function' ? Promise.resolve().then.bind(Promise.resolve()) : setTimeout;
 
@@ -15,22 +15,14 @@ export function registerComponent(type, name) {
         lifetimes: {
             //微信需要lifetimes, methods
             attached: function attached() {
-                usingComponents[name] = type;
                 //微信小程序的组件的实例化可能先于页面的React render,需要延迟
                 //https://github.com/RubyLouvre/anu/issues/531
+                let wx = this;
                 defer(()=>{
-                    var uuid = this.dataset.instanceUid || null;
-                    for (var i = 0; i < reactInstances.length; i++) {
-                        var reactInstance = reactInstances[i];
-                        if (reactInstance.instanceUid === uuid) {
-                            reactInstance.wx = this;
-                            this.reactInstance = reactInstance;
-                            updateMiniApp(reactInstance);
-                            return reactInstances.splice(i, 1);
-                        }
-                    }
+                    usingComponents[name] = type;
+                    let uuid = wx.dataset.instanceUid || null;
+                    refreshMatchedApp(reactInstances, wx, uuid);
                 });
-                //wxInstances.push(this);
             },
             detached() {
                 let t = this.reactInstance;

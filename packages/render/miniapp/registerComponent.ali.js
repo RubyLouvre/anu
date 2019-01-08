@@ -1,23 +1,15 @@
-import { registeredComponents, usingComponents, updateMiniApp } from './utils';
+import { registeredComponents, usingComponents, refreshMatchedApp } from './utils';
 import { dispatchEvent } from './eventSystem';
 
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
-    var reactInstances = type.reactInstances = [];
+    let reactInstances = type.reactInstances = [];
     type.wxInstances = {};
-    var hasInit = false;
+    let hasInit = false;
     function didUpdate() {
         usingComponents[name] = type;
-        var uuid = this.props['data-instance-uid'] || null;
-        for (var i = reactInstances.length - 1; i >= 0; i--) {
-            var reactInstance = reactInstances[i];
-            if (reactInstance.instanceUid === uuid) {
-                reactInstance.wx = this;
-                this.reactInstance = reactInstance;
-                updateMiniApp(reactInstance);
-                return reactInstances.splice(i, 1);
-            }
-        }
+        let uuid = this.props['data-instance-uid'] || null;
+        refreshMatchedApp(reactInstances, this, uuid);
     }
     return {
         data: {

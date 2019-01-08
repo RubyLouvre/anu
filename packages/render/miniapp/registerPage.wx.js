@@ -33,6 +33,9 @@ export function registerPage(PageClass, path, testObject) {
         config[hook] = function(e) {
             let instance = this.reactInstance;
             let fn = instance[hook], fired = false;
+            //在百度小程序，从A页面跳转到B页面，模拟器下是先触发A的onHide再触发B的onShow
+            //真机下，却是先触发B的onShow再触发A的onHide,其他小程序可能也有这问题，因此我们只在onShow
+            //里修改全局对象的属性
             if (hook === 'onShow'){
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;

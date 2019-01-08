@@ -1,4 +1,4 @@
-import { registeredComponents, usingComponents, updateMiniApp, _getApp } from './utils';
+import { registeredComponents, usingComponents, refreshMatchedApp } from './utils';
 import { dispatchEvent } from './eventSystem';
 
 export function registerComponent(type, name) {
@@ -14,17 +14,8 @@ export function registerComponent(type, name) {
 
         attached() {
             usingComponents[name] = type;
-            var uuid = this.dataset.instanceUid || null;
-            var pagePath = Object(_getApp()).$$pagePath;
-            for (var i = 0; i < reactInstances.length; i++) {
-                var reactInstance = reactInstances[i];
-                if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
-                    reactInstance.wx = this;
-                    this.reactInstance = reactInstance;
-                    updateMiniApp(reactInstance);
-                    return reactInstances.splice(i, 1);
-                }
-            }
+            let uuid = this.dataset.instanceUid || null;
+            refreshMatchedApp(reactInstances, this, uuid);
         },
         detached() {
             let t = this.reactInstance;
