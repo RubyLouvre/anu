@@ -7,6 +7,7 @@ const rbabel = require('rollup-plugin-babel');
 const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs'); 
 const alias = require('rollup-plugin-alias');
+const nodeResolve = require('resolve');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
 const glob = require('glob');
@@ -15,10 +16,10 @@ const crypto = require('crypto');
 const config = require('./config');
 const quickFiles = require('./quickFiles');
 const miniTransform = require('./miniappTransform');
+
 const styleTransform = require('./styleTransform');
-const resolveNpm = require('./resolveNpm');
+
 const generate = require('./generate');
-let pageRegExp = utils.getComponentOrAppOrPageReg();
 let cwd = process.cwd();
 let inputPath = path.join(cwd,  config.sourceDir);
 let entry = path.join(inputPath, 'app.js');
@@ -34,9 +35,15 @@ let needUpdate = (id, code, fn) => {
     }
 };
 
-const isNpm = path => {
-    return /\/node_modules\//.test(path);
+let removeDist = ()=>{
+    let distPath = path.join(cwd, config.buildDir);
+    try {
+        fs.removeSync(distPath);
+    } catch (err) {
+        console.log(err);
+    }
 };
+
 const isStyle = path => {
     return /\.(?:less|scss|sass)$/.test(path);
 };
@@ -47,16 +54,13 @@ const isJson = path => {
     return /\.json$/.test(path);
 };
 const getFileType = (id)=>{
-    if ( isNpm(id) ) {
-        return 'npm';
-    } else if (isStyle(id)){
+    if (isStyle(id)){
         return 'css';
     } else if (isJs(id)) {
         return 'js';
     } else if (isJson(id)){
         return 'json';
     }
-
 };
 
 //跳过rollup对样式内容解析
@@ -71,7 +75,6 @@ let ignoreStyleParsePlugin = ()=>{
 };
 
 
-
 //监听打包资源
 utils.on('build', ()=>{
     generate();
@@ -84,29 +87,40 @@ class Parser {
         this.styleFiles = [];
         this.npmFiles = [];
         this.depTree = {};
+        this.collectError = {
+            //样式@import引用错误, 如page中引用component样式
+            styleImportError: [],
+            //page or component js代码是否超过500行
+            jsCodeLineNumberError: [],
+            //page中是否包含了component目录
+            componentInPageError: [],
+            jsxError: [],
+            // 引用的组件是否符合规范
+            componentsStandardError: []
+        };
+        
         this.customAliasConfig = Object.assign(
             { resolve: ['.js','.css', '.scss', '.sass', '.less'] },
-            utils.getCustomAliasConfig()
+            utils.getAliasConfig()
         );
+        
         this.inputConfig = {
             input: this.entry,
-            treeshake: false,
             plugins: [
                 alias(this.customAliasConfig), //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
-                    jail: path.join(cwd), //从项目根目录中搜索npm模块, 防止向父级查找
-                    preferBuiltins: false,
+                    jail: path.join(cwd),   //从项目根目录中搜索npm模块, 防止向父级查找
+                    preferBuiltins: false,  //防止查找内置模块
                     customResolveOptions: {
                         moduleDirectory: [
-                            path.join(cwd, 'node_modules'),
+                            path.join(cwd, 'node_modules')
                         ]
                     }
                 }),
                 ignoreStyleParsePlugin(),
                 commonjs({
-                    include: [
-                        path.join(cwd, 'node_modules/**')
-                    ]
+                    include: 'node_modules/**',
+                    exclude: ['node_modules/schnee-ui/**'] //防止解析ui库中的jsx报错
                 }),
                 rbabel({
                     babelrc: false,
@@ -114,7 +128,18 @@ class Parser {
                     presets: [require('babel-preset-react')],
                     plugins: [
                         require('babel-plugin-transform-class-properties'),
-                        require('babel-plugin-transform-object-rest-spread')
+                        require('babel-plugin-transform-object-rest-spread'),
+                        [
+                            //重要,import { Xbutton } from 'schnee-ui' //按需引入
+                            require('babel-plugin-import').default,
+                            {
+                                libraryName: 'schnee-ui',
+                                libraryDirectory: 'components',
+                                camel2DashComponentName: false
+                            }
+                        ],
+                        require('./babelPlugins/collectPatchComponents'),
+                        ...require('./babelPlugins/validateJsx')(this.collectError)
                     ]
                 })
             ],
@@ -122,16 +147,16 @@ class Parser {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
                 if (warning.code === 'UNRESOLVED_IMPORT') {
-                    if (this.customAliasConfig[warning.source.split(path.sep)[0]]) return;
-                    console.log(chalk.red(`缺少模块: ${warning.source}, 请检查`));
+                    let key = warning.source.split(path.sep)[0];
+                    if (this.customAliasConfig[key]) return;
+                    console.log(chalk.red(`缺少运行依赖模块: ${key}, 请安装.`));
+                    process.exit(1);
                 }
             }
-            
         };
 
         //监听是否有patchComponent解析
-        utils.on('compliePatch', (data)=>{
-            let id =  path.join(data.href, 'index.js');
+        utils.on('compliePatch', (id)=>{
             this.inputConfig.input = id;
             this.parse();
         });
@@ -139,25 +164,36 @@ class Parser {
     }
     async parse() {
         let bundle = await rollup.rollup(this.inputConfig);
+        
+        //如果有需要打补丁的组件并且本地没有安装schnee-ui
+        if (this.needInstallUiLib()) {
+            utils.installer('schnee-ui');
+        }
+    
+        let moduleMap = this.moduleMap();
         bundle.modules.forEach(item => {
-            const id = item.id;
-            if (/commonjsHelpers/.test(id)) return;
-            this.moduleMap()[getFileType(id)](item);
+            if (/commonjsHelpers/.test(item.id)) return;
+            let hander = moduleMap[getFileType(item.id)];
+            if (hander) {
+                hander(item);
+            }
             this.collectDeps(item);
         });
 
-        this.transform();
+        this.check(()=>{
+            this.transform();
+        });
+        
         this.copyAssets();
         this.copyProjectConfig();
     }
-    checkCodeLine(filePath, code, number){
-        if (code.match(/\n/g).length >= number) {
-            let id = path.relative( cwd,  filePath);
-            console.warn(
-                chalk.yellow(
-                    `\nWaning: ${id} 文件代码不能超过${number}行, 请优化.`
-                )
-            );
+    needInstallUiLib() {
+        if ( !config[config.buildType].jsxPatchNode ) return false; //没有需要patch的组件
+        try {
+            nodeResolve.sync('schnee-ui', { basedir: process.cwd() });
+            return false;
+        } catch (err) {
+            return true;
         }
     }
     collectDeps(item) {
@@ -172,105 +208,134 @@ class Parser {
     }
     moduleMap() {
         return {
-            npm: (data)=>{
-                this.npmFiles.push({
-                    id: data.id,
-                    originalCode: data.originalCode
-                });
-            },
             css: (data)=>{
-                let importComponentStyleInPage =  this.checkStyleImport(data);
-                if (importComponentStyleInPage.length) {
-                    console.log(
-                        chalk.red(
-                            `\nError: ${data.id} 文件中不能@import 组件(components)样式, 该文件忽略编译. 组件样式请在组件中引用.`
-                        )
-                    );
-                    return;
-                }
-
+                this.checkStyleImport(data);
                 if (config.buildType == 'quick'){
                     //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
                     var jsName = data.id.replace(/\.\w+$/, '.js');
                     if (fs.pathExistsSync(jsName)) {
                         var cssExt = path.extname(data.id).slice(1);
-                        quickFiles[ utils.resolvePatchComponentPath(jsName) ] = {
+                        quickFiles[ jsName ] = {
                             cssPath: data.id,
                             cssType: cssExt === 'scss' ?  'sass' : cssExt
                         };
                     }
                     return;
                 }
-
                 this.styleFiles.push({
                     id: data.id,
                     originalCode: data.originalCode
                 });
             },
             js: (data)=>{
-                if (pageRegExp.test(data.id)) {
-                    //校验文件代码行数是否超过500, 抛出警告。
-                    this.checkCodeLine(data.id, data.originalCode, 500);
-                }
+                //校验文件代码行数是否超过500, 抛出警告。
+                this.checkCodeLine(data.id, data.originalCode, 500);
+                //校验pages目录中是否包含components目录
+                this.checkComponentsInPages(data.id);
+                //校验组件组件名以及文件夹是否符合规范
+                this.checkImportComponent(data);
                 this.jsFiles.push({
                     id: data.id,
                     originalCode: data.originalCode,
-                    resolvedIds: this.filterNpmModule(data.resolvedIds) //处理路径alias配置
+                    resolvedIds: data.resolvedIds //获取alias配置
                 });
             }
         };
     }
-    filterNpmModule(resolvedIds) {
-        //判定路径是否以字母开头
-        let result = {};
-        Object.keys(resolvedIds).forEach(key => {
-            if (utils.isNpm(key)) {
-                result[key] = resolvedIds[key];
+
+    checkImportComponent(item){
+        // const path = item.id;
+        const componentsDir = path.join(cwd, config.sourceDir, 'components');
+        // 如果是 components 中的组件需要校验
+        if (item.id.indexOf(componentsDir) === 0) {
+            const restComponentsPath = item.id.replace(componentsDir, '');
+            if (!/^(\/|\\)[A-Z][a-zA-Z0-9]*(\/|\\)index\.js/.test(restComponentsPath)) {
+                this.collectError.componentsStandardError.push({
+                    id: item.id,
+                    level: 'error',
+                    msg: item.id.replace(`${cwd}${path.sep}`, '')
+                        + '\n组件名必须首字母大写\nimport [组件名] from \'@components/[组件名]/[此处必须index]\''
+                        + '\neg. import Loading from \'@components/Loading/index\'\n'
+                });
             }
-        });
-        return result;
+        }
     }
     transform() {
         this.updateJsQueue(this.jsFiles);
         this.updateStyleQueue(this.styleFiles);
-        this.updateNpmQueue(this.npmFiles);
+    }
+    check( cb ) {
+        let errorMsg = '';
+        let warningMsg = '';
+        Object.keys(this.collectError).forEach((key)=>{
+            this.collectError[key].forEach((info)=>{
+                switch (info.level) {
+                    case 'error':
+                        errorMsg += `Error: ${info.msg}\n`;
+                        break;
+                    case 'warning':
+                        warningMsg += `Warning: ${info.msg}\n`;
+                        break;
+                }
+            });
+            this.collectError[key] = [];
+        });
+        
+        if ( warningMsg ) {
+            console.log(chalk.yellow(warningMsg));
+        }
+        if ( errorMsg ) {
+            console.log(chalk.red(errorMsg));
+            process.exit(1);
+        }
+        cb && cb();
     }
     checkComponentsInPages(id) {
-        let flag = false;
+        id = path.relative( cwd,  id);
         let pathAray = utils.isWin() ? id.split('\\') :  id.split('/'); //分割目录
         let componentsPos = pathAray.indexOf('components');
         let pagesPos = pathAray.indexOf('pages');
-        if (componentsPos != -1 && pagesPos!=-1 && componentsPos > pagesPos ) {
-            flag = true;
-        }
-        return flag;
+        let msg = '';
+        if ( !( componentsPos != -1 && pagesPos != -1 ) ) return;
+        componentsPos > pagesPos
+            ? msg = `${id} 文件中路径中不能包含components目录, 请修复.`
+            : msg = `${id} 文件中路径中不能包含pages目录, 请修复.`;
+        this.collectError.componentInPageError.push({
+            id: id,
+            level: 'error',
+            msg: msg
+        });
+        
+    }
+    checkCodeLine(filePath, code, number){
+        if ( /^(React)/.test(path.basename(filePath)) ) return; //React runtime不校验代码行数
+        if ( code.match(/\n/g).length <= number ) return;
+        let id = path.relative( cwd,  filePath);
+        this.collectError.jsCodeLineNumberError.push({
+            id: id,
+            level: 'warning',
+            msg: `${id} 文件代码不能超过${number}行, 请优化.`
+        });
     }
     checkStyleImport (data){
+        let id = path.relative(cwd, data.id);
         let importList = data.originalCode.match(/^(?:@import)\s+([^;]+)/igm) || [];
         importList = importList.filter((importer)=>{
             return /[/|@]components\//.test(importer);
         });
-        return importList;
+       
+        if (!importList.length) return;
+        this.collectError.styleImportError.push({
+            id: id,
+            level: 'error',
+            msg: `${id} 文件中不能@import 组件(components)样式, 组件样式请在组件中引用, 请修复.`
+        });
     }
     updateJsQueue(jsFiles) {
-        
         while (jsFiles.length) {
-            let { id, originalCode, resolvedIds } = jsFiles.shift();
-            if (this.checkComponentsInPages(id)) {
-                // eslint-disable-next-line
-                console.log(
-                    chalk.red(
-                        JSON.stringify(
-                            {
-                                path: id,
-                                msg: 'components目录不能存在于pages目录下, 请检查'
-                            },
-                            null,
-                            4
-                        )
-                    )
-                );
-            }
+            let item = jsFiles.shift();
+            if (/commonjs-proxy:/.test(item.id)) item.id = item.id.split(':')[1];
+            let { id, originalCode, resolvedIds } = item;
             needUpdate(id, originalCode, function(){
                 miniTransform(id, resolvedIds, originalCode);
             });
@@ -278,23 +343,12 @@ class Parser {
     }
     updateStyleQueue(styleFiles) {
         while (styleFiles.length) {
-            let data = styleFiles.shift();
-            let { id, originalCode } = data; 
+            let { id, originalCode } = styleFiles.shift(); 
             needUpdate(id, originalCode, function(){
                 styleTransform({
                     id: id,
                     originalCode: originalCode
                 });   
-            });
-        }
-    }
-    updateNpmQueue(npmFiles) {
-        while (npmFiles.length) {
-            let item = npmFiles.shift();
-            // rollup 处理 commonjs 模块时候，会在 id 加上 commonjs-proxy: 前缀
-            if (/commonjs-proxy:/.test(item.id)) item.id = item.id.split(':')[1];
-            needUpdate(item.id, item.originalCode, function(){
-                resolveNpm(item);
             });
         }
     }
@@ -379,12 +433,13 @@ class Parser {
 
 async function build(arg, opts) {
     let { option } = opts;
+    removeDist();
     await utils.asyncReact(option);  //同步react
     if (config['buildType'] === 'quick') {
         //快应用mege package.json 以及 生成秘钥
         utils.initQuickAppConfig();
     }
-    let spinner = utils.spinner(chalk.green('正在分析依赖...')).start();
+    let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
     let parser = new Parser(entry);
     await parser.parse();
     spinner.succeed(chalk.green('依赖分析成功'));

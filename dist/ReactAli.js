@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-25
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -1067,6 +1067,18 @@ function updateMiniApp(instance) {
         instance.wx.setData(data);
     } else {
         updateQuickApp(instance.wx, data);
+    }
+}
+function refreshMatchedApp(reactInstances, wx, uuid) {
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = reactInstances.length - 1; i >= 0; i--) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
     }
 }
 function updateQuickApp(quick, data) {
@@ -2426,19 +2438,8 @@ var Renderer$1 = createRenderer({
             }
             var wxInstances = type.wxInstances;
             if (wxInstances) {
-                var componentWx = wxInstances[0];
-                if (componentWx && componentWx.__wxExparserNodeId__) {
-                    for (var i = 0; i < wxInstances.length; i++) {
-                        var el = wxInstances[i];
-                        if (!el.disposed && el.dataset.instanceUid === uuid) {
-                            el.reactInstance = instance;
-                            instance.wx = el;
-                            wxInstances.splice(i, 1);
-                            break;
-                        }
-                    }
-                }
                 if (!instance.wx) {
+                    instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
                 }
             }
@@ -2548,15 +2549,7 @@ function registerComponent(type, name) {
     function didUpdate() {
         usingComponents[name] = type;
         var uuid = this.props['data-instance-uid'] || null;
-        for (var i = reactInstances.length - 1; i >= 0; i--) {
-            var reactInstance = reactInstances[i];
-            if (reactInstance.instanceUid === uuid) {
-                reactInstance.wx = this;
-                this.reactInstance = reactInstance;
-                updateMiniApp(reactInstance);
-                return reactInstances.splice(i, 1);
-            }
-        }
+        refreshMatchedApp(reactInstances, this, uuid);
     }
     return {
         data: {
@@ -2576,7 +2569,6 @@ function registerComponent(type, name) {
         didUpdate: didUpdate,
         didUnmount: function didUnmount() {
             var t = this.reactInstance;
-            this.disposed = true;
             if (t) {
                 t.wx = null;
                 this.reactInstance = null;
@@ -2593,6 +2585,7 @@ function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
     app.$$page = this;
+    app.$$pagePath = path;
     var container = {
         type: 'page',
         props: {},
@@ -2635,7 +2628,7 @@ function onUnload() {
     var root = this.reactContainer;
     var container = root && root._reactInternalFiber;
     if (container) {
-        Renderer.updateComponent(container.hostRoot, {
+        Renderer.updateComponent(container.child, {
             child: null
         }, function () {
             root._reactInternalFiber = null;
@@ -2674,7 +2667,10 @@ function registerPage(PageClass, path, testObject) {
             var instance = this.reactInstance;
             var fn = instance[hook],
                 fired = false;
-            _getApp().$$page = this;
+            if (hook === 'onShow') {
+                _getApp().$$page = this;
+                _getApp().$$pagePath = instance.props.path;
+            }
             if (isFn(fn)) {
                 fired = true;
                 var ret = fn.call(instance, e);
@@ -2714,7 +2710,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.4.9',
+    version: '1.4.8',
     render: render$1,
     hydrate: render$1,
     webview: webview,

@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2018-12-25
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-01-07
  */
 
 (function (global, factory) {
@@ -3166,9 +3166,6 @@
     function useEffect(create, inputs) {
         return dispatcher.useEffect(create, inputs, PASSIVE, 'passive', 'unpassive');
     }
-    function useLayoutEffect(create, inputs) {
-        return dispatcher.useEffect(create, inputs, HOOK, 'layout', 'unlayout');
-    }
     function useCallback(create, inputs) {
         return dispatcher.useCallbackOrMeno(create, inputs);
     }
@@ -3180,9 +3177,6 @@
     }
     function useContext(initValue) {
         return dispatcher.useContext(initValue);
-    }
-    function useImperativeMethods(ref, create, inputs) {
-        return dispatcher.useImperativeMethods(ref, create, inputs);
     }
 
     var noCheck = false;
@@ -3324,7 +3318,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.4.9',
+            version: '1.4.8',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,
@@ -3336,8 +3330,13 @@
             Component: Component,
             createRef: createRef,
             forwardRef: forwardRef,
-            useState: useState, useReducer: useReducer, useEffect: useEffect, useLayoutEffect: useLayoutEffect, useCallback: useCallback,
-            useMemo: useMemo, useRef: useRef, useContext: useContext, useImperativeMethods: useImperativeMethods,
+            useState: useState,
+            useReducer: useReducer,
+            useEffect: useEffect,
+            useContext: useContext,
+            useCallback: useCallback,
+            useMemo: useMemo,
+            useRef: useRef,
             createElement: createElement,
             cloneElement: cloneElement,
             PureComponent: PureComponent,

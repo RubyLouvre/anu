@@ -1,0 +1,21 @@
+.music-header {
+    margin: 25rpx 15rpx 10rpx;
+    overflow: hidden;
+}
+.music-header:before {
+    display: inline-block;
+    width: 5rpx;
+    background-color: red;
+    height: 0.8em;
+    content: '';
+    vertical-align: middle;
+    margin-right: 15rpx;
+    border-radius: 10rpx;
+}
+
+.music-info {
+    &, & text {
+        font-size: 26rpx;
+        color: #888;
+    }
+}

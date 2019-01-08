@@ -250,7 +250,7 @@
               });
               var slocation = source.location;
               if (modeObject.value === "hash") {
-                  if (replace && slocation.hash !== newHash) {
+                  if (replace && slocation.hash !== to) {
                       history.back();
                   }
                   slocation.hash = to;

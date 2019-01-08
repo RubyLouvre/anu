@@ -1,10 +1,10 @@
-import { registeredComponents, usingComponents, updateMiniApp } from './utils';
+import { registeredComponents, usingComponents, refreshMatchedApp } from './utils';
 import { dispatchEvent } from './eventSystem.quick';
 
 export function registerComponent(type, name) {
     registeredComponents[name] = type;
-    var reactInstances = (type.reactInstances = []);
-    type.wxInstances = {};
+    let reactInstances = (type.reactInstances = []);
+    type.wxInstances = [];
     return {
         data() {
             return {
@@ -18,20 +18,11 @@ export function registerComponent(type, name) {
             usingComponents[name] = type;
         },
         onReady() {
-            var uuid = this.dataInstanceUid || null;
-            for (var i = 0; i < reactInstances.length; i++) {
-                var reactInstance = reactInstances[i];
-                if (reactInstance.instanceUid === uuid) {
-                    reactInstance.wx = this;
-                    this.reactInstance = reactInstance;
-                    updateMiniApp(reactInstance);
-                    return reactInstances.splice(i, 1);
-                }
-            }
+            let uuid = this.dataInstanceUid || null;
+            refreshMatchedApp(reactInstances, this, uuid);
         },
         onDestroy() {
             let t = this.reactInstance;
-            this.disposed = true;
             if (t) {
                 t.wx = null;
                 this.reactInstance = null;

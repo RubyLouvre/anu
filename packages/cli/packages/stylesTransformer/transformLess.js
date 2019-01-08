@@ -11,7 +11,6 @@ let cache = {};
 
 //获取dist路径
 let getDist = (filePath) =>{
-    filePath = utils.resolvePatchComponentPath(filePath);
     let dist = utils.updatePath(filePath, config.sourceDir, 'dist');
     let { name, dir} =  path.parse(dist);
     return path.join(dir, `${name}.${exitName || 'less'}`);
@@ -101,6 +100,7 @@ const renderLess = (filePath, originalCode)=>{
                         .catch((err)=>{
                             // eslint-disable-next-line
                            console.log(err);
+                            process.exit(1);
                         });
                 });
 

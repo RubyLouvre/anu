@@ -18,11 +18,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
         });
         return;
     }
-    let transformFilePath = sourcePath;
-    sourcePath = utils.resolvePatchComponentPath(sourcePath);
-  
     babel.transformFile(
-        transformFilePath,
+        sourcePath,
         {
             babelrc: false,
             comments: false,
@@ -39,7 +36,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
         async function(err, result) {
             if (err) {
                 //eslint-disable-next-line
-                console.log(transformFilePath, '\n', err);
+                console.log(sourcePath, '\n', err);
+                process.exit(1);
             }
             let babelPlugins = [
                 ...require('./babelPlugins/transformEnv'),
@@ -59,7 +57,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 });
             } catch (err) {
                 //eslint-disable-next-line
-                console.log(transformFilePath, '\n', err);
+                console.log(sourcePath, '\n', err);
+                process.exit(1);
             }
             //处理中文转义问题
             result.code = utils.decodeChinise(result.code);

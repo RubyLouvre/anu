@@ -1,10 +1,11 @@
 const postCss = require('postcss');
 const varReg = /@{?([a-zA-Z0-9-_."']+)}?/g;
+const insertVarReg = /@{([a-zA-Z0-9-_."']+)}/g;
 const removeQuoteReg = /^["|'](.*)["|']$/;
 
 const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
     function findVarValue(node, key) {
-        let result = '';
+        let result = { important: false };
         // 去掉变量定义首尾引号
         key = key.replace(removeQuoteReg, '$1');
         let find = false;
@@ -13,36 +14,42 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
         node.each(node => {
             if (node.variable && key === node.name) {
                 find = true;
-                value = node.value;
+                value = node.value.trim();
             }
         });
         if (find && value) {
-            result = value;
+            value = value.replace(/\s*!important$/, function() {
+                result.important = true;
+                return '';
+            });
+            result.value = value;
         }
         // 没找到或到达根节点则退出递归
         if (!find && node.type !== 'root') {
             result = findVarValue(node.parent, key);
         }
 
-        return result.replace(removeQuoteReg, '$1');
+        return result;
     }
 
-    function parseVariable(variable, decl) {
-        const variables = variable && variable.match(varReg);
+    function parseVariable(variable, decl, isInsertVal) {
+        const reg = isInsertVal ? insertVarReg : varReg;
+        const variables = variable && variable.match(reg);
 
         if (variables && variables.length) {
             for (var i = 0, length = variables.length; i < length; i++) {
                 let key;
-                variables[i].replace(varReg, function(a, b) {
+                variables[i].replace(reg, function(a, b) {
                     key = b;
                 });
-                const value = findVarValue(decl.parent, key);
+                const { value, important } = findVarValue(decl.parent, key);
                 variable = variable.replace(variables[i], value);
                 // 添加标识，是由variable转换来的
                 decl.isVar = true;
+                if (important) { decl.important = important; }
             }
         }
-        if (variable && variable.match(varReg)) {
+        if (variable && variable.match(reg)) {
             variable = parseVariable(variable, decl);
         }
         return variable;
@@ -50,27 +57,34 @@ const postCssPluginLessVar = postCss.plugin('postCssPluginLessVar', ()=> {
 
     return (root) => {
         // 解析变量声明
+        root.walkAtRules(decl => {
+            if (decl.mixinVariable) {
+                // 转换变量的value
+                decl.value = parseVariable(decl.value, decl);
+            }
+        });
+        // 解析变量声明
         root.walkDecls(decl => {
-            // 转换变量的key
-            decl.prop = parseVariable(decl.prop, decl);
-            // 转换变量的value
-            decl.value = parseVariable(decl.value, decl);
+            if (!decl.mixinVariable) {
+                // 转换变量的key
+                decl.prop = parseVariable(decl.prop, decl);
+                // 转换变量的value
+                decl.value = parseVariable(decl.value, decl);
+            }
         });
         // 解析插值变量
         root.walkRules(rule => {
-            rule.selector = parseVariable(rule.selector, rule);
+            rule.selector = parseVariable(rule.selector, rule, true);
         });
         
         root.walkAtRules(atrule => {
-            // import语句
-            if (atrule.import) {
+            // 解析charset、namespace、keyframes...
+            if (!atrule.variable) {
                 atrule.params = parseVariable(atrule.params, atrule);
             }
-        });
-        root.walkAtRules(atrule => {
-            // 移除变量声明
-            if (atrule.variable) {
-                atrule.remove();
+            // import语句
+            if (atrule.import) {
+                atrule.filename = atrule.params = parseVariable(atrule.params, atrule);
             }
         });
     };

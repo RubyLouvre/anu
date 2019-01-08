@@ -1,0 +1,26 @@
+.anu-row { // 水平布局
+  display: flex;
+  flex-direction: row;
+}
+.anu-col { // 垂直布局
+  display: flex;
+  flex-direction: column;
+  flex:1;
+}
+
+.anu-wrap {
+  flex-wrap: wrap;
+}
+
+.anu-center { // 主轴居中
+  justify-content: center;
+}
+.anu-middle { // 交叉轴居中
+  align-items: center;
+}
+.anu-grow {
+  flex: 1;
+}
+.anu-shrink {
+  flex: 0;
+}

@@ -11,12 +11,7 @@ import {
     removeStorageSync,
     clearStorageSync
 } from './quickApis/storage.js';
-import {
-    getSavedFileInfo,
-    getSavedFileList,
-    removeSavedFile,
-    saveFile
-} from './quickApis/file.js';
+import { getSavedFileInfo, getSavedFileList, removeSavedFile, saveFile } from './quickApis/file.js';
 import { setClipboardData, getClipboardData } from './quickApis/clipboard.js';
 import { getNetworkType, onNetworkStatusChange } from './quickApis/network.js';
 import { getSystemInfo } from './quickApis/device.js';
@@ -28,18 +23,20 @@ import { showToast } from './quickApis/showToast';
 import { createCanvasContext } from './quickApis/canvas.js';
 
 function createRouter(name) {
-    return function (obj) {
+    return function(obj) {
         const router = require('@system.router');
         const params = {};
-        let href = obj.url || obj.uri || '';
+        let href = obj ? obj.url || obj.uri || '' : '';
         let uri = href.slice(href.indexOf('/pages') + 1);
-        uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('&').forEach(function (param) {
-                param = param.split('=');
-                params[param[0]] = param[1];
-            });
-            return '';
-        }).replace(/\/index$/, '');
+        uri = uri
+            .replace(/\?(.*)/, function(a, b) {
+                b.split('&').forEach(function(param) {
+                    param = param.split('=');
+                    params[param[0]] = param[1];
+                });
+                return '';
+            })
+            .replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
@@ -53,7 +50,7 @@ function createRouter(name) {
 export var api = {
     // 交互
     showModal(obj) {
-        // showCancel 默认值是 true
+    // showCancel 默认值是 true
         obj.showCancel = obj.showCancel === false ? false : true;
         var buttons = [
             {
@@ -120,7 +117,7 @@ export var api = {
     share(obj) {
         var share = require('@service.share');
         share.getAvailablePlatforms({
-            success: function (data) {
+            success: function(data) {
                 let shareType = 0;
                 if (obj.path && obj.title) {
                     shareType = 0;
@@ -137,7 +134,6 @@ export var api = {
                 share.share(obj);
             }
         });
-
     },
 
     // 上传
@@ -183,8 +179,8 @@ export var api = {
     chooseImage,
     setNavigationBarTitle({ title, success, fail, complete }) {
         try {
-            let currentPage = _getApp().page;//相当于getCurrentPage()
-            currentPage.wx.$page.setTitleBar({ text: title });
+            let currentPage = _getApp().$$page; //相当于getCurrentPage()
+            currentPage.$page.setTitleBar({ text: title });
 
             runFunction(success);
         } catch (error) {
@@ -194,5 +190,22 @@ export var api = {
         }
     },
     createShortcut,
-    createCanvasContext
+    createCanvasContext,
+    stopPullDownRefresh(obj) {
+        obj = obj || {};
+        let success = obj.success || noop,
+            fail= obj.fail|| noop,
+            complete = obj.complete || noop;
+
+        try {
+            // 停止刷新没有作用
+            // let currentPage = _getApp().$$page; //相当于getCurrentPage()
+            // console.log('currentPage', currentPage)
+            runFunction(success );
+        } catch (error){
+            runFunction(fail, error);
+        } finally {
+            runFunction(complete);
+        }
+    }
 };

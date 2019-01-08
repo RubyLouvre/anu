@@ -9,6 +9,7 @@ export function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
     app.$$page = this;
+    app.$$pagePath = path;
     let container = {
         type: 'page',
         props: {},
@@ -57,7 +58,7 @@ export function onUnload() {
     let container = root && root._reactInternalFiber;
     if (container) {
         Renderer.updateComponent(
-            container.hostRoot,
+            container.child,
             {
                 child: null
             },

@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2018-12-19T06
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-03
  */
 
 var arrayPush = Array.prototype.push;
@@ -82,7 +82,7 @@ try {
 } catch (e) {}
 var rname = /function\s+(\w+)/;
 function miniCreateClass(ctor, superClass, methods, statics) {
-    var className = ctor.name || (ctor.toString().match(rname) || ["", "Anonymous"])[1];
+    var className = ctor.name || (ctor.toString().match(rname) || ['', 'Anonymous'])[1];
     var Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : function ReactInstance() {
         superClass.apply(this, arguments);
         ctor.apply(this, arguments);
@@ -176,10 +176,10 @@ Component.prototype = {
         return this.updater.isMounted(this);
     },
     setState: function setState(state, cb) {
-        this.updater.enqueueSetState(this, state, cb);
+        this.updater.enqueueSetState(get(this), state, cb);
     },
     forceUpdate: function forceUpdate(cb) {
-        this.updater.enqueueSetState(this, true, cb);
+        this.updater.enqueueSetState(get(this), true, cb);
     },
     render: function render() {
         throw "must implement render";
@@ -1197,11 +1197,14 @@ function createInstance(fiber, context) {
         props: props,
         context: context,
         ref: ref,
+        _reactInternalFiber: fiber,
         __proto__: type.prototype
     };
-    fiber.errorHook = "constructor";
+    fiber.updateQueue = UpdateQueue();
+    fiber.errorHook = 'constructor';
     try {
         if (isStateless) {
+            Renderer.currentOwner = instance;
             extend(instance, {
                 __isStateless: true,
                 __init: true,
@@ -1216,7 +1219,7 @@ function createInstance(fiber, context) {
                     if (a && a.render) {
                         delete this.__isStateless;
                         for (var i in a) {
-                            instance[i == "render" ? "renderImpl" : i] = a[i];
+                            instance[i == 'render' ? 'renderImpl' : i] = a[i];
                         }
                     } else if (this.__init) {
                         this.__keep = {
@@ -1238,13 +1241,12 @@ function createInstance(fiber, context) {
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
-                throw type.name + " doesn't extend React.Component";
+                throw type.name + ' doesn\'t extend React.Component';
             }
         }
     } finally {
         Renderer.currentOwner = lastOwn;
         fiber.stateNode = instance;
-        fiber.updateQueue = UpdateQueue();
         instance._reactInternalFiber = fiber;
         instance.updater = updater;
         instance.context = context;
@@ -1273,8 +1275,9 @@ var DETACH = 13;
 var HOOK = 17;
 var REF = 19;
 var CALLBACK = 23;
-var CAPTURE = 29;
-var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
+var PASSIVE = 29;
+var CAPTURE = 31;
+var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, PASSIVE, CAPTURE].sort(function (a, b) {
     return a - b;
 });
 var effectLength = effectNames.length;
@@ -1600,11 +1603,19 @@ function updateClassComponent(fiber, info) {
         props = fiber.props;
     var contextStack = info.contextStack,
         containerStack = info.containerStack;
-    var newContext = getMaskedContext(instance, type.contextTypes, type.contextType, contextStack);
+    var getContext = type.contextType;
+    var unmaskedContext = contextStack[0];
+    var isStaticContextType = isFn(type.contextType);
+    var newContext = isStaticContextType ? getContext(fiber) : getMaskedContext(instance, type.contextTypes, unmaskedContext);
     if (instance == null) {
         fiber.parent = type === AnuPortal ? props.parent : containerStack[0];
         instance = createInstance(fiber, newContext);
-        cacheContext(instance, contextStack[0], newContext);
+        if (isStaticContextType) {
+            getContext.subscribers.push(instance);
+        }
+    }
+    if (!isStaticContextType) {
+        cacheContext(instance, unmaskedContext, newContext);
     }
     var isStateful = !instance.__isStateless;
     instance._reactInternalFiber = fiber;
@@ -1614,7 +1625,7 @@ function updateClassComponent(fiber, info) {
         if (fiber.hasMounted) {
             applybeforeUpdateHooks(fiber, instance, props, newContext, contextStack);
         } else {
-            applybeforeMountHooks(fiber, instance, props, newContext, contextStack);
+            applybeforeMountHooks(fiber, instance, props);
         }
         if (fiber.memoizedState) {
             instance.state = fiber.memoizedState;
@@ -1637,14 +1648,14 @@ function updateClassComponent(fiber, info) {
     fiber.memoizedState = instance.state;
     if (instance.getChildContext) {
         var context = instance.getChildContext();
-        context = Object.assign({}, contextStack[0], context);
+        context = Object.assign({}, unmaskedContext, context);
         fiber.shiftContext = true;
         contextStack.unshift(context);
     }
+    if (fiber.parent && fiber.hasMounted && fiber.dirty) {
+        fiber.parent.insertPoint = getInsertPoint(fiber);
+    }
     if (isStateful) {
-        if (fiber.parent && fiber.hasMounted && fiber.dirty) {
-            fiber.parent.insertPoint = getInsertPoint(fiber);
-        }
         if (fiber.updateFail) {
             cloneChildren(fiber);
             fiber._hydrating = false;
@@ -1652,7 +1663,7 @@ function updateClassComponent(fiber, info) {
         }
         delete fiber.dirty;
         fiber.effectTag *= HOOK;
-    } else {
+    } else if (fiber.effectTag == 1) {
         fiber.effectTag = WORKING;
     }
     if (fiber.catchError) {
@@ -1661,16 +1672,16 @@ function updateClassComponent(fiber, info) {
     Renderer.onBeforeRender(fiber);
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
-    var rendered = applyCallback(instance, "render", []);
+    var rendered = applyCallback(instance, 'render', []);
     diffChildren(fiber, rendered);
     Renderer.onAfterRender(fiber);
 }
 function applybeforeMountHooks(fiber, instance, newProps) {
     fiber.setout = true;
     if (instance.__useNewHooks) {
-        setStateByProps(instance, fiber, newProps, instance.state);
+        setStateByProps(fiber, newProps, instance.state);
     } else {
-        callUnsafeHook(instance, "componentWillMount", []);
+        callUnsafeHook(instance, 'componentWillMount', []);
     }
     delete fiber.setout;
     mergeStates(fiber, newProps);
@@ -1683,12 +1694,12 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     updater.prevProps = oldProps;
     updater.prevState = oldState;
     var propsChanged = oldProps !== newProps;
-    var contextChanged = instance.context !== newContext;
     fiber.setout = true;
     if (!instance.__useNewHooks) {
+        var contextChanged = instance.context !== newContext;
         if (propsChanged || contextChanged) {
             var prevState = instance.state;
-            callUnsafeHook(instance, "componentWillReceiveProps", [newProps, newContext]);
+            callUnsafeHook(instance, 'componentWillReceiveProps', [newProps, newContext]);
             if (prevState !== instance.state) {
                 fiber.memoizedState = instance.state;
             }
@@ -1698,7 +1709,7 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     var updateQueue = fiber.updateQueue;
     mergeStates(fiber, newProps);
     newState = fiber.memoizedState;
-    setStateByProps(instance, fiber, newProps, newState);
+    setStateByProps(fiber, newProps, newState);
     newState = fiber.memoizedState;
     delete fiber.setout;
     fiber._hydrating = true;
@@ -1707,23 +1718,23 @@ function applybeforeUpdateHooks(fiber, instance, newProps, newContext, contextSt
     } else {
         var args = [newProps, newState, newContext];
         fiber.updateQueue = UpdateQueue();
-        if (!updateQueue.isForced && !applyCallback(instance, "shouldComponentUpdate", args)) {
+        if (!updateQueue.isForced && !applyCallback(instance, 'shouldComponentUpdate', args)) {
             fiber.updateFail = true;
         } else if (!instance.__useNewHooks) {
-            callUnsafeHook(instance, "componentWillUpdate", args);
+            callUnsafeHook(instance, 'componentWillUpdate', args);
         }
     }
 }
 function callUnsafeHook(a, b, c) {
     applyCallback(a, b, c);
-    applyCallback(a, "UNSAFE_" + b, c);
+    applyCallback(a, 'UNSAFE_' + b, c);
 }
 function isSameNode(a, b) {
     if (a.type === b.type && a.key === b.key) {
         return true;
     }
 }
-function setStateByProps(instance, fiber, nextProps, prevState) {
+function setStateByProps(fiber, nextProps, prevState) {
     fiber.errorHook = gDSFP;
     var fn = fiber.type[gDSFP];
     if (fn) {
@@ -1752,42 +1763,25 @@ function cacheContext(instance, unmaskedContext, context) {
     instance.__unmaskedContext = unmaskedContext;
     instance.__maskedContext = context;
 }
-function getMaskedContext(instance, contextTypes, contextType, contextStack) {
-    var noContext = !contextTypes && !contextType;
-    if (instance && noContext) {
-        return instance.context;
-    }
-    var context = {};
-    if (noContext) {
-        return context;
-    }
-    var unmaskedContext = contextStack[0];
+function getMaskedContext(instance, contextTypes, unmaskedContext) {
+    var noContext = !contextTypes;
     if (instance) {
+        if (noContext) {
+            return instance.context;
+        }
         var cachedUnmasked = instance.__unmaskedContext;
         if (cachedUnmasked === unmaskedContext) {
             return instance.__maskedContext;
         }
     }
-    if (contextTypes) {
-        for (var key in contextTypes) {
-            if (contextTypes.hasOwnProperty(key)) {
-                context[key] = unmaskedContext[key];
-            }
-        }
-    } else {
-        var has = false;
-        for (var i in unmaskedContext) {
-            var v = unmaskedContext[i];
-            context = v.get();
-            has = true;
-            break;
-        }
-        if (!has) {
-            context = new contextType.Provider().emitter.get();
-        }
+    var context = {};
+    if (noContext) {
+        return context;
     }
-    if (instance) {
-        cacheContext(instance, unmaskedContext, context);
+    for (var key in contextTypes) {
+        if (contextTypes.hasOwnProperty(key)) {
+            context[key] = unmaskedContext[key];
+        }
     }
     return context;
 }
@@ -1876,7 +1870,7 @@ var Refs = {
                 fiber.deleteRef = true;
             }
         } catch (e) {
-            pushError(fiber, "ref", e);
+            pushError(fiber, 'ref', e);
         }
     }
 };
@@ -1899,9 +1893,10 @@ var refStrategy = {
     }
 };
 
-var domFns = ["insertElement", "updateContent", "updateAttribute"];
+var domFns = ['insertElement', 'updateContent', 'updateAttribute'];
 var domEffects = [PLACE, CONTENT, ATTR];
 var domRemoved = [];
+var passiveFibers = [];
 function commitDFSImpl(fiber) {
     var topFiber = fiber;
     outerLoop: while (true) {
@@ -1934,8 +1929,10 @@ function commitDFSImpl(fiber) {
         while (f) {
             if (f.effectTag === WORKING) {
                 f.effectTag = NOWORK;
+                f.hasMounted = true;
             } else if (f.effectTag > WORKING) {
                 commitEffects(f);
+                f.hasMounted = true;
                 if (f.capturedValues) {
                     f.effectTag = CAPTURE;
                 }
@@ -1959,6 +1956,12 @@ function commitDFS(effects$$1) {
                 disposeFiber(el);
             } else {
                 commitDFSImpl(el);
+            }
+            if (passiveFibers.length) {
+                passiveFibers.forEach(function (fiber) {
+                    safeInvokeHooks(fiber.updateQueue, 'passive', 'unpassive');
+                });
+                passiveFibers.length = 0;
             }
             if (domRemoved.length) {
                 domRemoved.forEach(Renderer.removeElement);
@@ -1990,17 +1993,22 @@ function commitEffects(fiber) {
                     Renderer.updateControlled(fiber);
                     break;
                 case HOOK:
-                    if (fiber.hasMounted) {
-                        guardCallback(instance, "componentDidUpdate", [updater.prevProps, updater.prevState, updater.snapshot]);
+                    if (instance.__isStateless) {
+                        safeInvokeHooks(fiber.updateQueue, 'layout', 'unlayout');
+                    } else if (fiber.hasMounted) {
+                        guardCallback(instance, 'componentDidUpdate', [updater.prevProps, updater.prevState, updater.snapshot]);
                     } else {
                         fiber.hasMounted = true;
-                        guardCallback(instance, "componentDidMount", []);
+                        guardCallback(instance, 'componentDidMount', []);
                     }
                     delete fiber._hydrating;
                     if (fiber.catchError) {
                         fiber.effectTag = amount;
                         return;
                     }
+                    break;
+                case PASSIVE:
+                    passiveFibers.push(fiber);
                     break;
                 case REF:
                     Refs.fireRef(fiber, instance);
@@ -2049,13 +2057,35 @@ function disposeFibers(fiber) {
     delete fiber.oldChildren;
     fiber.children = {};
 }
+function safeInvokeHooks(upateQueue, create, destory) {
+    var uneffects = upateQueue[destory],
+        effects$$1 = upateQueue[create],
+        fn;
+    if (!uneffects) {
+        return;
+    }
+    while (fn = uneffects.shift()) {
+        try {
+            fn();
+        } catch (e) {      }
+    }
+    while (fn = effects$$1.shift()) {
+        try {
+            var f = fn();
+            if (typeof f === 'function') {
+                uneffects.push(f);
+            }
+        } catch (e) {      }
+    }
+}
 function disposeFiber(fiber, force) {
     var stateNode = fiber.stateNode,
         effectTag = fiber.effectTag;
     if (!stateNode) {
         return;
     }
-    if (!stateNode.__isStateless && fiber.ref) {
+    var isStateless = stateNode.__isStateless;
+    if (!isStateless && fiber.ref) {
         Refs.fireRef(fiber, null);
     }
     if (effectTag % DETACH == 0 || force === true) {
@@ -2064,8 +2094,12 @@ function disposeFiber(fiber, force) {
         } else {
             Renderer.onDispose(fiber);
             if (fiber.hasMounted) {
+                if (isStateless) {
+                    safeInvokeHooks(fiber.updateQueue, 'layout', 'unlayout');
+                    safeInvokeHooks(fiber.updateQueue, 'passive', 'unpassive');
+                }
                 stateNode.updater.enqueueSetState = returnFalse;
-                guardCallback(stateNode, "componentWillUnmount", []);
+                guardCallback(stateNode, 'componentWillUnmount', []);
                 delete fiber.stateNode;
             }
         }
@@ -2109,7 +2143,7 @@ function render(vnode, root, callback) {
         Renderer.emptyElement(container);
     }
     var carrier = {};
-    updateComponent(container.hostRoot, {
+    updateComponent(container.child, {
         child: vnode
     }, wrapCb(callback, carrier), immediateUpdate);
     return carrier.instance;
@@ -2272,8 +2306,7 @@ function pushChildQueue(fiber, queue) {
         queue.push(fiber);
     }
 }
-function updateComponent(instance, state, callback, immediateUpdate) {
-    var fiber = get(instance);
+function updateComponent(fiber, state, callback, immediateUpdate) {
     fiber.dirty = true;
     var sn = typeNumber(state);
     var isForced = state === true;
@@ -2394,19 +2427,8 @@ var Renderer$1 = createRenderer({
             }
             var wxInstances = type.wxInstances;
             if (wxInstances) {
-                var componentWx = wxInstances[0];
-                if (componentWx && componentWx.__wxExparserNodeId__) {
-                    for (var i = 0; i < wxInstances.length; i++) {
-                        var el = wxInstances[i];
-                        if (!el.disposed && el.dataset.instanceUid === uuid) {
-                            el.reactInstance = instance;
-                            instance.wx = el;
-                            wxInstances.splice(i, 1);
-                            break;
-                        }
-                    }
-                }
                 if (!instance.wx) {
+                    instance.$$page = Object(_getApp()).$$page;
                     type.reactInstances.push(instance);
                 }
             }
@@ -2599,15 +2621,10 @@ function onUnload() {
         }
         delete usingComponents[i];
     }
-    var instance = this.reactInstance;
-    var hook = instance.componentWillUnmount;
-    if (isFn(hook)) {
-        hook.call(instance);
-    }
     var root = this.reactContainer;
     var container = root && root._reactInternalFiber;
     if (container) {
-        Renderer.updateComponent(container.hostRoot, {
+        Renderer.updateComponent(container.child, {
             child: null
         }, function () {
             root._reactInternalFiber = null;

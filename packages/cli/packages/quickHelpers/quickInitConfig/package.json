@@ -8,13 +8,7 @@
         "watch": "hap watch"
     },
     "devDependencies": {
-        "@babel/cli": "^7.0.0",
-        "@babel/core": "^7.0.0",
-        "@babel/plugin-syntax-jsx": "^7.0.0",
-        "@babel/preset-env": "^7.0.0",
-        "babel-loader": "^8.0.0",
-        "css-what": "^2.1.0",
-        "hap-toolkit": "^0.0.38",
+        "hap-toolkit": "^0.1.0",
         "koa": "^2.3.0",
         "koa-body": "^2.5.0",
         "koa-router": "^7.2.1",

@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2018-12-25
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-01-08T06
  * IE9+
  */
 
@@ -931,6 +931,18 @@ function updateMiniApp(instance) {
         instance.wx.setData(data);
     } else {
         updateQuickApp(instance.wx, data);
+    }
+}
+function refreshMatchedApp(reactInstances, wx, uuid) {
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = reactInstances.length - 1; i >= 0; i--) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
     }
 }
 function updateQuickApp(quick, data) {
@@ -2290,19 +2302,8 @@ var Renderer$1 = createRenderer({
             }
             var wxInstances = type.wxInstances;
             if (wxInstances) {
-                var componentWx = wxInstances[0];
-                if (componentWx && componentWx.__wxExparserNodeId__) {
-                    for (var i = 0; i < wxInstances.length; i++) {
-                        var el = wxInstances[i];
-                        if (!el.disposed && el.dataset.instanceUid === uuid) {
-                            el.reactInstance = instance;
-                            instance.wx = el;
-                            wxInstances.splice(i, 1);
-                            break;
-                        }
-                    }
-                }
                 if (!instance.wx) {
+                    instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
                 }
             }
@@ -2408,6 +2409,7 @@ function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
     app.$$page = this;
+    app.$$pagePath = path;
     var container = {
         type: 'page',
         props: {},
@@ -2450,7 +2452,7 @@ function onUnload() {
     var root = this.reactContainer;
     var container = root && root._reactInternalFiber;
     if (container) {
-        Renderer.updateComponent(container.hostRoot, {
+        Renderer.updateComponent(container.child, {
             child: null
         }, function () {
             root._reactInternalFiber = null;
@@ -2489,7 +2491,10 @@ function registerPage(PageClass, path, testObject) {
             var instance = this.reactInstance;
             var fn = instance[hook],
                 fired = false;
-            _getApp().$$page = this;
+            if (hook === 'onShow') {
+                _getApp().$$page = this;
+                _getApp().$$pagePath = instance.props.path;
+            }
             if (isFn(fn)) {
                 fired = true;
                 var ret = fn.call(instance, e);
@@ -2521,10 +2526,11 @@ function registerPage(PageClass, path, testObject) {
     return config;
 }
 
+var defer = typeof Promise == 'function' ? Promise.resolve().then.bind(Promise.resolve()) : setTimeout;
 function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    var wxInstances = type.wxInstances = [];
+    type.wxInstances = [];
     var config = {
         data: {
             props: {},
@@ -2533,18 +2539,12 @@ function registerComponent(type, name) {
         },
         lifetimes: {
             attached: function attached() {
-                usingComponents[name] = type;
-                var uuid = this.dataset.instanceUid || null;
-                for (var i = 0; i < reactInstances.length; i++) {
-                    var reactInstance = reactInstances[i];
-                    if (reactInstance.instanceUid === uuid) {
-                        reactInstance.wx = this;
-                        this.reactInstance = reactInstance;
-                        updateMiniApp(reactInstance);
-                        return reactInstances.splice(i, 1);
-                    }
-                }
-                wxInstances.push(this);
+                var wx = this;
+                defer(function () {
+                    usingComponents[name] = type;
+                    var uuid = wx.dataset.instanceUid || null;
+                    refreshMatchedApp(reactInstances, wx, uuid);
+                });
             },
             detached: function detached() {
                 var t = this.reactInstance;

@@ -78,10 +78,9 @@ function loop(callee, fn, modules) {
     attrs.push(createAttribute('wx:for-index', fn.params[1].name));
     if (modules.key) {
         attrs.push(createAttribute('wx:key', utils.genKey(modules.key)));
-
         modules.key = null;
     } else {
-        attrs.push(createAttribute('wx:key', t.stringLiteral(`{{${fn.params[1].name}}}`)));
+        attrs.push(createAttribute('wx:key', '*this'));
     }
 
     const body = t.isBlockStatement(fn.body)

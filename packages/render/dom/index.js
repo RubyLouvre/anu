@@ -5,11 +5,7 @@ import { PureComponent } from 'react-core/PureComponent';
 import { createRef, forwardRef } from 'react-core/createRef';
 import { createPortal } from 'react-core/createPortal';
 import { createContext } from 'react-core/createContext';
-
-import { useState,useReducer, useEffect,useLayoutEffect, 
-    useCallback,useMemo,useRef,useContext,
-    useImperativeMethods
-} from 'react-core/hooks';
+import { useState, useReducer, useEffect, useCallback, useMemo, useRef, useContext } from 'react-core/hooks';
 
 import {
     createElement,
@@ -53,8 +49,13 @@ if (prevReact && prevReact.eventSystem) {
         Component,
         createRef,
         forwardRef,
-        useState,useReducer, useEffect,useLayoutEffect, useCallback,
-        useMemo,useRef,useContext,useImperativeMethods,
+        useState,
+        useContext,
+        useEffect,
+        useReducer,
+        useCallback,
+        useMemo,
+        useRef,
         createElement,
         cloneElement,
         PureComponent,

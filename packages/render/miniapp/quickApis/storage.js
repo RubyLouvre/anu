@@ -1,6 +1,5 @@
 const storage = require('@system.storage');
-import {runFunction} from '../utils';
-
+import { runFunction } from '../utils';
 
 function setStorage({ key, data, success, fail, complete }) {
   let value = data;
@@ -39,20 +38,55 @@ function clearStorage(obj) {
 let storageCache = {};
 
 function setStorageSync(key, value) {
-   return storageCache[key] = value
+  setStorage({
+    key: key,
+    data: value
+  });
+  return storageCache[key] = value;
 }
 
-function getStorageSync(key) {
-  return storageCache[key]
+function getStoragePromise(key) {
+  return new Promise((resolve, rejects) => {
+    getStorage({
+      key: key,
+      success: res => {
+        resolve(res.data);
+      },
+      fail: () => {
+        rejects(null);
+      }
+    });
+  });
+}
+
+async function getStorageSync(key) {
+  let value = storageCache[key];
+
+  // 这样做不对的
+  if (!value) {
+    value = await getStoragePromise(key);
+  }
+
+  return value;
 }
 
 function removeStorageSync(key) {
-  delete storageCache[key]
+  delete storageCache[key];
+  removeStorage({key: key})
 }
 
-function clearStorageSync(key) {
-  storageCache = {}
+function clearStorageSync() {
+  storageCache = {};
+  clearStorage({})
 }
 
-
-export { setStorage, getStorage, removeStorage, clearStorage, setStorageSync, getStorageSync, removeStorageSync,clearStorageSync  };
+export {
+  setStorage,
+  getStorage,
+  removeStorage,
+  clearStorage,
+  setStorageSync,
+  getStorageSync,
+  removeStorageSync,
+  clearStorageSync
+};

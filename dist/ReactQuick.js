@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2018-12-25
+ * 运行于快应用的React by 司徒正美 Copyright 2019-01-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -674,6 +674,18 @@ function updateMiniApp(instance) {
         updateQuickApp(instance.wx, data);
     }
 }
+function refreshMatchedApp(reactInstances, wx, uuid) {
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = reactInstances.length - 1; i >= 0; i--) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
+    }
+}
 function updateQuickApp(quick, data) {
     for (var i in data) {
         quick.$set(i, data[i]);
@@ -931,16 +943,39 @@ function clearStorage(obj) {
 }
 var storageCache = {};
 function setStorageSync(key, value) {
+  setStorage({
+    key: key,
+    data: value
+  });
   return storageCache[key] = value;
 }
-function getStorageSync(key) {
-  return storageCache[key];
+function getStoragePromise(key) {
+  return new Promise(function (resolve, rejects) {
+    getStorage({
+      key: key,
+      success: function success(res) {
+        resolve(res.data);
+      },
+      fail: function fail() {
+        rejects(null);
+      }
+    });
+  });
+}
+async function getStorageSync(key) {
+  var value = storageCache[key];
+  if (!value) {
+    value = await getStoragePromise(key);
+  }
+  return value;
 }
 function removeStorageSync(key) {
   delete storageCache[key];
+  removeStorage({ key: key });
 }
-function clearStorageSync(key) {
+function clearStorageSync() {
   storageCache = {};
+  clearStorage({});
 }
 
 var file = require('@system.file');
@@ -1224,7 +1259,7 @@ function createRouter(name) {
     return function (obj) {
         var router = require('@system.router');
         var params = {};
-        var href = obj.url || obj.uri || '';
+        var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('&').forEach(function (param) {
@@ -1354,8 +1389,8 @@ var api = {
             fail = _ref2.fail,
             complete = _ref2.complete;
         try {
-            var currentPage = _getApp().page;
-            currentPage.wx.$page.setTitleBar({ text: title });
+            var currentPage = _getApp().$$page;
+            currentPage.$page.setTitleBar({ text: title });
             runFunction(success);
         } catch (error) {
             runFunction(fail, error);
@@ -1364,7 +1399,20 @@ var api = {
         }
     },
     createShortcut: createShortcut,
-    createCanvasContext: createCanvasContext
+    createCanvasContext: createCanvasContext,
+    stopPullDownRefresh: function stopPullDownRefresh(obj) {
+        obj = obj || {};
+        var success = obj.success || noop,
+            fail = obj.fail || noop,
+            complete = obj.complete || noop;
+        try {
+            runFunction(success);
+        } catch (error) {
+            runFunction(fail, error);
+        } finally {
+            runFunction(complete);
+        }
+    }
 };
 
 function UpdateQueue() {
@@ -2620,19 +2668,8 @@ var Renderer$1 = createRenderer({
             }
             var wxInstances = type.wxInstances;
             if (wxInstances) {
-                var componentWx = wxInstances[0];
-                if (componentWx && componentWx.__wxExparserNodeId__) {
-                    for (var i = 0; i < wxInstances.length; i++) {
-                        var el = wxInstances[i];
-                        if (!el.disposed && el.dataset.instanceUid === uuid) {
-                            el.reactInstance = instance;
-                            instance.wx = el;
-                            wxInstances.splice(i, 1);
-                            break;
-                        }
-                    }
-                }
                 if (!instance.wx) {
+                    instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
                 }
             }
@@ -2749,7 +2786,7 @@ function toStyle(obj, props, key) {
 function registerComponent(type, name) {
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    type.wxInstances = {};
+    type.wxInstances = [];
     return {
         data: function data() {
             return {
@@ -2763,19 +2800,10 @@ function registerComponent(type, name) {
         },
         onReady: function onReady() {
             var uuid = this.dataInstanceUid || null;
-            for (var i = 0; i < reactInstances.length; i++) {
-                var reactInstance = reactInstances[i];
-                if (reactInstance.instanceUid === uuid) {
-                    reactInstance.wx = this;
-                    this.reactInstance = reactInstance;
-                    updateMiniApp(reactInstance);
-                    return reactInstances.splice(i, 1);
-                }
-            }
+            refreshMatchedApp(reactInstances, this, uuid);
         },
         onDestroy: function onDestroy() {
             var t = this.reactInstance;
-            this.disposed = true;
             if (t) {
                 t.wx = null;
                 this.reactInstance = null;
@@ -2790,6 +2818,7 @@ function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
     app.$$page = this;
+    app.$$pagePath = path;
     var container = {
         type: 'page',
         props: {},
@@ -2832,7 +2861,7 @@ function onUnload() {
     var root = this.reactContainer;
     var container = root && root._reactInternalFiber;
     if (container) {
-        Renderer.updateComponent(container.hostRoot, {
+        Renderer.updateComponent(container.child, {
             child: null
         }, function () {
             root._reactInternalFiber = null;
@@ -2914,7 +2943,6 @@ function registerPage(PageClass) {
             var instance = onLoad.call(this, PageClass, array[0], array[1]);
             var pageConfig = instance.config || PageClass.config;
             $app.$$pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
-            $app.$$pagePath = array[0];
         },
         onReady: onReady,
         onDestroy: onUnload
@@ -2923,7 +2951,10 @@ function registerPage(PageClass) {
         config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook];
-            _getApp().$$page = this;
+            if (hook === 'onShow') {
+                _getApp().$$page = instance.wx;
+                _getApp().$$pagePath = instance.props.path;
+            }
             if (hook === 'onMenuPress') {
                 showMenu(instance, this.$app);
             } else if (isFn(fn)) {
@@ -2946,7 +2977,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.4.9',
+    version: '1.4.8',
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,
