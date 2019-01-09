@@ -73,6 +73,7 @@
     "babel-traverse": "^6.26.0",
     "babel-types": "^6.26.0",
     "babylon": "^6.18.0",
+    "clean-css": "^4.2.1",
     "cross-env": "^5.1.4",
     "es3ify-webpack-plugin": "0.0.1",
     "eslint": "^5.4.0",

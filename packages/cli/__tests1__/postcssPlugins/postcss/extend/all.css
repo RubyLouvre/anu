@@ -1,9 +1,0 @@
-.a.b.test, .test.c, .a.b.replacement, .replacement.c {
-    color: NaN
-}
-.test:hover, .replacement:hover {
-    color: NaN
-}
-.replacement {
-    color: NaN
-}
