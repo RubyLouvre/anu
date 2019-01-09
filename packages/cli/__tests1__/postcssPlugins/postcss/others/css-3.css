@@ -1,0 +1,140 @@
+.comma-delimited {
+    text-shadow: NaN;
+    -moz-box-shadow: NaN;
+    -webkit-transform: NaN
+}
+@font-face {
+    font-family: NaN;
+    unicode-range: NaN
+}
+.other {
+    -moz-transform: NaN;
+    transform: NaN
+}
+.item[data-cra_zy-attr1b-ut3=bold] {
+    font-weight: NaN
+}
+p:not([class*="lead"]) {
+    color: NaN
+}
+input[type="text"].class#id[attr=32]:not(1) {
+    color: NaN
+}
+div#id.class[a=1][b=2].class:not(1) {
+    color: NaN
+}
+ul.comma > li:not(:only-child)::after {
+    color: NaN
+}
+ol.comma > li:nth-last-child(2)::after {
+    color: NaN
+}
+li:nth-child(4n+1), li:nth-child(-5n), li:nth-child(-n+2) {
+    color: NaN
+}
+a[href^="http://"] {
+    color: NaN
+}
+a[href$="http://"] {
+    color: NaN
+}
+form[data-disabled] {
+    color: NaN
+}
+p::before {
+    color: NaN
+}
+#issue322 {
+    -webkit-animation: NaN
+}
+@-webkit-keyframes frames {
+    0% {
+        border: NaN
+    }
+    5.5% {
+        border: NaN
+    }
+    100% {
+        border: NaN
+    }
+}
+@keyframes fontbulger1 {
+    to {
+        font-size: NaN
+    }
+    from, to {
+        font-size: NaN
+    }
+    0%, 100% {
+        font-size: NaN
+    }
+}
+@supports ( box-shadow: 2px 2px 2px black ) or
+          ( -moz-box-shadow: 2px 2px 2px black ) {
+    .outline {
+        box-shadow: NaN;
+        -moz-box-shadow: NaN
+    }
+}
+@-x-document url-prefix(""github.com"") {
+    h1 {
+        color: NaN
+    }
+}
+@viewport {
+    font-size: NaN
+}
+@namespace foo url(http://www.example.com);
+foo|h1 {
+    color: NaN
+}
+foo|* {
+    color: NaN
+}
+|h1 {
+    color: NaN
+}
+*|h1 {
+    color: NaN
+}
+h1 {
+    color: NaN
+}
+.upper-test {
+    UpperCaseProperties: NaN
+}
+@host {
+    div {
+        display: NaN
+    }
+}
+::distributed(input::placeholder) {
+    color: NaN
+}
+.shadow ^ .dom, body ^^ .shadow {
+    display: NaN
+}
+:host(.sel .a), :host-context(.sel .b), .sel /deep/ .b, ::content .sel {
+    type: NaN
+}
+/deep/ b {
+    c: NaN
+}
+/deep/ b[e] {
+    f: NaN
+}
+#issue2066 {
+    background: NaN
+}
+@counter-style triangle {
+    system: NaN;
+    symbols: NaN;
+    suffix: NaN
+}
+@-ms-viewport {}
+@unknown foo 42 (bar) {
+    x {
+        y: NaN
+    }
+}
+@unknown foo 43

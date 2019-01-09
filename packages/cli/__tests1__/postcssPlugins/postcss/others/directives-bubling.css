@@ -1,0 +1,119 @@
+.parent {
+    color: NaN
+}
+@document url-prefix() {
+    .parent .child {
+        color: NaN
+    }
+}
+@supports (sandwitch: butter) {
+    .inside .top {
+        property: NaN
+    }
+}
+@supports (sandwitch: bread) {
+    .in1 .in2 {
+        property: NaN
+    }
+}
+@supports (sandwitch: ham) {
+    .inside .top {
+        property: NaN
+    }
+}
+@supports (font-family: weirdFont) {
+    @font-face {
+        font-family: NaN;
+        src: NaN
+    }
+}
+@font-face {
+    @supports not (-webkit-font-smoothing: subpixel-antialiased) {
+        font-family: NaN;
+        src: NaN
+    }
+}
+@supports (property: value) {
+    @media (max-size: 2px) {
+        @supports (whatever: something) {
+            .outOfMedia {
+                property: NaN
+            }
+        }
+    }
+}
+@supports (property: value) {
+    @media (max-size: 2px) {
+        @supports (whatever: something) {
+            .onTop {
+                property: NaN
+            }
+        }
+    }
+}
+@media print {
+    html {
+        in-html: NaN
+    }
+    @supports (upper: test) {
+        html {
+            in-supports: NaN
+        }
+        html div {
+            in-div: NaN
+        }
+        @supports not (-webkit-font-smoothing: subpixel-antialiased) {
+            html div {
+                in-supports: NaN
+            }
+            @media screen {
+                html div {
+                    font-weight: 400
+                }
+                html div nested {
+                    property: NaN
+                }
+            }
+        }
+    }
+}
+@media print and (max-size: 2px) {
+    .in1 {
+        stay: NaN
+    }
+    @supports not (-webkit-font-smoothing: subpixel-antialiased) {
+        @supports (whatever: something) {
+            .in2 .in1 {
+                property: NaN
+            }
+        }
+    }
+}
+html {
+    font-weight: 300;
+    -webkit-font-smoothing: NaN
+}
+@supports not (-webkit-font-smoothing: subpixel-antialiased) {
+    html {
+        font-weight: 400
+    }
+    html nested {
+        property: NaN
+    }
+}
+.onTop {
+    animation: NaN;
+    font-family: NaN
+}
+@font-face {
+    font-family: NaN;
+    src: NaN
+}
+@keyframes "textscale" {
+    0% {
+        font-size: NaN
+    }
+    100% {
+        font-size: NaN
+    }
+}

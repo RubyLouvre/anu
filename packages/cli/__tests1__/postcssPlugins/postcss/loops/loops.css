@@ -1,5 +1,19 @@
-.loop() when ( > 0) {width: (10px * );}
-
-.generate-columns(, : 1) when ( =< ) .column- {
-    width: ( * 100% / );
-  }
+div {
+    width: NaN;
+    width: NaN;
+    width: NaN;
+    width: NaN;
+    width: NaN
+}
+.column-1 {
+    width: NaN
+}
+.column-2 {
+    width: NaN
+}
+.column-3 {
+    width: NaN
+}
+.column-4 {
+    width: NaN
+}

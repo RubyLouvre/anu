@@ -1,10 +1,13 @@
-@media print { 
-  .selector, .screenClass {color: black;
-  }
+@media print {
+    .selector, .screenClass {
+        color: NaN
+    }
 }
-.selector {color: red;
+.selector {
+    color: NaN
 }
 @media screen {
-  .selector {color: blue;
-  }
+    .selector {
+        color: NaN
+    }
 }

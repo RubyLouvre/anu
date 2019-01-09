@@ -1,6 +1,7 @@
 .caller {
-  width: ;
-  height: ;
+    width: NaN;
+    height: NaN
 }
-
-div {padding: ;}
+div {
+    padding: NaN
+}

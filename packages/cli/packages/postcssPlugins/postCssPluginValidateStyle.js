@@ -2,7 +2,8 @@ const postCss = require('postcss');
 const chalk = require('chalk');
 
 function rpxToPx(value) {
-    return value.replace(/([-\d]+)(r?px)/g, function(match, numberStr, unit) {
+    return value.replace(/(-?\d*\.?\d+)(r?px)/g, function(match, numberStr, unit) {
+        
         const number = Number(numberStr.trim());
         if (unit === 'rpx') {
             return `${number}px`;

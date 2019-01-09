@@ -1,17 +1,10 @@
-.border-radius(: 5px) {
-  -webkit-border-radius: ;
-  -moz-border-radius: ;
-  border-radius: ;
-}
-.mixin(; : 2) {
-  color-2: ;
-  padding-2: ;
-}
-.mixin(; ; : 2) {
-  color-3: ;
-  padding-3: ;
-  margin:    ;
+#header {
+    -webkit-border-radius: NaN;
+    -moz-border-radius: NaN;
+    border-radius: NaN
 }
 .some .selector div {
-  color-1: ;
+    color-1: NaN;
+    color-2: NaN;
+    padding-2: 2
 }

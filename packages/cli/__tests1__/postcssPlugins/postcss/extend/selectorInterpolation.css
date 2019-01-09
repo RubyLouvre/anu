@@ -1,6 +1,6 @@
-.bucket, .some-class {color: blue;
-} 
-
 .bucket, .some-class {
-  color: blue;
+    color: NaN
+}
+.bucket, .some-class {
+    color: NaN
 }

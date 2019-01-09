@@ -1,5 +1,10 @@
-.mixin(: black; : 10px; : 20px) {
-  color: ;
-  margin: ;
-  padding: ;
+.class1 {
+    color: NaN;
+    margin: NaN;
+    padding: NaN
+}
+.class2 {
+    color: NaN;
+    margin: NaN;
+    padding: NaN
 }
