@@ -24,7 +24,6 @@ let needUpdate = (id, originalCode, fn) => {
 
 //获取dist路径
 let getDist = (filePath) =>{
-    filePath = utils.resolvePatchComponentPath(filePath);
     let dist = utils.updatePath(filePath, config.sourceDir, 'dist');
     let { name, dir, ext} =  path.parse(dist);
     let distPath = '';

@@ -7,6 +7,7 @@ const rbabel = require('rollup-plugin-babel');
 const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs'); 
 const alias = require('rollup-plugin-alias');
+const nodeResolve = require('resolve');
 const chokidar = require('chokidar');
 const fs = require('fs-extra');
 const glob = require('glob');
@@ -17,7 +18,7 @@ const quickFiles = require('./quickFiles');
 const miniTransform = require('./miniappTransform');
 
 const styleTransform = require('./styleTransform');
-const resolveNpm = require('./resolveNpm');
+
 const generate = require('./generate');
 let cwd = process.cwd();
 let inputPath = path.join(cwd,  config.sourceDir);
@@ -43,9 +44,6 @@ let removeDist = ()=>{
     }
 };
 
-const isNpm = path => {
-    return /\/node_modules\//.test(path);
-};
 const isStyle = path => {
     return /\.(?:less|scss|sass)$/.test(path);
 };
@@ -56,16 +54,13 @@ const isJson = path => {
     return /\.json$/.test(path);
 };
 const getFileType = (id)=>{
-    if ( isNpm(id) ) {
-        return 'npm';
-    } else if (isStyle(id)){
+    if (isStyle(id)){
         return 'css';
     } else if (isJs(id)) {
         return 'js';
     } else if (isJson(id)){
         return 'json';
     }
-
 };
 
 //跳过rollup对样式内容解析
@@ -99,31 +94,33 @@ class Parser {
             jsCodeLineNumberError: [],
             //page中是否包含了component目录
             componentInPageError: [],
-            jsxError: []
+            jsxError: [],
+            // 引用的组件是否符合规范
+            componentsStandardError: []
         };
+        
         this.customAliasConfig = Object.assign(
             { resolve: ['.js','.css', '.scss', '.sass', '.less'] },
-            utils.getCustomAliasConfig()
+            utils.getAliasConfig()
         );
+        
         this.inputConfig = {
             input: this.entry,
-            treeshake: false,
             plugins: [
                 alias(this.customAliasConfig), //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
-                    jail: path.join(cwd), //从项目根目录中搜索npm模块, 防止向父级查找
-                    preferBuiltins: false,
+                    jail: path.join(cwd),   //从项目根目录中搜索npm模块, 防止向父级查找
+                    preferBuiltins: false,  //防止查找内置模块
                     customResolveOptions: {
                         moduleDirectory: [
-                            path.join(cwd, 'node_modules'),
+                            path.join(cwd, 'node_modules')
                         ]
                     }
                 }),
                 ignoreStyleParsePlugin(),
                 commonjs({
-                    include: [
-                        path.join(cwd, 'node_modules/**')
-                    ]
+                    include: 'node_modules/**',
+                    exclude: ['node_modules/schnee-ui/**'] //防止解析ui库中的jsx报错
                 }),
                 rbabel({
                     babelrc: false,
@@ -132,6 +129,16 @@ class Parser {
                     plugins: [
                         require('babel-plugin-transform-class-properties'),
                         require('babel-plugin-transform-object-rest-spread'),
+                        [
+                            //重要,import { Xbutton } from 'schnee-ui' //按需引入
+                            require('babel-plugin-import').default,
+                            {
+                                libraryName: 'schnee-ui',
+                                libraryDirectory: 'components',
+                                camel2DashComponentName: false
+                            }
+                        ],
+                        require('./babelPlugins/collectPatchComponents'),
                         ...require('./babelPlugins/validateJsx')(this.collectError)
                     ]
                 })
@@ -140,16 +147,16 @@ class Parser {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
                 if (warning.code === 'UNRESOLVED_IMPORT') {
-                    if (this.customAliasConfig[warning.source.split(path.sep)[0]]) return;
-                    console.log(chalk.red(`缺少模块: ${warning.source}, 请检查`));
+                    let key = warning.source.split(path.sep)[0];
+                    if (this.customAliasConfig[key]) return;
+                    console.log(chalk.red(`缺少运行依赖模块: ${key}, 请安装.`));
+                    process.exit(1);
                 }
             }
-            
         };
 
         //监听是否有patchComponent解析
-        utils.on('compliePatch', (data)=>{
-            let id =  path.join(data.href, 'index.js');
+        utils.on('compliePatch', (id)=>{
             this.inputConfig.input = id;
             this.parse();
         });
@@ -157,21 +164,38 @@ class Parser {
     }
     async parse() {
         let bundle = await rollup.rollup(this.inputConfig);
+        
+        //如果有需要打补丁的组件并且本地没有安装schnee-ui
+        if (this.needInstallUiLib()) {
+            utils.installer('schnee-ui');
+        }
+    
+        let moduleMap = this.moduleMap();
         bundle.modules.forEach(item => {
-            const id = item.id;
-            if (/commonjsHelpers/.test(id)) return;
-            this.moduleMap()[getFileType(id)](item);
+            if (/commonjsHelpers/.test(item.id)) return;
+            let hander = moduleMap[getFileType(item.id)];
+            if (hander) {
+                hander(item);
+            }
             this.collectDeps(item);
         });
 
         this.check(()=>{
             this.transform();
         });
-
+        
         this.copyAssets();
         this.copyProjectConfig();
     }
-    
+    needInstallUiLib() {
+        if ( !config[config.buildType].jsxPatchNode ) return false; //没有需要patch的组件
+        try {
+            nodeResolve.sync('schnee-ui', { basedir: process.cwd() });
+            return false;
+        } catch (err) {
+            return true;
+        }
+    }
     collectDeps(item) {
         //搜集js的样式依赖，快应用下如果更新样式，需触发js构建ux.
         if ( !/\.js$/.test(item.id) ) return;
@@ -184,68 +208,65 @@ class Parser {
     }
     moduleMap() {
         return {
-            npm: (data)=>{
-                this.npmFiles.push({
-                    id: data.id,
-                    originalCode: data.originalCode
-                });
-            },
             css: (data)=>{
                 this.checkStyleImport(data);
-
                 if (config.buildType == 'quick'){
                     //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
                     var jsName = data.id.replace(/\.\w+$/, '.js');
                     if (fs.pathExistsSync(jsName)) {
                         var cssExt = path.extname(data.id).slice(1);
-                        quickFiles[ utils.resolvePatchComponentPath(jsName) ] = {
+                        quickFiles[ jsName ] = {
                             cssPath: data.id,
                             cssType: cssExt === 'scss' ?  'sass' : cssExt
                         };
                     }
                     return;
                 }
-
                 this.styleFiles.push({
                     id: data.id,
                     originalCode: data.originalCode
                 });
             },
             js: (data)=>{
-                
                 //校验文件代码行数是否超过500, 抛出警告。
                 this.checkCodeLine(data.id, data.originalCode, 500);
-
                 //校验pages目录中是否包含components目录
                 this.checkComponentsInPages(data.id);
-
+                //校验组件组件名以及文件夹是否符合规范
+                this.checkImportComponent(data);
                 this.jsFiles.push({
                     id: data.id,
                     originalCode: data.originalCode,
-                    resolvedIds: this.filterNpmModule(data.resolvedIds) //处理路径alias配置
+                    resolvedIds: data.resolvedIds //获取alias配置
                 });
             }
         };
     }
-    filterNpmModule(resolvedIds) {
-        //判定路径是否以字母开头
-        let result = {};
-        Object.keys(resolvedIds).forEach(key => {
-            if (utils.isNpm(key)) {
-                result[key] = resolvedIds[key];
+
+    checkImportComponent(item){
+        // const path = item.id;
+        const componentsDir = path.join(cwd, config.sourceDir, 'components');
+        // 如果是 components 中的组件需要校验
+        if (item.id.indexOf(componentsDir) === 0) {
+            const restComponentsPath = item.id.replace(componentsDir, '');
+            if (!/^(\/|\\)[A-Z][a-zA-Z0-9]*(\/|\\)index\.js/.test(restComponentsPath)) {
+                this.collectError.componentsStandardError.push({
+                    id: item.id,
+                    level: 'error',
+                    msg: item.id.replace(`${cwd}${path.sep}`, '')
+                        + '\n组件名必须首字母大写\nimport [组件名] from \'@components/[组件名]/[此处必须index]\''
+                        + '\neg. import Loading from \'@components/Loading/index\'\n'
+                });
             }
-        });
-        return result;
+        }
     }
     transform() {
         this.updateJsQueue(this.jsFiles);
         this.updateStyleQueue(this.styleFiles);
-        this.updateNpmQueue(this.npmFiles);
     }
     check( cb ) {
         let errorMsg = '';
         let warningMsg = '';
-     
         Object.keys(this.collectError).forEach((key)=>{
             this.collectError[key].forEach((info)=>{
                 switch (info.level) {
@@ -257,9 +278,9 @@ class Parser {
                         break;
                 }
             });
+            this.collectError[key] = [];
         });
-       
-
+        
         if ( warningMsg ) {
             console.log(chalk.yellow(warningMsg));
         }
@@ -312,7 +333,9 @@ class Parser {
     }
     updateJsQueue(jsFiles) {
         while (jsFiles.length) {
-            let { id, originalCode, resolvedIds } = jsFiles.shift();       
+            let item = jsFiles.shift();
+            if (/commonjs-proxy:/.test(item.id)) item.id = item.id.split(':')[1];
+            let { id, originalCode, resolvedIds } = item;
             needUpdate(id, originalCode, function(){
                 miniTransform(id, resolvedIds, originalCode);
             });
@@ -326,16 +349,6 @@ class Parser {
                     id: id,
                     originalCode: originalCode
                 });   
-            });
-        }
-    }
-    updateNpmQueue(npmFiles) {
-        while (npmFiles.length) {
-            let item = npmFiles.shift();
-            // rollup 处理 commonjs 模块时候，会在 id 加上 commonjs-proxy: 前缀
-            if (/commonjs-proxy:/.test(item.id)) item.id = item.id.split(':')[1];
-            needUpdate(item.id, item.originalCode, function(){
-                resolveNpm(item);
             });
         }
     }

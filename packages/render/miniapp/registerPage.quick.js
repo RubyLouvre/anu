@@ -39,7 +39,7 @@ export function registerPage(PageClass) {
                 pageConfig && Object.keys(pageConfig).length
                     ? pageConfig
                     : null;
-            $app.$$pagePath = array[0];
+            // $app.$$pagePath = array[0];
         },
         onReady: onReady,
         onDestroy: onUnload
@@ -48,7 +48,10 @@ export function registerPage(PageClass) {
         config[hook] = function(e) {
             let instance = this.reactInstance;
             let fn = instance[hook];
-            _getApp().$$page = this;
+            if (hook === 'onShow'){
+                _getApp().$$page = instance.wx;
+                _getApp().$$pagePath = instance.props.path;
+            }
             if (hook === 'onMenuPress') {
                 showMenu(instance, this.$app);
             } else if (isFn(fn)) {
