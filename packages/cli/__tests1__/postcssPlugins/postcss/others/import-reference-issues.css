@@ -1,0 +1,22 @@
+.test-c {
+    background-color: NaN
+}
+.theOnlySelector {
+    shall-have: NaN
+}
+show-all-content {
+    /* tralala */
+}
+show-all-content .fix {
+    fix: NaN
+}
+show-all-content .something {
+    inside: NaN
+}
+#used-namespaced-mixin {
+    was: NaN;
+    shall-see: NaN
+}
+call-mixin-with-import-by-reference-inside {
+    the-only-property: NaN
+}

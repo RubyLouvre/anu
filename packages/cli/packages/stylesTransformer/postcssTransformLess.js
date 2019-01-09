@@ -3,28 +3,35 @@ const fs = require('fs');
 const postCss = require('postcss');
 const utils = require('../utils');
 const postCssLessEngine = require('postcss-less-engine');
+const config = require('../config');
 
 const compileLessByPostCss = (filePath, originalCode)=>{
     return new Promise((resolved, reject)=>{
-        postCss([
+        let plugins = [
             postCssLessEngine(),
+            require('../postcssPlugins/postCssPluginFixNumber'),
             require('../postcssPlugins/postCssPluginValidateStyle'),
             require('postcss-import')({
                 resolve(importer, baseDir){
                     //如果@import的值没有文件后缀
-                    if (!/\.s[ca]ss$/.test(importer)) {
-                        importer = importer + '.scss';
+                    if (!/\.less$/.test(importer)) {
+                        importer = importer + '.less';
                     }
                     //处理alias路径
                     return utils.resolveStyleAlias(importer, baseDir);
                 }
-            }),
-        ])
+            })
+        ];
+        if (config.buildType !== 'quick') {
+            // 只有快应用需要postCssPluginValidateStyle插件
+            plugins.splice(2, 1);
+        }
+        postCss(plugins)
             .process(
                 originalCode || fs.readFileSync(filePath).toString(),
                 {
                     from: filePath,
-                    parser: postCssLessEngine.parser,
+                    parser: postCssLessEngine.parser
                 }
             )
             .then((result)=>{

@@ -1,5 +1,5 @@
-.box-shadow(: 0; : 0; : 1px; : #000) {
-  -webkit-box-shadow: ;
-  -moz-box-shadow: ;
-  box-shadow: ;
+.big-block {
+    -webkit-box-shadow: NaN;
+    -moz-box-shadow: NaN;
+    box-shadow: NaN
 }

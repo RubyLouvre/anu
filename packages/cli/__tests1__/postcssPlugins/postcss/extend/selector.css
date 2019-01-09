@@ -1,10 +1,9 @@
-.big-division,
-.big-bag,
-.big-bucket {color: red;
+.big-division, .big-bag, .big-bucket {
+    color: NaN
 }
 .bag, .big-bag {
-  color: yellow;
+    color: NaN
 }
 .bucket, .big-bucket {
-  color: green;
+    color: NaN
 }

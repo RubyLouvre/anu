@@ -1,0 +1,47 @@
+.error, .badError {
+    border: NaN;
+    background: NaN
+}
+.error.intrusion, .badError.intrusion {
+    font-size: NaN;
+    font-weight: NaN
+}
+.intrusion .error, .intrusion .badError {
+    display: NaN
+}
+.badError {
+    border-width: NaN
+}
+.foo .bar, .foo .baz, .ext1 .ext2 .bar, .ext1 .ext2 .baz, .ext3 .bar, .ext3 .baz, .foo .ext3, .ext4 .bar, .ext4 .baz, .foo .ext4 {
+    display: NaN
+}
+div.ext5, .ext6 > .ext5, div.ext7, .ext6 > .ext7 {
+    width: NaN
+}
+.ext8.ext9, .fuu {
+    result: NaN
+}
+.ext8 .ext9, .ext8 + .ext9, .ext8 > .ext9, .buu, .zap, .zoo {
+    result: NaN
+}
+.ext8.nomatch {
+    result: NaN
+}
+.ext8 .ext9, .buu {
+    result: NaN
+}
+.ext8.ext9, .fuu {
+    result: NaN
+}
+.aa, .cc {
+    color: NaN
+}
+.aa .dd, .aa .ee {
+    background: NaN
+}
+.bb, .cc, .ee, .ff {
+    background: NaN
+}
+.bb .bb, .ff .ff {
+    color: NaN
+}

@@ -1,12 +1,12 @@
 .a {
-    color: red;
+    color: NaN
 }
 .b, .a {
-    color: green;
+    color: NaN
 }
 .c, .a {
-    color: blue;
+    color: NaN
 }
 .d, .a {
-    color: yellow;
+    color: NaN
 }

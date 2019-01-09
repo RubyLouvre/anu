@@ -1,0 +1,26 @@
+/* * comment at the top* */
+#import-test {
+    height: 20px;
+    color: red;
+    width: 20px;
+    height: 30%
+}
+#import {
+    color: red
+}
+.mixin {
+    height: 20px;
+    color: red
+}
+.test-f {
+    height: 20px
+}
+.deep-import-url {
+    color: red
+}
+@media print {
+    body {
+        width: 100%
+    }
+}
+@charset "UTF-8"
