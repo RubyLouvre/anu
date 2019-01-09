@@ -1,11 +1,9 @@
-.a.class,
-.class.a,
-.class > .a {
-  color: blue;
-}.class, .test {
-  color: red;
+.a.class, .class.a, .class > .a {
+    color: NaN
 }
-
+.class, .test {
+    color: NaN
+}
 link:hover:visited {
-  color: blue;
+    color: NaN
 }

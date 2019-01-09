@@ -1,4 +1,3 @@
-.alert-info,
-.widget, .alert, .alert {
-    color: red;
+.alert-info, .widget, .alert, .alert {
+    color: NaN
 }

@@ -1,0 +1,29 @@
+.escape\|random\|char {
+    color: NaN
+}
+.mixin\!tUp {
+    font-weight: NaN
+}
+.\34 04 {
+    background: NaN
+}
+.\34 04 strong {
+    color: NaN;
+    font-weight: NaN
+}
+.trailingTest\+ {
+    color: NaN
+}
+/* This hideous test of hideousness checks for the selector "blockquote" with various permutations of hex escapes */
+\62\6c\6f \63 \6B \0071 \000075o\74 e {
+    color: NaN
+}
+[ng\:cloak], ng\:form {
+    display: NaN
+}
+.bootstrap {
+    background-color: NaN
+}
+textarea {
+    font-family: NaN
+}

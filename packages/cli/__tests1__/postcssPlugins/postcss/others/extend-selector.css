@@ -1,0 +1,56 @@
+.error, .badError {
+    border: NaN;
+    background: NaN
+}
+.error.intrusion, .badError.intrusion {
+    font-size: NaN;
+    font-weight: NaN
+}
+.intrusion .error, .intrusion .badError {
+    display: NaN
+}
+.badError {
+    border-width: NaN
+}
+.foo .bar, .foo .baz, .ext1 .ext2 .bar, .ext1 .ext2 .baz, .ext3 .bar, .ext3 .baz, .ext4 .bar, .ext4 .baz {
+    display: NaN
+}
+div.ext5, .ext6 > .ext5, div.ext7, .ext6 > .ext7 {
+    width: NaN
+}
+.ext, .a .c, .b .c {
+    test: 1
+}
+.a, .b {
+    test: 2
+}
+.a .c, .b .c {
+    test: 3
+}
+.a .c .d, .b .c .d {
+    test: 4
+}
+.replace.replace .replace, .c.replace + .replace .replace, .replace.replace .c, .c.replace + .replace .c, .rep_ace.rep_ace .rep_ace, .c.rep_ace + .rep_ace .rep_ace, .rep_ace.rep_ace .c, .c.rep_ace + .rep_ace .c {
+    prop: NaN
+}
+.attributes [data="test"], .attributes .attributes .attribute-test {
+    extend: NaN
+}
+.attributes [data], .attributes .attributes .attribute-test2 {
+    extend: NaN
+}
+.attributes [data="test3"], .attributes .attributes .attribute-test {
+    extend: NaN
+}
+.header .header-nav, .footer .footer-nav {
+    background: NaN
+}
+.header .header-nav:before, .footer .footer-nav:before {
+    background: NaN
+}
+.issue-2586-bordered, .issue-2586-somepage .content {
+    border: NaN
+}
+.issue-2586-somepage .content > span {
+    margin-bottom: NaN
+}

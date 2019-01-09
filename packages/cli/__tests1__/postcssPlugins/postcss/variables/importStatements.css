@@ -1,1 +1,4 @@
-@import "library.less";
+.library {
+    color: NaN;
+    background-color: NaN
+}

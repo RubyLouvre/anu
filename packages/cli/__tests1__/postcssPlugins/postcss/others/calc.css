@@ -1,0 +1,19 @@
+.no-math {
+    root: NaN;
+    root2: NaN;
+    width: NaN;
+    height: NaN;
+    min-height: NaN;
+    foo: NaN;
+    bar: NaN
+}
+.b {
+    one: NaN;
+    two: NaN;
+    three: NaN;
+    four: NaN;
+    nested: NaN
+}
+.c {
+    height: NaN
+}

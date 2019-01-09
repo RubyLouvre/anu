@@ -57,7 +57,7 @@
     "postcss": "^7.0.6",
     "postcss-automath": "^1.0.1",
     "postcss-import": "^12.0.1",
-    "postcss-less-engine": "^0.6.2",
+    "postcss-less-engine": "git@github.com:shaoyudong/postcss-less.git",
     "postcss-nested": "^4.1.0",
     "postcss-nested-props": "^2.0.0",
     "postcss-scss": "^2.0.0",

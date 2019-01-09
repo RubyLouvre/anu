@@ -1,0 +1,104 @@
+#yelow #short {
+    color: NaN
+}
+#yelow #long {
+    color: NaN
+}
+#yelow #rgba {
+    color: NaN
+}
+#yelow #argb {
+    color: NaN
+}
+#blue #short {
+    color: NaN
+}
+#blue #long {
+    color: NaN
+}
+#blue #rgba {
+    color: NaN
+}
+#blue #argb {
+    color: NaN
+}
+#alpha #hsla {
+    color: NaN
+}
+#overflow .a {
+    color: NaN
+}
+#overflow .b {
+    color: NaN
+}
+#overflow .c {
+    color: NaN
+}
+#overflow .d {
+    color: NaN
+}
+#overflow .e {
+    color: NaN
+}
+#grey {
+    color: NaN
+}
+#333333 {
+    color: NaN
+}
+#808080 {
+    color: NaN
+}
+#00ff00 {
+    color: NaN
+}
+.lightenblue {
+    color: NaN
+}
+.darkenblue {
+    color: NaN
+}
+.unknowncolors {
+    color: NaN;
+    border: NaN
+}
+.transparent {
+    color: NaN;
+    background-color: NaN
+}
+#alpha #fromvar {
+    opacity: 0.7
+}
+#alpha #short {
+    opacity: 1
+}
+#alpha #long {
+    opacity: 1
+}
+#alpha #rgba {
+    opacity: 0.2
+}
+#alpha #hsl {
+    opacity: 1
+}
+#percentage {
+    color: 255;
+    border-color: NaN
+}
+#rrggbbaa {
+    test-1: NaN;
+    test-2: NaN;
+    test-3: NaN;
+    test-4: NaN;
+    test-5: NaN;
+    test-6: NaN;
+    test-7: NaN;
+    test-8: NaN;
+    test-9: NaN;
+    test-9: NaN;
+    test-10: NaN;
+    test-11: NaN;
+    test-12: NaN;
+    --semi-transparent-dark-background: NaN;
+    --semi-transparent-dark-background-2: NaN
+}

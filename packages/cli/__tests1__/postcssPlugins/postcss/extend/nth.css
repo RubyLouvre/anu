@@ -1,13 +1,12 @@
 :nth-child(1n + 3) {
-  color: blue;
-}
-
-[title="identifier"], .noQuote, .singleQuote, .doubleQuote {
-  color: blue;
+    color: NaN
 }
 [title="identifier"], .noQuote, .singleQuote, .doubleQuote {
-  color: blue;
+    color: NaN
 }
 [title="identifier"], .noQuote, .singleQuote, .doubleQuote {
-  color: blue;
+    color: NaN
+}
+[title="identifier"], .noQuote, .singleQuote, .doubleQuote {
+    color: NaN
 }

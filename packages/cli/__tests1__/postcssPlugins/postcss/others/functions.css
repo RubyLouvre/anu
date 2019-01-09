@@ -1,0 +1,233 @@
+#functions {
+    color: NaN;
+    width: NaN;
+    height: NaN;
+    border-width: NaN;
+    variable: NaN;
+    background: NaN
+}
+#built-in {
+    escaped: NaN;
+    lighten: NaN;
+    lighten-relative: NaN;
+    darken: NaN;
+    darken-relative: NaN;
+    saturate: NaN;
+    saturate-relative: NaN;
+    desaturate: NaN;
+    desaturate-relative: NaN;
+    greyscale: NaN;
+    hsl-clamp: NaN;
+    spin-p: NaN;
+    spin-n: NaN;
+    luma-white: NaN;
+    luma-black: NaN;
+    luma-black-alpha: NaN;
+    luma-red: NaN;
+    luma-green: NaN;
+    luma-blue: NaN;
+    luma-yellow: NaN;
+    luma-cyan: NaN;
+    luma-differs-from-luminance: NaN;
+    luminance-white: NaN;
+    luminance-black: NaN;
+    luminance-black-alpha: NaN;
+    luminance-red: NaN;
+    luminance-differs-from-luma: NaN;
+    contrast-filter: NaN;
+    saturate-filter: NaN;
+    contrast-white: NaN;
+    contrast-black: NaN;
+    contrast-red: NaN;
+    contrast-green: NaN;
+    contrast-blue: NaN;
+    contrast-yellow: NaN;
+    contrast-cyan: NaN;
+    contrast-light: NaN;
+    contrast-dark: NaN;
+    contrast-wrongorder: NaN;
+    contrast-light-thresh: NaN;
+    contrast-dark-thresh: NaN;
+    contrast-high-thresh: NaN;
+    contrast-low-thresh: NaN;
+    contrast-light-thresh-per: NaN;
+    contrast-dark-thresh-per: NaN;
+    contrast-high-thresh-per: NaN;
+    contrast-low-thresh-per: NaN;
+    replace: NaN;
+    replace-captured: NaN;
+    replace-with-flags: NaN;
+    replace-single-quoted: NaN;
+    replace-escaped-string: NaN;
+    replace-keyword: NaN;
+    replace-with-color: NaN;
+    replace-with-number: NaN;
+    format: NaN;
+    format-string: NaN;
+    format-multiple: NaN;
+    format-url-encode: NaN;
+    format-single-quoted: NaN;
+    format-escaped-string: NaN;
+    format-color-as-string: NaN;
+    format-number-as-string: NaN;
+    eformat: NaN;
+    unitless: 12;
+    unit: NaN;
+    unitpercentage: NaN;
+    get-unit: NaN;
+    get-unit-empty: 0;
+    hue: 98;
+    saturation: NaN;
+    lightness: NaN;
+    hsvhue: 98;
+    hsvsaturation: NaN;
+    hsvvalue: NaN;
+    red: 255;
+    green: 255;
+    blue: 255;
+    rounded: 11;
+    rounded-two: 10.67;
+    roundedpx: NaN;
+    roundedpx-three: NaN;
+    rounded-percentage: NaN;
+    ceil: NaN;
+    floor: NaN;
+    sqrt: NaN;
+    pi: 3.14159265;
+    mod: NaN;
+    abs: NaN;
+    tan: 0.90040404;
+    sin: 0.17364818;
+    cos: 0.84385396;
+    atan: NaN;
+    atan: NaN;
+    atan: NaN;
+    pow: NaN;
+    pow: 64;
+    pow: 27;
+    min: 0;
+    min: 5;
+    min: NaN;
+    min: NaN;
+    max: 3;
+    max: NaN;
+    percentage: NaN;
+    color-quoted-digit: NaN;
+    color-quoted-keyword: NaN;
+    color-color: NaN;
+    color-keyword: NaN;
+    tint: NaN;
+    tint-full: NaN;
+    tint-percent: NaN;
+    tint-negative: NaN;
+    shade: NaN;
+    shade-full: NaN;
+    shade-percent: NaN;
+    shade-negative: NaN;
+    fade-out: NaN;
+    fade-in: NaN;
+    fade-out-relative: NaN;
+    fade-in-relative: NaN;
+    fade-out2: NaN;
+    fade-out2-relative: NaN;
+    hsv: NaN;
+    hsva: NaN;
+    mix: NaN;
+    mix-0: NaN;
+    mix-100: NaN;
+    mix-weightless: NaN;
+    mixt: NaN
+}
+#built-in .is-a {
+    ruleset: NaN;
+    color: NaN;
+    color1: NaN;
+    color2: NaN;
+    color3: NaN;
+    keyword: NaN;
+    number: NaN;
+    string: NaN;
+    pixel: NaN;
+    percent: NaN;
+    em: NaN;
+    ex: NaN;
+    rem: NaN;
+    vw: NaN;
+    vh: NaN;
+    vmin: NaN;
+    vmax: NaN;
+    ch: NaN;
+    cm: NaN;
+    mm: NaN;
+    pt: NaN;
+    q: NaN;
+    in: NaN;
+    cat: NaN;
+    no-unit-is-empty: NaN;
+    case-insensitive-1: NaN;
+    case-insensitive-2: NaN
+}
+#alpha {
+    alpha: NaN;
+    alpha2: 0.5;
+    alpha3: 0
+}
+#blendmodes {
+    multiply: NaN;
+    screen: NaN;
+    overlay: NaN;
+    softlight: NaN;
+    hardlight: NaN;
+    difference: NaN;
+    exclusion: NaN;
+    average: NaN;
+    negation: NaN
+}
+#extract-and-length {
+    extract: NaN;
+    length: 6
+}
+#quoted-functions-in-mixin {
+    replace-double-quoted: NaN;
+    replace-single-quoted: NaN;
+    replace-escaped-string: NaN;
+    replace-keyword: NaN;
+    replace-anonymous: NaN;
+    format-double-quoted: NaN;
+    format-single-quoted: NaN;
+    format-escaped-string: NaN;
+    format-keyword: NaN;
+    format-anonymous: NaN
+}
+#list-details {
+    length: 2;
+    one: NaN;
+    two: NaN;
+    two-length: 2;
+    two-one: NaN;
+    two-two: 2
+}
+/* comment1 */
+html {
+    color: NaN
+}
+#boolean {
+    a: NaN;
+    b: NaN;
+    c: NaN
+}
+#if {
+    a: 1;
+    b: 2;
+    c: 3;
+    e: 0;
+    f: 6;
+    g: 3;
+    h: 5;
+    i: 6;
+    j: 8;
+    k: 1;
+    /* results in void */
+    color: NaN;
+    color: NaN
+}

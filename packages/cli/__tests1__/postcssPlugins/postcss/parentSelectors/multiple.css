@@ -1,26 +1,24 @@
 .link + .link {
-    color: red;
-  }
-  .link .link {
-    color: green;
-  }
-  .link.link {
-    color: blue;
-  }
-  .link,
-  .linkish {
-    color: cyan;
-  }
+    color: NaN
+}
+.link .link {
+    color: NaN
+}
+.link.link {
+    color: NaN
+}
+.link, .linkish {
+    color: NaN
+}
 .grand .parent > .grand .parent {
-      color: red;
-    }
+    color: NaN
+}
 .grand .parent .grand .parent {
-      color: green;
-    }
+    color: NaN
+}
 .grand .parent.grand .parent {
-      color: blue;
-    }
-.grand .parent,
-    .grand .parentish {
-      color: cyan;
-    }
+    color: NaN
+}
+.grand .parent, .grand .parentish {
+    color: NaN
+}

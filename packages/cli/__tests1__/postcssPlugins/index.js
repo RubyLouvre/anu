@@ -1,20 +1,23 @@
-const fs = require('fs');
+const fs = require('fs-extra');
 const postCss = require('postcss');
 const path = require('path');
 const exec = require('child_process').exec;
+const postCssLessEngine = require('postcss-less-engine');
+const less = require('less');
 
 const lessDir = './less';
 
 const index = process.argv.indexOf('--file');
 if (index !== -1) {
-    readFile(path.join(__dirname, './less', process.argv[index + 1]));
+    readFile(path.join(__dirname, process.argv[index + 1]));
     return;
 }
 readDir(path.join(__dirname, lessDir));
 
 async function readDir(dir) {
     try {
-        fs.mkdirSync(dir.replace(/\/less(\/?)/, '/postcss$1'));
+        fs.mkdirpSync(dir.replace(/\/less(\/?)/, '/postcss$1'));
+        fs.mkdirpSync(dir.replace(/\/less(\/?)/, '/css$1'));
     } catch(e) {
     }
     const files = fs.readdirSync(dir);
@@ -24,28 +27,24 @@ async function readDir(dir) {
         if (info.isDirectory()) {
             readDir(childPath);
         } else {
-            const code = fs.readFileSync(childPath, 'utf-8');
-            output(code, 'origin');
-            exec(`lessc ${childPath}`, function(err, stdout) {
-                output(stdout, 'less');
-                fs.writeFileSync(childPath.replace(/\/less(\/?)/, '/css$1').replace(/\.less$/, '.css'), stdout, 'utf-8');
-            });
-            const compiledCode = await compileLess(code, childPath);
-            if (compiledCode && compiledCode.css) {
-                output(compiledCode.css, 'postcss');
-                fs.writeFileSync(childPath.replace(/\/less(\/?)/, '/postcss$1').replace(/\.less$/, '.css'), compiledCode.css, 'utf-8');
-            }
+            await readFile(childPath);
         }
     }
 }
 
 async function readFile(filepath) {
+    if (/\/others\/(import|import-reference-issues)\//.test(filepath)) {
+        return;
+    }
     const code = fs.readFileSync(filepath, 'utf-8');
     output(code, 'origin');
-    exec(`lessc ${filepath}`, function(err, stdout) {
-        output(stdout, 'less');
-        fs.writeFileSync(filepath.replace(/\/less(\/?)/, '/css$1').replace(/\.less$/, '.css'), stdout, 'utf-8');
-    });
+    // exec(`lessc ${filepath}`, function(err, stdout) {
+    //     output(stdout, 'less');
+    //     fs.writeFileSync(filepath.replace(/\/less(\/?)/, '/css$1').replace(/\.less$/, '.css'), stdout, 'utf-8');
+    // });
+    less.render(code, function(e, output) {
+        fs.writeFileSync(filepath.replace(/\/less(\/?)/, '/css$1').replace(/\.less$/, '.css'), output.css, 'utf-8');
+    })
     const compiledCode = await compileLess(code, filepath);
     if (compiledCode && compiledCode.css) {
         output(compiledCode.css, 'postcss');
@@ -55,40 +54,35 @@ async function readFile(filepath) {
 
 function compileLess(code, dir) {
     return postCss([
-        require('../postcssPlugins/postCssPluginLessMixins'),
-        require('../postcssPlugins/postCssPluginLessVar'),
-        require('postcss-import')({
-            resolve(importer, baseDir){
-                //如果@import的值没有文件后缀
-                if (!/\.less$/.test(importer)) {
-                    importer = importer + '.less';
-                }
-                //处理alias路径
-                return utils.resolveStyleAlias(importer, baseDir);
-            }
-        }),
-        require('postcss-nested'), // 嵌套
-        require('../postcssPlugins/postCssPluginLessFunction'),
-        require('../postcssPlugins/postCssPluginLessMerge'),
-        require('postcss-automath'),      //5px + 2 => 7px
-        // require('postcss-nested-props'),   //属性嵌套
-        require('../postcssPlugins/postCssPluginLessExtend'),
-        require('../postcssPlugins/postCssPluginRemoveCommentsAndEmptyRule'),
+        postCssLessEngine(),
+        // require('postcss-automath'),      //5px + 2 => 7px
+        require('../../packages/postcssPlugins/postCssPluginValidateStyle'),
+        // require('postcss-import')({
+        //     resolve(importer, baseDir){
+        //         //如果@import的值没有文件后缀
+        //         if (!/\.s[ca]ss$/.test(importer)) {
+        //             importer = importer + '.scss';
+        //         }
+        //         //处理alias路径
+        //         return utils.resolveStyleAlias(importer, baseDir);
+        //     }
+        // })
     ]).process(
         code,
         {
             from: dir,
-            syntax: require('postcss-less')
+            parser: postCssLessEngine.parser
         }
     ).catch((e) => {
-        console.log(e);
+        // console.log(dir);
+        console.log(e + '\n');
     })
 }
 
 function output(str, mode) {
-    console.log('--------------------------------');
-    console.log(`${mode}::::::::::`);
-    console.log(str);
-    console.log('--------------------------------')
+    // console.log('--------------------------------');
+    // console.log(`${mode}::::::::::`);
+    // console.log(str);
+    // console.log('--------------------------------')
 }
 

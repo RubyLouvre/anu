@@ -1,9 +1,4 @@
-.mixin(dark; ) {
-  color: darken(, 10%);
-}
-.mixin(light; ) {
-  color: lighten(, 10%);
-}
-.mixin(; ) {
-  display: block;
+.class {
+    color: NaN;
+    display: NaN
 }

@@ -1,0 +1,37 @@
+.light {
+    color: NaN
+}
+.see-the {
+    color: NaN
+}
+.hide-the {
+    color: NaN
+}
+.multiple-conditions-1 {
+    color: NaN
+}
+.inheritance .test {
+    color: NaN
+}
+.inheritance:hover {
+    color: NaN
+}
+.clsWithGuard {
+    dispaly: NaN
+}
+.dont-split-me-up {
+    width: NaN;
+    color: NaN;
+    height: NaN
+}
++ .dont-split-me-up {
+    sibling: NaN
+}
+.scope-check {
+    sub-prop: NaN;
+    prop: NaN
+}
+.scope-check-2 {
+    sub-prop: NaN;
+    prop: NaN
+}

@@ -1,4 +1,8 @@
-.foo (: #f5f5f5, : #900) {
-  background: ;
-  color: ;
+.unimportant {
+    background: NaN;
+    color: NaN
+}
+.important {
+    background: NaN !important;
+    color: NaN !important
 }

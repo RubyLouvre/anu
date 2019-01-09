@@ -1,3 +1,6 @@
 #outer .inner {
-    color: red;
-  }
+    color: NaN
+}
+.c {
+    color: NaN
+}
