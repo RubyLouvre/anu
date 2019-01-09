@@ -6,10 +6,10 @@ function fround(value, numPrecision) {
 }
 
 function fixNumber(value) {
-    return value.replace(/(-?\d*\.?\d+)/g, function(match, numberStr) {
+    return value.replace(/(\s|^)(-?\d*\.?\d+)(\s|$)/g, function(match, before, numberStr, after) {
         const numPrecision = 8;
         const number = fround(Number(numberStr.trim()), numPrecision);
-        return number;
+        return before + number + after;
     });
 }
 

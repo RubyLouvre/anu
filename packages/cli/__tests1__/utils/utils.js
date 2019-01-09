@@ -1,7 +1,10 @@
 let babel = require('babel-core');
 const prettifyXml = require('prettify-xml');
-let jsTransform = require('../../packages/translator/jsTransform');
-let helpers = require('../../packages/translator/helpers');
+// let jsTransform = require('../../packages/translator/jsTransform');
+// let helpers = require('../../packages/translator/helpers');
+const postCss = require('postcss');
+const postCssLessEngine = require('postcss-less-engine');
+
 function baseCode(code, state = '', head = '', methods = '') {
     return `
     ${head}
@@ -30,20 +33,51 @@ function baseCode(code, state = '', head = '', methods = '') {
 }
 
 exports.transform = function(code, state, head, methods) {
-    code = baseCode(code, state, head, methods);
-    var result = babel.transform(code, {
-        babelrc: false,
-        plugins: [
-            'syntax-jsx',
-            'transform-decorators-legacy',
-            'transform-object-rest-spread',
-            'transform-async-to-generator',
-            'transform-es2015-template-literals',
-            jsTransform.miniappPlugin
-        ]
-    });
+    // code = baseCode(code, state, head, methods);
+    // var result = babel.transform(code, {
+    //     babelrc: false,
+    //     plugins: [
+    //         'syntax-jsx',
+    //         'transform-decorators-legacy',
+    //         'transform-object-rest-spread',
+    //         'transform-async-to-generator',
+    //         'transform-es2015-template-literals',
+    //         // jsTransform.miniappPlugin
+    //     ]
+    // });
 
-    return helpers.moduleToCjs.byCode(result.code).code;
+    // return helpers.moduleToCjs.byCode(result.code).code;
+};
+
+
+exports.transformLess = async function (code, buildType) {
+    let plugins = [
+        postCssLessEngine(),
+        require('../../packages/postcssPlugins/postCssPluginFixNumber'),
+        require('../../packages/postcssPlugins/postCssPluginValidateStyle'),
+        require('postcss-import')({
+            resolve(importer, baseDir){
+                //如果@import的值没有文件后缀
+                if (!/\.less$/.test(importer)) {
+                    importer = importer + '.less';
+                }
+                //处理alias路径
+                return utils.resolveStyleAlias(importer, baseDir);
+            }
+        })
+    ];
+    if (buildType !== 'quick') {
+        // 只有快应用需要postCssPluginValidateStyle插件
+        plugins.splice(2, 1);
+    }
+    const result = await postCss(plugins).process(
+        code,
+        {
+            parser: postCssLessEngine.parser
+        }
+    );
+    return result.css;
+        
 };
 
 exports.evalClass = function(template) {
