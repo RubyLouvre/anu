@@ -202,3 +202,99 @@ function cloneChildFibers(alternate, fiber) {
     }
     newChild.sibling = null;
 }
+
+function updateClassComponent(
+    current,
+    fiber,
+    Component,
+    nextProps,
+    renderExpirationTime,
+  ) {
+    // Push context providers early to prevent context stack mismatches.
+    // During mounting we don't know the child context yet as the instance doesn't exist.
+    // We will invalidate the child context in finishClassComponent() right after rendering.
+    let hasContext;
+    if (isLegacyContextProvider(Component)) {
+      hasContext = true;
+      pushLegacyContextProvider(fiber);
+    } else {
+      hasContext = false;
+    }
+    prepareToReadContext(fiber, renderExpirationTime);
+  
+    const instance = fiber.stateNode;
+    let shouldUpdate;
+    if (instance === null) {
+      if (current !== null) {
+        // An class component without an instance only mounts if it suspended
+        // inside a non- concurrent tree, in an inconsistent state. We want to
+        // tree it like a new mount, even though an empty version of it already
+        // committed. Disconnect the alternate pointers.
+        current.alternate = null;
+        fiber.alternate = null;
+        // Since this is conceptually a new fiber, schedule a Placement effect
+        fiber.effectTag |= Placement;
+      }
+      // In the initial pass we might need to construct the instance.
+      constructClassInstance(
+        fiber,
+        Component,
+        nextProps,
+        renderExpirationTime,
+      );
+      mountClassInstance(
+        fiber,
+        Component,
+        nextProps,
+        renderExpirationTime,
+      );
+      shouldUpdate = true;
+    } else {
+      shouldUpdate = updateClassInstance(
+        current,
+        fiber,
+        Component,
+        nextProps,
+        renderExpirationTime,
+      );
+    }
+    const child = finishClassComponent(
+      current,
+      fiber,
+      Component,
+      shouldUpdate,
+      hasContext,
+      renderExpirationTime,
+    );
+
+    return child;
+  }
+
+
+  function constructClassInstance(fiber, ctor, props, renderExpirationTime) {
+    var isLegacyContextConsumer = false;
+    var unmaskedContext = emptyContextObject;
+    var context = null;
+    var contextType = ctor.contextType;
+    if (Object( contextType ) === contextType ) {//React 16.7的static contextType
+        context = readContext$1(contextType);
+    } else {
+        unmaskedContext = getUnmaskedContext(fiber, ctor, true);
+        var contextTypes = ctor.contextTypes;
+        isLegacyContextConsumer = contextTypes !== null && contextTypes !== undefined;
+        context = isLegacyContextConsumer ? getMaskedContext(fiber, unmaskedContext) : emptyContextObject;
+    }
+    var instance = new ctor(props, context);
+    fiber.memoizedState =  instance.state || null;
+   // instance.updater = classComponentUpdater;
+    fiber.stateNode = instance;
+    if (typeof ctor.getDerivedStateFromProps === 'function' || typeof instance.getSnapshotBeforeUpdate === 'function') {
+        instance.useReact16Hook = true
+    }
+    
+    if (isLegacyContextConsumer) {
+        cacheContext(fiber, unmaskedContext, context);
+    }
+
+    return instance;
+}
