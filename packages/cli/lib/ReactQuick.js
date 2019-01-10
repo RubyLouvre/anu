@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-01-03
+ * 运行于快应用的React by 司徒正美 Copyright 2019-01-09
  */
 
 var arrayPush = Array.prototype.push;
@@ -655,7 +655,7 @@ function getCurrentPage() {
     return app.$$page && app.$$page.reactInstance;
 }
 function _getCurrentPages() {
-    console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
     if (isFn(getCurrentPages)) {
         return getCurrentPages();
     }
@@ -673,6 +673,25 @@ function updateMiniApp(instance) {
         instance.wx.setData(data);
     } else {
         updateQuickApp(instance.wx, data);
+    }
+}
+function refreshComponent(reactInstances, wx, uuid) {
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = reactInstances.length - 1; i >= 0; i--) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
+    }
+}
+function detachComponent() {
+    var t = this.reactInstance;
+    if (t) {
+        t.wx = null;
+        this.reactInstance = null;
     }
 }
 function updateQuickApp(quick, data) {
@@ -1245,163 +1264,163 @@ function createCanvasContext(id, obj) {
 }
 
 function createRouter(name) {
-  return function (obj) {
-    var router = require('@system.router');
-    var params = {};
-    var href = obj ? obj.url || obj.uri || '' : '';
-    var uri = href.slice(href.indexOf('/pages') + 1);
-    uri = uri.replace(/\?(.*)/, function (a, b) {
-      b.split('&').forEach(function (param) {
-        param = param.split('=');
-        params[param[0]] = param[1];
-      });
-      return '';
-    }).replace(/\/index$/, '');
-    if (uri.charAt(0) !== '/') {
-      uri = '/' + uri;
-    }
-    router[name]({
-      uri: uri,
-      params: params
-    });
-  };
+    return function (obj) {
+        var router = require('@system.router');
+        var params = {};
+        var href = obj ? obj.url || obj.uri || '' : '';
+        var uri = href.slice(href.indexOf('/pages') + 1);
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('&').forEach(function (param) {
+                param = param.split('=');
+                params[param[0]] = param[1];
+            });
+            return '';
+        }).replace(/\/index$/, '');
+        if (uri.charAt(0) !== '/') {
+            uri = '/' + uri;
+        }
+        router[name]({
+            uri: uri,
+            params: params
+        });
+    };
 }
 var api = {
-  showModal: function showModal(obj) {
-    obj.showCancel = obj.showCancel === false ? false : true;
-    var buttons = [{
-      text: obj.confirmText,
-      color: obj.confirmColor
-    }];
-    if (obj.showCancel) {
-      buttons.push({
-        text: obj.cancelText,
-        color: obj.cancelColor
-      });
-    }
-    obj.buttons = obj.confirmText ? buttons : [];
-    obj.message = obj.content;
-    delete obj.content;
-    var fn = obj['success'];
-    obj['success'] = function (res) {
-      res.confirm = !res.index;
-      fn && fn(res);
-    };
-    var prompt = require('@system.prompt');
-    prompt.showDialog(obj);
-  },
-  showToast: showToast,
-  hideToast: noop,
-  showActionSheet: function showActionSheet(obj) {
-    var prompt = require('@system.prompt');
-    prompt.showContextMenu(obj);
-  },
-  showLoading: function showLoading(obj) {
-    var prompt = require('@system.prompt');
-    obj.message = obj.title;
-    obj.duration = 1;
-    prompt.showToast(obj);
-  },
-  hideLoading: noop,
-  navigateTo: createRouter('push'),
-  redirectTo: createRouter('replace'),
-  navigateBack: createRouter('back'),
-  vibrateLong: function vibrateLong() {
-    var vibrator = require('@system.vibrator');
-    vibrator.vibrate();
-  },
-  vibrateShort: function vibrateShort() {
-    var vibrator = require('@system.vibrator');
-    vibrator.vibrate();
-  },
-  share: function share(obj) {
-    var share = require('@service.share');
-    share.getAvailablePlatforms({
-      success: function success(data) {
-        var shareType = 0;
-        if (obj.path && obj.title) {
-          shareType = 0;
-        } else if (obj.title) {
-          shareType = 1;
-        } else if (obj.imageUrl) {
-          shareType = 2;
+    showModal: function showModal(obj) {
+        obj.showCancel = obj.showCancel === false ? false : true;
+        var buttons = [{
+            text: obj.confirmText,
+            color: obj.confirmColor
+        }];
+        if (obj.showCancel) {
+            buttons.push({
+                text: obj.cancelText,
+                color: obj.cancelColor
+            });
         }
-        obj.shareType = obj.shareType || shareType;
-        obj.targetUrl = obj.path;
-        obj.summary = obj.desc;
-        obj.imagePath = obj.imageUrl;
-        obj.platforms = data.platforms;
-        share.share(obj);
-      }
-    });
-  },
-  uploadFile: uploadFile,
-  downloadFile: downloadFile,
-  request: request,
-  scanCode: function scanCode(_ref) {
-    var success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    var barcode = require('@system.barcode');
-    barcode.scan({
-      success: success,
-      fail: fail,
-      cancel: fail,
-      complete: complete
-    });
-  },
-  setStorage: setStorage,
-  getStorage: getStorage,
-  removeStorage: removeStorage,
-  clearStorage: clearStorage,
-  setStorageSync: setStorageSync,
-  getStorageSync: getStorageSync,
-  removeStorageSync: removeStorageSync,
-  clearStorageSync: clearStorageSync,
-  getSavedFileInfo: getSavedFileInfo,
-  getSavedFileList: getSavedFileList,
-  removeSavedFile: removeSavedFile,
-  saveFile: saveFile,
-  setClipboardData: setClipboardData,
-  getClipboardData: getClipboardData,
-  getLocation: function getLocation(obj) {
-    var geolocation = require('@system.geolocation');
-    geolocation.getLocation(obj);
-  },
-  getNetworkType: getNetworkType,
-  onNetworkStatusChange: onNetworkStatusChange,
-  getSystemInfo: getSystemInfo,
-  chooseImage: chooseImage,
-  setNavigationBarTitle: function setNavigationBarTitle(_ref2) {
-    var title = _ref2.title,
-        success = _ref2.success,
-        fail = _ref2.fail,
-        complete = _ref2.complete;
-    try {
-      var currentPage = _getApp().$$page;
-      currentPage.$page.setTitleBar({ text: title });
-      runFunction(success);
-    } catch (error) {
-      runFunction(fail, error);
-    } finally {
-      runFunction(complete);
+        obj.buttons = obj.confirmText ? buttons : [];
+        obj.message = obj.content;
+        delete obj.content;
+        var fn = obj['success'];
+        obj['success'] = function (res) {
+            res.confirm = !res.index;
+            fn && fn(res);
+        };
+        var prompt = require('@system.prompt');
+        prompt.showDialog(obj);
+    },
+    showToast: showToast,
+    hideToast: noop,
+    showActionSheet: function showActionSheet(obj) {
+        var prompt = require('@system.prompt');
+        prompt.showContextMenu(obj);
+    },
+    showLoading: function showLoading(obj) {
+        var prompt = require('@system.prompt');
+        obj.message = obj.title;
+        obj.duration = 1;
+        prompt.showToast(obj);
+    },
+    hideLoading: noop,
+    navigateTo: createRouter('push'),
+    redirectTo: createRouter('replace'),
+    navigateBack: createRouter('back'),
+    vibrateLong: function vibrateLong() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    vibrateShort: function vibrateShort() {
+        var vibrator = require('@system.vibrator');
+        vibrator.vibrate();
+    },
+    share: function share(obj) {
+        var share = require('@service.share');
+        share.getAvailablePlatforms({
+            success: function success(data) {
+                var shareType = 0;
+                if (obj.path && obj.title) {
+                    shareType = 0;
+                } else if (obj.title) {
+                    shareType = 1;
+                } else if (obj.imageUrl) {
+                    shareType = 2;
+                }
+                obj.shareType = obj.shareType || shareType;
+                obj.targetUrl = obj.path;
+                obj.summary = obj.desc;
+                obj.imagePath = obj.imageUrl;
+                obj.platforms = data.platforms;
+                share.share(obj);
+            }
+        });
+    },
+    uploadFile: uploadFile,
+    downloadFile: downloadFile,
+    request: request,
+    scanCode: function scanCode(_ref) {
+        var success = _ref.success,
+            fail = _ref.fail,
+            complete = _ref.complete;
+        var barcode = require('@system.barcode');
+        barcode.scan({
+            success: success,
+            fail: fail,
+            cancel: fail,
+            complete: complete
+        });
+    },
+    setStorage: setStorage,
+    getStorage: getStorage,
+    removeStorage: removeStorage,
+    clearStorage: clearStorage,
+    setStorageSync: setStorageSync,
+    getStorageSync: getStorageSync,
+    removeStorageSync: removeStorageSync,
+    clearStorageSync: clearStorageSync,
+    getSavedFileInfo: getSavedFileInfo,
+    getSavedFileList: getSavedFileList,
+    removeSavedFile: removeSavedFile,
+    saveFile: saveFile,
+    setClipboardData: setClipboardData,
+    getClipboardData: getClipboardData,
+    getLocation: function getLocation(obj) {
+        var geolocation = require('@system.geolocation');
+        geolocation.getLocation(obj);
+    },
+    getNetworkType: getNetworkType,
+    onNetworkStatusChange: onNetworkStatusChange,
+    getSystemInfo: getSystemInfo,
+    chooseImage: chooseImage,
+    setNavigationBarTitle: function setNavigationBarTitle(_ref2) {
+        var title = _ref2.title,
+            success = _ref2.success,
+            fail = _ref2.fail,
+            complete = _ref2.complete;
+        try {
+            var currentPage = _getApp().$$page;
+            currentPage.$page.setTitleBar({ text: title });
+            runFunction(success);
+        } catch (error) {
+            runFunction(fail, error);
+        } finally {
+            runFunction(complete);
+        }
+    },
+    createShortcut: createShortcut,
+    createCanvasContext: createCanvasContext,
+    stopPullDownRefresh: function stopPullDownRefresh(obj) {
+        obj = obj || {};
+        var success = obj.success || noop,
+            fail = obj.fail || noop,
+            complete = obj.complete || noop;
+        try {
+            runFunction(success);
+        } catch (error) {
+            runFunction(fail, error);
+        } finally {
+            runFunction(complete);
+        }
     }
-  },
-  createShortcut: createShortcut,
-  createCanvasContext: createCanvasContext,
-  stopPullDownRefresh: function stopPullDownRefresh(obj) {
-    obj = obj || {};
-    var success = obj.success || noop,
-        fail = obj.fail || noop,
-        complete = obj.complete || noop;
-    try {
-      runFunction(success);
-    } catch (error) {
-      runFunction(fail, error);
-    } finally {
-      runFunction(complete);
-    }
-  }
 };
 
 function UpdateQueue() {
@@ -2658,7 +2677,7 @@ var Renderer$1 = createRenderer({
             var wxInstances = type.wxInstances;
             if (wxInstances) {
                 if (!instance.wx) {
-                    instance.$$page = Object(_getApp()).$$page;
+                    instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
                 }
             }
@@ -2773,9 +2792,9 @@ function toStyle(obj, props, key) {
 }
 
 function registerComponent(type, name) {
+    type.wxInstances = {};
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    type.wxInstances = [];
     return {
         data: function data() {
             return {
@@ -2784,29 +2803,12 @@ function registerComponent(type, name) {
                 context: {}
             };
         },
-        onInit: function onInit() {
-            usingComponents[name] = type;
-        },
         onReady: function onReady() {
+            usingComponents[name] = type;
             var uuid = this.dataInstanceUid || null;
-            for (var i = 0; i < reactInstances.length; i++) {
-                var reactInstance = reactInstances[i];
-                if (reactInstance.instanceUid === uuid) {
-                    reactInstance.wx = this;
-                    this.reactInstance = reactInstance;
-                    updateMiniApp(reactInstance);
-                    return reactInstances.splice(i, 1);
-                }
-            }
+            refreshComponent(reactInstances, this, uuid);
         },
-        onDestroy: function onDestroy() {
-            var t = this.reactInstance;
-            if (t) {
-                t.wx = null;
-                this.reactInstance = null;
-            }
-            console.log('detached ' + name + ' \u7EC4\u4EF6');
-        },
+        onDestroy: detachComponent,
         dispatchEvent: dispatchEvent
     };
 }
@@ -2815,6 +2817,7 @@ function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
     app.$$page = this;
+    app.$$pagePath = path;
     var container = {
         type: 'page',
         props: {},
@@ -2939,7 +2942,6 @@ function registerPage(PageClass) {
             var instance = onLoad.call(this, PageClass, array[0], array[1]);
             var pageConfig = instance.config || PageClass.config;
             $app.$$pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
-            $app.$$pagePath = array[0];
         },
         onReady: onReady,
         onDestroy: onUnload
@@ -2948,7 +2950,10 @@ function registerPage(PageClass) {
         config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook];
-            _getApp().$$page = this;
+            if (hook === 'onShow') {
+                _getApp().$$page = instance.wx;
+                _getApp().$$pagePath = instance.props.path;
+            }
             if (hook === 'onMenuPress') {
                 showMenu(instance, this.$app);
             } else if (isFn(fn)) {
