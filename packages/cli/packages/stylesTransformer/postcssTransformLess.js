@@ -3,7 +3,6 @@ const fs = require('fs');
 const postCss = require('postcss');
 const utils = require('../utils');
 const postCssLessEngine = require('postcss-less-engine');
-const config = require('../config');
 
 const compileLessByPostCss = (filePath, originalCode)=>{
     return new Promise((resolved, reject)=>{
@@ -22,10 +21,7 @@ const compileLessByPostCss = (filePath, originalCode)=>{
                 }
             })
         ];
-        if (config.buildType !== 'quick') {
-            // 只有快应用需要postCssPluginValidateStyle插件
-            plugins.splice(2, 1);
-        }
+        
         postCss(plugins)
             .process(
                 originalCode || fs.readFileSync(filePath).toString(),
