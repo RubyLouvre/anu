@@ -549,11 +549,9 @@ function mountClassInstance(
         var nextChildren = void 0;
         prepareToReadContext(workInProgress, renderExpirationTime);
         prepareToUseHooks(current$$1, workInProgress, renderExpirationTime); {
-            ReactCurrentOwner$3.current = workInProgress;
-            setCurrentPhase('render');
-            nextChildren = Component(nextProps, context);
-            setCurrentPhase(null);
-        }
+        ReactCurrentOwner$3.current = workInProgress;
+        nextChildren = Component(nextProps, context);
+        
         nextChildren = finishHooks(Component, nextProps, nextChildren, context);
 
         // React DevTools reads this flag.
@@ -561,11 +559,3 @@ function mountClassInstance(
         reconcileChildren(current$$1, workInProgress, nextChildren, renderExpirationTime);
         return workInProgress.child;
     }
-
-    avalon的设计失误，当年就是模拟knockout, angular那样，把指令写在真实的标签上。这导致一个问题是，
-    浏览器会对标签的属性进行了转义，比如说href，src在IE6-8会得到完整路径，你为了兼容IE，需要用getAttribute("src",2)
-    这样的hack。你想得到元素的属性集合，在IE6，7下会得到上百个我们没有指定的属性，这也要过滤。最惨的是，我们想实现组件机制
-    <Picker />这样的标签名无法得到，不是全部小写化，就是全部大写化。虽然可以学VML那样引入命名空间机制，但这也导致性能问题。
-    如果当然 <div ms-controller="vmId"></div> 这些需要解析的标签放在<script type="avalon"></script>
-    那么通过AST进行转译，我们可以得到用户原汁原叶的属性定义与标签名，也不怕某个标签名不能包含某个标签名下（比如说，
-    thead标签下只能放tr与col, script这几种标签，不能 <thead><Tds / ></thead>这样的效果）
