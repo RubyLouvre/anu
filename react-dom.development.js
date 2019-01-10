@@ -14551,7 +14551,7 @@
             }
             // In the initial pass we might need to construct the instance.
             constructClassInstance(workInProgress, Component, nextProps, renderExpirationTime);
-            mountClassInstance(workInProgress, Component, nextProps, renderExpirationTime);
+            mountClassInstance(workInProgress, Component, nextProps, renderExpirationTime);//check2
             shouldUpdate = true;
         } else if (current$$1 === null) {
             // In a resume, we'll already have an instance we can reuse.
@@ -14817,7 +14817,7 @@
         prepareToReadContext(workInProgress, renderExpirationTime);
 
         constructClassInstance(workInProgress, Component, nextProps, renderExpirationTime);
-        mountClassInstance(workInProgress, Component, nextProps, renderExpirationTime);
+        mountClassInstance(workInProgress, Component, nextProps, renderExpirationTime);//check3
 
         return finishClassComponent(null, workInProgress, Component, true, hasContext, renderExpirationTime);
     }
@@ -14889,7 +14889,7 @@
             }
 
             adoptClassInstance(workInProgress, value);
-            mountClassInstance(workInProgress, Component, props, renderExpirationTime);
+            mountClassInstance(workInProgress, Component, props, renderExpirationTime);//check1
             return finishClassComponent(null, workInProgress, Component, true, hasContext, renderExpirationTime);
         } else {
             // Proceed under the assumption that this is a function component
