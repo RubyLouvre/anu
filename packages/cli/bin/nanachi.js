@@ -24,13 +24,13 @@ program
 program.command('init <project-name>').description('初始化项目');
 
 program
-    .command('watch:[wx|ali|bu|quick|tt]')
-    .description('监听[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]')
+    .command('watch:[wx|ali|bu|quick|tt|h5]')
+    .description('监听[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序 | h5]')
     .option('--beta', '同步React');
 
 program
-    .command('build:[wx|ali|bu|quick|tt]')
-    .description('构建[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]')
+    .command('build:[wx|ali|bu|quick|tt|h5]')
+    .description('构建[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序 | h5]')
     .option('--beta', '同步React');
     
 
@@ -73,7 +73,7 @@ process.env.ANU_ENV = buildType;
 config['buildType'] = buildType;
 
 let command = args[0];
-if (/\:/.test(command)) {
+if (/\:/.test(command) && !/h5/.test(command)) {
     //<watch|build>:
     command = command.split(':')[0];
 }
@@ -95,10 +95,10 @@ switch (command) {
     case 'init':
         require('../packages/init')(args[1]);
         break;
-    case 'web-start':
+    case 'watch:h5':
         require('mini-html5/runkit/run');
         break;
-    case 'web-build':
+    case 'build:h5':
         require('mini-html5/runkit/build');
         break;
     default:
