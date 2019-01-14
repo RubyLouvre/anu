@@ -120,7 +120,6 @@ module.exports = function validateStyle(code) {
         R.flatten,
         R.map(extractDeclarationsFromRule)
     );
-    console.log(rules);
     extractDeclarationsFromRules(rules).forEach(declaration => {
         replaceRPXtoPX(declaration);
         if (visitors[declaration.property]) {
@@ -128,10 +127,10 @@ module.exports = function validateStyle(code) {
         }
     });
 
-    rules.forEach(rule => {
+    rules && rules.forEach(rule => {
         const patchComponents = config[config.buildType].patchComponents || [];
         let selectors = [];
-        rule.selectors.forEach(selector => {
+        rule.selectors && rule.selectors.forEach(selector => {
             selectors = selectors.concat(selector.split(/\s+/));
         });
         patchComponents.forEach(comp => {
