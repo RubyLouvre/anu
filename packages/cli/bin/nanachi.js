@@ -101,6 +101,12 @@ switch (command) {
     case 'init':
         require('../packages/init')(args[1]);
         break;
+    case 'web-start':
+        require('mini-html5/runkit/run');
+        break;
+    case 'web-build':
+        require('mini-html5/runkit/build');
+        break;
     default:
         console.log(chalk.green('初始化项目: nanachi init <project-name>'));
 }
