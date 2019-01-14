@@ -31,15 +31,14 @@ module.exports = ()=>{
                     chalk.green(`build success: ${nPath.relative(cwd, path)} `) +
                     chalk.gray(`[${getSize(code)}]`)
                 );
-                if (queue.size !== sucSize) return;
-                queue.size = 0;
-                sucSize = 0;
-                utils.spinner('').succeed('构建结束\n');
             })
             .catch((err)=>{
                 // eslint-disable-next-line
                 console.log(err, '\n', chalk.red(`build fail: ${nPath.relative(cwd, path)} `));
             });
-        
     }
 };
+
+process.on('beforeExit', function () {
+    sucSize = 0;
+});

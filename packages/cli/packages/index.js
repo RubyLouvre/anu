@@ -431,6 +431,7 @@ class Parser {
     }
 }
 
+let watch;
 async function build(arg, opts) {
     let { option } = opts;
     removeDist();
@@ -443,7 +444,19 @@ async function build(arg, opts) {
     let parser = new Parser(entry);
     await parser.parse();
     spinner.succeed(chalk.green('依赖分析成功'));
-    if (arg === 'watch') parser.watching();
+    watch = null;
+    if (arg === 'watch') {
+        watch = parser.watching.bind(parser);
+    }
 }
 
 module.exports = build;
+
+process.on('beforeExit', function() {
+    console.log();
+    utils.spinner('').succeed('构建结束~');
+    if ( watch ) {
+        console.log(chalk.gray('\n监听文件修改中...'));
+        watch();
+    }
+});
