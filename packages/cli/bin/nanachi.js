@@ -65,13 +65,7 @@ if (args[0] === 'init' && typeof args[1] === 'undefined') {
 }
 
 let buildType = getBuildType(args);
-/* eslint-disable */
-if (!config[buildType]) {
-    let type = args[0].split(':');
-    console.log(chalk.red('请检查命令是否正确'));
-    console.log(chalk.green(`nanachi ${type[0]}:[wx|bu|ali|quick|tt]`));
-    process.exit(1);
-}
+
 
 process.env.ANU_ENV = buildType;
 
