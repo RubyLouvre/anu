@@ -33,6 +33,15 @@ module.exports = (metaData)=>{
                     );
                     
                     if (!cache[dist]) {
+                        // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
+                        const placeholder = {
+                            code: '',
+                            path: dist,
+                            type: 'npm'
+                        };
+                        queue.push(placeholder);
+                        // 补丁 END
+                        
                         queue.push({
                             code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
                             path: dist,

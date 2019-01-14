@@ -55,6 +55,14 @@ function runCompileStyle(filePath, originalCode){
             return;
         }
 
+        // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
+        const placeholder = {
+            code: '',
+            path: getDist(filePath),
+            type: 'css'
+        };
+        queue.push(placeholder);
+        // 补丁 END
         compilerMap[exitName](filePath, originalCode)
             .then((result)=>{
                 let { code } = result;
