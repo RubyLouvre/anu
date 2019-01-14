@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-03
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-09
  */
 
 var arrayPush = Array.prototype.push;
@@ -938,7 +938,7 @@ function getCurrentPage() {
     return app.$$page && app.$$page.reactInstance;
 }
 function _getCurrentPages() {
-    console.warn("getCurrentPages存在严重的平台差异性，不建议再使用");
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
     if (isFn(getCurrentPages)) {
         return getCurrentPages();
     }
@@ -956,6 +956,25 @@ function updateMiniApp(instance) {
         instance.wx.setData(data);
     } else {
         updateQuickApp(instance.wx, data);
+    }
+}
+function refreshComponent(reactInstances, wx, uuid) {
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = reactInstances.length - 1; i >= 0; i--) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
+    }
+}
+function detachComponent() {
+    var t = this.reactInstance;
+    if (t) {
+        t.wx = null;
+        this.reactInstance = null;
     }
 }
 function updateQuickApp(quick, data) {
@@ -2316,7 +2335,7 @@ var Renderer$1 = createRenderer({
             var wxInstances = type.wxInstances;
             if (wxInstances) {
                 if (!instance.wx) {
-                    instance.$$page = Object(_getApp()).$$page;
+                    instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
                 }
             }
@@ -2431,27 +2450,9 @@ function registerComponent(type, name) {
         attached: function attached() {
             usingComponents[name] = type;
             var uuid = this.dataset.instanceUid || null;
-            var page = Object(_getApp()).$$page;
-            console.log(name, reactInstances.length);
-            for (var i = 0; i < reactInstances.length; i++) {
-                var reactInstance = reactInstances[i];
-                if (reactInstance.$$page === page && reactInstance.instanceUid === uuid) {
-                    reactInstance.wx = this;
-                    this.reactInstance = reactInstance;
-                    updateMiniApp(reactInstance);
-                    return reactInstances.splice(i, 1);
-                }
-            }
+            refreshComponent(reactInstances, this, uuid);
         },
-        detached: function detached() {
-            var t = this.reactInstance;
-            this.disposed = true;
-            if (t) {
-                t.wx = null;
-                this.reactInstance = null;
-            }
-            console.log('detached ' + name + ' \u7EC4\u4EF6');
-        },
+        detached: detachComponent,
         dispatchEvent: dispatchEvent
     };
 }
@@ -2460,6 +2461,7 @@ function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
     app.$$page = this;
+    app.$$pagePath = path;
     var container = {
         type: 'page',
         props: {},
@@ -2541,7 +2543,10 @@ function registerPage(PageClass, path, testObject) {
             var instance = this.reactInstance;
             var fn = instance[hook],
                 fired = false;
-            _getApp().$$page = this;
+            if (hook === 'onShow') {
+                _getApp().$$page = this;
+                _getApp().$$pagePath = instance.props.path;
+            }
             if (isFn(fn)) {
                 fired = true;
                 var ret = fn.call(instance, e);
