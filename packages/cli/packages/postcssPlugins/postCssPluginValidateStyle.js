@@ -1,5 +1,22 @@
 const postCss = require('postcss');
 const chalk = require('chalk');
+const config = require('../config');
+const parser = require('postcss-selector-parser');
+
+function parseSelector(css) {
+    let result = [];
+    parser((selector) => {
+        if (selector.nodes && selector.nodes.length) {
+            // 遍历选择器
+            for (var i = 0, length = selector.nodes.length; i < length; i++) {
+                result = result.concat(selector.nodes[i].toString().split(/\s+/));
+            }
+        }
+    }).processSync(css, {
+        lossless: false
+    });
+    return result;
+}
 
 function rpxToPx(value) {
     return value.replace(/(-?\d*\.?\d+)(r?px)/g, function(match, numberStr, unit) {
@@ -180,16 +197,31 @@ const visitors = {
 
 const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style', ()=> {
     return (root) => {
-        root.walkAtRules(atrule => {
-            if (atrule.name === 'media') {
-                atrule.params = rpxToPx(atrule.params);
-            }
-        });
-        root.walkDecls(decl => {
-            if (visitors[decl.prop]) {
-                visitors[decl.prop](decl);
-            }
-            decl.value = rpxToPx(decl.value);
+        if (config.buildType === 'quick') {
+            root.walkAtRules(atrule => {
+                if (atrule.name === 'media') {
+                    atrule.params = rpxToPx(atrule.params);
+                }
+            });
+            root.walkDecls(decl => {
+                if (visitors[decl.prop]) {
+                    visitors[decl.prop](decl);
+                }
+                decl.value = rpxToPx(decl.value);
+            });
+        }
+        root.walkRules(rule => {
+            const selectors = parseSelector(rule.selector);
+            const patchComponents = config[config.buildType].patchComponents || [];
+            patchComponents.forEach(comp => {
+                if (selectors.indexOf(comp) !== -1) {
+                    // eslint-disable-next-line
+                    console.warn(
+                        chalk`补丁组件{red ${comp}}不支持标签选择器`
+                    );
+                }
+            });
+            
         });
     };
 });
