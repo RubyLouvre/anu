@@ -350,8 +350,7 @@ let utils = {
       })
     );
   },
-  async getReactLibPath(option) {
-    let isBeta = ['-b', '--beta'].includes(option);
+  async getReactLibPath(isBeta) {
     let React = this.getReactLibName();
     let reactTargetPath = path.join(cwd, config.sourceDir, React);
     if (isBeta) {
