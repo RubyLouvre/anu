@@ -150,10 +150,7 @@ class Parser {
         
     }
     async parse() {
-        let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
         let bundle = await rollup.rollup(this.inputConfig);
-        spinner.succeed(chalk.green('依赖分析成功'));
-        
         //如果有需要打补丁的组件并且本地没有安装schnee-ui
         if (this.needInstallUiLib()) {
             utils.installer('schnee-ui');
