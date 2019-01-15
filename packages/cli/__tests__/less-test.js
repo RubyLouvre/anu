@@ -28,7 +28,7 @@ tests.forEach(t => {
                 test(file, async () => {
                     const result = await transformLess(code, BUILD_TYPE, path.join(__dirname, './less', t.category, file));
                     const lessRes = await less.render(code, {
-                        paths: ['./packages/cli/__tests-less__/less/variables']
+                        paths: ['./packages/cli/__tests__/less/variables']
                     });
                     expect(new CleanCSS({
                         format: 'beautify' // formats output in a really nice way

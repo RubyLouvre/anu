@@ -2,7 +2,7 @@
 const fs = require('fs');
 const postCss = require('postcss');
 const utils = require('../utils');
-const postCssLessEngine = require('postcss-less-engine');
+const postCssLessEngine = require('postcss-less-engine-latest');
 
 const compileLessByPostCss = (filePath, originalCode)=>{
     return new Promise((resolved, reject)=>{
