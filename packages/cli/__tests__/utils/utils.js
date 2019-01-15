@@ -1,5 +1,5 @@
 const postCss = require('postcss');
-const postCssLessEngine = require('postcss-less-engine');
+const postCssLessEngine = require('postcss-less-engine-latest');
 const utils = require('../../packages/utils');
 
 exports.transformLess = async function (code, buildType, filePath) {
