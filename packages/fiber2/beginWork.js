@@ -1,6 +1,6 @@
 
 
-expot function beginWork(
+export function beginWork(
     current,
     fiber,
     renderExpirationTime,
@@ -170,8 +170,6 @@ expot function beginWork(
   
 
 function bailoutOnAlreadyFinishedWork(alternate, fiber, renderExpirationTime) {
-
-
     // Check if the children have any pending work.
     var childExpirationTime = fiber.childExpirationTime;
     if (childExpirationTime < renderExpirationTime) {
@@ -542,20 +540,38 @@ function mountClassInstance(
     }
 
 
-    function updateFunctionComponent(current$$1, workInProgress, Component, nextProps, renderExpirationTime) {
-        var unmaskedContext = getUnmaskedContext(workInProgress, Component, true);
-        var context = getMaskedContext(workInProgress, unmaskedContext);
+    function updateFunctionComponent(alternate, fiber, Component, nextProps, renderExpirationTime) {
+        var unmaskedContext = getUnmaskedContext(fiber, Component, true);
+        var context = getMaskedContext(fiber, unmaskedContext);
 
         var nextChildren = void 0;
-        prepareToReadContext(workInProgress, renderExpirationTime);
-        prepareToUseHooks(current$$1, workInProgress, renderExpirationTime); {
-        ReactCurrentOwner$3.current = workInProgress;
+        prepareToReadContext(fiber, renderExpirationTime);
+        prepareToUseHooks(alternate, fiber, renderExpirationTime); {
+        ReactCurrentOwner$3.current = fiber;
         nextChildren = Component(nextProps, context);
         
         nextChildren = finishHooks(Component, nextProps, nextChildren, context);
 
         // React DevTools reads this flag.
-        workInProgress.effectTag |= PerformedWork;
-        reconcileChildren(current$$1, workInProgress, nextChildren, renderExpirationTime);
-        return workInProgress.child;
+        fiber.effectTag |= PerformedWork;
+        reconcileChildren(alternate, fiber, nextChildren, renderExpirationTime);
+        return fiber.child;
+    }
+
+
+
+    function applyDerivedStateFromProps(fiber, ctor, getDerivedStateFromProps, nextProps) {
+        var prevState = fiber.memoizedState;
+        var partialState = getDerivedStateFromProps(nextProps, prevState);
+
+        // Merge the partial state and the previous state.
+        var memoizedState = partialState === null || partialState === undefined ? prevState : _assign({}, prevState, partialState);
+        fiber.memoizedState = memoizedState;
+
+        // Once the update queue is empty, persist the derived state onto the
+        // base state.
+        var updateQueue = fiber.updateQueue;
+        if (updateQueue !== null && fiber.expirationTime === NoWork) {
+            updateQueue.baseState = memoizedState;
+        }
     }
