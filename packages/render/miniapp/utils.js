@@ -1,5 +1,6 @@
-import { hasOwnProperty, noop, typeNumber, isFn } from 'react-core/util';
+import { hasOwnProperty, noop, typeNumber, isFn, get } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
+import { Renderer } from 'react-core/createRenderer';
 
 var fakeApp = {
     app: {
@@ -123,15 +124,19 @@ export function apiRunner (arg = {} , apiCallback, apiPromise) {
     return handler(arg);
 }
 
-export function useComponent (props) {
+export function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
-    // 确保两个相邻的业务组件的数据不会串了
-    props.key = props.key || props['data-instance-uid'] || new Date - 0;
+    props.key = props.key || props['data-instance-uid'] || new Date() - 0;
     delete props.is;
-    var args = [].slice.call(arguments, 2);
-    args.unshift(clazz, props);
-    return createElement.apply(null, args);
+    if (this.ref !== null) {
+        props.ref = this.ref;
+    }
+    var owner = Renderer.currentOwner;
+    if (owner){
+        Renderer.currentOwner = get(owner)._owner;
+    }
+    return createElement(clazz, props);
 }
 
 function safeClone (originVal) {

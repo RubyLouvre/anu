@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-09
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-15
  */
 
 var arrayPush = Array.prototype.push;
@@ -1101,9 +1101,14 @@ function useComponent(props) {
     var clazz = registeredComponents[is];
     props.key = props.key || props['data-instance-uid'] || new Date() - 0;
     delete props.is;
-    var args = [].slice.call(arguments, 2);
-    args.unshift(clazz, props);
-    return createElement.apply(null, args);
+    if (this.ref !== null) {
+        props.ref = this.ref;
+    }
+    var owner = Renderer.currentOwner;
+    if (owner) {
+        Renderer.currentOwner = get(owner)._owner;
+    }
+    return createElement(clazz, props);
 }
 function safeClone(originVal) {
     var temp = originVal instanceof Array ? [] : {};
