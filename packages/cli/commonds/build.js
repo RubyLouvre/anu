@@ -29,7 +29,7 @@ async function beforeParse(args){
 
 module.exports = async function(args){
     beforeParse(args);
-    let spinner = utils.spinner(chalk.green('正在分析依赖...')).start();
+    let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
     await parser.parse();
     spinner.succeed(chalk.green('依赖分析成功'));
     if (args['watch']) {
