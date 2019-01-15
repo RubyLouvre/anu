@@ -32,18 +32,18 @@ function createReactRoot (container, forceHydrate) {
 }
 
 function ReactRoot (container, isConcurrent, hydrate) {
-  var root = createContainer(container, isConcurrent, hydrate)
-  this._internalRoot = root
+  var fiber = createContainer(container, isConcurrent, hydrate)
+  this._internalRoot = fiber
 }
 ReactRoot.prototype.setState = function (children, callback, parentInstance) {
-  var root = this._internalRoot, fn = null, instance
+  var rootFiber = this._internalRoot, fn = null, instance
   if (typeof callback === 'function') {
     fn = function () {
-      instance = root.child ? root.child.stateNode : null
+      instance = rootFiber.child ? rootFiber.child.stateNode : null
       callback.call(instance)
     }
   }
-  updateContainer(children, root, parentInstance || null, fn)
+  updateContainer(children, rootFiber, parentInstance || null, fn)
   return instance
 }
 
@@ -53,16 +53,17 @@ var NoWork = 0
 var Never = 1
 var Sync = maxSigned31BitInt
 
-updateContainerBridge.update = function (children, hostRoot, parentInstance, expirationTime, callback) {
+updateContainerBridge.update = function (children, rootFiber, parentInstance, expirationTime, callback) {
   // TODO: If this is a nested container, this won't be the root.
-  var current = hostRoot.current
+  var fiber = rootFiber.current
+  fiber.current = rootFiber
   var context = getContextForSubtree(parentInstance)
-  if (hostRoot.context === null) {
-    hostRoot.context = context
+  if (rootFiber.context === null) {
+    rootFiber.context = context
   } else {
-    hostRoot.pendingContext = context
+    rootFiber.pendingContext = context
   }
-  return scheduleRootUpdate(current, children, expirationTime, callback)
+  return scheduleRootUpdate(fiber, children, expirationTime, callback)
 }
 
 var UpdateState = 1

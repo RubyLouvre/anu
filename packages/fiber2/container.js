@@ -33,6 +33,7 @@ export function FiberNode (tag, pendingProps, key) {
   this.pendingProps = pendingProps
 }
 var HostRoot = 3
+// createHostRoot
 export function createContainer (containerInfo, isConcurrent, hydrate) {
   var fiber = new FiberNode(HostRoot, null, null, null)
   fiber.contextStack = []
