@@ -1,7 +1,7 @@
-import { hasContextChanged, getUnmaskedContext, getMaskedContext, cacheContext, pushConext } from './oldContext';
-import { readContext } from './newContext';
+import { hasContextChanged, getUnmaskedContext, getMaskedContext, cacheContext, pushConext, adjustContext } from './oldContext';
+import { readContext, resolveDefaultProps } from './newContext';
 
-import { Placement, Update, Snapshot } from './effectTag';
+import { Placement, Update, Snapshot,DidCapture, NoEffect, NoWork, PerformedWork ,Ref} from './effectTag';
 export function updateClassComponent(
     current,
     fiber,
@@ -165,7 +165,7 @@ function updateClassInstance(
   
     const oldProps = fiber.memoizedProps;
     instance.props =
-      fiber.type === fiber.elementType
+      fiber.type === fiber.type
           ? oldProps
           : resolveDefaultProps(fiber.type, oldProps);
   
@@ -267,9 +267,7 @@ function updateClassInstance(
     if (shouldUpdate) {
         // In order to support react-lifecycles-compat polyfilled components,
         // Unsafe lifecycles should not be invoked for components using the new APIs.
-        if (
-            !instance.useReact16Hook 
-        ) {
+        if ( !instance.useReact16Hook ) {
             callComponentWillUpdate(instance, newProps, newState, nextContext );
         }
     } else {
@@ -286,12 +284,75 @@ function updateClassInstance(
     return shouldUpdate;
 }
 
+function markRef(alternate, fiber) {
+    var ref = fiber.ref;
+    if (alternate === null && ref !== null || alternate !== null && alternate.ref !== ref) {
+        // Schedule a Ref effect
+        fiber.effectTag |= Ref;
+    }
+}
+
+function finishClassComponent(alternate, fiber, Component, shouldUpdate, hasContext, renderExpirationTime) {
+    // Refs should update even if shouldComponentUpdate returns false
+    markRef(alternate, fiber);
+
+    var didCaptureError = (fiber.effectTag & DidCapture) !== NoEffect;
+
+    if (!shouldUpdate && !didCaptureError) {
+        // Context providers should defer to sCU for rendering
+        if (hasContext) {
+            adjustContext(fiber, Component, false);
+        }
+        return bailoutOnAlreadyFinishedWork(alternate, fiber, renderExpirationTime);
+    }
+
+    var instance = fiber.stateNode;
+
+    // Rerender
+    // ReactCurrentOwner.current = fiber;
+    var nextChildren = void 0;
+    if (didCaptureError && typeof Component.getDerivedStateFromError !== 'function') {
+        // If we captured an error, but getDerivedStateFrom catch is not defined,
+        // unmount all the children. componentDidCatch will schedule an update to
+        // re-render a fallback. This is temporary until we migrate everyone to
+        // the new API.
+        // TODO: Warn in a future release.
+        nextChildren = null;
+
+        
+    } else {
+        nextChildren = instance.render();
+    }
+
+    // React DevTools reads this flag.
+    fiber.effectTag |= PerformedWork;
+    if (alternate !== null && didCaptureError) {
+        // 如果我们从错误中恢复过来，那么我们将不会复用现有的children,
+        // 从概念上讲，正常的children与用于
+        // 显示错误信息的children是两个没有交集的东西，即使它们的位置类型都一样，我们也不应该复用它们。
+
+        fiber.child = reconcileChildFibers(fiber, alternate.child, null, renderExpirationTime);
+        fiber.child = reconcileChildFibers(fiber, null, nextChildren, renderExpirationTime);
+    } else {
+        reconcileChildren(alternate, fiber, nextChildren, renderExpirationTime);
+    }
+    if (hasContext) {
+        adjustContext(fiber, Component, true);
+    }
+    // Memoize state using the values we just used to render.
+    // TODO: Restructure so we never read values from the instance.
+    fiber.memoizedState = instance.state;
+
+    return fiber.child;
+}
+
+
 function applyDerivedStateFromProps(fiber, ctor, getDerivedStateFromProps, nextProps) {
     var prevState = fiber.memoizedState;
     var partialState = getDerivedStateFromProps(nextProps, prevState);
 
     // Merge the partial state and the previous state.
-    var memoizedState = partialState === null || partialState === undefined ? prevState : _assign({}, prevState, partialState);
+    var memoizedState = partialState === null || partialState === undefined ? prevState : Object.assign({}, prevState, partialState);
     fiber.memoizedState = memoizedState;
 
     // Once the update queue is empty, persist the derived state onto the
