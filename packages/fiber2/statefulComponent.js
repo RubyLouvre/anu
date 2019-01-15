@@ -364,3 +364,12 @@ function applyDerivedStateFromProps(fiber, ctor, getDerivedStateFromProps, nextP
 }
 
 function callComponentWillUpdate(){}
+
+
+function resetHasForceUpdateBeforeProcessing() {
+    hasForceUpdate = false;
+}
+
+function checkHasForceUpdateAfterProcessing() {
+    return hasForceUpdate;
+}
