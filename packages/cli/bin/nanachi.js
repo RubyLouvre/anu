@@ -24,13 +24,13 @@ program
 program.command('init <project-name>').description('初始化项目');
 
 program
-    .command('watch:[wx|ali|bu|quick|tt]')
-    .description('监听[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]')
+    .command('watch:[wx|ali|bu|quick|tt|h5]')
+    .description('监听[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序 | h5]')
     .option('--beta', '同步React');
 
 program
-    .command('build:[wx|ali|bu|quick|tt]')
-    .description('构建[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序]')
+    .command('build:[wx|ali|bu|quick|tt|h5]')
+    .description('构建[ 微信小程序 | 支付宝小程序 | 百度智能小程序 | 快应用 | 头条小程序 | h5]')
     .option('--beta', '同步React');
     
 
@@ -65,13 +65,7 @@ if (args[0] === 'init' && typeof args[1] === 'undefined') {
 }
 
 let buildType = getBuildType(args);
-/* eslint-disable */
-if (!config[buildType]) {
-    let type = args[0].split(':');
-    console.log(chalk.red('请检查命令是否正确'));
-    console.log(chalk.green(`nanachi ${type[0]}:[wx|bu|ali|quick|tt]`));
-    process.exit(1);
-}
+
 
 process.env.ANU_ENV = buildType;
 
@@ -79,7 +73,7 @@ process.env.ANU_ENV = buildType;
 config['buildType'] = buildType;
 
 let command = args[0];
-if (/\:/.test(command)) {
+if (/\:/.test(command) && !/h5/.test(command)) {
     //<watch|build>:
     command = command.split(':')[0];
 }
@@ -100,6 +94,12 @@ switch (command) {
         break;
     case 'init':
         require('../packages/init')(args[1]);
+        break;
+    case 'watch:h5':
+        require('mini-html5/runkit/run');
+        break;
+    case 'build:h5':
+        require('mini-html5/runkit/build');
         break;
     default:
         console.log(chalk.green('初始化项目: nanachi init <project-name>'));

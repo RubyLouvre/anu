@@ -54,6 +54,7 @@
     "less": "^3.8.1",
     "less-import-aliases": "^1.0.2",
     "mathjs": "^5.2.3",
+    "mini-html5": "0.0.1-beta.4",
     "ora": "^3.0.0",
     "postcss": "^7.0.6",
     "postcss-automath": "^1.0.1",

@@ -89,6 +89,13 @@ const compileSass = (filePath) =>{
                     let importer = dep;
                     let abPath = path.resolve(path.dirname(filePath), importer);
                     if (cache[abPath]) return;
+                    // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
+                    const placeholder = {
+                        path:  getDist(abPath),
+                        code: ''
+                    };
+                    queue.push(placeholder);
+                    // 补丁 END
                     compileSass(abPath)
                         .then((res)=>{
                             queue.push({

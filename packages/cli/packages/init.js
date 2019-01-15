@@ -138,14 +138,17 @@ const writeDir = appName => {
                    \t或使用nanachi watch:ali 构建支付宝小程序
                    \t或使用nanachi watch:tt 构建头条小程序
                    \t或使用nanachi watch:quick 构建快应用
-                   \t或使用nanachi watch:bu 构建百度智能小程序`);
+                   \t或使用nanachi watch:bu 构建百度智能小程序
+                   \t或使用nanachi watch:h5 构建h5`);
+
     console.log();
     console.log(chalk.green('nanachi build'));
     console.log(`  构建项目(构建出错的情况下，修复后需要强制全量构建), 
                    \t或使用nanachi build:ali 构建支付宝小程序
                    \t或使用nanachi build:tt 构建头条小程序
                    \t或使用nanachi build:quick 构建快应用
-                   \t或使用nanachi build:bu 构建百度智能小程序`);
+                   \t或使用nanachi build:bu 构建百度智能小程序
+                   \t或使用nanachi watch:h5 构建h5`);
     console.log();
     console.log(
         chalk.magenta(
