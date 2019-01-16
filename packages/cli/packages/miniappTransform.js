@@ -29,8 +29,10 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 require('babel-plugin-transform-object-rest-spread'),
                 require('babel-plugin-transform-es2015-template-literals'),
                 ...require('./babelPlugins/transformMiniApp')(sourcePath),
-                require('babel-plugin-transform-async-to-generator'),
-                require('./babelPlugins/transformIfImport')
+                ...require('./babelPlugins/transformEnv'),
+                ...require('./babelPlugins/injectRegeneratorRuntime'),
+                require('./babelPlugins/transformIfImport'),
+                require('./babelPlugins/trasnformAlias')( {sourcePath,resolvedIds} ),
             ]
         },
         async function(err, result) {
@@ -39,30 +41,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 console.log(sourcePath, '\n', err);
                 process.exit(1);
             }
-            let babelPlugins = [
-                ...require('./babelPlugins/transformEnv'),
-                require('./babelPlugins/injectRegeneratorRuntime'),
-                require('./babelPlugins/trasnformAlias')(
-                    {
-                        sourcePath: sourcePath,
-                        resolvedIds: resolvedIds
-                    }
-                )
-            ];
-            //babel无transform异步方法
-            try {
-                result = babel.transform(result.code, {
-                    babelrc: false,
-                    plugins: babelPlugins
-                });
-            } catch (err) {
-                //eslint-disable-next-line
-                console.log(sourcePath, '\n', err);
-                process.exit(1);
-            }
             //处理中文转义问题
             result.code = utils.decodeChinise(result.code);
-
             let queueData = {
                 code: result.code,
                 path: utils.updatePath(sourcePath, config.sourceDir, 'dist'),
