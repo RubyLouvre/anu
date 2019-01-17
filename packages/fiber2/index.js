@@ -2,7 +2,8 @@ import { getContextForSubtree } from './context'
 import { NoEffect, Incomplete, PerformedWork } from './effectTag'
 import { createContainer, updateContainer, updateContainerBridge, FiberNode, requestCurrentTime } from './container'
 import { beginWork } from './enterFiber'
-
+// 引入fiber.tag的各种值
+import { HostRoot, HostComponent, HostPortal, ClassComponent, ContextProvider, SuspenseComponent } from './fiberTags'
 function K (fn) {
   fn()
 }
@@ -255,7 +256,7 @@ function performWorkOnRoot (root, expirationTime, isYieldy) {
       root.timeoutHandle = noTimeout
       clearTimeout(timeoutHandle)
     }
-    renderRoot(root, isYieldy)
+    renderRoot(root, isYieldy, expirationTime)
     finishedWork = root.finishedWork
     if (finishedWork !== null) {
       // We've completed the root. Commit it.
@@ -264,7 +265,7 @@ function performWorkOnRoot (root, expirationTime, isYieldy) {
   }
   isRendering = false
 }
-function renderRoot (root, isYieldy) {
+function renderRoot (root, isYieldy, expirationTime) {
   isWorking = true
   var nextUnitOfWork
   if (roots.indexOf(root) == -1) {
@@ -273,7 +274,7 @@ function renderRoot (root, isYieldy) {
 
   do {
     try {
-      workLoop(nextUnitOfWork, isYieldy)
+      workLoop(nextUnitOfWork, isYieldy, expirationTime)
     } catch (thrownValue) {
       console.log('thrownValue', thrownValue)
     }
@@ -286,10 +287,10 @@ function renderRoot (root, isYieldy) {
   root.finishedWork = finishedWork
 }
 
-function workLoop (nextUnitOfWork, isYieldy) {
+function workLoop (nextUnitOfWork, isYieldy, expirationTime) {
   // Flush work without yielding
   while (nextUnitOfWork !== null) {
-    nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
+    nextUnitOfWork = performUnitOfWork(nextUnitOfWork, expirationTime)
   }
 }
 
@@ -316,14 +317,14 @@ function createAlternate (current, pendingProps) {
   return alternate
 }
 
-function performUnitOfWork (fiber) {
+function performUnitOfWork (fiber, expirationTime) {
   var current = fiber.alternate
   var next = void 0
-  next = beginWork(current, fiber)
+  next = beginWork(current, fiber, expirationTime)
   fiber.memoizedProps = fiber.pendingProps
   // 如果当前fiber的第一个孩子不存在，那么就需要返回它的兄弟或它的父节点的兄弟
   if (next === null || next === void 0) {
-    next = completeUnitOfWork(fiber)
+    next = completeUnitOfWork(fiber, expirationTime)
   }
   return next
 }
