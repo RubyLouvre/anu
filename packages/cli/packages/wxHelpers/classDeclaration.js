@@ -37,6 +37,7 @@ module.exports = {
                 t.objectExpression(modules.staticMethods)
             ])
         );
+
         //插入到最前面
         //  astPath.parentPath.parentPath.insertBefore(onInit);
         //  可以通过`console.log(generate(call).code)`验证
@@ -44,7 +45,7 @@ module.exports = {
         if (astPath.type == 'CallExpression') {
             if (astPath.parentPath.type === 'VariableDeclarator') {
                 if (parent.type == 'VariableDeclaration') {
-                    parent.node.kind = '';
+                    parent.node.kind = 'var';
                 }
             }
         }
