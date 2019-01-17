@@ -1,50 +1,51 @@
-import { hasContextChanged } from './oldContext'
-import { resolveDefaultProps } from './newContext'
+import { hasContextChanged } from './oldContext';
+import { resolveDefaultProps } from './newContext';
 
-import { updateClassComponent } from './StatefulComponent'
-import { updateFunctionComponent, updateMemoComponent, updateSimpleMemoComponent, updateForwardRef } from './StatelessComponent'
-import { updateFragment, updateMode, updateProfiler } from './VirtualComponent'
-import { updateHostComponent, updateHostText, updateHostRoot, updateHostPortal } from './HostComponent'
+import { updateClassComponent } from './StatefulComponent';
+import { updateFunctionComponent, updateMemoComponent, updateSimpleMemoComponent, updateForwardRef } from './StatelessComponent';
+import { updateFragment, updateMode, updateProfiler } from './VirtualComponent';
+import { updateHostComponent, updateHostText, updateHostRoot, updateHostPortal } from './HostComponent';
+import { Ref } from './effectTag';
 
 export function beginWork (current, fiber, renderExpirationTime) {
-  const updateExpirationTime = fiber.expirationTime
+    const updateExpirationTime = fiber.expirationTime;
 
-  if (current !== null) {
-    const oldProps = current.memoizedProps
-    const newProps = fiber.pendingProps
-    if (oldProps === newProps && !hasContextChanged(fiber) && updateExpirationTime < renderExpirationTime) {
-      // This fiber does not have any pending work. Bailout without entering
-      // the begin phase. There's still some bookkeeping we that needs to be done
-      // in this optimized path, mostly pushing stuff onto the stack.
-      switch (fiber.tag) {
-        case HostRoot:
-          // 处理fiber的context
-          break
-        case HostComponent:
-        // 处理根节点的container
+    if (current !== null) {
+        const oldProps = current.memoizedProps;
+        const newProps = fiber.pendingProps;
+        if (oldProps === newProps && !hasContextChanged(fiber) && updateExpirationTime < renderExpirationTime) {
+            // This fiber does not have any pending work. Bailout without entering
+            // the begin phase. There's still some bookkeeping we that needs to be done
+            // in this optimized path, mostly pushing stuff onto the stack.
+            switch (fiber.tag) {
+                case HostRoot:
+                    // 处理fiber的context
+                    break;
+                case HostComponent:
+                    // 处理根节点的container
 
-          break
-        case ClassComponent: {
-          // 处理fiber的context
-          break
+                    break;
+                case ClassComponent: {
+                    // 处理fiber的context
+                    break;
+                }
+                case HostPortal:
+                    // 处理根节点的container
+                    break;
+                case ContextProvider: {
+                    // 处理fiber的context
+                    break;
+                }
+                case SuspenseComponent:
+                    break;
+            }
+            return bailoutOnAlreadyFinishedWork(current, fiber, renderExpirationTime);
         }
-        case HostPortal:
-          // 处理根节点的container
-          break
-        case ContextProvider: {
-          // 处理fiber的context
-          break
-        }
-        case SuspenseComponent:
-          break
-      }
-      return bailoutOnAlreadyFinishedWork(current, fiber, renderExpirationTime)
     }
-  }
 
-  // Before entering the begin phase, clear the expiration time.
-  fiber.expirationTime = NoWork
-  return updateAdapter[fiber.tag](alternate, fiber, fiber.type, updateExpirationTime, renderExpirationTime)
+    // Before entering the begin phase, clear the expiration time.
+    fiber.expirationTime = NoWork;
+    return updateAdapter[fiber.tag](alternate, fiber, fiber.type, updateExpirationTime, renderExpirationTime);
 }
 /*
 
@@ -68,22 +69,24 @@ export const LazyComponent = 16
 
 */
 var updateAdapter = {
-  0: updateFunctionComponent,
-  1: updateClassComponent,
-  3: updateHostRoot,
-  4: updateHostPortal,
-  5: updateHostComponent,
-  6: updateHostText,
-  7: updateFragment,
-  8: updateMode,
-  9: updateClassComponent, // updateContextConsumer,
-  10: updateClassComponent, // updateContextProvider,
-  11: updateForwardRef,
-  12: updateProfiler,
-  13: updateSuspenseComponent,
-  14: updateMemoComponent,
-  15: updateSimpleMemoComponent,
-  16: mountLazyComponent
-}
+    0: updateFunctionComponent,
+    1: updateClassComponent,
+    3: updateHostRoot,
+    4: updateHostPortal,
+    5: updateHostComponent,
+    6: updateHostText,
+    7: updateFragment,
+    8: updateMode,
+    9: updateClassComponent, // updateContextConsumer,
+    10: updateClassComponent, // updateContextProvider,
+    11: updateForwardRef,
+    12: updateProfiler,
+    13: updateSuspenseComponent,
+    14: updateMemoComponent,
+    15: updateSimpleMemoComponent,
+    16: mountLazyComponent
+};
 
-// {}, {},{}
+
+
+

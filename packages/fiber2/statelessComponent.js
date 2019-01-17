@@ -71,7 +71,6 @@ export function updateMemoComponent(alternate, fiber, Component, updateExpiratio
 }
 //updateSimpleMemoComponent是MemoComponent的优化，没有比较
 export function updateSimpleMemoComponent(alternate, fiber, Component, updateExpirationTime, renderExpirationTime) {
-  
     if (alternate !== null && updateExpirationTime < renderExpirationTime) {
         var prevProps = alternate.memoizedProps;
         var nextProps = fiber.pendingProps;
