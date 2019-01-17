@@ -29,7 +29,12 @@ yarn global add nanachi-cli
 3. npm run server <br />
 详情请见快应用文档
 
+
 详见 https://rubylouvre.github.io/nanachi/index.html 或  https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
 
 
 ![image](https://user-images.githubusercontent.com/190846/45038189-53f44a80-b093-11e8-9ecb-a4080f21b262.png)
+
+## 开发交流群
+
+![31547727313_ pic](https://user-images.githubusercontent.com/8794029/51319185-57fb9480-1a97-11e9-83c8-d7a0538c6f9c.jpg)
