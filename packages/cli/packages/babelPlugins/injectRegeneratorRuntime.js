@@ -10,7 +10,6 @@ let visitor = {
             //微信，百度小程序async/await语法需要插入var regeneratorRuntime = require('regenerator-runtime/runtime');
             let name = astPath.node.id.name;
             if ( !(name === '_asyncToGenerator' && hackList.includes(config.buildType))  ) {
-                astPath.skip();
                 return;
             }
             let root = astPath.findParent(t.isProgram);
