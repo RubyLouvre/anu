@@ -7,9 +7,12 @@ import { HostRoot, IndeterminateComponent,
     HostComponent, 
     HostPortal, 
     ClassComponent, 
-    ContextProvider, 
+    HostText,
+    Fragment,
+    Mode,
+    Profiler,
     SuspenseComponent } from './fiberTags';
-
+import { Deletion, DidCapture, NoEffect, Update,} from './effectTag';
 export function bailoutOnAlreadyFinishedWork (alternate, fiber, renderExpirationTime) {
     // Check if the children have any pending work.
     var childExpirationTime = fiber.childExpirationTime;
