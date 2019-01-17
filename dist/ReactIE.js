@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-01-09
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-01-17
  */
 
 (function (global, factory) {
@@ -1703,11 +1703,13 @@
             type = fiber.type,
             tag = fiber.tag,
             ref = fiber.ref,
+            key = fiber.key,
             isStateless = tag === 1,
             lastOwn = Renderer.currentOwner,
             instance = {
             refs: {},
             props: props,
+            key: key,
             context: context,
             ref: ref,
             _reactInternalFiber: fiber,

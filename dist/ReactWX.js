@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-01-17T03
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-01-17T10
  * IE9+
  */
 
@@ -1011,7 +1011,7 @@ function refreshComponent(reactInstances, wx, uuid) {
     var pagePath = Object(_getApp()).$$pagePath;
     for (var i = reactInstances.length - 1; i >= 0; i--) {
         var reactInstance = reactInstances[i];
-        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
             updateMiniApp(reactInstance);
@@ -1037,7 +1037,7 @@ function isReferenceType(val) {
 function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
-    props.key = props.key || props['data-instance-uid'] || new Date() - 0;
+    props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
     delete props.is;
     if (this.ref !== null) {
         props.ref = this.ref;
@@ -1151,11 +1151,13 @@ function createInstance(fiber, context) {
         type = fiber.type,
         tag = fiber.tag,
         ref = fiber.ref,
+        key = fiber.key,
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = {
         refs: {},
         props: props,
+        key: key,
         context: context,
         ref: ref,
         _reactInternalFiber: fiber,
