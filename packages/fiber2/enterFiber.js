@@ -1,11 +1,12 @@
 import { hasContextChanged } from './oldContext';
 import { resolveDefaultProps } from './newContext';
 
+//引入各种组件
 import { updateClassComponent } from './StatefulComponent';
 import { updateFunctionComponent, updateMemoComponent, updateSimpleMemoComponent, updateForwardRef } from './StatelessComponent';
 import { updateFragment, updateMode, updateProfiler } from './VirtualComponent';
 import { updateHostComponent, updateHostText, updateHostRoot, updateHostPortal } from './HostComponent';
-import { Ref } from './effectTag';
+import { updateSuspenseComponent, mountLazyComponent } from './PlaceHolder';
 
 export function beginWork (current, fiber, renderExpirationTime) {
     const updateExpirationTime = fiber.expirationTime;
