@@ -571,7 +571,12 @@ let utils = {
   hasNpm(npmName) {
     let flag = false;
     try {
-      nodeResolve.sync(npmName, { basedir: process.cwd() });
+      nodeResolve.sync(
+        npmName, 
+        { 
+          moduleDirectory: path.join(cwd, 'node_modules'),
+        }
+      );
       flag = true;
     } catch (err) {
       // eslint-disable-next-line
