@@ -37,6 +37,7 @@ module.exports = {
         jsExt: 'ux',
         helpers: 'quickHelpers',
         patchComponents: [
+            'icon',
             'button',
             'radio',
             'checkbox',
