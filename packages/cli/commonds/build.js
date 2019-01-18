@@ -21,14 +21,14 @@ function injectQuickAppConfig(){
     }
 }
 
-async function beforeParse(args){
+async function beforeParseTask(args){
     cleanDist();
     injectQuickAppConfig();
     await utils.asyncReact(args['beta']);
 }
 
 module.exports = async function(args){
-    beforeParse(args);
+    await beforeParseTask(args);
     let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
     await parser.parse();
     spinner.succeed(chalk.green('依赖分析成功'));
