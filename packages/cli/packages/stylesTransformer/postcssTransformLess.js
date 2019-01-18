@@ -1,25 +1,35 @@
 /* eslint no-console: 0 */
 const fs = require('fs');
+const path = require('path');
 const postCss = require('postcss');
-const utils = require('../utils');
 const postCssLessEngine = require('postcss-less-engine-latest');
+const getAliasFileManager = require('less-import-aliases');
+
+const getAlias = ()=>{
+    let cwd = process.cwd();
+    let pkg = require(path.join( cwd, 'package.json' ));
+    let alias = ( pkg.nanachi || pkg.mpreact || {} ).alias || {};
+    let result = {};
+    Object.keys(alias).forEach((key)=>{
+        //The key has to be used without "at[@]" prefix
+        //https://www.npmjs.com/package/less-import-aliases
+        result[key.replace(/@/, '')] = path.join( cwd, alias[key]);
+    });
+    return result;
+};
 
 const compileLessByPostCss = (filePath, originalCode)=>{
     return new Promise((resolved, reject)=>{
         let plugins = [
-            postCssLessEngine(),
+            postCssLessEngine({
+                plugins: [
+                    new getAliasFileManager({
+                        aliases: getAlias()
+                    })
+                ]
+            }),
             require('../postcssPlugins/postCssPluginFixNumber'),
-            require('../postcssPlugins/postCssPluginValidateStyle'),
-            require('postcss-import')({
-                resolve(importer, baseDir){
-                    //如果@import的值没有文件后缀
-                    if (!/\.less$/.test(importer)) {
-                        importer = importer + '.less';
-                    }
-                    //处理alias路径
-                    return utils.resolveStyleAlias(importer, baseDir);
-                }
-            })
+            require('../postcssPlugins/postCssPluginValidateStyle')
         ];
         
         postCss(plugins)
