@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-01-17
+ * 运行于快应用的React by 司徒正美 Copyright 2019-01-21
  */
 
 var arrayPush = Array.prototype.push;
@@ -3056,7 +3056,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.4.8',
+    version: '1.4.9',
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,
