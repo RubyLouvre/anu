@@ -3,6 +3,7 @@
 
 1. fix dist/Router.js中newHash变量不存在的BUG，改成to变量
 2. fix require("react-dom/server") 找不到，无法别名的BUG
+3. 重构React.createContext的实现
 
 ## 1.4.9(2018.11.17)
 
