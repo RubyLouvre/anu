@@ -2791,7 +2791,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.4.9',
+    version: '1.5.0',
     render: render$1,
     hydrate: render$1,
     webview: webview,
