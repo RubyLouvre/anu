@@ -1,5 +1,6 @@
-import { hasOwnProperty, noop, typeNumber, isFn } from 'react-core/util';
+import { hasOwnProperty, noop, typeNumber, isFn, get } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
+import { Renderer } from 'react-core/createRenderer';
 
 var fakeApp = {
     app: {
@@ -67,7 +68,8 @@ export function refreshComponent (reactInstances, wx, uuid) {
     let pagePath = Object(_getApp()).$$pagePath;
     for (let i = reactInstances.length - 1; i >= 0; i--) {
         let reactInstance = reactInstances[i];
-        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+        //处理组件A包含组件时B，当出现多个A组件，B组件会串的问题
+        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
             updateMiniApp(reactInstance);
@@ -123,15 +125,19 @@ export function apiRunner (arg = {} , apiCallback, apiPromise) {
     return handler(arg);
 }
 
-export function useComponent (props) {
+export function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
-    // 确保两个相邻的业务组件的数据不会串了
-    props.key = props.key || props['data-instance-uid'] || new Date - 0;
+    props.key = this.key != null ? this.key :  (props['data-instance-uid'] || new Date() - 0);
     delete props.is;
-    var args = [].slice.call(arguments, 2);
-    args.unshift(clazz, props);
-    return createElement.apply(null, args);
+    if (this.ref !== null) {
+        props.ref = this.ref;
+    }
+    var owner = Renderer.currentOwner;
+    if (owner){
+        Renderer.currentOwner = get(owner)._owner;
+    }
+    return createElement(clazz, props);
 }
 
 function safeClone (originVal) {

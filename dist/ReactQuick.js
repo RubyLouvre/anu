@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-01-09
+ * 运行于快应用的React by 司徒正美 Copyright 2019-01-17
  */
 
 var arrayPush = Array.prototype.push;
@@ -552,6 +552,80 @@ function createPortal(children, parent) {
     return child;
 }
 
+var MAX_NUMBER = 1073741823;
+function createContext(defaultValue, calculateChangedBits) {
+    if (calculateChangedBits == void 0) {
+        calculateChangedBits = null;
+    }
+    var instance = {
+        value: defaultValue,
+        subscribers: []
+    };
+    var Provider = miniCreateClass(function Provider(props) {
+        this.value = props.value;
+        getContext.subscribers = this.subscribers = [];
+        instance = this;
+    }, Component, {
+        componentWillUnmount: function componentWillUnmount() {
+            this.subscribers.length = 0;
+        },
+        UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
+            if (this.props.value !== nextProps.value) {
+                var oldValue = this.props.value;
+                var newValue = nextProps.value;
+                var changedBits = void 0;
+                if (Object.is(oldValue, newValue)) {
+                    changedBits = 0;
+                } else {
+                    this.value = newValue;
+                    changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
+                    changedBits |= 0;
+                    if (changedBits !== 0) {
+                        instance.subscribers.forEach(function (fiber) {
+                            if (fiber.setState) {
+                                fiber.setState({ value: newValue });
+                                fiber = get(fiber);
+                            }
+                            Renderer.updateComponent(fiber, true);
+                        });
+                    }
+                }
+            }
+        },
+        render: function render() {
+            return this.props.children;
+        }
+    });
+    var Consumer = miniCreateClass(function Consumer() {
+        instance.subscribers.push(this);
+        this.observedBits = 0;
+        this.state = {
+            value: instance.value
+        };
+    }, Component, {
+        componentWillUnmount: function componentWillUnmount() {
+            var i = instance.subscribers.indexOf(this);
+            instance.subscribers.splice(i, 1);
+        },
+        render: function render() {
+            return this.props.children(this.state.value);
+        }
+    });
+    function getContext(fiber) {
+        while (fiber.return) {
+            if (fiber.name == 'Provider') {
+                return instance.value;
+            }
+            fiber = fiber.return;
+        }
+        return defaultValue;
+    }
+    getContext.subscribers = [];
+    getContext.Provider = Provider;
+    getContext.Consumer = Consumer;
+    return getContext;
+}
+
 function getDataSet(obj) {
     var ret = {};
     for (var name in obj) {
@@ -678,7 +752,7 @@ function refreshComponent(reactInstances, wx, uuid) {
     var pagePath = Object(_getApp()).$$pagePath;
     for (var i = reactInstances.length - 1; i >= 0; i--) {
         var reactInstance = reactInstances[i];
-        if (reactInstance.$$pagePath === pagePath && reactInstance.instanceUid === uuid) {
+        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
             updateMiniApp(reactInstance);
@@ -731,11 +805,16 @@ function apiRunner() {
 function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
-    props.key = props.key || props['data-instance-uid'] || new Date() - 0;
+    props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
     delete props.is;
-    var args = [].slice.call(arguments, 2);
-    args.unshift(clazz, props);
-    return createElement.apply(null, args);
+    if (this.ref !== null) {
+        props.ref = this.ref;
+    }
+    var owner = Renderer.currentOwner;
+    if (owner) {
+        Renderer.currentOwner = get(owner)._owner;
+    }
+    return createElement(clazz, props);
 }
 function safeClone(originVal) {
     var temp = originVal instanceof Array ? [] : {};
@@ -1438,11 +1517,13 @@ function createInstance(fiber, context) {
         type = fiber.type,
         tag = fiber.tag,
         ref = fiber.ref,
+        key = fiber.key,
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = {
         refs: {},
         props: props,
+        key: key,
         context: context,
         ref: ref,
         _reactInternalFiber: fiber,
@@ -2988,6 +3069,7 @@ var React = getWindow().React = {
     cloneElement: cloneElement,
     PureComponent: PureComponent,
     isValidElement: isValidElement,
+    createContext: createContext,
     toClass: miniCreateClass,
     toRenderProps: toRenderProps,
     useComponent: useComponent,

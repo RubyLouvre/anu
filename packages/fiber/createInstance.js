@@ -14,12 +14,13 @@ export function createInstance(fiber, context) {
         enqueueSetState: returnFalse,
         isMounted: isMounted
     };
-    let { props, type, tag, ref } = fiber,
+    let { props, type, tag, ref, key } = fiber,
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = {
             refs: {},
             props,
+            key,
             context,
             ref,
             _reactInternalFiber: fiber,

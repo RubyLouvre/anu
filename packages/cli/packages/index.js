@@ -16,13 +16,10 @@ const crypto = require('crypto');
 const config = require('./config');
 const quickFiles = require('./quickFiles');
 const miniTransform = require('./miniappTransform');
-
 const styleTransform = require('./styleTransform');
-
 const generate = require('./generate');
 let cwd = process.cwd();
 let inputPath = path.join(cwd,  config.sourceDir);
-let entry = path.join(inputPath, 'app.js');
 let cache = {};
 let needUpdate = (id, code, fn) => {
     let sha1 = crypto
@@ -34,16 +31,6 @@ let needUpdate = (id, code, fn) => {
         fn();
     }
 };
-
-let removeDist = ()=>{
-    let distPath = path.join(cwd, config.buildDir);
-    try {
-        fs.removeSync(distPath);
-    } catch (err) {
-        console.log(err);
-    }
-};
-
 const isStyle = path => {
     return /\.(?:less|scss|sass)$/.test(path);
 };
@@ -164,7 +151,6 @@ class Parser {
     }
     async parse() {
         let bundle = await rollup.rollup(this.inputConfig);
-        
         //如果有需要打补丁的组件并且本地没有安装schnee-ui
         if (this.needInstallUiLib()) {
             utils.installer('schnee-ui');
@@ -385,11 +371,11 @@ class Parser {
         if ( ['ali', 'bu', 'quick'].includes( config.buildType) ) return;
         let fileName = 'project.config.json';
         let dist = path.join(cwd, config.buildDir, fileName);
-        let src = path.join(cwd, config.sourceDir, fileName);
+        let src = path.join(cwd, fileName);
         fs.ensureFileSync(dist);
         fs.copyFile( src, dist, (err)=>{
             if (err) {
-                console.log(err);
+                //console.log(err);
             }
         });
     }
@@ -431,19 +417,6 @@ class Parser {
     }
 }
 
-async function build(arg, opts) {
-    let { option } = opts;
-    removeDist();
-    await utils.asyncReact(option);  //同步react
-    if (config['buildType'] === 'quick') {
-        //快应用mege package.json 以及 生成秘钥
-        utils.initQuickAppConfig();
-    }
-    let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
-    let parser = new Parser(entry);
-    await parser.parse();
-    spinner.succeed(chalk.green('依赖分析成功'));
-    if (arg === 'watch') parser.watching();
-}
-
-module.exports = build;
+module.exports = (entry)=>{
+    return new Parser(entry);
+};

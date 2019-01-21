@@ -9,6 +9,8 @@ import {
     isValidElement,
     createFactory
 } from 'react-core/createElement';
+import { createContext } from 'react-core/createContext';
+
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { injectAPIs } from './api';
@@ -53,6 +55,7 @@ let React = (getWindow().React = {
     createPortal,
     createElement,
     createFactory,
+    createContext,
     cloneElement,
     PureComponent,
     isValidElement,

@@ -173,7 +173,7 @@ class P extends React.Component {
   }
   render() {
       return (
-          <div class="page">
+          <div class="demo-page">
               <image
                   mode="aspectFit"
                   class="top-image"
@@ -183,10 +183,10 @@ class P extends React.Component {
                   {this.state.indexPageIcons.map(function(item) {
                       return (
                           <div
-                              class={'item-wrapper  ' + item.class}
+                              class='item-wrapper'
                               onTap={this.gotoSome.bind(this, item.url)}
                           >
-                              <image src={item.logoSrc} class="itemBgc" />
+                              <image src={item.logoSrc} class={`itemBgc ${item.class}`} />
                               <text class="title">{item.bizTitle}</text>
                               {item.showSpecialLogo && item.specialText.length ? (
                                   <div class="special-text">{item.specialText}</div>
@@ -201,8 +201,8 @@ class P extends React.Component {
                   {this.state.toolData.map(function(item, index) {
                       return (
                           <div onTap={this.showTip} class="tool-item anu-block" >
-                              <image src={item.url} />
-                              <text>{item.title}</text>
+                              <image class="image" src={item.url} />
+                              <text class="text">{item.title}</text>
                           </div>
                       );
                   })}
@@ -218,8 +218,8 @@ class P extends React.Component {
                       {this.state.specialOfferData.map(function(item, index) {
                           return (
                                   <swiper-item onTap={this.showTip}  class="special-offer-item anu-block">
-                                      <image src={item.url} />
-                                      <text>{item.title}</text>
+                                      <image class="special-offer-image" src={item.url} />
+                                      <text class="special-offer-text">{item.title}</text>
                                   </swiper-item>
                           );
                       })}
@@ -229,8 +229,8 @@ class P extends React.Component {
                   <text class="title">活动专区</text>
                   <div class="activity-wrapper">
                       <div onTap={this.showTip} class="left-content">
-                          <image src="https://img1.qunarzz.com/order/comp/1808/c3/dda9c77c3b1d8802.png" />
-                          <div class="content anu-block">
+                          <image class="image" src="https://img1.qunarzz.com/order/comp/1808/c3/dda9c77c3b1d8802.png" />
+                          <div class="activity-content anu-block">
                               <text class="title">何时飞</text>
                               <text class="desc">机票趋势早知道</text>
                           </div>
@@ -238,16 +238,17 @@ class P extends React.Component {
                       <div class="right-content anu-block">
                           <div onTap={this.showTip} class="right-content-wrapper first-child">
                               <image
+                                  class="image"
                                   src="https://img1.qunarzz.com/order/comp/1808/3b/fd717d94ed8b6102.jpg"
                               />
-                              <div class="content anu-block">
+                              <div class="activity-content anu-block">
                                   <text class="title">人格测试</text>
                                   <text class="desc">简直惊悚</text>
                               </div>
                           </div>
                           <div onTap={this.showTip} class="right-content-wrapper">
-                              <image src="https://img1.qunarzz.com/order/comp/1806/1c/61cd118da20ec702.jpg" />
-                              <div class="content anu-block">
+                              <image class="image" src="https://img1.qunarzz.com/order/comp/1806/1c/61cd118da20ec702.jpg" />
+                              <div class="activity-content anu-block">
                                   <text class="title">飞行宝贝</text>
                                   <text class="desc">榜单有礼</text>
                               </div>
