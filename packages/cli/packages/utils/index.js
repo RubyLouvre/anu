@@ -350,8 +350,7 @@ let utils = {
       })
     );
   },
-  async getReactLibPath(option) {
-    let isBeta = ['-b', '--beta'].includes(option);
+  async getReactLibPath(isBeta) {
     let React = this.getReactLibName();
     let reactTargetPath = path.join(cwd, config.sourceDir, React);
     if (isBeta) {
@@ -572,7 +571,12 @@ let utils = {
   hasNpm(npmName) {
     let flag = false;
     try {
-      nodeResolve.sync(npmName, { basedir: process.cwd() });
+      nodeResolve.sync(
+        npmName, 
+        { 
+          moduleDirectory: path.join(cwd, 'node_modules'),
+        }
+      );
       flag = true;
     } catch (err) {
       // eslint-disable-next-line

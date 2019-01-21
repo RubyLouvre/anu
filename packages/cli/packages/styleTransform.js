@@ -6,9 +6,9 @@ const utils = require('./utils');
 const exitName = config[config['buildType']].styleExt;
 const crypto = require('crypto');
 const compileSassByPostCss = require('./stylesTransformer/postcssTransformSass');
-// const compileLessByPostCss = require('./stylesTransformer/postcssTransformLess');
+const compileLessByPostCss = require('./stylesTransformer/postcssTransformLess');
 const compileSass = require('./stylesTransformer/transformSass');
-const compileLess = require('./stylesTransformer/transformLess');
+// const compileLess = require('./stylesTransformer/transformLess');
 let cache = {};
 //缓存层，避免重复编译
 let needUpdate = (id, originalCode, fn) => {
@@ -36,8 +36,8 @@ let getDist = (filePath) =>{
 //用户工程下是否有node-sass
 let hasNodeSass = utils.hasNpm('node-sass');
 const compilerMap = {
-    '.less': compileLess,
-    '.css':  compileLess,
+    '.less': compileLessByPostCss,
+    '.css':  compileLessByPostCss,
     '.sass': hasNodeSass ? compileSass : compileSassByPostCss,
     '.scss': hasNodeSass ? compileSass : compileSassByPostCss
 };
@@ -55,6 +55,14 @@ function runCompileStyle(filePath, originalCode){
             return;
         }
 
+        // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
+        const placeholder = {
+            code: '',
+            path: getDist(filePath),
+            type: 'css'
+        };
+        queue.push(placeholder);
+        // 补丁 END
         compilerMap[exitName](filePath, originalCode)
             .then((result)=>{
                 let { code } = result;

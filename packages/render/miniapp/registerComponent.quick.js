@@ -1,10 +1,10 @@
-import { registeredComponents, usingComponents, refreshMatchedApp } from './utils';
+import { registeredComponents, usingComponents, refreshComponent, detachComponent } from './utils';
 import { dispatchEvent } from './eventSystem.quick';
 
-export function registerComponent(type, name) {
+export function registerComponent (type, name) {
+    type.wxInstances = {};
     registeredComponents[name] = type;
-    let reactInstances = (type.reactInstances = []);
-    type.wxInstances = [];
+    let reactInstances = type.reactInstances = [];
     return {
         data() {
             return {
@@ -13,23 +13,12 @@ export function registerComponent(type, name) {
                 context: {}
             };
         },
-
-        onInit() {
-            usingComponents[name] = type;
-        },
         onReady() {
+            usingComponents[name] = type;
             let uuid = this.dataInstanceUid || null;
-            refreshMatchedApp(reactInstances, this, uuid);
+            refreshComponent(reactInstances, this, uuid);
         },
-        onDestroy() {
-            let t = this.reactInstance;
-            if (t) {
-                t.wx = null;
-                this.reactInstance = null;
-            }
-            console.log(`detached ${name} 组件`); //eslint-disabled-line
-        },
-        dispatchEvent
-
+        onDestroy: detachComponent,
+        dispatchEvent: dispatchEvent
     };
 }

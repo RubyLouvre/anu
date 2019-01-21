@@ -9,6 +9,7 @@ import {
     isValidElement,
     createFactory
 } from 'react-core/createElement';
+import { createContext } from 'react-core/createContext';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { dispatchEvent } from './eventSystem.quick';
@@ -46,7 +47,7 @@ let React = getWindow().React = {
     cloneElement,
     PureComponent,
     isValidElement,
-   
+    createContext,
     toClass: miniCreateClass,
     toRenderProps,
     useComponent,

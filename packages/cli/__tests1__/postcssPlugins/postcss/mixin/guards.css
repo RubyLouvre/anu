@@ -1,9 +1,0 @@
-.mixin () when (lightness() >= 50%) {
-  background-color: black;
-}
-.mixin () when (lightness() < 50%) {
-  background-color: white;
-}
-.mixin () {
-  color: ;
-}

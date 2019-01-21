@@ -29,8 +29,10 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 require('babel-plugin-transform-object-rest-spread'),
                 require('babel-plugin-transform-es2015-template-literals'),
                 ...require('./babelPlugins/transformMiniApp')(sourcePath),
-                require('babel-plugin-transform-async-to-generator'),
-                require('./babelPlugins/transformIfImport')
+                ...require('./babelPlugins/transformEnv'),
+                ...require('./babelPlugins/injectRegeneratorRuntime'),
+                require('./babelPlugins/transformIfImport'),
+                require('./babelPlugins/trasnformAlias')( {sourcePath,resolvedIds} ),
             ]
         },
         async function(err, result) {
@@ -39,30 +41,8 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 console.log(sourcePath, '\n', err);
                 process.exit(1);
             }
-            let babelPlugins = [
-                ...require('./babelPlugins/transformEnv'),
-                require('./babelPlugins/injectRegeneratorRuntime'),
-                require('./babelPlugins/trasnformAlias')(
-                    {
-                        sourcePath: sourcePath,
-                        resolvedIds: resolvedIds
-                    }
-                )
-            ];
-            //babel无transform异步方法
-            try {
-                result = babel.transform(result.code, {
-                    babelrc: false,
-                    plugins: babelPlugins
-                });
-            } catch (err) {
-                //eslint-disable-next-line
-                console.log(sourcePath, '\n', err);
-                process.exit(1);
-            }
             //处理中文转义问题
             result.code = utils.decodeChinise(result.code);
-
             let queueData = {
                 code: result.code,
                 path: utils.updatePath(sourcePath, config.sourceDir, 'dist'),
@@ -70,13 +50,23 @@ function transform(sourcePath, resolvedIds, originalCode) {
             };
            
             if (config.buildType == 'quick' && quickFiles[sourcePath]) {
+                const distPath = utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux');
+                // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
+                const placeholder = {
+                    code: '',
+                    path: distPath,
+                    type: 'ux'
+                };
+                queue.push(placeholder);
+                // 补丁 END
+                
                 //ux处理
                 queueData = {
                     code: await mergeUx({
                         sourcePath: sourcePath,
                         result: result
                     }),
-                    path: utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux'),
+                    path: distPath,
                     type: 'ux'
                 };
             } 

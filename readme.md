@@ -50,6 +50,7 @@ resolve: {
     alias: {
        'react': 'anujs',
        'react-dom': 'anujs',
+        'react-dom/server': 'anujs/dist/React/server',//在dist下面有一个Reac目录
          // For compatibility with IE please use the following configuration
          // 'react': 'anujs/dist/ReactIE',
          // 'react-dom': 'anujs/dist/ReactIE',

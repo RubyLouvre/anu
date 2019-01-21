@@ -58,7 +58,7 @@ function createHistory(source) {
             // try...catch iOS Safari limits to 100 pushState calls
             var slocation = source.location;
             if (modeObject.value === 'hash') {
-                if (replace && slocation.hash !== to) {
+                if (replace && slocation.hash !== newHash) {
                     history.back();
                 }
                 slocation.hash = to;

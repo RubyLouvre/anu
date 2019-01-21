@@ -1,30 +1,43 @@
 /* eslint no-console: 0 */
 const fs = require('fs');
+const path = require('path');
 const postCss = require('postcss');
-const utils = require('../utils');
-const postCssLessEngine = require('postcss-less-engine');
+const postCssLessEngine = require('postcss-less-engine-latest');
+const getAliasFileManager = require('less-import-aliases');
+
+const getAlias = ()=>{
+    let cwd = process.cwd();
+    let pkg = require(path.join( cwd, 'package.json' ));
+    let alias = ( pkg.nanachi || pkg.mpreact || {} ).alias || {};
+    let result = {};
+    Object.keys(alias).forEach((key)=>{
+        //The key has to be used without "at[@]" prefix
+        //https://www.npmjs.com/package/less-import-aliases
+        result[key.replace(/@/, '')] = path.join( cwd, alias[key]);
+    });
+    return result;
+};
 
 const compileLessByPostCss = (filePath, originalCode)=>{
     return new Promise((resolved, reject)=>{
-        postCss([
-            postCssLessEngine(),
-            require('../postcssPlugins/postCssPluginValidateStyle'),
-            require('postcss-import')({
-                resolve(importer, baseDir){
-                    //如果@import的值没有文件后缀
-                    if (!/\.s[ca]ss$/.test(importer)) {
-                        importer = importer + '.scss';
-                    }
-                    //处理alias路径
-                    return utils.resolveStyleAlias(importer, baseDir);
-                }
+        let plugins = [
+            postCssLessEngine({
+                plugins: [
+                    new getAliasFileManager({
+                        aliases: getAlias()
+                    })
+                ]
             }),
-        ])
+            require('../postcssPlugins/postCssPluginFixNumber'),
+            require('../postcssPlugins/postCssPluginValidateStyle')
+        ];
+        
+        postCss(plugins)
             .process(
                 originalCode || fs.readFileSync(filePath).toString(),
                 {
                     from: filePath,
-                    parser: postCssLessEngine.parser,
+                    parser: postCssLessEngine.parser
                 }
             )
             .then((result)=>{
