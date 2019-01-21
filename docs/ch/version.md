@@ -1,3 +1,9 @@
+
+## 1.5.0(2019.1.21)
+
+1. fix dist/Router.js中newHash变量不存在的BUG，改成to变量
+2. fix require("react-dom/server") 找不到，无法别名的BUG
+
 ## 1.4.9(2018.11.17)
 
 1. 重构小程序dispathEvent与dispatchEventQuick的实现

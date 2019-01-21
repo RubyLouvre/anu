@@ -5,7 +5,7 @@ banner:
   btns: 
     - { name: 'Start', href: './en/index.html', primary: true }
     - { name: 'Github >', href: 'https://github.com/RubyLouvre/anu' }
-  caption: 'version: v1.4.3'
+  caption: 'version: v1.5.0'
 features: 
   - { name: 'Elaborate design', desc: 'Supports all features of React 16, but only 14kb' }
   - { name: 'Backing on React ’s huge biome', desc: 'Run nearly more than 800 official unit tests and 246 antd unit tests!' }
