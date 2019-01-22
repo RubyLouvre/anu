@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-17
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-22
  */
 
 var arrayPush = Array.prototype.push;
@@ -975,6 +975,35 @@ var buApis = function buApis(api) {
             a = a || {};
             a.title = a.title || '加载中...';
             return api.showLoading(a);
+        },
+        setMetaDescription: function _(a) {
+            var empty = function empty(res) {};
+            var defailt = {
+                content: '',
+                success: empty,
+                fail: empty,
+                complete: empty
+            };
+            var options = Object.assign(defailt, a);
+            return api.setMetaDescription && api.setMetaDescription(options);
+        },
+        setMetaKeywords: function _(a) {
+            var empty = function empty(res) {};
+            var defailt = {
+                content: '',
+                success: empty,
+                fail: empty,
+                complete: empty
+            };
+            var options = Object.assign(defailt, a);
+            return api.setMetaKeywords && api.setMetaKeywords(options);
+        },
+        setDocumentTitle: function _(a) {
+            var defailt = {
+                title: ''
+            };
+            var options = Object.assign(defailt, a);
+            return api.setDocumentTitle && setDocumentTitle(options);
         }
     };
 };
