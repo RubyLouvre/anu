@@ -68,7 +68,7 @@ const compileSassByPostCss = (filePath, originalCode)=>{
             postCssWalkAtFunction,
             require('postcss-nested-props'),   //属性嵌套
             require('precss'),
-            require('postcss-automath'),       //5px + 2 => 7px
+            require('postcss-automath-latest'),       //5px + 2 => 7px
             
         ])
             .process(
