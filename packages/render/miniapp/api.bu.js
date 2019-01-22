@@ -49,7 +49,7 @@ export var buApis = function(api) {
                title: ''
             };
             let options = Object.assign(defailt, a);
-            return api.setDocumentTitle && setDocumentTitle(options)
+            return api.setDocumentTitle && api.setDocumentTitle(options)
         }
     };
 };
