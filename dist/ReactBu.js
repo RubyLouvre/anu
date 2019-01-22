@@ -1003,7 +1003,7 @@ var buApis = function buApis(api) {
                 title: ''
             };
             var options = Object.assign(defailt, a);
-            return api.setDocumentTitle && setDocumentTitle(options);
+            return api.setDocumentTitle && api.setDocumentTitle(options);
         }
     };
 };
