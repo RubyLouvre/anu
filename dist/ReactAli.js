@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-17
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-23
  */
 
 var arrayPush = Array.prototype.push;
@@ -1145,7 +1145,7 @@ function updateMiniApp(instance) {
 }
 function refreshComponent(reactInstances, wx, uuid) {
     var pagePath = Object(_getApp()).$$pagePath;
-    for (var i = reactInstances.length - 1; i >= 0; i--) {
+    for (var i = 0, n = reactInstances.length; i < n; i++) {
         var reactInstance = reactInstances[i];
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
             reactInstance.wx = wx;
@@ -2791,7 +2791,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.4.8',
+    version: '1.5.0',
     render: render$1,
     hydrate: render$1,
     webview: webview,
