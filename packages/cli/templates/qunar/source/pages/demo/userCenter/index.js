@@ -86,7 +86,7 @@ class P extends React.Component {
                     <div class="font-27">关注公众号</div>
                     <div class='right-content'>
                         <text class='right-message font-27'>去关注</text>
-                        <image src='../../../assets/image/arrow.png' />
+                        <image class='right-content-image' src='../../../assets/image/arrow.png' />
                     </div>
                 </div>
                 {
@@ -96,7 +96,7 @@ class P extends React.Component {
                                 <text class={'menu-item-title' + (item.isArrow ? '': 'high-light')}>{item.title}</text>
                                 {
                                     item.isArrow
-                                        ? <image src='../../../assets/image/arrow.png'/>
+                                        ? <image className='menu-item-image' src='../../../assets/image/arrow.png'/>
                                         : ''
                                 }
                             </div>
