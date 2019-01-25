@@ -24,19 +24,43 @@ import { createCanvasContext } from './quickApis/canvas.js';
 
 function createRouter(name) {
     return function(obj) {
-        const router = require('@system.router');
-        const params = {};
-        let href = obj ? obj.url || obj.uri || '' : '';
-        let uri = href.slice(href.indexOf('/pages') + 1);
-        uri = uri
-            .replace(/\?(.*)/, function(a, b) {
-                b.split('&').forEach(function(param) {
-                    param = param.split('=');
-                    params[param[0]] = param[1];
-                });
-                return '';
-            })
-            .replace(/\/index$/, '');
+        var href = obj ? obj.url || obj.uri || '' : '';
+
+        //from https://www.regextester.com/98192
+        let urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
+        if (urlReg.test(href)) {
+            webview.loadUrl({
+                url: webViewUrls[uri],
+                allowthirdpartycookies: true
+            });
+            return;
+        }
+
+        var uri = href.slice(href.indexOf('/pages') + 1);
+        var webViewUrls = {};
+        try {
+             webViewUrls = require('./webviewConfig');
+        } catch (err) {
+
+        }
+
+        if (webViewUrls[uri]) {
+            var webview = require('@system.webview');
+            webview.loadUrl({
+                url: webViewUrls[uri],
+                allowthirdpartycookies: true
+            });
+            return;
+        }
+        var router = require('@system.router');
+        var params = {};
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('&').forEach(function (param) {
+                param = param.split('=');
+                params[param[0]] = param[1];
+            });
+            return '';
+        }).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }

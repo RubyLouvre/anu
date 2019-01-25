@@ -588,6 +588,44 @@ let utils = {
       return unescape(`%u${b}`);
     });
   },
+  setWebViewRoutesConfig(queue) {
+    /**
+     * ret
+     * {
+     *   "pages/demo/syntax/index/index": "${host}/pages/demo/syntax/index/index"
+     * }
+     */
+     
+    let ret = {}, pkg = null, host = '';
+    try {
+       pkg = require( path.join(cwd, 'package.json') );
+    } catch (err) {
+
+    }
+
+    if ( pkg && pkg.nanachi) {
+      host = pkg.nanachi.H5_HOST
+    }
+    
+    if (!host) {
+      console.log(chalk.red('Error: H5请在package.json中nanachi字段里配置H5_HOST字段'));
+      process.exit(1);
+    }
+
+    config['webview'].forEach((el)=>{
+        let route =  path
+            .relative( path.join(cwd, config.sourceDir) , el)  //demo/syntax/index/index.js
+            .replace(/\.js$/, '')
+            .replace(/\\/, '/');  //处理windows下反斜杠
+        ret[route] = host + '/' + route;
+    });
+    let code = `module.exports = ${JSON.stringify(ret)}`;
+    queue.push({
+        code: code,
+        type: 'js',
+        path: path.join(process.cwd(), 'dist', 'webviewConfig.js')
+    });
+  },
   sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
 

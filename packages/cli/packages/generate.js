@@ -47,6 +47,15 @@ module.exports = ()=>{
                         sucSize = 0;
                         utils.spinner('').succeed('构建结束\n');
                         if (config.buildType === 'quick'){
+
+                            // if (config.webview && config.webview.length > 0) {
+                            //     let result = spawn.sync('nanachi', ['watch:h5'], { stdio: 'inherit' });
+                            //     if (result.error) {
+                            //         console.log(result.error);
+                            //         process.exit(1);
+                            //     }
+                            // }
+                            
                             console.log(chalk.magentaBright('请打开另一个窗口, 安装hap。'), chalk.greenBright('npm i && npm run build'));
                             console.log(chalk.magentaBright('在打开另一个窗口, 安装hap的watch命令。'), chalk.greenBright('npm run server'));
                         }
