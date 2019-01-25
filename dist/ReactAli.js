@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-23
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-25
  */
 
 var arrayPush = Array.prototype.push;
@@ -2724,7 +2724,7 @@ function onUnload() {
 }
 
 var globalHooks = {
-    onShareAppMessage: 'onGlobalShare',
+    onShare: 'onGlobalShare',
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
@@ -2743,26 +2743,29 @@ function registerPage(PageClass, path, testObject) {
         onReady: onReady,
         onUnload: onUnload
     };
-    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide').forEach(function (hook) {
+    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
         config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook],
                 fired = false;
-            if (hook === 'onShow') {
+            if (hook === 'onShareAppMessage') {
+                hook = 'onShare';
+                fn = fn || instance[hook];
+            } else if (hook === 'onShow') {
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }
             if (isFn(fn)) {
                 fired = true;
                 var ret = fn.call(instance, e);
-                if (hook === 'onShareAppMessage') {
+                if (hook === 'onShare') {
                     return ret;
                 }
             }
             var globalHook = globalHooks[hook];
             if (globalHook) {
                 ret = callGlobalHook(globalHook, e);
-                if (hook === 'onShareAppMessage') {
+                if (hook === 'onShare') {
                     return ret;
                 }
             }
