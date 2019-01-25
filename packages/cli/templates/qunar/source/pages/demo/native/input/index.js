@@ -16,18 +16,18 @@ class P extends React.Component {
 
     bindKeyInput(e) {
         this.setState({
-            inputValue: e.detail.value.trim()
+            inputValue: e.target.value.trim()
         });
     }
 
     bindReplaceInput(e) {
         // eslint-disable-next-line
         console.log(e);
-        var value = e.detail.value;
+        var value = e.target.value;
         var pos = e.cursor;
         if (pos != -1) {
             //光标在中间
-            var left = e.detail.value.slice(0, pos);
+            var left = e.target.value.slice(0, pos);
             //计算光标的位置
             pos = left;
         }
