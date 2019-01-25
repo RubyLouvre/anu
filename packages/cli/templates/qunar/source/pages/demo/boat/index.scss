@@ -26,7 +26,7 @@ page {
   
   width: 100%;
   margin-top: 180rpx;
-  .content {
+  .boat-content {
     display: flex;
     flex-direction: column;
     background-color: #fff;
@@ -85,7 +85,7 @@ page {
         height: 70rpx;
         border-radius: 36rpx;
         border: 1px solid #000;
-        image {
+        .image {
           // transform: translate(-50%, -50%);
           // transform: translate(-35rpx, -35rpx);
           width: 46rpx;

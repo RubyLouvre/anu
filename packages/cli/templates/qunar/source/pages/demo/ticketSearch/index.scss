@@ -1,5 +1,5 @@
 
-.page {
+.ticket-page {
   display: -webkit-flex;
   display: flex;
   -webkit-flex-direction: column;
@@ -16,7 +16,7 @@
   .anu-block {
     display:flex;
     flex-direction: column;
-    
+    width: auto;
   }
   .flex-right {
     display: flex;

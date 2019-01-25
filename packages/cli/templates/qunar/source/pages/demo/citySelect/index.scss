@@ -7,7 +7,7 @@ page{
         padding: 20rpx 30rpx;
         background-color: #fff;
         font-size: 0;
-        input {
+        .input {
             padding: 0 60rpx;
             box-sizing: border-box;
             margin-right: 20rpx;
@@ -19,7 +19,7 @@ page{
             background-color: rgb(241, 241, 241);
             transition: width 300ms ease;
         }
-        image {
+        .image {
             position: absolute;
             top: 30rpx;
             left: 50rpx;

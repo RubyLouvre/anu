@@ -26,66 +26,53 @@ class P extends React.Component {
 
     checkboxChange(e) {
         //待调试
-        var checked = e.value;
-        var changed = {};
-        for (var i = 0; i < this.state.checkboxItems.length; i++) {
-            if (checked.indexOf(this.state.checkboxItems[i].name) !== -1) {
-                changed['checkboxItems[' + i + '].checked'] = true;
+        var checked = e.detail.value;
+        var state = this.state;
+        for (var i = 0; i < state.checkboxItems.length; i++) {
+            if (checked.indexOf(state.checkboxItems[i].name) !== -1) {
+                state.checkboxItems[i].checked = true;
             } else {
-                changed['checkboxItems[' + i + '].checked'] = false;
+                state.checkboxItems[i].checked = false;
             }
         }
         // eslint-disable-next-line
-        console.log(changed);
-        this.setState(changed);
+        this.setState(state);
     }
 
     radioChange(e) {
-        var checked = e.value;
-        var changed = {};
-        for (var i = 0; i < this.state.radioItems.length; i++) {
-            if (checked.indexOf(this.state.radioItems[i].name) !== -1) {
-                changed['radioItems[' + i + '].checked'] = true;
+        var checked = e.detail.value;
+        var state = this.state;
+        for (var i = 0; i < state.radioItems.length; i++) {
+            if (checked.indexOf(state.radioItems[i].name) !== -1) {
+                state.radioItems[i].checked = true;
             } else {
-                changed['radioItems[' + i + '].checked'] = false;
+                state.radioItems[i].checked = false;
             }
         }
         // eslint-disable-next-line
-        console.log(changed);
-        this.setState(changed);
+        this.setState(state);
     }
     render() {
         return (
             <div>
                 {this.a}
-                <view class="section section_gap">
-                    <view class="section__title">表单组件在label内</view>
+                <view className="section section_gap">
+                    <view className="section__title">表单组件在label内</view>
                     <checkbox-group
-                        class="group"
+                        className="group"
                         onChange={this.checkboxChange}
                     >
-                        {this.state.checkboxItems.map(function(item) {
+                        {this.state.checkboxItems.map(function(item, index) {
                             return (
-                                <view class="label-1">
+                                <view className="label-1" key={index}>
                                     <label>
+                                        <text className="label-1__text">
+                                            {item.value}
+                                        </text>
                                         <checkbox
-                                            hidden
                                             value={item.name}
                                             checked={item.checked}
                                         />
-                                        <view class="label-1__icon">
-                                            <view
-                                                class="label-1__icon-checked"
-                                                style={{
-                                                    opacity: item.checked
-                                                        ? 1
-                                                        : 0
-                                                }}
-                                            />
-                                        </view>
-                                        <text class="label-1__text">
-                                            {item.value}
-                                        </text>
                                     </label>
                                 </view>
                             );
@@ -93,32 +80,22 @@ class P extends React.Component {
                     </checkbox-group>
                 </view>
 
-                <view class="section section_gap">
-                    <view class="section__title">label用for标识表单组件</view>
-                    <radio-group class="group" onChange={this.radioChange}>
-                        {this.state.radioItems.map(function(item) {
+                <view className="section section_gap">
+                    <view className="section__title">label用for标识表单组件</view>
+                    <radio-group className="group" onChange={this.radioChange}>
+                        {this.state.radioItems.map(function(item, index) {
                             return (
-                                <view class="label-2">
+                                <view className="label-2" key={index}>
+                                    <div className="label-2__text">
+                                        <label for={item.name}>
+                                        <text>{item.name}</text>
+                                        </label>
+                                    </div>
                                     <radio
                                         id={item.name}
-                                        hidden
                                         value={item.name}
                                         checked={item.checked}
                                     />
-                                    <view class="label-2__icon">
-                                        <view
-                                            class="label-2__icon-checked"
-                                            style={{
-                                                opacity: item.checked ? 1 : 0
-                                            }}
-                                        />
-                                    </view>
-                                    <label
-                                        class="label-2__text"
-                                        for={item.name}
-                                    >
-                                        <text>{item.name}</text>
-                                    </label>
                                 </view>
                             );
                         })}

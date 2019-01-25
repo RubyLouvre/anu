@@ -73,7 +73,7 @@ class P extends React.Component {
 
   render() {
       return (
-          <div className="page" style="{background-color: #feb64e}">
+          <div className="ticket-page" style="{background-color: #feb64e}">
               <image
                   className="sreach_bg"
                   mode="scaleToFill"
