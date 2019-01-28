@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-01-23
+ * 运行于快应用的React by 司徒正美 Copyright 2019-01-28
  */
 
 var arrayPush = Array.prototype.push;
@@ -1344,10 +1344,30 @@ function createCanvasContext(id, obj) {
 
 function createRouter(name) {
     return function (obj) {
+        var href = obj ? obj.url || obj.uri || '' : '';
+        var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
+        if (urlReg.test(href)) {
+            webview.loadUrl({
+                url: webViewUrls[uri],
+                allowthirdpartycookies: true
+            });
+            return;
+        }
+        var uri = href.slice(href.indexOf('/pages') + 1);
+        var webViewUrls = {};
+        try {
+            webViewUrls = require('./webviewConfig');
+        } catch (err) {}
+        if (webViewUrls[uri]) {
+            var webview = require('@system.webview');
+            webview.loadUrl({
+                url: webViewUrls[uri],
+                allowthirdpartycookies: true
+            });
+            return;
+        }
         var router = require('@system.router');
         var params = {};
-        var href = obj ? obj.url || obj.uri || '' : '';
-        var uri = href.slice(href.indexOf('/pages') + 1);
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('&').forEach(function (param) {
                 param = param.split('=');

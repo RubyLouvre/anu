@@ -25,33 +25,35 @@ import { createCanvasContext } from './quickApis/canvas.js';
 function createRouter(name) {
     return function(obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
-
-        //from https://www.regextester.com/98192
-        let urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
-        if (urlReg.test(href)) {
-            webview.loadUrl({
-                url: webViewUrls[uri],
-                allowthirdpartycookies: true
-            });
-            return;
-        }
-
         var uri = href.slice(href.indexOf('/pages') + 1);
         var webViewUrls = {};
-        try {
-             webViewUrls = require('./webviewConfig');
-        } catch (err) {
-
+        var webViewRoute = '';
+        //from https://www.regextester.com/98192
+        var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
+        //绝对路径
+        if (urlReg.test(href)) {
+            webViewRoute = href;
+        } else {
+           //webview url
+           try {
+               webViewUrls = require('./webviewConfig.js');
+               webViewRoute = webViewUrls[uri];
+           } catch (err) {
+              
+           }
         }
 
-        if (webViewUrls[uri]) {
+        //如果是 webViewRoute是绝对路径 或者 webview
+        if (webViewRoute) {
             var webview = require('@system.webview');
             webview.loadUrl({
-                url: webViewUrls[uri],
+                url: webViewRoute,
                 allowthirdpartycookies: true
             });
             return;
         }
+        
+        //其他按普通跳转处理
         var router = require('@system.router');
         var params = {};
         uri = uri.replace(/\?(.*)/, function (a, b) {

@@ -13,14 +13,23 @@ let utils = require('./utils');
 let isReact = function(sourcePath){
     return /^(React)/.test( path.basename(sourcePath) );
 };
-let isWebView = function(sourcePath){
-    return config['buildType'] === 'quick' && config['webview'] && config['webview'].includes(sourcePath);
-};
+// let isWebView = function(sourcePath){
+//     if ( config['buildType'] != 'quick' &&  !config['webview'] ) return;
+//     let isMatch = 
+//     config['webview'].includes(sourcePath) ||
+//     config['webview'].some((reg)=>{
+//         return Object.prototype.toString.call(reg) === '[object RegExp]' 
+//                && reg.test(sourcePath)
+//     });
+
+//     return isMatch;
+// };
 
 function transform(sourcePath, resolvedIds, originalCode) {
 
     //跳过 React 编译
     if ( isReact(sourcePath) ) {
+       
         queue.push({
             code: originalCode,
             type: 'js',
@@ -30,12 +39,13 @@ function transform(sourcePath, resolvedIds, originalCode) {
         return;
     }
     
-    if (isWebView(sourcePath)) {
-        //将webview的router写入到dist/webviewConfig.js文件中
-        utils.setWebViewRoutesConfig(queue);
-        //跳过 webview 编译
-        return;
-    }
+    // if (isWebView(sourcePath)) {
+        
+    //     //将webview的router写入到dist/webviewConfig.js文件中
+    //     utils.setWebViewRoutesConfig(queue, sourcePath);
+    //     //跳过 webview 编译
+    //     return;
+    // }
 
     babel.transformFile(
         sourcePath,

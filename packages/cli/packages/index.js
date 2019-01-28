@@ -72,6 +72,7 @@ class Parser {
         this.entry = entry;
         this.jsFiles = [];
         this.styleFiles = [];
+        this.webViewFiles = [];
         this.npmFiles = [];
         this.depTree = {};
         this.collectError = {
@@ -125,6 +126,7 @@ class Parser {
                                 camel2DashComponentName: false
                             }
                         ],
+                        require('./babelPlugins/collectWebViewPage'),
                         require('./babelPlugins/collectPatchComponents'),
                         ...require('./babelPlugins/validateJsx')(this.collectError)
                     ]
@@ -220,11 +222,20 @@ class Parser {
                 this.checkComponentsInPages(data.id);
                 //校验组件组件名以及文件夹是否符合规范
                 this.checkImportComponent(data);
-                this.jsFiles.push({
-                    id: data.id,
-                    originalCode: data.originalCode,
-                    resolvedIds: data.resolvedIds //获取alias配置
-                });
+
+                if (utils.isWebView(data.id)) {
+                    this.webViewFiles.push({
+                        id: data.id
+                    });
+                } else {
+                    this.jsFiles.push({
+                        id: data.id,
+                        originalCode: data.originalCode,
+                        resolvedIds: data.resolvedIds //获取alias配置
+                    });
+                }
+               
+                
             }
         };
     }
@@ -248,6 +259,7 @@ class Parser {
     }
     transform() {
         this.updateJsQueue(this.jsFiles);
+        this.updateWebViewRoutes(this.webViewFiles);
         this.updateStyleQueue(this.styleFiles);
     }
     check( cb ) {
@@ -327,6 +339,18 @@ class Parser {
                 miniTransform(id, resolvedIds, originalCode);
             });
         }
+       
+    }
+    updateWebViewRoutes(jsFiles){
+        //删除各 route 编译 or 运行 配置文件
+        utils.deleteWebViewConifg();
+
+        if (!jsFiles.length) return;
+        //注入h5编译route配置
+        utils.setH5CompileConfig(jsFiles);
+
+        //注入运行时 webview 各route配置
+        utils.setWebViewConfig(utils.getWebViewRoutesConfig(jsFiles));
     }
     updateStyleQueue(styleFiles) {
         while (styleFiles.length) {

@@ -17,6 +17,7 @@ const EventEmitter = require('events').EventEmitter;
 const config = require('../config');
 const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
+const queue = require('../queue');
 const userConfig = pkg.nanachi || pkg.mpreact || {};
 process.on('unhandledRejection', error => {
   // eslint-disable-next-line
@@ -588,21 +589,21 @@ let utils = {
       return unescape(`%u${b}`);
     });
   },
-  setWebViewRoutesConfig(queue) {
-    /**
-     * ret
-     * {
-     *   "pages/demo/syntax/index/index": "${host}/pages/demo/syntax/index/index"
-     * }
-     */
-     
+  setWebViewConfig(routes) {
+    let code = `module.exports = ${JSON.stringify(routes)};`;
+    queue.push({
+        code: code,
+        type: 'js',
+        path: path.join(process.cwd(), 'dist', 'webviewConfig.js')
+    });
+  },
+  getWebViewRoutesConfig(jsFiles) {
     let ret = {}, pkg = null, host = '';
     try {
        pkg = require( path.join(cwd, 'package.json') );
     } catch (err) {
 
     }
-
     if ( pkg && pkg.nanachi) {
       host = pkg.nanachi.H5_HOST
     }
@@ -612,20 +613,53 @@ let utils = {
       process.exit(1);
     }
 
-    config['webview'].forEach((el)=>{
-        let route =  path
-            .relative( path.join(cwd, config.sourceDir) , el)  //demo/syntax/index/index.js
-            .replace(/\.js$/, '')
-            .replace(/\\/, '/');  //处理windows下反斜杠
-        ret[route] = host + '/' + route;
-    });
-    let code = `module.exports = ${JSON.stringify(ret)}`;
-    queue.push({
-        code: code,
-        type: 'js',
-        path: path.join(process.cwd(), 'dist', 'webviewConfig.js')
-    });
+    jsFiles.forEach((el)=>{
+      let route = path.relative( path.join( cwd, config.sourceDir ), el.id ).replace(/\.js$/, '');
+      ret[route] = host + '/' + route;
+
+    })
+    return ret;
   },
+  setH5CompileConfig(jsFiles){
+    let H5_COMPILE_JSON_FILE = path.join(cwd, 'src', 'H5_COMPILE_CONFIG.json');
+    fs.ensureFileSync(H5_COMPILE_JSON_FILE)
+    fs.writeFileSync(
+        H5_COMPILE_JSON_FILE,
+        JSON.stringify({
+            webviewPages: jsFiles.map((item)=>{
+                return item.id
+            })
+        })
+    )
+  },
+  deleteWebViewConifg(){
+    let list = [
+       'H5_COMPILE_CONFIG.json',
+       'webviewConfig.js'
+    ];
+    list = list.map((file)=>{
+      return path.join(cwd, 'src', file);
+    });
+
+    list.forEach((fileId)=>{
+      try {
+        fs.removeSync(fileId);
+      } catch (err) {
+      }
+    })
+   
+  },
+  isWebView(fileId){
+    if ( config['buildType'] != 'quick' &&  !config['webview'] ) return;
+    let isMatch = 
+    config['webview'].includes(fileId) ||
+    config['webview'].some((reg)=>{
+        return Object.prototype.toString.call(reg) === '[object RegExp]' 
+               && reg.test(fileId)
+    });
+    return isMatch;
+  },
+  
   sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
 
