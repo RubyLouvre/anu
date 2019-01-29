@@ -651,6 +651,7 @@ let utils = {
   },
   isWebView(fileId){
     if ( config['buildType'] != 'quick' &&  !config['webview'] ) return;
+    if (!config['webview']) return;
     let isMatch = 
     config['webview'].includes(fileId) ||
     config['webview'].some((reg)=>{
