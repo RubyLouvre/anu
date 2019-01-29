@@ -621,7 +621,7 @@ let utils = {
     return ret;
   },
   setH5CompileConfig(jsFiles){
-    let H5_COMPILE_JSON_FILE = path.join(cwd, 'src', 'H5_COMPILE_CONFIG.json');
+    let H5_COMPILE_JSON_FILE = path.join(cwd, config.sourceDir, 'H5_COMPILE_CONFIG.json');
     fs.ensureFileSync(H5_COMPILE_JSON_FILE)
     fs.writeFileSync(
         H5_COMPILE_JSON_FILE,
@@ -638,7 +638,7 @@ let utils = {
        'webviewConfig.js'
     ];
     list = list.map((file)=>{
-      return path.join(cwd, 'src', file);
+      return path.join(cwd, config.sourceDir, file);
     });
 
     list.forEach((fileId)=>{
