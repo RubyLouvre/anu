@@ -22,7 +22,10 @@ import { toRenderProps, getCurrentPage, _getApp, _getCurrentPages, useComponent 
 
 import { registerComponent } from './registerComponent.quick';
 import { registerPage } from './registerPage.quick';
-
+let appMethods = {
+    onLaunch: 'onCreate',
+    onHide: 'onDestory'
+};
 let { render } = Renderer;
 let React = getWindow().React = {
     //平台相关API
@@ -60,8 +63,10 @@ let React = getWindow().React = {
     appType: 'quick',
     registerApp(demo){
         var app = {};
-        for (var i in demo){
-            app[i] = demo[i];
+        for (let name in demo){
+            let value = demo[name];
+            name = appMethods[name] || name;
+            app[name] = value;
         }
         delete app.constructor;//有这属性会报错
         return app;

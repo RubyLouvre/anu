@@ -1,9 +1,35 @@
 # Changelog
 
+
+# 1.1.0 (2019-01-25)
+## 核心库
+
+#### Bug fix
+- 修复小程序实例匹配错误 bug。
+
+## CLI
+#### Feature
+- 增加百度 setMetaDescription, setMetaKeywords, setDocumentTitle 三个接口。
+- 增加 nanachi page `<page-name>` 和 nanachi component `<component-name>` 两命令行接口。
+  
+
+#### Bug fix
+- 修复 alias 别名 bug。
+- 修复快应用样式样式解析 bug。
+- 修复 qunar 模板样式 bug。
+
+
+
+
+# 1.0.9 (2019-01-18)
+## CLI
+#### Feature
+- 修复 qunar 模板样式问题。
+
 # 1.0.8 (2019-01-18)
 ## CLI
 #### Feature
-- 修复命令行 --beta 参数
+- 修复命令行 --beta 参数。
 
 
 # 1.0.7 (2019-01-18)
