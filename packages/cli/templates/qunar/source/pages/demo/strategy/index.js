@@ -39,7 +39,7 @@ class P extends React.Component {
   render() {
     
       return (
-          <div class="page">
+          <div class="strategy-page">
               {this.state.data.map(function(item) {
                   return (
                       <div onTap={this.fun_tip.bind(this)} class="strategy-item col" >
@@ -51,7 +51,7 @@ class P extends React.Component {
                               </div>
                               <div class="user-wrapper">
                                   <div class="user-image">
-                                      <image src={item.userImage} />
+                                      <image class="image" mode="scaleToFill" src={item.userImage} />
                                   </div>
                                   <text class="user-name fontColor">{item.userName}</text>
                               </div>

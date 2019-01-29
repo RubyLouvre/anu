@@ -1,7 +1,6 @@
 .col {
   display:flex;
   flex-direction: column;
-  
 }
 
 page {
@@ -23,7 +22,7 @@ page {
   font-size: 22rpx;
 }
 .boat {
-  
+  align-self: flex-start;
   width: 100%;
   margin-top: 180rpx;
   .boat-content {

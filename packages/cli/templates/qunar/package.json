@@ -4,11 +4,34 @@
     "nanachi_project": true,
     "name": "qunar",
     "nanachi": {
-        "alias":  {
-            "@assets":"source/assets"
+        "alias": {
+            "@assets": "source/assets"
         }
     },
     "dependencies": {
-        "regenerator-runtime": "^0.12.1"
+        "https": "^1.0.0",
+        "regenerator-runtime": "^0.12.1",
+        "schnee-ui": "^1.0.1"
+    },
+    "scripts": {
+        "server": "hap server",
+        "postinstall": "hap postinstall",
+        "debug": "hap debug",
+        "build": "hap build",
+        "release": "hap release",
+        "watch": "hap watch"
+    },
+    "devDependencies": {
+        "hap-toolkit": "^0.1.0",
+        "koa": "^2.3.0",
+        "koa-body": "^2.5.0",
+        "koa-router": "^7.2.1",
+        "koa-send": "^4.1.1",
+        "koa-static": "^4.0.1",
+        "less-loader": "^4.1.0",
+        "node-sass": "^4.9.4",
+        "sass-loader": "^7.1.0",
+        "socket.io": "^2.1.0",
+        "webpack": "^4"
     }
 }
