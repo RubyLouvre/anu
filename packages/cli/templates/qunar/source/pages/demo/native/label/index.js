@@ -88,7 +88,7 @@ class P extends React.Component {
                                 <view className="label-2" key={index}>
                                     <div className="label-2__text">
                                         <label for={item.name}>
-                                        <text>{item.name}</text>
+                                            <text>{item.name}</text>
                                         </label>
                                     </div>
                                     <radio

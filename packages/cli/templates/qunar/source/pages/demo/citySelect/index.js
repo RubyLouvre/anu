@@ -84,7 +84,7 @@ class P extends React.Component {
                                             <div class='title'>{item.title}</div>     
                                             <div class='city-item'>
                                                 {
-                                                    item.data.map(function(item,index){
+                                                    item.data.map(function(item){
                                                         return  (
                                                             <div
                                                                 onTap={this.itemClick.bind(this,item)}

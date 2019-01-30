@@ -133,12 +133,12 @@ class Calendar extends React.Component {
                 </scroll-view>
                 {
                     this.env === 'web' ?
-                    <style jsx>{`
+                        <style jsx>{`
                         .e-head {
                             top: 48px;
                         }
                     `}</style> :
-                    null
+                        null
                 }
             </div>
         );
