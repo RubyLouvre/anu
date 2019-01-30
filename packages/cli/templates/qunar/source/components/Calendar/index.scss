@@ -1,21 +1,31 @@
 page {
     height: 100%;
 }
+
 .m-calendar {
     margin-top: 42px;
     background-color:#fff;
     height: 100%;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    z-index: 1000;
 }
 .e-head {
     position:fixed;
     width:100%;
-    top: 0;
+    height: 50rpx;
+    top: 0px;
     left: 0;
     z-index:10;
     background-color:#fff;
     border-bottom: 1rpx solid #e5e5e5;
     display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: row;
 }
 
 .e-head .w{
@@ -28,52 +38,61 @@ page {
 
 .e-head .s{
     color: #fe9808;
+    text { // 兼容快应用
+        color: #fe9808;
+    }
 }
 
 .e-month {
     background: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
 }
 
 .e-month .b-header {
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
     font-size: 18px;
     height: 30px;
-    line-height: 30px;
-    border-top: 1px solid #dce1e6;
     padding-top: 8px;
 }
 .e-month .b-header:first-child {
     border-top: 0;
 }
 .e-month .b-row {
-    margin: 0 2px;
+    margin: 0 2rpx;
     display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.e-month .b-row .item{
-    flex: 1;
-    width: 0;
-    position: relative;
+.e-month .b-row .row-item{
     margin-bottom: 5px;
     font-size: 18px;
-    text-align: center;
-    height: 60px;
-    line-height: 60px;
+    width: 106rpx;
+    height: 106rpx;
     border-radius: 4px;
-    z-index: 1;
-    text-align: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }
 
-.multi .e-month .b-row .item.select,
-.multi .e-month .b-row .item-a:active {
+.multi .e-month .b-row .row-item.select,
+.multi .e-month .b-row .row-item-a:active {
     background-color: #f5f5f5;
     width: 90%;
 }
-.multi .e-month .b-row .item.select .day,
-.multi .e-month .b-row .item.select .holiday,
-.multi .e-month .b-row .item.select .ban,
-.multi .e-month .b-row .item.select .xiu,
-.multi .e-month .b-row .item.select .text,
+.multi .e-month .b-row .row-item.select .day,
+.multi .e-month .b-row .row-item.select .holiday,
+.multi .e-month .b-row .row-item.select .ban,
+.multi .e-month .b-row .row-item.select .xiu,
+.multi .e-month .b-row .row-item.select .text,
 .multi .e-month .b-row .item-a:active {
     color: #00bcd4;
 }
@@ -129,6 +148,9 @@ page {
 
 .e-month .b-row .weekend{
     color: #fe9808;
+    text {
+        color: #fe9808;
+    }
 }
 
 .e-month .b-row .select,

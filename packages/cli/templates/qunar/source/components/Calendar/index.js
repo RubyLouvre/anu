@@ -7,6 +7,8 @@ class Calendar extends React.Component {
             calendarArray: [],
             week: ['日', '一', '二', '三', '四', '五', '六']
         };
+
+        this.env = process.env.ANU_ENV;
     }
     componentDidMount() {
     // 显示月份数
@@ -21,8 +23,7 @@ class Calendar extends React.Component {
         for (var i = 0; i < SHOWMONTH; i++) {
             var item1 = {},
                 iYear = year,
-                iMonth = month;
-
+                iMonth = month + 1;
             // 判断是否增加年份
             if (iMonth + i < 13) {
                 iMonth += i;
@@ -83,40 +84,40 @@ class Calendar extends React.Component {
     }
     render() {
         return (
-            <div class="calendar">
-                <div class="e-head">
+            <div className="calendar">
+                <div className="e-head">
                     {this.state.week.map(function(item, idx) {
                         return (
                             <block key={item}>
                                 {idx == 0 || idx == 6 ? (
-                                    <view class="w s">{item}</view>
+                                    <view className="w s">{item}</view>
                                 ) : (
-                                    <view class="w">{item}</view>
+                                    <view className="w">{item}</view>
                                 )}
                             </block>
                         );
                     })}
                 </div>
-                <scroll-view class="m-calendar" scroll-y="true" scroll-into-div={this.state.todivId}>
+                <scroll-view className="m-calendar" scroll-y="true" scroll-into-div={this.state.todivId}>
                     {this.state.calendarArray.map(function(month, idx) {
                         return (
                             <div key={idx}>
-                                <div class="e-month">
-                                    <div class="b-header">{month.date}</div>
+                                <div className="e-month">
+                                    <div className="b-header">{month.date}</div>
                                     {month.daysArray.map(function(itemRow, Row) {
                                         return (
-                                            <div class="b-row" key={Row}>
+                                            <div className="b-row" key={Row}>
                                                 {itemRow.map(function(item1, index1) {
                                                     return (
                                                         <block key={index1}>
                                                             {item1.isBlank ? (
-                                                                <div class="item" />
+                                                                <div className="row-item" />
                                                             ) : (
                                                                 <div
                                                                     onTap={this.getDate.bind(this, item1.date)}
-                                                                    class={'item item-a ' + (item1.isWeekend ? 'weekend' : '')}
+                                                                    className="row-item item-a"
                                                                 >
-                                                                    <div class="day">{item1.showDate}</div>
+                                                                    <div className={`day ${item1.isWeekend ? 'weekend' : ''}`}>{item1.showDate}</div>
                                                                 </div>
                                                             )}
                                                         </block>
@@ -130,6 +131,15 @@ class Calendar extends React.Component {
                         );
                     })}
                 </scroll-view>
+                {
+                    this.env === 'web' ?
+                    <style jsx>{`
+                        .e-head {
+                            top: 48px;
+                        }
+                    `}</style> :
+                    null
+                }
             </div>
         );
     }

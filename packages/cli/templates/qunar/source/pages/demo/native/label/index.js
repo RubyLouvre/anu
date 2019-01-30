@@ -26,7 +26,7 @@ class P extends React.Component {
 
     checkboxChange(e) {
         //待调试
-        var checked = e.detail.value;
+        var checked = e.detail.value || e.target.value;
         var state = this.state;
         for (var i = 0; i < state.checkboxItems.length; i++) {
             if (checked.indexOf(state.checkboxItems[i].name) !== -1) {
@@ -40,7 +40,7 @@ class P extends React.Component {
     }
 
     radioChange(e) {
-        var checked = e.detail.value;
+        var checked = e.detail.value || e.target.value;
         var state = this.state;
         for (var i = 0; i < state.radioItems.length; i++) {
             if (checked.indexOf(state.radioItems[i].name) !== -1) {
