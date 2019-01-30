@@ -196,16 +196,7 @@ class Parser {
         return {
             css: (data)=>{
                 this.checkStyleImport(data);
-                if (config.buildType == 'quick'){
-                    //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
-                    var jsName = data.id.replace(/\.\w+$/, '.js');
-                    if (fs.pathExistsSync(jsName)) {
-                        var cssExt = path.extname(data.id).slice(1);
-                        quickFiles[ jsName ] = {
-                            cssPath: data.id,
-                            cssType: cssExt === 'scss' ?  'sass' : cssExt
-                        };
-                    }
+                if (config.buildType == 'quick') {
                     return;
                 }
                 this.styleFiles.push({
@@ -220,11 +211,12 @@ class Parser {
                 this.checkComponentsInPages(data.id);
                 //校验组件组件名以及文件夹是否符合规范
                 this.checkImportComponent(data);
-                this.jsFiles.push({
-                    id: data.id,
-                    originalCode: data.originalCode,
-                    resolvedIds: data.resolvedIds //获取alias配置
-                });
+
+                //搜集js中依赖的样式，存入quickFiles
+                this.collectQuickDepStyle(data);
+                
+
+                this.jsFiles.push(data);
             }
         };
     }
@@ -275,6 +267,20 @@ class Parser {
             process.exit(1);
         }
         cb && cb();
+    }
+    collectQuickDepStyle(data){
+        if (config.buildType === 'quick') {
+            let cssPath = data.dependencies.filter((fileId)=>{
+                return isStyle(fileId);
+            })[0];
+            if (cssPath) {
+                let extname = path.extname(cssPath).replace(/^\./, '');
+                quickFiles[data.id] = {
+                    cssPath: cssPath,
+                    cssType: extname == 'scss' ? 'sass' : extname
+                };
+            }
+        }
     }
     checkComponentsInPages(id) {
         id = path.relative( cwd,  id);
