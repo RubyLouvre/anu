@@ -16,18 +16,18 @@ class P extends React.Component {
 
     bindKeyInput(e) {
         this.setState({
-            inputValue: e.value.trim()
+            inputValue: e.detail.value.trim()
         });
     }
 
     bindReplaceInput(e) {
         // eslint-disable-next-line
         console.log(e);
-        var value = e.value;
+        var value = e.detail.value;
         var pos = e.cursor;
         if (pos != -1) {
             //光标在中间
-            var left = e.value.slice(0, pos);
+            var left = e.detail.value.slice(0, pos);
             //计算光标的位置
             pos = left;
         }
@@ -38,6 +38,10 @@ class P extends React.Component {
             value: value.replace(/11/g, '2'),
             cursor: pos
         };
+    }
+
+    bindHideKeyboard() {
+
     }
 
     render() {
@@ -130,8 +134,7 @@ class P extends React.Component {
                             <view class="weui-cell weui-cell_input">
                                 <input
                                     class="weui-input"
-                                    password
-                                    type="text"
+                                    type="password"
                                     placeholder="这是一个密码输入框"
                                 />
                             </view>

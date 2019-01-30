@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-01-17T10
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-01-23T06
  * IE9+
  */
 
@@ -1010,7 +1010,7 @@ function updateMiniApp(instance) {
 }
 function refreshComponent(reactInstances, wx, uuid) {
     var pagePath = Object(_getApp()).$$pagePath;
-    for (var i = reactInstances.length - 1; i >= 0; i--) {
+    for (var i = 0, n = reactInstances.length; i < n; i++) {
         var reactInstance = reactInstances[i];
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
             reactInstance.wx = wx;

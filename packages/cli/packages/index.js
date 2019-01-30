@@ -295,7 +295,8 @@ class Parser {
     }
     checkCodeLine(filePath, code, number){
         if ( /^(React)/.test(path.basename(filePath)) ) return; //React runtime不校验代码行数
-        if ( code.match(/\n/g).length <= number ) return;
+        let line =  code.match(/\n/g);
+        if ( !line || line.length <= number ) return;
         let id = path.relative( cwd,  filePath);
         this.collectError.jsCodeLineNumberError.push({
             id: id,

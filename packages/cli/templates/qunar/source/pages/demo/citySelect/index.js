@@ -62,8 +62,8 @@ class P extends React.Component {
         return (
             <div class='city-select'>
                 <div class='search-wrapper'>
-                    <input type='text' placeholder='搜索目的地'/>
-                    <image src='../../../assets/image/search.png' />
+                    <input class="input" type='text' placeholder='搜索目的地'/>
+                    <image class="image" src='../../../assets/image/search.png' />
                 </div>
                 {
                     this.state.isSearch

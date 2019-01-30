@@ -21,6 +21,35 @@ export var buApis = function(api) {
           a = a || {}
           a.title =  a.title || '加载中...';
           return api.showLoading(a);
+        },
+        setMetaDescription: function _(a) {
+            let empty = function(res){};
+            let defailt = {
+                content: '',
+                success: empty,
+                fail: empty,
+                complete: empty
+            }
+            let options = Object.assign(defailt, a);
+            return api.setMetaDescription && api.setMetaDescription(options);
+        },
+        setMetaKeywords: function _(a) {
+            let empty = function(res){};
+            let defailt = {
+                content: '',
+                success: empty,
+                fail: empty,
+                complete: empty
+            };
+            let options = Object.assign(defailt, a);
+            return api.setMetaKeywords && api.setMetaKeywords(options);
+        },
+        setDocumentTitle: function _(a) {
+            let defailt = {
+               title: ''
+            };
+            let options = Object.assign(defailt, a);
+            return api.setDocumentTitle && api.setDocumentTitle(options)
         }
     };
 };

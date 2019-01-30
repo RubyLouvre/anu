@@ -13,11 +13,15 @@ let compatiblePath = (value)=>{
 module.exports = (metaData)=>{
     let {sourcePath, resolvedIds} = metaData;
     let aliasMap = utils.resolveAliasPath(sourcePath, resolvedIds);
+    
     return [
         require('babel-plugin-module-resolver'),        //计算别名配置以及处理npm路径计算
         {
             resolvePath(moduleName) {
-                if ( /^\/|\./.test(moduleName) ) return;
+                if (/^(\/|\.)/.test(moduleName) ) {
+                    return;
+                }
+
                 //针对async/await语法依赖的npm路径做处理
                 if (/regenerator-runtime\/runtime/.test(moduleName)) {
                     let regeneratorRuntimePath = utils.getRegeneratorRuntimePath(sourcePath);

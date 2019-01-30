@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-01-17
+ * 运行于快应用的React by 司徒正美 Copyright 2019-01-25
  */
 
 var arrayPush = Array.prototype.push;
@@ -750,7 +750,7 @@ function updateMiniApp(instance) {
 }
 function refreshComponent(reactInstances, wx, uuid) {
     var pagePath = Object(_getApp()).$$pagePath;
-    for (var i = reactInstances.length - 1; i >= 0; i--) {
+    for (var i = 0, n = reactInstances.length; i < n; i++) {
         var reactInstance = reactInstances[i];
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
             reactInstance.wx = wx;
@@ -3048,6 +3048,10 @@ function registerPage(PageClass) {
     return config;
 }
 
+var appMethods = {
+    onLaunch: 'onCreate',
+    onHide: 'onDestory'
+};
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {
@@ -3056,7 +3060,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.4.8',
+    version: '1.5.0',
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,
@@ -3082,8 +3086,10 @@ var React = getWindow().React = {
     appType: 'quick',
     registerApp: function registerApp(demo) {
         var app = {};
-        for (var i in demo) {
-            app[i] = demo[i];
+        for (var name in demo) {
+            var value = demo[name];
+            name = appMethods[name] || name;
+            app[name] = value;
         }
         delete app.constructor;
         return app;

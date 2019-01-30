@@ -1,6 +1,20 @@
-.label-1, .label-2{
+.label-1{
     margin-bottom: 15px;
+    div {
+        display: flex;
+        flex-direction: row;
+    }
 }
+
+.label-2 {
+    display: flex;
+    flex-direction: row;
+    div {
+        display: flex;
+        width: auto;
+    }
+}
+
 .label-1__text, .label-2__text {
     display: inline-block;
     vertical-align: middle;

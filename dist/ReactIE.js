@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-01-17
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-01-23
  */
 
 (function (global, factory) {
@@ -3320,7 +3320,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.4.8',
+            version: '1.5.0',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,

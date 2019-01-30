@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-17
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-01-25
  */
 
 var arrayPush = Array.prototype.push;
@@ -975,6 +975,35 @@ var buApis = function buApis(api) {
             a = a || {};
             a.title = a.title || '加载中...';
             return api.showLoading(a);
+        },
+        setMetaDescription: function _(a) {
+            var empty = function empty(res) {};
+            var defailt = {
+                content: '',
+                success: empty,
+                fail: empty,
+                complete: empty
+            };
+            var options = Object.assign(defailt, a);
+            return api.setMetaDescription && api.setMetaDescription(options);
+        },
+        setMetaKeywords: function _(a) {
+            var empty = function empty(res) {};
+            var defailt = {
+                content: '',
+                success: empty,
+                fail: empty,
+                complete: empty
+            };
+            var options = Object.assign(defailt, a);
+            return api.setMetaKeywords && api.setMetaKeywords(options);
+        },
+        setDocumentTitle: function _(a) {
+            var defailt = {
+                title: ''
+            };
+            var options = Object.assign(defailt, a);
+            return api.setDocumentTitle && api.setDocumentTitle(options);
         }
     };
 };
@@ -1033,7 +1062,7 @@ function updateMiniApp(instance) {
 }
 function refreshComponent(reactInstances, wx, uuid) {
     var pagePath = Object(_getApp()).$$pagePath;
-    for (var i = reactInstances.length - 1; i >= 0; i--) {
+    for (var i = 0, n = reactInstances.length; i < n; i++) {
         var reactInstance = reactInstances[i];
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
             reactInstance.wx = wx;
@@ -2599,7 +2628,7 @@ function onUnload() {
 }
 
 var globalHooks = {
-    onShareAppMessage: 'onGlobalShare',
+    onShare: 'onGlobalShare',
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
@@ -2618,26 +2647,29 @@ function registerPage(PageClass, path, testObject) {
         onReady: onReady,
         onUnload: onUnload
     };
-    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onShow', 'onHide').forEach(function (hook) {
+    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
         config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook],
                 fired = false;
-            if (hook === 'onShow') {
+            if (hook === 'onShareAppMessage') {
+                hook = 'onShare';
+                fn = fn || instance[hook];
+            } else if (hook === 'onShow') {
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }
             if (isFn(fn)) {
                 fired = true;
                 var ret = fn.call(instance, e);
-                if (hook === 'onShareAppMessage') {
+                if (hook === 'onShare') {
                     return ret;
                 }
             }
             var globalHook = globalHooks[hook];
             if (globalHook) {
                 ret = callGlobalHook(globalHook, e);
-                if (hook === 'onShareAppMessage') {
+                if (hook === 'onShare') {
                     return ret;
                 }
             }
@@ -2666,7 +2698,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.4.8',
+    version: '1.5.0',
     render: render$1,
     hydrate: render$1,
     webview: webview,

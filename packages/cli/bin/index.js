@@ -78,6 +78,25 @@ program
         require('../commonds/init')(appName);
     });
 
+
+
+program
+    .command('page <template-name>')
+    .description('description: 创建pages/<template-name>/index.js模版')
+    .action((name)=>{
+        let isPage = true;
+        require('../commonds/createPage')( {name, isPage} );
+    });
+
+program
+    .command('component <component-name>')
+    .description('description: 创建components/<component-name>/index.js组件')
+    .action((name)=>{
+        let isPage = false;
+        require('../commonds/createPage')( {name, isPage});
+    });
+
+
 buildCommonds.forEach(function(el){
     let {type, des} = el;
     program
