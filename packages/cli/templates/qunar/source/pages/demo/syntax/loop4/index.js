@@ -65,9 +65,9 @@ class P extends React.Component {
         });
     }
     onSelect(e){
-        type = e.value;
+        type = e.detail.value || e.target.value;
     }
-    onInput(e){
+    onChange(e){
         this.setState({
             value: e.target.value
         });
@@ -94,7 +94,7 @@ class P extends React.Component {
                     <radio value="Cat"  />Cat
                     <radio value="Fish" />Fish
                 </radio-group>
-                <textarea value={this.state.value} auto-height={true} onInput={this.onInput.bind(this)} style="border:1px solid grey;"/>
+                <textarea value={this.state.value} auto-height={true} onChange={this.onChange.bind(this)} style="border:1px solid grey;"/>
                 <button type="button" onClick={this.sendMsg.bind(this)}>添加</button>
             </div>
         );

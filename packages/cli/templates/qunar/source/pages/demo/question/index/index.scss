@@ -1,5 +1,5 @@
 page {
-  position: relative;
+  height: 100%;
   background-color: rgb(240, 240, 240);
 }
 
@@ -19,6 +19,7 @@ page {
   display: flex;
   flex-direction: column;
   flex: 1;
+  height: 100%;
   .nav-wrapper {
     
     z-index: 999;
@@ -36,6 +37,15 @@ page {
       flex-direction: row;
       &:last-child {
         margin-right: 0;
+      }
+
+      .open-icon-wrapper {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        width: 60rpx;
+        height: 40rpx;
       }
       
       .open-icon {
@@ -69,11 +79,16 @@ page {
     width: 80rpx;
     transform: translateX(270rpx);
   }
-  .content {
+  .quest-content {
     background-color: #ffffff;
+    height: 100%;
     .my-question-answer {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
+      height: 100%;
       .tool {
-        
         padding: 0 30rpx;
         border-bottom-style: solid;
         border-bottom-width: 1px;
@@ -82,17 +97,22 @@ page {
         font-size: 22rpx;
         letter-spacing: 1rpx;
         color: rgb(197, 195, 195);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
         .switch-wrapper {
-         
           line-height: 60rpx;
         }
       }
       .no-data-prompt {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        image {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-top: -100rpx;
+        .image {
           display: block;
           // margin: 0 auto;
           margin-bottom: 30rpx;
@@ -107,7 +127,6 @@ page {
       }
     }
     .question-item {
-      position: relative;
       padding: 20rpx 30rpx;
       padding-top: 40rpx;
       border-bottom: 1px solid rgb(240, 240, 240);
@@ -136,11 +155,15 @@ page {
         background-color: #bae7ff;
         color: #1890ff;
       }
+      .width {
+        width: 600rpx;
+      }
       .title {
         // display: inline;
         font-size: 30rpx;
         letter-spacing: 1rpx;
         font-weight: 700;
+        width: calc(100% - 10rpx);
         // height: 40rpx;
       }
       .desc {
@@ -167,7 +190,7 @@ page {
           &:last-child {
             margin-right: 0;
           }
-          image {
+          .image {
             
             margin-right: 10rpx;
             width: 25rpx;
@@ -181,7 +204,7 @@ page {
           .eye-text {
             line-height: 32rpx;
           }
-          text {
+          .text {
             line-height: 25rpx;
             font-size: 20rpx;
             color: rgb(175, 174, 174);

@@ -44,12 +44,12 @@ class P extends React.Component {
     toCitySelect(isStartCity) {
         this.setState({isStartCity});
         React.api.navigateTo({
-            url: '../../demo/citySelect/index'
+            url: '/pages/demo/citySelect/index'
         });
     }
     toDateSelect() {
         React.api.navigateTo({
-            url: '../../demo/calendar/index'
+            url: '/pages/demo/calendar/index'
         });
 
     }

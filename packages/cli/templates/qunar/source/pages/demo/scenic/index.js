@@ -43,13 +43,13 @@ class P extends React.Component {
           <div class="scenic">
               <div class="input-wrapper">
                   <div class="input">
-                      <input placeholder="请输入城市或景点" type="text" />
+                      <input class="n-input" placeholder="请输入城市或景点" type="text" />
                   </div>
               </div>
               <div class="scenic-content col">
                   {this.state.data.map(function(item) {
                       return (
-                          <div class="item col" >
+                          <div class="scenic-content-item col" >
                               <div class="title-wrapper">
                                   <div class="mark" />
                                   <text class="title">{item.title}</text>

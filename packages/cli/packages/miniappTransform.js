@@ -48,26 +48,27 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 path: utils.updatePath(sourcePath, config.sourceDir, 'dist'),
                 type: 'js'
             };
-           
-            if (config.buildType == 'quick' && quickFiles[sourcePath]) {
-                const distPath = utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux');
+
+            if (config.buildType == 'quick' && quickFiles[sourcePath] ) {
+
                 // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
                 const placeholder = {
                     code: '',
-                    path: distPath,
-                    type: 'ux'
+                    path: utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux')
                 };
                 queue.push(placeholder);
                 // 补丁 END
                 
                 //ux处理
+                let {code, type} = await mergeUx({
+                    sourcePath: sourcePath,
+                    result: result
+                });
+                let distPath = utils.updatePath(sourcePath, config.sourceDir, 'dist',  type == 'ux' ? 'ux' : 'js');
+                
                 queueData = {
-                    code: await mergeUx({
-                        sourcePath: sourcePath,
-                        result: result
-                    }),
-                    path: distPath,
-                    type: 'ux'
+                    code: code,
+                    path: distPath
                 };
             } 
 

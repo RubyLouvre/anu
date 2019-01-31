@@ -1,3 +1,6 @@
+page {
+  height: 100%;
+}
 
 .ticket-page {
   display: -webkit-flex;
@@ -103,10 +106,11 @@
       border-bottom-style: solid;
       border-bottom-color: #e7e7e7;
       border-bottom-width: 1px;
+      display: flex;
+      justify-content: space-between;
+      flex-direction: row;
+      align-items: center;
       
-      .date-week {
-        margin-right: 15px;
-      }
       .date-week-text {
         font-size: 14px;
         color: #666;
@@ -122,8 +126,14 @@
       -webkit-justify-content: space-between;
       -webkit-align-items: center;
       margin-top: 15px;
+      .switch-label {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
       .hight-speed {
         width: 20px;
+        height: 20px;
       }
       .switch-context {
         margin-left: 10rpx;
@@ -136,7 +146,7 @@
         font-size: 14px;
         color: #333;
       }
-      switch {
+      .switch {
         -webkit-tap-highlight-color: transparent;
         display: inline-block;
       }

@@ -92,6 +92,15 @@ let map = {
 module.exports = async (data)=>{
     let {sourcePath, result} = data;
     var uxFile = quickFiles[sourcePath];
+
+    //如果没有模板, 并且不是app，则认为这是个纯js模块。
+    if (!uxFile.template && uxFile.type != 'App') {
+        return {
+            type: 'js',
+            code: result.code
+        };
+    }
+
     if (!uxFile) return;
     //假设假设存在<template>
     var ux = `${uxFile.template || ''}`;
@@ -99,5 +108,8 @@ module.exports = async (data)=>{
     ux = beautifyUx(map.getImportTag(uxFile, sourcePath) + ux) + '\n'; 
     ux = ux + map.getJsCode(result.code) + '\n'; 
     ux = ux + await map.getCssCode(uxFile);
-    return ux;
+    return {
+        type: 'ux',
+        code: ux
+    };
 };
