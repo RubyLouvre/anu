@@ -215,7 +215,7 @@ class P extends React.Component {
                       autoplay={true}
                       displayMultipleItems={3}
                   >
-                      {this.state.specialOfferData.map(function(item, index) {
+                      {this.state.specialOfferData.map(function(item) {
                           return (
                                   <swiper-item onTap={this.showTip}  class="special-offer-item anu-block">
                                       <image class="special-offer-image" src={item.url} />
