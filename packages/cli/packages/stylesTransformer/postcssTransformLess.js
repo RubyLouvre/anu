@@ -1,6 +1,7 @@
 /* eslint no-console: 0 */
 const fs = require('fs');
 const path = require('path');
+const utils = require('../utils');
 const postCss = require('postcss');
 const postCssLessEngine = require('postcss-less-engine-latest');
 const getAliasFileManager = require('less-import-aliases');
@@ -42,7 +43,8 @@ const compileLessByPostCss = (filePath, originalCode)=>{
             )
             .then((result)=>{
                 resolved({
-                    code: result.css
+                    code: result.css,
+                    deps: utils.getDeps(result.messages)
                 });
             })
             .catch((err)=>{
