@@ -23,7 +23,8 @@ const compileSassByPostCss = (filePath, originalCode)=>{
             }),
             require('@csstools/postcss-sass'),
             require('../postcssPlugins/postcssPluginAddImport')({
-                extName
+                extName,
+                type: 'sass'
             }), // 添加@import规则，小程序可以解析原有依赖
             require('../postcssPlugins/postCssPluginFixNumber'), // 数字精度插件
             require('../postcssPlugins/postCssPluginValidateStyle')

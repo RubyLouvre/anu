@@ -2,9 +2,11 @@
 const fs = require('fs');
 const path = require('path');
 const utils = require('../utils');
+const config = require('../config');
 const postCss = require('postcss');
 const postCssLessEngine = require('postcss-less-engine-latest');
 const getAliasFileManager = require('less-import-aliases');
+const extName = config[config['buildType']].styleExt;
 
 const getAlias = ()=>{
     let cwd = process.cwd();
@@ -19,9 +21,42 @@ const getAlias = ()=>{
     return result;
 };
 
+const deps = [];
+
+const postcssPluginResolveImports = postCss.plugin('postcss-plugin-resolve-imports', () => {
+    return (root, res) => {
+        root.walkAtRules(atrule => {
+            if (atrule.name === 'import' && atrule.import && atrule.params.match(/\(\s*reference\s*\)/)) {
+                let importer = atrule.filename.trim().replace(/^['"](.*?)['"]$/, '$1');
+                //如果@import的值没有文件后缀
+                if (!/\.less$/.test(importer)) {
+                    importer = importer + '.less';
+                }
+                //处理alias路径
+                deps.push({
+                    file: path.resolve(path.dirname(res.opts.from), utils.resolveStyleAlias(importer, path.dirname(res.opts.from)))
+                });
+            }
+        });
+    };
+});
+
 const compileLessByPostCss = (filePath, originalCode)=>{
-    return new Promise((resolved, reject)=>{
-        let plugins = [
+    originalCode = originalCode || fs.readFileSync(filePath).toString();
+    
+    return new Promise(async (resolved, reject)=>{
+        
+        if (/@import/.test(originalCode)) {
+            await postCss([postcssPluginResolveImports]).process(
+                originalCode,
+                {
+                    from: filePath,
+                    syntax: require('postcss-less')
+                }
+            );
+        }
+        
+        postCss([
             postCssLessEngine({
                 plugins: [
                     new getAliasFileManager({
@@ -29,13 +64,16 @@ const compileLessByPostCss = (filePath, originalCode)=>{
                     })
                 ]
             }),
+            require('../postcssPlugins/postcssPluginAddImport')({
+                extName,
+                type: 'less',
+                dependencies: deps
+            }),
             require('../postcssPlugins/postCssPluginFixNumber'),
             require('../postcssPlugins/postCssPluginValidateStyle')
-        ];
-        
-        postCss(plugins)
+        ])
             .process(
-                originalCode || fs.readFileSync(filePath).toString(),
+                originalCode,
                 {
                     from: filePath,
                     parser: postCssLessEngine.parser
@@ -44,7 +82,7 @@ const compileLessByPostCss = (filePath, originalCode)=>{
             .then((result)=>{
                 resolved({
                     code: result.css,
-                    deps: utils.getDeps(result.messages)
+                    deps
                 });
             })
             .catch((err)=>{
