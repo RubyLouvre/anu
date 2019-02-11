@@ -44,7 +44,6 @@ const compilerMap = {
 function runCompileStyle(filePath, originalCode){
     needUpdate(filePath, originalCode,  ()=>{
         let exitName = path.extname(filePath);
-
         if (config.buildType === 'h5') {
             queue.push({
                 code: originalCode,
@@ -73,13 +72,15 @@ function runCompileStyle(filePath, originalCode){
                 // 递归编译@import依赖文件
                 deps.forEach(dep => {
                     const code = fs.readFileSync(dep.file, 'utf-8');
-                    compilerMap[exitName](dep.file, code).then(res => {
-                        queue.push({
-                            code: res.code,
-                            path: getDist(dep.file),
-                            type: 'css'
+                    needUpdate(dep.file, code,  ()=>{
+                        compilerMap[exitName](dep.file, code).then(res => {
+                            queue.push({
+                                code: res.code,
+                                path: getDist(dep.file),
+                                type: 'css'
+                            });
                         });
-                    });
+                    })
                 });
             })
             .catch((err)=>{
