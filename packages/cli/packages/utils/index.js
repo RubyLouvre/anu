@@ -565,6 +565,11 @@ let utils = {
     }
     return importer;
   },
+  getDeps(messages = []) {
+    return messages.filter((item) => {
+      return item.plugin === 'postcss-import' && item.type === 'dependency';
+    });
+  },
   getComponentOrAppOrPageReg() {
     return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
   },

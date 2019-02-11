@@ -1,5 +1,6 @@
 /* eslint no-console: 0 */
 const path = require('path');
+const fs = require('fs');
 const queue = require('./queue');
 const config = require('./config');
 const utils = require('./utils');
@@ -7,7 +8,7 @@ const exitName = config[config['buildType']].styleExt;
 const crypto = require('crypto');
 const compileSassByPostCss = require('./stylesTransformer/postcssTransformSass');
 const compileLessByPostCss = require('./stylesTransformer/postcssTransformLess');
-const compileSass = require('./stylesTransformer/transformSass');
+// const compileSass = require('./stylesTransformer/transformSass');
 // const compileLess = require('./stylesTransformer/transformLess');
 let cache = {};
 //缓存层，避免重复编译
@@ -33,13 +34,11 @@ let getDist = (filePath) =>{
     return distPath;
 };
 
-//用户工程下是否有node-sass
-let hasNodeSass = utils.hasNpm('node-sass');
 const compilerMap = {
     '.less': compileLessByPostCss,
     '.css':  compileLessByPostCss,
-    '.sass': hasNodeSass ? compileSass : compileSassByPostCss,
-    '.scss': hasNodeSass ? compileSass : compileSassByPostCss
+    '.sass': compileSassByPostCss,
+    '.scss': compileSassByPostCss
 };
 
 function runCompileStyle(filePath, originalCode){
@@ -65,11 +64,22 @@ function runCompileStyle(filePath, originalCode){
         // 补丁 END
         compilerMap[exitName](filePath, originalCode)
             .then((result)=>{
-                let { code } = result;
+                let { code, deps } = result;
                 queue.push({
                     code: code,
                     path: getDist(filePath),
                     type: 'css'
+                });
+                // 递归编译@import依赖文件
+                deps.forEach(dep => {
+                    const code = fs.readFileSync(dep.file, 'utf-8');
+                    compilerMap[exitName](dep.file, code).then(res => {
+                        queue.push({
+                            code: res.code,
+                            path: getDist(dep.file),
+                            type: 'css'
+                        });
+                    });
                 });
             })
             .catch((err)=>{
