@@ -30,11 +30,11 @@ function createRouter(name) {
         var webViewRoute = '';
         //from https://www.regextester.com/98192
         var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
-        //绝对路径
+        //如果是http地址
         if (urlReg.test(href)) {
             webViewRoute = href;
         } else {
-           //webview url
+           //查找是否有webview配置
            try {
                webViewUrls = require('./webviewConfig.js');
                webViewRoute = webViewUrls[uri];
@@ -43,7 +43,7 @@ function createRouter(name) {
            }
         }
 
-        //如果是 webViewRoute是绝对路径 或者 webview
+        //如果webViewRoute有值, 走@system.webview跳转
         if (webViewRoute) {
             var webview = require('@system.webview');
             webview.loadUrl({

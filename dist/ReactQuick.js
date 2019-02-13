@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-01-28
+ * 运行于快应用的React by 司徒正美 Copyright 2019-02-13
  */
 
 var arrayPush = Array.prototype.push;
@@ -1344,23 +1344,22 @@ function createCanvasContext(id, obj) {
 function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
-        var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
-        if (urlReg.test(href)) {
-            webview.loadUrl({
-                url: webViewUrls[uri],
-                allowthirdpartycookies: true
-            });
-            return;
-        }
         var uri = href.slice(href.indexOf('/pages') + 1);
         var webViewUrls = {};
-        try {
-            webViewUrls = require('./webviewConfig');
-        } catch (err) {}
-        if (webViewUrls[uri]) {
+        var webViewRoute = '';
+        var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
+        if (urlReg.test(href)) {
+            webViewRoute = href;
+        } else {
+            try {
+                webViewUrls = require('./webviewConfig.js');
+                webViewRoute = webViewUrls[uri];
+            } catch (err) {}
+        }
+        if (webViewRoute) {
             var webview = require('@system.webview');
             webview.loadUrl({
-                url: webViewUrls[uri],
+                url: webViewRoute,
                 allowthirdpartycookies: true
             });
             return;
