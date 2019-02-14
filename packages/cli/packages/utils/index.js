@@ -17,6 +17,7 @@ const EventEmitter = require('events').EventEmitter;
 const config = require('../config');
 const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
+const queue = require('../queue');
 const userConfig = pkg.nanachi || pkg.mpreact || {};
 process.on('unhandledRejection', error => {
   // eslint-disable-next-line
@@ -470,8 +471,11 @@ let utils = {
       'package.json'
     ));
 
-    Object.assign(projectPkg.scripts || {}, quickPkg.scripts);  //注入快应用scripts命令
-    Object.assign(projectPkg.devDependencies || {}, quickPkg.devDependencies); //注入快应用开发依赖
+    projectPkg.scripts = projectPkg.scripts || {};
+    projectPkg.devDependencies = projectPkg.devDependencies || {};
+
+    Object.assign(projectPkg.scripts, quickPkg.scripts);  //注入快应用scripts命令
+    Object.assign(projectPkg.devDependencies, quickPkg.devDependencies); //注入快应用开发依赖
 
     fs.writeFile(projectPkgPath, JSON.stringify(projectPkg, null, 4)).catch(err => {
       // eslint-disable-next-line
@@ -593,6 +597,79 @@ let utils = {
       return unescape(`%u${b}`);
     });
   },
+  setWebViewConfig(routes) {
+    let code = `module.exports = ${JSON.stringify(routes)};`;
+    queue.push({
+        code: code,
+        type: 'js',
+        path: path.join(process.cwd(), 'dist', 'webviewConfig.js')
+    });
+  },
+  getWebViewRoutesConfig(jsFiles) {
+    let ret = {}, pkg = null, host = '';
+    try {
+       pkg = require( path.join(cwd, 'package.json') );
+    } catch (err) {
+
+    }
+    if ( pkg && pkg.nanachi) {
+      host = pkg.nanachi.H5_HOST
+    }
+    
+    if (!host) {
+      console.log(chalk.red('Error: H5请在package.json中nanachi字段里配置H5_HOST字段'));
+      process.exit(1);
+    }
+
+    jsFiles.forEach((el)=>{
+      let route = path.relative( path.join( cwd, config.sourceDir ), el.id ).replace(/\.js$/, '');
+      ret[route] = host + '/' + route;
+
+    })
+    return ret;
+  },
+  setH5CompileConfig(jsFiles){
+    let H5_COMPILE_JSON_FILE = path.join(cwd, config.sourceDir, 'H5_COMPILE_CONFIG.json');
+    fs.ensureFileSync(H5_COMPILE_JSON_FILE)
+    fs.writeFileSync(
+        H5_COMPILE_JSON_FILE,
+        JSON.stringify({
+            webviewPages: jsFiles.map((item)=>{
+                return item.id
+            })
+        })
+    )
+  },
+  deleteWebViewConifg(){
+    let list = [
+       'H5_COMPILE_CONFIG.json',
+       'webviewConfig.js'
+    ];
+    list = list.map((file)=>{
+      return path.join(cwd, config.sourceDir, file);
+    });
+
+    list.forEach((fileId)=>{
+      try {
+        fs.removeSync(fileId);
+      } catch (err) {
+      }
+    })
+   
+  },
+  isWebView(fileId){
+    if ( config['buildType'] != 'quick' &&  !config['webview'] ) return;
+    if (!config['webview']) return;
+    let isWebView = 
+    config['webview'].includes(fileId) ||
+    config['webview'].some((reg)=>{
+        //如果是webview设置成true, 则用增则匹配
+        return Object.prototype.toString.call(reg) === '[object RegExp]' 
+               && reg.test(fileId)
+    });
+    return isWebView;
+  },
+  
   sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
 

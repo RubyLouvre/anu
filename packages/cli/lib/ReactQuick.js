@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-01-23
+ * 运行于快应用的React by 司徒正美 Copyright 2019-02-13
  */
 
 var arrayPush = Array.prototype.push;
@@ -1344,10 +1344,29 @@ function createCanvasContext(id, obj) {
 
 function createRouter(name) {
     return function (obj) {
-        var router = require('@system.router');
-        var params = {};
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
+        var webViewUrls = {};
+        var webViewRoute = '';
+        var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
+        if (urlReg.test(href)) {
+            webViewRoute = href;
+        } else {
+            try {
+                webViewUrls = require('./webviewConfig.js');
+                webViewRoute = webViewUrls[uri];
+            } catch (err) {}
+        }
+        if (webViewRoute) {
+            var webview = require('@system.webview');
+            webview.loadUrl({
+                url: webViewRoute,
+                allowthirdpartycookies: true
+            });
+            return;
+        }
+        var router = require('@system.router');
+        var params = {};
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('&').forEach(function (param) {
                 param = param.split('=');
