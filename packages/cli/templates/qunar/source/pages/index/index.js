@@ -200,7 +200,7 @@ class P extends React.Component {
               <div class="tool-wrapper">
                   {this.state.toolData.map(function(item, index) {
                       return (
-                          <div onTap={this.showTip} class="tool-item anu-block" >
+                          <div onTap={this.showTip} class="tool-item" >
                               <image class="image" src={item.url} />
                               <text class="text">{item.title}</text>
                           </div>
@@ -211,11 +211,11 @@ class P extends React.Component {
                   <text class="title">特价专区</text>
                   <swiper
                       class="special-offer-wrapper"
-                      interval="2500"
-                      autoplay="true"
-                      display-multiple-items="3"
+                      interval={2500}
+                      autoplay={true}
+                      displayMultipleItems={3}
                   >
-                      {this.state.specialOfferData.map(function(item, index) {
+                      {this.state.specialOfferData.map(function(item) {
                           return (
                                   <swiper-item onTap={this.showTip}  class="special-offer-item anu-block">
                                       <image class="special-offer-image" src={item.url} />
@@ -230,18 +230,18 @@ class P extends React.Component {
                   <div class="activity-wrapper">
                       <div onTap={this.showTip} class="left-content">
                           <image class="image" src="https://img1.qunarzz.com/order/comp/1808/c3/dda9c77c3b1d8802.png" />
-                          <div class="activity-content anu-block">
+                          <div class="activity-content">
                               <text class="title">何时飞</text>
                               <text class="desc">机票趋势早知道</text>
                           </div>
                       </div>
-                      <div class="right-content anu-block">
+                      <div class="right-content">
                           <div onTap={this.showTip} class="right-content-wrapper first-child">
                               <image
                                   class="image"
                                   src="https://img1.qunarzz.com/order/comp/1808/3b/fd717d94ed8b6102.jpg"
                               />
-                              <div class="activity-content anu-block">
+                              <div class="activity-content">
                                   <text class="title">人格测试</text>
                                   <text class="desc">简直惊悚</text>
                               </div>

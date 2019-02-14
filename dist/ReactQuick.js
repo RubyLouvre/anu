@@ -3067,6 +3067,10 @@ function registerPage(PageClass) {
     return config;
 }
 
+var appMethods = {
+    onLaunch: 'onCreate',
+    onHide: 'onDestory'
+};
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {
@@ -3101,8 +3105,10 @@ var React = getWindow().React = {
     appType: 'quick',
     registerApp: function registerApp(demo) {
         var app = {};
-        for (var i in demo) {
-            app[i] = demo[i];
+        for (var name in demo) {
+            var value = demo[name];
+            name = appMethods[name] || name;
+            app[name] = value;
         }
         delete app.constructor;
         return app;

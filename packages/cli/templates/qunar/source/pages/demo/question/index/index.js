@@ -12,6 +12,14 @@ class P extends React.Component {
             data: [],
             city: '北京'
         };
+        this.colStyle = {};
+        if (process.env.ANU_ENV === 'quick') {
+            // 对于快应用的样式代码
+            this.colStyle = {
+                display: 'flex',
+                flexDirection: 'column'
+            };
+        }
     }
     navItemClick(navBtnActiveIndex) {
         this.setState({ navBtnActiveIndex });
@@ -37,7 +45,7 @@ class P extends React.Component {
         });
     }
     questionDetail() {
-        React.api.navigateTo({ url: '../detail/index' });
+        React.api.navigateTo({ url: '/pages/demo/question/detail/index' });
     }
     componentDidMount() {
         this.getData();
@@ -49,19 +57,19 @@ class P extends React.Component {
         }
     }
   config = {
-      backgroundColor: '#fff',
+      backgroundColor: 'rgb(240, 240, 240);',
       navigationBarBackgroundColor: '#fff',
       navigationBarTitleText: '趣问答',
       navigationBarTextStyle: 'black'
   };
   toCitySelect() {
       this.navItemClick(2);
-      React.api.navigateTo({ url: '../../citySelect/index' });
+      React.api.navigateTo({ url: '/pages/demo/citySelect/index' });
   }
-  render() {  
+  render() {
       return (
           <div class="question">
-              <div class="nav-wrapper col">
+              <div class="nav-wrapper" style={this.colStyle}>
                   <div class=" row">
                       <text
                           onTap={this.navItemClick.bind(this, 0)}
@@ -75,16 +83,15 @@ class P extends React.Component {
                       >
             推荐
                       </text>
-                      <div class={'nav-btn ' }>
+                      <div class="nav-btn">
                           <text onTap={this.navItemClick.bind(this, 2)} class={(this.state.navBtnActiveIndex === 2 ? 'active' : '')}>{this.state.city}</text>
-                          <image
-                              onTap={this.toCitySelect.bind(this)}
-                              class="open-icon"
-                              src={
-                                  '../../../../assets/image/' +
-                (this.state.navBtnActiveIndex === 2 ? 'open_select.png' : 'open.png')
+                          <div onTap={this.toCitySelect.bind(this)} class="open-icon-wrapper">
+                              {
+                                  this.state.navBtnActiveIndex === 2 ?
+                                      <image class="open-icon image" src="../../../../assets/image/open_select.png" /> :
+                                      <image class="open-icon image" src="../../../../assets/image/open.png" />
                               }
-                          />
+                          </div>
                       </div>
                   </div>
                   <div
@@ -98,33 +105,33 @@ class P extends React.Component {
                       }
                   />
               </div>
-              <div class="content col">
+              <div class="quest-content" style={this.colStyle}>
                   {this.state.navBtnActiveIndex === 0 && (
                       <div class="my-question-answer">
                           <div class="tool">
-                              <text>{this.state.isQuestion ? '共有0个提问' : '共有0个回答'}</text>
+                              <div>{this.state.isQuestion ? '共有0个提问' : '共有0个回答'}</div>
                               <div onTap={this.switchFun.bind(this)} class="switch-wrapper">
-                                  <text>{this.state.isQuestion ? '切换至回答' : '切换至提问'}</text>
+                                  <div>{this.state.isQuestion ? '切换至回答' : '切换至提问'}</div>
                               </div>
                           </div>
                           <div class="no-data-prompt">
-                              <image src="../../../../assets/image/order_none.png" />
-                              <text class="message">
+                              <image class="image" src="../../../../assets/image/order_none.png" />
+                              <div class="message">
                                   {this.state.isQuestion
                                       ? '您还没有发布过问题，去提问吧~'
                                       : '您还没有发布过回答，去回答吧~'}
-                              </text>
+                              </div>
                           </div>
                       </div>
                   )}
                   {(this.state.navBtnActiveIndex === 1 || this.state.navBtnActiveIndex === 2) && (
-                      <div class="all-question col">
+                      <div class="all-question" style={this.colStyle}>
                           {this.state.data.map(function(item) {
                               return (
-                                  <div onTap={this.questionDetail.bind(this)} class="question-item col" >
+                                  <div onTap={this.questionDetail.bind(this)} class="question-item" style={this.colStyle} >
                                       <div class="quest-title"> 
                                           {item.isRemark && (
-                                              <text
+                                              <span
                                                   class={
                                                       'remark ' +
                             (item.remark === '最新'
@@ -135,20 +142,20 @@ class P extends React.Component {
                                                   } 
                                               >
                                                   {item.remark}
-                                              </text>
+                                              </span>
                                           )}
-                                          <text class="title">{item.title}</text>
+                                          <span class={`${item.isRemark ? 'width' : ''} title`}>{item.title}</span>
                                       </div>
 
                                       <text class="desc hide-text">{item.desc}</text>
                                       <div class="other-message">
                                           <div class="other-message-item">
-                                              <image class="eye" src="../../../../assets/image/eye.png" />
-                                              <text class="eye-text">{item.seeNum}</text>
+                                              <image class="eye image" src="../../../../assets/image/eye.png" />
+                                              <text class="eye-text text">{item.seeNum}</text>
                                           </div>
                                           <div class="other-message-item">
-                                              <image src="../../../../assets/image/message.png" />
-                                              <text>{item.commentNum}</text>
+                                              <image class="image" src="../../../../assets/image/message.png" />
+                                              <text class="text">{item.commentNum}</text>
                                           </div>
                                       </div>
                                   </div>

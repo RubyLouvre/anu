@@ -62,8 +62,8 @@ class P extends React.Component {
         return (
             <div class='city-select'>
                 <div class='search-wrapper'>
-                    <input type='text' placeholder='搜索目的地'/>
-                    <image src='../../../assets/image/search.png' />
+                    <input class="input" type='text' placeholder='搜索目的地'/>
+                    <image class="image" src='../../../assets/image/search.png' />
                 </div>
                 {
                     this.state.isSearch
@@ -84,8 +84,15 @@ class P extends React.Component {
                                             <div class='title'>{item.title}</div>     
                                             <div class='city-item'>
                                                 {
-                                                    item.data.map(function(item,index){
-                                                        return  <div onTap={this.itemClick.bind(this,item)} class={'item '+ ((index+1)%4 === 0 ? 'no-margin-left' : '')} >{item}</div>;
+                                                    item.data.map(function(item){
+                                                        return  (
+                                                            <div
+                                                                onTap={this.itemClick.bind(this,item)}
+                                                                class="item"
+                                                            >
+                                                                <text>{item}</text>
+                                                            </div>
+                                                        );
                                                     })
                                                 }
                                             </div>

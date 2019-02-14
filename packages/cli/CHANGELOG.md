@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.1.1 (2019-02-01)
+
+## CLI  
+
+#### Bug fix
+- 修复样式 font-size/line-height、 background-position/background-size 缩写解析错误。
+- 修复快应用中页面无法import pages目录中的js模块问题。
+- 修复脚手架中 qunar 模板样式问题。
+  
 
 # 1.1.0 (2019-01-25)
 ## 核心库
@@ -9,13 +18,13 @@
 
 ## CLI
 #### Feature
-- 增加百度 setMetaDescription, setMetaKeywords, setDocumentTitle 三个接口。
+- 增加百度 setMetaDescription, setMetaKeywords, setDocumentTitle 三个接口。
 - 增加 nanachi page `<page-name>` 和 nanachi component `<component-name>` 两命令行接口。
   
 
 #### Bug fix
-- 修复 alias 别名 bug。
-- 修复快应用样式样式解析 bug。
+- 修复 alias 别名 bug。
+- 修复快应用样式样式解析 bug。
 - 修复 qunar 模板样式 bug。
 
 

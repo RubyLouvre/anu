@@ -13,23 +13,11 @@ let utils = require('./utils');
 let isReact = function(sourcePath){
     return /^(React)/.test( path.basename(sourcePath) );
 };
-// let isWebView = function(sourcePath){
-//     if ( config['buildType'] != 'quick' &&  !config['webview'] ) return;
-//     let isMatch = 
-//     config['webview'].includes(sourcePath) ||
-//     config['webview'].some((reg)=>{
-//         return Object.prototype.toString.call(reg) === '[object RegExp]' 
-//                && reg.test(sourcePath)
-//     });
-
-//     return isMatch;
-// };
 
 function transform(sourcePath, resolvedIds, originalCode) {
 
     //跳过 React 编译
     if ( isReact(sourcePath) ) {
-       
         queue.push({
             code: originalCode,
             type: 'js',
@@ -38,14 +26,6 @@ function transform(sourcePath, resolvedIds, originalCode) {
        
         return;
     }
-    
-    // if (isWebView(sourcePath)) {
-        
-    //     //将webview的router写入到dist/webviewConfig.js文件中
-    //     utils.setWebViewRoutesConfig(queue, sourcePath);
-    //     //跳过 webview 编译
-    //     return;
-    // }
 
     babel.transformFile(
         sourcePath,
@@ -77,26 +57,27 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 path: utils.updatePath(sourcePath, config.sourceDir, 'dist'),
                 type: 'js'
             };
-           
-            if (config.buildType == 'quick' && quickFiles[sourcePath]) {
-                const distPath = utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux');
+
+            if (config.buildType == 'quick' && quickFiles[sourcePath] ) {
+
                 // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
                 const placeholder = {
                     code: '',
-                    path: distPath,
-                    type: 'ux'
+                    path: utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux')
                 };
                 queue.push(placeholder);
                 // 补丁 END
                 
                 //ux处理
+                let {code, type} = await mergeUx({
+                    sourcePath: sourcePath,
+                    result: result
+                });
+                let distPath = utils.updatePath(sourcePath, config.sourceDir, 'dist',  type == 'ux' ? 'ux' : 'js');
+                
                 queueData = {
-                    code: await mergeUx({
-                        sourcePath: sourcePath,
-                        result: result
-                    }),
-                    path: distPath,
-                    type: 'ux'
+                    code: code,
+                    path: distPath
                 };
             } 
 

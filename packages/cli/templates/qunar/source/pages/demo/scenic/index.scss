@@ -18,26 +18,27 @@
   width: 100%;
   .input-wrapper {
     width: 100%;
-    flex: 1;
     background-color: #1890ff;
     padding: 20rpx 0;
     padding-bottom: 35rpx;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
     .input {
+      flex-grow: 1;
       background-color: #ffffff;
       margin-left: 20rpx;
+      margin-right: 20rpx;
     }
-    input {
-      display: block;
-      width: 90%;
+    .n-input {
       height: 60rpx;
-     
       font-size: 22rpx;
-     
       padding-left: 30rpx;
     }
   }
   .scenic-content {
-    .item {
+    .scenic-content-item {
       background-color: #ffffff;
       margin-bottom: 30rpx;
       &:last-child {

@@ -461,8 +461,8 @@ let utils = {
     }
   },
   mergeQuickAppJson: function() {
-    let prevPkgPath = path.join(cwd, 'package.json');
-    let prevpkg = require(prevPkgPath);
+    let projectPkgPath = path.join(cwd, 'package.json');
+    let projectPkg = require(projectPkgPath);
     let quickPkg = require(path.join(
       __dirname,
       '..',
@@ -470,11 +470,14 @@ let utils = {
       'quickInitConfig',
       'package.json'
     ));
-    let mergeJsonResult = {
-      ...prevpkg,
-      ...quickPkg
-    };
-    fs.writeFile(prevPkgPath, JSON.stringify(mergeJsonResult, null, 4)).catch(err => {
+
+    projectPkg.scripts = projectPkg.scripts || {};
+    projectPkg.devDependencies = projectPkg.devDependencies || {};
+
+    Object.assign(projectPkg.scripts, quickPkg.scripts);  //注入快应用scripts命令
+    Object.assign(projectPkg.devDependencies, quickPkg.devDependencies); //注入快应用开发依赖
+
+    fs.writeFile(projectPkgPath, JSON.stringify(projectPkg, null, 4)).catch(err => {
       // eslint-disable-next-line
       console.log(err);
     });
@@ -566,6 +569,11 @@ let utils = {
     }
     return importer;
   },
+  getDeps(messages = []) {
+    return messages.filter((item) => {
+      return item.plugin === 'postcss-import' && item.type === 'dependency';
+    });
+  },
   getComponentOrAppOrPageReg() {
     return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
   },
@@ -652,13 +660,14 @@ let utils = {
   isWebView(fileId){
     if ( config['buildType'] != 'quick' &&  !config['webview'] ) return;
     if (!config['webview']) return;
-    let isMatch = 
+    let isWebView = 
     config['webview'].includes(fileId) ||
     config['webview'].some((reg)=>{
+        //如果是webview设置成true, 则用增则匹配
         return Object.prototype.toString.call(reg) === '[object RegExp]' 
                && reg.test(fileId)
     });
-    return isMatch;
+    return isWebView;
   },
   
   sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep

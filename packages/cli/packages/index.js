@@ -198,16 +198,7 @@ class Parser {
         return {
             css: (data)=>{
                 this.checkStyleImport(data);
-                if (config.buildType == 'quick'){
-                    //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
-                    var jsName = data.id.replace(/\.\w+$/, '.js');
-                    if (fs.pathExistsSync(jsName)) {
-                        var cssExt = path.extname(data.id).slice(1);
-                        quickFiles[ jsName ] = {
-                            cssPath: data.id,
-                            cssType: cssExt === 'scss' ?  'sass' : cssExt
-                        };
-                    }
+                if (config.buildType == 'quick') {
                     return;
                 }
                 this.styleFiles.push({
@@ -228,14 +219,11 @@ class Parser {
                         id: data.id
                     });
                 } else {
-                    this.jsFiles.push({
-                        id: data.id,
-                        originalCode: data.originalCode,
-                        resolvedIds: data.resolvedIds //获取alias配置
-                    });
+                    //搜集js中依赖的样式，存入quickFiles
+                    this.collectQuickDepStyle(data);
+                    this.jsFiles.push(data);
                 }
                
-                
             }
         };
     }
@@ -287,6 +275,20 @@ class Parser {
             process.exit(1);
         }
         cb && cb();
+    }
+    collectQuickDepStyle(data){
+        if (config.buildType === 'quick') {
+            let cssPath = data.dependencies.filter((fileId)=>{
+                return isStyle(fileId);
+            })[0];
+            if (cssPath) {
+                let extname = path.extname(cssPath).replace(/^\./, '');
+                quickFiles[data.id] = {
+                    cssPath: cssPath,
+                    cssType: extname == 'scss' ? 'sass' : extname
+                };
+            }
+        }
     }
     checkComponentsInPages(id) {
         id = path.relative( cwd,  id);
@@ -341,16 +343,17 @@ class Parser {
         }
        
     }
-    updateWebViewRoutes(jsFiles){
+    updateWebViewRoutes(webViewRoutes){
+        
         //删除各 route 编译 or 运行 配置文件
         utils.deleteWebViewConifg();
 
-        if (!jsFiles.length) return;
+        if (!webViewRoutes.length) return;
         //注入h5编译route配置
-        utils.setH5CompileConfig(jsFiles);
+        utils.setH5CompileConfig(webViewRoutes);
 
         //注入运行时 webview 各route配置
-        utils.setWebViewConfig(utils.getWebViewRoutesConfig(jsFiles));
+        utils.setWebViewConfig(utils.getWebViewRoutesConfig(webViewRoutes));
     }
     updateStyleQueue(styleFiles) {
         while (styleFiles.length) {
