@@ -1,5 +1,23 @@
 # Changelog
 
+
+
+# 1.1.2 (2019-02-15)
+
+## CLI  
+
+#### Feature
+- 样式预处理器 dart-sass 替代 node-sass。
+- 支持快应用智能 webview。
+- 支持H5 pull refresh, scroll hooks 功能。
+
+#### Bug fix
+- 修复 windows 平台下路径处理 bug。
+- 修复 H5 路由 bug。
+
+
+
+
 # 1.1.1 (2019-02-01)
 
 ## CLI  
