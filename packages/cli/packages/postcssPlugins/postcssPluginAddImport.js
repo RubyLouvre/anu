@@ -21,7 +21,7 @@ const postcssPluginAddImport = postCss.plugin('postcss-plugin-add-import', funct
             // 遍历依赖插入@import语句
             const importNode = postCss.atRule({
                 name: 'import',
-                params: getRelativeImportPath(path.dirname(res.opts.from), dep.file)
+                params: getRelativeImportPath(path.dirname(res.opts.from), dep.file).replace(/\\/g, '/')
             });
             root.insertBefore(root.nodes[0], importNode);
         });

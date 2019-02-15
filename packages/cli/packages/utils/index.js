@@ -430,8 +430,9 @@ let utils = {
   resolveDistPath(filePath){
     let dist = config.buildType === 'quick' ? 'src': (config.buildDir || 'dist');
     let sep = path.sep;
+    let reg = this.isWin() ? /\\node_modules\\/g : /\/node_modules\//g;
     filePath = utils.updatePath(filePath, 'dist', dist); //待优化
-    return /\/node_modules\//.test(filePath)
+    return reg.test(filePath)
     ? utils.updatePath(filePath, 'node_modules', `${dist}${sep}npm`)
     : utils.updatePath(filePath, config.sourceDir, dist);
   },
@@ -460,7 +461,7 @@ let utils = {
       );
     }
   },
-  mergeQuickAppJson: function() {
+  mergeQuickAppJson: function() { 
     let projectPkgPath = path.join(cwd, 'package.json');
     let projectPkg = require(projectPkgPath);
     let quickPkg = require(path.join(
