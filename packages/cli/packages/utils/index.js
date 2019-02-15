@@ -93,11 +93,13 @@ let utils = {
   createElement(nodeName, attrs, children) {
     return t.JSXElement(
       t.JSXOpeningElement(
-        t.JSXIdentifier(nodeName),
+        // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+        t.jsxIdentifier(nodeName),
         attrs,
         config.buildType === 'quick' ? false : !children.length
       ),
-      t.jSXClosingElement(t.JSXIdentifier(nodeName)),
+      // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+      t.jSXClosingElement(t.jsxIdentifier(nodeName)),
       children
     );
   },
@@ -168,7 +170,8 @@ let utils = {
   },
   createAttribute(name, value) {
     return t.JSXAttribute(
-      t.JSXIdentifier(name),
+      // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+      t.jsxIdentifier(name),
       typeof value == 'object' ? value : t.stringLiteral(value)
     );
   },

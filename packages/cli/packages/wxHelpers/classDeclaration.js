@@ -20,7 +20,8 @@ module.exports = {
                 b: modules.thisProperties
             });
         }
-        let parent = astPath.parentPath.parentPath;
+        // 获取node的根节点
+        let parent = astPath.findParent(t.isProgram);
         parent.insertBefore(modules.ctorFn);
         //用于绑定事件
         modules.thisMethods.push(

@@ -45,11 +45,11 @@ function transform(code, buildType) {
             babelrc: false,
             comments: false,
             plugins: [
-                require('babel-plugin-syntax-jsx'),
-                require('babel-plugin-transform-decorators-legacy').default,
-                require('babel-plugin-transform-object-rest-spread'),
-                require('babel-plugin-transform-es2015-template-literals'),
-                require('babel-plugin-transform-async-to-generator'),
+                require('@babel/plugin-syntax-jsx'),
+                require('@babel/plugin-transform-decorators-legacy').default,
+                require('@babel/plugin-transform-object-rest-spread'),
+                require('@babel/plugin-transform-es2015-template-literals'),
+                require('@babel/plugin-transform-async-to-generator'),
 
                 () => {
                     return {

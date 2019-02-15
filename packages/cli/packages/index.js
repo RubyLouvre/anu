@@ -69,7 +69,9 @@ let ignoreStyleParsePlugin = ()=>{
         transform: function(code, id){
             let styleExtList = ['.css', '.less', '.scss', '.sass'];
             let ext = path.extname(id);
-            if (styleExtList.includes(ext)) return false;
+            if (styleExtList.includes(ext)) return {
+                code: ''
+            };
         }
     };
 };
@@ -125,10 +127,26 @@ class Parser {
                 rbabel({
                     babelrc: false,
                     only: ['**/*.js'],
-                    presets: [require('babel-preset-react')],
+                    // exclude: 'node_modules/**',
+                    presets: [
+                        // [
+                        //     require('@babel/preset-env'), {
+                        //         modules: false
+                        //     }
+                        // ],
+                        require('@babel/preset-react')
+                    ],
                     plugins: [
-                        require('babel-plugin-transform-class-properties'),
-                        require('babel-plugin-transform-object-rest-spread'),
+                        /**
+                         * [babel 6 to 7] 
+                         * v6 default config: ["plugin", { "loose": true }]
+                         * v7 default config: ["plugin"]
+                         */
+                        [
+                            require('@babel/plugin-proposal-class-properties'),
+                            { loose: true }
+                        ],
+                        require('@babel/plugin-proposal-object-rest-spread'),
                         [
                             //重要,import { Xbutton } from 'schnee-ui' //按需引入
                             require('babel-plugin-import').default,
@@ -234,6 +252,11 @@ class Parser {
                 this.checkComponentsInPages(data.id);
                 //校验组件组件名以及文件夹是否符合规范
                 this.checkImportComponent(data);
+
+                // 依赖中会多一个无用的 rollupPluginBabelHelpers.js
+                if (data.id.indexOf('rollupPluginBabelHelpers.js') !== -1){
+                    return;
+                }
                 this.jsFiles.push({
                     id: data.id,
                     originalCode: data.originalCode,

@@ -1,5 +1,5 @@
 /* eslint no-console: 0 */
-const syntaxJSX = require('babel-plugin-syntax-jsx');
+const syntaxJSX = require('@babel/plugin-syntax-jsx');
 const babel = require('babel-core');
 const t = require('babel-types');
 const generate = require('babel-generator').default;

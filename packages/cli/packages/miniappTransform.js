@@ -1,7 +1,8 @@
+/* eslint-disable no-console */
 /*!
  * 生成js文件, ux文件
  */
-let babel = require('babel-core');
+let babel = require('@babel/core');
 let path = require('path');
 let config = require('./config');
 let quickFiles = require('./quickFiles');
@@ -24,19 +25,41 @@ function transform(sourcePath, resolvedIds, originalCode) {
             babelrc: false,
             comments: false,
             plugins: [
-                require('babel-plugin-syntax-jsx'),
-                require('babel-plugin-transform-decorators-legacy').default,
-                require('babel-plugin-transform-object-rest-spread'),
-                require('babel-plugin-transform-es2015-template-literals'),
+                /**
+                 * [babel 6 to 7] 
+                 * v6 default config: ["plugin", { "loose": true }]
+                 * v7 default config: ["plugin"]
+                 */
+                [
+                    require('@babel/plugin-proposal-class-properties'),
+                    { loose: true }
+                ],
+                require('@babel/plugin-syntax-jsx'),
+                [
+                    /**
+                     * [babel 6 to 7] 
+                     * In anticipation of the new decorators proposal implementation,
+                     * we've decided to make it the new default behavior.
+                     * This means that to continue using the current decorators syntax/behavior,
+                     * you must set the legacy option as true.
+                     */
+                    require('@babel/plugin-proposal-decorators'),
+                    {
+                        legacy: true
+                    }
+                ],
+                require('@babel/plugin-proposal-object-rest-spread'),
+                require('@babel/plugin-transform-template-literals'),
                 ...require('./babelPlugins/transformMiniApp')(sourcePath),
-                require('babel-plugin-transform-async-to-generator'),
+                require('@babel/plugin-transform-async-to-generator'),
                 require('./babelPlugins/transformIfImport')
             ]
         },
         async function(err, result) {
             if (err) {
+                console.log('444444444444 err');
                 //eslint-disable-next-line
-                console.log(sourcePath, '\n', err);
+                console.log('sourcePath:', sourcePath, '\n', err);
                 process.exit(1);
             }
             let babelPlugins = [
@@ -49,13 +72,16 @@ function transform(sourcePath, resolvedIds, originalCode) {
                     }
                 )
             ];
+            console.log('55555555555');
             //babel无transform异步方法
             try {
                 result = babel.transform(result.code, {
                     babelrc: false,
                     plugins: babelPlugins
                 });
+                console.log('666666666666');
             } catch (err) {
+                console.log('666666666666 catch (err)');
                 //eslint-disable-next-line
                 console.log(sourcePath, '\n', err);
                 process.exit(1);

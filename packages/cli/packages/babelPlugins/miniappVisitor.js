@@ -50,6 +50,7 @@ module.exports = {
     ClassExpression: helpers.classDeclaration,
     ClassMethod: {
         enter(astPath, state) {
+            console.log('ClassMethod enter');
             let modules = utils.getAnu(state);
             let methodName = astPath.node.key.name;
             modules.walkingMethod = methodName;
@@ -110,6 +111,7 @@ module.exports = {
             );
         },
         exit(astPath, state) {
+            console.log('ClassMethod exit');
             var modules = utils.getAnu(state);
             const methodName = astPath.node.key.name;
             if (methodName === 'render') {
@@ -130,6 +132,7 @@ module.exports = {
     FunctionDeclaration: {
         //enter里面会转换jsx中的JSXExpressionContainer
         exit(astPath, state) {
+            console.log('FunctionDeclaration enter');
             //函数声明转换为无状态组件
             let modules = utils.getAnu(state);
             let name = astPath.node.id.name;
@@ -190,6 +193,7 @@ module.exports = {
     },
     ExportDefaultDeclaration: {
         exit(astPath, state) {
+            console.log('ExportDefaultDeclaration exit');
             var modules = utils.getAnu(state);
             if (/Page|Component/.test(modules.componentType)) {
                 let declaration = astPath.node.declaration;
@@ -267,6 +271,7 @@ module.exports = {
 
     ExportNamedDeclaration: {
         exit(astPath) {
+            console.log('ExportNamedDeclaration exit');
             //生成 module.exports.default = ${name};
             let declaration = astPath.node.declaration || { type: '{}' };
             switch (declaration.type) {
@@ -299,6 +304,7 @@ module.exports = {
     },
     ClassProperty: {
         exit(astPath, state) {
+            console.log('ClassProperty exit');
             let key = astPath.node.key.name;
             let modules = utils.getAnu(state);
             if (key === 'config') {
@@ -346,6 +352,7 @@ module.exports = {
     AssignmentExpression() {},
     CallExpression: {
         enter(astPath, state) {
+            console.log('CallExpression enter');
             let node = astPath.node;
             let args = node.arguments;
             let callee = node.callee;
@@ -431,6 +438,7 @@ module.exports = {
             }
         },
         exit(astPath, state) {
+            console.log('CallExpression exit');
             let modules = utils.getAnu(state);
             if (utils.isLoopMap(astPath)) {
                 var indexArr = modules.indexArr;
@@ -454,12 +462,14 @@ module.exports = {
         if (buildType == 'quick' && !node.closingElement) {
             node.openingElement.selfClosing = false;
             node.closingElement = t.JSXClosingElement(
-                t.JSXIdentifier(nodeName)
+                // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+                t.jsxIdentifier(nodeName)
             );
         }
     },
     JSXOpeningElement: {
         enter: function(astPath, state) {
+            console.log('JSXOpeningElement enter');
             let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
@@ -496,7 +506,8 @@ module.exports = {
                 modules.is && modules.is.push(nodeName);
                 attrs.push(
                     t.JSXAttribute(
-                        t.JSXIdentifier('is'),
+                        // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+                        t.jsxIdentifier('is'),
                         t.jSXExpressionContainer(t.stringLiteral(nodeName))
                     )
                 );
@@ -520,6 +531,7 @@ module.exports = {
     },
     JSXAttribute: {
         enter: function(astPath, state) {
+            console.log('JSXAttribute enter');
             let attrName = astPath.node.name.name;
             let attrValue = astPath.node.value;
             let parentPath = astPath.parentPath;
@@ -646,6 +658,7 @@ module.exports = {
             }
         },
         exit(astPath, state) {
+            console.log('JSXAttribute exit');
             let attrName = astPath.node.name.name;
             if (attrName == 'render' && astPath.parentPath.renderProps) {
                 let attrValue = astPath.parentPath.renderProps;
