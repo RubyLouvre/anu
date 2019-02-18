@@ -1,8 +1,8 @@
 /* eslint no-console: 0 */
 
-const generate = require('babel-generator').default;
-const t = require('babel-types');
-const babel = require('babel-core');
+const generate = require('@babel/generator').default;
+const t = require('@babel/types');
+const babel = require('@babel/core');
 
 
 /**

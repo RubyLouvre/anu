@@ -48,11 +48,19 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         legacy: true
                     }
                 ],
+                require('@babel/plugin-transform-async-to-generator'),
                 require('@babel/plugin-proposal-object-rest-spread'),
                 require('@babel/plugin-transform-template-literals'),
                 ...require('./babelPlugins/transformMiniApp')(sourcePath),
-                require('@babel/plugin-transform-async-to-generator'),
-                require('./babelPlugins/transformIfImport')
+                ...require('./babelPlugins/transformEnv'),
+                require('./babelPlugins/injectRegeneratorRuntime'),
+                require('./babelPlugins/transformIfImport'),
+                require('./babelPlugins/trasnformAlias')(
+                    {
+                        sourcePath: sourcePath,
+                        resolvedIds: resolvedIds
+                    }
+                )
             ]
         },
         async function(err, result) {
@@ -62,30 +70,30 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 console.log('sourcePath:', sourcePath, '\n', err);
                 process.exit(1);
             }
-            let babelPlugins = [
-                ...require('./babelPlugins/transformEnv'),
-                require('./babelPlugins/injectRegeneratorRuntime'),
-                require('./babelPlugins/trasnformAlias')(
-                    {
-                        sourcePath: sourcePath,
-                        resolvedIds: resolvedIds
-                    }
-                )
-            ];
+            // let babelPlugins = [
+            //     ...require('./babelPlugins/transformEnv'),
+            //     require('./babelPlugins/injectRegeneratorRuntime'),
+            //     require('./babelPlugins/trasnformAlias')(
+            //         {
+            //             sourcePath: sourcePath,
+            //             resolvedIds: resolvedIds
+            //         }
+            //     )
+            // ];
             console.log('55555555555');
             //babel无transform异步方法
-            try {
-                result = babel.transform(result.code, {
-                    babelrc: false,
-                    plugins: babelPlugins
-                });
-                console.log('666666666666');
-            } catch (err) {
-                console.log('666666666666 catch (err)');
-                //eslint-disable-next-line
-                console.log(sourcePath, '\n', err);
-                process.exit(1);
-            }
+            // try {
+            //     result = babel.transform(result.code, {
+            //         babelrc: false,
+            //         plugins: babelPlugins
+            //     });
+            //     console.log('666666666666');
+            // } catch (err) {
+            //     console.log('666666666666 catch (err)');
+            //     //eslint-disable-next-line
+            //     console.log(sourcePath, '\n', err);
+            //     process.exit(1);
+            // }
             //处理中文转义问题
             result.code = utils.decodeChinise(result.code);
 

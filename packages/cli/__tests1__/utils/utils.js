@@ -1,4 +1,4 @@
-let babel = require('babel-core');
+let babel = require('@babel/core');
 const prettifyXml = require('prettify-xml');
 // let jsTransform = require('../../packages/translator/jsTransform');
 // let helpers = require('../../packages/translator/helpers');

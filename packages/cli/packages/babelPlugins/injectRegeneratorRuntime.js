@@ -1,5 +1,5 @@
 let config = require('../config');
-let t = require('babel-types');
+let t = require('@babel/types');
 let hackList = ['wx', 'bu', 'tt', 'quick'];
 let visitor = {
     FunctionDeclaration: {

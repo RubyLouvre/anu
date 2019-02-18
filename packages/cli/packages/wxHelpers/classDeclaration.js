@@ -1,6 +1,6 @@
-const t = require('babel-types');
-const template = require('babel-template');
-const generate = require('babel-generator').default;
+const t = require('@babel/types');
+const template = require('@babel/template').default;
+const generate = require('@babel/generator').default;
 const utils = require('../utils');
 
 module.exports = {
@@ -15,14 +15,26 @@ module.exports = {
         // 将类表式变成函数调用
         let modules = utils.getAnu(state);
         if (!modules.ctorFn) {
-            modules.ctorFn = template('function x(){b}')({
-                x: t.identifier(modules.className),
-                b: modules.thisProperties
+            /**
+             * placeholderPattern
+             * Type: RegExp | false Default: /^[_$A-Z0-9]+$/
+             * 
+             * A pattern to search for when looking for Identifier and StringLiteral nodes
+             * that should be considered placeholders. 'false' will disable placeholder searching
+             * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
+             */
+            modules.ctorFn = template('function X(){B}')({
+                X: t.identifier(modules.className),
+                B: modules.thisProperties
             });
         }
+        /**
+         * let parent = astPath.parentPath.parentPath;
+         * parent.insertBefore(modules.ctorFn);
+         */
         // 获取node的根节点
         let parent = astPath.findParent(t.isProgram);
-        parent.insertBefore(modules.ctorFn);
+        parent.node.body.unshift(modules.ctorFn);
         //用于绑定事件
         modules.thisMethods.push(
             t.objectProperty(

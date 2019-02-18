@@ -1,4 +1,4 @@
-const g = require('babel-generator').default;
+const g = require('@babel/generator').default;
 const path = require('path');
 const config = require('../config');
 const cwd = process.cwd();
