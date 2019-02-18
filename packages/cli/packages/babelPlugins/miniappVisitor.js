@@ -204,8 +204,7 @@ module.exports = {
 
                 if (declaration.type == 'FunctionDeclaration') {
                     //将export default function AAA(){}的方法提到前面
-                    var fn = template(generate(declaration).code)();
-                    astPath.insertBefore(fn);
+                    astPath.insertBefore(declaration);
                     astPath.node.declaration = declaration.id;
                 }
                 //延后插入createPage语句在其同名的export语句前
