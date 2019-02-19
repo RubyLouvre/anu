@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-02-13
+ * 运行于快应用的React by 司徒正美 Copyright 2019-02-18
  */
 
 var arrayPush = Array.prototype.push;

@@ -15,13 +15,16 @@ const postcssPluginAddImport = postCss.plugin('postcss-plugin-add-import', funct
         if (!deps) {
             return;
         }
-        deps.forEach(dep => {
+        // 保证只有一条css规则的情况下也有分号（有些平台@import语句必须以分号结束）
+        root.raws.semicolon = true;
+        for (var i = deps.length - 1; i >= 0; i--) {
             // 遍历依赖插入@import语句
-            root.insertBefore(root.nodes[0], postCss.atRule({
+            const importNode = postCss.atRule({
                 name: 'import',
-                params: getRelativeImportPath(path.dirname(res.opts.from), dep.file)
-            }));
-        });
+                params: getRelativeImportPath(path.dirname(res.opts.from), deps[i].file).replace(/\\/g, '/')
+            });
+            root.insertBefore(root.nodes[0], importNode);
+        }
     };
 });
 
