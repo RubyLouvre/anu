@@ -139,14 +139,14 @@ let visitor = {
                         continue;
                     }
                     parentTag = parentNode.openingElement.name.name;
-                    if (parentTag !== 'block'){
-                        hasBlockTag = true;
+                    if (parentTag === 'block'){
+                        astPath = astPath.parentPath;
+                    } else {
                         break;
                     }
-                    astPath = astPath.parentPath;
                 }
                 //如果文本节点的父节点不是text, a, option, span并且不是组件, 我们在外面生成一个text
-                if (!quickTextContainer[parentTag] && !/^anu-/.test(parentTag)) {
+                if (hasBlockTag || !quickTextContainer[parentTag] && !/^anu-/.test(parentTag)) {
                     let index = children.indexOf(textNode);
                     let trimValue = textNode.value.trim();
                     if (trimValue == '') {
