@@ -80,7 +80,7 @@ function runCompileStyle(filePath, originalCode){
                                 type: 'css'
                             });
                         });
-                    })
+                    });
                 });
             })
             .catch((err)=>{
