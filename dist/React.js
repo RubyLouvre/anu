@@ -806,7 +806,7 @@
         return dispatcher.useEffect(create, inputs, PASSIVE, 'passive', 'unpassive');
     }
     function useCallback(create, inputs) {
-        return dispatcher.useCallbackOrMeno(create, inputs);
+        return dispatcher.useCallbackOrMeo(create, inputs);
     }
     function useMemo(create, inputs) {
         return dispatcher.useCallbackOrMemo(create, inputs, true);
