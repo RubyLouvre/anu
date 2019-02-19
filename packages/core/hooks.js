@@ -14,7 +14,7 @@ export function useLayoutEffect(create, inputs) {
 }
 
 export function useCallback(create, inputs) {
-    return dispatcher.useCallbackOrMeno(create, inputs);
+    return dispatcher.useCallbackOrMemo(create, inputs);
 }
 export function useMemo(create, inputs) {
     return dispatcher.useCallbackOrMemo(create, inputs, true);
