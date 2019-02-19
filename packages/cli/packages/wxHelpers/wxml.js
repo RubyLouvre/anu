@@ -141,6 +141,7 @@ let visitor = {
                     parentTag = parentNode.openingElement.name.name;
                     if (parentTag === 'block'){
                         astPath = astPath.parentPath;
+                        hasBlockTag = true;
                     } else {
                         break;
                     }
