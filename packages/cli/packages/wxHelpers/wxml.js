@@ -134,6 +134,10 @@ let visitor = {
                     if (!children){
                         children = parentNode.children;
                     }
+                    if (!parentNode.openingElement){
+                        astPath = astPath.parentPath;
+                        continue;
+                    }
                     parentTag = parentNode.openingElement.name.name;
                     if (parentTag !== 'block'){
                         hasBlockTag = true;
