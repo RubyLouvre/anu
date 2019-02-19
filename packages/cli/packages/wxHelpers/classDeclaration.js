@@ -16,6 +16,7 @@ module.exports = {
         let modules = utils.getAnu(state);
         if (!modules.ctorFn) {
             /**
+             * 占位符要大写
              * placeholderPattern
              * Type: RegExp | false Default: /^[_$A-Z0-9]+$/
              * 
@@ -28,13 +29,7 @@ module.exports = {
                 B: modules.thisProperties
             });
         }
-        /**
-         * let parent = astPath.parentPath.parentPath;
-         * parent.insertBefore(modules.ctorFn);
-         */
-        // 获取node的根节点
-        let parent = astPath.findParent(t.isProgram);
-        parent.node.body.unshift(modules.ctorFn);
+        astPath.insertBefore(modules.ctorFn);
         //用于绑定事件
         modules.thisMethods.push(
             t.objectProperty(
