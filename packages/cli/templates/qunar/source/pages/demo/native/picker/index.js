@@ -61,14 +61,14 @@ class P extends React.Component {
                 '锤子',
                 'oppo',
                 'vivo',
-                'iphone',
-                '华为',
-                '小米',
-                '三星',
-                '魅族',
-                '锤子',
-                'oppo',
-                'vivo'
+                'iphone1',
+                '华为1',
+                '小米1',
+                '三星1',
+                '魅族1',
+                '锤子1',
+                'oppo1',
+                'vivo1'
             ]
         };
     }
@@ -192,6 +192,7 @@ class P extends React.Component {
                         <text>当前选择：{this.state.region[0]}, {this.state.region[1]},{this.state.region[2]}</text>
                     </picker>
                 </div>
+                <div style={{height: '800px'}}></div>
             </div>
         );
     }
