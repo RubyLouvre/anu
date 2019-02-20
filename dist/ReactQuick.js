@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-02-18
+ * 运行于快应用的React by 司徒正美 Copyright 2019-02-20
  */
 
 var arrayPush = Array.prototype.push;
@@ -703,11 +703,7 @@ var fakeApp = {
 };
 function _getApp() {
     if (isFn(getApp)) {
-        var app = getApp();
-        if (!app.globalData && app.$def) {
-            app.globalData = app.$def.globalData || {};
-        }
-        return app;
+        return getApp();
     }
     return fakeApp;
 }

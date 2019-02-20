@@ -9,11 +9,7 @@ var fakeApp = {
 };
 function _getApp () {
     if (isFn(getApp)) {
-        var app = getApp();
-        if (!app.globalData && app.$def) { // 快应用的数据放在$def上
-            app.globalData = app.$def.globalData || {};
-        }
-        return app;
+        return getApp();
     }
     return fakeApp;
 }

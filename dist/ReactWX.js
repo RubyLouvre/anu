@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-02-18T08
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-02-20T08
  * IE9+
  */
 
@@ -962,11 +962,7 @@ var fakeApp = {
 };
 function _getApp() {
     if (isFn(getApp)) {
-        var app = getApp();
-        if (!app.globalData && app.$def) {
-            app.globalData = app.$def.globalData || {};
-        }
-        return app;
+        return getApp();
     }
     return fakeApp;
 }

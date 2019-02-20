@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-02-18
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-02-20
  */
 
 (function (global, factory) {
@@ -3174,7 +3174,7 @@
         return dispatcher.useEffect(create, deps, HOOK, 'layout', 'unlayout');
     }
     function useCallback(create, deps) {
-        return dispatcher.useCallbackOrMeno(create, deps);
+        return dispatcher.useCallbackOrMemo(create, deps);
     }
     function useMemo(create, deps) {
         return dispatcher.useCallbackOrMemo(create, deps, true);
