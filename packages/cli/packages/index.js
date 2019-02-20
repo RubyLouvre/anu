@@ -61,7 +61,6 @@ let ignoreStyleParsePlugin = ()=>{
     };
 };
 
-
 //监听打包资源
 utils.on('build', ()=>{
     generate();

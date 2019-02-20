@@ -19,7 +19,7 @@ let map = Object.assign({}, builtIn);
     map[el] = 'div';
 });
 'span,b,s,code,quote,cite'.replace(rword, function(el) {
-    map[el] = 'text';
+    map[el] = 'text';//span不能直接放在div下面
 });
 map.button = 'input';
 map['web-view'] = 'web';

@@ -8,7 +8,7 @@
         "watch": "hap watch"
     },
     "devDependencies": {
-        "hap-toolkit": "^0.1.0",
+        "hap-toolkit": "^0.2.0",
         "koa": "^2.3.0",
         "koa-body": "^2.5.0",
         "koa-router": "^7.2.1",
