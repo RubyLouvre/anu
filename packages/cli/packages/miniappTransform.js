@@ -80,7 +80,6 @@ function transform(sourcePath, resolvedIds, originalCode) {
             //         }
             //     )
             // ];
-            console.log('55555555555');
             //babel无transform异步方法
             // try {
             //     result = babel.transform(result.code, {
