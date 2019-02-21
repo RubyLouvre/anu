@@ -75,5 +75,10 @@ let React = getWindow().React = {
    
 };
 
+if(typeof global !== 'undefined'){
+    var ref = Object.getPrototypeOf(global) || global;
+    ref.ReactQuick = React
+}
+
 export default React;
 export { Children, createElement, Component };
