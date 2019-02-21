@@ -2,7 +2,12 @@
 
 
 
-# 1.1.2 (2019-02-15)
+# 1.1.2 (2019-02-22)
+
+## 核心库
+- 简化各平台 getApp 实现。
+- 支持同步的 storage API。
+
 
 ## CLI  
 
@@ -11,11 +16,11 @@
 - 支持快应用智能 webview。
 - 支持H5 pull refresh, scroll hooks 功能。
 
+
 #### Bug fix
 - 修复 windows 平台下路径处理 bug。
 - 修复 H5 路由 bug。
-
-
+- 修复快应用自动插入span 或 text 的功能。
 
 
 # 1.1.1 (2019-02-01)
