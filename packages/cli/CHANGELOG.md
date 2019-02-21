@@ -6,7 +6,7 @@
 
 ## 核心库
 - 简化各平台 getApp 实现。
-- 支持同步的 storage API。
+- 支持快应用同步 storage API。
 
 
 ## CLI  
