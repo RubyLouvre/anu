@@ -130,7 +130,7 @@ class Global extends React.Component {
     }
     onGlobalLoad() {
         let ANU_ENV = process.env.ANU_ENV;//wx ali bu quick
-        if(ANU_ENV === 'quick') {
+        if (ANU_ENV === 'quick') {
             React.api.initStorageSync(this.globalData.__storage);
         }
         
