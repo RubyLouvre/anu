@@ -9,7 +9,8 @@ import {
     setStorageSync,
     getStorageSync,
     removeStorageSync,
-    clearStorageSync
+    clearStorageSync,
+    initStorageSync
 } from './quickApis/storage.js';
 import { getSavedFileInfo, getSavedFileList, removeSavedFile, saveFile } from './quickApis/file.js';
 import { setClipboardData, getClipboardData } from './quickApis/clipboard.js';
@@ -194,6 +195,7 @@ export var api = {
     saveFile,
     setClipboardData,
     getClipboardData,
+    initStorageSync,
     // 位置
     getLocation(obj) {
         const geolocation = require('@system.geolocation');

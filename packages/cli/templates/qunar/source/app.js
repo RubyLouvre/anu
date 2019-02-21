@@ -128,6 +128,13 @@ class Global extends React.Component {
     onGlobalShow() {
         console.log(React.getCurrentPage().props.path, 'onGlobalShow');//eslint-disable-line
     }
+    onGlobalLoad() {
+        let ANU_ENV = process.env.ANU_ENV;//wx ali bu quick
+        if(ANU_ENV === 'quick') {
+            React.api.initStorageSync(this.globalData.__storage);
+        }
+        
+    }
     onLaunch() {
         //针对快应用的全局getApp补丁
         if (this.$data && typeof global === 'object') {
@@ -136,6 +143,8 @@ class Global extends React.Component {
             ref.getApp = function() {
                 return _this;
             };
+            this.globalData = this.$def.globalData;
+           
         }
         console.log('App launched');//eslint-disable-line
     }
