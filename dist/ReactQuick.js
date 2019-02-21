@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-02-20
+ * 运行于快应用的React by 司徒正美 Copyright 2019-02-21
  */
 
 var arrayPush = Array.prototype.push;
@@ -987,78 +987,96 @@ function downloadFile(_ref3) {
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
 function setStorage(_ref) {
-  var key = _ref.key,
-      data = _ref.data,
-      success = _ref.success,
-      fail = _ref.fail,
-      complete = _ref.complete;
-  var value = data;
-  if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
-    try {
-      value = JSON.stringify(value);
-    } catch (error) {
-      runFunction(fail, error);
+    var key = _ref.key,
+        data = _ref.data,
+        success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
+    var value = data;
+    if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
+        try {
+            value = JSON.stringify(value);
+        } catch (error) {
+            runFunction(fail, error);
+        }
     }
-  }
-  storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
+    storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
 }
 function getStorage(_ref2) {
-  var key = _ref2.key,
-      success = _ref2.success,
-      fail = _ref2.fail,
-      complete = _ref2.complete;
-  function dataObj(data) {
-    try {
-      data = JSON.parse(data);
-    } catch (e) {}
-    success({
-      data: data
-    });
-  }
-  storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
+    var key = _ref2.key,
+        success = _ref2.success,
+        fail = _ref2.fail,
+        complete = _ref2.complete;
+    function dataObj(data) {
+        try {
+            data = JSON.parse(data);
+        } catch (e) {}
+        success({
+            data: data
+        });
+    }
+    storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
 }
 function removeStorage(obj) {
-  storage.delete(obj);
+    storage.delete(obj);
 }
 function clearStorage(obj) {
-  storage.clear(obj);
+    storage.clear(obj);
 }
-var storageCache = {};
-function setStorageSync(key, value) {
-  setStorage({
-    key: key,
-    data: value
-  });
-  return storageCache[key] = value;
+function initStorageSync(storageCache) {
+    if ((typeof ReactQuick === 'undefined' ? 'undefined' : _typeof$1(ReactQuick)) !== 'object') {
+        console.log('meiyouu');
+        return;
+    }
+    var apis = ReactQuick.api;
+    var n = storage.length;
+    var j = 0;
+    for (var i = 0; i < n; i++) {
+        storage.key({
+            index: i,
+            success: function success(key) {
+                storage.get({
+                    key: key,
+                    success: function success(value) {
+                        storageCache[key] = value;
+                        if (j++ == n) {
+                            console.log('init success');
+                        }
+                    }
+                });
+            }
+        });
+    }
+    apis.setStorageSync = function (key, value) {
+        setStorage({
+            key: key,
+            data: value
+        });
+        return storageCache[key] = value;
+    };
+    apis.getStorageSync = function (key) {
+        return storageCache[key];
+    };
+    apis.removeStorageSync = function (key) {
+        delete storageCache[key];
+        removeStorage({ key: key });
+    };
+    apis.clearStorageSync = function () {
+        for (var i in storageCache) {
+            delete storageCache[i];
+        }
+        clearStorage({});
+    };
 }
-function getStoragePromise(key) {
-  return new Promise(function (resolve, rejects) {
-    getStorage({
-      key: key,
-      success: function success(res) {
-        resolve(res.data);
-      },
-      fail: function fail() {
-        rejects(null);
-      }
-    });
-  });
+function warnToInitStorage() {
+    {
+        console.log('还没有初始化storageSync');
+    }
 }
-async function getStorageSync(key) {
-  var value = storageCache[key];
-  if (!value) {
-    value = await getStoragePromise(key);
-  }
-  return value;
-}
-function removeStorageSync(key) {
-  delete storageCache[key];
-  removeStorage({ key: key });
-}
-function clearStorageSync() {
-  storageCache = {};
-  clearStorage({});
-}
+var setStorageSync = warnToInitStorage;
+var getStorageSync = warnToInitStorage;
+var removeStorageSync = warnToInitStorage;
+var clearStorageSync = warnToInitStorage;
 
 var file = require('@system.file');
 var SUCCESS_MESSAGE = 'ok';
@@ -1476,6 +1494,7 @@ var api = {
     saveFile: saveFile,
     setClipboardData: setClipboardData,
     getClipboardData: getClipboardData,
+    initStorageSync: initStorageSync,
     getLocation: function getLocation(obj) {
         var geolocation = require('@system.geolocation');
         geolocation.getLocation(obj);
@@ -3111,6 +3130,10 @@ var React = getWindow().React = {
     },
     api: api
 };
+if (typeof global !== 'undefined') {
+    var ref = Object.getPrototypeOf(global) || global;
+    ref.ReactQuick = React;
+}
 
 export default React;
 export { Children, createElement, Component };
