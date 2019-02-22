@@ -15,12 +15,15 @@
 - 样式预处理器 dart-sass 替代 node-sass。
 - 支持快应用智能 webview。
 - 支持H5 pull refresh, scroll hooks 功能。
+- 优化快应用下 block 标签生成机制（如果 
+在span, text, strong 这几个标签内部出现 {} , {}里面有 三元或&&， 不应该转换成block）。
 
 
 #### Bug fix
 - 修复 windows 平台下路径处理 bug。
 - 修复 H5 路由 bug。
 - 修复快应用自动插入span 或 text 的功能。
+- 修复快应用下页面配置对象没有定义 tabBar 就不应该走app.js的config的tabBar问题。
 
 
 # 1.1.1 (2019-02-01)
