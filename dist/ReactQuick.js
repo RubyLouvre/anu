@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-02-21
+ * 运行于快应用的React by 司徒正美 Copyright 2019-02-22
  */
 
 var arrayPush = Array.prototype.push;
@@ -986,6 +986,12 @@ function downloadFile(_ref3) {
 
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
+function json_parse(str) {
+    try {
+        str = JSON.parse(str);
+    } catch (err) {}
+    return str;
+}
 function setStorage(_ref) {
     var key = _ref.key,
         data = _ref.data,
@@ -1055,7 +1061,7 @@ function initStorageSync(storageCache) {
         return storageCache[key] = value;
     };
     apis.getStorageSync = function (key) {
-        return storageCache[key];
+        return json_parse(storageCache[key]);
     };
     apis.removeStorageSync = function (key) {
         delete storageCache[key];
