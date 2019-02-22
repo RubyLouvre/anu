@@ -163,7 +163,7 @@ let visitor = {
     JSXExpressionContainer: {
         exit(astPath, state) {
             let expr = astPath.node.expression;
-
+            //如果是位于属性中
             if (t.isJSXAttribute(astPath.parent)) {
                 attrValueHelper(astPath);
             } else if (
@@ -173,11 +173,21 @@ let visitor = {
                 let attributes = [];
                 let template = utils.createElement('slot', attributes, []);
                 astPath.replaceWith(template);
-                //  console.warn("小程序暂时不支持{this.props.children}");
             } else {
                 let modules = utils.getAnu(state);
                 //返回block元素或template元素
-                let block = logicHelper(expr, modules);
+                let isWrapText = false;
+                if (astPath.parentPath.type === 'JSXElement'){
+                    let tag = astPath.parentPath.node.openingElement;
+                    let tagName = tag && tag.name && tag.name.name;
+                    //对<text>{aaa ? 111: 2}</text>的情况进行优化，不插入block标签
+                    //只是将单花括号变成双花括号
+                    if (tagName === 'text'){
+                        isWrapText = true;
+                    }
+                }
+               
+                let block = logicHelper(expr, modules, isWrapText);
                 try {
                     astPath.replaceWithMultiple(block);
                 } catch (e) {

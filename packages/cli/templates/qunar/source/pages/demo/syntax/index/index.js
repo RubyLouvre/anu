@@ -56,10 +56,6 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/multiple/index'
                 },
                 {
-                    title: 'Render Props',
-                    url: '/pages/demo/syntax/renderprops/index'
-                },
-                {
                     title: '一个页面多个相同组件',
                     url: '/pages/demo/syntax/loop5/index'
                 },
