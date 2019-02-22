@@ -15,7 +15,7 @@ import {
 import { getSavedFileInfo, getSavedFileList, removeSavedFile, saveFile } from './quickApis/file.js';
 import { setClipboardData, getClipboardData } from './quickApis/clipboard.js';
 import { getNetworkType, onNetworkStatusChange } from './quickApis/network.js';
-import { getSystemInfo } from './quickApis/device.js';
+import { getSystemInfo, getDeviceId } from './quickApis/device.js';
 import { chooseImage } from './quickApis/media.js';
 import { createShortcut } from './quickApis/system.js';
 import { runFunction, _getApp } from './utils';
@@ -196,6 +196,7 @@ export var api = {
     setClipboardData,
     getClipboardData,
     initStorageSync,
+    getDeviceId,
     // 位置
     getLocation(obj) {
         const geolocation = require('@system.geolocation');

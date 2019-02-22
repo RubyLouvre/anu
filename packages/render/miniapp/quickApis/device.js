@@ -55,4 +55,9 @@ function getSystemInfo(options) {
   })
 }
 
-export{ getSystemInfo }
+function getDeviceId(options) {
+    device.getDeviceId(options)
+
+}
+
+export{ getSystemInfo ,getDeviceId}
