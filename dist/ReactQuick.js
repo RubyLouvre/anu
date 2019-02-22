@@ -1273,6 +1273,9 @@ function getSystemInfo(options) {
     complete: complete
   });
 }
+function getDeviceId(options) {
+  device.getDeviceId(options);
+}
 
 var media = require('@system.media');
 var file$1 = require('@system.file');
@@ -1501,6 +1504,7 @@ var api = {
     setClipboardData: setClipboardData,
     getClipboardData: getClipboardData,
     initStorageSync: initStorageSync,
+    getDeviceId: getDeviceId,
     getLocation: function getLocation(obj) {
         var geolocation = require('@system.geolocation');
         geolocation.getLocation(obj);
