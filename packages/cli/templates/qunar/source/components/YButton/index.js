@@ -14,7 +14,7 @@ class YButton extends React.Component {
         const buttonClasses = ['anu-button'];
         const labelClasses = ['anu-button__label'];
         const loadingClasses = ['anu-button__loading'];
-        if(props.size === 'mini') {
+        if (props.size === 'mini') {
             buttonClasses.push('anu-button--mini');
             labelClasses.push('anu-button__label--mini');
             loadingClasses.push('anu-button__loading--mini');
@@ -63,7 +63,6 @@ class YButton extends React.Component {
         this.updateState(nextProps, false);
     }
     onClick(e) {
-        console.log('click');
         // 不在 XLabel 内部的时候，执行本身逻辑
         // 在快应用下不支持事件冒泡，直接执行本身逻辑
         if (process.env.ANU_ENV === 'quick' || !this.props.__InLabel) {
