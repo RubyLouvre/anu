@@ -14,7 +14,7 @@ class YButton extends React.Component {
         const buttonClasses = ['anu-button'];
         const labelClasses = ['anu-button__label'];
         const loadingClasses = ['anu-button__loading'];
-        if (props.size === 'mini') {
+        if(props.size === 'mini') {
             buttonClasses.push('anu-button--mini');
             labelClasses.push('anu-button__label--mini');
             loadingClasses.push('anu-button__loading--mini');
@@ -36,10 +36,11 @@ class YButton extends React.Component {
             loadingClasses.push('anu-button__loading--hidden');
         }
         return {
-            value: props.children,
             loadingClasses: loadingClasses.join(' '),
             buttonClasses: buttonClasses.join(' '),
-            labelClasses: labelClasses.join(' ')
+            labelClasses: labelClasses.join(' '),
+            children: this.props.children,
+            env: process.env.ANU_ENV
         };
     }
 
@@ -62,6 +63,7 @@ class YButton extends React.Component {
         this.updateState(nextProps, false);
     }
     onClick(e) {
+        console.log('click');
         // 不在 XLabel 内部的时候，执行本身逻辑
         // 在快应用下不支持事件冒泡，直接执行本身逻辑
         if (process.env.ANU_ENV === 'quick' || !this.props.__InLabel) {
@@ -94,18 +96,20 @@ class YButton extends React.Component {
         return (
             <stack
                 className={'anu-col anu-center anu-middle ' + this.state.buttonClasses}
+                style={this.props.style}
             >
-                <div className="anu-row anu-middle">
+                <div className="anu-button__main anu-row anu-middle">
                     <image
                         className={this.state.loadingClasses}
                         src="https://s.qunarzz.com/flight_qzz/loading.gif"
                     />
-
                     <text className={this.state.labelClasses}>
-                        {this.state.value}
+                        {this.state.children}
                     </text>
                 </div>
-                <input className="anu-button__mask" type='button' onClick={this.onClick} />
+                {(this.state.env === 'ali' || this.state.env === 'bu') ?
+                    <div className="anu-button__mask" onClick={this.onClick}></div> :
+                    <input className="anu-button__mask" type='button' onClick={this.onClick} />}
             </stack>
         );
     }
@@ -116,6 +120,7 @@ YButton.defaultProps = {
     disabled: false,
     plain: false,
     size: 'default',
+    style: {},
     loading: false,
     __InLabel: false
 };
