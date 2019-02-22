@@ -193,7 +193,7 @@
       backgroundColor: mixin.navigationBarBackgroundColor,
       menu: true
     })
-    var tabBar = mixin.tabBar;
+    var tabBar = app.$$pageConfig.tabBar;
     if (tabBar && tabBar.list && tabBar.list.length) {
       tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
       tabBar.color = tabBar.color || "#000";
