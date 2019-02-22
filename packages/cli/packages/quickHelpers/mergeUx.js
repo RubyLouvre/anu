@@ -6,17 +6,38 @@ let quickFiles = require('../quickFiles');
 let utils = require('../utils');
 let queue = require('../queue');
 let cwd = process.cwd();
+let fs = require('fs');
+
+const crypto = require('crypto');
+let cache = {};
+//缓存层，避免重复编译
+let needUpdate = (id, originalCode, fn) => {
+    let sha1 = crypto
+        .createHash('sha1')
+        .update(originalCode)
+        .digest('hex');
+    if (!cache[id] || cache[id] != sha1) {
+        cache[id] = sha1;
+        fn();
+    }
+};
+
+//获取dist路径
+let getDist = (filePath) =>{
+    let dist = utils.updatePath(filePath, config.sourceDir, 'dist');
+    let { name, dir} =  path.parse(dist);
+    let distPath = path.join(dir, `${name}.css`);
+    return distPath;
+};
 
 const compileSassByPostCss = require('../stylesTransformer/postcssTransformSass');
 const compileLessByPostCss = require('../stylesTransformer/postcssTransformLess');
-const compileSass = require('../stylesTransformer/transformSass');
-// const compileLess = require('../stylesTransformer/transformLess');
-const hasNodeSass = utils.hasNpm('node-sass');
+
 const styleCompilerMap = {
     'less': compileLessByPostCss,
     'css':  compileLessByPostCss,
-    'sass': hasNodeSass ? compileSass : compileSassByPostCss,
-    'scss': hasNodeSass ? compileSass : compileSassByPostCss
+    'sass': compileSassByPostCss,
+    'scss': compileSassByPostCss
 };
 
 
@@ -44,7 +65,6 @@ function fixPath(fileId, dep){
 }
 
 
-
 let map = {
     getImportTag: function(uxFile, sourcePath){
         //假设存在<import>
@@ -68,9 +88,24 @@ let map = {
     getCssCode:  function(uxFile){
         if (!uxFile.cssType) return '';
         let {cssType, cssPath} = uxFile;
+       
         return styleCompilerMap[cssType](cssPath)
             .then((res)=>{
-                return `<style lang="${uxFile.cssType}">\n${res.code}\n</style>`;
+                // 递归编译@import依赖文件
+                res.deps.forEach(dep => {
+                    const code = fs.readFileSync(dep.file, 'utf-8');
+                    needUpdate(dep.file, code,  ()=>{
+                        let exitName = path.extname(dep.file).replace(/\./, '');
+                        styleCompilerMap[exitName](dep.file, code).then(res => {
+                            queue.push({
+                                code: res.code,
+                                path: getDist(dep.file),
+                                type: 'css'
+                            });
+                        });
+                    });
+                });
+                return `<style>\n${res.code}\n</style>`;
             });
     },
     resolveComponents: function(data){
