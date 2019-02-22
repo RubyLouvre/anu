@@ -14,7 +14,7 @@
     </block>
     <div class="tabBar" if="{{tabBar.list.length}}" style="background-color:{{tabBar.backgroundColor}}">
       <div class="tab" for="(index, item) in tabBar.list" @click="onSelected(item)">
-        <image src="/{{ pagePath === item.pagePath ? item.selectedIconPath : item.iconPath }}" />
+        <image src="{{ pagePath === item.pagePath ? item.selectedIconPath : item.iconPath }}" />
         <text style="color:{{ pagePath === item.pagePath ? tabBar.selectedColor: tabBar.color }}">
           {{item.text}}
         </text>
