@@ -183,26 +183,34 @@
   
     function setTitleAndTabs(instance, app) {
         instance.pagePath = app.$$pagePath;
-    var pageConfig = Object(app.$$pageConfig);
-    var mixin = Object.assign({
-      navigationBarTitleText: "",
-      navigationBarTextStyle: "white",
-      navigationBarBackgroundColor: "#000000"
-    }, app.$def.config, pageConfig);
-    instance.backgroundColor = mixin.backgroundColor || "#ffffff"
-    instance.pageRefresh = !!mixin.enablePullDownRefresh;
-    instance.$page.setTitleBar({
-      text: mixin.navigationBarTitleText,
-      textColor: mixin.navigationBarTextStyle,
-      backgroundColor: mixin.navigationBarBackgroundColor,
-      menu: true
-    })
-    var tabBar = pageConfig.tabBar;
-    if (tabBar && tabBar.list && tabBar.list.length) {
-      tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
-      tabBar.color = tabBar.color || "#000";
-      tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
-      instance.tabBar = tabBar;
-    }   
+        var pageConfig = Object(app.$$pageConfig);
+        var mixin = Object.assign({
+          navigationBarTitleText: "",
+          navigationBarTextStyle: "white",
+          navigationBarBackgroundColor: "#000000"
+        }, app.$def.config, pageConfig);
+        instance.backgroundColor = mixin.backgroundColor || "#ffffff"
+        instance.pageRefresh = !!mixin.enablePullDownRefresh;
+        if(pageConfig.title === ''){
+          instance.$page.setTitleBar({
+              titleBar: false,
+              text: "",
+              menu: false
+          })
+        }else{
+          instance.$page.setTitleBar({
+                text: mixin.navigationBarTitleText,
+                textColor: mixin.navigationBarTextStyle,
+                backgroundColor: mixin.navigationBarBackgroundColor,
+                menu: true
+            })
+        }
+        var tabBar = pageConfig.tabBar;
+        if (tabBar && tabBar.list && tabBar.list.length) {
+            tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
+            tabBar.color = tabBar.color || "#000";
+            tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
+            instance.tabBar = tabBar;
+        }   
     }
   </script>
