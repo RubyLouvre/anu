@@ -485,10 +485,15 @@ let utils = {
       ...prevpkg,
       ...quickPkg
     };
-    fs.writeFile(prevPkgPath, JSON.stringify(mergeJsonResult, null, 4)).catch(err => {
-      // eslint-disable-next-line
-      console.log(err);
-    });
+    /**
+     * 改成同步，防止异步写文件，
+     * 文件还没写入时后续读取 package.json 解析出错的问题
+     */
+    try {
+      fs.writeJsonSync(prevPkgPath, mergeJsonResult, {spaces: 4})
+    } catch (error) {
+      console.log(error);
+    }
   },
   initQuickAppConfig: function() {
     //merge快应用依赖的package.json配置

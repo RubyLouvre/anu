@@ -34,14 +34,18 @@ if (buildType == 'quick') {
          * A pattern to search for when looking for Identifier and StringLiteral nodes
          * that should be considered placeholders. 'false' will disable placeholder searching
          * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
+         * 
+         * isPage: false 时 templateString = console.log(nanachi)
+         * 此时如果传入后面的 {CLASSNAME: t.identifier(className)} 
+         * 会抛出异常信息 Error: Unknown substitution "CLASSNAME" given
          */
         var templateString = isPage
             ? 'className = React.registerPage(CLASSNAME,ASTPATH)'
             : 'console.log(nanachi)';
-        return template(templateString)({
+        return isPage ? template(templateString)({
             CLASSNAME: t.identifier(className),
             ASTPATH: t.stringLiteral(path)
-        });
+        }) : template(templateString)();
     };
 }
 function registerPageOrComponent(name, path, modules) {
