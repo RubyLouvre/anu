@@ -23,18 +23,21 @@ function getSystemInfo(options) {
     language,
     region,
     screenWidth,
-    screenHeight
+    screenHeight,
+    windowWidth,
+    windowHeight,
+    screenDensity
   }) {
 
     success && success({
       // 小米未提供
-      // pixelRatio,
+      pixelRatio: screenDensity,  
       brand,
       model,
       screenWidth,
       screenHeight,
-      windowWidth: screenWidth,
-      windowHeight: screenHeight,
+      windowWidth,
+      windowHeight,
       statusBarHeight: 0,
       language,
       version: platformVersionCode,

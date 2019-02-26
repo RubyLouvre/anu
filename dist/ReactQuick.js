@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-02-22
+ * 运行于快应用的React by 司徒正美 Copyright 2019-02-26
  */
 
 var arrayPush = Array.prototype.push;
@@ -1045,7 +1045,7 @@ function initStorageSync(storageCache) {
                     key: key,
                     success: function success(value) {
                         storageCache[key] = value;
-                        if (j++ == n) {
+                        if (++j == n) {
                             console.log('init success');
                         }
                     }
@@ -1250,14 +1250,18 @@ function getSystemInfo(options) {
         language = _ref.language,
         region = _ref.region,
         screenWidth = _ref.screenWidth,
-        screenHeight = _ref.screenHeight;
+        screenHeight = _ref.screenHeight,
+        windowWidth = _ref.windowWidth,
+        windowHeight = _ref.windowHeight,
+        screenDensity = _ref.screenDensity;
     success && success({
+      pixelRatio: screenDensity,
       brand: brand,
       model: model,
       screenWidth: screenWidth,
       screenHeight: screenHeight,
-      windowWidth: screenWidth,
-      windowHeight: screenHeight,
+      windowWidth: windowWidth,
+      windowHeight: windowHeight,
       statusBarHeight: 0,
       language: language,
       version: platformVersionCode,
@@ -1531,6 +1535,19 @@ var api = {
     createShortcut: createShortcut,
     createCanvasContext: createCanvasContext,
     stopPullDownRefresh: function stopPullDownRefresh(obj) {
+        obj = obj || {};
+        var success = obj.success || noop,
+            fail = obj.fail || noop,
+            complete = obj.complete || noop;
+        try {
+            runFunction(success);
+        } catch (error) {
+            runFunction(fail, error);
+        } finally {
+            runFunction(complete);
+        }
+    },
+    createAnimation: function createAnimation(obj) {
         obj = obj || {};
         var success = obj.success || noop,
             fail = obj.fail || noop,
