@@ -57,7 +57,6 @@ function transform(sourcePath, resolvedIds, originalCode) {
                         legacy: true
                     }
                 ],
-                require('@babel/plugin-transform-async-to-generator'),
                 require('@babel/plugin-proposal-object-rest-spread'),
                 require('@babel/plugin-transform-template-literals'),
                 ...require('./babelPlugins/transformMiniApp')(sourcePath),

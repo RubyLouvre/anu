@@ -132,7 +132,7 @@ module.exports = function quickConfig(config, modules, queue){
         var win = config.window || {};
 
         //配置page页面titlebar
-        var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages;
+        var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages || [];
         disabledTitleBarPages.forEach(function(el){
             // userPath/titledemo/source/pages/index/index.js => pages/index/index
             let route = path.relative( path.join(process.cwd(), platConfig.sourceDir),  path.dirname(el) );
