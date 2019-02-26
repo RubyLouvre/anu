@@ -37,18 +37,26 @@ module.exports = {
                 t.stringLiteral(modules.classUid)
             )
         );
-        const call = t.expressionStatement(
-            t.callExpression(t.identifier('React.toClass'), [
-                t.identifier(modules.className),
-                t.identifier(modules.parentName),
-                t.objectExpression(modules.thisMethods),
-                t.objectExpression(modules.staticMethods)
-            ])
+        /**
+         * 使用 babel-types 完成如下语法
+         * var Global = React.toClass(Global, React.Component, {});
+         */
+        const classDeclarationAst = t.variableDeclaration(
+            'var',
+            [
+                t.variableDeclarator(
+                    t.identifier(modules.className),
+                    t.callExpression(t.identifier('React.toClass'), [
+                        t.identifier(modules.className),
+                        t.identifier(modules.parentName),
+                        t.objectExpression(modules.thisMethods),
+                        t.objectExpression(modules.staticMethods)
+                    ])
+                )
+            ]
         );
-        //插入到最前面
-        //  astPath.parentPath.parentPath.insertBefore(onInit);
-        //  可以通过`console.log(generate(call).code)`验证
-        astPath.replaceWith(call);
+        // 可以通过 `console.log(generate(classDeclarationAst).code)` 查看编译后的代码
+        astPath.replaceWith(classDeclarationAst);
         if (astPath.type == 'CallExpression') {
             if (astPath.parentPath.type === 'VariableDeclarator') {
                 if (parent.type == 'VariableDeclaration') {
