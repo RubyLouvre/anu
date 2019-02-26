@@ -191,20 +191,14 @@
         }, app.$def.config, pageConfig);
         instance.backgroundColor = mixin.backgroundColor || "#ffffff"
         instance.pageRefresh = !!mixin.enablePullDownRefresh;
-        if(pageConfig.title === ''){
-          instance.$page.setTitleBar({
-              titleBar: false,
-              text: "",
-              menu: false
-          })
-        }else{
-          instance.$page.setTitleBar({
-                text: mixin.navigationBarTitleText,
-                textColor: mixin.navigationBarTextStyle,
-                backgroundColor: mixin.navigationBarBackgroundColor,
-                menu: true
-            })
-        }
+
+        instance.$page.setTitleBar({
+            text: mixin.navigationBarTitleText,
+            textColor: mixin.navigationBarTextStyle,
+            backgroundColor: mixin.navigationBarBackgroundColor,
+            menu: true
+        })
+        
         var tabBar = pageConfig.tabBar;
         if (tabBar && tabBar.list && tabBar.list.length) {
             tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
