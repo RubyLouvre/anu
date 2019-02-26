@@ -116,18 +116,45 @@ let visitor = {
     JSXText: {
         exit(astPath) {
             if (buildType == 'quick') {
-                let parentNode = astPath.parentPath.node;
-                let parentTag = parentNode.openingElement.name.name;
-                let children = parentNode.children;
-                //如果文本节点的父节点不是text, a, option, span并且不是组件, 我们在外面生成一个text
-                if (!quickTextContainer[parentTag] && !/^anu-/.test(parentTag)) {
-                    let index = children.indexOf(astPath.node);
-                    let trimValue = astPath.node.value.trim();
-                    if (trimValue == '') {
-                        parentNode.children.splice(index, 1);
+                let textNode = astPath.node, children, parentTag;
+                let hasBlockTag = false;
+                //快应用文本节点必须放在特定标签的问题
+                // 情况1. <div><span>xxx</span></div>  --> <div><text>xxx</text></div>
+                // 情况2. <div><strong>xxx</strong></div>  --> <div><text>xxx</text></div>
+                // 情况3. <div><b>xxx</b></div>  --> <div><text>xxx</text></div>
+                // 情况4. <div><s>xxx</s></div>  --> <div><text>xxx</text></div>
+                // 1~4是将除a, option, label外的内联元素全部变成text标签
+                // 情况5. <div>yyy</div>  --> <div><text>yyy</text></div>
+                // 块状元素下直接放文本，需要插入一个text标签
+                // 情况6. <div><span><block if="true">yyy</block></span></div>  --> 
+                //    <div><text><block if="true"><span>yyy</span></block></text></div>
+                // if for指令所在的block标签下的文本需要包一个span标签
+                while (astPath.parentPath){
+                    let parentNode = astPath.parentPath.node;
+                    if (!children){
+                        children = parentNode.children;
+                    }
+                    if (!parentNode.openingElement){
+                        astPath = astPath.parentPath;
+                        continue;
+                    }
+                    parentTag = parentNode.openingElement.name.name;
+                    if (parentTag === 'block'){
+                        astPath = astPath.parentPath;
+                        hasBlockTag = true;
                     } else {
-                        astPath.node.value = trimValue;
-                        parentNode.children.splice(index, 1, utils.createElement('text', [], [astPath.node]));
+                        break;
+                    }
+                }
+                //如果文本节点的父节点不是text, a, option, span并且不是组件, 我们在外面生成一个text
+                if (hasBlockTag || !quickTextContainer[parentTag] && !/^anu-/.test(parentTag)) {
+                    let index = children.indexOf(textNode);
+                    let trimValue = textNode.value.trim();
+                    if (trimValue == '') {
+                        children.splice(index, 1);
+                    } else {
+                        textNode.value = trimValue;
+                        children.splice(index, 1, utils.createElement(hasBlockTag ? 'span' : 'text', [], [textNode]));
                     }
                 }
             }
@@ -136,7 +163,7 @@ let visitor = {
     JSXExpressionContainer: {
         exit(astPath, state) {
             let expr = astPath.node.expression;
-
+            //如果是位于属性中
             if (t.isJSXAttribute(astPath.parent)) {
                 attrValueHelper(astPath);
             } else if (
@@ -146,11 +173,21 @@ let visitor = {
                 let attributes = [];
                 let template = utils.createElement('slot', attributes, []);
                 astPath.replaceWith(template);
-                //  console.warn("小程序暂时不支持{this.props.children}");
             } else {
                 let modules = utils.getAnu(state);
                 //返回block元素或template元素
-                let block = logicHelper(expr, modules);
+                let isWrapText = false;
+                if (astPath.parentPath.type === 'JSXElement'){
+                    let tag = astPath.parentPath.node.openingElement;
+                    let tagName = tag && tag.name && tag.name.name;
+                    //对<text>{aaa ? 111: 2}</text>的情况进行优化，不插入block标签
+                    //只是将单花括号变成双花括号
+                    if (tagName === 'text'){
+                        isWrapText = true;
+                    }
+                }
+               
+                let block = logicHelper(expr, modules, isWrapText);
                 try {
                     astPath.replaceWithMultiple(block);
                 } catch (e) {

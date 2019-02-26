@@ -1,6 +1,6 @@
 {
   "name": "nanachi-cli",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "cli tool for nanachi",
   "bin": {
     "nanachi": "./bin/index.js"
@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/RubyLouvre/anu/tree/master/packages/cli#readme",
   "dependencies": {
+    "@csstools/postcss-sass": "^4.0.0",
     "axios": "^0.18.0",
     "babel": "^6.23.0",
     "babel-core": "^6.26.3",
@@ -72,6 +73,7 @@
     "rollup-plugin-babel": "^3.0.7",
     "rollup-plugin-commonjs": "^9.1.6",
     "rollup-plugin-node-resolve": "^3.3.0",
+    "sass": "^1.16.1",
     "uglify-es": "^3.3.9",
     "validate-npm-package-name": "^3.0.0"
   }

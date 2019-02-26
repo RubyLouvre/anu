@@ -8,6 +8,11 @@ var hookCursor = 0;
 export function resetCursor() {
     hookCursor = 0;
 }
+function getCurrentKey(){
+    let key = hookCursor + 'Hook';
+    hookCursor++;
+    return key;
+}
 
 export var dispatcher = {
     useContext(getContext) {//这个实现并不正确
@@ -24,9 +29,8 @@ export var dispatcher = {
     },
     useReducer(reducer, initValue, initAction) {//ok
         let fiber = getCurrentFiber();
-        let key = hookCursor + 'Hook';
+        let key = getCurrentKey();
         let updateQueue = fiber.updateQueue;
-        hookCursor++;
         //compute用于放在dispatch中计算新值
         let compute = reducer ? function (cursor, action) {
             return reducer(updateQueue[cursor], action || { type: Math.random() });
@@ -44,13 +48,12 @@ export var dispatcher = {
         let value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
     },
-    useCallbackOrMemo(create, inputs, isMemo) {//ok
+    useCallbackOrMemo(create, deps, isMemo) {//ok
         let fiber = getCurrentFiber();
-        let key = hookCursor + 'Hook';
+        let key = getCurrentKey();
         let updateQueue = fiber.updateQueue;
-        hookCursor++;
 
-        let nextInputs = Array.isArray(inputs) ? inputs : [create];
+        let nextInputs = Array.isArray(deps) ? deps : [create];
         let prevState = updateQueue[key];
         if (prevState) {
             let prevInputs = prevState[1];
@@ -65,17 +68,16 @@ export var dispatcher = {
     },
     useRef(initValue) {//ok
         let fiber = getCurrentFiber();
-        let key = hookCursor + 'Hook';
+        let key = getCurrentKey();
         let updateQueue = fiber.updateQueue;
-        hookCursor++;
         if (key in updateQueue) {
             return updateQueue[key];
         }
         return updateQueue[key] = { current: initValue };
     },
-    useEffect(create, inputs, EffectTag, createList, destoryList) {//ok
+    useEffect(create, deps, EffectTag, createList, destoryList) {//ok
         let fiber = getCurrentFiber();
-        let cb = dispatcher.useCallbackOrMemo(create, inputs);
+        let cb = dispatcher.useCallbackOrMemo(create, deps);
         if (fiber.effectTag % EffectTag) {
             fiber.effectTag *= EffectTag;
         }
@@ -84,8 +86,8 @@ export var dispatcher = {
         updateQueue[destoryList] ||  (updateQueue[destoryList] = []);
         list.push(cb);
     },
-    useImperativeMethods(ref, create, inputs) {
-        const nextInputs = Array.isArray(inputs) ? inputs.concat([ref])
+    useImperativeHandle(ref, create, deps) {
+        const nextInputs = Array.isArray(deps) ? deps.concat([ref])
             : [ref, create];
         dispatcher.useEffect(() => {
             if (typeof ref === 'function') {

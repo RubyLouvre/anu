@@ -9,12 +9,13 @@ import {
     setStorageSync,
     getStorageSync,
     removeStorageSync,
-    clearStorageSync
+    clearStorageSync,
+    initStorageSync
 } from './quickApis/storage.js';
 import { getSavedFileInfo, getSavedFileList, removeSavedFile, saveFile } from './quickApis/file.js';
 import { setClipboardData, getClipboardData } from './quickApis/clipboard.js';
 import { getNetworkType, onNetworkStatusChange } from './quickApis/network.js';
-import { getSystemInfo } from './quickApis/device.js';
+import { getSystemInfo, getDeviceId } from './quickApis/device.js';
 import { chooseImage } from './quickApis/media.js';
 import { createShortcut } from './quickApis/system.js';
 import { runFunction, _getApp } from './utils';
@@ -24,19 +25,45 @@ import { createCanvasContext } from './quickApis/canvas.js';
 
 function createRouter(name) {
     return function(obj) {
-        const router = require('@system.router');
-        const params = {};
-        let href = obj ? obj.url || obj.uri || '' : '';
-        let uri = href.slice(href.indexOf('/pages') + 1);
-        uri = uri
-            .replace(/\?(.*)/, function(a, b) {
-                b.split('&').forEach(function(param) {
-                    param = param.split('=');
-                    params[param[0]] = param[1];
-                });
-                return '';
-            })
-            .replace(/\/index$/, '');
+        var href = obj ? obj.url || obj.uri || '' : '';
+        var uri = href.slice(href.indexOf('/pages') + 1);
+        var webViewUrls = {};
+        var webViewRoute = '';
+        //from https://www.regextester.com/98192
+        var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
+        //如果是http地址
+        if (urlReg.test(href)) {
+            webViewRoute = href;
+        } else {
+           //查找是否有webview配置
+           try {
+               webViewUrls = require('./webviewConfig.js');
+               webViewRoute = webViewUrls[uri];
+           } catch (err) {
+              
+           }
+        }
+
+        //如果webViewRoute有值, 走@system.webview跳转
+        if (webViewRoute) {
+            var webview = require('@system.webview');
+            webview.loadUrl({
+                url: webViewRoute,
+                allowthirdpartycookies: true
+            });
+            return;
+        }
+        
+        //其他按普通跳转处理
+        var router = require('@system.router');
+        var params = {};
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('&').forEach(function (param) {
+                param = param.split('=');
+                params[param[0]] = param[1];
+            });
+            return '';
+        }).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
@@ -168,6 +195,8 @@ export var api = {
     saveFile,
     setClipboardData,
     getClipboardData,
+    initStorageSync,
+    getDeviceId,
     // 位置
     getLocation(obj) {
         const geolocation = require('@system.geolocation');

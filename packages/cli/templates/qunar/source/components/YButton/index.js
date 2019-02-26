@@ -36,10 +36,11 @@ class YButton extends React.Component {
             loadingClasses.push('anu-button__loading--hidden');
         }
         return {
-            value: props.children,
             loadingClasses: loadingClasses.join(' '),
             buttonClasses: buttonClasses.join(' '),
-            labelClasses: labelClasses.join(' ')
+            labelClasses: labelClasses.join(' '),
+            children: this.props.children,
+            env: process.env.ANU_ENV
         };
     }
 
@@ -94,18 +95,20 @@ class YButton extends React.Component {
         return (
             <stack
                 className={'anu-col anu-center anu-middle ' + this.state.buttonClasses}
+                style={this.props.style}
             >
-                <div className="anu-row anu-middle">
+                <div className="anu-button__main anu-row anu-middle">
                     <image
                         className={this.state.loadingClasses}
                         src="https://s.qunarzz.com/flight_qzz/loading.gif"
                     />
-
                     <text className={this.state.labelClasses}>
-                        {this.state.value}
+                        {this.state.children}
                     </text>
                 </div>
-                <input className="anu-button__mask" type='button' onClick={this.onClick} />
+                {(this.state.env === 'ali' || this.state.env === 'bu') ?
+                    <div className="anu-button__mask" onClick={this.onClick}></div> :
+                    <input className="anu-button__mask" type='button' onClick={this.onClick} />}
             </stack>
         );
     }
@@ -116,6 +119,7 @@ YButton.defaultProps = {
     disabled: false,
     plain: false,
     size: 'default',
+    style: {},
     loading: false,
     __InLabel: false
 };

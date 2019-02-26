@@ -81,8 +81,8 @@ program
 
 
 program
-    .command('page <template-name>')
-    .description('description: 创建pages/<template-name>/index.js模版')
+    .command('page <page-name>')
+    .description('description: 创建pages/<page-name>/index.js模版')
     .action((name)=>{
         let isPage = true;
         require('../commonds/createPage')( {name, isPage} );

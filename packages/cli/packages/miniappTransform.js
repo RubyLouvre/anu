@@ -9,15 +9,24 @@ let queue = require('./queue');
 let mergeUx = require('./quickHelpers/mergeUx');
 let utils = require('./utils');
 
+
+let isReact = function(sourcePath){
+    return /^(React)/.test( path.basename(sourcePath) );
+};
+
 function transform(sourcePath, resolvedIds, originalCode) {
-    if (/^(React)/.test( path.basename(sourcePath)) ) {
+
+    //跳过 React 编译
+    if ( isReact(sourcePath) ) {
         queue.push({
             code: originalCode,
             type: 'js',
             path: utils.updatePath(sourcePath, config.sourceDir, 'dist') 
         });
+       
         return;
     }
+
     babel.transformFile(
         sourcePath,
         {

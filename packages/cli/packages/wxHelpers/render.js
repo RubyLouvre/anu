@@ -112,11 +112,7 @@ exports.exit = function(astPath, type, componentName, modules) {
                 'dist',
                 xmlExt
             ),
-            code: wxml /* minifier(wxml,{
-                collapseWhitespace: true ,
-                keepClosingSlash: true,
-                caseSensitive: true
-            })*/
+            code: wxml
         });
     }
 };

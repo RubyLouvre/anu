@@ -4,9 +4,11 @@
 
 */
 const path = require('path');
+const utils = require('../utils');
+const platConfig = require('../config');
+
 
 module.exports = function quickConfig(config, modules, queue){
-  
     if (modules.componentType === 'App'){
         var manifest = {
             package: 'org.hapjs.demo.sample',
@@ -112,17 +114,33 @@ module.exports = function quickConfig(config, modules, queue){
               
         };
         config.pages.forEach(function(el ,index){
-            var path = el.slice(0, -6);
-            manifest.router.pages[path] = {
+
+            //如果是webview, 不注入router配置
+            if (utils.isWebView(path.join(process.cwd(), platConfig.sourceDir, el + '.js' ))) {
+                return;
+            }
+            var routePath = el.slice(0, -6);
+            manifest.router.pages[routePath] = {
                 component: 'index'
             };
             //设置首页
             if (index === 0){
-                manifest.router.entry = path;
+                manifest.router.entry = routePath;
             } 
         });
         var display = manifest.display ;
         var win = config.window || {};
+
+        //配置page页面titlebar
+        var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages;
+        disabledTitleBarPages.forEach(function(el){
+            // userPath/titledemo/source/pages/index/index.js => pages/index/index
+            let route = path.relative( path.join(process.cwd(), platConfig.sourceDir),  path.dirname(el) )
+            display['pages'] = display['pages'] || {};
+            display['pages'][route] = display['pages'][route] || {};
+            display['pages'][route]['titleBar'] = false;
+        })
+        
         display.titleBarText = win.navigationBarTitleText || 'nanachi';
         display.titleBarTextColor = win.navigationBarTextStyle || 'black';
         display.backgroundColor = win.navigationBarBackgroundColor || '#000000';
