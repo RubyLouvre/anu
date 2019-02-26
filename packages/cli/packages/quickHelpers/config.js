@@ -135,11 +135,11 @@ module.exports = function quickConfig(config, modules, queue){
         var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages;
         disabledTitleBarPages.forEach(function(el){
             // userPath/titledemo/source/pages/index/index.js => pages/index/index
-            let route = path.relative( path.join(process.cwd(), platConfig.sourceDir),  path.dirname(el) )
+            let route = path.relative( path.join(process.cwd(), platConfig.sourceDir),  path.dirname(el) );
             display['pages'] = display['pages'] || {};
             display['pages'][route] = display['pages'][route] || {};
             display['pages'][route]['titleBar'] = false;
-        })
+        });
         
         display.titleBarText = win.navigationBarTitleText || 'nanachi';
         display.titleBarTextColor = win.navigationBarTextStyle || 'black';
