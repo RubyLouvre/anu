@@ -1,7 +1,7 @@
 /* eslint no-console: 0 */
 /* eslint-disable*/
 const execSync = require('child_process').execSync;
-const t = require('babel-types');
+const t = require('@babel/types');
 const fs = require('fs-extra');
 const path = require('path');
 const cwd = process.cwd();
@@ -10,7 +10,7 @@ const spawn = require('cross-spawn');
 const uglifyJS = require('uglify-es');
 const cleanCSS = require('clean-css');
 const nodeResolve = require('resolve');
-const template = require('babel-template');
+const template = require('@babel/template').default;
 const axios = require('axios');
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
@@ -94,11 +94,13 @@ let utils = {
   createElement(nodeName, attrs, children) {
     return t.JSXElement(
       t.JSXOpeningElement(
-        t.JSXIdentifier(nodeName),
+        // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+        t.jsxIdentifier(nodeName),
         attrs,
         config.buildType === 'quick' ? false : !children.length
       ),
-      t.jSXClosingElement(t.JSXIdentifier(nodeName)),
+      // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+      t.jSXClosingElement(t.jsxIdentifier(nodeName)),
       children
     );
   },
@@ -169,7 +171,8 @@ let utils = {
   },
   createAttribute(name, value) {
     return t.JSXAttribute(
-      t.JSXIdentifier(name),
+      // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+      t.jsxIdentifier(name),
       typeof value == 'object' ? value : t.stringLiteral(value)
     );
   },
@@ -249,12 +252,20 @@ let utils = {
     return true;
   },
   createRegisterStatement(className, path, isPage) {
+    /**
+     * placeholderPattern
+     * Type: RegExp | false Default: /^[_$A-Z0-9]+$/
+     * 
+     * A pattern to search for when looking for Identifier and StringLiteral nodes
+     * that should be considered placeholders. 'false' will disable placeholder searching
+     * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
+     */
     var templateString = isPage
-      ? 'Page(React.registerPage(className,astPath))'
-      : 'Component(React.registerComponent(className,astPath))';
+      ? 'Page(React.registerPage(CLASSNAME,ASTPATH))'
+      : 'Component(React.registerComponent(CLASSNAME,ASTPATH))';
     return template(templateString)({
-      className: t.identifier(className),
-      astPath: t.stringLiteral(path)
+      CLASSNAME: t.identifier(className),
+      ASTPATH: t.stringLiteral(path)
     });
   },
   /**
@@ -478,10 +489,15 @@ let utils = {
     Object.assign(projectPkg.scripts, quickPkg.scripts);  //注入快应用scripts命令
     Object.assign(projectPkg.devDependencies, quickPkg.devDependencies); //注入快应用开发依赖
 
-    fs.writeFile(projectPkgPath, JSON.stringify(projectPkg, null, 4)).catch(err => {
-      // eslint-disable-next-line
-      console.log(err);
-    });
+    /**
+     * 改成同步，防止异步写文件，
+     * 文件还没写入时后续读取 package.json 解析出错的问题
+     */
+    try {
+      fs.writeJsonSync(projectPkgPath, projectPkg, {spaces: 4})
+    } catch (error) {
+      console.log(error);
+    }
   },
   initQuickAppConfig: function() {
     //merge快应用依赖的package.json配置

@@ -1,9 +1,9 @@
 /* eslint no-console: 0 */
 
-const generate = require('babel-generator').default;
-const t = require('babel-types');
+const generate = require('@babel/generator').default;
+const t = require('@babel/types');
 const wxmlHelper = require('./wxml');
-const babel = require('babel-core');
+const babel = require('@babel/core');
 const queue = require('../queue');
 const utils = require('../utils');
 const config = require('../config');
@@ -63,13 +63,18 @@ exports.exit = function(astPath, type, componentName, modules) {
 
     if (t.isReturnStatement(expr)) {
         let jsx = generate(expr.argument).code;
+        /**
+         * [babel 6 to 7]
+         * babel -> Options
+         * babel7 default ast:false
+         */
         let jsxAst = babel.transform(jsx, {
             babelrc: false,
             plugins: [
-                [require('babel-plugin-transform-react-jsx'), { pragma: 'h' }]
-            ]
+                [require('@babel/plugin-transform-react-jsx'), { pragma: 'h' }]
+            ],
+            ast: true
         });
-
         expr.argument = jsxAst.ast.program.body[0];
         let wxml = wxmlHelper(`<block>{${jsx}}</block>`, modules).slice(7, -9); //去掉<block> </block>;
 

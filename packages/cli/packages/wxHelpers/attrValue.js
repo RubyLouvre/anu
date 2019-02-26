@@ -1,7 +1,7 @@
 //将<view aaa={this.state.xxx}> 转换成 <view aaa="{{xxx}}">
 
-const t = require('babel-types');
-const generate = require('babel-generator').default;
+const t = require('@babel/types');
+const generate = require('@babel/generator').default;
 const getStyleValue = require('../utils/getStyleValue');
 const buildType = require('../config').buildType;
 

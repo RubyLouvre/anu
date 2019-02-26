@@ -1,5 +1,5 @@
 const config = require('../config');
-const traverse = require('babel-traverse').default;
+const traverse = require('@babel/traverse').default;
 const path = require('path');
 const cwd = process.cwd();
 

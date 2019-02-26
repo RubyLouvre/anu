@@ -1,6 +1,6 @@
-const t = require('babel-types');
-const generate = require('babel-generator').default;
-const template = require('babel-template');
+const t = require('@babel/types');
+const generate = require('@babel/generator').default;
+const template = require('@babel/template').default;
 const path = require('path');
 const queue = require('../queue');
 const utils = require('../utils');
@@ -27,13 +27,25 @@ let cache = {};
 if (buildType == 'quick') {
     //快应用不需要放到Component/Page方法中
     utils.createRegisterStatement = function(className, path, isPage) {
+        /**
+         * placeholderPattern
+         * Type: RegExp | false Default: /^[_$A-Z0-9]+$/
+         * 
+         * A pattern to search for when looking for Identifier and StringLiteral nodes
+         * that should be considered placeholders. 'false' will disable placeholder searching
+         * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
+         * 
+         * isPage: false 时 templateString = console.log(nanachi)
+         * 此时如果传入后面的 {CLASSNAME: t.identifier(className)} 
+         * 会抛出异常信息 Error: Unknown substitution "CLASSNAME" given
+         */
         var templateString = isPage
-            ? 'className = React.registerPage(className,astPath)'
+            ? 'className = React.registerPage(CLASSNAME,ASTPATH)'
             : 'console.log(nanachi)';
-        return template(templateString)({
-            className: t.identifier(className),
-            astPath: t.stringLiteral(path)
-        });
+        return isPage ? template(templateString)({
+            CLASSNAME: t.identifier(className),
+            ASTPATH: t.stringLiteral(path)
+        }) : template(templateString)();
     };
 }
 function registerPageOrComponent(name, path, modules) {
@@ -196,8 +208,7 @@ module.exports = {
 
                 if (declaration.type == 'FunctionDeclaration') {
                     //将export default function AAA(){}的方法提到前面
-                    var fn = template(generate(declaration).code)();
-                    astPath.insertBefore(fn);
+                    astPath.insertBefore(declaration);
                     astPath.node.declaration = declaration.id;
                 }
                 //延后插入createPage语句在其同名的export语句前
@@ -454,7 +465,8 @@ module.exports = {
         if (buildType == 'quick' && !node.closingElement) {
             node.openingElement.selfClosing = false;
             node.closingElement = t.JSXClosingElement(
-                t.JSXIdentifier(nodeName)
+                // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+                t.jsxIdentifier(nodeName)
             );
         }
     },
@@ -496,7 +508,8 @@ module.exports = {
                 modules.is && modules.is.push(nodeName);
                 attrs.push(
                     t.JSXAttribute(
-                        t.JSXIdentifier('is'),
+                        // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+                        t.jsxIdentifier('is'),
                         t.jSXExpressionContainer(t.stringLiteral(nodeName))
                     )
                 );
