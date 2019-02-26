@@ -63,7 +63,7 @@ export function initStorageSync( storageCache){
                     key: key,
                     success: function(value){
                         storageCache[key] = value;
-                        if(j++ == n) {
+                        if(++j == n) {
                             console.log('init success')
                         }
                     } 

@@ -236,5 +236,20 @@ export var api = {
         } finally {
             runFunction(complete);
         }
+    },
+    createAnimation(obj) {
+        obj = obj || {};
+        let success = obj.success || noop,
+            fail= obj.fail|| noop,
+            complete = obj.complete || noop;
+
+        try {
+            runFunction(success );
+        } catch (error){
+            runFunction(fail, error);
+        } finally {
+            runFunction(complete);
+        }
     }
+
 };
