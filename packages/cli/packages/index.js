@@ -125,6 +125,7 @@ class Parser {
                                 camel2DashComponentName: false
                             }
                         ],
+                        require('./babelPlugins/collectTitleBarConfig'),
                         require('./babelPlugins/collectWebViewPage'),
                         require('./babelPlugins/collectPatchComponents'),
                         ...require('./babelPlugins/validateJsx')(this.collectError)
