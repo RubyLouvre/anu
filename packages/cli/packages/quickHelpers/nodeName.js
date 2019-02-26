@@ -22,5 +22,6 @@ let map = Object.assign({}, builtIn);
     map[el] = 'text';//span不能直接放在div下面
 });
 map.button = 'input';
+map['scroll-view'] = 'list';
 map['web-view'] = 'web';
 module.exports = utils.createNodeName(map, 'div');

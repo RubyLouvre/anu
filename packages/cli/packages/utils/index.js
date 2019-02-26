@@ -70,18 +70,20 @@ let utils = {
   },
   getEventName(eventName, nodeName, buildType) {
     if (eventName == 'Click' || eventName == 'Tap') {
-      if (
-        buildType === 'ali' ||
-        buildType === 'wx' ||
-        buildType === 'tt' || //头条也是bindtap
-        buildType === 'bu'
-      ) {
-        return 'Tap';
-      } else {
-        return 'Click';
-      }
+        if (buildType === 'quick' || buildType === 'h5'){
+           return 'Click';
+        }else{
+          return 'Tap';
+        }
     }
-
+    if( buildType === 'quick'){
+       if(eventName === 'ScrollToLower' ){
+        return 'ScrollEnd'//快应用的list标签的事件
+       }else if(eventName === 'ScrollToUpper'){
+        return 'ScrollTop'
+       }
+    }
+    
     if (eventName === 'Change') {
       if (nodeName === 'input' || nodeName === 'textarea') {
         if (buildType !== 'quick') {
