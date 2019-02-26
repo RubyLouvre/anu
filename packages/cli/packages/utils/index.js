@@ -78,7 +78,7 @@ let utils = {
     }
     if( buildType === 'quick'){
        if(eventName === 'ScrollToLower' ){
-        return 'ScrollEnd'//快应用的list标签的事件
+        return 'ScrollBottom'//快应用的list标签的事件
        }else if(eventName === 'ScrollToUpper'){
         return 'ScrollTop'
        }
