@@ -76,19 +76,6 @@ function generateConflictDeclarations(declName, conflictRegex) {
     };
 }
 
-function generateProhibitValue(declName, prohibitRegex) {
-    return (decl) => {
-        if (prohibitRegex.test(decl.value)) {
-            // eslint-disable-next-line
-            console.log(
-                chalk`Remote resource is not supported in {cyan ${declName}}, ` +
-                    chalk`supplied {red ${decl.value}} will be removed.`
-            );
-            decl.remove();
-        }
-    };
-}
-
 function transformBorderRadius(decl) {
     const props = [
         'border-top-left-radius',
@@ -182,10 +169,6 @@ const visitors = {
         generateConflictDeclarations(
             'background-image',
             /(background|border)-color/i
-        )(decl);
-        generateProhibitValue(
-            'background-image',
-            /url\(['"]https?:\/\/\S+['"]\)/i
         )(decl);
     },
     margin: validateMargin,
