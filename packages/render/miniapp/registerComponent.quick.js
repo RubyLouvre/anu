@@ -13,7 +13,7 @@ export function registerComponent (type, name) {
                 context: {}
             };
         },
-        onReady() {
+        onInit() {
             usingComponents[name] = type;
             let uuid = this.dataInstanceUid || null;
             refreshComponent(reactInstances, this, uuid);

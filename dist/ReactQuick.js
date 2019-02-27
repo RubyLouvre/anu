@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-02-26
+ * 运行于快应用的React by 司徒正美 Copyright 2019-02-27
  */
 
 var arrayPush = Array.prototype.push;
@@ -2944,7 +2944,7 @@ function registerComponent(type, name) {
                 context: {}
             };
         },
-        onReady: function onReady() {
+        onInit: function onInit() {
             usingComponents[name] = type;
             var uuid = this.dataInstanceUid || null;
             refreshComponent(reactInstances, this, uuid);

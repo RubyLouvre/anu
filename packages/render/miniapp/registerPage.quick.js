@@ -21,6 +21,7 @@ function getUrlAndQuery(page){
     
     return [path, query];
 }
+
 export function registerPage(PageClass) {
     PageClass.reactInstances = [];
     let config = {
