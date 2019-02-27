@@ -74,7 +74,7 @@
       onShow() {
         setTitleAndTabs(this, this.$app);
       },
-      onReachBottom() {
+      onReachBottom(e) {
         var react = getCurrentPage();
         console.log('onReachBottom',react)
         if (react.onReachBottom) {
@@ -131,7 +131,7 @@
           url: item.pagePath
         })
       },
-      onPullDownRefresh() {
+      onPullDownRefresh(e) {
         var app = this.$app;
         var appConfig = Object(app.$def.config);
         var pageConfig = Object(app.$$pageConfig);
@@ -139,7 +139,7 @@
         var isOk = pageConfig[enable] || appConfig[enable];
         var page = getCurrentPage();
         if (isOk && page.onPullDownRefresh) {
-          page.onPullDownRefresh()
+          page.onPullDownRefresh(e)
           React.api.showToast({ title: 'refreshed' });
         }
         this.pageRefreshing = true
