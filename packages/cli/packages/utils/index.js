@@ -300,17 +300,14 @@ let utils = {
       }
     }
   },
-  installer(npmName, dev) {
+  installer(npmName, dev, needModuleEntryPath) {
+    needModuleEntryPath = needModuleEntryPath || false;
     return new Promise(resolve => {
-      console.log(chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`));
       let bin = '';
       let options = [];
-      if (false) { //todo: yarn待调
+      if (this.useYarn()) {
         bin = 'yarn';
         options.push('add', npmName, dev === 'dev' ? '--dev' : '--save');
-      } else if (this.useCnpm()) {
-        bin = 'cnpm';
-        options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
       } else {
         bin = 'npm';
         options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
@@ -321,19 +318,23 @@ let utils = {
         console.log(result.error);
         process.exit(1);
       }
-      console.log(chalk.green(`${npmName}安装成功\n`));
 
-      //获得自动安装的npm依赖模块路径
-      let npmPath = nodeResolve.sync(npmName, {
-        basedir: cwd,
-        moduleDirectory: path.join(cwd, 'node_modules'),
-        packageFilter: pkg => {
-          if (pkg.module) {
-            pkg.main = pkg.module;
+      let npmPath = '';
+      npmName = npmName.split('@')[0];
+      if (needModuleEntryPath) {
+        //获得自动安装的npm依赖模块路径
+        npmPath = nodeResolve.sync(npmName, {
+          basedir: cwd,
+          moduleDirectory: path.join(cwd, 'node_modules'),
+          packageFilter: pkg => {
+            if (pkg.module) {
+              pkg.main = pkg.module;
+            }
+            return pkg;
           }
-          return pkg;
-        }
-      });
+        });
+      } 
+      
       resolve(npmPath);
     });
   },
