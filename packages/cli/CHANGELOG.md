@@ -1,10 +1,32 @@
 # Changelog
 
 
+# 1.1.3 (2019-02-27)
+
+## 核心库
+#### Feature
+- 提前快应用组件注入数据的时机，从 `onReady` 改成 `onInit` 。
+
+
+## CLI  
+
+#### Feature
+- 支持快应用自定义 `titleBar` 的现实/隐藏。
+- 升级快应用的标签与事件名转换。
+- 简化编译快应用时构建依赖安装流程 && 减少构建依赖安装。
+- 升级快应用下 `scroll-view` 编译方式。
+
+
+#### Bug fix
+- 修复快应用下 `getSystemInfo` bug。
+
+
 
 # 1.1.2 (2019-02-22)
 
 ## 核心库
+
+#### Feature
 - 简化各平台 getApp 实现。
 - 支持快应用同步 storage API。
 
