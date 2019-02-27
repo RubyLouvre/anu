@@ -13,8 +13,8 @@ module.exports = function quickConfig(config, modules, queue){
         var manifest = {
             package: 'org.hapjs.demo.sample',
             name: 'nanachi转快应用',
-            versionName: '1.1',
             versionCode: 1,
+            minPlatformVersion: 1030,
             icon: '/assets/logo.png',
             features: [
                 { name: 'system.webview' },
