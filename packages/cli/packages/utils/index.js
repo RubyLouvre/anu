@@ -68,6 +68,11 @@ let utils = {
   shortcutOfCreateElement() {
     return 'var h = React.createElement;';
   },
+  //传入path.node, 得到标签名
+  getNodeName(node){
+    var openTag =  node.openingElement
+    return openTag && Object(openTag.name).name
+  },
   getEventName(eventName, nodeName, buildType) {
     if (eventName == 'Click' || eventName == 'Tap') {
         if (buildType === 'quick' || buildType === 'h5'){
