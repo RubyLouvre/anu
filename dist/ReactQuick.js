@@ -696,6 +696,115 @@ function createEvent(e, target, type) {
     return event;
 }
 
+var HTTP_OK_CODE = 200;
+var JSON_TYPE_STRING = 'json';
+function uploadFile(_ref) {
+    var url = _ref.url,
+        filePath = _ref.filePath,
+        name = _ref.name,
+        header = _ref.header,
+        formData = _ref.formData,
+        success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
+    var request = require('@system.request');
+    var data = [];
+    Object.keys(formData).map(function (key) {
+        var value = formData[key];
+        var item = {
+            value: value,
+            name: key
+        };
+        data.push(item);
+    });
+    function successForMi(_ref2) {
+        var statusCode = _ref2.code,
+            data = _ref2.data;
+        success({
+            statusCode: statusCode,
+            data: data
+        });
+    }
+    request.upload({
+        url: url,
+        header: header,
+        data: data,
+        files: [{ uri: filePath, name: name }],
+        success: successForMi,
+        fail: fail,
+        complete: complete
+    });
+}
+function downloadFile(_ref3) {
+    var url = _ref3.url,
+        header = _ref3.header,
+        success = _ref3.success,
+        fail = _ref3.fail,
+        complete = _ref3.complete;
+    function downloadSuccess(_ref4) {
+        var tempFilePath = _ref4.uri;
+        success({
+            statusCode: HTTP_OK_CODE,
+            tempFilePath: tempFilePath
+        });
+    }
+    function downloadTaskStarted(_ref5) {
+        var token = _ref5.token;
+        request.onDownloadComplete({
+            token: token,
+            success: downloadSuccess,
+            fail: fail,
+            complete: complete
+        });
+    }
+    var request = require('@system.request');
+    request.download({
+        url: url,
+        header: header,
+        success: downloadTaskStarted,
+        fail: fail,
+        complete: complete
+    });
+}
+function request(_ref6) {
+    var url = _ref6.url,
+        data = _ref6.data,
+        header = _ref6.header,
+        method = _ref6.method,
+        _ref6$dataType = _ref6.dataType,
+        dataType = _ref6$dataType === undefined ? JSON_TYPE_STRING : _ref6$dataType,
+        success = _ref6.success,
+        fail = _ref6.fail,
+        complete = _ref6.complete;
+    var fetch = require('@system.fetch');
+    function onFetchSuccess(_ref7) {
+        var statusCode = _ref7.code,
+            data = _ref7.data,
+            headers = _ref7.header;
+        if (dataType === JSON_TYPE_STRING) {
+            try {
+                data = JSON.parse(data);
+            } catch (error) {
+                fail && fail(error);
+            }
+        }
+        success({
+            statusCode: statusCode,
+            data: data,
+            headers: headers
+        });
+    }
+    fetch.fetch({
+        url: url,
+        data: data,
+        header: header,
+        method: method,
+        success: onFetchSuccess,
+        fail: fail,
+        complete: complete
+    });
+}
+
 var fakeApp = {
     app: {
         globalData: {}
@@ -776,28 +885,6 @@ function runFunction(fn, a, b) {
         fn.call(null, a, b);
     }
 }
-function functionCount() {
-    var ret = 0;
-    for (var i = 0; i < arguments.length; i++) {
-        if (isFn(arguments[i])) {
-            ret++;
-        }
-    }
-    return ret;
-}
-function apiRunner() {
-    var arg = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    var apiCallback = arguments[1];
-    var apiPromise = arguments[2];
-    var success = arg.success,
-        fail = arg.fail,
-        complete = arg.complete;
-    var handler = functionCount(success, fail, complete) ? apiCallback : apiPromise;
-    arg.success = arg.success || noop;
-    arg.fail = arg.fail || noop;
-    arg.complete = arg.complete || noop;
-    return handler(arg);
-}
 function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
@@ -833,163 +920,13 @@ function toRenderProps() {
     return null;
 }
 
-var fetch = require('@system.fetch');
-var JSON_TYPE_STRING = 'json';
-function requestCallback(_ref) {
-  var url = _ref.url,
-      data = _ref.data,
-      header = _ref.header,
-      method = _ref.method,
-      _ref$dataType = _ref.dataType,
-      dataType = _ref$dataType === undefined ? JSON_TYPE_STRING : _ref$dataType,
-      success = _ref.success,
-      fail = _ref.fail,
-      complete = _ref.complete;
-  function onFetchSuccess(_ref2) {
-    var statusCode = _ref2.code,
-        data = _ref2.data,
-        headers = _ref2.header;
-    if (dataType === JSON_TYPE_STRING) {
-      try {
-        data = JSON.parse(data);
-      } catch (error) {
-        runFunction(fail, error);
-      }
-    }
-    success({
-      statusCode: statusCode,
-      data: data,
-      headers: headers
-    });
-  }
-  fetch.fetch({
-    url: url,
-    data: data,
-    header: header,
-    method: method,
-    success: onFetchSuccess,
-    fail: fail,
-    complete: complete
-  });
-}
-function requestPromise(_ref3) {
-  var url = _ref3.url,
-      data = _ref3.data,
-      header = _ref3.header,
-      method = _ref3.method,
-      _ref3$dataType = _ref3.dataType,
-      dataType = _ref3$dataType === undefined ? JSON_TYPE_STRING : _ref3$dataType,
-      complete = _ref3.complete;
-  return new Promise(function (resolve, reject) {
-    function onFetchSuccess(_ref4) {
-      var statusCode = _ref4.code,
-          data = _ref4.data,
-          headers = _ref4.header;
-      if (dataType === JSON_TYPE_STRING) {
-        try {
-          data = JSON.parse(data);
-        } catch (error) {
-          reject(error);
-        }
-      }
-      resolve({
-        statusCode: statusCode,
-        data: data,
-        headers: headers
-      });
-    }
-    fetch.fetch({
-      url: url,
-      data: data,
-      header: header,
-      method: method,
-      success: onFetchSuccess,
-      fail: function fail(error) {
-        return reject(error);
-      },
-      complete: complete
-    });
-  });
-}
-function request(opt) {
-  return apiRunner(opt, requestCallback, requestPromise);
-}
-
-var request$1 = require('@system.request');
-var HTTP_OK_CODE = 200;
-function uploadFile(_ref) {
-  var url = _ref.url,
-      filePath = _ref.filePath,
-      name = _ref.name,
-      header = _ref.header,
-      formData = _ref.formData,
-      success = _ref.success,
-      fail = _ref.fail,
-      complete = _ref.complete;
-  var data = [];
-  Object.keys(formData).map(function (key) {
-    var value = formData[key];
-    var item = {
-      value: value,
-      name: key
-    };
-    data.push(item);
-  });
-  function successForMi(_ref2) {
-    var statusCode = _ref2.code,
-        data = _ref2.data;
-    success({
-      statusCode: statusCode,
-      data: data
-    });
-  }
-  request$1.upload({
-    url: url,
-    header: header,
-    data: data,
-    files: [{ uri: filePath, name: name }],
-    success: successForMi,
-    fail: fail,
-    complete: complete
-  });
-}
-function downloadFile(_ref3) {
-  var url = _ref3.url,
-      header = _ref3.header,
-      success = _ref3.success,
-      fail = _ref3.fail,
-      complete = _ref3.complete;
-  function downloadSuccess(_ref4) {
-    var tempFilePath = _ref4.uri;
-    success({
-      statusCode: HTTP_OK_CODE,
-      tempFilePath: tempFilePath
-    });
-  }
-  function downloadTaskStarted(_ref5) {
-    var token = _ref5.token;
-    request$1.onDownloadComplete({
-      token: token,
-      success: downloadSuccess,
-      fail: fail,
-      complete: complete
-    });
-  }
-  request$1.download({
-    url: url,
-    header: header,
-    success: downloadTaskStarted,
-    fail: fail,
-    complete: complete
-  });
-}
-
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
-function json_parse(str) {
+function saveParse(str) {
     try {
-        str = JSON.parse(str);
-    } catch (err) {}
+        return JSON.parse(str);
+    } catch (err) {
+    }
     return str;
 }
 function setStorage(_ref) {
@@ -1014,11 +951,8 @@ function getStorage(_ref2) {
         fail = _ref2.fail,
         complete = _ref2.complete;
     function dataObj(data) {
-        try {
-            data = JSON.parse(data);
-        } catch (e) {}
         success({
-            data: data
+            data: saveParse(data)
         });
     }
     storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
@@ -1031,7 +965,6 @@ function clearStorage(obj) {
 }
 function initStorageSync(storageCache) {
     if ((typeof ReactQuick === 'undefined' ? 'undefined' : _typeof$1(ReactQuick)) !== 'object') {
-        console.log('meiyouu');
         return;
     }
     var apis = ReactQuick.api;
@@ -1046,7 +979,7 @@ function initStorageSync(storageCache) {
                     success: function success(value) {
                         storageCache[key] = value;
                         if (++j == n) {
-                            console.log('init success');
+                            console.log('init storage success');
                         }
                     }
                 });
@@ -1061,7 +994,7 @@ function initStorageSync(storageCache) {
         return storageCache[key] = value;
     };
     apis.getStorageSync = function (key) {
-        return json_parse(storageCache[key]);
+        return saveParse(storageCache[key]);
     };
     apis.removeStorageSync = function (key) {
         delete storageCache[key];
@@ -1172,113 +1105,111 @@ function saveFile(_ref5) {
 
 var clipboard = require('@system.clipboard');
 function setClipboardData(_ref) {
-  var text = _ref.data,
-      success = _ref.success,
-      fail = _ref.fail,
-      complete = _ref.complete;
-  clipboard.set({
-    text: text,
-    success: success || noop,
-    fail: fail || noop,
-    complete: complete || noop
-  });
+    var text = _ref.data,
+        success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
+    clipboard.set({
+        text: text,
+        success: success || noop,
+        fail: fail || noop,
+        complete: complete || noop
+    });
 }
 function getClipboardData(_ref2) {
-  var success = _ref2.success,
-      fail = _ref2.fail,
-      complete = _ref2.complete;
-  function gotSuccess(_ref3) {
-    var data = _ref3.text;
-    success({
-      data: data
+    var _success = _ref2.success,
+        fail = _ref2.fail,
+        complete = _ref2.complete;
+    clipboard.get({
+        success: function success(obj) {
+            _success({
+                data: obj.text
+            });
+        },
+        fail: fail || noop,
+        complete: complete || noop
     });
-  }
-  clipboard.get({
-    success: gotSuccess,
-    fail: fail || noop,
-    complete: complete || noop
-  });
 }
 
 var network = require('@system.network');
 function getNetworkType(_ref) {
-  var success = _ref.success,
-      fail = _ref.fail,
-      complete = _ref.complete;
-  function networkTypeGot(_ref2) {
-    var networkType = _ref2.type;
-    success({ networkType: networkType });
-  }
-  network.getType({
-    success: networkTypeGot,
-    fail: fail,
-    complete: complete
-  });
+    var success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
+    function networkTypeGot(_ref2) {
+        var networkType = _ref2.type;
+        success({ networkType: networkType });
+    }
+    network.getType({
+        success: networkTypeGot,
+        fail: fail,
+        complete: complete
+    });
 }
 function onNetworkStatusChange(callback) {
-  function networkChanged(_ref3) {
-    var networkType = _ref3.type;
-    var connectedTypes = ['wifi', '4g', '3g', '2g'];
-    callback({
-      isConnected: connectedTypes.includes(networkType),
-      networkType: networkType
-    });
-  }
-  network.subscribe({ callback: networkChanged });
+    function networkChanged(_ref3) {
+        var networkType = _ref3.type;
+        var connectedTypes = ['wifi', '4g', '3g', '2g'];
+        callback({
+            isConnected: connectedTypes.includes(networkType),
+            networkType: networkType
+        });
+    }
+    network.subscribe({ callback: networkChanged });
 }
 
 var device = require('@system.device');
 var DEFAULT_FONT_SIZE = 14;
 function getSystemInfo(options) {
-  if (!options) {
-    console.error('参数格式错误');
-    return;
-  }
-  var success = options.success,
-      fail = options.fail,
-      complete = options.complete;
-  function gotSuccessInfo(_ref) {
-    var brand = _ref.brand,
-        manufacturer = _ref.manufacturer,
-        model = _ref.model,
-        product = _ref.product,
-        osType = _ref.osType,
-        osVersionName = _ref.osVersionName,
-        osVersionCode = _ref.osVersionCode,
-        platformVersionName = _ref.platformVersionName,
-        platformVersionCode = _ref.platformVersionCode,
-        language = _ref.language,
-        region = _ref.region,
-        screenWidth = _ref.screenWidth,
-        screenHeight = _ref.screenHeight,
-        windowWidth = _ref.windowWidth,
-        windowHeight = _ref.windowHeight,
-        screenDensity = _ref.screenDensity;
-    success && success({
-      pixelRatio: screenDensity,
-      brand: brand,
-      model: model,
-      screenWidth: screenWidth,
-      screenHeight: screenHeight,
-      windowWidth: windowWidth,
-      windowHeight: windowHeight,
-      statusBarHeight: 0,
-      language: language,
-      version: platformVersionCode,
-      system: osVersionCode,
-      platform: platformVersionName,
-      fontSizeSetting: DEFAULT_FONT_SIZE,
-      SDKVersion: platformVersionCode
+    if (!options) {
+        console.error('参数格式错误');
+        return;
+    }
+    var success = options.success,
+        fail = options.fail,
+        complete = options.complete;
+    function gotSuccessInfo(_ref) {
+        var brand = _ref.brand,
+            manufacturer = _ref.manufacturer,
+            model = _ref.model,
+            product = _ref.product,
+            osType = _ref.osType,
+            osVersionName = _ref.osVersionName,
+            osVersionCode = _ref.osVersionCode,
+            platformVersionName = _ref.platformVersionName,
+            platformVersionCode = _ref.platformVersionCode,
+            language = _ref.language,
+            region = _ref.region,
+            screenWidth = _ref.screenWidth,
+            screenHeight = _ref.screenHeight,
+            windowWidth = _ref.windowWidth,
+            windowHeight = _ref.windowHeight,
+            screenDensity = _ref.screenDensity;
+        success && success({
+            pixelRatio: screenDensity,
+            brand: brand,
+            model: model,
+            screenWidth: screenWidth,
+            screenHeight: screenHeight,
+            windowWidth: windowWidth,
+            windowHeight: windowHeight,
+            statusBarHeight: 0,
+            language: language,
+            version: platformVersionCode,
+            system: osVersionCode,
+            platform: platformVersionName,
+            fontSizeSetting: DEFAULT_FONT_SIZE,
+            SDKVersion: platformVersionCode
+        });
+    }
+    device.getInfo({
+        success: gotSuccessInfo,
+        fail: fail,
+        complete: complete
     });
-  }
-  device.getInfo({
-    success: gotSuccessInfo,
-    fail: fail,
-    complete: complete
-  });
 }
 function getDeviceId(options) {
-  device.getDeviceId(options);
+    device.getDeviceId(options);
 }
 
 var media = require('@system.media');
@@ -1319,15 +1250,47 @@ function chooseImage(_ref) {
   });
 }
 
+var prompt = require('@system.prompt');
+function showModal(obj) {
+    obj.showCancel = obj.showCancel === false ? false : true;
+    var buttons = [{
+        text: obj.confirmText,
+        color: obj.confirmColor
+    }];
+    if (obj.showCancel) {
+        buttons.push({
+            text: obj.cancelText,
+            color: obj.cancelColor
+        });
+    }
+    obj.buttons = obj.confirmText ? buttons : [];
+    obj.message = obj.content;
+    delete obj.content;
+    var fn = obj['success'];
+    obj['success'] = function (res) {
+        res.confirm = !res.index;
+        fn && fn(res);
+    };
+    prompt.showDialog(obj);
+}
 function showToast(obj) {
-    var prompt = require('@system.prompt');
     obj.message = obj.title;
     obj.duration = obj.duration / 1000;
     prompt.showToast(obj);
 }
+function hideToast() {}
+function showActionSheet(obj) {
+    prompt.showContextMenu(obj);
+}
+function showLoading(obj) {
+    obj.message = obj.title;
+    obj.duration = 1;
+    prompt.showToast(obj);
+}
+function hideLoading() {}
 
-var shortcut = require('@system.shortcut');
 function createShortcut() {
+    var shortcut = require('@system.shortcut');
     shortcut.hasInstalled({
         success: function success(ret) {
             if (ret) {
@@ -1346,28 +1309,6 @@ function createShortcut() {
     });
 }
 
-function createCanvasContext(id, obj) {
-  if (obj.wx && obj.wx.$element) {
-    var el = obj.wx.$element(id);
-    var ctx = el && el.getContext('2d');
-    'strokeStyle,textAlign,textBaseline,fillStyle,lineWidth,lineCap,lineJoin,miterLimit,globalAlpha'.split(',').map(function (item) {
-      var method = 'set' + item.substring(0, 1).toUpperCase() + item.substring(1);
-      ctx[method] = function (value) {
-        ctx[item] = value;
-      };
-    });
-    ctx.setFontSize = function (value) {
-      ctx.font = value + 'px';
-    };
-    ctx.draw = function () {
-      ctx.closePath();
-    };
-    return ctx;
-  } else {
-    throw new Error('createCanvasContext 第二个 字段 this 必须添加');
-  }
-}
-
 function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
@@ -1381,7 +1322,8 @@ function createRouter(name) {
             try {
                 webViewUrls = require('./webviewConfig.js');
                 webViewRoute = webViewUrls[uri];
-            } catch (err) {}
+            } catch (err) {
+            }
         }
         if (webViewRoute) {
             var webview = require('@system.webview');
@@ -1409,75 +1351,79 @@ function createRouter(name) {
         });
     };
 }
-var api = {
-    showModal: function showModal(obj) {
-        obj.showCancel = obj.showCancel === false ? false : true;
-        var buttons = [{
-            text: obj.confirmText,
-            color: obj.confirmColor
-        }];
-        if (obj.showCancel) {
-            buttons.push({
-                text: obj.cancelText,
-                color: obj.cancelColor
-            });
-        }
-        obj.buttons = obj.confirmText ? buttons : [];
-        obj.message = obj.content;
-        delete obj.content;
-        var fn = obj['success'];
-        obj['success'] = function (res) {
-            res.confirm = !res.index;
-            fn && fn(res);
-        };
-        var prompt = require('@system.prompt');
-        prompt.showDialog(obj);
-    },
-    showToast: showToast,
-    hideToast: noop,
-    showActionSheet: function showActionSheet(obj) {
-        var prompt = require('@system.prompt');
-        prompt.showContextMenu(obj);
-    },
-    showLoading: function showLoading(obj) {
-        var prompt = require('@system.prompt');
-        obj.message = obj.title;
-        obj.duration = 1;
-        prompt.showToast(obj);
-    },
-    hideLoading: noop,
-    navigateTo: createRouter('push'),
-    redirectTo: createRouter('replace'),
-    navigateBack: createRouter('back'),
-    vibrateLong: function vibrateLong() {
-        var vibrator = require('@system.vibrator');
-        vibrator.vibrate();
-    },
-    vibrateShort: function vibrateShort() {
-        var vibrator = require('@system.vibrator');
-        vibrator.vibrate();
-    },
-    share: function share(obj) {
-        var share = require('@service.share');
-        share.getAvailablePlatforms({
-            success: function success(data) {
-                var shareType = 0;
-                if (obj.path && obj.title) {
-                    shareType = 0;
-                } else if (obj.title) {
-                    shareType = 1;
-                } else if (obj.imageUrl) {
-                    shareType = 2;
-                }
-                obj.shareType = obj.shareType || shareType;
-                obj.targetUrl = obj.path;
-                obj.summary = obj.desc;
-                obj.imagePath = obj.imageUrl;
-                obj.platforms = data.platforms;
-                share.share(obj);
+var navigateTo = createRouter('push');
+var redirectTo = createRouter('replace');
+var navigateBack = createRouter('back');
+
+var vibrator = require('@system.vibrator');
+function vibrateLong() {
+    vibrator.vibrate({
+        mode: 'long'
+    });
+}
+function vibrateShort() {
+    vibrator.vibrate({
+        mode: 'short'
+    });
+}
+
+function share(obj) {
+    var share = require('@service.share');
+    share.getAvailablePlatforms({
+        success: function success(data) {
+            var shareType = 0;
+            if (obj.path && obj.title) {
+                shareType = 0;
+            } else if (obj.title) {
+                shareType = 1;
+            } else if (obj.imageUrl) {
+                shareType = 2;
             }
-        });
-    },
+            obj.shareType = obj.shareType || shareType;
+            obj.targetUrl = obj.path;
+            obj.summary = obj.desc;
+            obj.imagePath = obj.imageUrl;
+            obj.platforms = data.platforms;
+            share.share(obj);
+        }
+    });
+}
+
+function createCanvasContext(id, obj) {
+  if (obj.wx && obj.wx.$element) {
+    var el = obj.wx.$element(id);
+    var ctx = el && el.getContext('2d');
+    'strokeStyle,textAlign,textBaseline,fillStyle,lineWidth,lineCap,lineJoin,miterLimit,globalAlpha'.split(',').map(function (item) {
+      var method = 'set' + item.substring(0, 1).toUpperCase() + item.substring(1);
+      ctx[method] = function (value) {
+        ctx[item] = value;
+      };
+    });
+    ctx.setFontSize = function (value) {
+      ctx.font = value + 'px';
+    };
+    ctx.draw = function () {
+      ctx.closePath();
+    };
+    return ctx;
+  } else {
+    throw new Error('createCanvasContext 第二个 字段 this 必须添加');
+  }
+}
+
+var facade = {
+    showModal: showModal,
+    showActionSheet: showActionSheet,
+    showToast: showToast,
+    hideToast: hideToast,
+    showLoading: showLoading,
+    hideLoading: hideLoading,
+    navigateTo: navigateTo,
+    redirectTo: redirectTo,
+    navigateBack: navigateBack,
+    vibrateLong: vibrateLong,
+    vibrateShort: vibrateShort,
+    share: share,
     uploadFile: uploadFile,
     downloadFile: downloadFile,
     request: request,
@@ -1496,6 +1442,7 @@ var api = {
     setStorage: setStorage,
     getStorage: getStorage,
     removeStorage: removeStorage,
+    initStorageSync: initStorageSync,
     clearStorage: clearStorage,
     setStorageSync: setStorageSync,
     getStorageSync: getStorageSync,
@@ -1507,7 +1454,6 @@ var api = {
     saveFile: saveFile,
     setClipboardData: setClipboardData,
     getClipboardData: getClipboardData,
-    initStorageSync: initStorageSync,
     getDeviceId: getDeviceId,
     getLocation: function getLocation(obj) {
         var geolocation = require('@system.geolocation');
@@ -1561,6 +1507,244 @@ var api = {
         }
     }
 };
+
+var onAndSyncApis = {
+  onSocketOpen: true,
+  onSocketError: true,
+  onSocketMessage: true,
+  onSocketClose: true,
+  onBackgroundAudioPlay: true,
+  onBackgroundAudioPause: true,
+  onBackgroundAudioStop: true,
+  onNetworkStatusChange: true,
+  onAccelerometerChange: true,
+  onCompassChange: true,
+  onBluetoothAdapterStateChange: true,
+  onBluetoothDeviceFound: true,
+  onBLEConnectionStateChange: true,
+  onBLECharacteristicValueChange: true,
+  onBeaconUpdate: true,
+  onBeaconServiceChange: true,
+  onUserCaptureScreen: true,
+  onHCEMessage: true,
+  onGetWifiList: true,
+  onWifiConnected: true,
+  setStorageSync: true,
+  getStorageSync: true,
+  getStorageInfoSync: true,
+  removeStorageSync: true,
+  clearStorageSync: true,
+  getSystemInfoSync: true,
+  getExtConfigSync: true,
+  getLogManager: true
+};
+var noPromiseApis = {
+  initStorageSync: true,
+  stopRecord: true,
+  getRecorderManager: true,
+  pauseVoice: true,
+  stopVoice: true,
+  pauseBackgroundAudio: true,
+  stopBackgroundAudio: true,
+  getBackgroundAudioManager: true,
+  createAudioContext: true,
+  createInnerAudioContext: true,
+  createVideoContext: true,
+  createCameraContext: true,
+  navigateBack: true,
+  createMapContext: true,
+  canIUse: true,
+  startAccelerometer: true,
+  stopAccelerometer: true,
+  startCompass: true,
+  stopCompass: true,
+  hideToast: true,
+  hideLoading: true,
+  showNavigationBarLoading: true,
+  hideNavigationBarLoading: true,
+  createAnimation: true,
+  pageScrollTo: true,
+  createSelectorQuery: true,
+  createCanvasContext: true,
+  createContext: true,
+  drawCanvas: true,
+  hideKeyboard: true,
+  stopPullDownRefresh: true,
+  arrayBufferToBase64: true,
+  base64ToArrayBuffer: true,
+  getUpdateManager: true,
+  createWorker: true
+};
+var otherApis = {
+  uploadFile: true,
+  downloadFile: true,
+  connectSocket: true,
+  sendSocketMessage: true,
+  closeSocket: true,
+  chooseImage: true,
+  previewImage: true,
+  getImageInfo: true,
+  saveImageToPhotosAlbum: true,
+  startRecord: true,
+  playVoice: true,
+  getBackgroundAudioPlayerState: true,
+  playBackgroundAudio: true,
+  seekBackgroundAudio: true,
+  chooseVideo: true,
+  saveVideoToPhotosAlbum: true,
+  loadFontFace: true,
+  saveFile: true,
+  getFileInfo: true,
+  getSavedFileList: true,
+  getSavedFileInfo: true,
+  removeSavedFile: true,
+  openDocument: true,
+  setStorage: true,
+  getStorage: true,
+  getStorageInfo: true,
+  removeStorage: true,
+  clearStorage: true,
+  navigateTo: true,
+  redirectTo: true,
+  switchTab: true,
+  reLaunch: true,
+  getLocation: true,
+  chooseLocation: true,
+  openLocation: true,
+  getSystemInfo: true,
+  getNetworkType: true,
+  makePhoneCall: true,
+  scanCode: true,
+  setClipboardData: true,
+  getClipboardData: true,
+  openBluetoothAdapter: true,
+  closeBluetoothAdapter: true,
+  getBluetoothAdapterState: true,
+  startBluetoothDevicesDiscovery: true,
+  stopBluetoothDevicesDiscovery: true,
+  getBluetoothDevices: true,
+  getConnectedBluetoothDevices: true,
+  createBLEConnection: true,
+  closeBLEConnection: true,
+  getBLEDeviceServices: true,
+  getBLEDeviceCharacteristics: true,
+  readBLECharacteristicValue: true,
+  writeBLECharacteristicValue: true,
+  notifyBLECharacteristicValueChange: true,
+  startBeaconDiscovery: true,
+  stopBeaconDiscovery: true,
+  getBeacons: true,
+  setScreenBrightness: true,
+  getScreenBrightness: true,
+  setKeepScreenOn: true,
+  vibrateLong: true,
+  vibrateShort: true,
+  addPhoneContact: true,
+  getHCEState: true,
+  startHCE: true,
+  stopHCE: true,
+  sendHCEMessage: true,
+  startWifi: true,
+  stopWifi: true,
+  connectWifi: true,
+  getWifiList: true,
+  setWifiList: true,
+  getConnectedWifi: true,
+  showToast: true,
+  showLoading: true,
+  showModal: true,
+  showActionSheet: true,
+  setNavigationBarTitle: true,
+  setNavigationBarColor: true,
+  setTabBarBadge: true,
+  removeTabBarBadge: true,
+  showTabBarRedDot: true,
+  hideTabBarRedDot: true,
+  setTabBarStyle: true,
+  setTabBarItem: true,
+  showTabBar: true,
+  hideTabBar: true,
+  setTopBarText: true,
+  startPullDownRefresh: true,
+  canvasToTempFilePath: true,
+  canvasGetImageData: true,
+  canvasPutImageData: true,
+  getExtConfig: true,
+  login: true,
+  checkSession: true,
+  authorize: true,
+  getUserInfo: true,
+  requestPayment: true,
+  showShareMenu: true,
+  hideShareMenu: true,
+  updateShareMenu: true,
+  getShareInfo: true,
+  chooseAddress: true,
+  addCard: true,
+  openCard: true,
+  openSetting: true,
+  getSetting: true,
+  getWeRunData: true,
+  navigateToMiniProgram: true,
+  navigateBackMiniProgram: true,
+  chooseInvoiceTitle: true,
+  checkIsSupportSoterAuthentication: true,
+  startSoterAuthentication: true,
+  checkIsSoterEnrolledInDevice: true
+};
+
+function processApis(ReactWX, facade) {
+    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
+    Object.keys(weApis).forEach(function (key) {
+        if (!onAndSyncApis[key] && !noPromiseApis[key]) {
+            ReactWX.api[key] = function (options) {
+                options = options || {};
+                if (options + '' === options) {
+                    return facade[key](options);
+                }
+                var task = null;
+                var obj = Object.assign({}, options);
+                var p = new Promise(function (resolve, reject) {
+                    ['fail', 'success', 'complete'].forEach(function (k) {
+                        obj[k] = function (res) {
+                            options[k] && options[k](res);
+                            if (k === 'success') {
+                                if (key === 'connectSocket') {
+                                    resolve(task);
+                                } else {
+                                    resolve(res);
+                                }
+                            } else if (k === 'fail') {
+                                reject(res);
+                            }
+                        };
+                    });
+                    if (!isFn(facade[key])) {
+                        console.warn('平台未不支持', key, '方法');
+                    } else {
+                        task = facade[key](obj);
+                    }
+                });
+                if (key === 'uploadFile' || key === 'downloadFile') {
+                    p.progress = function (cb) {
+                        task.onProgressUpdate(cb);
+                        return p;
+                    };
+                    p.abort = function (cb) {
+                        cb && cb();
+                        task.abort();
+                        return p;
+                    };
+                }
+                return p;
+            };
+        } else {
+            ReactWX.api[key] = function () {
+                return facade[key].apply(facade, arguments);
+            };
+        }
+    });
+}
 
 function UpdateQueue() {
     return {
@@ -3016,29 +3200,24 @@ function onUnload() {
 }
 
 function showMenu(instance, app) {
-    api.getSystemInfo({
+    getSystemInfo({
         success: function success(appInfo) {
-            api.showActionSheet({
+            showActionSheet({
                 itemList: ['转发', '保存到桌面', '关于', '取消'],
                 success: function success(ret) {
                     switch (ret.index) {
                         case 0:
-                            var fn = instance.onShareAppMessage;
+                            var fn = instance.onShareAppMessage || app.onGlobalShare;
                             var obj = fn && fn();
                             if (obj) {
-                                api.share(obj);
-                            }
-                            fn = app.onGlobalShare;
-                            obj = fn && fn();
-                            if (obj) {
-                                api.share(obj);
+                                share(obj);
                             }
                             break;
                         case 1:
-                            api.createShortcut();
+                            createShortcut();
                             break;
                         case 2:
-                            api.redirectTo({
+                            redirectTo({
                                 url: 'pages/about/index?brand=' + appInfo.brand + '&version=' + appInfo.version
                             });
                             break;
@@ -3118,6 +3297,7 @@ var React = getWindow().React = {
     eventSystem: {
         dispatchEvent: dispatchEvent
     },
+    api: {},
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
@@ -3154,13 +3334,13 @@ var React = getWindow().React = {
         }
         delete app.constructor;
         return app;
-    },
-    api: api
+    }
 };
 if (typeof global !== 'undefined') {
     var ref = Object.getPrototypeOf(global) || global;
     ref.ReactQuick = React;
 }
-
+onAndSyncApis.request = true;
+processApis(React, facade);
 export default React;
 export { Children, createElement, Component };

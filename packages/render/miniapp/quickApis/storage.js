@@ -1,60 +1,54 @@
 const storage = require('@system.storage');
 import { runFunction } from '../utils';
 
-function json_parse(str) {
-    try{
-        str = JSON.parse(str);
-    }catch(err) {
-
+function saveParse(str) {
+    try {
+        return JSON.parse(str);
+    } catch (err) {
+        //eslint-disable-line
     }
-    return str
+    return str;
 }
 
 function setStorage({ key, data, success, fail, complete }) {
-  let value = data;
-  if (typeof value === 'object') {
-    try {
-      value = JSON.stringify(value);
-    } catch (error) {
-      runFunction(fail, error);
+    let value = data;
+    if (typeof value === 'object') {
+        try {
+            value = JSON.stringify(value);
+        } catch (error) {
+            runFunction(fail, error);
+        }
     }
-  }
 
-  storage.set({ key, value, success, fail, complete });
+    storage.set({ key, value, success, fail, complete });
 }
 
 function getStorage({ key, success, fail, complete }) {
-  function dataObj(data) {
-    try {
-      data = JSON.parse(data);
-    } catch (e) {}
-
-    success({
-      data
-    });
-  }
-
-  storage.get({ key, success: dataObj, fail, complete });
+    function dataObj(data) {
+        success({
+            data: saveParse(data)
+        });
+    }
+    storage.get({ key, success: dataObj, fail, complete });
 }
 
 function removeStorage(obj) {
-  storage.delete(obj);
+    storage.delete(obj);
 }
 
 function clearStorage(obj) {
-  storage.clear(obj);
+    storage.clear(obj);
 }
 
 
 var initStorage = false;
 export function initStorageSync( storageCache){
-    if(typeof ReactQuick !== 'object'){
-        console.log('meiyouu')
-        return 
+    if (typeof ReactQuick !== 'object'){
+        return; 
     }
-    var apis = ReactQuick.api;
+    var apis = ReactQuick.api;//eslint-disable-line
     var n = storage.length;
-    var j =0
+    var j =0;
     for (var i = 0; i < n; i++){
         storage.key({
             index:i,
@@ -63,8 +57,8 @@ export function initStorageSync( storageCache){
                     key: key,
                     success: function(value){
                         storageCache[key] = value;
-                        if(++j == n) {
-                            console.log('init success')
+                        if (++j == n) {
+                            console.log('init storage success');
                         }
                     } 
                 });
@@ -80,7 +74,7 @@ export function initStorageSync( storageCache){
     };
     
     apis.getStorageSync = function(key) {
-        return json_parse(storageCache[key]);
+        return saveParse(storageCache[key]);
     };
     
     apis.removeStorageSync = function(key) {
@@ -88,21 +82,21 @@ export function initStorageSync( storageCache){
         removeStorage({key: key});
     };
     apis.clearStorageSync =  function() {
-        for(var i in storageCache ){
-            delete storageCache[i]
+        for (var i in storageCache ){
+            delete storageCache[i];
         }
         clearStorage({});
     };
 }
 function warnToInitStorage(){
     if (!initStorage){
-        console.log('还没有初始化storageSync');
+        console.log('还没有初始化storageSync');//eslint-disable-line
     }
 }
-export  var setStorageSync = warnToInitStorage
-export var  getStorageSync = warnToInitStorage
-export var  removeStorageSync= warnToInitStorage
- export var  clearStorageSync=  warnToInitStorage
+export var setStorageSync = warnToInitStorage;
+export var getStorageSync = warnToInitStorage;
+export var removeStorageSync= warnToInitStorage;
+export var clearStorageSync=  warnToInitStorage;
 
 export {
     setStorage,

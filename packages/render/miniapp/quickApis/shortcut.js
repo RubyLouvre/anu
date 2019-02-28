@@ -1,7 +1,8 @@
-import { showToast }  from './showToast';
-const shortcut = require('@system.shortcut');
+import { showToast }  from './dialog';
 
-function createShortcut () {
+export function createShortcut () {
+    var shortcut = require('@system.shortcut');
+
     shortcut.hasInstalled({
         success: function (ret) {
             if (ret) {
@@ -18,8 +19,4 @@ function createShortcut () {
             }
         }
     });
-}
-
-export {
-    createShortcut
 }
