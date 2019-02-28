@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-02-27
+ * 运行于快应用的React by 司徒正美 Copyright 2019-02-28
  */
 
 var arrayPush = Array.prototype.push;
@@ -2893,7 +2893,7 @@ function remove(children, node) {
 }
 
 var rcamel = /-(\w)/g;
-var rpx = /(\d+)px/gi;
+var rpx = /(\d+)rpx/gi;
 function camel(target) {
     return target.replace(rcamel, function (all, letter) {
         return letter.toUpperCase();
@@ -2912,7 +2912,7 @@ function transform(obj) {
 }
 function toStyle(obj, props, key) {
     if (props) {
-        if (obj + "" === obj) {
+        if (obj + '' === obj) {
             var ret = {};
             obj.split(';').forEach(function (el) {
                 var index = el.indexOf(':');
