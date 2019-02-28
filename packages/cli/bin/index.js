@@ -97,6 +97,30 @@ program
     });
 
 
+program
+    .command('build')
+    .description('description: 默认构建微信小程序')
+    .option('-c, --compress', '压缩资源')
+    .option('-b, --beta', '同步react runtime')
+    .action(function(cmd){
+        cmd['_name'] = 'build:wx';
+        let args = getArgValue(cmd);
+        injectBuildEnv(cmd);
+        require('../commonds/build')(args);
+    });
+program
+    .command('watch')
+    .description('description: 默认监听微信小程序')
+    .option('-c, --compress', '压缩资源')
+    .option('-b, --beta', '同步react runtime')
+    .action(function(cmd){
+        cmd['_name'] = 'watch:wx';
+        let args = getArgValue(cmd);
+        args['watch'] = true;
+        injectBuildEnv(cmd);
+        require('../commonds/build')(args);
+    });
+
 buildCommonds.forEach(function(el){
     let {type, des} = el;
     program
@@ -107,7 +131,6 @@ buildCommonds.forEach(function(el){
         .action(function(cmd){
             let args = getArgValue(cmd);
             injectBuildEnv(cmd);
-
             getBuildType(cmd) === 'h5'
                 ? require('mini-html5/runkit/build')
                 : require('../commonds/build')(args);
@@ -121,7 +144,6 @@ buildCommonds.forEach(function(el){
             let args = getArgValue(cmd);
             args['watch'] = true;
             injectBuildEnv(cmd);
-
             getBuildType(cmd) === 'h5'
                 ? require('mini-html5/runkit/run')
                 : require('../commonds/build')(args);
