@@ -13,7 +13,7 @@ class Style extends React.Component {
         this.state = {
             title: '使用 React 编写小程序',
             methodColor: {
-                color: '#e44',
+                color: 'blue',
                 bac: '#fee',
                 radius: '4px'
             }
@@ -59,7 +59,10 @@ class Style extends React.Component {
                         backgroundColor: this.state.methodColor.bac
                     }}
                 >
-                    {this.state.title}
+                    <text style={{
+                        color: this.state.methodColor.color,
+                        backgroundColor: this.state.methodColor.bac
+                    }}>{this.state.title}</text>
                 </div>
             </div>
         );

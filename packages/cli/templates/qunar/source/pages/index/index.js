@@ -231,8 +231,10 @@ class P extends React.Component {
                       <div onTap={this.showTip} class="left-content">
                           <image class="image" src="https://img1.qunarzz.com/order/comp/1808/c3/dda9c77c3b1d8802.png" />
                           <div class="activity-content">
-                              <text class="title">何时飞</text>
-                              <text class="desc">机票趋势早知道</text>
+                            <text>
+                               <span class="title">何时飞</span>
+                               <span class="desc">机票趋势早知道</span>
+                             </text> 
                           </div>
                       </div>
                       <div class="right-content">

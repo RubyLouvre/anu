@@ -68,6 +68,11 @@ let utils = {
   shortcutOfCreateElement() {
     return 'var h = React.createElement;';
   },
+  //传入path.node, 得到标签名
+  getNodeName(node){
+    var openTag =  node.openingElement
+    return openTag && Object(openTag.name).name
+  },
   getEventName(eventName, nodeName, buildType) {
     if (eventName == 'Click' || eventName == 'Tap') {
         if (buildType === 'quick' || buildType === 'h5'){
@@ -480,11 +485,7 @@ let utils = {
 
     Object.assign(projectPkg.scripts, quickPkg.scripts);  //注入快应用scripts命令
     Object.assign(projectPkg.devDependencies, quickPkg.devDependencies); //注入快应用开发依赖
-
-    fs.writeFile(projectPkgPath, JSON.stringify(projectPkg, null, 4)).catch(err => {
-      // eslint-disable-next-line
-      console.log(err);
-    });
+    fs.writeFileSync(projectPkgPath, JSON.stringify(projectPkg, null, 4));
   },
   initQuickAppConfig: function() {
     //merge快应用依赖的package.json配置

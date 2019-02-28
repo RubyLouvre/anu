@@ -1,4 +1,4 @@
-// 处理行内样式
+// 处理行内样式(快应用没有rpx)
 var rcamel = /-(\w)/g;
 var rpx = /(\d+)(r?px)/gi;
 function camel(target) {
@@ -25,7 +25,7 @@ function transform(obj) {
 
 export function toStyle(obj, props, key) {
     if (props) {
-        if ( obj +"" === obj ){
+        if ( obj +'' === obj ){
             var ret = {};
             obj.split(';').forEach(function(el){
                 var index = el.indexOf(':');

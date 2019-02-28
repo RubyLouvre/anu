@@ -2914,7 +2914,7 @@ function transform(obj) {
 }
 function toStyle(obj, props, key) {
     if (props) {
-        if (obj + "" === obj) {
+        if (obj + '' === obj) {
             var ret = {};
             obj.split(';').forEach(function (el) {
                 var index = el.indexOf(':');
