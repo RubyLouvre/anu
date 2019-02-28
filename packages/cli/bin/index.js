@@ -22,10 +22,17 @@ function getArgValue(cmd){
     let args = {};
     cmd.options.forEach(function(op){
         let key = op.long.replace(/^--/, '');
+        //commander中会把 --beta-ui 风格的参数变为cmd上betaUi驼峰
+        //beta-ui => betaUi
+        key = key.split('-').map((el, index)=>{
+            return index > 0 ? `${el[0].toUpperCase()}${el.slice(1)}` : el;
+        }).join('');
+        
         if (typeof cmd[key] !== 'undefined') {
             args[key] = cmd[key];
         }
     });
+   
     return args;
 }
 
@@ -97,22 +104,27 @@ program
     });
 
 
+//默认注册wx
 program
     .command('build')
     .description('description: 默认构建微信小程序')
     .option('-c, --compress', '压缩资源')
     .option('-b, --beta', '同步react runtime')
+    .option('-ui, --beta-ui', '同步schnee-ui')
     .action(function(cmd){
         cmd['_name'] = 'build:wx';
         let args = getArgValue(cmd);
         injectBuildEnv(cmd);
         require('../commonds/build')(args);
     });
+
+//默认注册wx
 program
     .command('watch')
     .description('description: 默认监听微信小程序')
     .option('-c, --compress', '压缩资源')
     .option('-b, --beta', '同步react runtime')
+    .option('-ui, --beta-ui', '同步schnee-ui')
     .action(function(cmd){
         cmd['_name'] = 'watch:wx';
         let args = getArgValue(cmd);
@@ -121,6 +133,7 @@ program
         require('../commonds/build')(args);
     });
 
+//注册其他命令
 buildCommonds.forEach(function(el){
     let {type, des} = el;
     program
@@ -128,6 +141,7 @@ buildCommonds.forEach(function(el){
         .description(`description: 构建${des}`)
         .option('-c, --compress', '压缩资源')
         .option('-b, --beta', '同步react runtime')
+        .option('-ui, --beta-ui', '同步schnee-ui')
         .action(function(cmd){
             let args = getArgValue(cmd);
             injectBuildEnv(cmd);
@@ -140,6 +154,7 @@ buildCommonds.forEach(function(el){
         .description(`description: 监听${des}`)
         .option('-c, --compress', '压缩资源')
         .option('-b, --beta', '同步react runtime')
+        .option('-ui, --beta-ui', '同步schnee-ui')
         .action(function(cmd){
             let args = getArgValue(cmd);
             args['watch'] = true;
@@ -149,7 +164,6 @@ buildCommonds.forEach(function(el){
                 : require('../commonds/build')(args);
         });
 });
-
 
 
 program
@@ -164,9 +178,3 @@ program.parse(process.argv);
 if (!process.argv.slice(2).length) {
     program.outputHelp();
 }
-
-
-
-
-
-

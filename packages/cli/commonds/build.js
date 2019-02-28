@@ -6,6 +6,7 @@ const config = require('../packages/config');
 const utils = require('../packages/utils');
 const entry = path.join(cwd, config.sourceDir, 'app.js');
 const parser = require('../packages/index')(entry);
+const spawn = require('cross-spawn');
 function cleanDist(){
     let distPath = path.join(cwd, config.buildDir);
     try {
@@ -21,10 +22,28 @@ function injectQuickAppConfig(){
     }
 }
 
+function asyncUI(betaUi){
+    if (!betaUi) return;
+    // eslint-disable-next-line
+    console.log(chalk.green('正在同步最新版schnee-ui, 请稍候...'));
+    let dir = path.join(process.cwd(), 'node_modules');
+    let currentCwd = process.cwd();
+    fs.removeSync(path.join(dir, 'schnee-ui'));
+    process.chdir(dir);
+    let result = spawn.sync('git', ['clone',  '-b', 'dev', 'https://github.com/qunarcorp/schnee-ui.git'], { stdio: 'inherit' });
+    if (result.error) {
+        // eslint-disable-next-line
+        console.log(result.error, 11);
+        process.exit(1);
+    }
+    process.chdir(currentCwd);
+}
+
 async function beforeParseTask(args){
     cleanDist();
     injectQuickAppConfig();
     await utils.asyncReact(args['beta']);
+    asyncUI(args['betaUi']);
 }
 
 module.exports = async function(args){
