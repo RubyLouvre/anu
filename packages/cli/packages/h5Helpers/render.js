@@ -37,6 +37,7 @@ exports.exit = function (astPath, type, componentName, modules) {
          * babel7 default ast:false
          */
         var jsxAst = babel.transform(jsx, {
+            configFile: false,
             babelrc: false,
             plugins: [[ require('@babel/plugin-transform-react-jsx'), { pragma: 'h' }]],
             ast: true

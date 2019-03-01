@@ -31,6 +31,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
     babel.transformFile(
         sourcePath,
         {
+            configFile: false,
             babelrc: false,
             comments: false,
             plugins: [
@@ -58,7 +59,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
                     }
                 ],
                 require('@babel/plugin-proposal-object-rest-spread'),
-                require('@babel/plugin-transform-template-literals'),
+                [require('@babel/plugin-transform-template-literals'), { loose: true }],
                 ...require('./babelPlugins/transformMiniApp')(sourcePath),
                 ...require('./babelPlugins/transformEnv'),
                 ...require('./babelPlugins/injectRegeneratorRuntime'),

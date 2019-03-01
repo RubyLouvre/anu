@@ -22,6 +22,7 @@ const quickTextContainer = {
 
 function wxml(code, modules) {
     let result = babel.transform(code, {
+        configFile: false,
         babelrc: false,
         plugins: [
             require('@babel/plugin-syntax-jsx'),

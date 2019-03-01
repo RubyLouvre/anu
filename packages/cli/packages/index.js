@@ -121,8 +121,8 @@ class Parser {
                      * 读取 babel.config.js 文件导致报错
                      */
                     root: path.join(__dirname, '..'),
+                    configFile: false,
                     presets: [
-                        // [require('@babel/preset-env'), { modules: false }],
                         require('@babel/preset-react')
                     ],
                     plugins: [

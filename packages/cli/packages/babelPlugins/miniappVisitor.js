@@ -40,7 +40,7 @@ if (buildType == 'quick') {
          * 会抛出异常信息 Error: Unknown substitution "CLASSNAME" given
          */
         var templateString = isPage
-            ? 'className = React.registerPage(CLASSNAME,ASTPATH)'
+            ? 'CLASSNAME = React.registerPage(CLASSNAME,ASTPATH)'
             : 'console.log(nanachi)';
         return isPage ? template(templateString)({
             CLASSNAME: t.identifier(className),
