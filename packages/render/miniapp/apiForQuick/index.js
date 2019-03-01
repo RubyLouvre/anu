@@ -49,6 +49,8 @@ import { share } from './share';
 
 import { createCanvasContext } from './canvas.js';
 
+import { pay, getProvider, wxpayGetType, wxpay, alipay} from './pay.js'
+
 export var facade = {
     // 交互
     showModal,
@@ -161,6 +163,11 @@ export var facade = {
 export function more(){
     return  {
         initStorageSync,
-        share //分享(小程序没有这个api)
+        share, //分享(小程序没有这个api)
+        pay, 
+        getProvider, 
+        wxpayGetType, 
+        wxpay, 
+        alipay
     };
 } 
