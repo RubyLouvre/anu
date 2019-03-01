@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-02-28
+ * 运行于快应用的React by 司徒正美 Copyright 2019-03-01
  */
 
 var arrayPush = Array.prototype.push;
@@ -1320,10 +1320,20 @@ function chooseImage(_ref) {
 }
 
 function showToast(obj) {
-    var prompt = require('@system.prompt');
-    obj.message = obj.title;
-    obj.duration = obj.duration / 1000;
+  var prompt = require('@system.prompt');
+  obj.message = obj.title;
+  obj.duration = obj.duration / 1000;
+  var success = obj.success || noop,
+      fail = obj.fail || noop,
+      complete = obj.complete || noop;
+  try {
     prompt.showToast(obj);
+    runFunction(success);
+  } catch (error) {
+    runFunction(fail, error);
+  } finally {
+    runFunction(complete);
+  }
 }
 
 var shortcut = require('@system.shortcut');
@@ -2904,8 +2914,9 @@ function transform(obj) {
     for (var i in obj) {
         var value = obj[i] + '';
         value = value.replace(rpx, function (str, match, unit) {
-            console.log('======match', match);
-            console.log('======unit', unit);
+            if (unit.toLowerCase() === 'px') {
+                match = parseFloat(match) * 2;
+            }
             return match + 'px';
         });
         ret[camel(i)] = value;
