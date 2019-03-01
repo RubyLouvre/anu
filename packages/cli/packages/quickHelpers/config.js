@@ -144,6 +144,24 @@ module.exports = function quickConfig(config, modules, queue){
         display.titleBarText = win.navigationBarTitleText || 'nanachi';
         display.titleBarTextColor = win.navigationBarTextStyle || 'black';
         display.backgroundColor = win.navigationBarBackgroundColor || '#000000';
+        
+        
+        //配置各支付参数
+        let payConfig = {};
+        try {
+            payConfig = require(path.join(process.cwd(), 'pay.json'));
+        } catch (err) {
+            // eslint-disable-next-line
+        }
+        Object.keys(payConfig).forEach((name)=>{
+            if ( Object.prototype.toString.call(payConfig[name]) === '[object Object]') {
+                let defaultPayConfig = manifest.features.filter((feat)=>{
+                    return feat.name === name;
+                })[0];
+                defaultPayConfig['params'] = payConfig[name];
+            }
+        });
+        
         queue.push({
             path: path.join(process.cwd(), 'src', 'manifest.json'),
             code: JSON.stringify(manifest, null, 4),
