@@ -128,22 +128,67 @@ class Global extends React.Component {
         console.log(React.getCurrentPage().props.path, 'onGlobalShow');//eslint-disable-line
     }
     onGlobalLoad() {
-        let ANU_ENV = process.env.ANU_ENV;//wx ali bu quick
-        if (ANU_ENV === 'quick') {
+        if (process.env.ANU_ENV === 'quick') {
             React.api.initStorageSync(this.globalData.__storage);
         }
         
     }
+    onShowMenu(pageInstance, app){
+        //点击左上角的按扭出现菜单，这里设置 转发，设置快捷方式， 关于等功能
+        if (process.env.ANU_ENV === 'quick') {
+            var api = React.api;
+            api.getSystemInfo({
+                success: function(appInfo){
+                    api.showActionSheet({
+                        itemList: ['转发', '保存到桌面', '关于', '取消'],
+                        success: function (ret) {
+                            switch (ret.index) {
+                                case 0: //分享转发
+                                    var fn = pageInstance.onShareAppMessage || app.onGlobalShare;
+                                    var obj = fn && fn();
+                                    if (obj){
+                                        console.log(obj);//eslint-disable-line
+                                        obj.type = obj.type || 'path';
+                                        obj.data = obj.data || obj.path;
+                                        obj.success = obj.success || function(a){
+                                            console.log(a, '分享成功');//eslint-disable-line
+                                        };
+                                        obj.fail = obj.fail || function(a){
+                                            console.log(a, '分享失败');//eslint-disable-line
+                                        };
+                                        api.share(obj);
+                                    }
+                                    break;
+                                case 1:
+                                    // 保存桌面
+                                    api.createShortcut();
+                                    break;
+                                case 2:
+                                    // 关于
+                                    api.redirectTo({
+                                        url: `pages/about/index?brand=${appInfo.brand}&version=${appInfo.version}`
+                                    });
+                                    break;
+                                case 3:
+                                    // 取消
+                                    break;
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
+    
     onLaunch() {
         //针对快应用的全局getApp补丁
-        if (this.$data && typeof global === 'object') {
+        if (process.env.ANU_ENV === 'quick') {
             var ref = Object.getPrototypeOf(global) || global;
             var _this = this;
             ref.getApp = function() {
                 return _this;
             };
             this.globalData = this.$def.globalData;
-           
         }
         console.log('App launched');//eslint-disable-line
     }

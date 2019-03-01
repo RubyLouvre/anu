@@ -78,40 +78,6 @@ class Express extends React.Component {
     });
   }
   
-  share() {
-    /**
-     * 快应用分享api，快应用右上角分享方式：在页面中定义onShareAppMessage函数
-     * eg:
-     * onShareAppMessage() {
-     *    return {
-     *        title: '标题',
-     *        path: 'http://www.example.com',
-     *        success: function(data) {
-     *            React.api.showToast({ title: 'handling success'});
-     *            console.log('handling success')
-     *        },
-     *        fail: function(data, code) {
-     *            React.api.showToast({ title: `code=${code}, ${data}` });
-     *            console.log(`code=${code}, ${data}`)
-     *        }
-     *    }
-     * }
-     */ 
-    
-    React.api.share && React.api.share({
-      title: '标题',
-      imageUrl: '/assets/logo.png',
-      path: 'http://www.example.com',
-      success: function(data) {
-          React.api.showToast({ title: 'handling success'});
-          console.log('handling success')
-      },
-      fail: function(data, code) {
-          React.api.showToast({ title: `code=${code}, ${data}` });
-          console.log(`code=${code}, ${data}`)
-      }
-    });
-  }
 
   upload() {
     console.log('upload');
@@ -176,7 +142,21 @@ class Express extends React.Component {
       }
     });
   }
+  onShareAppMessage(){
+      var path = React.getCurrentPage().props.path
+      return {
+        title: '妹子图片',
+        path: path,
+        imageUrl: "/assets/logo.jpg",
+        success: (res) => {
+          React.api.showToast({ title: 'handling success'+ res});
 
+        },
+        fail: (res) => {
+          React.api.showToast({ title: 'handling fail'+ res});
+        }
+      }
+  }
 
 
   getSavedFileInfo() {
@@ -326,9 +306,6 @@ class Express extends React.Component {
           }
           <div onClick={this.setTitleBar} class="anu-item">
             <text>setTitleBar</text>
-          </div>
-          <div onClick={this.share} class="anu-item">
-            <text>分享链接</text>
           </div>
           <div onClick={this.createShortcut} class="anu-item">
             <text>保存图标到桌面</text>
