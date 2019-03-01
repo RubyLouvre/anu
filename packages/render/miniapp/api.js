@@ -82,17 +82,17 @@ function request(options) {
     return p;
 }
 
-function processApis(ReactWX, facade) {
+export function processApis(ReactWX, facade) {
     const weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
     Object.keys(weApis).forEach(key => {
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
             ReactWX.api[key] = options => {
                 options = options || {};
-                let task = null;
-                let obj = Object.assign({}, options);
                 if ( options +'' === options ) {
                     return facade[key](options);
                 }
+                let task = null;
+                let obj = Object.assign({}, options);
                 const p = new Promise((resolve, reject) => {
                     ['fail', 'success', 'complete'].forEach(k => {
                         obj[k] = res => {
@@ -109,7 +109,7 @@ function processApis(ReactWX, facade) {
                         };
                     });
                     if (!isFn(facade[key])){
-                        console.warn('平台未不支持',key, '方法');
+                        console.warn('平台未不支持',key, '方法');//eslint-disable-line
                     } else {
                         task = facade[key](obj);
                     }

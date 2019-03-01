@@ -13,13 +13,14 @@ import { createContext } from 'react-core/createContext';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { dispatchEvent } from './eventSystem.quick';
-import { api } from './api.quick';
+import { facade } from './quickApis/index';
+import { processApis } from './api';
 import { Renderer } from './render.all';
 //import { onBeforeRender } from './onBeforeRender.quick';
 //Renderer.onBeforeRender = onBeforeRender;
 import { toStyle } from './toStyle.quick';
 import { toRenderProps, getCurrentPage, _getApp, _getCurrentPages, useComponent } from './utils';
-
+import { onAndSyncApis } from './apiList';
 import { registerComponent } from './registerComponent.quick';
 import { registerPage } from './registerPage.quick';
 let appMethods = {
@@ -32,6 +33,7 @@ let React = getWindow().React = {
     eventSystem: {
         dispatchEvent
     },
+    api: {},
     findDOMNode: function() {
         console.log("小程序不支持findDOMNode"); /* eslint-disable-line */
     },
@@ -70,15 +72,14 @@ let React = getWindow().React = {
         }
         delete app.constructor;//有这属性会报错
         return app;
-    },
-    api: api
-   
+    }   
 };
 
-if(typeof global !== 'undefined'){
+if (typeof global !== 'undefined'){
     var ref = Object.getPrototypeOf(global) || global;
-    ref.ReactQuick = React
+    ref.ReactQuick = React;
 }
-
+onAndSyncApis.request = true;
+processApis(React, facade); 
 export default React;
 export { Children, createElement, Component };
