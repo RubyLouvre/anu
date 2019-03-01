@@ -1,6 +1,7 @@
 var prompt = require('@system.prompt');
 
-
+import { noop } from 'react-core/util';
+import { runFunction } from '../utils';
 /**
  * 显示一个可以带两个按钮的弹窗
  * @param {*} obj 
@@ -43,9 +44,31 @@ export function showModal(obj) {
 export function showToast(obj) {  
     obj.message = obj.title;
     obj.duration = obj.duration / 1000;
-    prompt.showToast(obj);
+    let success = obj.success || noop,
+      fail = obj.fail || noop,
+      complete = obj.complete || noop;
+  
+    try {
+      prompt.showToast(obj);
+      runFunction(success);
+    } catch (error) {
+      runFunction(fail, error);
+    } finally {
+      runFunction(complete);
+    }
 }
-export function hideToast(){}
+export function hideToast(obj){
+    let success = obj.success || noop,
+    fail = obj.fail || noop,
+    complete = obj.complete || noop;
+    try {
+        runFunction(success);
+      } catch (error) {
+        runFunction(fail, error);
+      } finally {
+        runFunction(complete);
+      }
+}
 
 export function showActionSheet(obj) {
     prompt.showContextMenu(obj);
