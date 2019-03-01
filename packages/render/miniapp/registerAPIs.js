@@ -4,7 +4,7 @@ import { isFn, noop } from 'react-core/util';
 
 
 const RequestQueue = {
-    MAX_REQUEST: 5,
+    MAX_REQUEST: typeof wx !== 'undefined' ? 10 : Infinity,
     queue: [],
     request(options) {
         this.push(options);
