@@ -36,7 +36,6 @@ let React = getWindow().React = {
     eventSystem: {
         dispatchEvent
     },
-    api: {},
     findDOMNode: function() {
         console.log("小程序不支持findDOMNode"); /* eslint-disable-line */
     },

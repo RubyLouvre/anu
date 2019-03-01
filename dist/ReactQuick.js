@@ -1705,7 +1705,7 @@ var otherApis = {
 };
 
 function promisefyApis(ReactWX, facade, more) {
-    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
+    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis, more);
     Object.keys(weApis).forEach(function (key) {
         var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
@@ -3290,7 +3290,6 @@ var React = getWindow().React = {
     eventSystem: {
         dispatchEvent: dispatchEvent
     },
-    api: {},
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },

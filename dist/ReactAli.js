@@ -2399,7 +2399,7 @@ function request(options) {
     return p;
 }
 function promisefyApis(ReactWX, facade, more) {
-    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
+    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis, more);
     Object.keys(weApis).forEach(function (key) {
         var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {

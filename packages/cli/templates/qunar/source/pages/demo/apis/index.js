@@ -61,9 +61,17 @@ class Express extends React.Component {
       }
     });
   }
-  vibrator() {
-    console.log('vibrator');
+  vibrateLong() {
+    console.log('vibrateLong');
     React.api.vibrateLong({
+      success: () => {
+        alert('震动起来了');
+      }
+    });
+  }
+  vibrateShort() {
+    console.log('vibrateShort');
+    React.api.vibrateShort({
       success: () => {
         alert('震动起来了');
       }
@@ -90,7 +98,7 @@ class Express extends React.Component {
      * }
      */ 
     
-    React.api.share({
+    React.api.share && React.api.share({
       title: '标题',
       imageUrl: '/assets/logo.png',
       path: 'http://www.example.com',
@@ -236,7 +244,7 @@ class Express extends React.Component {
 
   showToast() {
     React.api.showToast({
-      title: 'showToast'
+      title: 'showToast'+ React.api.hideToast
     })
   }
 
@@ -259,8 +267,11 @@ class Express extends React.Component {
           <div onClick={this.showContextMenu} class="anu-item">
             <text>显示上下文菜单</text>
           </div>
-          <div onClick={this.vibrator} class="anu-item">
-            <text>震动</text>
+          <div onClick={this.vibrateShort} class="anu-item">
+            <text>短震</text>
+          </div>
+          <div onClick={this.vibrateLong} class="anu-item">
+            <text>长震</text>
           </div>
           <div onClick={this.upload} class="anu-item">
             <text>文件上传</text>

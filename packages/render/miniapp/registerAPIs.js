@@ -65,7 +65,7 @@ function request(options) {
 }
 
 export function promisefyApis(ReactWX, facade, more) {
-    const weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
+    const weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis, more);
     Object.keys(weApis).forEach(key => {
         var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
