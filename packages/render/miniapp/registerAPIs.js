@@ -64,14 +64,16 @@ function request(options) {
     return p;
 }
 
-export function processApis(ReactWX, facade) {
+export function promisefyApis(ReactWX, facade, more) {
     const weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
     Object.keys(weApis).forEach(key => {
+        var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
             ReactWX.api[key] = options => {
                 options = options || {};
+              
                 if ( options +'' === options ) {
-                    return facade[key](options);
+                    return needWrapper(options);
                 }
                 let task = null;
                 let obj = Object.assign({}, options);
@@ -90,10 +92,10 @@ export function processApis(ReactWX, facade) {
                             }
                         };
                     });
-                    if (!isFn(facade[key])){
+                    if (needWrapper === noop){
                         console.warn('平台未不支持',key, '方法');//eslint-disable-line
                     } else {
-                        task = facade[key](obj);
+                        task = needWrapper(obj);
                     }
                    
                 });
@@ -111,9 +113,13 @@ export function processApis(ReactWX, facade) {
                 return p;
             };
         } else {
-            ReactWX.api[key] = function() {
-                return facade[key] && facade[key].apply(facade, arguments);
-            };
+            if (needWrapper == noop){
+                ReactWX.api[key] = noop;
+            } else {
+                ReactWX.api[key] = function() {
+                    return needWrapper.apply(facade, arguments);
+                };
+            }
         }
     });
 
@@ -151,9 +157,5 @@ export function registerAPIs(ReactWX, facade, override) {
 
 export function registerAPIsQuick(ReactWX, facade, override) {
     ReactWX.api = {};
-    processApis(ReactWX, facade);
-    if (override){
-        var obj = override(facade);
-        Object.assign(ReactWX.api, obj);
-    }
+    promisefyApis(ReactWX, facade, override(facade) );
 }

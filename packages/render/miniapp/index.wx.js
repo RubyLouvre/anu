@@ -69,7 +69,9 @@ if (typeof wx != 'undefined'){
     React.appType = 'tt';
 } 
 
-registerAPIs(React, apiContainer);
+registerAPIs(React, apiContainer, function(){
+    return {};
+});
 
 export default React;
 export { Children, createElement, Component };
