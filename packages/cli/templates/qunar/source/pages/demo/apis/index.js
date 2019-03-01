@@ -227,7 +227,7 @@ class Express extends React.Component {
 
    setTitleBar() {
     React.api.setNavigationBarTitle({
-      title: 111,
+      title: 'a new title',
       success: function() {
         alert('setTitleBar success');
       }
