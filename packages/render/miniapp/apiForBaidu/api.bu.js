@@ -46,7 +46,7 @@ export var buApis = function(api) {
         },
         setDocumentTitle: function _(a) {
             let defailt = {
-               title: ''
+                title: ''
             };
             let options = Object.assign(defailt, a);
             return api.setDocumentTitle && api.setDocumentTitle(options)

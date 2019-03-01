@@ -1,21 +1,7 @@
 import { onAndSyncApis, noPromiseApis, otherApis } from './apiList';
-import { isFn } from 'react-core/util';
+import { isFn, noop } from 'react-core/util';
 
-function initPxTransform() {
-    var wxConfig = this.api;
-    var windowWidth = 375;
-    wxConfig.designWidth = windowWidth;
-    wxConfig.deviceRatio = 750 / windowWidth / 2;
-    if (wxConfig.getSystemInfo) {
-        wxConfig.getSystemInfo({
-            success: function(res) {
-                windowWidth = res.windowWidth;
-                wxConfig.designWidth = windowWidth;
-                wxConfig.deviceRatio = 750 / windowWidth / 2;
-            }
-        });
-    }
-}
+
 
 const RequestQueue = {
     MAX_REQUEST: 5,
@@ -36,9 +22,10 @@ const RequestQueue = {
         if (this.queue.length <= this.MAX_REQUEST) {
             let options = this.queue.shift();
             let completeFn = options.complete;
-            options.complete = () => {
-                completeFn && completeFn.apply(options, [...arguments]);
-                this.run();
+            var self = this;
+            options.complete = function() {
+                completeFn && completeFn.apply(null, arguments);
+                self.run();
             };
             if (this.facade.httpRequest) {
                 this.facade.httpRequest(options);
@@ -51,30 +38,25 @@ const RequestQueue = {
 
 function request(options) {
     options = options || {};
-    if ( options +'' === options) {
-        options = {
-            url: options
-        };
-    }
     options.headers = options.headers || options.header;
-    const originSuccess = options['success'];
-    const originFail = options['fail'];
-    const originComplete = options['complete'];
+    const originSuccess = options.success || noop;
+    const originFail = options.fail || noop;
+    const originComplete = options.complete || noop;
     const p = new Promise((resolve, reject) => {
-        options['success'] = res => {
+        options.success = res => {
             //  支付宝返回字段不相同
             res.statusCode = res.status || res.statusCode;
             res.header = res.headers || res.header;
-            originSuccess && originSuccess(res);
+            originSuccess(res);
             resolve(res);
         };
         options['fail'] = res => {
-            originFail && originFail(res);
+            originFail(res);
             reject(res);
         };
 
         options['complete'] = res => {
-            originComplete && originComplete(res);
+            originComplete(res);
         };
 
         RequestQueue.request(options);
@@ -143,15 +125,35 @@ function pxTransform(size) {
     return parseInt(size, 10) / deviceRatio + 'rpx';
 }
 
-export function injectAPIs(ReactWX, facade, override) {
+function initPxTransform(facade) {   
+    function fallback(windowWidth){
+        facade.designWidth = windowWidth;
+        facade.deviceRatio = 750 / windowWidth / 2;
+    }
+    if (facade.getSystemInfo) {
+        facade.getSystemInfo({
+            success: function(res) {
+                fallback(res.windowWidth);
+            }
+        });
+    } else {
+        fallback(375);
+    }
+}
+
+export function registerAPIs(ReactWX, facade, override) {
+    registerAPIsQuick(ReactWX, facade, override);
+    RequestQueue.facade = facade;
+    ReactWX.api.request = request;
+    initPxTransform(ReactWX.api);
+    ReactWX.api.pxTransform =  ReactWX.pxTransform = pxTransform.bind(ReactWX);
+}
+
+export function registerAPIsQuick(ReactWX, facade, override) {
     ReactWX.api = {};
     processApis(ReactWX, facade);
-    ReactWX.api.request = request;
     if (override){
         var obj = override(facade);
         Object.assign(ReactWX.api, obj);
     }
-    RequestQueue.facade = facade;
-    ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
-    ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }

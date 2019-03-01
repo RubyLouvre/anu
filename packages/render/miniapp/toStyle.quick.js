@@ -13,8 +13,8 @@ function transform(obj) {
     for (var i in obj){
         let value = obj[i]+'';
         value = value.replace(rpx, (str, match, unit) => {
-            if(unit.toLowerCase() === 'px') {
-                match = parseFloat(match) * 2
+            if ( unit.toLowerCase() === 'px') {
+                match = parseFloat(match) * 2;
             } 
             return match + 'px';
         });

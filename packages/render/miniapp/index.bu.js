@@ -13,15 +13,20 @@ import { createContext } from 'react-core/createContext';
 
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
-import { injectAPIs } from './api';
-import { buApis } from './api.bu';
 
 import { dispatchEvent, webview } from './eventSystem';
 import { Renderer } from './render.all';
-//import { onBeforeRender } from './onBeforeRender.bu';
-//Renderer.onBeforeRender = onBeforeRender;
+
 import { toStyle } from './toStyle';
-import { toRenderProps,  _getApp , getCurrentPage, _getCurrentPages, useComponent } from './utils';
+import { 
+    toRenderProps, 
+    _getApp , 
+    getCurrentPage, 
+    _getCurrentPages, 
+    useComponent } from './utils';
+//小程序的API注入
+import { registerAPIs } from './registerAPIs';
+import { more } from './apiForBaidu/index';
 
 import { registerComponent } from './registerComponent.bu';
 import { registerPage } from './registerPage.wx';
@@ -69,7 +74,7 @@ let apiContainer = {};
 if (typeof swan != 'undefined') {
     apiContainer = swan; //eslint-disable-line
 }
-injectAPIs(React, apiContainer, buApis);
+registerAPIs(React, apiContainer, more);
 
 export default React;
 export { Children, createElement, Component };

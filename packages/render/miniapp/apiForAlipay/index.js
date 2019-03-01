@@ -1,4 +1,4 @@
-export var aliApis = function(api) {
+export var more = function(api) {
     return {
         // 交互
         showModal: function _(a) {
@@ -32,7 +32,6 @@ export var aliApis = function(api) {
         setNavigationBarColor: function _(a) {
             return api.setNavigationBar(a);
         },
-
         // 震动
         vibrateLong: function _(a) {
           return api.vibrate(a);

@@ -1212,42 +1212,44 @@ function getDeviceId(options) {
     device.getDeviceId(options);
 }
 
-var media = require('@system.media');
-var file$1 = require('@system.file');
 function chooseImage(_ref) {
-  var _ref$count = _ref.count,
-      count = _ref$count === undefined ? 1 : _ref$count,
-      _ref$sourceType = _ref.sourceType,
-      sourceType = _ref$sourceType === undefined ? [] : _ref$sourceType,
-      _success = _ref.success,
-      fail = _ref.fail,
-      complete = _ref.complete;
-  if (count > 1) {
-    runFunction(fail, new Error('快应用选择图片的数量不能大于1'));
-  }
-  function imagePicked(_ref2) {
-    var path = _ref2.uri;
-    file$1.get({
-      uri: path,
-      success: function success(_ref3) {
-        var size = _ref3.length;
-        var tempFilePaths = [path];
-        var tempFiles = [{ path: path, size: size }];
-        _success({
-          tempFilePaths: tempFilePaths,
-          tempFiles: tempFiles
+    var _ref$count = _ref.count,
+        count = _ref$count === undefined ? 1 : _ref$count,
+        _ref$sourceType = _ref.sourceType,
+        sourceType = _ref$sourceType === undefined ? [] : _ref$sourceType,
+        _success = _ref.success,
+        _ref$fail = _ref.fail,
+        fail = _ref$fail === undefined ? noop : _ref$fail,
+        _ref$complete = _ref.complete,
+        complete = _ref$complete === undefined ? noop : _ref$complete;
+    if (count > 1) {
+        return fail(new Error('快应用选择图片的数量不能大于1'));
+    }
+    function imagePicked(_ref2) {
+        var path = _ref2.uri;
+        var file = require('@system.file');
+        file.get({
+            uri: path,
+            success: function success(_ref3) {
+                var size = _ref3.length;
+                var tempFilePaths = [path];
+                var tempFiles = [{ path: path, size: size }];
+                _success({
+                    tempFilePaths: tempFilePaths,
+                    tempFiles: tempFiles
+                });
+            },
+            fail: fail
         });
-      },
-      fail: fail
+    }
+    var media = require('@system.media');
+    var pick = sourceType.length === 1 && sourceType[0] === 'camera' ? media.takePhoto : media.pickImage;
+    pick({
+        success: imagePicked,
+        fail: fail,
+        complete: complete,
+        cancel: fail
     });
-  }
-  var pick = sourceType.length === 1 && sourceType[0] === 'camera' ? media.takePhoto : media.pickImage;
-  pick({
-    success: imagePicked,
-    fail: fail || noop,
-    complete: complete || noop,
-    cancel: fail || noop
-  });
 }
 
 var prompt = require('@system.prompt');
@@ -1389,7 +1391,7 @@ function vibrateShort() {
 }
 
 function share(obj) {
-    var share = require('@service.share');
+    var share = require('@system.share');
     share.getAvailablePlatforms({
         success: function success(data) {
             var shareType = 0;
@@ -1528,6 +1530,12 @@ var facade = {
         }
     }
 };
+function more() {
+    return {
+        initStorageSync: initStorageSync,
+        share: share
+    };
+}
 
 var onAndSyncApis = {
   onSocketOpen: true,
@@ -1765,6 +1773,14 @@ function processApis(ReactWX, facade) {
             };
         }
     });
+}
+function registerAPIsQuick(ReactWX, facade, override) {
+    ReactWX.api = {};
+    processApis(ReactWX, facade);
+    if (override) {
+        var obj = override(facade);
+        Object.assign(ReactWX.api, obj);
+    }
 }
 
 function UpdateQueue() {
@@ -3223,37 +3239,6 @@ function onUnload() {
     callGlobalHook('onGlobalUnload');
 }
 
-function showMenu(instance, app) {
-    getSystemInfo({
-        success: function success(appInfo) {
-            showActionSheet({
-                itemList: ['转发', '保存到桌面', '关于', '取消'],
-                success: function success(ret) {
-                    switch (ret.index) {
-                        case 0:
-                            var fn = instance.onShareAppMessage || app.onGlobalShare;
-                            var obj = fn && fn();
-                            if (obj) {
-                                share(obj);
-                            }
-                            break;
-                        case 1:
-                            createShortcut();
-                            break;
-                        case 2:
-                            redirectTo({
-                                url: 'pages/about/index?brand=' + appInfo.brand + '&version=' + appInfo.version
-                            });
-                            break;
-                        case 3:
-                            break;
-                    }
-                }
-            });
-        }
-    });
-}
-
 var globalHooks = {
     onShareAppMessage: 'onGlobalShare',
     onShow: 'onGlobalShow',
@@ -3294,12 +3279,13 @@ function registerPage(PageClass) {
         config[hook] = function (e) {
             var instance = this.reactInstance;
             var fn = instance[hook];
+            var app = _getApp();
             if (hook === 'onShow') {
-                _getApp().$$page = instance.wx;
-                _getApp().$$pagePath = instance.props.path;
+                app.$$page = instance.wx;
+                app.$$pagePath = instance.props.path;
             }
             if (hook === 'onMenuPress') {
-                showMenu(instance, this.$app);
+                app.onShowMenu && app.onShowMenu(instance, this.$app);
             } else if (isFn(fn)) {
                 fn.call(instance, e);
             }
@@ -3365,7 +3351,7 @@ if (typeof global !== 'undefined') {
     ref.ReactQuick = React;
 }
 onAndSyncApis.request = true;
-processApis(React, facade);
+registerAPIsQuick(React, facade, more);
 
 export default React;
 export { Children, createElement, Component };

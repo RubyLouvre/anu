@@ -1,5 +1,5 @@
 
-import {showActionSheet} from './dialog';
+import { showActionSheet} from './dialog';
 import { getSystemInfo }  from './device';
 import { share }  from './share';
 import { redirectTo }  from './router';

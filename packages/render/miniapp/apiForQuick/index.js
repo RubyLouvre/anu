@@ -158,4 +158,9 @@ export var facade = {
     }
 
 };
-
+export function more(){
+    return  {
+        initStorageSync,
+        share //分享(小程序没有这个api)
+    };
+} 

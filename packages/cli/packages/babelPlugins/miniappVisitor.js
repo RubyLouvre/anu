@@ -469,7 +469,7 @@ module.exports = {
                 });
                 
                 let parentTagName = p && utils.getNodeName(p.node);
-                if (parentTagName === ' text'|| parentTagName === 'a'){
+                if (parentTagName === 'text'|| parentTagName === 'a'){
                     return;
                 }       
             }
