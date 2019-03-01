@@ -354,7 +354,32 @@ module.exports = {
         }
     },
     MemberExpression() {},
-    AssignmentExpression() {},
+    AssignmentExpression:{
+        enter(astPath, state) {
+            // eslint-disable-next-line no-debugger
+            debugger;
+            const member = generate(astPath.get('left').node).code;
+            let modules = utils.getAnu(state);
+            if (member === 'this.config'){
+                // eslint-disable-next-line no-debugger
+                debugger;
+                console.log('[AE] == this.config ======', path.relative(process.cwd(), state.filename));
+                if (/App|Page|Component/.test(modules.componentType)) {
+                    try {
+                        var json = eval('0,' + generate(astPath.get('right').node).code);
+                        Object.assign(modules.config, json);
+                    } catch (e) {
+                        console.log('eval json error', e);
+                    }
+                }
+            }
+            if (member === 'this.globalData' && modules.componentType === 'App') {
+                // eslint-disable-next-line no-debugger
+                debugger;
+                console.log('[AE] == this.globalData ==', path.relative(process.cwd(), state.filename));
+            }
+        }
+    },
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
