@@ -355,15 +355,10 @@ module.exports = {
     },
     MemberExpression() {},
     AssignmentExpression:{
-        enter(astPath, state) {
-            // eslint-disable-next-line no-debugger
-            debugger;
+        exit(astPath, state) {
             const member = generate(astPath.get('left').node).code;
             let modules = utils.getAnu(state);
             if (member === 'this.config'){
-                // eslint-disable-next-line no-debugger
-                debugger;
-                console.log('[AE] == this.config ======', path.relative(process.cwd(), state.filename));
                 if (/App|Page|Component/.test(modules.componentType)) {
                     try {
                         var json = eval('0,' + generate(astPath.get('right').node).code);
