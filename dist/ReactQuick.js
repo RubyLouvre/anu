@@ -1421,6 +1421,25 @@ function createCanvasContext(id, obj) {
   }
 }
 
+var payAPI = require('@service.pay');
+var wxpayAPI = require('@service.wxpay');
+var alipayAPI = require('@service.alipay');
+function pay(obj) {
+    payAPI.pay(obj);
+}
+function getProvider() {
+    payAPI.getProvider();
+}
+function wxpayGetType() {
+    wxpayAPI.getType();
+}
+function wxpay() {
+    wxpayAPI.pay();
+}
+function alipay() {
+    alipayAPI.pay();
+}
+
 var facade = {
     showModal: showModal,
     showActionSheet: showActionSheet,
@@ -1516,7 +1535,12 @@ var facade = {
 function more() {
     return {
         initStorageSync: initStorageSync,
-        share: share
+        share: share,
+        pay: pay,
+        getProvider: getProvider,
+        wxpayGetType: wxpayGetType,
+        wxpay: wxpay,
+        alipay: alipay
     };
 }
 
