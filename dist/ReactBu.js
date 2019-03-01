@@ -2191,7 +2191,6 @@ var onAndSyncApis = {
   getLogManager: true
 };
 var noPromiseApis = {
-  initStorageSync: true,
   stopRecord: true,
   getRecorderManager: true,
   pauseVoice: true,
@@ -2446,7 +2445,7 @@ function processApis(ReactWX, facade) {
             };
         } else {
             ReactWX.api[key] = function () {
-                return facade[key].apply(facade, arguments);
+                return facade[key] && facade[key].apply(facade, arguments);
             };
         }
     });

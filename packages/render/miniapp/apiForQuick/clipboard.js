@@ -24,7 +24,6 @@ function getClipboardData({
     fail,
     complete
 }) {
-  
     clipboard.get({
         success:  function(obj) {
             success({

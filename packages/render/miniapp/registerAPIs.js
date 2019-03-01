@@ -112,7 +112,7 @@ export function processApis(ReactWX, facade) {
             };
         } else {
             ReactWX.api[key] = function() {
-                return facade[key].apply(facade, arguments);
+                return facade[key] && facade[key].apply(facade, arguments);
             };
         }
     });

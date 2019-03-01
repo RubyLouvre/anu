@@ -1290,18 +1290,6 @@ function showToast(obj) {
         runFunction(complete);
     }
 }
-function hideToast(obj) {
-    var success = obj.success || noop,
-        fail = obj.fail || noop,
-        complete = obj.complete || noop;
-    try {
-        runFunction(success);
-    } catch (error) {
-        runFunction(fail, error);
-    } finally {
-        runFunction(complete);
-    }
-}
 function showActionSheet(obj) {
     prompt.showContextMenu(obj);
 }
@@ -1310,7 +1298,6 @@ function showLoading(obj) {
     obj.duration = 1;
     prompt.showToast(obj);
 }
-function hideLoading() {}
 
 function createShortcut() {
     var shortcut = require('@system.shortcut');
@@ -1438,15 +1425,12 @@ var facade = {
     showModal: showModal,
     showActionSheet: showActionSheet,
     showToast: showToast,
-    hideToast: hideToast,
     showLoading: showLoading,
-    hideLoading: hideLoading,
     navigateTo: navigateTo,
     redirectTo: redirectTo,
     navigateBack: navigateBack,
     vibrateLong: vibrateLong,
     vibrateShort: vibrateShort,
-    share: share,
     uploadFile: uploadFile,
     downloadFile: downloadFile,
     request: request,
@@ -1465,7 +1449,6 @@ var facade = {
     setStorage: setStorage,
     getStorage: getStorage,
     removeStorage: removeStorage,
-    initStorageSync: initStorageSync,
     clearStorage: clearStorage,
     setStorageSync: setStorageSync,
     getStorageSync: getStorageSync,
@@ -1568,7 +1551,6 @@ var onAndSyncApis = {
   getLogManager: true
 };
 var noPromiseApis = {
-  initStorageSync: true,
   stopRecord: true,
   getRecorderManager: true,
   pauseVoice: true,
@@ -1769,7 +1751,7 @@ function processApis(ReactWX, facade) {
             };
         } else {
             ReactWX.api[key] = function () {
-                return facade[key].apply(facade, arguments);
+                return facade[key] && facade[key].apply(facade, arguments);
             };
         }
     });

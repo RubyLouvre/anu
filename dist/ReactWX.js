@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-01T07
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-01T09
  * IE9+
  */
 
@@ -658,7 +658,6 @@ var onAndSyncApis = {
   getLogManager: true
 };
 var noPromiseApis = {
-  initStorageSync: true,
   stopRecord: true,
   getRecorderManager: true,
   pauseVoice: true,
@@ -913,7 +912,7 @@ function processApis(ReactWX, facade) {
             };
         } else {
             ReactWX.api[key] = function () {
-                return facade[key].apply(facade, arguments);
+                return facade[key] && facade[key].apply(facade, arguments);
             };
         }
     });
