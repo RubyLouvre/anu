@@ -11,7 +11,7 @@ function alert(msg) {
 }
 
 // 事件
-class Data extends React.Component {
+class P extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -97,4 +97,4 @@ class Data extends React.Component {
     );
   }
 }
-export default Data;
+export default P;

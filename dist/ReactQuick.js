@@ -1503,7 +1503,6 @@ var facade = {
             runFunction(complete);
         }
     },
-    createShortcut: createShortcut,
     createCanvasContext: createCanvasContext,
     stopPullDownRefresh: function stopPullDownRefresh(obj) {
         obj = obj || {};
@@ -1535,6 +1534,7 @@ var facade = {
 function more() {
     return {
         initStorageSync: initStorageSync,
+        createShortcut: createShortcut,
         share: share,
         pay: pay,
         getProvider: getProvider,

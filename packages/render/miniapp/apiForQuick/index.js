@@ -124,7 +124,7 @@ export var facade = {
             runFunction(complete);
         }
     },
-    createShortcut,
+   
     createCanvasContext,
     stopPullDownRefresh(obj) {
         obj = obj || {};
@@ -162,7 +162,8 @@ export var facade = {
 export function more(){
     return  {
         initStorageSync,
-        share, //分享(小程序没有这个api)
+        createShortcut,//快应用专用
+        share, //快应用专用
         pay, 
         getProvider, 
         wxpayGetType, 
