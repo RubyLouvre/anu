@@ -29,7 +29,6 @@ export var onAndSyncApis = {
     getLogManager: true
 };
 export var noPromiseApis = {
-    initStorageSync: true,
     // 媒体
     stopRecord: true,
     getRecorderManager: true,
@@ -211,5 +210,4 @@ export var otherApis = {
     checkIsSupportSoterAuthentication: true,
     startSoterAuthentication: true,
     checkIsSoterEnrolledInDevice: true
-    //
 };

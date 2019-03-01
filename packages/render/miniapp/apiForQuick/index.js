@@ -39,9 +39,9 @@ import {
     showModal,
     showActionSheet,
     showToast,
-    hideToast,
+  
     showLoading,
-    hideLoading 
+   
 } from './dialog';
 import { navigateTo, redirectTo , navigateBack } from './router';
 import { vibrateLong, vibrateShort } from './vibrator';
@@ -56,9 +56,9 @@ export var facade = {
     showModal,
     showActionSheet,
     showToast,
-    hideToast,
+    // hideToast,
     showLoading,
-    hideLoading,
+    // hideLoading,
     // 导航
     navigateTo, 
     redirectTo , 
@@ -67,8 +67,7 @@ export var facade = {
     vibrateLong, 
     vibrateShort,
 
-    // 分享(小程序没有这个api)
-    share,
+
     // 上传
     uploadFile,
     // 下载
@@ -90,7 +89,7 @@ export var facade = {
     setStorage,
     getStorage,
     removeStorage,
-    initStorageSync,
+    // initStorageSync,
     clearStorage,
     setStorageSync,
     getStorageSync,

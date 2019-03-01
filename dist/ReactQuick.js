@@ -1290,18 +1290,6 @@ function showToast(obj) {
         runFunction(complete);
     }
 }
-function hideToast(obj) {
-    var success = obj.success || noop,
-        fail = obj.fail || noop,
-        complete = obj.complete || noop;
-    try {
-        runFunction(success);
-    } catch (error) {
-        runFunction(fail, error);
-    } finally {
-        runFunction(complete);
-    }
-}
 function showActionSheet(obj) {
     prompt.showContextMenu(obj);
 }
@@ -1310,7 +1298,6 @@ function showLoading(obj) {
     obj.duration = 1;
     prompt.showToast(obj);
 }
-function hideLoading() {}
 
 function createShortcut() {
     var shortcut = require('@system.shortcut');
@@ -1438,15 +1425,12 @@ var facade = {
     showModal: showModal,
     showActionSheet: showActionSheet,
     showToast: showToast,
-    hideToast: hideToast,
     showLoading: showLoading,
-    hideLoading: hideLoading,
     navigateTo: navigateTo,
     redirectTo: redirectTo,
     navigateBack: navigateBack,
     vibrateLong: vibrateLong,
     vibrateShort: vibrateShort,
-    share: share,
     uploadFile: uploadFile,
     downloadFile: downloadFile,
     request: request,
@@ -1465,7 +1449,6 @@ var facade = {
     setStorage: setStorage,
     getStorage: getStorage,
     removeStorage: removeStorage,
-    initStorageSync: initStorageSync,
     clearStorage: clearStorage,
     setStorageSync: setStorageSync,
     getStorageSync: getStorageSync,
@@ -1568,7 +1551,6 @@ var onAndSyncApis = {
   getLogManager: true
 };
 var noPromiseApis = {
-  initStorageSync: true,
   stopRecord: true,
   getRecorderManager: true,
   pauseVoice: true,
@@ -1722,14 +1704,15 @@ var otherApis = {
   checkIsSoterEnrolledInDevice: true
 };
 
-function processApis(ReactWX, facade) {
+function promisefyApis(ReactWX, facade, more) {
     var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
     Object.keys(weApis).forEach(function (key) {
+        var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
             ReactWX.api[key] = function (options) {
                 options = options || {};
                 if (options + '' === options) {
-                    return facade[key](options);
+                    return needWrapper(options);
                 }
                 var task = null;
                 var obj = Object.assign({}, options);
@@ -1748,10 +1731,10 @@ function processApis(ReactWX, facade) {
                             }
                         };
                     });
-                    if (!isFn(facade[key])) {
+                    if (needWrapper === noop) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
-                        task = facade[key](obj);
+                        task = needWrapper(obj);
                     }
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
@@ -1768,19 +1751,19 @@ function processApis(ReactWX, facade) {
                 return p;
             };
         } else {
-            ReactWX.api[key] = function () {
-                return facade[key].apply(facade, arguments);
-            };
+            if (needWrapper == noop) {
+                ReactWX.api[key] = noop;
+            } else {
+                ReactWX.api[key] = function () {
+                    return needWrapper.apply(facade, arguments);
+                };
+            }
         }
     });
 }
 function registerAPIsQuick(ReactWX, facade, override) {
     ReactWX.api = {};
-    processApis(ReactWX, facade);
-    if (override) {
-        var obj = override(facade);
-        Object.assign(ReactWX.api, obj);
-    }
+    promisefyApis(ReactWX, facade, override(facade));
 }
 
 function UpdateQueue() {

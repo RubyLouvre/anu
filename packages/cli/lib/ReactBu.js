@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-02-22
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-01
  */
 
 var arrayPush = Array.prototype.push;
@@ -626,388 +626,6 @@ function createContext(defaultValue, calculateChangedBits) {
     getContext.Consumer = Consumer;
     return getContext;
 }
-
-var onAndSyncApis = {
-  onSocketOpen: true,
-  onSocketError: true,
-  onSocketMessage: true,
-  onSocketClose: true,
-  onBackgroundAudioPlay: true,
-  onBackgroundAudioPause: true,
-  onBackgroundAudioStop: true,
-  onNetworkStatusChange: true,
-  onAccelerometerChange: true,
-  onCompassChange: true,
-  onBluetoothAdapterStateChange: true,
-  onBluetoothDeviceFound: true,
-  onBLEConnectionStateChange: true,
-  onBLECharacteristicValueChange: true,
-  onBeaconUpdate: true,
-  onBeaconServiceChange: true,
-  onUserCaptureScreen: true,
-  onHCEMessage: true,
-  onGetWifiList: true,
-  onWifiConnected: true,
-  setStorageSync: true,
-  getStorageSync: true,
-  getStorageInfoSync: true,
-  removeStorageSync: true,
-  clearStorageSync: true,
-  getSystemInfoSync: true,
-  getExtConfigSync: true,
-  getLogManager: true
-};
-var noPromiseApis = {
-  stopRecord: true,
-  getRecorderManager: true,
-  pauseVoice: true,
-  stopVoice: true,
-  pauseBackgroundAudio: true,
-  stopBackgroundAudio: true,
-  getBackgroundAudioManager: true,
-  createAudioContext: true,
-  createInnerAudioContext: true,
-  createVideoContext: true,
-  createCameraContext: true,
-  navigateBack: true,
-  createMapContext: true,
-  canIUse: true,
-  startAccelerometer: true,
-  stopAccelerometer: true,
-  startCompass: true,
-  stopCompass: true,
-  hideToast: true,
-  hideLoading: true,
-  showNavigationBarLoading: true,
-  hideNavigationBarLoading: true,
-  createAnimation: true,
-  pageScrollTo: true,
-  createSelectorQuery: true,
-  createCanvasContext: true,
-  createContext: true,
-  drawCanvas: true,
-  hideKeyboard: true,
-  stopPullDownRefresh: true,
-  arrayBufferToBase64: true,
-  base64ToArrayBuffer: true,
-  getUpdateManager: true,
-  createWorker: true
-};
-var otherApis = {
-  uploadFile: true,
-  downloadFile: true,
-  connectSocket: true,
-  sendSocketMessage: true,
-  closeSocket: true,
-  chooseImage: true,
-  previewImage: true,
-  getImageInfo: true,
-  saveImageToPhotosAlbum: true,
-  startRecord: true,
-  playVoice: true,
-  getBackgroundAudioPlayerState: true,
-  playBackgroundAudio: true,
-  seekBackgroundAudio: true,
-  chooseVideo: true,
-  saveVideoToPhotosAlbum: true,
-  loadFontFace: true,
-  saveFile: true,
-  getFileInfo: true,
-  getSavedFileList: true,
-  getSavedFileInfo: true,
-  removeSavedFile: true,
-  openDocument: true,
-  setStorage: true,
-  getStorage: true,
-  getStorageInfo: true,
-  removeStorage: true,
-  clearStorage: true,
-  navigateTo: true,
-  redirectTo: true,
-  switchTab: true,
-  reLaunch: true,
-  getLocation: true,
-  chooseLocation: true,
-  openLocation: true,
-  getSystemInfo: true,
-  getNetworkType: true,
-  makePhoneCall: true,
-  scanCode: true,
-  setClipboardData: true,
-  getClipboardData: true,
-  openBluetoothAdapter: true,
-  closeBluetoothAdapter: true,
-  getBluetoothAdapterState: true,
-  startBluetoothDevicesDiscovery: true,
-  stopBluetoothDevicesDiscovery: true,
-  getBluetoothDevices: true,
-  getConnectedBluetoothDevices: true,
-  createBLEConnection: true,
-  closeBLEConnection: true,
-  getBLEDeviceServices: true,
-  getBLEDeviceCharacteristics: true,
-  readBLECharacteristicValue: true,
-  writeBLECharacteristicValue: true,
-  notifyBLECharacteristicValueChange: true,
-  startBeaconDiscovery: true,
-  stopBeaconDiscovery: true,
-  getBeacons: true,
-  setScreenBrightness: true,
-  getScreenBrightness: true,
-  setKeepScreenOn: true,
-  vibrateLong: true,
-  vibrateShort: true,
-  addPhoneContact: true,
-  getHCEState: true,
-  startHCE: true,
-  stopHCE: true,
-  sendHCEMessage: true,
-  startWifi: true,
-  stopWifi: true,
-  connectWifi: true,
-  getWifiList: true,
-  setWifiList: true,
-  getConnectedWifi: true,
-  showToast: true,
-  showLoading: true,
-  showModal: true,
-  showActionSheet: true,
-  setNavigationBarTitle: true,
-  setNavigationBarColor: true,
-  setTabBarBadge: true,
-  removeTabBarBadge: true,
-  showTabBarRedDot: true,
-  hideTabBarRedDot: true,
-  setTabBarStyle: true,
-  setTabBarItem: true,
-  showTabBar: true,
-  hideTabBar: true,
-  setTopBarText: true,
-  startPullDownRefresh: true,
-  canvasToTempFilePath: true,
-  canvasGetImageData: true,
-  canvasPutImageData: true,
-  getExtConfig: true,
-  login: true,
-  checkSession: true,
-  authorize: true,
-  getUserInfo: true,
-  requestPayment: true,
-  showShareMenu: true,
-  hideShareMenu: true,
-  updateShareMenu: true,
-  getShareInfo: true,
-  chooseAddress: true,
-  addCard: true,
-  openCard: true,
-  openSetting: true,
-  getSetting: true,
-  getWeRunData: true,
-  navigateToMiniProgram: true,
-  navigateBackMiniProgram: true,
-  chooseInvoiceTitle: true,
-  checkIsSupportSoterAuthentication: true,
-  startSoterAuthentication: true,
-  checkIsSoterEnrolledInDevice: true
-};
-
-function initPxTransform() {
-    var wxConfig = this.api;
-    var windowWidth = 375;
-    wxConfig.designWidth = windowWidth;
-    wxConfig.deviceRatio = 750 / windowWidth / 2;
-    if (wxConfig.getSystemInfo) {
-        wxConfig.getSystemInfo({
-            success: function success(res) {
-                windowWidth = res.windowWidth;
-                wxConfig.designWidth = windowWidth;
-                wxConfig.deviceRatio = 750 / windowWidth / 2;
-            }
-        });
-    }
-}
-var RequestQueue = {
-    MAX_REQUEST: 5,
-    queue: [],
-    request: function request(options) {
-        this.push(options);
-        this.run();
-    },
-    push: function push(options) {
-        this.queue.push(options);
-    },
-    run: function run() {
-        var _arguments = arguments,
-            _this = this;
-        if (!this.queue.length) {
-            return;
-        }
-        if (this.queue.length <= this.MAX_REQUEST) {
-            var options = this.queue.shift();
-            var completeFn = options.complete;
-            options.complete = function () {
-                completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
-                _this.run();
-            };
-            if (this.facade.httpRequest) {
-                this.facade.httpRequest(options);
-            } else if (this.facade.request) {
-                this.facade.request(options);
-            }
-        }
-    }
-};
-function request(options) {
-    options = options || {};
-    if (options + '' === options) {
-        options = {
-            url: options
-        };
-    }
-    options.headers = options.headers || options.header;
-    var originSuccess = options['success'];
-    var originFail = options['fail'];
-    var originComplete = options['complete'];
-    var p = new Promise(function (resolve, reject) {
-        options['success'] = function (res) {
-            res.statusCode = res.status || res.statusCode;
-            res.header = res.headers || res.header;
-            originSuccess && originSuccess(res);
-            resolve(res);
-        };
-        options['fail'] = function (res) {
-            originFail && originFail(res);
-            reject(res);
-        };
-        options['complete'] = function (res) {
-            originComplete && originComplete(res);
-        };
-        RequestQueue.request(options);
-    });
-    return p;
-}
-function processApis(ReactWX, facade) {
-    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
-    Object.keys(weApis).forEach(function (key) {
-        if (!onAndSyncApis[key] && !noPromiseApis[key]) {
-            ReactWX.api[key] = function (options) {
-                options = options || {};
-                var task = null;
-                var obj = Object.assign({}, options);
-                if (options + '' === options) {
-                    return facade[key](options);
-                }
-                var p = new Promise(function (resolve, reject) {
-                    ['fail', 'success', 'complete'].forEach(function (k) {
-                        obj[k] = function (res) {
-                            options[k] && options[k](res);
-                            if (k === 'success') {
-                                if (key === 'connectSocket') {
-                                    resolve(task);
-                                } else {
-                                    resolve(res);
-                                }
-                            } else if (k === 'fail') {
-                                reject(res);
-                            }
-                        };
-                    });
-                    if (!isFn(facade[key])) {
-                        console.warn('平台未不支持', key, '方法');
-                    } else {
-                        task = facade[key](obj);
-                    }
-                });
-                if (key === 'uploadFile' || key === 'downloadFile') {
-                    p.progress = function (cb) {
-                        task.onProgressUpdate(cb);
-                        return p;
-                    };
-                    p.abort = function (cb) {
-                        cb && cb();
-                        task.abort();
-                        return p;
-                    };
-                }
-                return p;
-            };
-        } else {
-            ReactWX.api[key] = function () {
-                return facade[key].apply(facade, arguments);
-            };
-        }
-    });
-}
-function pxTransform(size) {
-    var deviceRatio = this.api.deviceRatio;
-    return parseInt(size, 10) / deviceRatio + 'rpx';
-}
-function injectAPIs(ReactWX, facade, override) {
-    ReactWX.api = {};
-    processApis(ReactWX, facade);
-    ReactWX.api.request = request;
-    if (override) {
-        var obj = override(facade);
-        Object.assign(ReactWX.api, obj);
-    }
-    RequestQueue.facade = facade;
-    ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
-    ReactWX.pxTransform = pxTransform.bind(ReactWX);
-}
-
-var buApis = function buApis(api) {
-    return {
-        showActionSheet: function _(a) {
-            var success = a['success'],
-                complete = a['complete'];
-            a['success'] = function (res) {
-                success && success({ index: res.tapIndex });
-            };
-            a['complete'] = function (res) {
-                complete && complete({ index: res.tapIndex });
-            };
-            return api.showActionSheet.apply(api, arguments);
-        },
-        connectSocket: function _(a) {
-            a.protocolsArray = a.protocols;
-            return api.connectSocket.apply(api, arguments);
-        },
-        showLoading: function _(a) {
-            a = a || {};
-            a.title = a.title || '加载中...';
-            return api.showLoading(a);
-        },
-        setMetaDescription: function _(a) {
-            var empty = function empty(res) {};
-            var defailt = {
-                content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
-            };
-            var options = Object.assign(defailt, a);
-            return api.setMetaDescription && api.setMetaDescription(options);
-        },
-        setMetaKeywords: function _(a) {
-            var empty = function empty(res) {};
-            var defailt = {
-                content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
-            };
-            var options = Object.assign(defailt, a);
-            return api.setMetaKeywords && api.setMetaKeywords(options);
-        },
-        setDocumentTitle: function _(a) {
-            var defailt = {
-                title: ''
-            };
-            var options = Object.assign(defailt, a);
-            return api.setDocumentTitle && api.setDocumentTitle(options);
-        }
-    };
-};
 
 var fakeApp = {
     app: {
@@ -2519,12 +2137,12 @@ var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
     return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
-function transform(obj) {
-    var _this = this;
+function transform(React, obj) {
+    var pxTransform = React.api.pxTransform || React.pxTransform;
     return Object.keys(obj).map(function (item) {
         var value = obj[item] + '';
         value = value.replace(/(\d+)px/g, function (str, match) {
-            return _this.pxTransform(match);
+            return pxTransform(match);
         });
         return hyphen(item) + ': ' + value;
     }).join(';');
@@ -2532,7 +2150,7 @@ function transform(obj) {
 function toStyle(obj, props, key) {
     if (props) {
         if (Object(obj) == obj) {
-            var str = transform.call(this, obj);
+            var str = transform(this, obj);
         } else {
             str = obj;
         }
@@ -2542,6 +2160,386 @@ function toStyle(obj, props, key) {
     }
     return obj;
 }
+
+var onAndSyncApis = {
+  onSocketOpen: true,
+  onSocketError: true,
+  onSocketMessage: true,
+  onSocketClose: true,
+  onBackgroundAudioPlay: true,
+  onBackgroundAudioPause: true,
+  onBackgroundAudioStop: true,
+  onNetworkStatusChange: true,
+  onAccelerometerChange: true,
+  onCompassChange: true,
+  onBluetoothAdapterStateChange: true,
+  onBluetoothDeviceFound: true,
+  onBLEConnectionStateChange: true,
+  onBLECharacteristicValueChange: true,
+  onBeaconUpdate: true,
+  onBeaconServiceChange: true,
+  onUserCaptureScreen: true,
+  onHCEMessage: true,
+  onGetWifiList: true,
+  onWifiConnected: true,
+  setStorageSync: true,
+  getStorageSync: true,
+  getStorageInfoSync: true,
+  removeStorageSync: true,
+  clearStorageSync: true,
+  getSystemInfoSync: true,
+  getExtConfigSync: true,
+  getLogManager: true
+};
+var noPromiseApis = {
+  initStorageSync: true,
+  stopRecord: true,
+  getRecorderManager: true,
+  pauseVoice: true,
+  stopVoice: true,
+  pauseBackgroundAudio: true,
+  stopBackgroundAudio: true,
+  getBackgroundAudioManager: true,
+  createAudioContext: true,
+  createInnerAudioContext: true,
+  createVideoContext: true,
+  createCameraContext: true,
+  navigateBack: true,
+  createMapContext: true,
+  canIUse: true,
+  startAccelerometer: true,
+  stopAccelerometer: true,
+  startCompass: true,
+  stopCompass: true,
+  hideToast: true,
+  hideLoading: true,
+  showNavigationBarLoading: true,
+  hideNavigationBarLoading: true,
+  createAnimation: true,
+  pageScrollTo: true,
+  createSelectorQuery: true,
+  createCanvasContext: true,
+  createContext: true,
+  drawCanvas: true,
+  hideKeyboard: true,
+  stopPullDownRefresh: true,
+  arrayBufferToBase64: true,
+  base64ToArrayBuffer: true,
+  getUpdateManager: true,
+  createWorker: true
+};
+var otherApis = {
+  uploadFile: true,
+  downloadFile: true,
+  connectSocket: true,
+  sendSocketMessage: true,
+  closeSocket: true,
+  chooseImage: true,
+  previewImage: true,
+  getImageInfo: true,
+  saveImageToPhotosAlbum: true,
+  startRecord: true,
+  playVoice: true,
+  getBackgroundAudioPlayerState: true,
+  playBackgroundAudio: true,
+  seekBackgroundAudio: true,
+  chooseVideo: true,
+  saveVideoToPhotosAlbum: true,
+  loadFontFace: true,
+  saveFile: true,
+  getFileInfo: true,
+  getSavedFileList: true,
+  getSavedFileInfo: true,
+  removeSavedFile: true,
+  openDocument: true,
+  setStorage: true,
+  getStorage: true,
+  getStorageInfo: true,
+  removeStorage: true,
+  clearStorage: true,
+  navigateTo: true,
+  redirectTo: true,
+  switchTab: true,
+  reLaunch: true,
+  getLocation: true,
+  chooseLocation: true,
+  openLocation: true,
+  getSystemInfo: true,
+  getNetworkType: true,
+  makePhoneCall: true,
+  scanCode: true,
+  setClipboardData: true,
+  getClipboardData: true,
+  openBluetoothAdapter: true,
+  closeBluetoothAdapter: true,
+  getBluetoothAdapterState: true,
+  startBluetoothDevicesDiscovery: true,
+  stopBluetoothDevicesDiscovery: true,
+  getBluetoothDevices: true,
+  getConnectedBluetoothDevices: true,
+  createBLEConnection: true,
+  closeBLEConnection: true,
+  getBLEDeviceServices: true,
+  getBLEDeviceCharacteristics: true,
+  readBLECharacteristicValue: true,
+  writeBLECharacteristicValue: true,
+  notifyBLECharacteristicValueChange: true,
+  startBeaconDiscovery: true,
+  stopBeaconDiscovery: true,
+  getBeacons: true,
+  setScreenBrightness: true,
+  getScreenBrightness: true,
+  setKeepScreenOn: true,
+  vibrateLong: true,
+  vibrateShort: true,
+  addPhoneContact: true,
+  getHCEState: true,
+  startHCE: true,
+  stopHCE: true,
+  sendHCEMessage: true,
+  startWifi: true,
+  stopWifi: true,
+  connectWifi: true,
+  getWifiList: true,
+  setWifiList: true,
+  getConnectedWifi: true,
+  showToast: true,
+  showLoading: true,
+  showModal: true,
+  showActionSheet: true,
+  setNavigationBarTitle: true,
+  setNavigationBarColor: true,
+  setTabBarBadge: true,
+  removeTabBarBadge: true,
+  showTabBarRedDot: true,
+  hideTabBarRedDot: true,
+  setTabBarStyle: true,
+  setTabBarItem: true,
+  showTabBar: true,
+  hideTabBar: true,
+  setTopBarText: true,
+  startPullDownRefresh: true,
+  canvasToTempFilePath: true,
+  canvasGetImageData: true,
+  canvasPutImageData: true,
+  getExtConfig: true,
+  login: true,
+  checkSession: true,
+  authorize: true,
+  getUserInfo: true,
+  requestPayment: true,
+  showShareMenu: true,
+  hideShareMenu: true,
+  updateShareMenu: true,
+  getShareInfo: true,
+  chooseAddress: true,
+  addCard: true,
+  openCard: true,
+  openSetting: true,
+  getSetting: true,
+  getWeRunData: true,
+  navigateToMiniProgram: true,
+  navigateBackMiniProgram: true,
+  chooseInvoiceTitle: true,
+  checkIsSupportSoterAuthentication: true,
+  startSoterAuthentication: true,
+  checkIsSoterEnrolledInDevice: true
+};
+
+var RequestQueue = {
+    MAX_REQUEST: 5,
+    queue: [],
+    request: function request(options) {
+        this.push(options);
+        this.run();
+    },
+    push: function push(options) {
+        this.queue.push(options);
+    },
+    run: function run() {
+        if (!this.queue.length) {
+            return;
+        }
+        if (this.queue.length <= this.MAX_REQUEST) {
+            var options = this.queue.shift();
+            var completeFn = options.complete;
+            var self = this;
+            options.complete = function () {
+                completeFn && completeFn.apply(null, arguments);
+                self.run();
+            };
+            if (this.facade.httpRequest) {
+                this.facade.httpRequest(options);
+            } else if (this.facade.request) {
+                this.facade.request(options);
+            }
+        }
+    }
+};
+function request(options) {
+    options = options || {};
+    options.headers = options.headers || options.header;
+    var originSuccess = options.success || noop;
+    var originFail = options.fail || noop;
+    var originComplete = options.complete || noop;
+    var p = new Promise(function (resolve, reject) {
+        options.success = function (res) {
+            res.statusCode = res.status || res.statusCode;
+            res.header = res.headers || res.header;
+            originSuccess(res);
+            resolve(res);
+        };
+        options['fail'] = function (res) {
+            originFail(res);
+            reject(res);
+        };
+        options['complete'] = function (res) {
+            originComplete(res);
+        };
+        RequestQueue.request(options);
+    });
+    return p;
+}
+function processApis(ReactWX, facade) {
+    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
+    Object.keys(weApis).forEach(function (key) {
+        if (!onAndSyncApis[key] && !noPromiseApis[key]) {
+            ReactWX.api[key] = function (options) {
+                options = options || {};
+                if (options + '' === options) {
+                    return facade[key](options);
+                }
+                var task = null;
+                var obj = Object.assign({}, options);
+                var p = new Promise(function (resolve, reject) {
+                    ['fail', 'success', 'complete'].forEach(function (k) {
+                        obj[k] = function (res) {
+                            options[k] && options[k](res);
+                            if (k === 'success') {
+                                if (key === 'connectSocket') {
+                                    resolve(task);
+                                } else {
+                                    resolve(res);
+                                }
+                            } else if (k === 'fail') {
+                                reject(res);
+                            }
+                        };
+                    });
+                    if (!isFn(facade[key])) {
+                        console.warn('平台未不支持', key, '方法');
+                    } else {
+                        task = facade[key](obj);
+                    }
+                });
+                if (key === 'uploadFile' || key === 'downloadFile') {
+                    p.progress = function (cb) {
+                        task.onProgressUpdate(cb);
+                        return p;
+                    };
+                    p.abort = function (cb) {
+                        cb && cb();
+                        task.abort();
+                        return p;
+                    };
+                }
+                return p;
+            };
+        } else {
+            ReactWX.api[key] = function () {
+                return facade[key].apply(facade, arguments);
+            };
+        }
+    });
+}
+function pxTransform(size) {
+    var deviceRatio = this.api.deviceRatio;
+    return parseInt(size, 10) / deviceRatio + 'rpx';
+}
+function initPxTransform(facade) {
+    function fallback(windowWidth) {
+        facade.designWidth = windowWidth;
+        facade.deviceRatio = 750 / windowWidth / 2;
+    }
+    if (facade.getSystemInfo) {
+        facade.getSystemInfo({
+            success: function success(res) {
+                fallback(res.windowWidth);
+            }
+        });
+    } else {
+        fallback(375);
+    }
+}
+function registerAPIs(ReactWX, facade, override) {
+    registerAPIsQuick(ReactWX, facade, override);
+    RequestQueue.facade = facade;
+    ReactWX.api.request = request;
+    initPxTransform(ReactWX.api);
+    ReactWX.api.pxTransform = ReactWX.pxTransform = pxTransform.bind(ReactWX);
+}
+function registerAPIsQuick(ReactWX, facade, override) {
+    ReactWX.api = {};
+    processApis(ReactWX, facade);
+    if (override) {
+        var obj = override(facade);
+        Object.assign(ReactWX.api, obj);
+    }
+}
+
+var more = function more(api) {
+    return {
+        showActionSheet: function _(a) {
+            var success = a['success'],
+                complete = a['complete'];
+            a['success'] = function (res) {
+                success && success({ index: res.tapIndex });
+            };
+            a['complete'] = function (res) {
+                complete && complete({ index: res.tapIndex });
+            };
+            return api.showActionSheet.apply(api, arguments);
+        },
+        connectSocket: function _(a) {
+            a.protocolsArray = a.protocols;
+            return api.connectSocket.apply(api, arguments);
+        },
+        showLoading: function _(a) {
+            a = a || {};
+            a.title = a.title || '加载中...';
+            return api.showLoading(a);
+        },
+        setMetaDescription: function _(a) {
+            var empty = function empty(res) {};
+            var defailt = {
+                content: '',
+                success: empty,
+                fail: empty,
+                complete: empty
+            };
+            var options = Object.assign(defailt, a);
+            return api.setMetaDescription && api.setMetaDescription(options);
+        },
+        setMetaKeywords: function _(a) {
+            var empty = function empty(res) {};
+            var defailt = {
+                content: '',
+                success: empty,
+                fail: empty,
+                complete: empty
+            };
+            var options = Object.assign(defailt, a);
+            return api.setMetaKeywords && api.setMetaKeywords(options);
+        },
+        setDocumentTitle: function _(a) {
+            var defailt = {
+                title: ''
+            };
+            var options = Object.assign(defailt, a);
+            return api.setDocumentTitle && api.setDocumentTitle(options);
+        }
+    };
+};
 
 function registerComponent(type, name) {
     registeredComponents[name] = type;
@@ -2725,7 +2723,7 @@ var apiContainer = {};
 if (typeof swan != 'undefined') {
     apiContainer = swan;
 }
-injectAPIs(React, apiContainer, buApis);
+registerAPIs(React, apiContainer, more);
 
 export default React;
 export { Children, createElement, Component };

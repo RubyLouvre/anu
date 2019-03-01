@@ -45,29 +45,17 @@ export function showToast(obj) {
     obj.message = obj.title;
     obj.duration = obj.duration / 1000;
     let success = obj.success || noop,
-      fail = obj.fail || noop,
-      complete = obj.complete || noop;
+        fail = obj.fail || noop,
+        complete = obj.complete || noop;
   
     try {
-      prompt.showToast(obj);
-      runFunction(success);
-    } catch (error) {
-      runFunction(fail, error);
-    } finally {
-      runFunction(complete);
-    }
-}
-export function hideToast(obj){
-    let success = obj.success || noop,
-    fail = obj.fail || noop,
-    complete = obj.complete || noop;
-    try {
+        prompt.showToast(obj);
         runFunction(success);
-      } catch (error) {
+    } catch (error) {
         runFunction(fail, error);
-      } finally {
+    } finally {
         runFunction(complete);
-      }
+    }
 }
 
 export function showActionSheet(obj) {
@@ -78,6 +66,7 @@ export function showLoading(obj) {
     obj.duration = 1;
     prompt.showToast(obj);
 }
-export function hideLoading(){}
+//export function hideLoading(){}
+//export function hideToast(){}
 
 

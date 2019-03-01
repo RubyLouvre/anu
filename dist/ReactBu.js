@@ -2191,7 +2191,6 @@ var onAndSyncApis = {
   getLogManager: true
 };
 var noPromiseApis = {
-  initStorageSync: true,
   stopRecord: true,
   getRecorderManager: true,
   pauseVoice: true,
@@ -2399,14 +2398,15 @@ function request(options) {
     });
     return p;
 }
-function processApis(ReactWX, facade) {
+function promisefyApis(ReactWX, facade, more) {
     var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
     Object.keys(weApis).forEach(function (key) {
+        var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
             ReactWX.api[key] = function (options) {
                 options = options || {};
                 if (options + '' === options) {
-                    return facade[key](options);
+                    return needWrapper(options);
                 }
                 var task = null;
                 var obj = Object.assign({}, options);
@@ -2425,10 +2425,10 @@ function processApis(ReactWX, facade) {
                             }
                         };
                     });
-                    if (!isFn(facade[key])) {
+                    if (needWrapper === noop) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
-                        task = facade[key](obj);
+                        task = needWrapper(obj);
                     }
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
@@ -2445,9 +2445,13 @@ function processApis(ReactWX, facade) {
                 return p;
             };
         } else {
-            ReactWX.api[key] = function () {
-                return facade[key].apply(facade, arguments);
-            };
+            if (needWrapper == noop) {
+                ReactWX.api[key] = noop;
+            } else {
+                ReactWX.api[key] = function () {
+                    return needWrapper.apply(facade, arguments);
+                };
+            }
         }
     });
 }
@@ -2479,11 +2483,7 @@ function registerAPIs(ReactWX, facade, override) {
 }
 function registerAPIsQuick(ReactWX, facade, override) {
     ReactWX.api = {};
-    processApis(ReactWX, facade);
-    if (override) {
-        var obj = override(facade);
-        Object.assign(ReactWX.api, obj);
-    }
+    promisefyApis(ReactWX, facade, override(facade));
 }
 
 var more = function more(api) {
