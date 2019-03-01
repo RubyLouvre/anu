@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-02-22T08
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-01T07
  * IE9+
  */
 
@@ -659,6 +659,7 @@ var onAndSyncApis = {
   getLogManager: true
 };
 var noPromiseApis = {
+  initStorageSync: true,
   stopRecord: true,
   getRecorderManager: true,
   pauseVoice: true,
@@ -812,21 +813,6 @@ var otherApis = {
   checkIsSoterEnrolledInDevice: true
 };
 
-function initPxTransform() {
-    var wxConfig = this.api;
-    var windowWidth = 375;
-    wxConfig.designWidth = windowWidth;
-    wxConfig.deviceRatio = 750 / windowWidth / 2;
-    if (wxConfig.getSystemInfo) {
-        wxConfig.getSystemInfo({
-            success: function success(res) {
-                windowWidth = res.windowWidth;
-                wxConfig.designWidth = windowWidth;
-                wxConfig.deviceRatio = 750 / windowWidth / 2;
-            }
-        });
-    }
-}
 var RequestQueue = {
     MAX_REQUEST: 5,
     queue: [],
@@ -838,17 +824,16 @@ var RequestQueue = {
         this.queue.push(options);
     },
     run: function run() {
-        var _arguments = arguments,
-            _this = this;
         if (!this.queue.length) {
             return;
         }
         if (this.queue.length <= this.MAX_REQUEST) {
             var options = this.queue.shift();
             var completeFn = options.complete;
+            var self = this;
             options.complete = function () {
-                completeFn && completeFn.apply(options, [].concat(Array.prototype.slice.call(_arguments)));
-                _this.run();
+                completeFn && completeFn.apply(null, arguments);
+                self.run();
             };
             if (this.facade.httpRequest) {
                 this.facade.httpRequest(options);
@@ -860,28 +845,23 @@ var RequestQueue = {
 };
 function request(options) {
     options = options || {};
-    if (options + '' === options) {
-        options = {
-            url: options
-        };
-    }
     options.headers = options.headers || options.header;
-    var originSuccess = options['success'];
-    var originFail = options['fail'];
-    var originComplete = options['complete'];
+    var originSuccess = options.success || noop;
+    var originFail = options.fail || noop;
+    var originComplete = options.complete || noop;
     var p = new Promise(function (resolve, reject) {
-        options['success'] = function (res) {
+        options.success = function (res) {
             res.statusCode = res.status || res.statusCode;
             res.header = res.headers || res.header;
-            originSuccess && originSuccess(res);
+            originSuccess(res);
             resolve(res);
         };
         options['fail'] = function (res) {
-            originFail && originFail(res);
+            originFail(res);
             reject(res);
         };
         options['complete'] = function (res) {
-            originComplete && originComplete(res);
+            originComplete(res);
         };
         RequestQueue.request(options);
     });
@@ -893,11 +873,11 @@ function processApis(ReactWX, facade) {
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
             ReactWX.api[key] = function (options) {
                 options = options || {};
-                var task = null;
-                var obj = Object.assign({}, options);
                 if (options + '' === options) {
                     return facade[key](options);
                 }
+                var task = null;
+                var obj = Object.assign({}, options);
                 var p = new Promise(function (resolve, reject) {
                     ['fail', 'success', 'complete'].forEach(function (k) {
                         obj[k] = function (res) {
@@ -943,17 +923,35 @@ function pxTransform(size) {
     var deviceRatio = this.api.deviceRatio;
     return parseInt(size, 10) / deviceRatio + 'rpx';
 }
-function injectAPIs(ReactWX, facade, override) {
+function initPxTransform(facade) {
+    function fallback(windowWidth) {
+        facade.designWidth = windowWidth;
+        facade.deviceRatio = 750 / windowWidth / 2;
+    }
+    if (facade.getSystemInfo) {
+        facade.getSystemInfo({
+            success: function success(res) {
+                fallback(res.windowWidth);
+            }
+        });
+    } else {
+        fallback(375);
+    }
+}
+function registerAPIs(ReactWX, facade, override) {
+    registerAPIsQuick(ReactWX, facade, override);
+    RequestQueue.facade = facade;
+    ReactWX.api.request = request;
+    initPxTransform(ReactWX.api);
+    ReactWX.api.pxTransform = ReactWX.pxTransform = pxTransform.bind(ReactWX);
+}
+function registerAPIsQuick(ReactWX, facade, override) {
     ReactWX.api = {};
     processApis(ReactWX, facade);
-    ReactWX.api.request = request;
     if (override) {
         var obj = override(facade);
         Object.assign(ReactWX.api, obj);
     }
-    RequestQueue.facade = facade;
-    ReactWX.initPxTransform = initPxTransform.bind(ReactWX)();
-    ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
 
 var fakeApp = {
@@ -2466,12 +2464,12 @@ var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
     return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
-function transform(obj) {
-    var _this = this;
+function transform(React, obj) {
+    var pxTransform = React.api.pxTransform || React.pxTransform;
     return Object.keys(obj).map(function (item) {
         var value = obj[item] + '';
         value = value.replace(/(\d+)px/g, function (str, match) {
-            return _this.pxTransform(match);
+            return pxTransform(match);
         });
         return hyphen(item) + ': ' + value;
     }).join(';');
@@ -2479,7 +2477,7 @@ function transform(obj) {
 function toStyle(obj, props, key) {
     if (props) {
         if (Object(obj) == obj) {
-            var str = transform.call(this, obj);
+            var str = transform(this, obj);
         } else {
             str = obj;
         }
@@ -2684,7 +2682,7 @@ if (typeof wx != 'undefined') {
     apiContainer = tt;
     React.appType = 'tt';
 }
-injectAPIs(React, apiContainer);
+registerAPIs(React, apiContainer);
 
 export default React;
 export { Children, createElement, Component };
