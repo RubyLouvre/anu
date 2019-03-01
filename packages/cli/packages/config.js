@@ -42,7 +42,8 @@ module.exports = {
             'radio',
             'checkbox',
             'label',
-            'navigator'
+            'navigator',
+            'picker'
         ]
     },
     tt: {
