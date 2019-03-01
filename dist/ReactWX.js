@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-01T09
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-01T11
  * IE9+
  */
 
@@ -866,7 +866,7 @@ function request(options) {
     return p;
 }
 function promisefyApis(ReactWX, facade, more) {
-    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis);
+    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis, more);
     Object.keys(weApis).forEach(function (key) {
         var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
