@@ -2345,7 +2345,7 @@ var otherApis = {
 };
 
 var RequestQueue = {
-    MAX_REQUEST: 5,
+    MAX_REQUEST: typeof wx !== 'undefined' ? 10 : Infinity,
     queue: [],
     request: function request(options) {
         this.push(options);
