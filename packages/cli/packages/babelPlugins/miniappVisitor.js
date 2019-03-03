@@ -308,52 +308,68 @@ module.exports = {
             }
         }
     },
-    ClassProperty: {
-        exit(astPath, state) {
-            let key = astPath.node.key.name;
-            let modules = utils.getAnu(state);
-            if (key === 'config') {
-                //将配置对象生成JSON文件
-                if (!/App|Page|Component/.test(modules.componentType)) {
-                    return;
-                }
-                try {
-                    var json = eval('0,' + generate(astPath.node.value).code);
+    // ClassProperty: {
+    //     exit(astPath, state) {
+    //         let key = astPath.node.key.name;
+    //         let modules = utils.getAnu(state);
+    //         if (key === 'config') {
+    //             //将配置对象生成JSON文件
+    //             if (!/App|Page|Component/.test(modules.componentType)) {
+    //                 return;
+    //             }
+    //             try {
+    //                 var json = eval('0,' + generate(astPath.node.value).code);
 
-                    Object.assign(modules.config, json);
-                } catch (e) {
-                    /**/
-                }
-            } else if (astPath.node.static) {
+    //                 Object.assign(modules.config, json);
+    //             } catch (e) {
+    //                 /**/
+    //             }
+    //         } else if (astPath.node.static) {
+    //             var keyValue = t.ObjectProperty(
+    //                 t.identifier(key),
+    //                 astPath.node.value
+    //             );
+    //             modules.staticMethods.push(keyValue);
+    //         } else {
+    //             if (key == 'globalData' && modules.componentType === 'App') {
+    //                 //globalData中插入平台buildType
+    //                 astPath.node.value.properties.push(
+    //                     t.objectProperty(
+    //                         t.identifier('buildType'),
+    //                         t.stringLiteral(config.buildType)
+    //                     )
+    //                 );
+    //                 var thisMember = t.assignmentExpression(
+    //                     '=',
+    //                     t.memberExpression(
+    //                         t.identifier('this'),
+    //                         t.identifier(key)
+    //                     ),
+    //                     astPath.node.value
+    //                 );
+    //                 modules.thisProperties.push(thisMember);
+    //             }
+    //         }
+    //         astPath.remove();
+    //     }
+    // },
+    MemberExpression: {
+        exit(astPath, state) {
+            const member = generate(astPath.node).code;
+            let modules = utils.getAnu(state);
+            // visitor 中的 ClassProperty 没有访问, 使用 MemberExpression 解析静态属性
+            if(member.includes(`${modules.className}.`)) {
                 var keyValue = t.ObjectProperty(
-                    t.identifier(key),
-                    astPath.node.value
+                    t.identifier(astPath.node.property.name),
+                    astPath.parentPath.get('right').node
                 );
                 modules.staticMethods.push(keyValue);
-            } else {
-                if (key == 'globalData' && modules.componentType === 'App') {
-                    //globalData中插入平台buildType
-                    astPath.node.value.properties.push(
-                        t.objectProperty(
-                            t.identifier('buildType'),
-                            t.stringLiteral(config.buildType)
-                        )
-                    );
-                    var thisMember = t.assignmentExpression(
-                        '=',
-                        t.memberExpression(
-                            t.identifier('this'),
-                            t.identifier(key)
-                        ),
-                        astPath.node.value
-                    );
-                    modules.thisProperties.push(thisMember);
-                }
+                astPath.findParent(t.isExpressionStatement).remove();
             }
-            astPath.remove();
         }
     },
-    MemberExpression() {},
+    // visitor 中的 ClassProperty 没有访问, 
+    // 使用 AssignmentExpression 解析 config 和 globalData
     AssignmentExpression:{
         exit(astPath, state) {
             const member = generate(astPath.get('left').node).code;
@@ -369,9 +385,24 @@ module.exports = {
                 }
             }
             if (member === 'this.globalData' && modules.componentType === 'App') {
-                // eslint-disable-next-line no-debugger
-                debugger;
-                console.log('[AE] == this.globalData ==', path.relative(process.cwd(), state.filename));
+                // 如果没有 buildType 属性, 在 globalData 中插入平台buildType
+                if(!generate(astPath.get('right').node).code.includes('buildType')){
+                    astPath.get('right').node.properties.push(
+                        t.objectProperty(
+                            t.identifier('buildType'),
+                            t.stringLiteral(config.buildType)
+                        )
+                    );
+                    var thisMember = t.assignmentExpression(
+                        '=',
+                        t.memberExpression(
+                            t.identifier('this'),
+                            t.identifier('globalData')
+                        ),
+                        astPath.get('right').node
+                    );
+                    modules.thisProperties.push(thisMember);
+                }
             }
         }
     },
