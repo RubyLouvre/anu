@@ -247,7 +247,17 @@ module.exports = {
                 }
                 // delete json.usingComponents;
                 if (Object.keys(json).length) {
-                    var a = template('0,' + JSON.stringify(json, null, 4))();
+                    /**
+                     * placeholderPattern:false
+                     * 因为 json 中可能会有大写(如API)的形式字符串
+                     * 模板项目中 pages/demo/apis/index.js 的 config(navigationBarTitleText: 'API')
+                     * placeholderPattern 默认行为 /^[_$A-Z0-9]+$/， 会匹配(API), 
+                     * 就会去 template() 返回的函数中找 API 这个变量导致报错
+                     * template 用法 -> https://babeljs.io/docs/en/babel-template
+                     */
+                    var a = template('0,' + JSON.stringify(json, null, 4), {
+                        placeholderPattern: false
+                    })();
                     var keyValue = t.ObjectProperty(
                         t.identifier('config'),
                         a.expression.expressions[1]
