@@ -154,7 +154,7 @@ function setTitleBar(config) {
 function setOtherConfig() {
     let userConfig = {};
     try {
-        userConfig = require(path.join(process.cwd(), 'qConfig.json'));
+        userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
     } catch (err) {
         // eslint-disable-next-line
     }
