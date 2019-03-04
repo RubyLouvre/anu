@@ -8,11 +8,11 @@ export function pay(obj) {
 }
 
 export function getProvider() {
-    payAPI.getProvider()
+    return payAPI.getProvider()
 }
 
 export function wxpayGetType() {
-    wxpayAPI.getType()
+    return wxpayAPI.getType()
 }
 
 export function wxpay(obj) {

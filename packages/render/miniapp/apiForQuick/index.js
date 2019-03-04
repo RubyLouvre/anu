@@ -43,7 +43,7 @@ import {
     showLoading,
    
 } from './dialog';
-import { navigateTo, redirectTo , navigateBack } from './router';
+import { navigateTo, redirectTo , navigateBack, makePhoneCall } from './router';
 import { vibrateLong, vibrateShort } from './vibrator';
 import { share } from './share';
 
@@ -74,6 +74,7 @@ export var facade = {
     downloadFile,
     // 网络请求
     request,
+    makePhoneCall,
     // 二维码
     scanCode({ success, fail, complete }) {
         const barcode = require('@system.barcode');
