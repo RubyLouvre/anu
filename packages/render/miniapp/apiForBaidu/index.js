@@ -1,3 +1,5 @@
+import { noop } from 'react-core/util';
+
 export var more = function(api) {
     return {
         // 界面交互
@@ -50,6 +52,9 @@ export var more = function(api) {
             };
             let options = Object.assign(defailt, a);
             return api.setDocumentTitle && api.setDocumentTitle(options)
+        },
+        request: function(_a) {
+            return api.request(_a);
         }
     };
 };
