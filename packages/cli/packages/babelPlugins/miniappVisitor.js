@@ -358,7 +358,7 @@ module.exports = {
             const member = generate(astPath.node).code;
             let modules = utils.getAnu(state);
             // visitor 中的 ClassProperty 没有访问, 使用 MemberExpression 解析静态属性
-            if(member.includes(`${modules.className}.`)) {
+            if (member.includes(`${modules.className}.`)) {
                 var keyValue = t.ObjectProperty(
                     t.identifier(astPath.node.property.name),
                     astPath.parentPath.get('right').node
@@ -373,8 +373,10 @@ module.exports = {
     AssignmentExpression:{
         exit(astPath, state) {
             const member = generate(astPath.get('left').node).code;
+            const isObj = t.isObjectExpression(astPath.get('right').node);
             let modules = utils.getAnu(state);
-            if (member === 'this.config'){
+            // 判断格式是否为： this.config = {}
+            if (member === 'this.config' && isObj){
                 if (/App|Page|Component/.test(modules.componentType)) {
                     try {
                         var json = eval('0,' + generate(astPath.get('right').node).code);
@@ -384,9 +386,10 @@ module.exports = {
                     }
                 }
             }
-            if (member === 'this.globalData' && modules.componentType === 'App') {
+            // 判断格式是否为： this.globalData = {}
+            if (member === 'this.globalData' && isObj && modules.componentType === 'App') {
                 // 如果没有 buildType 属性, 在 globalData 中插入平台buildType
-                if(!generate(astPath.get('right').node).code.includes('buildType')){
+                if (!generate(astPath.get('right').node).code.includes('buildType')){
                     astPath.get('right').node.properties.push(
                         t.objectProperty(
                             t.identifier('buildType'),
