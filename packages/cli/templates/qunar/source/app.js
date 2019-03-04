@@ -12,6 +12,7 @@ import './pages/demo/apis/canvas/fillStyle/index';
 import './pages/demo/apis/canvas/arc/index';
 import './pages/demo/apis/canvas/globalAlpha/index';
 import './pages/demo/apis/route/index';
+import './pages/demo/apis/request/index';
 
 import './pages/demo/native/index/index';
 import './pages/demo/native/button/index';
@@ -47,7 +48,6 @@ import './pages/demo/syntax/ifcom/index';
 import './pages/demo/syntax/children/index';
 import './pages/demo/syntax/await/index';
 import './pages/demo/syntax/multiple/index';
-import './pages/demo/syntax/request/index';
 
 import './pages/demo/ticketSearch/index';
 import './pages/demo/calendar/index';

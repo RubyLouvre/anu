@@ -1429,10 +1429,10 @@ function pay(obj) {
     payAPI.pay(obj);
 }
 function getProvider() {
-    payAPI.getProvider();
+    return payAPI.getProvider();
 }
 function wxpayGetType() {
-    wxpayAPI.getType();
+    return wxpayAPI.getType();
 }
 function wxpay(obj) {
     wxpayAPI.pay(obj);
@@ -1706,6 +1706,7 @@ var otherApis = {
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,
+  request: true,
   login: true,
   checkSession: true,
   authorize: true,
@@ -3357,7 +3358,6 @@ if (typeof global !== 'undefined') {
     var ref = Object.getPrototypeOf(global) || global;
     ref.ReactQuick = React;
 }
-onAndSyncApis.request = true;
 registerAPIsQuick(React, facade, more);
 
 export default React;

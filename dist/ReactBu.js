@@ -2321,6 +2321,7 @@ var otherApis = {
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,
+  request: true,
   login: true,
   checkSession: true,
   authorize: true,
@@ -2480,9 +2481,6 @@ var more = function more(api) {
             };
             var options = Object.assign(defailt, a);
             return api.setDocumentTitle && api.setDocumentTitle(options);
-        },
-        request: function request(_a) {
-            return api.request(_a);
         }
     };
 };

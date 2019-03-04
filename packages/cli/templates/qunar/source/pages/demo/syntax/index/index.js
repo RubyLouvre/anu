@@ -62,10 +62,6 @@ class Express extends React.Component {
                 {
                     title: 'webview',
                     url: '/pages/demo/syntax/webview/index'
-                },
-                {
-                    title: '数据请求',
-                    url: '/pages/demo/syntax/request/index'
                 }
             ]
         };

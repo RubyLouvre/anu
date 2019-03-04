@@ -13,6 +13,7 @@ import { createContext } from 'react-core/createContext';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 //注入小程序的API
 import { registerAPIs } from './registerAPIs';
+import { more } from './apiForWeixin/index';
 
 import { dispatchEvent, webview } from './eventSystem';
 
@@ -23,7 +24,6 @@ import { toRenderProps, _getApp, getCurrentPage, _getCurrentPages, useComponent 
 import { registerPage } from './registerPage.wx';
 import { registerComponent } from './registerComponent.wx';
 
-import { more } from './apiForWx/index';
 
 
 let { render } = Renderer;

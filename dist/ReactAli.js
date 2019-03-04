@@ -2321,6 +2321,7 @@ var otherApis = {
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,
+  request: true,
   login: true,
   checkSession: true,
   authorize: true,

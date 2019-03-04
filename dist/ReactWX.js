@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-04T04
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-04T08
  * IE9+
  */
 
@@ -788,6 +788,7 @@ var otherApis = {
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,
+  request: true,
   login: true,
   checkSession: true,
   authorize: true,
@@ -896,6 +897,42 @@ function registerAPIsQuick(ReactWX, facade, override) {
     ReactWX.api = {};
     promisefyApis(ReactWX, facade, override(facade));
 }
+
+var RequestQueue = {
+    MAX_REQUEST: 10,
+    queue: [],
+    request: function request(options) {
+        this.push(options);
+        this.run();
+    },
+    push: function push(options) {
+        this.queue.push(options);
+    },
+    run: function run() {
+        if (!this.queue.length) {
+            return;
+        }
+        if (this.queue.length <= this.MAX_REQUEST) {
+            var options = this.queue.shift();
+            var completeFn = options.complete;
+            var self = this;
+            options.complete = function () {
+                completeFn && completeFn.apply(null, arguments);
+                self.run();
+            };
+            this.facade.request(options);
+        }
+    }
+};
+var more = function more(api) {
+    return {
+        request: function request(_a) {
+            RequestQueue.facade = api;
+            RequestQueue.request(_a);
+            return RequestQueue.request(_a);
+        }
+    };
+};
 
 var fakeApp = {
     app: {
@@ -2584,42 +2621,6 @@ function registerComponent(type, name) {
     Object.assign(config, config.lifetimes);
     return config;
 }
-
-var RequestQueue = {
-    MAX_REQUEST: 10,
-    queue: [],
-    request: function request(options) {
-        this.push(options);
-        this.run();
-    },
-    push: function push(options) {
-        this.queue.push(options);
-    },
-    run: function run() {
-        if (!this.queue.length) {
-            return;
-        }
-        if (this.queue.length <= this.MAX_REQUEST) {
-            var options = this.queue.shift();
-            var completeFn = options.complete;
-            var self = this;
-            options.complete = function () {
-                completeFn && completeFn.apply(null, arguments);
-                self.run();
-            };
-            this.facade.request(options);
-        }
-    }
-};
-var more = function more(api) {
-    return {
-        request: function request(_a) {
-            RequestQueue.facade = api;
-            RequestQueue.request(_a);
-            return RequestQueue.request(_a);
-        }
-    };
-};
 
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
