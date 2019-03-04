@@ -34,12 +34,11 @@ import {
 } from './device.js';
 import { chooseImage } from './media.js';
 import { createShortcut } from './shortcut.js';
-import { runFunction, _getApp } from '../utils';
+import { _getApp } from '../utils';
 import { 
     showModal,
     showActionSheet,
     showToast,
-  
     showLoading,
    
 } from './dialog';
@@ -49,7 +48,7 @@ import { share } from './share';
 
 import { createCanvasContext } from './canvas.js';
 
-import { pay, getProvider, wxpayGetType, wxpay, alipay} from './pay.js'
+import { pay, getProvider, wxpayGetType, wxpay, alipay} from './pay.js';
 
 export var facade = {
     // 交互
@@ -114,48 +113,39 @@ export var facade = {
     onNetworkStatusChange,
     getSystemInfo,
     chooseImage,
-    setNavigationBarTitle({ title, success, fail, complete }) {
+    setNavigationBarTitle({ title, success = noop, fail = noop, complete = noop }) {
         try {
             let currentPage = _getApp().$$page; //相当于getCurrentPage()
             currentPage.$page.setTitleBar({ text: title });
-            runFunction(success);
+            success();
         } catch (error) {
-            runFunction(fail, error);
+            fail( error);
         } finally {
-            runFunction(complete);
+            complete();
         }
     },
    
     createCanvasContext,
-    stopPullDownRefresh(obj) {
-        obj = obj || {};
-        let success = obj.success || noop,
-            fail= obj.fail|| noop,
-            complete = obj.complete || noop;
+    stopPullDownRefresh({success = noop, fail = noop, complete = noop }) {
 
         try {
             // 停止刷新没有作用
             // let currentPage = _getApp().$$page; //相当于getCurrentPage()
             // console.log('currentPage', currentPage)
-            runFunction(success );
-        } catch (error){
-            runFunction(fail, error);
+            success();
+        } catch (error) {
+            fail( error);
         } finally {
-            runFunction(complete);
+            complete();
         }
     },
-    createAnimation(obj) {
-        obj = obj || {};
-        let success = obj.success || noop,
-            fail= obj.fail|| noop,
-            complete = obj.complete || noop;
-
+    createAnimation({success = noop, fail = noop, complete = noop }) {
         try {
-            runFunction(success );
-        } catch (error){
-            runFunction(fail, error);
+            success();
+        } catch (error) {
+            fail( error);
         } finally {
-            runFunction(complete);
+            complete();
         }
     }
 

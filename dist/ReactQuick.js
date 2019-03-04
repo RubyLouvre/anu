@@ -704,9 +704,12 @@ function uploadFile(_ref) {
         name = _ref.name,
         header = _ref.header,
         formData = _ref.formData,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
+        _ref$success = _ref.success,
+        success = _ref$success === undefined ? noop : _ref$success,
+        _ref$fail = _ref.fail,
+        fail = _ref$fail === undefined ? noop : _ref$fail,
+        _ref$complete = _ref.complete,
+        complete = _ref$complete === undefined ? noop : _ref$complete;
     var request = require('@system.request');
     var data = [];
     Object.keys(formData).map(function (key) {
@@ -738,9 +741,12 @@ function uploadFile(_ref) {
 function downloadFile(_ref3) {
     var url = _ref3.url,
         header = _ref3.header,
-        success = _ref3.success,
-        fail = _ref3.fail,
-        complete = _ref3.complete;
+        _ref3$success = _ref3.success,
+        success = _ref3$success === undefined ? noop : _ref3$success,
+        _ref3$fail = _ref3.fail,
+        fail = _ref3$fail === undefined ? noop : _ref3$fail,
+        _ref3$complete = _ref3.complete,
+        complete = _ref3$complete === undefined ? noop : _ref3$complete;
     function downloadSuccess(_ref4) {
         var tempFilePath = _ref4.uri;
         success({
@@ -773,9 +779,12 @@ function request(_ref6) {
         method = _ref6.method,
         _ref6$dataType = _ref6.dataType,
         dataType = _ref6$dataType === undefined ? JSON_TYPE_STRING : _ref6$dataType,
-        success = _ref6.success,
-        fail = _ref6.fail,
-        complete = _ref6.complete;
+        _ref6$success = _ref6.success,
+        success = _ref6$success === undefined ? noop : _ref6$success,
+        _ref6$fail = _ref6.fail,
+        fail = _ref6$fail === undefined ? noop : _ref6$fail,
+        _ref6$complete = _ref6.complete,
+        complete = _ref6$complete === undefined ? noop : _ref6$complete;
     var fetch = require('@system.fetch');
     function onFetchSuccess(_ref7) {
         var statusCode = _ref7.code,
@@ -785,7 +794,7 @@ function request(_ref6) {
             try {
                 data = JSON.parse(data);
             } catch (error) {
-                fail && fail(error);
+                return fail(error);
             }
         }
         success({
@@ -808,300 +817,197 @@ function request(_ref6) {
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
 function saveParse(str) {
-  try {
-    return JSON.parse(str);
-  } catch (err) {
-  }
-  return str;
+    try {
+        return JSON.parse(str);
+    } catch (err) {
+    }
+    return str;
 }
 function setStorage(_ref) {
-  var key = _ref.key,
-      data = _ref.data,
-      success = _ref.success,
-      _ref$fail = _ref.fail,
-      fail = _ref$fail === undefined ? noop : _ref$fail,
-      complete = _ref.complete;
-  var value = data;
-  if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
-    try {
-      value = JSON.stringify(value);
-    } catch (error) {
-      return fail(error);
+    var key = _ref.key,
+        data = _ref.data,
+        success = _ref.success,
+        _ref$fail = _ref.fail,
+        fail = _ref$fail === undefined ? noop : _ref$fail,
+        complete = _ref.complete;
+    var value = data;
+    if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
+        try {
+            value = JSON.stringify(value);
+        } catch (error) {
+            return fail(error);
+        }
     }
-  }
-  storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
+    storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
 }
 function getStorage(_ref2) {
-  var key = _ref2.key,
-      success = _ref2.success,
-      fail = _ref2.fail,
-      complete = _ref2.complete;
-  function dataObj(data) {
-    success({
-      data: saveParse(data)
-    });
-  }
-  storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
+    var key = _ref2.key,
+        success = _ref2.success,
+        fail = _ref2.fail,
+        complete = _ref2.complete;
+    function dataObj(data) {
+        success({
+            data: saveParse(data)
+        });
+    }
+    storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
 }
 function removeStorage(obj) {
-  storage.delete(obj);
+    storage.delete(obj);
 }
 function clearStorage(obj) {
-  storage.clear(obj);
+    storage.clear(obj);
 }
 function initStorageSync(storageCache) {
-  if ((typeof ReactQuick === 'undefined' ? 'undefined' : _typeof$1(ReactQuick)) !== 'object') {
-    return;
-  }
-  var apis = ReactQuick.api;
-  var n = storage.length;
-  var j = 0;
-  for (var i = 0; i < n; i++) {
-    storage.key({
-      index: i,
-      success: function success(key) {
-        storage.get({
-          key: key,
-          success: function success(value) {
-            storageCache[key] = value;
-            if (++j == n) {
-              console.log('init storage success');
-            }
-          }
-        });
-      }
-    });
-  }
-  apis.setStorageSync = function (key, value) {
-    setStorage({
-      key: key,
-      data: value
-    });
-    return storageCache[key] = value;
-  };
-  apis.getStorageSync = function (key) {
-    return saveParse(storageCache[key]);
-  };
-  apis.removeStorageSync = function (key) {
-    delete storageCache[key];
-    removeStorage({ key: key });
-  };
-  apis.clearStorageSync = function () {
-    for (var i in storageCache) {
-      delete storageCache[i];
+    if ((typeof ReactQuick === 'undefined' ? 'undefined' : _typeof$1(ReactQuick)) !== 'object') {
+        return;
     }
-    clearStorage({});
-  };
+    var apis = ReactQuick.api;
+    var n = storage.length;
+    var j = 0;
+    for (var i = 0; i < n; i++) {
+        storage.key({
+            index: i,
+            success: function success(key) {
+                storage.get({
+                    key: key,
+                    success: function success(value) {
+                        storageCache[key] = value;
+                        if (++j == n) {
+                            console.log('init storage success');
+                        }
+                    }
+                });
+            }
+        });
+    }
+    apis.setStorageSync = function (key, value) {
+        setStorage({
+            key: key,
+            data: value
+        });
+        return storageCache[key] = value;
+    };
+    apis.getStorageSync = function (key) {
+        return saveParse(storageCache[key]);
+    };
+    apis.removeStorageSync = function (key) {
+        delete storageCache[key];
+        removeStorage({ key: key });
+    };
+    apis.clearStorageSync = function () {
+        for (var i in storageCache) {
+            delete storageCache[i];
+        }
+        clearStorage({});
+    };
 }
 function warnToInitStorage() {
-  {
-    console.log('还没有初始化storageSync');
-  }
+    {
+        console.log('还没有初始化storageSync');
+    }
 }
 var setStorageSync = warnToInitStorage;
 var getStorageSync = warnToInitStorage;
 var removeStorageSync = warnToInitStorage;
 var clearStorageSync = warnToInitStorage;
 
-var fakeApp = {
-    app: {
-        globalData: {}
-    }
-};
-function _getApp() {
-    if (isFn(getApp)) {
-        return getApp();
-    }
-    return fakeApp;
-}
-if (typeof getApp === 'function') {
-    _getApp = getApp;
-}
-function callGlobalHook(method, e) {
-    var app = _getApp();
-    if (app && app[method]) {
-        return app[method](e);
-    }
-}
-var delayMounts = [];
-var usingComponents = [];
-var registeredComponents = {};
-function getCurrentPage() {
-    var app = _getApp();
-    return app.$$page && app.$$page.reactInstance;
-}
-function _getCurrentPages() {
-    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-    if (isFn(getCurrentPages)) {
-        return getCurrentPages();
-    }
-}
-function updateMiniApp(instance) {
-    if (!instance || !instance.wx) {
-        return;
-    }
-    var data = safeClone({
-        props: instance.props,
-        state: instance.state || null,
-        context: instance.context
-    });
-    if (instance.wx.setData) {
-        instance.wx.setData(data);
-    } else {
-        updateQuickApp(instance.wx, data);
-    }
-}
-function refreshComponent(reactInstances, wx, uuid) {
-    var pagePath = Object(_getApp()).$$pagePath;
-    for (var i = 0, n = reactInstances.length; i < n; i++) {
-        var reactInstance = reactInstances[i];
-        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-            reactInstance.wx = wx;
-            wx.reactInstance = reactInstance;
-            updateMiniApp(reactInstance);
-            return reactInstances.splice(i, 1);
-        }
-    }
-}
-function detachComponent() {
-    var t = this.reactInstance;
-    if (t) {
-        t.wx = null;
-        this.reactInstance = null;
-    }
-}
-function updateQuickApp(quick, data) {
-    for (var i in data) {
-        quick.$set(i, data[i]);
-    }
-}
-function isReferenceType(val) {
-    return typeNumber(val) > 6;
-}
-function runFunction(fn, a, b) {
-    if (isFn(fn)) {
-        fn.call(null, a, b);
-    }
-}
-function useComponent(props) {
-    var is = props.is;
-    var clazz = registeredComponents[is];
-    props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    delete props.is;
-    if (this.ref !== null) {
-        props.ref = this.ref;
-    }
-    var owner = Renderer.currentOwner;
-    if (owner) {
-        Renderer.currentOwner = get(owner)._owner;
-    }
-    return createElement(clazz, props);
-}
-function safeClone(originVal) {
-    var temp = originVal instanceof Array ? [] : {};
-    for (var item in originVal) {
-        if (hasOwnProperty.call(originVal, item)) {
-            var value = originVal[item];
-            if (isReferenceType(value)) {
-                if (value.$$typeof) {
-                    continue;
-                }
-                temp[item] = safeClone(value);
-            } else {
-                temp[item] = value;
-            }
-        }
-    }
-    return temp;
-}
-function toRenderProps() {
-    return null;
-}
-
 var file = require('@system.file');
 var SUCCESS_MESSAGE = 'ok';
 function getSavedFileInfo(_ref) {
-  var uri = _ref.filePath,
-      success = _ref.success,
-      fail = _ref.fail,
-      complete = _ref.complete;
-  function gotFile(_ref2) {
-    var length = _ref2.length,
-        lastModifiedTime = _ref2.lastModifiedTime;
-    success({
-      errMsg: SUCCESS_MESSAGE,
-      size: length,
-      createTime: lastModifiedTime
+    var uri = _ref.filePath,
+        _ref$success = _ref.success,
+        success = _ref$success === undefined ? noop : _ref$success,
+        _ref$fail = _ref.fail,
+        fail = _ref$fail === undefined ? noop : _ref$fail,
+        _ref$complete = _ref.complete,
+        complete = _ref$complete === undefined ? noop : _ref$complete;
+    function gotFile(_ref2) {
+        var length = _ref2.length,
+            lastModifiedTime = _ref2.lastModifiedTime;
+        success({
+            errMsg: SUCCESS_MESSAGE,
+            size: length,
+            createTime: lastModifiedTime
+        });
+    }
+    file.get({
+        uri: uri,
+        success: gotFile,
+        fail: fail,
+        complete: complete
     });
-  }
-  file.get({
-    uri: uri,
-    success: gotFile,
-    fail: fail,
-    complete: complete
-  });
 }
 function getSavedFileList(_ref3) {
-  var uri = _ref3.uri,
-      success = _ref3.success,
-      fali = _ref3.fali,
-      complete = _ref3.complete;
-  if (!uri) {
-    runFunction(fail, new Error('小米需要指定目录'));
-  }
-  function gotFileList(fileList) {
-    var newFileList = fileList.map(function (item) {
-      return {
-        fileList: item.uri,
-        size: item.length,
-        createTime: item.lastModifiedTime
-      };
+    var uri = _ref3.uri,
+        _ref3$success = _ref3.success,
+        success = _ref3$success === undefined ? noop : _ref3$success,
+        _ref3$fail = _ref3.fail,
+        fail = _ref3$fail === undefined ? noop : _ref3$fail,
+        _ref3$complete = _ref3.complete,
+        complete = _ref3$complete === undefined ? noop : _ref3$complete;
+    if (!uri) {
+        fail(new Error('小米需要指定目录'));
+    }
+    function gotFileList(fileList) {
+        var newFileList = fileList.map(function (item) {
+            return {
+                fileList: item.uri,
+                size: item.length,
+                createTime: item.lastModifiedTime
+            };
+        });
+        success({
+            fileList: newFileList,
+            errMsg: SUCCESS_MESSAGE
+        });
+    }
+    file.list({
+        uri: uri,
+        success: gotFileList,
+        fail: fail,
+        complete: complete
     });
-    success({
-      fileList: newFileList,
-      errMsg: SUCCESS_MESSAGE
-    });
-  }
-  file.list({
-    uri: uri,
-    success: gotFileList,
-    fali: fali,
-    complete: complete
-  });
 }
 function removeSavedFile(_ref4) {
-  var uri = _ref4.filePath,
-      success = _ref4.success,
-      fail = _ref4.fail,
-      complete = _ref4.complete;
-  file.delete({
-    uri: uri,
-    success: success,
-    fail: fail,
-    complete: complete
-  });
+    var uri = _ref4.filePath,
+        _ref4$success = _ref4.success,
+        success = _ref4$success === undefined ? noop : _ref4$success,
+        _ref4$fail = _ref4.fail,
+        fail = _ref4$fail === undefined ? noop : _ref4$fail,
+        _ref4$complete = _ref4.complete,
+        complete = _ref4$complete === undefined ? noop : _ref4$complete;
+    file.delete({
+        uri: uri,
+        success: success,
+        fail: fail,
+        complete: complete
+    });
 }
 function saveFile(_ref5) {
-  var srcUri = _ref5.tempFilePath,
-      dstUri = _ref5.destinationFilePath,
-      success = _ref5.success,
-      fail = _ref5.fail,
-      complete = _ref5.complete;
-  if (!dstUri) {
-    runFunction(fail, new Error('小米需要指定需要指定目标路径'));
-  }
-  function gotSuccess(uri) {
-    success({
-      savedFilePath: uri
+    var srcUri = _ref5.tempFilePath,
+        dstUri = _ref5.destinationFilePath,
+        _ref5$success = _ref5.success,
+        success = _ref5$success === undefined ? noop : _ref5$success,
+        _ref5$fail = _ref5.fail,
+        fail = _ref5$fail === undefined ? noop : _ref5$fail,
+        _ref5$complete = _ref5.complete,
+        complete = _ref5$complete === undefined ? noop : _ref5$complete;
+    if (!dstUri) {
+        fail(new Error('小米需要指定需要指定目标路径'));
+    }
+    function gotSuccess(uri) {
+        success({
+            savedFilePath: uri
+        });
+    }
+    file.move({
+        srcUri: srcUri,
+        dstUri: dstUri,
+        success: gotSuccess,
+        fail: fail,
+        complete: complete
     });
-  }
-  file.move({
-    srcUri: srcUri,
-    dstUri: dstUri,
-    success: gotSuccess,
-    fail: fail,
-    complete: complete
-  });
 }
 
 var clipboard = require('@system.clipboard');
@@ -1118,17 +1024,20 @@ function setClipboardData(_ref) {
     });
 }
 function getClipboardData(_ref2) {
-    var _success = _ref2.success,
-        fail = _ref2.fail,
-        complete = _ref2.complete;
+    var _ref2$success = _ref2.success,
+        _success = _ref2$success === undefined ? noop : _ref2$success,
+        _ref2$fail = _ref2.fail,
+        fail = _ref2$fail === undefined ? noop : _ref2$fail,
+        _ref2$complete = _ref2.complete,
+        complete = _ref2$complete === undefined ? noop : _ref2$complete;
     clipboard.get({
         success: function success(obj) {
             _success({
                 data: obj.text
             });
         },
-        fail: fail || noop,
-        complete: complete || noop
+        fail: fail,
+        complete: complete
     });
 }
 
@@ -1284,11 +1193,11 @@ function showToast(obj) {
         complete = obj.complete || noop;
     try {
         prompt.showToast(obj);
-        runFunction(success);
-    } catch (error) {
-        runFunction(fail, error);
+        success();
+    } catch (err) {
+        fail(err);
     } finally {
-        runFunction(complete);
+        complete();
     }
 }
 function showActionSheet(obj) {
@@ -1320,66 +1229,179 @@ function createShortcut() {
     });
 }
 
+var fakeApp = {
+    app: {
+        globalData: {}
+    }
+};
+function _getApp() {
+    if (isFn(getApp)) {
+        return getApp();
+    }
+    return fakeApp;
+}
+if (typeof getApp === 'function') {
+    _getApp = getApp;
+}
+function callGlobalHook(method, e) {
+    var app = _getApp();
+    if (app && app[method]) {
+        return app[method](e);
+    }
+}
+var delayMounts = [];
+var usingComponents = [];
+var registeredComponents = {};
+function getCurrentPage() {
+    var app = _getApp();
+    return app.$$page && app.$$page.reactInstance;
+}
+function _getCurrentPages() {
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    if (isFn(getCurrentPages)) {
+        return getCurrentPages();
+    }
+}
+function updateMiniApp(instance) {
+    if (!instance || !instance.wx) {
+        return;
+    }
+    var data = safeClone({
+        props: instance.props,
+        state: instance.state || null,
+        context: instance.context
+    });
+    if (instance.wx.setData) {
+        instance.wx.setData(data);
+    } else {
+        updateQuickApp(instance.wx, data);
+    }
+}
+function refreshComponent(reactInstances, wx, uuid) {
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = 0, n = reactInstances.length; i < n; i++) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
+    }
+}
+function detachComponent() {
+    var t = this.reactInstance;
+    if (t) {
+        t.wx = null;
+        this.reactInstance = null;
+    }
+}
+function updateQuickApp(quick, data) {
+    for (var i in data) {
+        quick.$set(i, data[i]);
+    }
+}
+function isReferenceType(val) {
+    return typeNumber(val) > 6;
+}
+function useComponent(props) {
+    var is = props.is;
+    var clazz = registeredComponents[is];
+    props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
+    delete props.is;
+    if (this.ref !== null) {
+        props.ref = this.ref;
+    }
+    var owner = Renderer.currentOwner;
+    if (owner) {
+        Renderer.currentOwner = get(owner)._owner;
+    }
+    return createElement(clazz, props);
+}
+function safeClone(originVal) {
+    var temp = originVal instanceof Array ? [] : {};
+    for (var item in originVal) {
+        if (hasOwnProperty.call(originVal, item)) {
+            var value = originVal[item];
+            if (isReferenceType(value)) {
+                if (value.$$typeof) {
+                    continue;
+                }
+                temp[item] = safeClone(value);
+            } else {
+                temp[item] = value;
+            }
+        }
+    }
+    return temp;
+}
+function toRenderProps() {
+    return null;
+}
+
 var router = require('@system.router');
 function createRouter(name) {
-  return function (obj) {
-    var href = obj ? obj.url || obj.uri || '' : '';
-    var uri = href.slice(href.indexOf('/pages') + 1);
-    var webViewUrls = {};
-    var webViewRoute = '';
-    var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
-    if (urlReg.test(href)) {
-      webViewRoute = href;
-    } else {
-      try {
-        webViewUrls = require('./webviewConfig.js');
-        webViewRoute = webViewUrls[uri];
-      } catch (err) {
-      }
-    }
-    if (webViewRoute) {
-      var webview = require('@system.webview');
-      webview.loadUrl({
-        url: webViewRoute,
-        allowthirdpartycookies: true
-      });
-      return;
-    }
-    var params = {};
-    uri = uri.replace(/\?(.*)/, function (a, b) {
-      b.split('&').forEach(function (param) {
-        param = param.split('=');
-        params[param[0]] = param[1];
-      });
-      return '';
-    }).replace(/\/index$/, '');
-    if (uri.charAt(0) !== '/') {
-      uri = '/' + uri;
-    }
-    router[name]({
-      uri: uri,
-      params: params
-    });
-  };
+    return function (obj) {
+        var href = obj ? obj.url || obj.uri || '' : '';
+        var uri = href.slice(href.indexOf('/pages') + 1);
+        var webViewUrls = {};
+        var webViewRoute = '';
+        var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
+        if (urlReg.test(href)) {
+            webViewRoute = href;
+        } else {
+            try {
+                webViewUrls = require('./webviewConfig.js');
+                webViewRoute = webViewUrls[uri];
+            } catch (err) {
+            }
+        }
+        if (webViewRoute) {
+            var webview = require('@system.webview');
+            webview.loadUrl({
+                url: webViewRoute,
+                allowthirdpartycookies: true
+            });
+            return;
+        }
+        var params = {};
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('&').forEach(function (param) {
+                param = param.split('=');
+                params[param[0]] = param[1];
+            });
+            return '';
+        }).replace(/\/index$/, '');
+        if (uri.charAt(0) !== '/') {
+            uri = '/' + uri;
+        }
+        router[name]({
+            uri: uri,
+            params: params
+        });
+    };
 }
 var navigateTo = createRouter('push');
 var redirectTo = createRouter('replace');
 var navigateBack = createRouter('back');
-function makePhoneCall(obj) {
-  var phoneNumber = obj.phoneNumber;
-  var success = obj.success || noop,
-      fail = obj.fail || noop,
-      complete = obj.complete || noop;
-  try {
-    router.push({
-      uri: 'tel:' + phoneNumber
-    });
-    runFunction(success);
-  } catch (error) {
-    runFunction(fail, error);
-  } finally {
-    runFunction(complete);
-  }
+function makePhoneCall(_ref) {
+    var phoneNumber = _ref.phoneNumber,
+        _ref$success = _ref.success,
+        success = _ref$success === undefined ? noop : _ref$success,
+        _ref$fail = _ref.fail,
+        fail = _ref$fail === undefined ? noop : _ref$fail,
+        _ref$complete = _ref.complete,
+        complete = _ref$complete === undefined ? noop : _ref$complete;
+    try {
+        router.push({
+            uri: 'tel:' + phoneNumber
+        });
+        success();
+    } catch (error) {
+        fail(error);
+    } finally {
+        complete();
+    }
 }
 
 var vibrator = require('@system.vibrator');
@@ -1417,25 +1439,25 @@ function share(obj) {
 }
 
 function createCanvasContext(id, obj) {
-  if (obj.wx && obj.wx.$element) {
-    var el = obj.wx.$element(id);
-    var ctx = el && el.getContext('2d');
-    'strokeStyle,textAlign,textBaseline,fillStyle,lineWidth,lineCap,lineJoin,miterLimit,globalAlpha'.split(',').map(function (item) {
-      var method = 'set' + item.substring(0, 1).toUpperCase() + item.substring(1);
-      ctx[method] = function (value) {
-        ctx[item] = value;
-      };
-    });
-    ctx.setFontSize = function (value) {
-      ctx.font = value + 'px';
-    };
-    ctx.draw = function () {
-      ctx.closePath();
-    };
-    return ctx;
-  } else {
-    throw new Error('createCanvasContext 第二个 字段 this 必须添加');
-  }
+    if (obj.wx && obj.wx.$element) {
+        var el = obj.wx.$element(id);
+        var ctx = el && el.getContext('2d');
+        'strokeStyle,textAlign,textBaseline,fillStyle,lineWidth,lineCap,lineJoin,miterLimit,globalAlpha'.split(',').map(function (item) {
+            var method = 'set' + item.substring(0, 1).toUpperCase() + item.substring(1);
+            ctx[method] = function (value) {
+                ctx[item] = value;
+            };
+        });
+        ctx.setFontSize = function (value) {
+            ctx.font = value + 'px';
+        };
+        ctx.draw = function () {
+            ctx.closePath();
+        };
+        return ctx;
+    } else {
+        throw new Error('createCanvasContext 第二个 字段 this 必须添加');
+    }
 }
 
 var payAPI = require('@service.pay');
@@ -1508,44 +1530,51 @@ var facade = {
     chooseImage: chooseImage,
     setNavigationBarTitle: function setNavigationBarTitle(_ref2) {
         var title = _ref2.title,
-            success = _ref2.success,
-            fail = _ref2.fail,
-            complete = _ref2.complete;
+            _ref2$success = _ref2.success,
+            success = _ref2$success === undefined ? noop : _ref2$success,
+            _ref2$fail = _ref2.fail,
+            fail = _ref2$fail === undefined ? noop : _ref2$fail,
+            _ref2$complete = _ref2.complete,
+            complete = _ref2$complete === undefined ? noop : _ref2$complete;
         try {
             var currentPage = _getApp().$$page;
             currentPage.$page.setTitleBar({ text: title });
-            runFunction(success);
+            success();
         } catch (error) {
-            runFunction(fail, error);
+            fail(error);
         } finally {
-            runFunction(complete);
+            complete();
         }
     },
     createCanvasContext: createCanvasContext,
-    stopPullDownRefresh: function stopPullDownRefresh(obj) {
-        obj = obj || {};
-        var success = obj.success || noop,
-            fail = obj.fail || noop,
-            complete = obj.complete || noop;
+    stopPullDownRefresh: function stopPullDownRefresh(_ref3) {
+        var _ref3$success = _ref3.success,
+            success = _ref3$success === undefined ? noop : _ref3$success,
+            _ref3$fail = _ref3.fail,
+            fail = _ref3$fail === undefined ? noop : _ref3$fail,
+            _ref3$complete = _ref3.complete,
+            complete = _ref3$complete === undefined ? noop : _ref3$complete;
         try {
-            runFunction(success);
+            success();
         } catch (error) {
-            runFunction(fail, error);
+            fail(error);
         } finally {
-            runFunction(complete);
+            complete();
         }
     },
-    createAnimation: function createAnimation(obj) {
-        obj = obj || {};
-        var success = obj.success || noop,
-            fail = obj.fail || noop,
-            complete = obj.complete || noop;
+    createAnimation: function createAnimation(_ref4) {
+        var _ref4$success = _ref4.success,
+            success = _ref4$success === undefined ? noop : _ref4$success,
+            _ref4$fail = _ref4.fail,
+            fail = _ref4$fail === undefined ? noop : _ref4$fail,
+            _ref4$complete = _ref4.complete,
+            complete = _ref4$complete === undefined ? noop : _ref4$complete;
         try {
-            runFunction(success);
+            success();
         } catch (error) {
-            runFunction(fail, error);
+            fail(error);
         } finally {
-            runFunction(complete);
+            complete();
         }
     }
 };
