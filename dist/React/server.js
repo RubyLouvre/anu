@@ -517,11 +517,12 @@
                     return str + '/>\n';
                 }
                 str += '>';
+
+                var cstr = '';
                 if (innerHTML$$1) {
 
                     str += innerHTML$$1;
                 } else {
-                    var cstr = '';
                     var fakeUpdater = {
                         _reactInternalFiber: vnode
                     };
