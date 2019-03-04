@@ -23,6 +23,8 @@ import { toRenderProps, _getApp, getCurrentPage, _getCurrentPages, useComponent 
 import { registerPage } from './registerPage.wx';
 import { registerComponent } from './registerComponent.wx';
 
+import { more } from './apiForWx/index';
+
 
 let { render } = Renderer;
 
@@ -69,9 +71,7 @@ if (typeof wx != 'undefined'){
     React.appType = 'tt';
 } 
 
-registerAPIs(React, apiContainer, function(){
-    return {};
-});
+registerAPIs(React, apiContainer, more);
 
 export default React;
 export { Children, createElement, Component };

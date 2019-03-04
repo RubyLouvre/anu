@@ -1,3 +1,5 @@
+import { noop } from 'react-core/util';
+
 export var more = function(api) {
     return {
         // 交互
@@ -153,6 +155,30 @@ export var more = function(api) {
         setScreenBrightness: function _(a) {
             a.brightness = a.value;
             return api.setScreenBrightness(a);
+        },
+
+        request: function(_a) {
+            const originSuccess = _a.success || noop;
+            const originFail = _a.fail || noop;
+            const originComplete = _a.complete || noop;
+            _a.success = function(res) {
+                const { status, headers, ...rest } = res;
+                if (typeof status !== 'undefined' && typeof headers !== 'undefined') {
+                    res = { statusCode: status, header: headers, ...rest };
+                }
+                originSuccess.call(this, res);
+                originComplete.call(this, res);
+            };
+            _a.fail = function(res) {
+                const { status, headers, ...rest } = res;
+                if (typeof status !== 'undefined' && typeof headers !== 'undefined') {
+                    res = { statusCode: status, header: headers, ...rest };
+                }
+                originFail.call(this, res);
+                originComplete.call(this, res);
+            };
+            
+            return api.httpRequest(_a);
         }
     };
 };
