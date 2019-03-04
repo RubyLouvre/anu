@@ -11,16 +11,19 @@ import {
 } from 'react-core/createElement';
 import { createContext } from 'react-core/createContext';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
+//注入小程序的API
+import { registerAPIs } from './registerAPIs';
 
-import { injectAPIs } from './api';
 import { dispatchEvent, webview } from './eventSystem';
+
 import { Renderer } from './render.all';
-//import { onBeforeRender } from './onBeforeRender.wx';
-//Renderer.onBeforeRender = onBeforeRender;
+
 import { toStyle } from './toStyle';
 import { toRenderProps, _getApp, getCurrentPage, _getCurrentPages, useComponent } from './utils';
 import { registerPage } from './registerPage.wx';
 import { registerComponent } from './registerComponent.wx';
+
+import { more } from './apiForWx/index';
 
 
 let { render } = Renderer;
@@ -68,7 +71,7 @@ if (typeof wx != 'undefined'){
     React.appType = 'tt';
 } 
 
-injectAPIs(React, apiContainer);
+registerAPIs(React, apiContainer, more);
 
 export default React;
 export { Children, createElement, Component };

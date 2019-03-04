@@ -2,7 +2,7 @@ import { isFn } from 'react-core/util';
 import { dispatchEvent } from './eventSystem.quick';
 import { onLoad, onUnload, onReady } from './registerPage.all';
 import { callGlobalHook,_getApp } from './utils';
-import { showMenu } from './showMenu.quick';
+//import { showMenu } from './apiForQuick/showMenu';
 var globalHooks = {
     onShareAppMessage: 'onGlobalShare',
     onShow: 'onGlobalShow',
@@ -21,6 +21,7 @@ function getUrlAndQuery(page){
     
     return [path, query];
 }
+
 export function registerPage(PageClass) {
     PageClass.reactInstances = [];
     let config = {
@@ -48,12 +49,13 @@ export function registerPage(PageClass) {
         config[hook] = function(e) {
             let instance = this.reactInstance;
             let fn = instance[hook];
+            let app =  _getApp();
             if (hook === 'onShow'){
-                _getApp().$$page = instance.wx;
-                _getApp().$$pagePath = instance.props.path;
+                app.$$page = instance.wx;
+                app.$$pagePath = instance.props.path;
             }
             if (hook === 'onMenuPress') {
-                showMenu(instance, this.$app);
+                app.onShowMenu && app.onShowMenu(instance, this.$app);
             } else if (isFn(fn)) {
                 fn.call(instance, e);
             }

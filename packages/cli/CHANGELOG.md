@@ -1,9 +1,115 @@
 # Changelog
 
+
+# 1.1.4 (2019-03-01)
+
+## 核心库
+
+#### Feature
+- Promise 化快应用API。
+- 支持快应用支付接口。
+
+#### Bug fix
+- 修复构建快应用下一些 API bug。
+- 容错平台没有实现的API，执行一个空函数。
+
+
+## CLI  
+
+#### Feature
+- 升级快应用下行内元素转换规则。
+- 支持命令行 `--beta-ui` 参数, 加载远程最新版补丁组件。
+
+
+#### Bug fix
+- 修复快应用下 `px` 转换 bug。
+
+
+
+# 1.1.3 (2019-02-27)
+
+## 核心库
+#### Feature
+- 提前快应用组件注入数据的时机，从 `onReady` 改成 `onInit` 。
+
+
+## CLI  
+
+#### Feature
+- 支持快应用自定义 `titleBar` 的现实/隐藏。
+- 升级快应用的标签与事件名转换。
+- 简化编译快应用时构建依赖安装流程 && 减少构建依赖安装。
+- 升级快应用下 `scroll-view` 编译方式。
+
+
+#### Bug fix
+- 修复快应用下 `getSystemInfo` bug。
+
+# 1.1.2 (2019-02-22)
+
+## 核心库
+
+#### Feature
+- 简化各平台 getApp 实现。
+- 支持快应用同步 storage API。
+
+
+## CLI  
+
+#### Feature
+- 样式预处理器 dart-sass 替代 node-sass。
+- 支持快应用智能 webview。
+- 支持H5 pull refresh, scroll hooks 功能。
+- 优化快应用下 block 标签生成机制（如果 
+在span, text, strong 这几个标签内部出现 {} , {}里面有 三元或&&， 不应该转换成block）。
+
+
+#### Bug fix
+- 修复 windows 平台下路径处理 bug。
+- 修复 H5 路由 bug。
+- 修复快应用自动插入span 或 text 的功能。
+- 修复快应用下页面配置对象没有定义 tabBar 就不应该走app.js的config的tabBar问题。
+
+
+# 1.1.1 (2019-02-01)
+
+## CLI  
+
+#### Bug fix
+- 修复样式 font-size/line-height、 background-position/background-size 缩写解析错误。
+- 修复快应用中页面无法import pages目录中的js模块问题。
+- 修复脚手架中 qunar 模板样式问题。
+  
+
+# 1.1.0 (2019-01-25)
+## 核心库
+
+#### Bug fix
+- 修复小程序实例匹配错误 bug。
+
+## CLI
+#### Feature
+- 增加百度 setMetaDescription, setMetaKeywords, setDocumentTitle 三个接口。
+- 增加 nanachi page `<page-name>` 和 nanachi component `<component-name>` 两命令行接口。
+  
+
+#### Bug fix
+- 修复 alias 别名 bug。
+- 修复快应用样式样式解析 bug。
+- 修复 qunar 模板样式 bug。
+
+
+
+
+# 1.0.9 (2019-01-18)
+## CLI
+#### Feature
+- 修复 qunar 模板样式问题。
+
 # 1.0.8 (2019-01-18)
 ## CLI
 #### Feature
-- 修复命令行 --beta 参数
+- 修复命令行 --beta 参数。
 
 
 # 1.0.7 (2019-01-18)

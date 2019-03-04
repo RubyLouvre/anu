@@ -13,13 +13,9 @@ import { createContext } from 'react-core/createContext';
 
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
-import { injectAPIs } from './api';
-import { aliApis } from './api.ali';
-
 import { dispatchEvent, webview } from './eventSystem';
 import { Renderer } from './render.all';
-//import { onBeforeRender } from './onBeforeRender.ali';
-//Renderer.onBeforeRender = onBeforeRender;
+
 import { toStyle } from './toStyle';
 import {
     toRenderProps,
@@ -28,7 +24,9 @@ import {
     _getCurrentPages,
     useComponent
 } from './utils';
-
+//小程序的API注入
+import { registerAPIs } from './registerAPIs';
+import { more } from './apiForAlipay/index';
 import { registerComponent } from './registerComponent.ali';
 import { registerPage } from './registerPage.wx';
 
@@ -75,7 +73,8 @@ let apiContainer = {};
 if (typeof my != 'undefined') {
     apiContainer = my; //eslint-disable-line
 }
-injectAPIs(React, apiContainer, aliApis);
+
+registerAPIs(React, apiContainer, more);
 
 export default React;
 export { Children, createElement, Component };

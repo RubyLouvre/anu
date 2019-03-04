@@ -15,7 +15,7 @@ import { Fragment, getWindow } from 'react-core/util';
 
 import { findDOMNode } from './findDOMNode';
 import { DOMRenderer } from './DOMRenderer';
-import { useState, useReducer, useEffect, useCallback, useMemo, useRef, useContext } from 'react-core/hooks';
+import { useState, useReducer, useEffect, useLayoutEffect, useCallback, useMemo, useRef, useContext, useImperativeHandle } from 'react-core/hooks';
 
 import './compat';
 let win = getWindow();
@@ -53,10 +53,12 @@ if (prevReact && prevReact.eventSystem) {
         useState, 
         useReducer, 
         useEffect, 
+        useLayoutEffect,
         useContext,
         useCallback, 
         useMemo, 
         useRef,
+        useImperativeHandle,
         createElement,
         cloneElement,
         PureComponent,

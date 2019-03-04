@@ -32,7 +32,6 @@ export var aliApis = function(api) {
         setNavigationBarColor: function _(a) {
             return api.setNavigationBar(a);
         },
-
         // 震动
         vibrateLong: function _(a) {
           return api.vibrate(a);

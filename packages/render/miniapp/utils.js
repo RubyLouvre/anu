@@ -9,11 +9,7 @@ var fakeApp = {
 };
 function _getApp () {
     if (isFn(getApp)) {
-        var app = getApp();
-        if (!app.globalData && app.$def) { // 快应用的数据放在$def上
-            app.globalData = app.$def.globalData || {};
-        }
-        return app;
+        return getApp();
     }
     return fakeApp;
 }
@@ -66,7 +62,7 @@ export function updateMiniApp (instance) {
 }
 export function refreshComponent (reactInstances, wx, uuid) {
     let pagePath = Object(_getApp()).$$pagePath;
-    for (let i = reactInstances.length - 1; i >= 0; i--) {
+    for (let i = 0, n = reactInstances.length ;i < n; i++) {
         let reactInstance = reactInstances[i];
         //处理组件A包含组件时B，当出现多个A组件，B组件会串的问题
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {

@@ -190,7 +190,7 @@ let RouterImpl = miniCreateClass(
             } = this.props;
             let routes = Children.map(children, createRoute(basepath));
             //** pathname改成getPath()
-            let pathname = location.getPath ? location.getPath() : '/';
+            let pathname = location.getPath()
           
             let match = pick(routes, pathname);
 
@@ -401,9 +401,8 @@ let Link = props => (
 
                     let href = resolve(to, baseuri);
                      //** pathname改成getPath()
-                    let pathname = location.getPath ? location.getPath() : '/';
-                    let isCurrent = pathname === href;
-                    let isPartiallyCurrent = startsWith(pathname, href);
+                    let isCurrent = location.getPath() === href;
+                    let isPartiallyCurrent = startsWith(location.getPath(), href);
                     Object.assign(
                         anchorProps,
                         getProps({ isCurrent, isPartiallyCurrent, href, location })

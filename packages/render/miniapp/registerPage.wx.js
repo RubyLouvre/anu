@@ -3,9 +3,9 @@ import { dispatchEvent } from './eventSystem';
 import { onLoad, onUnload, onReady } from './registerPage.all';
 import { callGlobalHook,_getApp } from './utils';
 var globalHooks = {
-    onShareAppMessage: 'onGlobalShare',
+    onShare: 'onGlobalShare',
     onShow: 'onGlobalShow',
-    onHide: 'onGlobalHide',
+    onHide: 'onGlobalHide'
 };
 var showHideHooks = {
     onShow: 'componentDidShow',
@@ -27,30 +27,34 @@ export function registerPage(PageClass, path, testObject) {
         'onShareAppMessage',
         'onReachBottom',
         'onPullDownRefresh',
+        'onResize',
         'onShow',
         'onHide'
     ).forEach(function(hook) {
         config[hook] = function(e) {
             let instance = this.reactInstance;
             let fn = instance[hook], fired = false;
-            //在百度小程序，从A页面跳转到B页面，模拟器下是先触发A的onHide再触发B的onShow
-            //真机下，却是先触发B的onShow再触发A的onHide,其他小程序可能也有这问题，因此我们只在onShow
-            //里修改全局对象的属性
-            if (hook === 'onShow'){
+            if (hook === 'onShareAppMessage'){
+                hook = 'onShare';
+                fn = fn || instance[hook];
+            } else if (hook === 'onShow'){
+                //在百度小程序，从A页面跳转到B页面，模拟器下是先触发A的onHide再触发B的onShow
+                //真机下，却是先触发B的onShow再触发A的onHide,其他小程序可能也有这问题，因此我们只在onShow
+                //里修改全局对象的属性
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }
-            if (isFn(fn)) {
+            if (isFn(fn)) {//页面级别
                 fired = true;
                 var ret =  fn.call(instance, e);
-                if (hook === 'onShareAppMessage'){
+                if (hook === 'onShare'){
                     return ret;
                 }
             }
             var globalHook = globalHooks[hook];
-            if (globalHook){
+            if (globalHook){//应用级别
                 ret = callGlobalHook(globalHook, e);
-                if (hook === 'onShareAppMessage'){
+                if (hook === 'onShare'){
                     return ret;
                 }
             }

@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2019-01-21
+ * by 司徒正美 Copyright 2019-03-04
  * IE9+
  */
 
@@ -802,20 +802,26 @@
     function useReducer(reducer, initValue, initAction) {
         return dispatcher.useReducer(reducer, initValue, initAction);
     }
-    function useEffect(create, inputs) {
-        return dispatcher.useEffect(create, inputs, PASSIVE, 'passive', 'unpassive');
+    function useEffect(create, deps) {
+        return dispatcher.useEffect(create, deps, PASSIVE, 'passive', 'unpassive');
     }
-    function useCallback(create, inputs) {
-        return dispatcher.useCallbackOrMeo(create, inputs);
+    function useLayoutEffect(create, deps) {
+        return dispatcher.useEffect(create, deps, HOOK, 'layout', 'unlayout');
     }
-    function useMemo(create, inputs) {
-        return dispatcher.useCallbackOrMemo(create, inputs, true);
+    function useCallback(create, deps) {
+        return dispatcher.useCallbackOrMemo(create, deps);
+    }
+    function useMemo(create, deps) {
+        return dispatcher.useCallbackOrMemo(create, deps, true);
     }
     function useRef(initValue) {
         return dispatcher.useRef(initValue);
     }
     function useContext(initValue) {
         return dispatcher.useContext(initValue);
+    }
+    function useImperativeHandle(ref, create, deps) {
+        return dispatcher.useImperativeHandle(ref, create, deps);
     }
 
     function findHostInstance(fiber) {
@@ -3196,7 +3202,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.5.0',
+            version: '1.5.1',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,
@@ -3211,10 +3217,12 @@
             useState: useState,
             useContext: useContext,
             useEffect: useEffect,
+            useLayoutEffect: useLayoutEffect,
             useReducer: useReducer,
             useCallback: useCallback,
             useMemo: useMemo,
             useRef: useRef,
+            useImperativeHandle: useImperativeHandle,
             createElement: createElement,
             cloneElement: cloneElement,
             PureComponent: PureComponent,

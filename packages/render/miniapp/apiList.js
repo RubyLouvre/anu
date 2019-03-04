@@ -1,4 +1,4 @@
-export const onAndSyncApis = {
+export var onAndSyncApis = {
     onSocketOpen: true,
     onSocketError: true,
     onSocketMessage: true,
@@ -28,7 +28,7 @@ export const onAndSyncApis = {
     getExtConfigSync: true,
     getLogManager: true
 };
-export const noPromiseApis = {
+export var noPromiseApis = {
     // 媒体
     stopRecord: true,
     getRecorderManager: true,
@@ -75,7 +75,7 @@ export const noPromiseApis = {
     getUpdateManager: true,
     createWorker: true
 };
-export const otherApis = {
+export var otherApis = {
     // 网络
     uploadFile: true,
     downloadFile: true,
@@ -210,5 +210,4 @@ export const otherApis = {
     checkIsSupportSoterAuthentication: true,
     startSoterAuthentication: true,
     checkIsSoterEnrolledInDevice: true
-    //
 };
