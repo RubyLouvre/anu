@@ -8,7 +8,7 @@
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
     "sync": "node ./scripts/build/syncAntd.js",
-    "buildIE": "webpack --config ./scripts/build/buildIE.js",
+    "buildIE": "webpack --config ./scripts/build/buildIE.js"
   },
   "lint-staged": {
     "linters": {

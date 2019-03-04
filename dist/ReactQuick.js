@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-03-01
+ * 运行于快应用的React by 司徒正美 Copyright 2019-03-04
  */
 
 var arrayPush = Array.prototype.push;
@@ -805,6 +805,104 @@ function request(_ref6) {
     });
 }
 
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var storage = require('@system.storage');
+function saveParse(str) {
+  try {
+    return JSON.parse(str);
+  } catch (err) {
+  }
+  return str;
+}
+function setStorage(_ref) {
+  var key = _ref.key,
+      data = _ref.data,
+      success = _ref.success,
+      _ref$fail = _ref.fail,
+      fail = _ref$fail === undefined ? noop : _ref$fail,
+      complete = _ref.complete;
+  var value = data;
+  if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
+    try {
+      value = JSON.stringify(value);
+    } catch (error) {
+      return fail(error);
+    }
+  }
+  storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
+}
+function getStorage(_ref2) {
+  var key = _ref2.key,
+      success = _ref2.success,
+      fail = _ref2.fail,
+      complete = _ref2.complete;
+  function dataObj(data) {
+    success({
+      data: saveParse(data)
+    });
+  }
+  storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
+}
+function removeStorage(obj) {
+  storage.delete(obj);
+}
+function clearStorage(obj) {
+  storage.clear(obj);
+}
+function initStorageSync(storageCache) {
+  if ((typeof ReactQuick === 'undefined' ? 'undefined' : _typeof$1(ReactQuick)) !== 'object') {
+    return;
+  }
+  var apis = ReactQuick.api;
+  var n = storage.length;
+  var j = 0;
+  for (var i = 0; i < n; i++) {
+    storage.key({
+      index: i,
+      success: function success(key) {
+        storage.get({
+          key: key,
+          success: function success(value) {
+            storageCache[key] = value;
+            if (++j == n) {
+              console.log('init storage success');
+            }
+          }
+        });
+      }
+    });
+  }
+  apis.setStorageSync = function (key, value) {
+    setStorage({
+      key: key,
+      data: value
+    });
+    return storageCache[key] = value;
+  };
+  apis.getStorageSync = function (key) {
+    return saveParse(storageCache[key]);
+  };
+  apis.removeStorageSync = function (key) {
+    delete storageCache[key];
+    removeStorage({ key: key });
+  };
+  apis.clearStorageSync = function () {
+    for (var i in storageCache) {
+      delete storageCache[i];
+    }
+    clearStorage({});
+  };
+}
+function warnToInitStorage() {
+  {
+    console.log('还没有初始化storageSync');
+  }
+}
+var setStorageSync = warnToInitStorage;
+var getStorageSync = warnToInitStorage;
+var removeStorageSync = warnToInitStorage;
+var clearStorageSync = warnToInitStorage;
+
 var fakeApp = {
     app: {
         globalData: {}
@@ -919,103 +1017,6 @@ function safeClone(originVal) {
 function toRenderProps() {
     return null;
 }
-
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-var storage = require('@system.storage');
-function saveParse(str) {
-    try {
-        return JSON.parse(str);
-    } catch (err) {
-    }
-    return str;
-}
-function setStorage(_ref) {
-    var key = _ref.key,
-        data = _ref.data,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    var value = data;
-    if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
-        try {
-            value = JSON.stringify(value);
-        } catch (error) {
-            runFunction(fail, error);
-        }
-    }
-    storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
-}
-function getStorage(_ref2) {
-    var key = _ref2.key,
-        success = _ref2.success,
-        fail = _ref2.fail,
-        complete = _ref2.complete;
-    function dataObj(data) {
-        success({
-            data: saveParse(data)
-        });
-    }
-    storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
-}
-function removeStorage(obj) {
-    storage.delete(obj);
-}
-function clearStorage(obj) {
-    storage.clear(obj);
-}
-function initStorageSync(storageCache) {
-    if ((typeof ReactQuick === 'undefined' ? 'undefined' : _typeof$1(ReactQuick)) !== 'object') {
-        return;
-    }
-    var apis = ReactQuick.api;
-    var n = storage.length;
-    var j = 0;
-    for (var i = 0; i < n; i++) {
-        storage.key({
-            index: i,
-            success: function success(key) {
-                storage.get({
-                    key: key,
-                    success: function success(value) {
-                        storageCache[key] = value;
-                        if (++j == n) {
-                            console.log('init storage success');
-                        }
-                    }
-                });
-            }
-        });
-    }
-    apis.setStorageSync = function (key, value) {
-        setStorage({
-            key: key,
-            data: value
-        });
-        return storageCache[key] = value;
-    };
-    apis.getStorageSync = function (key) {
-        return saveParse(storageCache[key]);
-    };
-    apis.removeStorageSync = function (key) {
-        delete storageCache[key];
-        removeStorage({ key: key });
-    };
-    apis.clearStorageSync = function () {
-        for (var i in storageCache) {
-            delete storageCache[i];
-        }
-        clearStorage({});
-    };
-}
-function warnToInitStorage() {
-    {
-        console.log('还没有初始化storageSync');
-    }
-}
-var setStorageSync = warnToInitStorage;
-var getStorageSync = warnToInitStorage;
-var removeStorageSync = warnToInitStorage;
-var clearStorageSync = warnToInitStorage;
 
 var file = require('@system.file');
 var SUCCESS_MESSAGE = 'ok';
@@ -1433,11 +1434,11 @@ function getProvider() {
 function wxpayGetType() {
     wxpayAPI.getType();
 }
-function wxpay() {
-    wxpayAPI.pay();
+function wxpay(obj) {
+    wxpayAPI.pay(obj);
 }
-function alipay() {
-    alipayAPI.pay();
+function alipay(obj) {
+    alipayAPI.pay(obj);
 }
 
 var facade = {
