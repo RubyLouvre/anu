@@ -64,7 +64,6 @@
     "eslint-plugin-react": "^7.1.0",
     "fs-extra": "^4.0.3",
     "glob": "^7.1.2",
-    "husky": "^0.14.3",
     "jasmine-check": "^1.0.0-rc.0",
     "jest": "^22.4.3",
     "lerna": "^3.5.1",
