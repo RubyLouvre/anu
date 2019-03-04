@@ -1434,11 +1434,11 @@ function getProvider() {
 function wxpayGetType() {
     wxpayAPI.getType();
 }
-function wxpay() {
-    wxpayAPI.pay();
+function wxpay(obj) {
+    wxpayAPI.pay(obj);
 }
-function alipay() {
-    alipayAPI.pay();
+function alipay(obj) {
+    alipayAPI.pay(obj);
 }
 
 var facade = {
