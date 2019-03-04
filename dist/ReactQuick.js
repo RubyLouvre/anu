@@ -1320,51 +1320,67 @@ function createShortcut() {
     });
 }
 
+var router = require('@system.router');
 function createRouter(name) {
-    return function (obj) {
-        var href = obj ? obj.url || obj.uri || '' : '';
-        var uri = href.slice(href.indexOf('/pages') + 1);
-        var webViewUrls = {};
-        var webViewRoute = '';
-        var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
-        if (urlReg.test(href)) {
-            webViewRoute = href;
-        } else {
-            try {
-                webViewUrls = require('./webviewConfig.js');
-                webViewRoute = webViewUrls[uri];
-            } catch (err) {
-            }
-        }
-        if (webViewRoute) {
-            var webview = require('@system.webview');
-            webview.loadUrl({
-                url: webViewRoute,
-                allowthirdpartycookies: true
-            });
-            return;
-        }
-        var router = require('@system.router');
-        var params = {};
-        uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('&').forEach(function (param) {
-                param = param.split('=');
-                params[param[0]] = param[1];
-            });
-            return '';
-        }).replace(/\/index$/, '');
-        if (uri.charAt(0) !== '/') {
-            uri = '/' + uri;
-        }
-        router[name]({
-            uri: uri,
-            params: params
-        });
-    };
+  return function (obj) {
+    var href = obj ? obj.url || obj.uri || '' : '';
+    var uri = href.slice(href.indexOf('/pages') + 1);
+    var webViewUrls = {};
+    var webViewRoute = '';
+    var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
+    if (urlReg.test(href)) {
+      webViewRoute = href;
+    } else {
+      try {
+        webViewUrls = require('./webviewConfig.js');
+        webViewRoute = webViewUrls[uri];
+      } catch (err) {
+      }
+    }
+    if (webViewRoute) {
+      var webview = require('@system.webview');
+      webview.loadUrl({
+        url: webViewRoute,
+        allowthirdpartycookies: true
+      });
+      return;
+    }
+    var params = {};
+    uri = uri.replace(/\?(.*)/, function (a, b) {
+      b.split('&').forEach(function (param) {
+        param = param.split('=');
+        params[param[0]] = param[1];
+      });
+      return '';
+    }).replace(/\/index$/, '');
+    if (uri.charAt(0) !== '/') {
+      uri = '/' + uri;
+    }
+    router[name]({
+      uri: uri,
+      params: params
+    });
+  };
 }
 var navigateTo = createRouter('push');
 var redirectTo = createRouter('replace');
 var navigateBack = createRouter('back');
+function makePhoneCall(obj) {
+  var phoneNumber = obj.phoneNumber;
+  var success = obj.success || noop,
+      fail = obj.fail || noop,
+      complete = obj.complete || noop;
+  try {
+    router.push({
+      uri: 'tel:' + phoneNumber
+    });
+    runFunction(success);
+  } catch (error) {
+    runFunction(fail, error);
+  } finally {
+    runFunction(complete);
+  }
+}
 
 var vibrator = require('@system.vibrator');
 function vibrateLong() {
@@ -1454,6 +1470,7 @@ var facade = {
     uploadFile: uploadFile,
     downloadFile: downloadFile,
     request: request,
+    makePhoneCall: makePhoneCall,
     scanCode: function scanCode(_ref) {
         var success = _ref.success,
             fail = _ref.fail,
