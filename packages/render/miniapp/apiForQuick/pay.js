@@ -15,10 +15,10 @@ export function wxpayGetType() {
     wxpayAPI.getType()
 }
 
-export function wxpay() {
-    wxpayAPI.pay()
+export function wxpay(obj) {
+    wxpayAPI.pay(obj)
 }
 
-export function alipay() {
-    alipayAPI.pay()
+export function alipay(obj) {
+    alipayAPI.pay(obj)
 }
