@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-01T11
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-04T04
  * IE9+
  */
 
@@ -811,60 +811,6 @@ var otherApis = {
   checkIsSoterEnrolledInDevice: true
 };
 
-var RequestQueue = {
-    MAX_REQUEST: 5,
-    queue: [],
-    request: function request(options) {
-        this.push(options);
-        this.run();
-    },
-    push: function push(options) {
-        this.queue.push(options);
-    },
-    run: function run() {
-        if (!this.queue.length) {
-            return;
-        }
-        if (this.queue.length <= this.MAX_REQUEST) {
-            var options = this.queue.shift();
-            var completeFn = options.complete;
-            var self = this;
-            options.complete = function () {
-                completeFn && completeFn.apply(null, arguments);
-                self.run();
-            };
-            if (this.facade.httpRequest) {
-                this.facade.httpRequest(options);
-            } else if (this.facade.request) {
-                this.facade.request(options);
-            }
-        }
-    }
-};
-function request(options) {
-    options = options || {};
-    options.headers = options.headers || options.header;
-    var originSuccess = options.success || noop;
-    var originFail = options.fail || noop;
-    var originComplete = options.complete || noop;
-    var p = new Promise(function (resolve, reject) {
-        options.success = function (res) {
-            res.statusCode = res.status || res.statusCode;
-            res.header = res.headers || res.header;
-            originSuccess(res);
-            resolve(res);
-        };
-        options['fail'] = function (res) {
-            originFail(res);
-            reject(res);
-        };
-        options['complete'] = function (res) {
-            originComplete(res);
-        };
-        RequestQueue.request(options);
-    });
-    return p;
-}
 function promisefyApis(ReactWX, facade, more) {
     var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis, more);
     Object.keys(weApis).forEach(function (key) {
@@ -943,8 +889,6 @@ function initPxTransform(facade) {
 }
 function registerAPIs(ReactWX, facade, override) {
     registerAPIsQuick(ReactWX, facade, override);
-    RequestQueue.facade = facade;
-    ReactWX.api.request = request;
     initPxTransform(ReactWX.api);
     ReactWX.api.pxTransform = ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
@@ -2641,6 +2585,42 @@ function registerComponent(type, name) {
     return config;
 }
 
+var RequestQueue = {
+    MAX_REQUEST: 10,
+    queue: [],
+    request: function request(options) {
+        this.push(options);
+        this.run();
+    },
+    push: function push(options) {
+        this.queue.push(options);
+    },
+    run: function run() {
+        if (!this.queue.length) {
+            return;
+        }
+        if (this.queue.length <= this.MAX_REQUEST) {
+            var options = this.queue.shift();
+            var completeFn = options.complete;
+            var self = this;
+            options.complete = function () {
+                completeFn && completeFn.apply(null, arguments);
+                self.run();
+            };
+            this.facade.request(options);
+        }
+    }
+};
+var more = function more(api) {
+    return {
+        request: function request(_a) {
+            RequestQueue.facade = api;
+            RequestQueue.request(_a);
+            return RequestQueue.request(_a);
+        }
+    };
+};
+
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {
@@ -2681,9 +2661,7 @@ if (typeof wx != 'undefined') {
     apiContainer = tt;
     React.appType = 'tt';
 }
-registerAPIs(React, apiContainer, function () {
-    return {};
-});
+registerAPIs(React, apiContainer, more);
 
 export default React;
 export { Children, createElement, Component };
