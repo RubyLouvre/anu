@@ -13,10 +13,14 @@ import { createContext } from 'react-core/createContext';
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { dispatchEvent } from './eventSystem.quick';
-import { api } from './api.quick';
+
+//快应用的API注入
+import { facade, more } from './apiForQuick/index';
+import { registerAPIsQuick } from './registerAPIs';
+import { onAndSyncApis } from './apiList';
+//快应用的渲染层
 import { Renderer } from './render.all';
-//import { onBeforeRender } from './onBeforeRender.quick';
-//Renderer.onBeforeRender = onBeforeRender;
+
 import { toStyle } from './toStyle.quick';
 import { toRenderProps, getCurrentPage, _getApp, _getCurrentPages, useComponent } from './utils';
 
@@ -70,15 +74,15 @@ let React = getWindow().React = {
         }
         delete app.constructor;//有这属性会报错
         return app;
-    },
-    api: api
-   
+    }   
 };
 
-if(typeof global !== 'undefined'){
+if (typeof global !== 'undefined'){
     var ref = Object.getPrototypeOf(global) || global;
-    ref.ReactQuick = React
+    ref.ReactQuick = React;
 }
+onAndSyncApis.request = true;
+registerAPIsQuick(React, facade, more); 
 
 export default React;
 export { Children, createElement, Component };

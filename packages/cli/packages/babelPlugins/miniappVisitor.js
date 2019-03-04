@@ -23,6 +23,7 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
+
 let cache = {};
 if (buildType == 'quick') {
     //快应用不需要放到Component/Page方法中
@@ -515,7 +516,7 @@ module.exports = {
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     JSXElement(astPath) {
         let node = astPath.node;
-        let nodeName = node.openingElement.name.name;
+        let nodeName = utils.getNodeName(node);
         if (buildType == 'quick' && !node.closingElement) {
             node.openingElement.selfClosing = false;
             node.closingElement = t.JSXClosingElement(
@@ -526,8 +527,19 @@ module.exports = {
     },
     JSXOpeningElement: {
         enter: function(astPath, state) {
-            let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
+            if (nodeName === 'span' && buildType === 'quick'){
+                //如果是快应用，<text><span></span></text>不变， <div><span></span></div>变<div><text></text></div>
+                let p = astPath.parentPath.findParent(function(parent){
+                    return  parent.type === 'JSXElement';
+                });
+                
+                let parentTagName = p && utils.getNodeName(p.node);
+                if (parentTagName === 'text'|| parentTagName === 'a'){
+                    return;
+                }       
+            }
+            let modules = utils.getAnu(state);
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
             let bag = modules.importComponents[nodeName];
             if (!bag) {
@@ -584,6 +596,10 @@ module.exports = {
                 }
             }
         }
+    },
+    JSXClosingElement: function(astPath) {
+        var tagName = utils.getNodeName(astPath.parentPath.node);
+        astPath.node.name.name = tagName;
     },
     JSXAttribute: {
         enter: function(astPath, state) {
@@ -750,8 +766,9 @@ module.exports = {
 
     JSXText(astPath) {
         //去掉内联元素内部的所有换行符
-        if (astPath.parentPath.node.type == 'JSXElement') {
-            var open = astPath.parentPath.node.openingElement;
+        if (astPath.parentPath.type == 'JSXElement') {
+          
+            var parentTagName = utils.getNodeName(astPath.parentPath.node);
             var value = astPath.node.value.trim();
             if (value === '') {
                 astPath.remove();
@@ -759,7 +776,7 @@ module.exports = {
             }
             if (
                 /quick|wx/.test(config.buildType) &&
-                inlineElement[open.name.name]
+                inlineElement[parentTagName]
             ) {
                 astPath.node.value = value;
             }
@@ -771,20 +788,6 @@ module.exports = {
             if (expr.innerComments && expr.innerComments.length) {
                 astPath.remove();
             }
-        }
-    },
-    JSXClosingElement: function(astPath, state) {
-        let modules = utils.getAnu(state);
-        let nodeName = astPath.node.name.name;
-        nodeName = helpers.nodeName(astPath, modules) || nodeName;
-        //将组件标签转换成React.toComponent标签，html标签转换成view/text标签
-        if (
-            !modules.importComponents[nodeName] &&
-            nodeName !== 'React.useComponent'
-        ) {
-            helpers.nodeName(astPath, modules);
-        } else {
-            astPath.node.name.name = 'React.useComponent';
         }
     }
 };

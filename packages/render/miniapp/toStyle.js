@@ -6,12 +6,13 @@ function hyphen(target) {
     return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
 
-function transform(obj) {
+function transform(React, obj) {
+    var pxTransform = React.api.pxTransform || React.pxTransform;
     return Object.keys(obj)
         .map(item => {
             let value = obj[item]+'';
             value = value.replace(/(\d+)px/g, (str, match) => {
-                return this.pxTransform(match);
+                return pxTransform(match);
             });
             return hyphen(item) + ': ' + value;
         })
@@ -21,7 +22,7 @@ function transform(obj) {
 export function toStyle(obj, props, key) {
     if (props) {
         if (Object( obj ) == obj ){//clor: red;
-            var str = transform.call(this, obj);
+            var str = transform(this, obj);
         } else {
             str = obj;
         }

@@ -1,6 +1,6 @@
-// 处理行内样式
+// 处理行内样式(快应用没有rpx)
 var rcamel = /-(\w)/g;
-var rpx = /(\d+)px/gi;
+var rpx = /(\d+)(r?px)/gi;
 function camel(target) {
     //转换为驼峰风格
     return target.replace(rcamel, function(all, letter){
@@ -12,7 +12,10 @@ function transform(obj) {
     var ret = {};
     for (var i in obj){
         let value = obj[i]+'';
-        value = value.replace(rpx, (str, match) => {
+        value = value.replace(rpx, (str, match, unit) => {
+            if ( unit.toLowerCase() === 'px') {
+                match = parseFloat(match) * 2;
+            } 
             return match + 'px';
         });
         ret[camel(i)] = value;
@@ -22,7 +25,7 @@ function transform(obj) {
 
 export function toStyle(obj, props, key) {
     if (props) {
-        if ( obj +"" === obj ){
+        if ( obj +'' === obj ){
             var ret = {};
             obj.split(';').forEach(function(el){
                 var index = el.indexOf(':');

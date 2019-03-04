@@ -175,8 +175,21 @@ class Parser {
         let bundle = await rollup.rollup(this.inputConfig);
         //如果有需要打补丁的组件并且本地没有安装schnee-ui
         if (this.needInstallUiLib()) {
+            console.log(chalk.green('缺少补丁组件, 正在安装, 请稍候...'));
             utils.installer('schnee-ui');
         }
+
+        //校验是否需要安装快应用hap-toolkit工具
+        if (this.needInstallHapToolkit()) {
+            //获取package.json中hap-toolkit版本，并安装
+            let toolName = 'hap-toolkit';
+            console.log(chalk.green(`缺少快应用构建工具${toolName}, 正在安装, 请稍候...`));
+            utils.installer(
+                `${toolName}@${require( path.join(cwd, 'package.json'))['devDependencies'][toolName] }`,
+                '--save-dev'
+            );
+        }
+        
     
         let moduleMap = this.moduleMap();
         bundle.modules.forEach(item => {
@@ -199,6 +212,19 @@ class Parser {
         if ( !config[config.buildType].jsxPatchNode ) return false; //没有需要patch的组件
         try {
             nodeResolve.sync('schnee-ui', { basedir: process.cwd() });
+            return false;
+        } catch (err) {
+            return true;
+        }
+    }
+    needInstallHapToolkit(){
+        if (config.buildType !== 'quick') return false;
+        //检查本地是否安装快应用的hap-toolkit工具
+        try {
+            //hap-toolkit中package.json没有main或者module字段, 无法用 nodeResolve 来判断是否存在。
+            //nodeResolve.sync('hap-toolkit', { basedir: process.cwd() });
+            let hapToolKitPath = path.join(cwd, 'node_modules', 'hap-toolkit');
+            fs.accessSync(hapToolKitPath);
             return false;
         } catch (err) {
             return true;

@@ -59,9 +59,8 @@ function fixPath(fileId, dep){
     if (!isNodeModulePath(fileId)) {
         return path.join(cwd, config.sourceDir, dep);
     }
-    // /Users/qitmac000524/work/schnee-ui/node_modules/schnee-ui/components/XPicker/index.js ==> schnee-ui
-    let libName =  path.relative( path.join(cwd, 'node_modules') , fileId).split(path.sep)[0];
-    return path.join(cwd, 'node_modules', libName, dep); 
+    let retPath = utils.updatePath(dep, 'npm', 'node_modules');
+    return path.join(cwd, retPath); 
 }
 
 

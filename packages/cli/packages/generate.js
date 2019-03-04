@@ -47,8 +47,8 @@ module.exports = ()=>{
                         sucSize = 0;
                         utils.spinner('').succeed('构建结束\n');
                         if (config.buildType === 'quick'){
-                            console.log(chalk.magentaBright('请打开另一个窗口, 安装hap。'), chalk.greenBright('npm i && npm run build'));
-                            console.log(chalk.magentaBright('在打开另一个窗口, 安装hap的watch命令。'), chalk.greenBright('npm run server'));
+                            console.log(chalk.magentaBright('请打开另一个窗口, 执行构建快应用命令'), chalk.greenBright('npm run build'));
+                            console.log(chalk.magentaBright('在打开另一个窗口, 执行启动快应用调试服务'), chalk.greenBright('npm run server'));
                         }
                         timer = null;
                     }, SET_TIMEOUT_TIME);

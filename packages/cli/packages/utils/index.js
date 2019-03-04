@@ -68,20 +68,27 @@ let utils = {
   shortcutOfCreateElement() {
     return 'var h = React.createElement;';
   },
+  //传入path.node, 得到标签名
+  getNodeName(node){
+    var openTag =  node.openingElement
+    return openTag && Object(openTag.name).name
+  },
   getEventName(eventName, nodeName, buildType) {
     if (eventName == 'Click' || eventName == 'Tap') {
-      if (
-        buildType === 'ali' ||
-        buildType === 'wx' ||
-        buildType === 'tt' || //头条也是bindtap
-        buildType === 'bu'
-      ) {
-        return 'Tap';
-      } else {
-        return 'Click';
-      }
+        if (buildType === 'quick' || buildType === 'h5'){
+           return 'Click';
+        }else{
+          return 'Tap';
+        }
     }
-
+    if( buildType === 'quick'){
+       if(eventName === 'ScrollToLower' ){
+        return 'ScrollBottom'//快应用的list标签的事件
+       }else if(eventName === 'ScrollToUpper'){
+        return 'ScrollTop'
+       }
+    }
+    
     if (eventName === 'Change') {
       if (nodeName === 'input' || nodeName === 'textarea') {
         if (buildType !== 'quick') {
@@ -309,17 +316,14 @@ let utils = {
       }
     }
   },
-  installer(npmName, dev) {
+  installer(npmName, dev, needModuleEntryPath) {
+    needModuleEntryPath = needModuleEntryPath || false;
     return new Promise(resolve => {
-      console.log(chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`));
       let bin = '';
       let options = [];
-      if (false) { //todo: yarn待调
+      if (this.useYarn()) {
         bin = 'yarn';
         options.push('add', npmName, dev === 'dev' ? '--dev' : '--save');
-      } else if (this.useCnpm()) {
-        bin = 'cnpm';
-        options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
       } else {
         bin = 'npm';
         options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
@@ -330,19 +334,23 @@ let utils = {
         console.log(result.error);
         process.exit(1);
       }
-      console.log(chalk.green(`${npmName}安装成功\n`));
 
-      //获得自动安装的npm依赖模块路径
-      let npmPath = nodeResolve.sync(npmName, {
-        basedir: cwd,
-        moduleDirectory: path.join(cwd, 'node_modules'),
-        packageFilter: pkg => {
-          if (pkg.module) {
-            pkg.main = pkg.module;
+      let npmPath = '';
+      npmName = npmName.split('@')[0];
+      if (needModuleEntryPath) {
+        //获得自动安装的npm依赖模块路径
+        npmPath = nodeResolve.sync(npmName, {
+          basedir: cwd,
+          moduleDirectory: path.join(cwd, 'node_modules'),
+          packageFilter: pkg => {
+            if (pkg.module) {
+              pkg.main = pkg.module;
+            }
+            return pkg;
           }
-          return pkg;
-        }
-      });
+        });
+      } 
+      
       resolve(npmPath);
     });
   },
@@ -488,16 +496,7 @@ let utils = {
 
     Object.assign(projectPkg.scripts, quickPkg.scripts);  //注入快应用scripts命令
     Object.assign(projectPkg.devDependencies, quickPkg.devDependencies); //注入快应用开发依赖
-
-    /**
-     * 改成同步，防止异步写文件，
-     * 文件还没写入时后续读取 package.json 解析出错的问题
-     */
-    try {
-      fs.writeJsonSync(projectPkgPath, projectPkg, {spaces: 4})
-    } catch (error) {
-      console.log(error);
-    }
+    fs.writeFileSync(projectPkgPath, JSON.stringify(projectPkg, null, 4));
   },
   initQuickAppConfig: function() {
     //merge快应用依赖的package.json配置
