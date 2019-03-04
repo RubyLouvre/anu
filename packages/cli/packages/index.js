@@ -193,7 +193,7 @@ class Parser {
     
         let moduleMap = this.moduleMap();
         bundle.modules.forEach(item => {
-            if (/commonjsHelpers/.test(item.id)) return;
+            if (/commonjsHelpers|rollupPluginBabelHelpers\.js/.test(item.id)) return;
             let hander = moduleMap[getFileType(item.id)];
             if (hander) {
                 hander(item);

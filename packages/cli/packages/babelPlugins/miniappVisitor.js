@@ -364,23 +364,10 @@ module.exports = {
     //         astPath.remove();
     //     }
     // },
-    MemberExpression: {
-        exit(astPath, state) {
-            const member = generate(astPath.node).code;
-            let modules = utils.getAnu(state);
-            // visitor 中的 ClassProperty 没有访问, 使用 MemberExpression 解析静态属性
-            if (member.includes(`${modules.className}.`)) {
-                var keyValue = t.ObjectProperty(
-                    t.identifier(astPath.node.property.name),
-                    astPath.parentPath.get('right').node
-                );
-                modules.staticMethods.push(keyValue);
-                astPath.findParent(t.isExpressionStatement).remove();
-            }
-        }
-    },
+    MemberExpression: {},
     // visitor 中的 ClassProperty 没有访问, 
     // 使用 AssignmentExpression 解析 config 和 globalData
+    // static 属性会自动挂载到 类
     AssignmentExpression:{
         exit(astPath, state) {
             const member = generate(astPath.get('left').node).code;
