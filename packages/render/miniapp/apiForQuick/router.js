@@ -1,4 +1,4 @@
-import { noop } from 'react-core/util';
+import { runCallbacks } from '../utils.js';
 var router = require('@system.router');
 function createRouter(name) {
     return function(obj) {
@@ -56,16 +56,10 @@ export var navigateTo = createRouter('push');
 export var redirectTo = createRouter('replace');
 export var navigateBack = createRouter('back');
 
-export function makePhoneCall({phoneNumber, success = noop, fail = noop, complete = noop }) {
- 
-    try {
+export function makePhoneCall({ phoneNumber, success , fail , complete  }) {
+    runCallbacks(function(){
         router.push({
             uri: `tel:${phoneNumber}`
-        });
-        success();
-    } catch (error) {
-        fail(error);
-    } finally {
-        complete();
-    }
+        }); 
+    }, success, fail, complete);
 }

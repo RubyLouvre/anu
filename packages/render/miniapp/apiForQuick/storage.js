@@ -57,7 +57,7 @@ export function initStorageSync (storageCache) {
                     success: function (value) {
                         storageCache[key] = value;
                         if (++j == n) {
-                            console.log('init storage success');
+                            console.log('init storage success');//eslint-disable-line
                         }
                     }
                 });

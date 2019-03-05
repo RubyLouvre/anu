@@ -1,4 +1,4 @@
-import { noop } from 'react-core/util';
+import { runCallbacks } from '../utils';
 import { 
     uploadFile, 
     downloadFile,
@@ -28,13 +28,14 @@ import {
     getNetworkType, 
     onNetworkStatusChange 
 } from './network.js';
+import { setNavigationBarTitle } from './title';
 import { 
     getSystemInfo, 
     getDeviceId 
 } from './device.js';
 import { chooseImage } from './media.js';
 import { createShortcut } from './shortcut.js';
-import { _getApp } from '../utils';
+
 import { 
     showModal,
     showActionSheet,
@@ -113,40 +114,15 @@ export var facade = {
     onNetworkStatusChange,
     getSystemInfo,
     chooseImage,
-    setNavigationBarTitle({ title, success = noop, fail = noop, complete = noop }) {
-        try {
-            let currentPage = _getApp().$$page; //相当于getCurrentPage()
-            currentPage.$page.setTitleBar({ text: title });
-            success();
-        } catch (error) {
-            fail( error);
-        } finally {
-            complete();
-        }
-    },
-   
+    //设置标题
+    setNavigationBarTitle,
     createCanvasContext,
-    stopPullDownRefresh({success = noop, fail = noop, complete = noop }) {
-
-        try {
-            // 停止刷新没有作用
-            // let currentPage = _getApp().$$page; //相当于getCurrentPage()
-            // console.log('currentPage', currentPage)
-            success();
-        } catch (error) {
-            fail( error);
-        } finally {
-            complete();
-        }
+    stopPullDownRefresh({success, fail, complete }) {
+        // 停止刷新没有作用
+        runCallbacks(function(){}, success, fail, complete );
     },
-    createAnimation({success = noop, fail = noop, complete = noop }) {
-        try {
-            success();
-        } catch (error) {
-            fail( error);
-        } finally {
-            complete();
-        }
+    createAnimation({success, fail, complete }) {
+        runCallbacks(function(){}, success, fail, complete );
     }
 
 };

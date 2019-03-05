@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-03-04
+ * 运行于快应用的React by 司徒正美 Copyright 2019-03-05
  */
 
 var arrayPush = Array.prototype.push;
@@ -142,7 +142,7 @@ var Renderer = {
     fireMiddlewares: function fireMiddlewares(begin) {
         var index = begin ? middlewares.length - 1 : 0,
             delta = begin ? -1 : 1,
-            method = begin ? 'begin' : 'end',
+            method = begin ? "begin" : "end",
             obj = void 0;
         while (obj = middlewares[index]) {
             obj[method]();
@@ -167,11 +167,11 @@ function Component(props, context) {
 Component.prototype = {
     constructor: Component,
     replaceState: function replaceState() {
-        toWarnDev('replaceState', true);
+        toWarnDev("replaceState", true);
     },
     isReactComponent: returnTrue,
     isMounted: function isMounted$$1() {
-        toWarnDev('isMounted', true);
+        toWarnDev("isMounted", true);
         return this.updater.isMounted(this);
     },
     setState: function setState(state, cb) {
@@ -181,11 +181,11 @@ Component.prototype = {
         this.updater.enqueueSetState(get(this), true, cb);
     },
     render: function render() {
-        throw 'must implement render';
+        throw "must implement render";
     }
 };
 
-var _typeof = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var RESERVED_PROPS = {
     key: true,
     ref: true,
@@ -384,7 +384,7 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
     }
     if (invokeCallback) {
         callback(bookKeeping, children,
-            nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
+        nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
         return 1;
     }
     var subtreeCount = 0;
@@ -426,13 +426,13 @@ var Children = {
         if (isValidElement(children)) {
             return children;
         }
-        throw new Error('expect only one child');
+        throw new Error("expect only one child");
     },
     count: function count(children) {
         if (children == null) {
             return 0;
         }
-        return traverseAllChildren(children, '', noop);
+        return traverseAllChildren(children, "", noop);
     },
     map: function map(children, func, context) {
         return proxyIt(children, func, [], context);
@@ -455,11 +455,11 @@ function K(el) {
     return el;
 }
 function mapChildren(children, prefix, func, result, context) {
-    var keyPrefix = '';
+    var keyPrefix = "";
     if (prefix != null) {
-        keyPrefix = escapeUserProvidedKey(prefix) + '/';
+        keyPrefix = escapeUserProvidedKey(prefix) + "/";
     }
-    traverseAllChildren(children, '', traverseCallback, {
+    traverseAllChildren(children, "", traverseCallback, {
         context: context,
         keyPrefix: keyPrefix,
         func: func,
@@ -469,7 +469,7 @@ function mapChildren(children, prefix, func, result, context) {
 }
 var userProvidedKeyEscapeRegex = /\/+/g;
 function escapeUserProvidedKey(text) {
-    return ('' + text).replace(userProvidedKeyEscapeRegex, '$&/');
+    return ("" + text).replace(userProvidedKeyEscapeRegex, "$&/");
 }
 function traverseCallback(bookKeeping, child, childKey) {
     var result = bookKeeping.result,
@@ -485,7 +485,7 @@ function traverseCallback(bookKeeping, child, childKey) {
     } else if (mappedChild != null) {
         if (isValidElement(mappedChild)) {
             mappedChild = extend({}, mappedChild);
-            mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + '/' : '') + childKey;
+            mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + "/" : "") + childKey;
         }
         result.push(mappedChild);
     }
@@ -696,6 +696,126 @@ function createEvent(e, target, type) {
     return event;
 }
 
+var fakeApp = {
+    app: {
+        globalData: {}
+    }
+};
+function _getApp() {
+    if (isFn(getApp)) {
+        return getApp();
+    }
+    return fakeApp;
+}
+if (typeof getApp === 'function') {
+    _getApp = getApp;
+}
+function callGlobalHook(method, e) {
+    var app = _getApp();
+    if (app && app[method]) {
+        return app[method](e);
+    }
+}
+var delayMounts = [];
+var usingComponents = [];
+var registeredComponents = {};
+function getCurrentPage() {
+    var app = _getApp();
+    return app.$$page && app.$$page.reactInstance;
+}
+function _getCurrentPages() {
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    if (isFn(getCurrentPages)) {
+        return getCurrentPages();
+    }
+}
+function updateMiniApp(instance) {
+    if (!instance || !instance.wx) {
+        return;
+    }
+    var data = safeClone({
+        props: instance.props,
+        state: instance.state || null,
+        context: instance.context
+    });
+    if (instance.wx.setData) {
+        instance.wx.setData(data);
+    } else {
+        updateQuickApp(instance.wx, data);
+    }
+}
+function refreshComponent(reactInstances, wx, uuid) {
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = 0, n = reactInstances.length; i < n; i++) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
+    }
+}
+function detachComponent() {
+    var t = this.reactInstance;
+    if (t) {
+        t.wx = null;
+        this.reactInstance = null;
+    }
+}
+function updateQuickApp(quick, data) {
+    for (var i in data) {
+        quick.$set(i, data[i]);
+    }
+}
+function isReferenceType(val) {
+    return typeNumber(val) > 6;
+}
+function runCallbacks(cb, success, fail, complete) {
+    try {
+        cb();
+        success && success();
+    } catch (error) {
+        fail && fail(error);
+    } finally {
+        complete && complete();
+    }
+}
+function useComponent(props) {
+    var is = props.is;
+    var clazz = registeredComponents[is];
+    props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
+    delete props.is;
+    if (this.ref !== null) {
+        props.ref = this.ref;
+    }
+    var owner = Renderer.currentOwner;
+    if (owner) {
+        Renderer.currentOwner = get(owner)._owner;
+    }
+    return createElement(clazz, props);
+}
+function safeClone(originVal) {
+    var temp = originVal instanceof Array ? [] : {};
+    for (var item in originVal) {
+        if (hasOwnProperty.call(originVal, item)) {
+            var value = originVal[item];
+            if (isReferenceType(value)) {
+                if (value.$$typeof) {
+                    continue;
+                }
+                temp[item] = safeClone(value);
+            } else {
+                temp[item] = value;
+            }
+        }
+    }
+    return temp;
+}
+function toRenderProps() {
+    return null;
+}
+
 var HTTP_OK_CODE = 200;
 var JSON_TYPE_STRING = 'json';
 function uploadFile(_ref) {
@@ -789,7 +909,7 @@ function request(_ref6) {
     function onFetchSuccess(_ref7) {
         var statusCode = _ref7.code,
             data = _ref7.data,
-            headers = _ref7.header;
+            headers = _ref7.headers;
         if (dataType === JSON_TYPE_STRING) {
             try {
                 data = JSON.parse(data);
@@ -814,7 +934,7 @@ function request(_ref6) {
     });
 }
 
-var _typeof$1 = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj; };
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
 function saveParse(str) {
     try {
@@ -1068,6 +1188,17 @@ function onNetworkStatusChange(callback) {
     network.subscribe({ callback: networkChanged });
 }
 
+function setNavigationBarTitle(_ref) {
+    var title = _ref.title,
+        success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
+    runCallbacks(function () {
+        var currentPage = _getApp().$$page;
+        currentPage.$page.setTitleBar({ text: title });
+    }, success, fail, complete);
+}
+
 var device = require('@system.device');
 var DEFAULT_FONT_SIZE = 14;
 function getSystemInfo(options) {
@@ -1212,8 +1343,8 @@ function showLoading(obj) {
 function createShortcut() {
     var shortcut = require('@system.shortcut');
     shortcut.hasInstalled({
-        success: function success(ret) {
-            if (ret) {
+        success: function success(ok) {
+            if (ok) {
                 showToast({ title: '已创建桌面图标' });
             } else {
                 shortcut.install({
@@ -1227,116 +1358,6 @@ function createShortcut() {
             }
         }
     });
-}
-
-var fakeApp = {
-    app: {
-        globalData: {}
-    }
-};
-function _getApp() {
-    if (isFn(getApp)) {
-        return getApp();
-    }
-    return fakeApp;
-}
-if (typeof getApp === 'function') {
-    _getApp = getApp;
-}
-function callGlobalHook(method, e) {
-    var app = _getApp();
-    if (app && app[method]) {
-        return app[method](e);
-    }
-}
-var delayMounts = [];
-var usingComponents = [];
-var registeredComponents = {};
-function getCurrentPage() {
-    var app = _getApp();
-    return app.$$page && app.$$page.reactInstance;
-}
-function _getCurrentPages() {
-    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-    if (isFn(getCurrentPages)) {
-        return getCurrentPages();
-    }
-}
-function updateMiniApp(instance) {
-    if (!instance || !instance.wx) {
-        return;
-    }
-    var data = safeClone({
-        props: instance.props,
-        state: instance.state || null,
-        context: instance.context
-    });
-    if (instance.wx.setData) {
-        instance.wx.setData(data);
-    } else {
-        updateQuickApp(instance.wx, data);
-    }
-}
-function refreshComponent(reactInstances, wx, uuid) {
-    var pagePath = Object(_getApp()).$$pagePath;
-    for (var i = 0, n = reactInstances.length; i < n; i++) {
-        var reactInstance = reactInstances[i];
-        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-            reactInstance.wx = wx;
-            wx.reactInstance = reactInstance;
-            updateMiniApp(reactInstance);
-            return reactInstances.splice(i, 1);
-        }
-    }
-}
-function detachComponent() {
-    var t = this.reactInstance;
-    if (t) {
-        t.wx = null;
-        this.reactInstance = null;
-    }
-}
-function updateQuickApp(quick, data) {
-    for (var i in data) {
-        quick.$set(i, data[i]);
-    }
-}
-function isReferenceType(val) {
-    return typeNumber(val) > 6;
-}
-function useComponent(props) {
-    var is = props.is;
-    var clazz = registeredComponents[is];
-    props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    delete props.is;
-    if (this.ref !== null) {
-        props.ref = this.ref;
-    }
-    var owner = Renderer.currentOwner;
-    if (owner) {
-        Renderer.currentOwner = get(owner)._owner;
-    }
-    return createElement(clazz, props);
-}
-function safeClone(originVal) {
-    var temp = originVal instanceof Array ? [] : {};
-    for (var item in originVal) {
-        if (hasOwnProperty.call(originVal, item)) {
-            var value = originVal[item];
-            if (isReferenceType(value)) {
-                if (value.$$typeof) {
-                    continue;
-                }
-                temp[item] = safeClone(value);
-            } else {
-                temp[item] = value;
-            }
-        }
-    }
-    return temp;
-}
-function toRenderProps() {
-    return null;
 }
 
 var router = require('@system.router');
@@ -1386,22 +1407,14 @@ var redirectTo = createRouter('replace');
 var navigateBack = createRouter('back');
 function makePhoneCall(_ref) {
     var phoneNumber = _ref.phoneNumber,
-        _ref$success = _ref.success,
-        success = _ref$success === undefined ? noop : _ref$success,
-        _ref$fail = _ref.fail,
-        fail = _ref$fail === undefined ? noop : _ref$fail,
-        _ref$complete = _ref.complete,
-        complete = _ref$complete === undefined ? noop : _ref$complete;
-    try {
+        success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
+    runCallbacks(function () {
         router.push({
             uri: 'tel:' + phoneNumber
         });
-        success();
-    } catch (error) {
-        fail(error);
-    } finally {
-        complete();
-    }
+    }, success, fail, complete);
 }
 
 var vibrator = require('@system.vibrator');
@@ -1528,54 +1541,19 @@ var facade = {
     onNetworkStatusChange: onNetworkStatusChange,
     getSystemInfo: getSystemInfo,
     chooseImage: chooseImage,
-    setNavigationBarTitle: function setNavigationBarTitle(_ref2) {
-        var title = _ref2.title,
-            _ref2$success = _ref2.success,
-            success = _ref2$success === undefined ? noop : _ref2$success,
-            _ref2$fail = _ref2.fail,
-            fail = _ref2$fail === undefined ? noop : _ref2$fail,
-            _ref2$complete = _ref2.complete,
-            complete = _ref2$complete === undefined ? noop : _ref2$complete;
-        try {
-            var currentPage = _getApp().$$page;
-            currentPage.$page.setTitleBar({ text: title });
-            success();
-        } catch (error) {
-            fail(error);
-        } finally {
-            complete();
-        }
-    },
+    setNavigationBarTitle: setNavigationBarTitle,
     createCanvasContext: createCanvasContext,
-    stopPullDownRefresh: function stopPullDownRefresh(_ref3) {
-        var _ref3$success = _ref3.success,
-            success = _ref3$success === undefined ? noop : _ref3$success,
-            _ref3$fail = _ref3.fail,
-            fail = _ref3$fail === undefined ? noop : _ref3$fail,
-            _ref3$complete = _ref3.complete,
-            complete = _ref3$complete === undefined ? noop : _ref3$complete;
-        try {
-            success();
-        } catch (error) {
-            fail(error);
-        } finally {
-            complete();
-        }
+    stopPullDownRefresh: function stopPullDownRefresh(_ref2) {
+        var success = _ref2.success,
+            fail = _ref2.fail,
+            complete = _ref2.complete;
+        runCallbacks(function () {}, success, fail, complete);
     },
-    createAnimation: function createAnimation(_ref4) {
-        var _ref4$success = _ref4.success,
-            success = _ref4$success === undefined ? noop : _ref4$success,
-            _ref4$fail = _ref4.fail,
-            fail = _ref4$fail === undefined ? noop : _ref4$fail,
-            _ref4$complete = _ref4.complete,
-            complete = _ref4$complete === undefined ? noop : _ref4$complete;
-        try {
-            success();
-        } catch (error) {
-            fail(error);
-        } finally {
-            complete();
-        }
+    createAnimation: function createAnimation(_ref3) {
+        var success = _ref3.success,
+            fail = _ref3.fail,
+            complete = _ref3.complete;
+        runCallbacks(function () {}, success, fail, complete);
     }
 };
 function more() {
@@ -1592,188 +1570,188 @@ function more() {
 }
 
 var onAndSyncApis = {
-    onSocketOpen: true,
-    onSocketError: true,
-    onSocketMessage: true,
-    onSocketClose: true,
-    onBackgroundAudioPlay: true,
-    onBackgroundAudioPause: true,
-    onBackgroundAudioStop: true,
-    onNetworkStatusChange: true,
-    onAccelerometerChange: true,
-    onCompassChange: true,
-    onBluetoothAdapterStateChange: true,
-    onBluetoothDeviceFound: true,
-    onBLEConnectionStateChange: true,
-    onBLECharacteristicValueChange: true,
-    onBeaconUpdate: true,
-    onBeaconServiceChange: true,
-    onUserCaptureScreen: true,
-    onHCEMessage: true,
-    onGetWifiList: true,
-    onWifiConnected: true,
-    setStorageSync: true,
-    getStorageSync: true,
-    getStorageInfoSync: true,
-    removeStorageSync: true,
-    clearStorageSync: true,
-    getSystemInfoSync: true,
-    getExtConfigSync: true,
-    getLogManager: true
+  onSocketOpen: true,
+  onSocketError: true,
+  onSocketMessage: true,
+  onSocketClose: true,
+  onBackgroundAudioPlay: true,
+  onBackgroundAudioPause: true,
+  onBackgroundAudioStop: true,
+  onNetworkStatusChange: true,
+  onAccelerometerChange: true,
+  onCompassChange: true,
+  onBluetoothAdapterStateChange: true,
+  onBluetoothDeviceFound: true,
+  onBLEConnectionStateChange: true,
+  onBLECharacteristicValueChange: true,
+  onBeaconUpdate: true,
+  onBeaconServiceChange: true,
+  onUserCaptureScreen: true,
+  onHCEMessage: true,
+  onGetWifiList: true,
+  onWifiConnected: true,
+  setStorageSync: true,
+  getStorageSync: true,
+  getStorageInfoSync: true,
+  removeStorageSync: true,
+  clearStorageSync: true,
+  getSystemInfoSync: true,
+  getExtConfigSync: true,
+  getLogManager: true
 };
 var noPromiseApis = {
-    stopRecord: true,
-    getRecorderManager: true,
-    pauseVoice: true,
-    stopVoice: true,
-    pauseBackgroundAudio: true,
-    stopBackgroundAudio: true,
-    getBackgroundAudioManager: true,
-    createAudioContext: true,
-    createInnerAudioContext: true,
-    createVideoContext: true,
-    createCameraContext: true,
-    navigateBack: true,
-    createMapContext: true,
-    canIUse: true,
-    startAccelerometer: true,
-    stopAccelerometer: true,
-    startCompass: true,
-    stopCompass: true,
-    hideToast: true,
-    hideLoading: true,
-    showNavigationBarLoading: true,
-    hideNavigationBarLoading: true,
-    createAnimation: true,
-    pageScrollTo: true,
-    createSelectorQuery: true,
-    createCanvasContext: true,
-    createContext: true,
-    drawCanvas: true,
-    hideKeyboard: true,
-    stopPullDownRefresh: true,
-    arrayBufferToBase64: true,
-    base64ToArrayBuffer: true,
-    getUpdateManager: true,
-    createWorker: true
+  stopRecord: true,
+  getRecorderManager: true,
+  pauseVoice: true,
+  stopVoice: true,
+  pauseBackgroundAudio: true,
+  stopBackgroundAudio: true,
+  getBackgroundAudioManager: true,
+  createAudioContext: true,
+  createInnerAudioContext: true,
+  createVideoContext: true,
+  createCameraContext: true,
+  navigateBack: true,
+  createMapContext: true,
+  canIUse: true,
+  startAccelerometer: true,
+  stopAccelerometer: true,
+  startCompass: true,
+  stopCompass: true,
+  hideToast: true,
+  hideLoading: true,
+  showNavigationBarLoading: true,
+  hideNavigationBarLoading: true,
+  createAnimation: true,
+  pageScrollTo: true,
+  createSelectorQuery: true,
+  createCanvasContext: true,
+  createContext: true,
+  drawCanvas: true,
+  hideKeyboard: true,
+  stopPullDownRefresh: true,
+  arrayBufferToBase64: true,
+  base64ToArrayBuffer: true,
+  getUpdateManager: true,
+  createWorker: true
 };
 var otherApis = {
-    uploadFile: true,
-    downloadFile: true,
-    connectSocket: true,
-    sendSocketMessage: true,
-    closeSocket: true,
-    chooseImage: true,
-    previewImage: true,
-    getImageInfo: true,
-    saveImageToPhotosAlbum: true,
-    startRecord: true,
-    playVoice: true,
-    getBackgroundAudioPlayerState: true,
-    playBackgroundAudio: true,
-    seekBackgroundAudio: true,
-    chooseVideo: true,
-    saveVideoToPhotosAlbum: true,
-    loadFontFace: true,
-    saveFile: true,
-    getFileInfo: true,
-    getSavedFileList: true,
-    getSavedFileInfo: true,
-    removeSavedFile: true,
-    openDocument: true,
-    setStorage: true,
-    getStorage: true,
-    getStorageInfo: true,
-    removeStorage: true,
-    clearStorage: true,
-    navigateTo: true,
-    redirectTo: true,
-    switchTab: true,
-    reLaunch: true,
-    getLocation: true,
-    chooseLocation: true,
-    openLocation: true,
-    getSystemInfo: true,
-    getNetworkType: true,
-    makePhoneCall: true,
-    scanCode: true,
-    setClipboardData: true,
-    getClipboardData: true,
-    openBluetoothAdapter: true,
-    closeBluetoothAdapter: true,
-    getBluetoothAdapterState: true,
-    startBluetoothDevicesDiscovery: true,
-    stopBluetoothDevicesDiscovery: true,
-    getBluetoothDevices: true,
-    getConnectedBluetoothDevices: true,
-    createBLEConnection: true,
-    closeBLEConnection: true,
-    getBLEDeviceServices: true,
-    getBLEDeviceCharacteristics: true,
-    readBLECharacteristicValue: true,
-    writeBLECharacteristicValue: true,
-    notifyBLECharacteristicValueChange: true,
-    startBeaconDiscovery: true,
-    stopBeaconDiscovery: true,
-    getBeacons: true,
-    setScreenBrightness: true,
-    getScreenBrightness: true,
-    setKeepScreenOn: true,
-    vibrateLong: true,
-    vibrateShort: true,
-    addPhoneContact: true,
-    getHCEState: true,
-    startHCE: true,
-    stopHCE: true,
-    sendHCEMessage: true,
-    startWifi: true,
-    stopWifi: true,
-    connectWifi: true,
-    getWifiList: true,
-    setWifiList: true,
-    getConnectedWifi: true,
-    showToast: true,
-    showLoading: true,
-    showModal: true,
-    showActionSheet: true,
-    setNavigationBarTitle: true,
-    setNavigationBarColor: true,
-    setTabBarBadge: true,
-    removeTabBarBadge: true,
-    showTabBarRedDot: true,
-    hideTabBarRedDot: true,
-    setTabBarStyle: true,
-    setTabBarItem: true,
-    showTabBar: true,
-    hideTabBar: true,
-    setTopBarText: true,
-    startPullDownRefresh: true,
-    canvasToTempFilePath: true,
-    canvasGetImageData: true,
-    canvasPutImageData: true,
-    getExtConfig: true,
-    request: true,
-    login: true,
-    checkSession: true,
-    authorize: true,
-    getUserInfo: true,
-    requestPayment: true,
-    showShareMenu: true,
-    hideShareMenu: true,
-    updateShareMenu: true,
-    getShareInfo: true,
-    chooseAddress: true,
-    addCard: true,
-    openCard: true,
-    openSetting: true,
-    getSetting: true,
-    getWeRunData: true,
-    navigateToMiniProgram: true,
-    navigateBackMiniProgram: true,
-    chooseInvoiceTitle: true,
-    checkIsSupportSoterAuthentication: true,
-    startSoterAuthentication: true,
-    checkIsSoterEnrolledInDevice: true
+  uploadFile: true,
+  downloadFile: true,
+  connectSocket: true,
+  sendSocketMessage: true,
+  closeSocket: true,
+  chooseImage: true,
+  previewImage: true,
+  getImageInfo: true,
+  saveImageToPhotosAlbum: true,
+  startRecord: true,
+  playVoice: true,
+  getBackgroundAudioPlayerState: true,
+  playBackgroundAudio: true,
+  seekBackgroundAudio: true,
+  chooseVideo: true,
+  saveVideoToPhotosAlbum: true,
+  loadFontFace: true,
+  saveFile: true,
+  getFileInfo: true,
+  getSavedFileList: true,
+  getSavedFileInfo: true,
+  removeSavedFile: true,
+  openDocument: true,
+  setStorage: true,
+  getStorage: true,
+  getStorageInfo: true,
+  removeStorage: true,
+  clearStorage: true,
+  navigateTo: true,
+  redirectTo: true,
+  switchTab: true,
+  reLaunch: true,
+  getLocation: true,
+  chooseLocation: true,
+  openLocation: true,
+  getSystemInfo: true,
+  getNetworkType: true,
+  makePhoneCall: true,
+  scanCode: true,
+  setClipboardData: true,
+  getClipboardData: true,
+  openBluetoothAdapter: true,
+  closeBluetoothAdapter: true,
+  getBluetoothAdapterState: true,
+  startBluetoothDevicesDiscovery: true,
+  stopBluetoothDevicesDiscovery: true,
+  getBluetoothDevices: true,
+  getConnectedBluetoothDevices: true,
+  createBLEConnection: true,
+  closeBLEConnection: true,
+  getBLEDeviceServices: true,
+  getBLEDeviceCharacteristics: true,
+  readBLECharacteristicValue: true,
+  writeBLECharacteristicValue: true,
+  notifyBLECharacteristicValueChange: true,
+  startBeaconDiscovery: true,
+  stopBeaconDiscovery: true,
+  getBeacons: true,
+  setScreenBrightness: true,
+  getScreenBrightness: true,
+  setKeepScreenOn: true,
+  vibrateLong: true,
+  vibrateShort: true,
+  addPhoneContact: true,
+  getHCEState: true,
+  startHCE: true,
+  stopHCE: true,
+  sendHCEMessage: true,
+  startWifi: true,
+  stopWifi: true,
+  connectWifi: true,
+  getWifiList: true,
+  setWifiList: true,
+  getConnectedWifi: true,
+  showToast: true,
+  showLoading: true,
+  showModal: true,
+  showActionSheet: true,
+  setNavigationBarTitle: true,
+  setNavigationBarColor: true,
+  setTabBarBadge: true,
+  removeTabBarBadge: true,
+  showTabBarRedDot: true,
+  hideTabBarRedDot: true,
+  setTabBarStyle: true,
+  setTabBarItem: true,
+  showTabBar: true,
+  hideTabBar: true,
+  setTopBarText: true,
+  startPullDownRefresh: true,
+  canvasToTempFilePath: true,
+  canvasGetImageData: true,
+  canvasPutImageData: true,
+  getExtConfig: true,
+  request: true,
+  login: true,
+  checkSession: true,
+  authorize: true,
+  getUserInfo: true,
+  requestPayment: true,
+  showShareMenu: true,
+  hideShareMenu: true,
+  updateShareMenu: true,
+  getShareInfo: true,
+  chooseAddress: true,
+  addCard: true,
+  openCard: true,
+  openSetting: true,
+  getSetting: true,
+  getWeRunData: true,
+  navigateToMiniProgram: true,
+  navigateBackMiniProgram: true,
+  chooseInvoiceTitle: true,
+  checkIsSupportSoterAuthentication: true,
+  startSoterAuthentication: true,
+  checkIsSoterEnrolledInDevice: true
 };
 
 function promisefyApis(ReactWX, facade, more) {
@@ -1858,14 +1836,14 @@ function createInstance(fiber, context) {
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = {
-            refs: {},
-            props: props,
-            key: key,
-            context: context,
-            ref: ref,
-            _reactInternalFiber: fiber,
-            __proto__: type.prototype
-        };
+        refs: {},
+        props: props,
+        key: key,
+        context: context,
+        ref: ref,
+        _reactInternalFiber: fiber,
+        __proto__: type.prototype
+    };
     fiber.updateQueue = UpdateQueue();
     fiber.errorHook = 'constructor';
     try {
@@ -1926,7 +1904,7 @@ function createInstance(fiber, context) {
 
 function Fiber(vnode) {
     extend(this, vnode);
-    var type = vnode.type || 'ProxyComponent(react-hot-loader)';
+    var type = vnode.type || "ProxyComponent(react-hot-loader)";
     this.name = type.displayName || type.name || type;
     this.effectTag = 1;
 }
@@ -1991,7 +1969,7 @@ function applyCallback(host, hook, args) {
     var fiber = host._reactInternalFiber;
     fiber.errorHook = hook;
     var fn = host[hook];
-    if (hook == 'componentWillUnmount') {
+    if (hook == "componentWillUnmount") {
         host[hook] = noop;
     }
     if (fn) {
@@ -2000,13 +1978,13 @@ function applyCallback(host, hook, args) {
     return true;
 }
 function describeError(names, hook) {
-    var segments = ['**' + hook + '** method occur error '];
+    var segments = ["**" + hook + "** method occur error "];
     names.forEach(function (name, i) {
         if (names[i + 1]) {
-            segments.push('in ' + name + ' (created By ' + names[i + 1] + ')');
+            segments.push("in " + name + " (created By " + names[i + 1] + ")");
         }
     });
-    return segments.join('\n\r').trim();
+    return segments.join("\n\r").trim();
 }
 function findCatchComponent(fiber, names, hook) {
     var instance = void 0,
@@ -2044,7 +2022,7 @@ function findCatchComponent(fiber, names, hook) {
                     boundary = f;
                 }
                 if (!boundary.catchError) {
-                    if (hook == 'componentWillUnmount' || hook == 'componentDidUpdate') {
+                    if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
                         boundary.effectTag = CAPTURE;
                     } else {
                         boundary.effectTag = effectTag * CAPTURE;
@@ -3246,11 +3224,11 @@ function onLoad(PageClass, path, query) {
         appendChild: noop
     };
     var pageInstance = render(
-        createElement(PageClass, {
-            path: path,
-            query: query,
-            isPageComponent: true
-        }), container);
+    createElement(PageClass, {
+        path: path,
+        query: query,
+        isPageComponent: true
+    }), container);
     callGlobalHook('onGlobalLoad');
     this.reactContainer = container;
     this.reactInstance = pageInstance;
@@ -3363,7 +3341,7 @@ var React = getWindow().React = {
         dispatchEvent: dispatchEvent
     },
     findDOMNode: function findDOMNode() {
-        console.log('小程序不支持findDOMNode');
+        console.log("小程序不支持findDOMNode");
     },
     version: '1.5.0',
     render: render$1,

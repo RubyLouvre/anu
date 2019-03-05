@@ -95,7 +95,7 @@ export function request({
     complete = noop
 }) {
     const fetch = require('@system.fetch');
-    function onFetchSuccess({ code: statusCode, data, header: headers }) {
+    function onFetchSuccess({ code: statusCode, data, headers }) {
         if (dataType === JSON_TYPE_STRING) {
             try {
                 data = JSON.parse(data);
