@@ -161,12 +161,14 @@ function setOtherConfig() {
    
     //配置各支付签名
     let userFeatures = userConfig.features || [];
+    console.log(userFeatures, 'userFeatures');
     let features = manifest.features.map(function(el){
         let userFeat = userFeatures.find(function(userFeat){
             return userFeat.name === el.name;
         });
         return userFeat ? userFeat : el;
     });
+    
     manifest.features = features;
 
     ['name', 'permissions', 'config', 'subpackages'].forEach(function(el){

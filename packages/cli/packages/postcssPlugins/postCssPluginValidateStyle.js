@@ -175,8 +175,30 @@ const visitors = {
     'border-left': splitBorder,
     'border-right': splitBorder,
     'border-bottom': splitBorder,
-    'border-top': splitBorder
+    'border-top': splitBorder,
+    'animation': (declaration) => {
+        generateConflictDeclarations(
+            'animation',
+            /animation-(name|duration|timing-function|delay|iteration-count|direction)/i
+        )(declaration);
+        transformAnimation(declaration);
+    }
 };
+
+let transformAnimation = (declaration)=>{
+    const properties = ['name', 'duration', 'timing-function', 'delay', 'iteration-count', 'direction'];
+    let value = declaration.value;
+    let values = value.replace(/(,\s+)/g, ',').trim().split(/\s+/);
+    values.map((value, index) => {
+        const res = {};
+        const prop = declaration.prop + '-' + properties[index];
+        res[prop] = value;
+        declaration.cloneBefore(postCss.decl({prop, value}));
+    });
+    declaration.remove();
+};
+
+module.exports = transformAnimation;
 
 const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style', ()=> {
     return (root) => {
