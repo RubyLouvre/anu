@@ -108,17 +108,15 @@ function functionCount () {
     return ret;
 }
 
-export function apiRunner (arg = {} , apiCallback, apiPromise) {
-    const { success, fail, complete } = arg;
-    // 如果提供了回调函数则使用回调函数形式调用 API
-    // 否则返回一个 Promise
-    const handler = functionCount(success, fail, complete)
-        ? apiCallback
-        : apiPromise;
-    arg.success = arg.success || noop;
-    arg.fail = arg.fail || noop;
-    arg.complete = arg.complete || noop;
-    return handler(arg);
+export function runCallbacks ( cb, success, fail, complete ) {
+    try {
+        cb();
+        success && success();
+    } catch (error){
+        fail && fail(error);
+    } finally {
+        complete && complete();
+    }
 }
 
 export function useComponent(props) {

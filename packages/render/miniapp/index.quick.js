@@ -17,7 +17,6 @@ import { dispatchEvent } from './eventSystem.quick';
 //快应用的API注入
 import { facade, more } from './apiForQuick/index';
 import { registerAPIsQuick } from './registerAPIs';
-import { onAndSyncApis } from './apiList';
 //快应用的渲染层
 import { Renderer } from './render.all';
 
@@ -81,7 +80,6 @@ if (typeof global !== 'undefined'){
     var ref = Object.getPrototypeOf(global) || global;
     ref.ReactQuick = React;
 }
-onAndSyncApis.request = true;
 registerAPIsQuick(React, facade, more); 
 
 export default React;

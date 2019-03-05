@@ -83,16 +83,16 @@ page {
     align-items: center;
 }
 
-.multi .e-month .b-row .row-item.select,
+.multi .select,
 .multi .e-month .b-row .row-item-a:active {
     background-color: #f5f5f5;
     width: 90%;
 }
-.multi .e-month .b-row .row-item.select .day,
-.multi .e-month .b-row .row-item.select .holiday,
-.multi .e-month .b-row .row-item.select .ban,
-.multi .e-month .b-row .row-item.select .xiu,
-.multi .e-month .b-row .row-item.select .text,
+.multi .select .day,
+.multi .select .holiday,
+.multi .select .ban,
+.multi .select .xiu,
+.multi .select .text,
 .multi .e-month .b-row .item-a:active {
     color: #00bcd4;
 }

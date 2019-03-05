@@ -190,6 +190,9 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 if (visitors[decl.prop]) {
                     visitors[decl.prop](decl);
                 }
+            });
+            // 再进行一次遍历保证所有px都被正确转换
+            root.walkDecls(decl => {
                 decl.value = rpxToPx(decl.value);
             });
         }

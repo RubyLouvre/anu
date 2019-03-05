@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-03-01
+ * 运行于快应用的React by 司徒正美 Copyright 2019-03-05
  */
 
 var arrayPush = Array.prototype.push;
@@ -696,115 +696,6 @@ function createEvent(e, target, type) {
     return event;
 }
 
-var HTTP_OK_CODE = 200;
-var JSON_TYPE_STRING = 'json';
-function uploadFile(_ref) {
-    var url = _ref.url,
-        filePath = _ref.filePath,
-        name = _ref.name,
-        header = _ref.header,
-        formData = _ref.formData,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    var request = require('@system.request');
-    var data = [];
-    Object.keys(formData).map(function (key) {
-        var value = formData[key];
-        var item = {
-            value: value,
-            name: key
-        };
-        data.push(item);
-    });
-    function successForMi(_ref2) {
-        var statusCode = _ref2.code,
-            data = _ref2.data;
-        success({
-            statusCode: statusCode,
-            data: data
-        });
-    }
-    request.upload({
-        url: url,
-        header: header,
-        data: data,
-        files: [{ uri: filePath, name: name }],
-        success: successForMi,
-        fail: fail,
-        complete: complete
-    });
-}
-function downloadFile(_ref3) {
-    var url = _ref3.url,
-        header = _ref3.header,
-        success = _ref3.success,
-        fail = _ref3.fail,
-        complete = _ref3.complete;
-    function downloadSuccess(_ref4) {
-        var tempFilePath = _ref4.uri;
-        success({
-            statusCode: HTTP_OK_CODE,
-            tempFilePath: tempFilePath
-        });
-    }
-    function downloadTaskStarted(_ref5) {
-        var token = _ref5.token;
-        request.onDownloadComplete({
-            token: token,
-            success: downloadSuccess,
-            fail: fail,
-            complete: complete
-        });
-    }
-    var request = require('@system.request');
-    request.download({
-        url: url,
-        header: header,
-        success: downloadTaskStarted,
-        fail: fail,
-        complete: complete
-    });
-}
-function request(_ref6) {
-    var url = _ref6.url,
-        data = _ref6.data,
-        header = _ref6.header,
-        method = _ref6.method,
-        _ref6$dataType = _ref6.dataType,
-        dataType = _ref6$dataType === undefined ? JSON_TYPE_STRING : _ref6$dataType,
-        success = _ref6.success,
-        fail = _ref6.fail,
-        complete = _ref6.complete;
-    var fetch = require('@system.fetch');
-    function onFetchSuccess(_ref7) {
-        var statusCode = _ref7.code,
-            data = _ref7.data,
-            headers = _ref7.header;
-        if (dataType === JSON_TYPE_STRING) {
-            try {
-                data = JSON.parse(data);
-            } catch (error) {
-                fail && fail(error);
-            }
-        }
-        success({
-            statusCode: statusCode,
-            data: data,
-            headers: headers
-        });
-    }
-    fetch.fetch({
-        url: url,
-        data: data,
-        header: header,
-        method: method,
-        success: onFetchSuccess,
-        fail: fail,
-        complete: complete
-    });
-}
-
 var fakeApp = {
     app: {
         globalData: {}
@@ -880,9 +771,14 @@ function updateQuickApp(quick, data) {
 function isReferenceType(val) {
     return typeNumber(val) > 6;
 }
-function runFunction(fn, a, b) {
-    if (isFn(fn)) {
-        fn.call(null, a, b);
+function runCallbacks(cb, success, fail, complete) {
+    try {
+        cb();
+        success && success();
+    } catch (error) {
+        fail && fail(error);
+    } finally {
+        complete && complete();
     }
 }
 function useComponent(props) {
@@ -920,6 +816,124 @@ function toRenderProps() {
     return null;
 }
 
+var HTTP_OK_CODE = 200;
+var JSON_TYPE_STRING = 'json';
+function uploadFile(_ref) {
+    var url = _ref.url,
+        filePath = _ref.filePath,
+        name = _ref.name,
+        header = _ref.header,
+        formData = _ref.formData,
+        _ref$success = _ref.success,
+        success = _ref$success === undefined ? noop : _ref$success,
+        _ref$fail = _ref.fail,
+        fail = _ref$fail === undefined ? noop : _ref$fail,
+        _ref$complete = _ref.complete,
+        complete = _ref$complete === undefined ? noop : _ref$complete;
+    var request = require('@system.request');
+    var data = [];
+    Object.keys(formData).map(function (key) {
+        var value = formData[key];
+        var item = {
+            value: value,
+            name: key
+        };
+        data.push(item);
+    });
+    function successForMi(_ref2) {
+        var statusCode = _ref2.code,
+            data = _ref2.data;
+        success({
+            statusCode: statusCode,
+            data: data
+        });
+    }
+    request.upload({
+        url: url,
+        header: header,
+        data: data,
+        files: [{ uri: filePath, name: name }],
+        success: successForMi,
+        fail: fail,
+        complete: complete
+    });
+}
+function downloadFile(_ref3) {
+    var url = _ref3.url,
+        header = _ref3.header,
+        _ref3$success = _ref3.success,
+        success = _ref3$success === undefined ? noop : _ref3$success,
+        _ref3$fail = _ref3.fail,
+        fail = _ref3$fail === undefined ? noop : _ref3$fail,
+        _ref3$complete = _ref3.complete,
+        complete = _ref3$complete === undefined ? noop : _ref3$complete;
+    function downloadSuccess(_ref4) {
+        var tempFilePath = _ref4.uri;
+        success({
+            statusCode: HTTP_OK_CODE,
+            tempFilePath: tempFilePath
+        });
+    }
+    function downloadTaskStarted(_ref5) {
+        var token = _ref5.token;
+        request.onDownloadComplete({
+            token: token,
+            success: downloadSuccess,
+            fail: fail,
+            complete: complete
+        });
+    }
+    var request = require('@system.request');
+    request.download({
+        url: url,
+        header: header,
+        success: downloadTaskStarted,
+        fail: fail,
+        complete: complete
+    });
+}
+function request(_ref6) {
+    var url = _ref6.url,
+        data = _ref6.data,
+        header = _ref6.header,
+        method = _ref6.method,
+        _ref6$dataType = _ref6.dataType,
+        dataType = _ref6$dataType === undefined ? JSON_TYPE_STRING : _ref6$dataType,
+        _ref6$success = _ref6.success,
+        success = _ref6$success === undefined ? noop : _ref6$success,
+        _ref6$fail = _ref6.fail,
+        fail = _ref6$fail === undefined ? noop : _ref6$fail,
+        _ref6$complete = _ref6.complete,
+        complete = _ref6$complete === undefined ? noop : _ref6$complete;
+    var fetch = require('@system.fetch');
+    function onFetchSuccess(_ref7) {
+        var statusCode = _ref7.code,
+            data = _ref7.data,
+            headers = _ref7.headers;
+        if (dataType === JSON_TYPE_STRING) {
+            try {
+                data = JSON.parse(data);
+            } catch (error) {
+                return fail(error);
+            }
+        }
+        success({
+            statusCode: statusCode,
+            data: data,
+            headers: headers
+        });
+    }
+    fetch.fetch({
+        url: url,
+        data: data,
+        header: header,
+        method: method,
+        success: onFetchSuccess,
+        fail: fail,
+        complete: complete
+    });
+}
+
 var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
 function saveParse(str) {
@@ -933,14 +947,15 @@ function setStorage(_ref) {
     var key = _ref.key,
         data = _ref.data,
         success = _ref.success,
-        fail = _ref.fail,
+        _ref$fail = _ref.fail,
+        fail = _ref$fail === undefined ? noop : _ref$fail,
         complete = _ref.complete;
     var value = data;
     if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
         try {
             value = JSON.stringify(value);
         } catch (error) {
-            runFunction(fail, error);
+            return fail(error);
         }
     }
     storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
@@ -1020,87 +1035,99 @@ var clearStorageSync = warnToInitStorage;
 var file = require('@system.file');
 var SUCCESS_MESSAGE = 'ok';
 function getSavedFileInfo(_ref) {
-  var uri = _ref.filePath,
-      success = _ref.success,
-      fail = _ref.fail,
-      complete = _ref.complete;
-  function gotFile(_ref2) {
-    var length = _ref2.length,
-        lastModifiedTime = _ref2.lastModifiedTime;
-    success({
-      errMsg: SUCCESS_MESSAGE,
-      size: length,
-      createTime: lastModifiedTime
+    var uri = _ref.filePath,
+        _ref$success = _ref.success,
+        success = _ref$success === undefined ? noop : _ref$success,
+        _ref$fail = _ref.fail,
+        fail = _ref$fail === undefined ? noop : _ref$fail,
+        _ref$complete = _ref.complete,
+        complete = _ref$complete === undefined ? noop : _ref$complete;
+    function gotFile(_ref2) {
+        var length = _ref2.length,
+            lastModifiedTime = _ref2.lastModifiedTime;
+        success({
+            errMsg: SUCCESS_MESSAGE,
+            size: length,
+            createTime: lastModifiedTime
+        });
+    }
+    file.get({
+        uri: uri,
+        success: gotFile,
+        fail: fail,
+        complete: complete
     });
-  }
-  file.get({
-    uri: uri,
-    success: gotFile,
-    fail: fail,
-    complete: complete
-  });
 }
 function getSavedFileList(_ref3) {
-  var uri = _ref3.uri,
-      success = _ref3.success,
-      fali = _ref3.fali,
-      complete = _ref3.complete;
-  if (!uri) {
-    runFunction(fail, new Error('小米需要指定目录'));
-  }
-  function gotFileList(fileList) {
-    var newFileList = fileList.map(function (item) {
-      return {
-        fileList: item.uri,
-        size: item.length,
-        createTime: item.lastModifiedTime
-      };
+    var uri = _ref3.uri,
+        _ref3$success = _ref3.success,
+        success = _ref3$success === undefined ? noop : _ref3$success,
+        _ref3$fail = _ref3.fail,
+        fail = _ref3$fail === undefined ? noop : _ref3$fail,
+        _ref3$complete = _ref3.complete,
+        complete = _ref3$complete === undefined ? noop : _ref3$complete;
+    if (!uri) {
+        fail(new Error('小米需要指定目录'));
+    }
+    function gotFileList(fileList) {
+        var newFileList = fileList.map(function (item) {
+            return {
+                fileList: item.uri,
+                size: item.length,
+                createTime: item.lastModifiedTime
+            };
+        });
+        success({
+            fileList: newFileList,
+            errMsg: SUCCESS_MESSAGE
+        });
+    }
+    file.list({
+        uri: uri,
+        success: gotFileList,
+        fail: fail,
+        complete: complete
     });
-    success({
-      fileList: newFileList,
-      errMsg: SUCCESS_MESSAGE
-    });
-  }
-  file.list({
-    uri: uri,
-    success: gotFileList,
-    fali: fali,
-    complete: complete
-  });
 }
 function removeSavedFile(_ref4) {
-  var uri = _ref4.filePath,
-      success = _ref4.success,
-      fail = _ref4.fail,
-      complete = _ref4.complete;
-  file.delete({
-    uri: uri,
-    success: success,
-    fail: fail,
-    complete: complete
-  });
+    var uri = _ref4.filePath,
+        _ref4$success = _ref4.success,
+        success = _ref4$success === undefined ? noop : _ref4$success,
+        _ref4$fail = _ref4.fail,
+        fail = _ref4$fail === undefined ? noop : _ref4$fail,
+        _ref4$complete = _ref4.complete,
+        complete = _ref4$complete === undefined ? noop : _ref4$complete;
+    file.delete({
+        uri: uri,
+        success: success,
+        fail: fail,
+        complete: complete
+    });
 }
 function saveFile(_ref5) {
-  var srcUri = _ref5.tempFilePath,
-      dstUri = _ref5.destinationFilePath,
-      success = _ref5.success,
-      fail = _ref5.fail,
-      complete = _ref5.complete;
-  if (!dstUri) {
-    runFunction(fail, new Error('小米需要指定需要指定目标路径'));
-  }
-  function gotSuccess(uri) {
-    success({
-      savedFilePath: uri
+    var srcUri = _ref5.tempFilePath,
+        dstUri = _ref5.destinationFilePath,
+        _ref5$success = _ref5.success,
+        success = _ref5$success === undefined ? noop : _ref5$success,
+        _ref5$fail = _ref5.fail,
+        fail = _ref5$fail === undefined ? noop : _ref5$fail,
+        _ref5$complete = _ref5.complete,
+        complete = _ref5$complete === undefined ? noop : _ref5$complete;
+    if (!dstUri) {
+        fail(new Error('小米需要指定需要指定目标路径'));
+    }
+    function gotSuccess(uri) {
+        success({
+            savedFilePath: uri
+        });
+    }
+    file.move({
+        srcUri: srcUri,
+        dstUri: dstUri,
+        success: gotSuccess,
+        fail: fail,
+        complete: complete
     });
-  }
-  file.move({
-    srcUri: srcUri,
-    dstUri: dstUri,
-    success: gotSuccess,
-    fail: fail,
-    complete: complete
-  });
 }
 
 var clipboard = require('@system.clipboard');
@@ -1117,17 +1144,20 @@ function setClipboardData(_ref) {
     });
 }
 function getClipboardData(_ref2) {
-    var _success = _ref2.success,
-        fail = _ref2.fail,
-        complete = _ref2.complete;
+    var _ref2$success = _ref2.success,
+        _success = _ref2$success === undefined ? noop : _ref2$success,
+        _ref2$fail = _ref2.fail,
+        fail = _ref2$fail === undefined ? noop : _ref2$fail,
+        _ref2$complete = _ref2.complete,
+        complete = _ref2$complete === undefined ? noop : _ref2$complete;
     clipboard.get({
         success: function success(obj) {
             _success({
                 data: obj.text
             });
         },
-        fail: fail || noop,
-        complete: complete || noop
+        fail: fail,
+        complete: complete
     });
 }
 
@@ -1156,6 +1186,17 @@ function onNetworkStatusChange(callback) {
         });
     }
     network.subscribe({ callback: networkChanged });
+}
+
+function setNavigationBarTitle(_ref) {
+    var title = _ref.title,
+        success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
+    runCallbacks(function () {
+        var currentPage = _getApp().$$page;
+        currentPage.$page.setTitleBar({ text: title });
+    }, success, fail, complete);
 }
 
 var device = require('@system.device');
@@ -1283,11 +1324,11 @@ function showToast(obj) {
         complete = obj.complete || noop;
     try {
         prompt.showToast(obj);
-        runFunction(success);
-    } catch (error) {
-        runFunction(fail, error);
+        success();
+    } catch (err) {
+        fail(err);
     } finally {
-        runFunction(complete);
+        complete();
     }
 }
 function showActionSheet(obj) {
@@ -1302,8 +1343,8 @@ function showLoading(obj) {
 function createShortcut() {
     var shortcut = require('@system.shortcut');
     shortcut.hasInstalled({
-        success: function success(ret) {
-            if (ret) {
+        success: function success(ok) {
+            if (ok) {
                 showToast({ title: '已创建桌面图标' });
             } else {
                 shortcut.install({
@@ -1319,6 +1360,7 @@ function createShortcut() {
     });
 }
 
+var router = require('@system.router');
 function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
@@ -1343,7 +1385,6 @@ function createRouter(name) {
             });
             return;
         }
-        var router = require('@system.router');
         var params = {};
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('&').forEach(function (param) {
@@ -1364,6 +1405,17 @@ function createRouter(name) {
 var navigateTo = createRouter('push');
 var redirectTo = createRouter('replace');
 var navigateBack = createRouter('back');
+function makePhoneCall(_ref) {
+    var phoneNumber = _ref.phoneNumber,
+        success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
+    runCallbacks(function () {
+        router.push({
+            uri: 'tel:' + phoneNumber
+        });
+    }, success, fail, complete);
+}
 
 var vibrator = require('@system.vibrator');
 function vibrateLong() {
@@ -1400,25 +1452,25 @@ function share(obj) {
 }
 
 function createCanvasContext(id, obj) {
-  if (obj.wx && obj.wx.$element) {
-    var el = obj.wx.$element(id);
-    var ctx = el && el.getContext('2d');
-    'strokeStyle,textAlign,textBaseline,fillStyle,lineWidth,lineCap,lineJoin,miterLimit,globalAlpha'.split(',').map(function (item) {
-      var method = 'set' + item.substring(0, 1).toUpperCase() + item.substring(1);
-      ctx[method] = function (value) {
-        ctx[item] = value;
-      };
-    });
-    ctx.setFontSize = function (value) {
-      ctx.font = value + 'px';
-    };
-    ctx.draw = function () {
-      ctx.closePath();
-    };
-    return ctx;
-  } else {
-    throw new Error('createCanvasContext 第二个 字段 this 必须添加');
-  }
+    if (obj.wx && obj.wx.$element) {
+        var el = obj.wx.$element(id);
+        var ctx = el && el.getContext('2d');
+        'strokeStyle,textAlign,textBaseline,fillStyle,lineWidth,lineCap,lineJoin,miterLimit,globalAlpha'.split(',').map(function (item) {
+            var method = 'set' + item.substring(0, 1).toUpperCase() + item.substring(1);
+            ctx[method] = function (value) {
+                ctx[item] = value;
+            };
+        });
+        ctx.setFontSize = function (value) {
+            ctx.font = value + 'px';
+        };
+        ctx.draw = function () {
+            ctx.closePath();
+        };
+        return ctx;
+    } else {
+        throw new Error('createCanvasContext 第二个 字段 this 必须添加');
+    }
 }
 
 var payAPI = require('@service.pay');
@@ -1428,16 +1480,16 @@ function pay(obj) {
     payAPI.pay(obj);
 }
 function getProvider() {
-    payAPI.getProvider();
+    return payAPI.getProvider();
 }
 function wxpayGetType() {
-    wxpayAPI.getType();
+    return wxpayAPI.getType();
 }
-function wxpay() {
-    wxpayAPI.pay();
+function wxpay(obj) {
+    wxpayAPI.pay(obj);
 }
-function alipay() {
-    alipayAPI.pay();
+function alipay(obj) {
+    alipayAPI.pay(obj);
 }
 
 var facade = {
@@ -1453,6 +1505,7 @@ var facade = {
     uploadFile: uploadFile,
     downloadFile: downloadFile,
     request: request,
+    makePhoneCall: makePhoneCall,
     scanCode: function scanCode(_ref) {
         var success = _ref.success,
             fail = _ref.fail,
@@ -1488,47 +1541,19 @@ var facade = {
     onNetworkStatusChange: onNetworkStatusChange,
     getSystemInfo: getSystemInfo,
     chooseImage: chooseImage,
-    setNavigationBarTitle: function setNavigationBarTitle(_ref2) {
-        var title = _ref2.title,
-            success = _ref2.success,
+    setNavigationBarTitle: setNavigationBarTitle,
+    createCanvasContext: createCanvasContext,
+    stopPullDownRefresh: function stopPullDownRefresh(_ref2) {
+        var success = _ref2.success,
             fail = _ref2.fail,
             complete = _ref2.complete;
-        try {
-            var currentPage = _getApp().$$page;
-            currentPage.$page.setTitleBar({ text: title });
-            runFunction(success);
-        } catch (error) {
-            runFunction(fail, error);
-        } finally {
-            runFunction(complete);
-        }
+        runCallbacks(function () {}, success, fail, complete);
     },
-    createCanvasContext: createCanvasContext,
-    stopPullDownRefresh: function stopPullDownRefresh(obj) {
-        obj = obj || {};
-        var success = obj.success || noop,
-            fail = obj.fail || noop,
-            complete = obj.complete || noop;
-        try {
-            runFunction(success);
-        } catch (error) {
-            runFunction(fail, error);
-        } finally {
-            runFunction(complete);
-        }
-    },
-    createAnimation: function createAnimation(obj) {
-        obj = obj || {};
-        var success = obj.success || noop,
-            fail = obj.fail || noop,
-            complete = obj.complete || noop;
-        try {
-            runFunction(success);
-        } catch (error) {
-            runFunction(fail, error);
-        } finally {
-            runFunction(complete);
-        }
+    createAnimation: function createAnimation(_ref3) {
+        var success = _ref3.success,
+            fail = _ref3.fail,
+            complete = _ref3.complete;
+        runCallbacks(function () {}, success, fail, complete);
     }
 };
 function more() {
@@ -1705,6 +1730,7 @@ var otherApis = {
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,
+  request: true,
   login: true,
   checkSession: true,
   authorize: true,
@@ -3356,7 +3382,6 @@ if (typeof global !== 'undefined') {
     var ref = Object.getPrototypeOf(global) || global;
     ref.ReactQuick = React;
 }
-onAndSyncApis.request = true;
 registerAPIsQuick(React, facade, more);
 
 export default React;

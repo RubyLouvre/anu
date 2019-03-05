@@ -221,6 +221,11 @@ class Express extends React.Component {
       }
     })
   }
+  makePhoneCall(){
+    React.api.makePhoneCall({
+       phoneNumber: '10086'
+    })
+ } 
 
   showToast() {
     React.api.showToast({
@@ -253,13 +258,19 @@ class Express extends React.Component {
           <div onClick={this.vibrateLong} class="anu-item">
             <text>长震</text>
           </div>
+          <div onClick={this.makePhoneCall} class="anu-item">
+            <text>打电话</text>
+          </div>
           <div onClick={this.upload} class="anu-item">
             <text>文件上传</text>
           </div>
           <div onClick={this.download} class="anu-item">
             <text>文件下载</text>
           </div>
-          <div onClick={this.request} class="anu-item">
+          <div
+            onClick={this.gotoSome.bind(this, '../../../pages/demo/apis/request/index')}
+            class="anu-item"
+          >
             <text>数据请求</text>
           </div>
           <div onClick={this.scan} class="anu-item">

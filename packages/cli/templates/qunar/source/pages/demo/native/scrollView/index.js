@@ -58,10 +58,10 @@ class P extends React.Component {
                         scroll-into-div={this.state.todiv}
                         scroll-top={this.state.scrollTop}
                     >
-                        <div id="green" class="scroll-view-item bc_green" />
-                        <div id="red" class="scroll-view-item bc_red" />
-                        <div id="yellow" class="scroll-view-item bc_yellow" />
-                        <div id="blue" class="scroll-view-item bc_blue" />
+                        <list-item type="green" id="green"  class="scroll-view-item bc_green" />
+                        <list-item type="red"  class="scroll-view-item bc_red" />
+                        <list-item type="yellow"  class="scroll-view-item bc_yellow" />
+                        <list-item type="blue"  class="scroll-view-item bc_blue" />
                     </scroll-view>
 
                     <div class="btn-area">
@@ -80,10 +80,10 @@ class P extends React.Component {
                         scroll-x
                         style="width: 100%"
                     >
-                        <div id="green" class="scroll-view-item_H bc_green" />
-                        <div id="red" class="scroll-view-item_H bc_red" />
-                        <div id="yellow" class="scroll-view-item_H bc_yellow" />
-                        <div id="blue" class="scroll-view-item_H bc_blue" />
+                        <list-item type="green" id="green" class="scroll-view-item_H bc_green" />
+                        <list-item type="red" id="red" class="scroll-view-item_H bc_red" />
+                        <list-item type="yellow" id="yellow" class="scroll-view-item_H bc_yellow" />
+                        <list-item type="blue" id="blue" class="scroll-view-item_H bc_blue" />
                     </scroll-view>
                 </div>
             </div>

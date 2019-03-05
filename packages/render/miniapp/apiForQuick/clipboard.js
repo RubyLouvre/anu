@@ -20,9 +20,9 @@ function setClipboardData({
 }
 
 function getClipboardData({
-    success,
-    fail,
-    complete
+    success = noop,
+    fail = noop,
+    complete = noop
 }) {
     clipboard.get({
         success:  function(obj) {
@@ -30,8 +30,8 @@ function getClipboardData({
                 data: obj.text
             });
         },
-        fail: fail || noop,
-        complete: complete || noop
+        fail,
+        complete
     });
 }
 
