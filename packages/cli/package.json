@@ -79,6 +79,7 @@
     "rollup-plugin-node-resolve": "^3.3.0",
     "sass": "^1.16.1",
     "uglify-es": "^3.3.9",
-    "validate-npm-package-name": "^3.0.0"
+    "validate-npm-package-name": "^3.0.0",
+    "eslint": "^4.12.1"
   }
 }
