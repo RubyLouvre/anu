@@ -198,7 +198,6 @@ let transformAnimation = (declaration)=>{
     declaration.remove();
 };
 
-module.exports = transformAnimation;
 
 const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style', ()=> {
     return (root) => {
