@@ -1532,7 +1532,6 @@ var facade = {
     saveFile: saveFile,
     setClipboardData: setClipboardData,
     getClipboardData: getClipboardData,
-    getDeviceId: getDeviceId,
     getLocation: function getLocation(obj) {
         var geolocation = require('@system.geolocation');
         geolocation.getLocation(obj);
@@ -1565,7 +1564,8 @@ function more() {
         getProvider: getProvider,
         wxpayGetType: wxpayGetType,
         wxpay: wxpay,
-        alipay: alipay
+        alipay: alipay,
+        getDeviceId: getDeviceId
     };
 }
 
@@ -3147,7 +3147,7 @@ function remove(children, node) {
 }
 
 var rcamel = /-(\w)/g;
-var rpx = /(\d+)(r?px)/gi;
+var rpx = /(\d[\d\.]*)(r?px)/gi;
 function camel(target) {
     return target.replace(rcamel, function (all, letter) {
         return letter.toUpperCase();
