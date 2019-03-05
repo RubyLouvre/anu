@@ -1,16 +1,17 @@
-const g = require('babel-generator').default;
+const g = require('@babel/generator').default;
 const path = require('path');
 const config = require('../config');
 const cwd = process.cwd();
 let collectError;
 const visitor = {
     JSXExpressionContainer: {
-        enter: function(astPath){
+        enter: function(astPath, state){
             let expression =  astPath.node.expression;
             let callee = expression.callee;
             
             let type = expression.type;
-            let fileId = path.relative(cwd, this.file.parserOpts.sourceFileName);
+            // [babel 6 to 7] 通过 state 来获取文件的绝对路径 fileId =  state.filename
+            let fileId = path.relative(cwd, state.filename);
             let { line, column } = astPath.node.loc.start;
 
             //判断map的数组是否经过函数处理. 例如: list.slice(0,2).map

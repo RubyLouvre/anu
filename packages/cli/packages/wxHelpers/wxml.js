@@ -1,8 +1,7 @@
 /* eslint no-console: 0 */
-const syntaxJSX = require('babel-plugin-syntax-jsx');
-const babel = require('babel-core');
-const t = require('babel-types');
-const generate = require('babel-generator').default;
+const babel = require('@babel/core');
+const t = require('@babel/types');
+const generate = require('@babel/generator').default;
 const utils = require('../utils');
 const config = require('../config');
 const buildType = config.buildType;
@@ -23,11 +22,12 @@ const quickTextContainer = {
 
 function wxml(code, modules) {
     let result = babel.transform(code, {
+        configFile: false,
         babelrc: false,
         plugins: [
+            require('@babel/plugin-syntax-jsx'),
             function wxmlPlugin() {
                 return {
-                    inherits: syntaxJSX,
                     visitor: visitor,
                     manipulateOptions(opts) {
                         //解析每个文件前执行一次

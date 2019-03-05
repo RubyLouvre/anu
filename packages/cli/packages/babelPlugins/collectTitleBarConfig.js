@@ -1,5 +1,5 @@
 let config = require('../config');
-const traverse = require('babel-traverse').default;
+const traverse = require('@babel/traverse').default;
 /**
  * 用于搜集快应用 titlebar 显示隐藏配置
  */

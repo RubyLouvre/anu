@@ -1,5 +1,5 @@
 let config = require('../config');
-let t = require('babel-types');
+let t = require('@babel/types');
 let hackList = ['wx', 'bu', 'tt', 'quick'];
 
 
@@ -72,7 +72,7 @@ module.exports = [
             visitor: visitor2
         };
     },
-    require('babel-plugin-transform-async-to-generator'),
+    require('@babel/plugin-transform-async-to-generator'),
     function(){
         return {
             visitor: visitor
