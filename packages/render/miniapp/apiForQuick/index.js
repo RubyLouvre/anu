@@ -50,7 +50,10 @@ import { share } from './share';
 import { createCanvasContext } from './canvas.js';
 
 import { pay, getProvider, wxpayGetType, wxpay, alipay} from './pay.js';
-
+function stopPullDownRefresh({success, fail, complete } = {}) {
+    // 停止刷新没有作用
+    runCallbacks(function(){}, success, fail, complete );
+}
 export var facade = {
     // 交互
     showModal,
@@ -117,13 +120,8 @@ export var facade = {
     //设置标题
     setNavigationBarTitle,
     createCanvasContext,
-    stopPullDownRefresh({success, fail, complete }) {
-        // 停止刷新没有作用
-        runCallbacks(function(){}, success, fail, complete );
-    },
-    createAnimation({success, fail, complete }) {
-        runCallbacks(function(){}, success, fail, complete );
-    }
+    stopPullDownRefresh,
+    createAnimation: stopPullDownRefresh
 
 };
 export function more(){

@@ -1492,6 +1492,13 @@ function alipay(obj) {
     alipayAPI.pay(obj);
 }
 
+function stopPullDownRefresh() {
+    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+        success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
+    runCallbacks(function () {}, success, fail, complete);
+}
 var facade = {
     showModal: showModal,
     showActionSheet: showActionSheet,
@@ -1506,10 +1513,10 @@ var facade = {
     downloadFile: downloadFile,
     request: request,
     makePhoneCall: makePhoneCall,
-    scanCode: function scanCode(_ref) {
-        var success = _ref.success,
-            fail = _ref.fail,
-            complete = _ref.complete;
+    scanCode: function scanCode(_ref2) {
+        var success = _ref2.success,
+            fail = _ref2.fail,
+            complete = _ref2.complete;
         var barcode = require('@system.barcode');
         barcode.scan({
             success: success,
@@ -1542,18 +1549,8 @@ var facade = {
     chooseImage: chooseImage,
     setNavigationBarTitle: setNavigationBarTitle,
     createCanvasContext: createCanvasContext,
-    stopPullDownRefresh: function stopPullDownRefresh(_ref2) {
-        var success = _ref2.success,
-            fail = _ref2.fail,
-            complete = _ref2.complete;
-        runCallbacks(function () {}, success, fail, complete);
-    },
-    createAnimation: function createAnimation(_ref3) {
-        var success = _ref3.success,
-            fail = _ref3.fail,
-            complete = _ref3.complete;
-        runCallbacks(function () {}, success, fail, complete);
-    }
+    stopPullDownRefresh: stopPullDownRefresh,
+    createAnimation: stopPullDownRefresh
 };
 function more() {
     return {
