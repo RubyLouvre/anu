@@ -104,7 +104,7 @@ export var facade = {
     //剪切板
     setClipboardData,
     getClipboardData,
-    getDeviceId,
+    
     // 位置
     getLocation(obj) {
         const geolocation = require('@system.geolocation');
@@ -135,6 +135,7 @@ export function more(){
         getProvider, 
         wxpayGetType, 
         wxpay, 
-        alipay
+        alipay,
+        getDeviceId,
     };
 } 
