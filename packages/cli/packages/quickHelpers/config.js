@@ -167,6 +167,7 @@ function setOtherConfig() {
         });
         return userFeat ? userFeat : el;
     });
+    
     manifest.features = features;
 
     ['name', 'permissions', 'config', 'subpackages'].forEach(function(el){
