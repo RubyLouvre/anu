@@ -182,11 +182,13 @@ let visitor = {
                     let tagName = tag && tag.name && tag.name.name;
                     //对<text>{aaa ? 111: 2}</text>的情况进行优化，不插入block标签
                     //只是将单花括号变成双花括号
-                    if (tagName === 'text'){
-                        isWrapText = true;
+                    if (tagName === 'text' || tagName === 'span'){
+                        if (t.isConditionalExpression(expr) || t.isLogicalExpression(expr)) {
+                            var hasTag = /<[^>]+>/.test( generate(expr).code);
+                            isWrapText = !hasTag;
+                        } 
                     }
                 }
-               
                 let block = logicHelper(expr, modules, isWrapText);
                 try {
                     astPath.replaceWithMultiple(block);
@@ -199,3 +201,4 @@ let visitor = {
     }
 };
 module.exports = wxml;
+
