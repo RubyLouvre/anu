@@ -1,12 +1,12 @@
 /**
- * by 司徒正美 Copyright 2019-03-04
+ * by 司徒正美 Copyright 2019-03-06
  * IE9+
  */
 
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-        typeof define === 'function' && define.amd ? define(factory) :
-            (global.React = factory());
+    typeof define === 'function' && define.amd ? define(factory) :
+    (global.React = factory());
 }(this, (function () {
     var arrayPush = Array.prototype.push;
     var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -114,7 +114,7 @@
             array = array.match(rword) || [];
         }
         var result = {},
-            value = val !== void 666 ? val : 1;
+        value = val !== void 666 ? val : 1;
         for (var i = 0, n = array.length; i < n; i++) {
             result[array[i]] = value;
         }
@@ -173,7 +173,7 @@
         fireMiddlewares: function fireMiddlewares(begin) {
             var index = begin ? middlewares.length - 1 : 0,
                 delta = begin ? -1 : 1,
-                method = begin ? 'begin' : 'end',
+                method = begin ? "begin" : "end",
                 obj = void 0;
             while (obj = middlewares[index]) {
                 obj[method]();
@@ -198,11 +198,11 @@
     Component.prototype = {
         constructor: Component,
         replaceState: function replaceState() {
-            toWarnDev('replaceState', true);
+            toWarnDev("replaceState", true);
         },
         isReactComponent: returnTrue,
         isMounted: function isMounted$$1() {
-            toWarnDev('isMounted', true);
+            toWarnDev("isMounted", true);
             return this.updater.isMounted(this);
         },
         setState: function setState(state, cb) {
@@ -212,11 +212,11 @@
             this.updater.enqueueSetState(get(this), true, cb);
         },
         render: function render() {
-            throw 'must implement render';
+            throw "must implement render";
         }
     };
 
-    var _typeof = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj; };
+    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     var RESERVED_PROPS = {
         key: true,
         ref: true,
@@ -415,7 +415,7 @@
         }
         if (invokeCallback) {
             callback(bookKeeping, children,
-                nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
+            nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
             return 1;
         }
         var subtreeCount = 0;
@@ -457,13 +457,13 @@
             if (isValidElement(children)) {
                 return children;
             }
-            throw new Error('expect only one child');
+            throw new Error("expect only one child");
         },
         count: function count(children) {
             if (children == null) {
                 return 0;
             }
-            return traverseAllChildren(children, '', noop);
+            return traverseAllChildren(children, "", noop);
         },
         map: function map(children, func, context) {
             return proxyIt(children, func, [], context);
@@ -486,11 +486,11 @@
         return el;
     }
     function mapChildren(children, prefix, func, result, context) {
-        var keyPrefix = '';
+        var keyPrefix = "";
         if (prefix != null) {
-            keyPrefix = escapeUserProvidedKey(prefix) + '/';
+            keyPrefix = escapeUserProvidedKey(prefix) + "/";
         }
-        traverseAllChildren(children, '', traverseCallback, {
+        traverseAllChildren(children, "", traverseCallback, {
             context: context,
             keyPrefix: keyPrefix,
             func: func,
@@ -500,7 +500,7 @@
     }
     var userProvidedKeyEscapeRegex = /\/+/g;
     function escapeUserProvidedKey(text) {
-        return ('' + text).replace(userProvidedKeyEscapeRegex, '$&/');
+        return ("" + text).replace(userProvidedKeyEscapeRegex, "$&/");
     }
     function traverseCallback(bookKeeping, child, childKey) {
         var result = bookKeeping.result,
@@ -516,7 +516,7 @@
         } else if (mappedChild != null) {
             if (isValidElement(mappedChild)) {
                 mappedChild = extend({}, mappedChild);
-                mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + '/' : '') + childKey;
+                mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + "/" : "") + childKey;
             }
             result.push(mappedChild);
         }
@@ -858,7 +858,7 @@
             return fiber;
         }
         if (!fiber.render) {
-            throw 'findDOMNode:invalid type';
+            throw "findDOMNode:invalid type";
         }
         return findHostInstance(fiber);
     }
@@ -925,27 +925,27 @@
             if (lastStyle[name] !== val) {
                 name = cssName(name, dom);
                 if (val !== 0 && !val) {
-                    val = '';
+                    val = "";
                 } else if (rnumber.test(val) && !cssNumber[name]) {
-                    val = val + 'px';
+                    val = val + "px";
                 }
                 try {
                     dom.style[name] = val;
                 } catch (e) {
-                    console.log('dom.style[' + name + '] = ' + val + 'throw error');
+                    console.log("dom.style[" + name + "] = " + val + "throw error");
                 }
             }
         }
         for (var _name in lastStyle) {
             if (!(_name in nextStyle)) {
                 _name = cssName(_name, dom);
-                dom.style[_name] = '';
+                dom.style[_name] = "";
             }
         }
     }
-    var cssNumber = oneObject('animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom');
-    var prefixes = ['', '-webkit-', '-o-', '-moz-', '-ms-'];
-    var cssMap = oneObject('float', 'cssFloat');
+    var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
+    var prefixes = ["", "-webkit-", "-o-", "-moz-", "-ms-"];
+    var cssMap = oneObject("float", "cssFloat");
     function cssName(name, dom) {
         if (cssMap[name]) {
             return cssMap[name];
@@ -969,54 +969,54 @@
             case 0:
                 return value;
             default:
-                return '';
+                return "";
         }
     }
     var duplexMap = {
         input: {
             init: function init(node, props) {
-                var defaultValue = props.defaultValue == null ? '' : props.defaultValue;
+                var defaultValue = props.defaultValue == null ? "" : props.defaultValue;
                 return node._wrapperState = {
                     initialValue: getSafeValue(props.value != null ? props.value : defaultValue)
                 };
             },
             mount: function mount(node, props, state) {
-                if (props.hasOwnProperty('value') || props.hasOwnProperty('defaultValue')) {
-                    var stateValue = '' + state.initialValue;
-                    if (node.value === '' && node.value !== stateValue) {
-                        syncValue(node, 'value', stateValue);
+                if (props.hasOwnProperty("value") || props.hasOwnProperty("defaultValue")) {
+                    var stateValue = "" + state.initialValue;
+                    if (node.value === "" && node.value !== stateValue) {
+                        syncValue(node, "value", stateValue);
                     }
                     node.defaultValue = stateValue;
                 }
                 var name = node.name;
-                if (name !== '') {
-                    node.name = '';
+                if (name !== "") {
+                    node.name = "";
                 }
                 node.defaultChecked = !node.defaultChecked;
                 node.defaultChecked = !node.defaultChecked;
-                if (name !== '') {
+                if (name !== "") {
                     node.name = name;
                 }
             },
             update: function update(node, props) {
                 if (props.checked != null) {
-                    syncValue(node, 'checked', !!props.checked);
+                    syncValue(node, "checked", !!props.checked);
                 }
                 var isActive = node === node.ownerDocument.activeElement;
                 var value = isActive ? node.value : getSafeValue(props.value);
                 if (value != null) {
-                    if (props.type === 'number') {
-                        if (value === 0 && node.value === '' ||
+                    if (props.type === "number") {
+                        if (value === 0 && node.value === "" ||
                         node.value != value) {
-                            syncValue(node, 'value', '' + value);
+                            syncValue(node, "value", "" + value);
                         }
-                    } else if (node.value !== '' + value) {
-                        syncValue(node, 'value', '' + value);
+                    } else if (node.value !== "" + value) {
+                        syncValue(node, "value", "" + value);
                     }
                 }
-                if (props.hasOwnProperty('value')) {
+                if (props.hasOwnProperty("value")) {
                     setDefaultValue(node, props.type, value, isActive);
-                } else if (props.hasOwnProperty('defaultValue')) {
+                } else if (props.hasOwnProperty("defaultValue")) {
                     setDefaultValue(node, props.type, getSafeValue(props.defaultValue), isActive);
                 }
                 if (props.checked == null && props.defaultChecked != null) {
@@ -1052,7 +1052,7 @@
                     if (props.defaultValue != null) {
                         updateOptions(node, multiple, props.defaultValue, true);
                     } else {
-                        updateOptions(node, multiple, multiple ? [] : '', false);
+                        updateOptions(node, multiple, multiple ? [] : "", false);
                     }
                 }
             }
@@ -1065,30 +1065,30 @@
                     var children = props.children;
                     if (children != null) {
                         defaultValue = textContent(node);
-                        node.innerHTML = '';
+                        node.innerHTML = "";
                     }
                     if (defaultValue == null) {
-                        defaultValue = '';
+                        defaultValue = "";
                     }
                     initialValue = defaultValue;
                 }
                 return node._wrapperState = {
-                    initialValue: '' + initialValue
+                    initialValue: "" + initialValue
                 };
             },
             mount: function mount(node, props, state) {
                 var text = textContent(node);
-                var stateValue = '' + state.initialValue;
+                var stateValue = "" + state.initialValue;
                 if (text !== stateValue) {
-                    syncValue(node, 'value', stateValue);
+                    syncValue(node, "value", stateValue);
                 }
             },
             update: function update(node, props) {
                 var value = props.value;
                 if (value != null) {
-                    var newValue = '' + value;
+                    var newValue = "" + value;
                     if (newValue !== node.value) {
-                        syncValue(node, 'value', newValue);
+                        syncValue(node, "value", newValue);
                     }
                     if (props.defaultValue == null) {
                         node.defaultValue = newValue;
@@ -1105,7 +1105,7 @@
                 duplexMap.option.mount(node, props);
             },
             mount: function mount(node, props) {
-                var elems = node.getElementsByTagName('*');
+                var elems = node.getElementsByTagName("*");
                 var n = elems.length,
                     el = void 0;
                 if (n) {
@@ -1113,7 +1113,7 @@
                         node.removeChild(el);
                     }
                 }
-                if ('value' in props) {
+                if ("value" in props) {
                     node.duplexValue = node.value = props.value;
                 } else {
                     node.duplexValue = node.text;
@@ -1126,11 +1126,11 @@
     }
     function setDefaultValue(node, type, value, isActive) {
         if (
-            type !== 'number' || !isActive) {
+        type !== "number" || !isActive) {
             if (value == null) {
-                node.defaultValue = '' + node._wrapperState.initialValue;
-            } else if (node.defaultValue !== '' + value) {
-                node.defaultValue = '' + value;
+                node.defaultValue = "" + node._wrapperState.initialValue;
+            } else if (node.defaultValue !== "" + value) {
+                node.defaultValue = "" + value;
             }
         }
     }
@@ -1140,10 +1140,10 @@
             var selectedValues = propValue;
             var selectedValue = {};
             for (var i = 0; i < selectedValues.length; i++) {
-                selectedValue['$' + selectedValues[i]] = true;
+                selectedValue["$" + selectedValues[i]] = true;
             }
             for (var _i = 0; _i < options.length; _i++) {
-                var selected = selectedValue.hasOwnProperty('$' + options[_i].duplexValue);
+                var selected = selectedValue.hasOwnProperty("$" + options[_i].duplexValue);
                 if (options[_i].selected !== selected) {
                     options[_i].selected = selected;
                 }
@@ -1152,7 +1152,7 @@
                 }
             }
         } else {
-            var _selectedValue = '' + propValue;
+            var _selectedValue = "" + propValue;
             var defaultSelected = null;
             for (var _i2 = 0; _i2 < options.length; _i2++) {
                 if (options[_i2].duplexValue === _selectedValue) {
@@ -1182,7 +1182,7 @@
             props = fiber.props,
             lastProps = fiber.lastProps;
         var fns = duplexMap[name];
-        if (name !== 'option') {
+        if (name !== "option") {
             enqueueDuplex(dom);
         }
         if (!lastProps || lastProps == emptyObject) {
@@ -1208,7 +1208,7 @@
                 if (fiber && !fiber.disposed) {
                     var props = fiber.props;
                     var tag = fiber.name;
-                    if (name === 'select') {
+                    if (name === "select") {
                         var value = props.value;
                         if (value != null) {
                             updateOptions(dom, !!props.multiple, value, false);
@@ -1216,7 +1216,7 @@
                     } else {
                         duplexMap[tag].update(dom, props);
                         var _name = props.name;
-                        if (props.type === 'radio' && _name != null && !radioMap[_name]) {
+                        if (props.type === "radio" && _name != null && !radioMap[_name]) {
                             radioMap[_name] = 1;
                             collectNamedCousins(dom, _name);
                         }
@@ -1230,10 +1230,10 @@
         while (queryRoot.parentNode) {
             queryRoot = queryRoot.parentNode;
         }
-        var group = queryRoot.getElementsByTagName('input');
+        var group = queryRoot.getElementsByTagName("input");
         for (var i = 0; i < group.length; i++) {
             var otherNode = group[i];
-            if (otherNode === rootNode || otherNode.name !== name || otherNode.type !== 'radio' || otherNode.form !== rootNode.form) {
+            if (otherNode === rootNode || otherNode.name !== name || otherNode.type !== "radio" || otherNode.form !== rootNode.form) {
                 continue;
             }
             enqueueDuplex(otherNode);
@@ -1471,10 +1471,10 @@
     };
     eventPropHooks.wheel = function (event) {
         event.deltaX = 'deltaX' in event ? event.deltaX :
-            'wheelDeltaX' in event ? -event.wheelDeltaX : 0;
+        'wheelDeltaX' in event ? -event.wheelDeltaX : 0;
         event.deltaY = 'deltaY' in event ? event.deltaY :
-            'wheelDeltaY' in event ? -event.wheelDeltaY :
-                'wheelDelta' in event ? -event.wheelDelta : 0;
+        'wheelDeltaY' in event ? -event.wheelDeltaY :
+        'wheelDelta' in event ? -event.wheelDelta : 0;
     };
     var focusMap = {
         focus: 'focus',
@@ -1605,38 +1605,38 @@
         x: { c: 1 }
     };
     var specialSVGPropertyName = {
-        'overline-thickness': 2,
-        'underline-thickness': 2,
-        'overline-position': 2,
-        'underline-position': 2,
-        'stroke-miterlimit': 2,
-        'baseline-shift': 2,
-        'clip-path': 2,
-        'font-size': 2,
-        'font-size-adjust': 2,
-        'font-stretch': 2,
-        'font-style': 2,
-        'text-decoration': 2,
-        'vert-origin-x': 2,
-        'vert-origin-y': 2,
-        'paint-order': 2,
-        'fill-rule': 2,
-        'color-rendering': 2,
-        'marker-end': 2,
-        'pointer-events': 2,
-        'units-per-em': 2,
-        'strikethrough-thickness': 2,
-        'lighting-color': 2
+        "overline-thickness": 2,
+        "underline-thickness": 2,
+        "overline-position": 2,
+        "underline-position": 2,
+        "stroke-miterlimit": 2,
+        "baseline-shift": 2,
+        "clip-path": 2,
+        "font-size": 2,
+        "font-size-adjust": 2,
+        "font-stretch": 2,
+        "font-style": 2,
+        "text-decoration": 2,
+        "vert-origin-x": 2,
+        "vert-origin-y": 2,
+        "paint-order": 2,
+        "fill-rule": 2,
+        "color-rendering": 2,
+        "marker-end": 2,
+        "pointer-events": 2,
+        "units-per-em": 2,
+        "strikethrough-thickness": 2,
+        "lighting-color": 2
     };
-    var repeatedKey = ['et', 'ep', 'em', 'es', 'pp', 'ts', 'td', 'to', 'lr', 'rr', 're', 'ht', 'gc'];
+    var repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
     function createRepaceFn(split) {
         return function (match) {
             return match.slice(0, 1) + split + match.slice(1).toLowerCase();
         };
     }
     var rhump = /([a-z])([A-Z])/;
-    var toHyphen = createRepaceFn('-');
-    var toColon = createRepaceFn(':');
+    var toHyphen = createRepaceFn("-");
+    var toColon = createRepaceFn(":");
     function getSVGAttributeName(name) {
         if (svgCache[name]) {
             return svgCache[name];
@@ -1673,8 +1673,8 @@
         var continueProps = skipProps;
         if (!isSVG && rform.test(fiber.type)) {
             continueProps = duplexProps;
-            if (!('onChange' in nextProps)) {
-                eventAction(dom, 'onChange', noop, lastProps, fiber);
+            if (!("onChange" in nextProps)) {
+                eventAction(dom, "onChange", noop, lastProps, fiber);
             }
             fiber.effectTag *= DUPLEX;
             fiber.onDuplex = continueProps.onDuplex;
@@ -1716,25 +1716,25 @@
         );
     }
     function getPropAction(dom, name, isSVG) {
-        if (isSVG && name === 'className') {
-            return 'svgClass';
+        if (isSVG && name === "className") {
+            return "svgClass";
         }
         if (isSpecialAttr[name]) {
             return name;
         }
         if (isEventName(name)) {
-            return 'event';
+            return "event";
         }
         if (isSVG) {
-            return 'svgAttr';
+            return "svgAttr";
         }
-        if (name === 'width' || name === 'height') {
-            return 'attribute';
+        if (name === "width" || name === "height") {
+            return "attribute";
         }
         if (isBooleanAttr(dom, name)) {
-            return 'booleanAttr';
+            return "booleanAttr";
         }
-        return name.indexOf('data-') === 0 || dom[name] === void 666 ? 'attribute' : 'property';
+        return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
     }
     var builtinStringProps = {
         className: 1,
@@ -1761,33 +1761,33 @@
             patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
         },
         autoFocus: function autoFocus(dom) {
-            if (/input|text/i.test(dom.nodeName) || dom.contentEditable === 'true') {
+            if (/input|text/i.test(dom.nodeName) || dom.contentEditable === "true") {
                 dom.focus();
             }
         },
         svgClass: function svgClass(dom, name, val) {
             if (!val) {
-                dom.removeAttribute('class');
+                dom.removeAttribute("class");
             } else {
-                dom.setAttribute('class', val);
+                dom.setAttribute("class", val);
             }
         },
         svgAttr: function svgAttr(dom, name, val) {
-            var method = typeNumber(val) < 3 && !val ? 'removeAttribute' : 'setAttribute';
+            var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
             var nameRes = getSVGAttributeName(name);
             if (nameRes.ifSpecial) {
-                var prefix = nameRes.name.split(':')[0];
-                dom[method + 'NS'](NAMESPACE[prefix], nameRes.name, val || '');
+                var prefix = nameRes.name.split(":")[0];
+                dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
             } else {
-                dom[method](nameRes, typeNumber(val) !== 3 && !val ? '' : val);
+                dom[method](nameRes, typeNumber(val) !== 3 && !val ? "" : val);
             }
         },
         booleanAttr: function booleanAttr(dom, name, val) {
             dom[name] = !!val;
             if (dom[name] === false) {
                 dom.removeAttribute(name);
-            } else if (dom[name] === 'false') {
-                dom[name] = '';
+            } else if (dom[name] === "false") {
+                dom[name] = "";
             }
         },
         attribute: function attribute(dom, name, val) {
@@ -1797,14 +1797,14 @@
             try {
                 dom.setAttribute(name, val);
             } catch (e) {
-                console.warn('setAttribute error', name, val);
+                console.warn("setAttribute error", name, val);
             }
         },
         property: function property(dom, name, val) {
             try {
                 if (!val && val !== 0) {
                     if (builtinStringProps[name]) {
-                        dom[name] = '';
+                        dom[name] = "";
                     } else {
                         dom.removeAttribute(name);
                     }
@@ -1822,7 +1822,7 @@
         dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
             var oldhtml = lastProps[name] && lastProps[name].__html;
             var html = val && val.__html;
-            html = html == null ? '' : html;
+            html = html == null ? "" : html;
             if (html !== oldhtml) {
                 dom.innerHTML = html;
             }
@@ -1849,14 +1849,14 @@
             isStateless = tag === 1,
             lastOwn = Renderer.currentOwner,
             instance = {
-                refs: {},
-                props: props,
-                key: key,
-                context: context,
-                ref: ref,
-                _reactInternalFiber: fiber,
-                __proto__: type.prototype
-            };
+            refs: {},
+            props: props,
+            key: key,
+            context: context,
+            ref: ref,
+            _reactInternalFiber: fiber,
+            __proto__: type.prototype
+        };
         fiber.updateQueue = UpdateQueue();
         fiber.errorHook = 'constructor';
         try {
@@ -1917,7 +1917,7 @@
 
     function Fiber(vnode) {
         extend(this, vnode);
-        var type = vnode.type || 'ProxyComponent(react-hot-loader)';
+        var type = vnode.type || "ProxyComponent(react-hot-loader)";
         this.name = type.displayName || type.name || type;
         this.effectTag = 1;
     }
@@ -1965,7 +1965,7 @@
         var fiber = host._reactInternalFiber;
         fiber.errorHook = hook;
         var fn = host[hook];
-        if (hook == 'componentWillUnmount') {
+        if (hook == "componentWillUnmount") {
             host[hook] = noop;
         }
         if (fn) {
@@ -1974,13 +1974,13 @@
         return true;
     }
     function describeError(names, hook) {
-        var segments = ['**' + hook + '** method occur error '];
+        var segments = ["**" + hook + "** method occur error "];
         names.forEach(function (name, i) {
             if (names[i + 1]) {
-                segments.push('in ' + name + ' (created By ' + names[i + 1] + ')');
+                segments.push("in " + name + " (created By " + names[i + 1] + ")");
             }
         });
-        return segments.join('\n\r').trim();
+        return segments.join("\n\r").trim();
     }
     function findCatchComponent(fiber, names, hook) {
         var instance = void 0,
@@ -2018,7 +2018,7 @@
                         boundary = f;
                     }
                     if (!boundary.catchError) {
-                        if (hook == 'componentWillUnmount' || hook == 'componentDidUpdate') {
+                        if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
                             boundary.effectTag = CAPTURE;
                         } else {
                             boundary.effectTag = effectTag * CAPTURE;
