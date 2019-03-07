@@ -125,6 +125,18 @@ module.exports = {
         exit(astPath, state) {
             var modules = utils.getAnu(state);
             const methodName = astPath.node.key.name;
+            if (astPath.node.static) {
+                // 处理静态方法
+                var keyValue = t.ObjectProperty(
+                    t.identifier(methodName),
+                    t.functionExpression(
+                        t.identifier(methodName),
+                        astPath.node.params,
+                        astPath.node.body
+                    )
+                );
+                modules.staticMethods.push(keyValue);
+            }
             if (methodName === 'render') {
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,
                 //而是VariableDeclaration
