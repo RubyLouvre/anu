@@ -130,7 +130,7 @@ module.exports = {
                 var keyValue = t.ObjectProperty(
                     t.identifier(methodName),
                     t.functionExpression(
-                        t.identifier(methodName),
+                        t.identifier('_'),
                         astPath.node.params,
                         astPath.node.body
                     )
