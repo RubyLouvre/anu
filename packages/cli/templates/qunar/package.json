@@ -5,7 +5,8 @@
     "name": "qunar",
     "nanachi": {
         "alias": {
-            "@assets": "source/assets"
+            "@assets": "source/assets",
+            "@common": "source/common"
         }
     },
     "dependencies": {
