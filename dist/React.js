@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2019-03-04
+ * by 司徒正美 Copyright 2019-03-07
  * IE9+
  */
 
@@ -675,6 +675,11 @@
     function resetCursor() {
         hookCursor = 0;
     }
+    function getCurrentKey() {
+        var key = hookCursor + 'Hook';
+        hookCursor++;
+        return key;
+    }
     var dispatcher = {
         useContext: function useContext(getContext) {
             if (isFn(getContext)) {
@@ -690,9 +695,8 @@
         },
         useReducer: function useReducer(reducer, initValue, initAction) {
             var fiber = getCurrentFiber();
-            var key = hookCursor + 'Hook';
+            var key = getCurrentKey();
             var updateQueue = fiber.updateQueue;
-            hookCursor++;
             var compute = reducer ? function (cursor, action) {
                 return reducer(updateQueue[cursor], action || { type: Math.random() });
             } : function (cursor, value) {
@@ -707,12 +711,11 @@
             var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
             return [value, dispatch];
         },
-        useCallbackOrMemo: function useCallbackOrMemo(create, inputs, isMemo) {
+        useCallbackOrMemo: function useCallbackOrMemo(create, deps, isMemo) {
             var fiber = getCurrentFiber();
-            var key = hookCursor + 'Hook';
+            var key = getCurrentKey();
             var updateQueue = fiber.updateQueue;
-            hookCursor++;
-            var nextInputs = Array.isArray(inputs) ? inputs : [create];
+            var nextInputs = Array.isArray(deps) ? deps : [create];
             var prevState = updateQueue[key];
             if (prevState) {
                 var prevInputs = prevState[1];
@@ -726,17 +729,16 @@
         },
         useRef: function useRef(initValue) {
             var fiber = getCurrentFiber();
-            var key = hookCursor + 'Hook';
+            var key = getCurrentKey();
             var updateQueue = fiber.updateQueue;
-            hookCursor++;
             if (key in updateQueue) {
                 return updateQueue[key];
             }
             return updateQueue[key] = { current: initValue };
         },
-        useEffect: function useEffect(create, inputs, EffectTag, createList, destoryList) {
+        useEffect: function useEffect(create, deps, EffectTag, createList, destoryList) {
             var fiber = getCurrentFiber();
-            var cb = dispatcher.useCallbackOrMemo(create, inputs);
+            var cb = dispatcher.useCallbackOrMemo(create, deps);
             if (fiber.effectTag % EffectTag) {
                 fiber.effectTag *= EffectTag;
             }
@@ -745,8 +747,8 @@
             updateQueue[destoryList] || (updateQueue[destoryList] = []);
             list.push(cb);
         },
-        useImperativeMethods: function useImperativeMethods(ref, create, inputs) {
-            var nextInputs = Array.isArray(inputs) ? inputs.concat([ref]) : [ref, create];
+        useImperativeHandle: function useImperativeHandle(ref, create, deps) {
+            var nextInputs = Array.isArray(deps) ? deps.concat([ref]) : [ref, create];
             dispatcher.useEffect(function () {
                 if (typeof ref === 'function') {
                     var refCallback = ref;
@@ -3202,7 +3204,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.5.1',
+            version: '1.5.2',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,

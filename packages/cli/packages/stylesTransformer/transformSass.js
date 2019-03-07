@@ -33,7 +33,6 @@ const nodeSassFilterImporter = ()=>{
             css: fs.readFileSync(abPath).toString(),
             postcssSyntax: postcssSyntax
         });
-        
         return {
             file: importerPath,
             contents: contents

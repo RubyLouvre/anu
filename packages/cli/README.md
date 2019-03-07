@@ -35,4 +35,4 @@ yarn global add nanachi-cli
 ![image](https://user-images.githubusercontent.com/190846/45038189-53f44a80-b093-11e8-9ecb-a4080f21b262.png)
 
 ## 开发者交流群
-![411547729622_ pic](https://user-images.githubusercontent.com/8794029/51320198-0dc7e280-1a9a-11e9-8c03-cfbd661c84d6.jpg)
+![411547729622_ pic](https://user-images.githubusercontent.com/16398401/52927213-5cf08400-3374-11e9-9f54-ccbad8b61ea7.jpeg)

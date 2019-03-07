@@ -1,6 +1,6 @@
-const t = require('babel-types');
-const template = require('babel-template');
-const generate = require('babel-generator').default;
+const t = require('@babel/types');
+const template = require('@babel/template').default;
+const generate = require('@babel/generator').default;
 const utils = require('../utils');
 
 module.exports = {
@@ -15,13 +15,21 @@ module.exports = {
         // 将类表式变成函数调用
         let modules = utils.getAnu(state);
         if (!modules.ctorFn) {
-            modules.ctorFn = template('function x(){b}')({
-                x: t.identifier(modules.className),
-                b: modules.thisProperties
+            /**
+             * 占位符要大写
+             * placeholderPattern
+             * Type: RegExp | false Default: /^[_$A-Z0-9]+$/
+             * 
+             * A pattern to search for when looking for Identifier and StringLiteral nodes
+             * that should be considered placeholders. 'false' will disable placeholder searching
+             * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
+             */
+            modules.ctorFn = template('function X(){B}')({
+                X: t.identifier(modules.className),
+                B: modules.thisProperties
             });
         }
-        let parent = astPath.parentPath.parentPath;
-        parent.insertBefore(modules.ctorFn);
+        astPath.insertBefore(modules.ctorFn);
         //用于绑定事件
         modules.thisMethods.push(
             t.objectProperty(
@@ -29,19 +37,26 @@ module.exports = {
                 t.stringLiteral(modules.classUid)
             )
         );
-        const call = t.expressionStatement(
-            t.callExpression(t.identifier('React.toClass'), [
-                t.identifier(modules.className),
-                t.identifier(modules.parentName),
-                t.objectExpression(modules.thisMethods),
-                t.objectExpression(modules.staticMethods)
-            ])
+        /**
+         * 使用 babel-types 完成如下语法
+         * var Global = React.toClass(Global, React.Component, {});
+         */
+        const classDeclarationAst = t.variableDeclaration(
+            'var',
+            [
+                t.variableDeclarator(
+                    t.identifier(modules.className),
+                    t.callExpression(t.identifier('React.toClass'), [
+                        t.identifier(modules.className),
+                        t.identifier(modules.parentName),
+                        t.objectExpression(modules.thisMethods),
+                        t.objectExpression(modules.staticMethods)
+                    ])
+                )
+            ]
         );
-
-        //插入到最前面
-        //  astPath.parentPath.parentPath.insertBefore(onInit);
-        //  可以通过`console.log(generate(call).code)`验证
-        astPath.replaceWith(call);
+        // 可以通过 `console.log(generate(classDeclarationAst).code)` 查看编译后的代码
+        astPath.replaceWith(classDeclarationAst);
         if (astPath.type == 'CallExpression') {
             if (astPath.parentPath.type === 'VariableDeclarator') {
                 if (parent.type == 'VariableDeclaration') {

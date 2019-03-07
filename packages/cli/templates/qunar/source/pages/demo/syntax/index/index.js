@@ -56,20 +56,12 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/multiple/index'
                 },
                 {
-                    title: 'Render Props',
-                    url: '/pages/demo/syntax/renderprops/index'
-                },
-                {
                     title: '一个页面多个相同组件',
                     url: '/pages/demo/syntax/loop5/index'
                 },
                 {
                     title: 'webview',
                     url: '/pages/demo/syntax/webview/index'
-                },
-                {
-                    title: '数据请求',
-                    url: '/pages/demo/syntax/request/index'
                 }
             ]
         };

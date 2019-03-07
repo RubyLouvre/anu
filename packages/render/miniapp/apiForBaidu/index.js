@@ -20,9 +20,9 @@ export var more = function(api) {
             return api.connectSocket.apply(api, arguments);
         },
         showLoading: function _(a) {
-          a = a || {}
-          a.title =  a.title || '加载中...';
-          return api.showLoading(a);
+            a = a || {};
+            a.title =  a.title || '加载中...';
+            return api.showLoading(a);
         },
         setMetaDescription: function _(a) {
             let empty = function(res){};
@@ -31,7 +31,7 @@ export var more = function(api) {
                 success: empty,
                 fail: empty,
                 complete: empty
-            }
+            };
             let options = Object.assign(defailt, a);
             return api.setMetaDescription && api.setMetaDescription(options);
         },
@@ -51,10 +51,7 @@ export var more = function(api) {
                 title: ''
             };
             let options = Object.assign(defailt, a);
-            return api.setDocumentTitle && api.setDocumentTitle(options)
-        },
-        request: function(_a) {
-            return api.request(_a);
+            return api.setDocumentTitle && api.setDocumentTitle(options);
         }
     };
 };

@@ -56,11 +56,12 @@ let ignoreStyleParsePlugin = ()=>{
         transform: function(code, id){
             let styleExtList = ['.css', '.less', '.scss', '.sass'];
             let ext = path.extname(id);
-            if (styleExtList.includes(ext)) return false;
+            if (styleExtList.includes(ext)) return {
+                code: ''
+            };
         }
     };
 };
-
 
 //监听打包资源
 utils.on('build', ()=>{
@@ -72,6 +73,7 @@ class Parser {
         this.entry = entry;
         this.jsFiles = [];
         this.styleFiles = [];
+        this.webViewFiles = [];
         this.npmFiles = [];
         this.depTree = {};
         this.collectError = {
@@ -96,13 +98,18 @@ class Parser {
             plugins: [
                 alias(this.customAliasConfig), //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
-                    jail: path.join(cwd),   //从项目根目录中搜索npm模块, 防止向父级查找
+                    
+                    jail: path.join(cwd, 'node_modules'),   //从项目根目录中搜索npm模块, 防止向父级查找
                     preferBuiltins: false,  //防止查找内置模块
                     customResolveOptions: {
-                        moduleDirectory: [
-                            path.join(cwd, 'node_modules')
-                        ]
-                    }
+                        packageFilter: function(pkg, pkgFile){
+                            if (  !pkg.main && !pkg.module ) {
+                                pkg.main = pkg.module = './index.js';
+                            }
+                            return pkg;
+                        }
+                    },
+                   
                 }),
                 ignoreStyleParsePlugin(),
                 commonjs({
@@ -112,10 +119,28 @@ class Parser {
                 rbabel({
                     babelrc: false,
                     only: ['**/*.js'],
-                    presets: [require('babel-preset-react')],
+                    // exclude: 'node_modules/**',
+                    /**
+                     * root
+                     * 防止读取外部 babel 配置文件，如去掉 root 配置在快应用下会
+                     * 读取 babel.config.js 文件导致报错
+                     */
+                    root: path.join(__dirname, '..'),
+                    configFile: false,
+                    presets: [
+                        require('@babel/preset-react')
+                    ],
                     plugins: [
-                        require('babel-plugin-transform-class-properties'),
-                        require('babel-plugin-transform-object-rest-spread'),
+                        /**
+                         * [babel 6 to 7] 
+                         * v6 default config: ["plugin", { "loose": true }]
+                         * v7 default config: ["plugin"]
+                         */
+                        [
+                            require('@babel/plugin-proposal-class-properties'),
+                            { loose: true }
+                        ],
+                        require('@babel/plugin-proposal-object-rest-spread'),
                         [
                             //重要,import { Xbutton } from 'schnee-ui' //按需引入
                             require('babel-plugin-import').default,
@@ -125,6 +150,8 @@ class Parser {
                                 camel2DashComponentName: false
                             }
                         ],
+                        require('./babelPlugins/collectTitleBarConfig'),
+                        require('./babelPlugins/collectWebViewPage'),
                         require('./babelPlugins/collectPatchComponents'),
                         ...require('./babelPlugins/validateJsx')(this.collectError)
                     ]
@@ -153,12 +180,25 @@ class Parser {
         let bundle = await rollup.rollup(this.inputConfig);
         //如果有需要打补丁的组件并且本地没有安装schnee-ui
         if (this.needInstallUiLib()) {
+            console.log(chalk.green('缺少补丁组件, 正在安装, 请稍候...'));
             utils.installer('schnee-ui');
         }
+
+        //校验是否需要安装快应用hap-toolkit工具
+        if (this.needInstallHapToolkit()) {
+            //获取package.json中hap-toolkit版本，并安装
+            let toolName = 'hap-toolkit';
+            console.log(chalk.green(`缺少快应用构建工具${toolName}, 正在安装, 请稍候...`));
+            utils.installer(
+                `${toolName}@${require( path.join(cwd, 'package.json'))['devDependencies'][toolName] }`,
+                '--save-dev'
+            );
+        }
+        
     
         let moduleMap = this.moduleMap();
         bundle.modules.forEach(item => {
-            if (/commonjsHelpers/.test(item.id)) return;
+            if (/commonjsHelpers|rollupPluginBabelHelpers\.js/.test(item.id)) return;
             let hander = moduleMap[getFileType(item.id)];
             if (hander) {
                 hander(item);
@@ -182,6 +222,19 @@ class Parser {
             return true;
         }
     }
+    needInstallHapToolkit(){
+        if (config.buildType !== 'quick') return false;
+        //检查本地是否安装快应用的hap-toolkit工具
+        try {
+            //hap-toolkit中package.json没有main或者module字段, 无法用 nodeResolve 来判断是否存在。
+            //nodeResolve.sync('hap-toolkit', { basedir: process.cwd() });
+            let hapToolKitPath = path.join(cwd, 'node_modules', 'hap-toolkit');
+            fs.accessSync(hapToolKitPath);
+            return false;
+        } catch (err) {
+            return true;
+        }
+    }
     collectDeps(item) {
         //搜集js的样式依赖，快应用下如果更新样式，需触发js构建ux.
         if ( !/\.js$/.test(item.id) ) return;
@@ -196,16 +249,7 @@ class Parser {
         return {
             css: (data)=>{
                 this.checkStyleImport(data);
-                if (config.buildType == 'quick'){
-                    //如果是快应用，那么不会生成独立的样式文件，而是合并到同名的 ux 文件中
-                    var jsName = data.id.replace(/\.\w+$/, '.js');
-                    if (fs.pathExistsSync(jsName)) {
-                        var cssExt = path.extname(data.id).slice(1);
-                        quickFiles[ jsName ] = {
-                            cssPath: data.id,
-                            cssType: cssExt === 'scss' ?  'sass' : cssExt
-                        };
-                    }
+                if (config.buildType == 'quick') {
                     return;
                 }
                 this.styleFiles.push({
@@ -220,11 +264,17 @@ class Parser {
                 this.checkComponentsInPages(data.id);
                 //校验组件组件名以及文件夹是否符合规范
                 this.checkImportComponent(data);
-                this.jsFiles.push({
-                    id: data.id,
-                    originalCode: data.originalCode,
-                    resolvedIds: data.resolvedIds //获取alias配置
-                });
+
+                if (utils.isWebView(data.id)) {
+                    this.webViewFiles.push({
+                        id: data.id
+                    });
+                } else {
+                    //搜集js中依赖的样式，存入quickFiles
+                    this.collectQuickDepStyle(data);
+                    this.jsFiles.push(data);
+                }
+               
             }
         };
     }
@@ -248,6 +298,7 @@ class Parser {
     }
     transform() {
         this.updateJsQueue(this.jsFiles);
+        this.updateWebViewRoutes(this.webViewFiles);
         this.updateStyleQueue(this.styleFiles);
     }
     check( cb ) {
@@ -275,6 +326,20 @@ class Parser {
             process.exit(1);
         }
         cb && cb();
+    }
+    collectQuickDepStyle(data){
+        if (config.buildType === 'quick') {
+            let cssPath = data.dependencies.filter((fileId)=>{
+                return isStyle(fileId);
+            })[0];
+            if (cssPath) {
+                let extname = path.extname(cssPath).replace(/^\./, '');
+                quickFiles[data.id] = {
+                    cssPath: cssPath,
+                    cssType: extname == 'scss' ? 'sass' : extname
+                };
+            }
+        }
     }
     checkComponentsInPages(id) {
         id = path.relative( cwd,  id);
@@ -321,12 +386,28 @@ class Parser {
     updateJsQueue(jsFiles) {
         while (jsFiles.length) {
             let item = jsFiles.shift();
-            if (/commonjs-proxy:/.test(item.id)) item.id = item.id.split(':')[1];
+            
+            if (/commonjs-proxy:/.test(item.id)) {
+                item.id = item.id.replace('commonjs-proxy:', '').replace('\u0000','')
+            }
             let { id, originalCode, resolvedIds } = item;
             needUpdate(id, originalCode, function(){
                 miniTransform(id, resolvedIds, originalCode);
             });
         }
+       
+    }
+    updateWebViewRoutes(webViewRoutes){
+        
+        //删除各 route 编译 or 运行 配置文件
+        utils.deleteWebViewConifg();
+
+        if (!webViewRoutes.length) return;
+        //注入h5编译route配置
+        utils.setH5CompileConfig(webViewRoutes);
+
+        //注入运行时 webview 各route配置
+        utils.setWebViewConfig(utils.getWebViewRoutesConfig(webViewRoutes));
     }
     updateStyleQueue(styleFiles) {
         while (styleFiles.length) {

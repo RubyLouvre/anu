@@ -11,8 +11,9 @@ let config = require('../config');
 module.exports = ()=>{
     return {
         visitor: {
-            JSXOpeningElement: function(astPath){
-                let fileId =  this.file.parserOpts.sourceFileName;
+            JSXOpeningElement: function(astPath, state){
+                // [babel 6 to 7] 通过 state 来获取文件的绝对路径 fileId =  state.filename
+                let fileId =  state.filename;
                 let nodeName = astPath.node.name.name;
                 let platConfig = config[config.buildType];
                 let patchComponents = platConfig.patchComponents || [];

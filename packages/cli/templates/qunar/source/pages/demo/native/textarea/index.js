@@ -21,7 +21,7 @@ class P extends React.Component {
                         输入区域高度自适应，不会出现滚动条
                     </view>
                     <view class="textarea-wrp">
-                        <textarea onBlur={this.bindTextAreaBlur} auto-height />
+                        <textarea onBlur={this.bindTextAreaBlur} autoHeight={true} />
                     </view>
                 </view>
 
@@ -30,7 +30,7 @@ class P extends React.Component {
                         这是一个可以自动聚焦的textarea
                     </view>
                     <view class="textarea-wrp">
-                        <textarea auto-focus="true" style="height: 3em" />
+                        <textarea autoFocus={true} style="height: 3em" />
                     </view>
                 </view>
             </view>

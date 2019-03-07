@@ -76,19 +76,6 @@ function generateConflictDeclarations(declName, conflictRegex) {
     };
 }
 
-function generateProhibitValue(declName, prohibitRegex) {
-    return (decl) => {
-        if (prohibitRegex.test(decl.value)) {
-            // eslint-disable-next-line
-            console.log(
-                chalk`Remote resource is not supported in {cyan ${declName}}, ` +
-                    chalk`supplied {red ${decl.value}} will be removed.`
-            );
-            decl.remove();
-        }
-    };
-}
-
 function transformBorderRadius(decl) {
     const props = [
         'border-top-left-radius',
@@ -183,17 +170,34 @@ const visitors = {
             'background-image',
             /(background|border)-color/i
         )(decl);
-        generateProhibitValue(
-            'background-image',
-            /url\(['"]https?:\/\/\S+['"]\)/i
-        )(decl);
     },
     margin: validateMargin,
     'border-left': splitBorder,
     'border-right': splitBorder,
     'border-bottom': splitBorder,
-    'border-top': splitBorder
+    'border-top': splitBorder,
+    'animation': (declaration) => {
+        generateConflictDeclarations(
+            'animation',
+            /animation-(name|duration|timing-function|delay|iteration-count|direction)/i
+        )(declaration);
+        transformAnimation(declaration);
+    }
 };
+
+let transformAnimation = (declaration)=>{
+    const properties = ['name', 'duration', 'timing-function', 'delay', 'iteration-count', 'direction'];
+    let value = declaration.value;
+    let values = value.replace(/(,\s+)/g, ',').trim().split(/\s+/);
+    values.map((value, index) => {
+        const res = {};
+        const prop = declaration.prop + '-' + properties[index];
+        res[prop] = value;
+        declaration.cloneBefore(postCss.decl({prop, value}));
+    });
+    declaration.remove();
+};
+
 
 const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style', ()=> {
     return (root) => {
@@ -207,6 +211,9 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 if (visitors[decl.prop]) {
                     visitors[decl.prop](decl);
                 }
+            });
+            // 再进行一次遍历保证所有px都被正确转换
+            root.walkDecls(decl => {
                 decl.value = rpxToPx(decl.value);
             });
         }

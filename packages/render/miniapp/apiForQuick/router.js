@@ -1,4 +1,5 @@
-
+import { runCallbacks } from '../utils.js';
+var router = require('@system.router');
 function createRouter(name) {
     return function(obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
@@ -16,7 +17,7 @@ function createRouter(name) {
                 webViewUrls = require('./webviewConfig.js');
                 webViewRoute = webViewUrls[uri];
             } catch (err) {
-                //eslint-disable-line
+        //eslint-disable-line
             }
         }
 
@@ -29,17 +30,19 @@ function createRouter(name) {
             });
             return;
         }
-        
+
         //其他按普通跳转处理
-        var router = require('@system.router');
+   
         var params = {};
-        uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('&').forEach(function (param) {
-                param = param.split('=');
-                params[param[0]] = param[1];
-            });
-            return '';
-        }).replace(/\/index$/, '');
+        uri = uri
+            .replace(/\?(.*)/, function(a, b) {
+                b.split('&').forEach(function(param) {
+                    param = param.split('=');
+                    params[param[0]] = param[1];
+                });
+                return '';
+            })
+            .replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
@@ -52,3 +55,11 @@ function createRouter(name) {
 export var navigateTo = createRouter('push');
 export var redirectTo = createRouter('replace');
 export var navigateBack = createRouter('back');
+
+export function makePhoneCall({ phoneNumber, success , fail , complete  }) {
+    runCallbacks(function(){
+        router.push({
+            uri: `tel:${phoneNumber}`
+        }); 
+    }, success, fail, complete);
+}

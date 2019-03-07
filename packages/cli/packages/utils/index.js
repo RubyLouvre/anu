@@ -1,7 +1,7 @@
 /* eslint no-console: 0 */
 /* eslint-disable*/
 const execSync = require('child_process').execSync;
-const t = require('babel-types');
+const t = require('@babel/types');
 const fs = require('fs-extra');
 const path = require('path');
 const cwd = process.cwd();
@@ -10,13 +10,14 @@ const spawn = require('cross-spawn');
 const uglifyJS = require('uglify-es');
 const cleanCSS = require('clean-css');
 const nodeResolve = require('resolve');
-const template = require('babel-template');
+const template = require('@babel/template').default;
 const axios = require('axios');
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
 const config = require('../config');
 const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
+const queue = require('../queue');
 const userConfig = pkg.nanachi || pkg.mpreact || {};
 process.on('unhandledRejection', error => {
   // eslint-disable-next-line
@@ -67,20 +68,27 @@ let utils = {
   shortcutOfCreateElement() {
     return 'var h = React.createElement;';
   },
+  //传入path.node, 得到标签名
+  getNodeName(node){
+    var openTag =  node.openingElement
+    return openTag && Object(openTag.name).name
+  },
   getEventName(eventName, nodeName, buildType) {
     if (eventName == 'Click' || eventName == 'Tap') {
-      if (
-        buildType === 'ali' ||
-        buildType === 'wx' ||
-        buildType === 'tt' || //头条也是bindtap
-        buildType === 'bu'
-      ) {
-        return 'Tap';
-      } else {
-        return 'Click';
-      }
+        if (buildType === 'quick' || buildType === 'h5'){
+           return 'Click';
+        }else{
+          return 'Tap';
+        }
     }
-
+    if( buildType === 'quick'){
+       if(eventName === 'ScrollToLower' ){
+        return 'ScrollBottom'//快应用的list标签的事件
+       }else if(eventName === 'ScrollToUpper'){
+        return 'ScrollTop'
+       }
+    }
+    
     if (eventName === 'Change') {
       if (nodeName === 'input' || nodeName === 'textarea') {
         if (buildType !== 'quick') {
@@ -93,11 +101,13 @@ let utils = {
   createElement(nodeName, attrs, children) {
     return t.JSXElement(
       t.JSXOpeningElement(
-        t.JSXIdentifier(nodeName),
+        // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+        t.jsxIdentifier(nodeName),
         attrs,
         config.buildType === 'quick' ? false : !children.length
       ),
-      t.jSXClosingElement(t.JSXIdentifier(nodeName)),
+      // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+      t.jSXClosingElement(t.jsxIdentifier(nodeName)),
       children
     );
   },
@@ -168,7 +178,8 @@ let utils = {
   },
   createAttribute(name, value) {
     return t.JSXAttribute(
-      t.JSXIdentifier(name),
+      // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+      t.jsxIdentifier(name),
       typeof value == 'object' ? value : t.stringLiteral(value)
     );
   },
@@ -248,12 +259,20 @@ let utils = {
     return true;
   },
   createRegisterStatement(className, path, isPage) {
+    /**
+     * placeholderPattern
+     * Type: RegExp | false Default: /^[_$A-Z0-9]+$/
+     * 
+     * A pattern to search for when looking for Identifier and StringLiteral nodes
+     * that should be considered placeholders. 'false' will disable placeholder searching
+     * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
+     */
     var templateString = isPage
-      ? 'Page(React.registerPage(className,astPath))'
-      : 'Component(React.registerComponent(className,astPath))';
+      ? 'Page(React.registerPage(CLASSNAME,ASTPATH))'
+      : 'Component(React.registerComponent(CLASSNAME,ASTPATH))';
     return template(templateString)({
-      className: t.identifier(className),
-      astPath: t.stringLiteral(path)
+      CLASSNAME: t.identifier(className),
+      ASTPATH: t.stringLiteral(path)
     });
   },
   /**
@@ -297,17 +316,14 @@ let utils = {
       }
     }
   },
-  installer(npmName, dev) {
+  installer(npmName, dev, needModuleEntryPath) {
+    needModuleEntryPath = needModuleEntryPath || false;
     return new Promise(resolve => {
-      console.log(chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`));
       let bin = '';
       let options = [];
-      if (false) { //todo: yarn待调
+      if (this.useYarn()) {
         bin = 'yarn';
         options.push('add', npmName, dev === 'dev' ? '--dev' : '--save');
-      } else if (this.useCnpm()) {
-        bin = 'cnpm';
-        options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
       } else {
         bin = 'npm';
         options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
@@ -318,19 +334,23 @@ let utils = {
         console.log(result.error);
         process.exit(1);
       }
-      console.log(chalk.green(`${npmName}安装成功\n`));
 
-      //获得自动安装的npm依赖模块路径
-      let npmPath = nodeResolve.sync(npmName, {
-        basedir: cwd,
-        moduleDirectory: path.join(cwd, 'node_modules'),
-        packageFilter: pkg => {
-          if (pkg.module) {
-            pkg.main = pkg.module;
+      let npmPath = '';
+      npmName = npmName.split('@')[0];
+      if (needModuleEntryPath) {
+        //获得自动安装的npm依赖模块路径
+        npmPath = nodeResolve.sync(npmName, {
+          basedir: cwd,
+          moduleDirectory: path.join(cwd, 'node_modules'),
+          packageFilter: pkg => {
+            if (pkg.module) {
+              pkg.main = pkg.module;
+            }
+            return pkg;
           }
-          return pkg;
-        }
-      });
+        });
+      } 
+      
       resolve(npmPath);
     });
   },
@@ -429,8 +449,9 @@ let utils = {
   resolveDistPath(filePath){
     let dist = config.buildType === 'quick' ? 'src': (config.buildDir || 'dist');
     let sep = path.sep;
+    let reg = this.isWin() ? /\\node_modules\\/g : /\/node_modules\//g;
     filePath = utils.updatePath(filePath, 'dist', dist); //待优化
-    return /\/node_modules\//.test(filePath)
+    return reg.test(filePath)
     ? utils.updatePath(filePath, 'node_modules', `${dist}${sep}npm`)
     : utils.updatePath(filePath, config.sourceDir, dist);
   },
@@ -459,9 +480,9 @@ let utils = {
       );
     }
   },
-  mergeQuickAppJson: function() {
-    let prevPkgPath = path.join(cwd, 'package.json');
-    let prevpkg = require(prevPkgPath);
+  mergeQuickAppJson: function() { 
+    let projectPkgPath = path.join(cwd, 'package.json');
+    let projectPkg = require(projectPkgPath);
     let quickPkg = require(path.join(
       __dirname,
       '..',
@@ -469,14 +490,13 @@ let utils = {
       'quickInitConfig',
       'package.json'
     ));
-    let mergeJsonResult = {
-      ...prevpkg,
-      ...quickPkg
-    };
-    fs.writeFile(prevPkgPath, JSON.stringify(mergeJsonResult, null, 4)).catch(err => {
-      // eslint-disable-next-line
-      console.log(err);
-    });
+
+    projectPkg.scripts = projectPkg.scripts || {};
+    projectPkg.devDependencies = projectPkg.devDependencies || {};
+
+    Object.assign(projectPkg.scripts, quickPkg.scripts);  //注入快应用scripts命令
+    Object.assign(projectPkg.devDependencies, quickPkg.devDependencies); //注入快应用开发依赖
+    fs.writeFileSync(projectPkgPath, JSON.stringify(projectPkg, null, 4));
   },
   initQuickAppConfig: function() {
     //merge快应用依赖的package.json配置
@@ -565,6 +585,11 @@ let utils = {
     }
     return importer;
   },
+  getDeps(messages = []) {
+    return messages.filter((item) => {
+      return item.plugin === 'postcss-import' && item.type === 'dependency';
+    });
+  },
   getComponentOrAppOrPageReg() {
     return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
   },
@@ -588,6 +613,79 @@ let utils = {
       return unescape(`%u${b}`);
     });
   },
+  setWebViewConfig(routes) {
+    let code = `module.exports = ${JSON.stringify(routes)};`;
+    queue.push({
+        code: code,
+        type: 'js',
+        path: path.join(process.cwd(), 'dist', 'webviewConfig.js')
+    });
+  },
+  getWebViewRoutesConfig(jsFiles) {
+    let ret = {}, pkg = null, host = '';
+    try {
+       pkg = require( path.join(cwd, 'package.json') );
+    } catch (err) {
+
+    }
+    if ( pkg && pkg.nanachi) {
+      host = pkg.nanachi.H5_HOST
+    }
+    
+    if (!host) {
+      console.log(chalk.red('Error: H5请在package.json中nanachi字段里配置H5_HOST字段'));
+      process.exit(1);
+    }
+
+    jsFiles.forEach((el)=>{
+      let route = path.relative( path.join( cwd, config.sourceDir ), el.id ).replace(/\.js$/, '');
+      ret[route] = host + '/' + route;
+
+    })
+    return ret;
+  },
+  setH5CompileConfig(jsFiles){
+    let H5_COMPILE_JSON_FILE = path.join(cwd, config.sourceDir, 'H5_COMPILE_CONFIG.json');
+    fs.ensureFileSync(H5_COMPILE_JSON_FILE)
+    fs.writeFileSync(
+        H5_COMPILE_JSON_FILE,
+        JSON.stringify({
+            webviewPages: jsFiles.map((item)=>{
+                return item.id
+            })
+        })
+    )
+  },
+  deleteWebViewConifg(){
+    let list = [
+       'H5_COMPILE_CONFIG.json',
+       'webviewConfig.js'
+    ];
+    list = list.map((file)=>{
+      return path.join(cwd, config.sourceDir, file);
+    });
+
+    list.forEach((fileId)=>{
+      try {
+        fs.removeSync(fileId);
+      } catch (err) {
+      }
+    })
+   
+  },
+  isWebView(fileId){
+    if ( config['buildType'] != 'quick' &&  !config['webview'] ) return;
+    if (!config['webview']) return;
+    let isWebView = 
+    config['webview'].includes(fileId) ||
+    config['webview'].some((reg)=>{
+        //如果是webview设置成true, 则用增则匹配
+        return Object.prototype.toString.call(reg) === '[object RegExp]' 
+               && reg.test(fileId)
+    });
+    return isWebView;
+  },
+  
   sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
 

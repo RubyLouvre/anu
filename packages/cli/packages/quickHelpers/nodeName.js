@@ -18,9 +18,10 @@ let map = Object.assign({}, builtIn);
 'p,div,h1,h2,h3,h4,h5,h6,quoteblock,label'.replace(rword, function(el) {
     map[el] = 'div';
 });
-'span,b,s,code,quote,cite'.replace(rword, function(el) {
-    map[el] = 'text';
+'span,b,s,code,quote,cite,icon'.replace(rword, function(el) {
+    map[el] = 'text';//span不能直接放在div下面
 });
-map.button = 'input';
+map.button = 'div';
+map['scroll-view'] = 'list';
 map['web-view'] = 'web';
 module.exports = utils.createNodeName(map, 'div');

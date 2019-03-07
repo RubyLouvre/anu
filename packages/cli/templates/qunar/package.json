@@ -4,8 +4,9 @@
     "nanachi_project": true,
     "name": "qunar",
     "nanachi": {
-        "alias":  {
-            "@assets":"source/assets"
+        "alias": {
+            "@assets": "source/assets",
+            "@common": "source/common"
         }
     },
     "dependencies": {

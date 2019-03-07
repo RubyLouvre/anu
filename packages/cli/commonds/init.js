@@ -79,7 +79,7 @@ function copyTemplate(data){
                    \t或使用nanachi build:tt 构建头条小程序
                    \t或使用nanachi build:quick 构建快应用
                    \t或使用nanachi build:bu 构建百度智能小程序
-                   \t或使用nanachi watch:h5 构建h5`);
+                   \t或使用nanachi build:h5 构建h5`);
     console.log();
     console.log(
         chalk.magenta(

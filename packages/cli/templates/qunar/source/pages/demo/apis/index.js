@@ -61,49 +61,23 @@ class Express extends React.Component {
       }
     });
   }
-  vibrator() {
-    console.log('vibrator');
+  vibrateLong() {
+    console.log('vibrateLong');
     React.api.vibrateLong({
       success: () => {
         alert('震动起来了');
       }
     });
   }
-  
-  share() {
-    /**
-     * 快应用分享api，快应用右上角分享方式：在页面中定义onShareAppMessage函数
-     * eg:
-     * onShareAppMessage() {
-     *    return {
-     *        title: '标题',
-     *        path: 'http://www.example.com',
-     *        success: function(data) {
-     *            React.api.showToast({ title: 'handling success'});
-     *            console.log('handling success')
-     *        },
-     *        fail: function(data, code) {
-     *            React.api.showToast({ title: `code=${code}, ${data}` });
-     *            console.log(`code=${code}, ${data}`)
-     *        }
-     *    }
-     * }
-     */ 
-    
-    React.api.share({
-      title: '标题',
-      imageUrl: '/assets/logo.png',
-      path: 'http://www.example.com',
-      success: function(data) {
-          React.api.showToast({ title: 'handling success'});
-          console.log('handling success')
-      },
-      fail: function(data, code) {
-          React.api.showToast({ title: `code=${code}, ${data}` });
-          console.log(`code=${code}, ${data}`)
+  vibrateShort() {
+    console.log('vibrateShort');
+    React.api.vibrateShort({
+      success: () => {
+        alert('震动起来了');
       }
     });
   }
+  
 
   upload() {
     console.log('upload');
@@ -168,7 +142,21 @@ class Express extends React.Component {
       }
     });
   }
+  onShareAppMessage(){
+      var path = React.getCurrentPage().props.path
+      return {
+        title: '妹子图片',
+        path: path,
+        imageUrl: "/assets/logo.jpg",
+        success: (res) => {
+          React.api.showToast({ title: 'handling success'+ res});
 
+        },
+        fail: (res) => {
+          React.api.showToast({ title: 'handling fail'+ res});
+        }
+      }
+  }
 
 
   getSavedFileInfo() {
@@ -227,16 +215,21 @@ class Express extends React.Component {
 
    setTitleBar() {
     React.api.setNavigationBarTitle({
-      title: 111,
+      title: 'a new title',
       success: function() {
         alert('setTitleBar success');
       }
     })
   }
+  makePhoneCall(){
+    React.api.makePhoneCall({
+       phoneNumber: '10086'
+    })
+ } 
 
   showToast() {
     React.api.showToast({
-      title: 'showToast'
+      title: 'showToast'+ React.api.hideToast
     })
   }
 
@@ -248,7 +241,7 @@ class Express extends React.Component {
 
   render() {
     return (
-      <div class="page">
+      <div class="api-page">
         <div class="anu-block">
           <div onClick={this.showModal} class="anu-item">
             <text>showModal</text>
@@ -259,8 +252,14 @@ class Express extends React.Component {
           <div onClick={this.showContextMenu} class="anu-item">
             <text>显示上下文菜单</text>
           </div>
-          <div onClick={this.vibrator} class="anu-item">
-            <text>震动</text>
+          <div onClick={this.vibrateShort} class="anu-item">
+            <text>短震</text>
+          </div>
+          <div onClick={this.vibrateLong} class="anu-item">
+            <text>长震</text>
+          </div>
+          <div onClick={this.makePhoneCall} class="anu-item">
+            <text>打电话</text>
           </div>
           <div onClick={this.upload} class="anu-item">
             <text>文件上传</text>
@@ -268,7 +267,10 @@ class Express extends React.Component {
           <div onClick={this.download} class="anu-item">
             <text>文件下载</text>
           </div>
-          <div onClick={this.request} class="anu-item">
+          <div
+            onClick={this.gotoSome.bind(this, '../../../pages/demo/apis/request/index')}
+            class="anu-item"
+          >
             <text>数据请求</text>
           </div>
           <div onClick={this.scan} class="anu-item">
@@ -315,9 +317,6 @@ class Express extends React.Component {
           }
           <div onClick={this.setTitleBar} class="anu-item">
             <text>setTitleBar</text>
-          </div>
-          <div onClick={this.share} class="anu-item">
-            <text>分享链接</text>
           </div>
           <div onClick={this.createShortcut} class="anu-item">
             <text>保存图标到桌面</text>

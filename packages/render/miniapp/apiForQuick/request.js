@@ -1,5 +1,7 @@
 const HTTP_OK_CODE = 200;
 const JSON_TYPE_STRING = 'json';
+import { noop } from 'react-core/util';
+
 // 上传
 export function uploadFile({
     url,
@@ -9,9 +11,9 @@ export function uploadFile({
     header,
     // 小米不支持
     formData,
-    success,
-    fail,
-    complete
+    success = noop,
+    fail = noop,
+    complete = noop
 }) {
     var request = require('@system.request');
 
@@ -43,7 +45,12 @@ export function uploadFile({
 }
 
 // 下载
-export function downloadFile({ url, header, success, fail, complete }) {
+export function downloadFile({ 
+    url,
+    header, 
+    success = noop,
+    fail = noop, 
+    complete = noop }) {
 
     // 小米回调函数参数形式和微信不一致，故进行兼容
     function downloadSuccess({ uri: tempFilePath }) {
@@ -83,17 +90,17 @@ export function request({
     dataType = JSON_TYPE_STRING,
     // 小米不支持设置 responseType
     // responseType,
-    success,
-    fail,
-    complete
+    success = noop,
+    fail = noop,
+    complete = noop
 }) {
     const fetch = require('@system.fetch');
-    function onFetchSuccess({ code: statusCode, data, header: headers }) {
+    function onFetchSuccess({ code: statusCode, data, headers }) {
         if (dataType === JSON_TYPE_STRING) {
             try {
                 data = JSON.parse(data);
             } catch (error) {
-                fail && fail(error);
+                return fail(error);
             }
         }
 

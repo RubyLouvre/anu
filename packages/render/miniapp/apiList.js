@@ -187,7 +187,8 @@ export var otherApis = {
   
     // 第三方平台
     getExtConfig: true,
-  
+    //远程请求
+    request: true,
     // 开放接口
     login: true,
     checkSession: true,

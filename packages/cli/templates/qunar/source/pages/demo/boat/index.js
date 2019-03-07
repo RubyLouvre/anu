@@ -44,12 +44,12 @@ class P extends React.Component {
     toCitySelect(isStartCity) {
         this.setState({isStartCity});
         React.api.navigateTo({
-            url: '../../demo/citySelect/index'
+            url: '/pages/demo/citySelect/index'
         });
     }
     toDateSelect() {
         React.api.navigateTo({
-            url: '../../demo/calendar/index'
+            url: '/pages/demo/calendar/index'
         });
 
     }
@@ -61,14 +61,14 @@ class P extends React.Component {
     render() {
         return ( 
             <div class='boat'>
-                <div class='content'>
+                <div class='boat-content'>
                     <div class='city-select-container'>
                         <div onTap={this.toCitySelect.bind(this,true)}  class='orgin-city-wrapper col'>
                             <div class='tip-wrapper row'><i class='dot'></i><span class="font-22">出发</span></div>
                             <div class='orgin-ctiy'><text class="font-38">{this.state.orginCity}</text></div>
                         </div>
                         <div onTap={this.exChangeCity.bind(this)} class='switch-logo'>
-                            <image src='../../../assets/image/switch.png' />
+                            <image class="image" src='../../../assets/image/switch.png' />
                         </div>
                         <div onTap={this.toCitySelect.bind(this,false)}  class='target-city-wrapper col' >
                             <div class='tip-wrapper row'><i class='dot'></i><span class="font-22">到达</span></div>

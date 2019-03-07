@@ -37,7 +37,7 @@ class P extends React.Component {
     }
     toDateSelect() {
         React.api.navigateTo({
-            url: '../../demo/calendar/index'
+            url: '/pages/demo/calendar/index'
         });
     }
     toCitySelect(isStartCity) {
@@ -49,7 +49,7 @@ class P extends React.Component {
             app.globalData.citySelect = '北京';
         }
         React.api.navigateTo({
-            url: '../../demo/citySelect/index'
+            url: '/pages/demo/citySelect/index'
         });
     }
     exChangeCity() {
@@ -73,7 +73,7 @@ class P extends React.Component {
 
   render() {
       return (
-          <div className="page" style="{background-color: #feb64e}">
+          <div className="ticket-page" style="{background-color: #feb64e}">
               <image
                   className="sreach_bg"
                   mode="scaleToFill"
@@ -87,7 +87,6 @@ class P extends React.Component {
                       <div className="city_change">
                           <image
                               className="exchange-logo"
-                              mode="widthFix"
                               src="../../../assets/image/train_icon.png"
                           />
                           <image
@@ -103,14 +102,14 @@ class P extends React.Component {
 
                   <div onTap={this.toDateSelect} className="dateSelector">
                       <span>{this.state.displayDate}</span>
-                      <div className="flex-right date-week"><span class="date-week-text">{this.state.dateWeek}</span></div>
+                      <span class="date-week-text">{this.state.dateWeek}</span>
                   </div>
 
                   <div className="switch-content">
                       <div className="switch-label">
                           <image
                               className="hight-speed"
-                              mode="widthFix"
+                              mode="scaleToFill"
                               src="../../../assets/image/train_highSpeed.png"
                           />
                           <text  className={'switch-context ' + 
@@ -120,6 +119,7 @@ class P extends React.Component {
                           }>只查看高铁/动车</text>
                       </div>
                       <switch
+                          class="switch"
                           checked={this.state.isOnlyGaotie}
                           onChange={this.handleChangeSwitch.bind(this)}
                           color="#00bcd4"

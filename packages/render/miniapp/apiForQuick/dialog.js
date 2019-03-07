@@ -1,7 +1,6 @@
 var prompt = require('@system.prompt');
 
 import { noop } from 'react-core/util';
-import { runFunction } from '../utils';
 /**
  * 显示一个可以带两个按钮的弹窗
  * @param {*} obj 
@@ -47,14 +46,13 @@ export function showToast(obj) {
     let success = obj.success || noop,
         fail = obj.fail || noop,
         complete = obj.complete || noop;
-  
     try {
         prompt.showToast(obj);
-        runFunction(success);
-    } catch (error) {
-        runFunction(fail, error);
+        success();
+    } catch (err) {
+        fail(err);
     } finally {
-        runFunction(complete);
+        complete();
     }
 }
 

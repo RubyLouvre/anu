@@ -1,9 +1,9 @@
 /* eslint no-console: 0 */
-const t = require('babel-types');
+const t = require('@babel/types');
 const wxmlHelper = require('./wxml');
-const babel = require('babel-core');
+const babel = require('@babel/core');
 const path = require('path');
-const generate = require('babel-generator').default;
+const generate = require('@babel/generator').default;
 const quickFiles = require('../quickFiles');
 const config = require('../config');
 const utils = require('../utils');
@@ -36,9 +36,16 @@ exports.exit = function (astPath, type, componentName, modules) {
         case t.isReturnStatement(expr):
             var needWrap = expr.argument.type !== 'JSXElement';
             var jsx = generate(expr.argument).code;
+            /**
+             * [babel 6 to 7]
+             * babel -> Options
+             * babel7 default ast:false
+             */
             var jsxAst = babel.transform(jsx, {
+                configFile: false,
                 babelrc: false,
-                plugins: [[require('babel-plugin-transform-react-jsx'), { pragma: 'h' }]]
+                plugins: [[require('@babel/plugin-transform-react-jsx'), { pragma: 'h' }]],
+                ast: true
             });
 
             expr.argument = jsxAst.ast.program.body[0];

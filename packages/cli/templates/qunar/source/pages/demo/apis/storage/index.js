@@ -7,11 +7,11 @@ function alert(msg) {
     content: msg,
     showCancel: false,
     confirmText: '确定'
-  })
-} 
+  });
+}
 
 // 事件
-class Data extends React.Component {
+class P extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -35,7 +35,7 @@ class Data extends React.Component {
 
   getStorage() {
     React.api.getStorage({
-      key: 'v1',
+      key: 'key',
       success: function(res) {
         alert(`handling success, ${res.data}`);
       },
@@ -56,21 +56,45 @@ class Data extends React.Component {
       }
     });
   }
-  
+
+  setStorageSync() {
+    let data = React.api.setStorageSync('key', 'value');
+    console.log('data', data);
+  }
+
+  getStorageSync() {
+    let data = React.api.getStorageSync('v1');
+    console.log(111111111,React.api.getStorageSync+"")
+    alert(`handling success, ${data}`);
+  }
+
+  removeStorageSync() {
+    let remove = React.api.removeStorageSync('key');
+  }
+
   render() {
     return (
       <div class="col">
         <div onClick={this.setStorage} class="item">
-            <text>setStorage</text>
-          </div>
-          <div onClick={this.getStorage} class="item">
-            <text>getStorage</text>
-          </div>
-          <div onClick={this.removeStorage} class="item">
-            <text>removeStorage</text>
-          </div>
+          <text>setStorage</text>
+        </div>
+        <div onClick={this.getStorage} class="item">
+          <text>getStorage</text>
+        </div>
+        <div onClick={this.removeStorage} class="item">
+          <text>removeStorage</text>
+        </div>
+        <div onClick={this.setStorageSync} class="item">
+          <text>setStorageSync</text>
+        </div>
+        <div onClick={this.getStorageSync} class="item">
+          <text>getStorageSync</text>
+        </div>
+        <div onClick={this.removeStorageSync} class="item">
+          <text>removeStorageSync</text>
+        </div>
       </div>
     );
   }
 }
-export default Data;
+export default P;

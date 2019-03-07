@@ -1,6 +1,6 @@
-const t = require('babel-types');
-const generate = require('babel-generator').default;
-const template = require('babel-template');
+const t = require('@babel/types');
+const generate = require('@babel/generator').default;
+const template = require('@babel/template').default;
 const path = require('path');
 const queue = require('../queue');
 const utils = require('../utils');
@@ -23,17 +23,30 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
+
 let cache = {};
 if (buildType == 'quick') {
     //快应用不需要放到Component/Page方法中
     utils.createRegisterStatement = function(className, path, isPage) {
+        /**
+         * placeholderPattern
+         * Type: RegExp | false Default: /^[_$A-Z0-9]+$/
+         * 
+         * A pattern to search for when looking for Identifier and StringLiteral nodes
+         * that should be considered placeholders. 'false' will disable placeholder searching
+         * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
+         * 
+         * isPage: false 时 templateString = console.log(nanachi)
+         * 此时如果传入后面的 {CLASSNAME: t.identifier(className)} 
+         * 会抛出异常信息 Error: Unknown substitution "CLASSNAME" given
+         */
         var templateString = isPage
-            ? 'className = React.registerPage(className,astPath)'
+            ? 'CLASSNAME = React.registerPage(CLASSNAME,ASTPATH)'
             : 'console.log(nanachi)';
-        return template(templateString)({
-            className: t.identifier(className),
-            astPath: t.stringLiteral(path)
-        });
+        return isPage ? template(templateString)({
+            CLASSNAME: t.identifier(className),
+            ASTPATH: t.stringLiteral(path)
+        }) : template(templateString)();
     };
 }
 function registerPageOrComponent(name, path, modules) {
@@ -112,6 +125,18 @@ module.exports = {
         exit(astPath, state) {
             var modules = utils.getAnu(state);
             const methodName = astPath.node.key.name;
+            if (astPath.node.static) {
+                // 处理静态方法
+                var keyValue = t.ObjectProperty(
+                    t.identifier(methodName),
+                    t.functionExpression(
+                        t.identifier('_'),
+                        astPath.node.params,
+                        astPath.node.body
+                    )
+                );
+                modules.staticMethods.push(keyValue);
+            }
             if (methodName === 'render') {
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,
                 //而是VariableDeclaration
@@ -196,8 +221,7 @@ module.exports = {
 
                 if (declaration.type == 'FunctionDeclaration') {
                     //将export default function AAA(){}的方法提到前面
-                    var fn = template(generate(declaration).code)();
-                    astPath.insertBefore(fn);
+                    astPath.insertBefore(declaration);
                     astPath.node.declaration = declaration.id;
                 }
                 //延后插入createPage语句在其同名的export语句前
@@ -235,7 +259,17 @@ module.exports = {
                 }
                 // delete json.usingComponents;
                 if (Object.keys(json).length) {
-                    var a = template('0,' + JSON.stringify(json, null, 4))();
+                    /**
+                     * placeholderPattern:false
+                     * 因为 json 中可能会有大写(如API)的形式字符串
+                     * 模板项目中 pages/demo/apis/index.js 的 config(navigationBarTitleText: 'API')
+                     * placeholderPattern 默认行为 /^[_$A-Z0-9]+$/， 会匹配(API), 
+                     * 就会去 template() 返回的函数中找 API 这个变量导致报错
+                     * template 用法 -> https://babeljs.io/docs/en/babel-template
+                     */
+                    var a = template('0,' + JSON.stringify(json, null, 4), {
+                        placeholderPattern: false
+                    })();
                     var keyValue = t.ObjectProperty(
                         t.identifier('config'),
                         a.expression.expressions[1]
@@ -297,32 +331,76 @@ module.exports = {
             }
         }
     },
-    ClassProperty: {
-        exit(astPath, state) {
-            let key = astPath.node.key.name;
-            let modules = utils.getAnu(state);
-            if (key === 'config') {
-                //将配置对象生成JSON文件
-                if (!/App|Page|Component/.test(modules.componentType)) {
-                    return;
-                }
-                try {
-                    var json = eval('0,' + generate(astPath.node.value).code);
+    // ClassProperty: {
+    //     exit(astPath, state) {
+    //         let key = astPath.node.key.name;
+    //         let modules = utils.getAnu(state);
+    //         if (key === 'config') {
+    //             //将配置对象生成JSON文件
+    //             if (!/App|Page|Component/.test(modules.componentType)) {
+    //                 return;
+    //             }
+    //             try {
+    //                 var json = eval('0,' + generate(astPath.node.value).code);
 
-                    Object.assign(modules.config, json);
-                } catch (e) {
-                    /**/
+    //                 Object.assign(modules.config, json);
+    //             } catch (e) {
+    //                 /**/
+    //             }
+    //         } else if (astPath.node.static) {
+    //             var keyValue = t.ObjectProperty(
+    //                 t.identifier(key),
+    //                 astPath.node.value
+    //             );
+    //             modules.staticMethods.push(keyValue);
+    //         } else {
+    //             if (key == 'globalData' && modules.componentType === 'App') {
+    //                 //globalData中插入平台buildType
+    //                 astPath.node.value.properties.push(
+    //                     t.objectProperty(
+    //                         t.identifier('buildType'),
+    //                         t.stringLiteral(config.buildType)
+    //                     )
+    //                 );
+    //                 var thisMember = t.assignmentExpression(
+    //                     '=',
+    //                     t.memberExpression(
+    //                         t.identifier('this'),
+    //                         t.identifier(key)
+    //                     ),
+    //                     astPath.node.value
+    //                 );
+    //                 modules.thisProperties.push(thisMember);
+    //             }
+    //         }
+    //         astPath.remove();
+    //     }
+    // },
+    MemberExpression: {},
+    // visitor 中的 ClassProperty 没有访问, 
+    // 使用 AssignmentExpression 解析 config 和 globalData
+    // static 属性会自动挂载到 类
+    AssignmentExpression:{
+        exit(astPath, state) {
+            const member = generate(astPath.get('left').node).code;
+            const isObj = t.isObjectExpression(astPath.get('right').node);
+            let modules = utils.getAnu(state);
+            // 判断格式是否为： this.config = {}
+            if (member === 'this.config' && isObj){
+                if (/App|Page|Component/.test(modules.componentType)) {
+                    try {
+                        var json = eval('0,' + generate(astPath.get('right').node).code);
+                        Object.assign(modules.config, json);
+                    } catch (e) {
+                        console.log('eval json error', e);
+                    }
                 }
-            } else if (astPath.node.static) {
-                var keyValue = t.ObjectProperty(
-                    t.identifier(key),
-                    astPath.node.value
-                );
-                modules.staticMethods.push(keyValue);
-            } else {
-                if (key == 'globalData' && modules.componentType === 'App') {
-                    //globalData中插入平台buildType
-                    astPath.node.value.properties.push(
+            }
+            // 判断格式是否为： this.globalData = {}
+            if (member === 'this.globalData' && isObj && modules.componentType === 'App') {
+                // 如果没有 buildType 属性, 在 globalData 中插入平台buildType
+                if (!generate(astPath.get('right').node).code.includes('buildType')){
+                    astPath.get('right').node.properties.push(
                         t.objectProperty(
                             t.identifier('buildType'),
                             t.stringLiteral(config.buildType)
@@ -332,18 +410,15 @@ module.exports = {
                         '=',
                         t.memberExpression(
                             t.identifier('this'),
-                            t.identifier(key)
+                            t.identifier('globalData')
                         ),
-                        astPath.node.value
+                        astPath.get('right').node
                     );
                     modules.thisProperties.push(thisMember);
                 }
             }
-            astPath.remove();
         }
     },
-    MemberExpression() {},
-    AssignmentExpression() {},
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
@@ -450,18 +525,30 @@ module.exports = {
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
     JSXElement(astPath) {
         let node = astPath.node;
-        let nodeName = node.openingElement.name.name;
+        let nodeName = utils.getNodeName(node);
         if (buildType == 'quick' && !node.closingElement) {
             node.openingElement.selfClosing = false;
             node.closingElement = t.JSXClosingElement(
-                t.JSXIdentifier(nodeName)
+                // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+                t.jsxIdentifier(nodeName)
             );
         }
     },
     JSXOpeningElement: {
         enter: function(astPath, state) {
-            let modules = utils.getAnu(state);
             let nodeName = astPath.node.name.name;
+            if (nodeName === 'span' && buildType === 'quick'){
+                //如果是快应用，<text><span></span></text>不变， <div><span></span></div>变<div><text></text></div>
+                let p = astPath.parentPath.findParent(function(parent){
+                    return  parent.type === 'JSXElement';
+                });
+                
+                let parentTagName = p && utils.getNodeName(p.node);
+                if (parentTagName === 'text'|| parentTagName === 'a'){
+                    return;
+                }       
+            }
+            let modules = utils.getAnu(state);
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
             let bag = modules.importComponents[nodeName];
             if (!bag) {
@@ -496,7 +583,8 @@ module.exports = {
                 modules.is && modules.is.push(nodeName);
                 attrs.push(
                     t.JSXAttribute(
-                        t.JSXIdentifier('is'),
+                        // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+                        t.jsxIdentifier('is'),
                         t.jSXExpressionContainer(t.stringLiteral(nodeName))
                     )
                 );
@@ -517,6 +605,10 @@ module.exports = {
                 }
             }
         }
+    },
+    JSXClosingElement: function(astPath) {
+        var tagName = utils.getNodeName(astPath.parentPath.node);
+        astPath.node.name.name = tagName;
     },
     JSXAttribute: {
         enter: function(astPath, state) {
@@ -683,8 +775,9 @@ module.exports = {
 
     JSXText(astPath) {
         //去掉内联元素内部的所有换行符
-        if (astPath.parentPath.node.type == 'JSXElement') {
-            var open = astPath.parentPath.node.openingElement;
+        if (astPath.parentPath.type == 'JSXElement') {
+          
+            var parentTagName = utils.getNodeName(astPath.parentPath.node);
             var value = astPath.node.value.trim();
             if (value === '') {
                 astPath.remove();
@@ -692,7 +785,7 @@ module.exports = {
             }
             if (
                 /quick|wx/.test(config.buildType) &&
-                inlineElement[open.name.name]
+                inlineElement[parentTagName]
             ) {
                 astPath.node.value = value;
             }
@@ -704,20 +797,6 @@ module.exports = {
             if (expr.innerComments && expr.innerComments.length) {
                 astPath.remove();
             }
-        }
-    },
-    JSXClosingElement: function(astPath, state) {
-        let modules = utils.getAnu(state);
-        let nodeName = astPath.node.name.name;
-        nodeName = helpers.nodeName(astPath, modules) || nodeName;
-        //将组件标签转换成React.toComponent标签，html标签转换成view/text标签
-        if (
-            !modules.importComponents[nodeName] &&
-            nodeName !== 'React.useComponent'
-        ) {
-            helpers.nodeName(astPath, modules);
-        } else {
-            astPath.node.name.name = 'React.useComponent';
         }
     }
 };

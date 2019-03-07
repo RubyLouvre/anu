@@ -32,7 +32,7 @@ page {
     padding: 50rpx 0;
     padding-left: 50rpx;
 
-    image {
+    .user-image {
       display: inline-block;
       width: $imgae-size;
       height: $imgae-size;
@@ -56,9 +56,11 @@ page {
       align-items: center;
       height: $menu-item-height;
       .right-message {
+        display: inline-block;
         margin-right: 15rpx;
       }
-      image {
+      .right-content-image {
+        display: inline-block;
         width: 12rpx;
         height: 21rpx;
       }
@@ -83,10 +85,7 @@ page {
     .high-light {
       color: #40a9ff;
     }
-    image {
-      
-      transform: translateY(-50%);
-      
+    .menu-item-image {
       width: 12rpx;
       height: 21rpx;
     }
