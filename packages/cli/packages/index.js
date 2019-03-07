@@ -160,7 +160,6 @@ class Parser {
             onwarn: warning => {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
-                console.log(warning, '111')
                 if (warning.code === 'UNRESOLVED_IMPORT') {
                     let key = warning.source.split(path.sep)[0];
                     if (this.customAliasConfig[key]) return;
@@ -393,7 +392,6 @@ class Parser {
             }
             let { id, originalCode, resolvedIds } = item;
             needUpdate(id, originalCode, function(){
-                console.log(id,'1234213id')
                 miniTransform(id, resolvedIds, originalCode);
             });
         }
