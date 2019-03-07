@@ -479,6 +479,7 @@
     };
     var _marked = regeneratorRuntime.mark(renderVNodeGen);
     function renderVNode(vnode, context) {
+        if(!vnode) return '';
         var _vnode = vnode,
             tag = _vnode.tag,
             type = _vnode.type,
