@@ -26,6 +26,7 @@
 - 修复转换快应用 px 转换 bug。
 - 修复转换快应用下 getDeviceId 接口 bug。
 - 修复初始化模板 bug。
+- 修复 windows 平台 js 模块引用 bug。
 
 
 
