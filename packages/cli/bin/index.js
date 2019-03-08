@@ -32,7 +32,6 @@ function getArgValue(cmd){
             args[key] = cmd[key];
         }
     });
-   
     return args;
 }
 
@@ -112,9 +111,8 @@ program
 program
     .command('build')
     .description('description: 默认构建微信小程序')
-    .option('-c, --compress', '压缩资源')
-    .option('-b, --beta', '同步react runtime')
-    .option('-ui, --beta-ui', '同步schnee-ui')
+    .option('--compress', '压缩资源')
+    .option('--beta', '同步react runtime')
     .action(function(cmd){
         cmd['_name'] = 'build:wx';
         let args = getArgValue(cmd);
@@ -126,9 +124,8 @@ program
 program
     .command('watch')
     .description('description: 默认监听微信小程序')
-    .option('-c, --compress', '压缩资源')
-    .option('-b, --beta', '同步react runtime')
-    .option('-ui, --beta-ui', '同步schnee-ui')
+    .option('--compress', '压缩资源')
+    .option('--beta', '同步react runtime')
     .action(function(cmd){
         cmd['_name'] = 'watch:wx';
         let args = getArgValue(cmd);
@@ -143,10 +140,10 @@ buildCommonds.forEach(function(el){
     program
         .command(`build:${type}`)
         .description(`description: 构建${des}`)
-        .option('-c, --compress', '压缩资源')
-        .option('-b, --beta', '同步react runtime')
-        .option('-ui, --beta-ui', '同步schnee-ui')
-        .option('-hw, --huawei','补丁华为快应用')
+        .option('--compress', '压缩资源')
+        .option('--beta', '同步react runtime')
+        .option('--beta-ui', '同步schnee-ui')
+        .option('--huawei','补丁华为快应用')
         .action(function(cmd){
             let args = getArgValue(cmd);
             injectBuildEnv(cmd);
@@ -157,10 +154,10 @@ buildCommonds.forEach(function(el){
     program
         .command(`watch:${type}`)
         .description(`description: 监听${des}`)
-        .option('-c, --compress', '压缩资源')
-        .option('-b, --beta', '同步react runtime')
-        .option('-ui, --beta-ui', '同步schnee-ui')
-        .option('-hw, --huawei','补丁华为快应用')
+        .option('--compress', '压缩资源')
+        .option('--beta', '同步react runtime')
+        .option('--beta-ui', '同步schnee-ui')
+        .option('--huawei','补丁华为快应用')
         .action(function(cmd){
             let args = getArgValue(cmd);
             args['watch'] = true;
