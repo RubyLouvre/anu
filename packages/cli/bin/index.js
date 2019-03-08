@@ -42,9 +42,13 @@ function getBuildType(cmd){
 
 function injectBuildEnv(cmd){
     let buildType = getBuildType(cmd);
+    let buildArgs = getArgValue(cmd);
     process.env.ANU_ENV = buildType;
     config['buildType'] = buildType;
-    config['compress'] = getArgValue(cmd)['compress'];
+    config['compress'] = buildArgs['compress'];
+    if (buildType === 'quick') {
+        config['huawei'] = buildArgs['huawei'] || false
+    }
 }
 
 let buildCommonds = [
@@ -142,6 +146,7 @@ buildCommonds.forEach(function(el){
         .option('-c, --compress', '压缩资源')
         .option('-b, --beta', '同步react runtime')
         .option('-ui, --beta-ui', '同步schnee-ui')
+        .option('-hw, --huawei','补丁华为快应用')
         .action(function(cmd){
             let args = getArgValue(cmd);
             injectBuildEnv(cmd);
@@ -155,6 +160,7 @@ buildCommonds.forEach(function(el){
         .option('-c, --compress', '压缩资源')
         .option('-b, --beta', '同步react runtime')
         .option('-ui, --beta-ui', '同步schnee-ui')
+        .option('-hw, --huawei','补丁华为快应用')
         .action(function(cmd){
             let args = getArgValue(cmd);
             args['watch'] = true;
