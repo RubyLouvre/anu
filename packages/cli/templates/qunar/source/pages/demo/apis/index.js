@@ -85,7 +85,7 @@ class Express extends React.Component {
       success: function(data) {
         console.log(`handling success: ${data.uri}`);
         React.api.uploadFile({
-          url: 'http://yapi.beta.qunar.com/mock/291/aaaaa',
+          url: 'http://yapi.demo.qunar.com/mock/291/aaaaa',
           filePath: data.uri,
           name: 'file1',
           formData: {
