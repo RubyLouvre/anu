@@ -1617,6 +1617,7 @@ var noPromiseApis = {
   createInnerAudioContext: true,
   createVideoContext: true,
   createCameraContext: true,
+  wxpayGetType: true,
   navigateBack: true,
   createMapContext: true,
   canIUse: true,
