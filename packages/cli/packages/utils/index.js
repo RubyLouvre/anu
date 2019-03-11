@@ -685,6 +685,18 @@ let utils = {
     });
     return isWebView;
   },
+  huaWeiStyleTransform(code) {
+      console.log('obj', typeof code)
+    // var ret = {};
+    var rpx = /(\d[\d\.]*)(r?px)/gi;
+    code = code.replace(rpx, (str, match, unit) => {
+        if ( unit.toLowerCase() === 'rpx') {
+                        match = parseFloat(match) / 2;
+                    } 
+        return match + 'px';
+    })
+    return code;
+  },
   
   sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
