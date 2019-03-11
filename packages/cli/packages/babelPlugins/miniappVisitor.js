@@ -683,6 +683,22 @@ module.exports = {
                     var styleType = expr.type;
                     var MemberExpression = styleType === 'MemberExpression';
                     var isIdentifier = styleType === 'Identifier';
+                    // 华为编辑器行内样式特殊处理
+                    if(config.huawei ) {
+                        if(styleType === 'ObjectExpression') {
+                            var code = generate(expr).code;
+                            code = utils.huaWeiStyleTransform(code);
+                            console.log('code', code);
+                            attrs.push(
+                                utils.createAttribute(
+                                    'style',`${code}`   
+                                )
+                            );
+                            astPath.remove();
+                            return;
+                        }
+                        
+                    }
                     if (
                         isIdentifier ||
                         MemberExpression ||
@@ -697,13 +713,11 @@ module.exports = {
                         //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
                         //MemberExpression 处理形如 <div style={this.state.styles.a}></div> 的style结构
                         //ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
-                        var code = generate(expr).code;
-                        if(config.huawei) {
-                            code = utils.huaWeiStyleTransform(code)
-                        }
+                        
+                        
                         var styleName = isIdentifier
                             ? expr.name
-                            : code;
+                            : generate(expr).code;
                         attrs.push(
                             utils.createAttribute(
                                 'style',

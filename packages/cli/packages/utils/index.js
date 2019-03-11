@@ -686,16 +686,42 @@ let utils = {
     return isWebView;
   },
   huaWeiStyleTransform(code) {
-      console.log('obj', typeof code)
-    // var ret = {};
+    // var obj = eval("0,"+code);
+    var obj = json_parse(code);
+    var str = '';
     var rpx = /(\d[\d\.]*)(r?px)/gi;
-    code = code.replace(rpx, (str, match, unit) => {
-        if ( unit.toLowerCase() === 'rpx') {
-                        match = parseFloat(match) / 2;
-                    } 
-        return match + 'px';
-    })
-    return code;
+    var rhyphen = /([a-z\d])([A-Z]+)/g;
+    function json_parse(code) {
+        code = code.replace(/^{\s*|\s*}$/gi, '');
+        let codeArr = code.split(/[:,]/gi);
+        let ret = {}
+        for(let i = 0 ; i<codeArr.length; i+=2) {
+            let name = codeArr[i];
+            let value= codeArr[i+1];
+            if(name) {
+                ret[name] = value
+            }
+        }
+
+        return ret
+    }
+    function hyphen(target) {
+    //转换为连字符风格
+     return target.replace(rhyphen, '$1-$2').toLowerCase();
+    }   
+    for(var i in obj){
+        let value = obj[i]+'';
+             value = value.replace(rpx, (str, match, unit) => {
+            if ( unit.toLowerCase() === 'px') {
+                match = parseFloat(match) * 2;
+            } 
+            return match + 'px';
+        });
+
+        str += hyphen(i)+":"+value+";"
+    }
+
+    return str;
   },
   
   sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
