@@ -697,9 +697,13 @@ module.exports = {
                         //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
                         //MemberExpression 处理形如 <div style={this.state.styles.a}></div> 的style结构
                         //ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
+                        var code = generate(expr).code;
+                        if(config.huawei) {
+                            code = utils.huaWeiStyleTransform(code)
+                        }
                         var styleName = isIdentifier
                             ? expr.name
-                            : generate(expr).code;
+                            : code;
                         attrs.push(
                             utils.createAttribute(
                                 'style',

@@ -92,6 +92,19 @@ let visitor = {
                     astPath.parentPath.replaceWith(template);
                 }
             }
+            // iconfont 各小程序匹配
+            // else if (buildType === 'ali' &&openTag&& openTag.name === 'text') {
+            //    var children = astPath.parentPath.node.children;
+            //    if(children.length === 1){
+            //         let iconValue = children[0].extra.raw
+            //         let iconReg = /\s*&#x/gi
+            //         if(iconReg.test(iconValue)) {
+            //             children.length = 0;
+
+            //         }
+            //    }
+
+            // }
         }
     },
     JSXAttribute(astPath, state) {
