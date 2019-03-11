@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-03-10
+ * 运行于快应用的React by 司徒正美 Copyright 2019-03-11
  */
 
 var arrayPush = Array.prototype.push;
@@ -1409,6 +1409,10 @@ function createRouter(name) {
 var navigateTo = createRouter('push');
 var redirectTo = createRouter('replace');
 var navigateBack = createRouter('back');
+var reLaunch = function reLaunch(obj) {
+    router.clear();
+    redirectTo(obj);
+};
 function makePhoneCall(_ref) {
     var phoneNumber = _ref.phoneNumber,
         success = _ref.success,
@@ -1510,6 +1514,7 @@ var facade = {
     showLoading: showLoading,
     navigateTo: navigateTo,
     redirectTo: redirectTo,
+    reLaunch: reLaunch,
     navigateBack: navigateBack,
     vibrateLong: vibrateLong,
     vibrateShort: vibrateShort,
