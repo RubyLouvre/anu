@@ -17,9 +17,7 @@ function cleanDist(){
     }
 }
 function injectQuickAppConfig(){
-    if (config['buildType'] === 'quick'){
-        utils.initQuickAppConfig();
-    }
+    utils.initQuickAppConfig();
 }
 
 function asyncUI(betaUi){
@@ -39,11 +37,11 @@ function asyncUI(betaUi){
     process.chdir(currentCwd);
 }
 
-async function beforeParseTask(args){
+async function beforeParseTask({ buildType, beta, betaUi }){
     cleanDist();
-    injectQuickAppConfig();
-    await utils.asyncReact(args['beta']);
-    asyncUI(args['betaUi']);
+    if (buildType === 'quick') { injectQuickAppConfig(); }
+    await utils.asyncReact(buildType, beta);
+    asyncUI(betaUi);
 }
 
 module.exports = async function(args){
