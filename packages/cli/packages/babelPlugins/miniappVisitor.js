@@ -29,7 +29,7 @@ const inlineElement = {
 let cache = {};
 if (buildType == 'quick') {
     //快应用不需要放到Component/Page方法中
-    utils.createRegisterStatement = function(className, path, isPage) {
+    utils.createRegisterStatement = function (className, path, isPage) {
         /**
          * placeholderPattern
          * Type: RegExp | false Default: /^[_$A-Z0-9]+$/
@@ -42,15 +42,16 @@ if (buildType == 'quick') {
          * 此时如果传入后面的 {CLASSNAME: t.identifier(className)} 
          * 会抛出异常信息 Error: Unknown substitution "CLASSNAME" given
          */
-        var templateString = isPage
-            ? 'CLASSNAME = React.registerPage(CLASSNAME,ASTPATH)'
-            : 'console.log(nanachi)';
+        var templateString = isPage ?
+            'CLASSNAME = React.registerPage(CLASSNAME,ASTPATH)' :
+            'console.log(nanachi)';
         return isPage ? template(templateString)({
             CLASSNAME: t.identifier(className),
             ASTPATH: t.stringLiteral(path)
         }) : template(templateString)();
     };
 }
+
 function registerPageOrComponent(name, path, modules) {
     if (name == modules.className) {
         path.insertBefore(modules.registerStatement);
@@ -208,7 +209,7 @@ module.exports = {
             if (/\.js$/.test(source)) {
                 source = source.replace(/\.js$/, '');
             }
-            
+
             modules.importComponents[item.local.name] = {
                 astPath: astPath,
                 source: source
@@ -235,7 +236,7 @@ module.exports = {
                 return;
             }
             var json = modules.config;
-            
+
             //将app.js中的import语句变成pages数组
             if (modules.componentType === 'App') {
                 json.pages = modules.pages;
@@ -243,12 +244,12 @@ module.exports = {
             }
 
             helpers.configName(json, modules.componentType);
-            
+
             var keys = Object.keys(modules.usedComponents),
                 usings;
             if (keys.length) {
                 usings = json.usingComponents || (json.usingComponents = {});
-                keys.forEach(function(name) {
+                keys.forEach(function (name) {
                     usings[name] = modules.usedComponents[name];
                 });
             }
@@ -284,7 +285,7 @@ module.exports = {
                     json.component = true;
                 }
             }
-           
+
             //只有非空才生成json文件
             if (Object.keys(json).length) {
                 queue.push({
@@ -304,7 +305,9 @@ module.exports = {
     ExportNamedDeclaration: {
         exit(astPath) {
             //生成 module.exports.default = ${name};
-            let declaration = astPath.node.declaration || { type: '{}' };
+            let declaration = astPath.node.declaration || {
+                type: '{}'
+            };
             switch (declaration.type) {
                 case 'Identifier':
                     astPath.replaceWith(utils.exportExpr(declaration.name));
@@ -325,7 +328,7 @@ module.exports = {
                     break;
                 case '{}':
                     astPath.replaceWithMultiple(
-                        astPath.node.specifiers.map(function(el) {
+                        astPath.node.specifiers.map(function (el) {
                             return utils.exportExpr(el.local.name);
                         })
                     );
@@ -333,62 +336,17 @@ module.exports = {
             }
         }
     },
-    // ClassProperty: {
-    //     exit(astPath, state) {
-    //         let key = astPath.node.key.name;
-    //         let modules = utils.getAnu(state);
-    //         if (key === 'config') {
-    //             //将配置对象生成JSON文件
-    //             if (!/App|Page|Component/.test(modules.componentType)) {
-    //                 return;
-    //             }
-    //             try {
-    //                 var json = eval('0,' + generate(astPath.node.value).code);
-
-    //                 Object.assign(modules.config, json);
-    //             } catch (e) {
-    //                 /**/
-    //             }
-    //         } else if (astPath.node.static) {
-    //             var keyValue = t.ObjectProperty(
-    //                 t.identifier(key),
-    //                 astPath.node.value
-    //             );
-    //             modules.staticMethods.push(keyValue);
-    //         } else {
-    //             if (key == 'globalData' && modules.componentType === 'App') {
-    //                 //globalData中插入平台buildType
-    //                 astPath.node.value.properties.push(
-    //                     t.objectProperty(
-    //                         t.identifier('buildType'),
-    //                         t.stringLiteral(config.buildType)
-    //                     )
-    //                 );
-    //                 var thisMember = t.assignmentExpression(
-    //                     '=',
-    //                     t.memberExpression(
-    //                         t.identifier('this'),
-    //                         t.identifier(key)
-    //                     ),
-    //                     astPath.node.value
-    //                 );
-    //                 modules.thisProperties.push(thisMember);
-    //             }
-    //         }
-    //         astPath.remove();
-    //     }
-    // },
-    MemberExpression: {},
+    
     // visitor 中的 ClassProperty 没有访问, 
     // 使用 AssignmentExpression 解析 config 和 globalData
     // static 属性会自动挂载到 类
-    AssignmentExpression:{
+    AssignmentExpression: {
         exit(astPath, state) {
             const member = generate(astPath.get('left').node).code;
             const isObj = t.isObjectExpression(astPath.get('right').node);
             let modules = utils.getAnu(state);
             // 判断格式是否为： this.config = {}
-            if (member === 'this.config' && isObj){
+            if (member === 'this.config' && isObj) {
                 if (/App|Page|Component/.test(modules.componentType)) {
                     try {
                         var json = eval('0,' + generate(astPath.get('right').node).code);
@@ -401,7 +359,7 @@ module.exports = {
             // 判断格式是否为： this.globalData = {}
             if (member === 'this.globalData' && isObj && modules.componentType === 'App') {
                 // 如果没有 buildType 属性, 在 globalData 中插入平台buildType
-                if (!generate(astPath.get('right').node).code.includes('buildType')){
+                if (!generate(astPath.get('right').node).code.includes('buildType')) {
                     astPath.get('right').node.properties.push(
                         t.objectProperty(
                             t.identifier('buildType'),
@@ -444,45 +402,6 @@ module.exports = {
             ) {
                 callee.name = 'React.registerApp';
                 return;
-            }
-
-            if (callee.property && callee.property.name == 'render') {
-                var p = astPath,
-                    checkIndex = 4,
-                    d;
-                while (p.type != 'JSXElement') {
-                    if (p.type === 'JSXExpressionContainer') {
-                        d = p;
-                    }
-                    p = p.parentPath;
-
-                    if (checkIndex-- == 0) {
-                        break;
-                    }
-                }
-                if (p.type === 'JSXElement' && d) {
-                    //<React.renderProps />
-                    var renderProps = utils.createElement(
-                        'React.toRenderProps',
-                        [],
-                        []
-                    );
-                    var arr = p.node.children;
-                    var json = modules.config;
-                    if (!json.usingComponents) {
-                        json.usingComponents = {
-                            'anu-render': '/components/RenderProps/index'
-                        };
-                    } else {
-                        json.usingComponents['anu-render'] =
-                            '/components/RenderProps/index';
-                    }
-                    var index = arr.indexOf(d.node);
-                    if (index !== -1) {
-                        //插入React.toRenderProps标签
-                        arr.splice(index, 0, renderProps);
-                    }
-                }
             }
             //处理循环语
             if (utils.isLoopMap(astPath)) {
@@ -537,18 +456,18 @@ module.exports = {
         }
     },
     JSXOpeningElement: {
-        enter: function(astPath, state) {
+        enter: function (astPath, state) {
             let nodeName = astPath.node.name.name;
-            if (nodeName === 'span' && buildType === 'quick'){
+            if (nodeName === 'span' && buildType === 'quick') {
                 //如果是快应用，<text><span></span></text>不变， <div><span></span></div>变<div><text></text></div>
-                let p = astPath.parentPath.findParent(function(parent){
-                    return  parent.type === 'JSXElement';
+                let p = astPath.parentPath.findParent(function (parent) {
+                    return parent.type === 'JSXElement';
                 });
-                
+
                 let parentTagName = p && utils.getNodeName(p.node);
-                if (parentTagName === 'text'|| parentTagName === 'a'){
+                if (parentTagName === 'text' || parentTagName === 'a') {
                     return;
-                }       
+                }
             }
             let modules = utils.getAnu(state);
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
@@ -608,21 +527,20 @@ module.exports = {
             }
         }
     },
-    JSXClosingElement: function(astPath) {
+    JSXClosingElement: function (astPath) {
         var tagName = utils.getNodeName(astPath.parentPath.node);
         astPath.node.name.name = tagName;
     },
     JSXAttribute: {
-        enter: function(astPath, state) {
+        enter: function (astPath, state) {
             let attrName = astPath.node.name.name;
             let attrValue = astPath.node.value;
             let parentPath = astPath.parentPath;
             let modules = utils.getAnu(state);
 
             let srcValue = attrValue && attrValue.value;
-            console.log(attrName, attrValue.type)
             //处理静态资源@assets/xxx.png别名
-            if(attrValue.type === 'StringLiteral'){
+            if (t.isStringLiteral(attrValue)) {
                 if (attrName === 'src' && /^(@assets)/.test(srcValue)) {
                     let realAssetsPath = path.join(
                         process.cwd(),
@@ -634,21 +552,80 @@ module.exports = {
                     );
                     astPath.node.value.value = relativePath;
                 }
-                 // 快应用下 string类型的行内样式 rpx 会换算成px
-                if(attrName === 'style' && buildType == 'quick' ){
-                    let value = quickhuaweiStyle(attrValue.value, true);
-                    astPath.node.value =  t.stringLiteral(value)
+                // 快应用下 string类型的行内样式 rpx 会换算成px
+                if (attrName === 'style' && buildType == 'quick') {
+
+                    let value = quickhuaweiStyle(attrValue, true);
+                    console.log('attrValue', typeof value);
+                    astPath.node.value = t.stringLiteral(value.slice(1, -1));
                 }
-            }else if (t.isJSXExpressionContainer(attrValue)) {
-              
+            } else if (t.isJSXExpressionContainer(attrValue)) {
+
                 let attrs = parentPath.node.attributes;
                 let expr = attrValue.expression;
                 let nodeName = parentPath.node.name.name;
-                //如果这是普通标签上的事件名
-                if (
+
+                if (attrName === 'style') {
+                    //将动态样式封装到React.toStyle中
+                    var styleType = expr.type;
+                    var MemberExpression = styleType === 'MemberExpression';
+                    var isIdentifier = styleType === 'Identifier';
+                    // 华为编辑器行内样式特殊处理
+
+                    if (config.huawei) {
+                        if (styleType === 'ObjectExpression') {
+                            let code = quickhuaweiStyle(expr);
+                            astPath.node.value = t.stringLiteral(code);
+                            return;
+                        }
+
+                    }
+                    if (
+                        isIdentifier ||
+                        MemberExpression ||
+                        styleType === 'ObjectExpression'
+                    ) {
+                        var ii = modules.indexArr ?
+                            modules.indexArr.join('+\'-\'+') :
+                            '';
+                        var styleRandName =
+                            `'style${utils.createUUID(astPath)}'` +
+                            (ii ? ' +' + ii : '');
+                        //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
+                        //MemberExpression 处理形如 <div style={this.state.styles.a}></div> 的style结构
+                        //ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
+
+
+                        var styleName = isIdentifier ?
+                            expr.name :
+                            generate(expr).code;
+                        attrs.push(
+                            utils.createAttribute(
+                                'style',
+                                t.jSXExpressionContainer(
+                                    t.identifier(
+                                        `React.toStyle(${styleName}, this.props, ${styleRandName})`
+                                    )
+                                )
+                            )
+                        );
+                        astPath.remove();
+                    }
+                }  else if (attrName == 'hidden') {
+                    if (buildType === 'quick') {
+                        //在快应用下hidden={a}变成show={!a}
+                        astPath.node.name.name = 'show';
+                        attrValue.expression = t.unaryExpression(
+                            '!',
+                            expr,
+                            true
+                        );
+                    }
+                } else if (
                     /^(?:on|catch)[A-Z]/.test(attrName) &&
                     !/[A-Z]/.test(nodeName)
                 ) {
+                    //如果这是普通标签上的事件名
                     var prefix = attrName.charAt(0) == 'o' ? 'on' : 'catch';
                     var eventName = attrName.replace(prefix, '');
                     var otherEventName = utils.getEventName(
@@ -677,7 +654,7 @@ module.exports = {
                     //data-beacon-uid是用于实现日志自动上传
                     if (
                         !attrs.setClassCode &&
-                        !attrs.some(function(el) {
+                        !attrs.some(function (el) {
                             return el.name.name == 'data-beacon-uid';
                         })
                     ) {
@@ -688,109 +665,7 @@ module.exports = {
                     }
                     attrs.setClassCode = true;
 
-                } else if (attrName === 'style') {
-                    //将动态样式封装到React.toStyle中
-                    var styleType = expr.type;
-                    var MemberExpression = styleType === 'MemberExpression';
-                    var isIdentifier = styleType === 'Identifier';
-                    // 华为编辑器行内样式特殊处理
-                 
-                    if (config.huawei ) {
-                        if (styleType === 'ObjectExpression') {
-                           let code = quickhuaweiStyle(expr);
-                           astPath.node.value =  t.stringLiteral(code)
-                           return
-                        }
-                        
-                    }
-                    if (
-                        isIdentifier ||
-                        MemberExpression ||
-                        styleType === 'ObjectExpression'
-                    ) {
-                        var ii = modules.indexArr
-                            ? modules.indexArr.join('+\'-\'+')
-                            : '';
-                        var styleRandName =
-                            `'style${utils.createUUID(astPath)}'` +
-                            (ii ? ' +' + ii : '');
-                        //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
-                        //MemberExpression 处理形如 <div style={this.state.styles.a}></div> 的style结构
-                        //ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
-                        
-                        
-                        var styleName = isIdentifier
-                            ? expr.name
-                            : generate(expr).code;
-                        attrs.push(
-                            utils.createAttribute(
-                                'style',
-                                t.jSXExpressionContainer(
-                                    t.identifier(
-                                        `React.toStyle(${styleName}, this.props, ${styleRandName})`
-                                    )
-                                )
-                            )
-                        );
-                        astPath.remove();
-                    }
-                } else if (attrName == 'render') {
-                    var type = expr.type;
-                    if (
-                        type === 'FunctionExpression' ||
-                        type == 'ArrowFunctionExpression'
-                    ) {
-                        var uuid = 'render' + utils.createUUID(astPath);
-                        attrs.push(utils.createAttribute('renderUid', uuid));
-                        parentPath.renderProps = attrValue;
-                        parentPath.renderUid = uuid;
-                        modules.is = [];
-                    }
-                } else if (buildType === 'quick') {
-                    if (attrName == 'hidden') {
-                        //在快应用下hidden={a}变成show={!a}
-                        astPath.node.name.name = 'show';
-                        attrValue.expression = t.unaryExpression(
-                            '!',
-                            expr,
-                            true
-                        );
-                    } 
                 }
-            }
-        },
-        exit(astPath, state) {
-            let attrName = astPath.node.name.name;
-            if (attrName == 'render' && astPath.parentPath.renderProps) {
-                let attrValue = astPath.parentPath.renderProps;
-                let fragmentUid = astPath.parentPath.renderUid;
-                delete astPath.parentPath.renderProps;
-                let modules = utils.getAnu(state);
-                let subComponents = {};
-                modules.is.forEach(function(a) {
-                    subComponents[a] = path.join('..', a, 'index');
-                });
-
-                helpers.render.exit(
-                    {
-                        node: attrValue.expression
-                    },
-
-                    'RenderProps',
-                    fragmentUid,
-                    {
-                        sourcePath: path.join(
-                            process.cwd(),
-                            config.sourceDir,
-                            'components',
-                            'RenderProps',
-                            'index.js'
-                        ),
-                        componentType: 'Component',
-                        importComponents: subComponents,
-                        usedComponents: modules.usedComponents
-                    }
-                );
             }
         }
     },
@@ -798,7 +673,7 @@ module.exports = {
     JSXText(astPath) {
         //去掉内联元素内部的所有换行符
         if (astPath.parentPath.type == 'JSXElement') {
-          
+
             var parentTagName = utils.getNodeName(astPath.parentPath.node);
             var value = astPath.node.value.trim();
             if (value === '') {
