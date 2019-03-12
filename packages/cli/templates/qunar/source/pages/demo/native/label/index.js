@@ -54,12 +54,11 @@ class P extends React.Component {
     }
     render() {
         return (
-            <div>
-                {this.a}
-                <view className="section section_gap">
+            <div class="column-layout">
+                <view className="section section_gap column-layout">
                     <view className="section__title">表单组件在label内</view>
                     <checkbox-group
-                        className="group"
+                        className="group column-layout"
                         onChange={this.checkboxChange}
                     >
                         {this.state.checkboxItems.map(function(item, index) {
@@ -80,9 +79,9 @@ class P extends React.Component {
                     </checkbox-group>
                 </view>
 
-                <view className="section section_gap">
+                <view className="section section_gap column-layout">
                     <view className="section__title">label用for标识表单组件</view>
-                    <radio-group className="group" onChange={this.radioChange}>
+                    <radio-group className="group column-layout" onChange={this.radioChange}>
                         {this.state.radioItems.map(function(item, index) {
                             return (
                                 <view className="label-2" key={index}>
