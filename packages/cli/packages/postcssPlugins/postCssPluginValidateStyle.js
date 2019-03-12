@@ -2,6 +2,15 @@ const postCss = require('postcss');
 const chalk = require('chalk');
 const config = require('../config');
 const parser = require('postcss-selector-parser');
+const { ignoreCss }= require('./ignoreCss');
+
+function removeCss(declaration) {
+    let value = declaration.value;
+    let prop = declaration.prop;
+    if (ignoreCss[prop]) {
+        declaration.remove();
+    }
+}
 
 function parseSelector(css) {
     let result = [];
@@ -53,7 +62,12 @@ function splitBorder(decl) {
         }
         values.map((value, index) => {
             const res = {};
-            const prop = decl.prop + '-' + properties[index];
+            let prop = decl.prop + '-' + properties[index];
+            // border-style  情况特殊
+            if (properties[index] === 'style') {
+                prop = 'border-style';
+            }
+            
             res[prop] = value;
             decl.cloneBefore(postCss.decl({prop, value}));
         });
@@ -249,6 +263,11 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
             // 再进行一次遍历保证所有px都被正确转换
             root.walkDecls(decl => {
                 decl.value = rpxToPx(decl.value);
+            });
+
+            // 对快应用没有用的属性进行过滤
+            root.walkDecls(decl => {
+                removeCss(decl);
             });
         }
         root.walkRules(rule => {
