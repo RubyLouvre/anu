@@ -54,7 +54,8 @@ class P extends React.Component {
     };
 
     componentDidMount() {
-        !this.state.rec.loading && this.init();
+        console.log('componentDidMount');
+        // !this.state.rec.loading && this.init();
     }
 
     init() {
@@ -189,6 +190,9 @@ class P extends React.Component {
     cateselect() {}
 
     render() {
+        console.log('this.state', this.state);
+
+
         return (
             <div class="anu-col">
                 <div id="header" class="tab">
@@ -353,7 +357,7 @@ class P extends React.Component {
                     {/* 歌单 */}
                     <div class={this.state.tabidx !== 1 ? 'tab_cnt hidden' : 'tab_cnt'}>
                         <div class="st_title" id="plc_header">
-                            {this.state.catelist &&this.state.catelist.checked && this.state.catelist.checked.name}
+                            <text>{this.state.catelist && this.state.catelist.checked && this.state.catelist.checked.name}</text>
                             <text onTap={this.togglePtype.bind(this)} id="catselectbtn">选择分类</text>
                         </div>
 
@@ -453,9 +457,10 @@ class P extends React.Component {
                             <Loading />
                         )}
                     </div>
+
                 </div>
                 {/* 选择分类 */}
-                <scroll-view
+                {/* <scroll-view
                     id="catewrap"
                     scroll-into-view="c2"
                     scroll-y="true"
@@ -468,7 +473,7 @@ class P extends React.Component {
                             catelist={this.state.catelist}
                         />
                     )}
-                </scroll-view>
+                </scroll-view> */}
             </div>
         );
     }
