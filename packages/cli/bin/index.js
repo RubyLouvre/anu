@@ -36,8 +36,8 @@ function getArgValue(cmd){
     return args;
 }
 
-function injectBuildEnv(cmd, buildType){
-    let buildArgs = getArgValue(cmd);
+function injectBuildEnv(buildArgs){
+    const { buildType } = buildArgs;
     process.env.ANU_ENV = buildType;
     config['buildType'] = buildType;
     config['compress'] = buildArgs['compress'];
@@ -58,58 +58,46 @@ program
     });
 
 
-
-program
-    .command('page <page-name>')
-    .description('description: 创建pages/<page-name>/index.js模版')
-    .action((name)=>{
-        let isPage = true;
-        require('../commands/createPage')( {name, isPage} );
-    });
-
-program
-    .command('component <component-name>')
-    .description('description: 创建components/<component-name>/index.js组件')
-    .action((name)=>{
-        let isPage = false;
-        require('../commands/createPage')( {name, isPage});
-    });
+['page', 'component'].forEach(type => {
+    program
+        .command(`${type} <page-name>`)
+        .description(`description: 创建${type}s/<${type}-name>/index.js模版`)
+        .action((name)=>{
+            const isPage = type === 'page';
+            require('../commands/createPage')( {name, isPage} );
+        });
+});
 
 function buildAction(buildType, compileType) {
     return function(cmd) {
         const args = getArgValue(cmd);
+        args['buildType'] = buildType;
         if (compileType === 'watch') { args['watch'] = true; }
-        injectBuildEnv(cmd, buildType);
+        injectBuildEnv(args);
         buildType === 'h5'
             ? require('mini-html5/runkit/build')
             : require('../commands/build')(args);
     };
 }
+
+function registeBuildfCommand(compileType, buildType, isDefault, des) {
+    program
+        .command(`${compileType}${isDefault ? '' : ':' + buildType}`)
+        .description(`description: 构建${des}`)
+        .option('--compress', '压缩资源')
+        .option('--beta', '同步react runtime')
+        .option('--beta-ui', '同步schnee-ui')
+        .option('--huawei','补丁华为快应用')
+        .action(buildAction(buildType, compileType));
+}
 //注册其他命令
 platforms.forEach(function(el){
-    let {type, des, isDefault } = el;
+    const { type, des, isDefault } = el;
     ['build', 'watch'].forEach(function (compileType) {
-        if (isDefault) {
-            program
-                .command(`${compileType}`)
-                .description(`description: 构建${des}`)
-                .option('--compress', '压缩资源')
-                .option('--beta', '同步react runtime')
-                .option('--beta-ui', '同步schnee-ui')
-                .option('--huawei','补丁华为快应用')
-                .action(buildAction(type, compileType));
-        }
-        program
-            .command(`${compileType}:${type}`)
-            .description(`description: 构建${des}`)
-            .option('--compress', '压缩资源')
-            .option('--beta', '同步react runtime')
-            .option('--beta-ui', '同步schnee-ui')
-            .option('--huawei','补丁华为快应用')
-            .action(buildAction(type, compileType));
+        if (isDefault) { registeBuildfCommand(compileType, type, isDefault, des); }
+        registeBuildfCommand(compileType, type, false, des);
     });
 });
-
 
 program
     .arguments('<command>')
