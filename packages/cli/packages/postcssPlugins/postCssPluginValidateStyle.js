@@ -186,15 +186,49 @@ const visitors = {
 };
 
 let transformAnimation = (declaration)=>{
-    const properties = ['name', 'duration', 'timing-function', 'delay', 'iteration-count', 'direction'];
+    const properties = [
+        {
+            name: 'name',
+            reg: /[a-zA-Z0-9]/gi
+        },
+        {
+            name: 'duration',
+            reg: /(\d[\d\.]*)(m?s)/gi
+        }, 
+        {
+            name: 'timing-function',
+            reg: /linear|ease|ease-in|ease-out|ease-in-out/gi
+        },
+        {
+            name: 'delay',
+            reg: /(\d[\d\.]*)(m?s)/gi
+        },
+        {
+            name: 'iteration-count',
+            reg: /\d|infinite/gi
+        },
+        {
+            name: 'fill-mode',
+            reg: /none|forwards/gi
+        }
+    ];
+
     let value = declaration.value;
     let values = value.replace(/(,\s+)/g, ',').trim().split(/\s+/);
-    values.map((value, index) => {
+    let index = 0;
+    for (let i =0; i< properties.length; i++) {
+        const  { name, reg } = properties[i];
         const res = {};
-        const prop = declaration.prop + '-' + properties[index];
+        const value = values[index];
+        if (!reg.test(value)) {
+            continue;
+        }
+        const prop = declaration.prop + '-' + name;
         res[prop] = value;
         declaration.cloneBefore(postCss.decl({prop, value}));
-    });
+        index++;
+    }
+
     declaration.remove();
 };
 

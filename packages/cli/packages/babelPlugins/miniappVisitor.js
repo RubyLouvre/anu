@@ -630,6 +630,17 @@ module.exports = {
                 );
                 astPath.node.value.value = relativePath;
             }
+            // 快应用下 string类型的行内样式 rpx 会换算成px
+            if (buildType == 'quick' && attrName === 'style' && attrValue.type === 'StringLiteral') {
+                
+                let value = utils.transform(attrValue.value);
+                parentPath.node.attributes.push(
+                    utils.createAttribute(
+                        'style',`${value}`   
+                    )
+                );
+                astPath.remove();
+            }
 
             if (t.isJSXExpressionContainer(attrValue)) {
                 let modules = utils.getAnu(state);
@@ -683,6 +694,20 @@ module.exports = {
                     var styleType = expr.type;
                     var MemberExpression = styleType === 'MemberExpression';
                     var isIdentifier = styleType === 'Identifier';
+                    // 华为编辑器行内样式特殊处理
+                    if (config.huawei ) {
+                        if (styleType === 'ObjectExpression') {
+                            let code = utils.huaWeiStyleTransform(expr);
+                            attrs.push(
+                                utils.createAttribute(
+                                    'style',`${code}`   
+                                )
+                            );
+                            astPath.remove();
+                            return;
+                        }
+                        
+                    }
                     if (
                         isIdentifier ||
                         MemberExpression ||
@@ -697,13 +722,11 @@ module.exports = {
                         //Identifier 处理形如 <div style={formItemStyle}></div> 的style结构
                         //MemberExpression 处理形如 <div style={this.state.styles.a}></div> 的style结构
                         //ObjectExpression 处理形如 style={{ width: 200, borderWidth: '1px' }} 的style结构
-                        var code = generate(expr).code;
-                        if(config.huawei) {
-                            code = utils.huaWeiStyleTransform(code)
-                        }
+                        
+                        
                         var styleName = isIdentifier
                             ? expr.name
-                            : code;
+                            : generate(expr).code;
                         attrs.push(
                             utils.createAttribute(
                                 'style',
