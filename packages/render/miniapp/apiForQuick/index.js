@@ -43,7 +43,7 @@ import {
     showLoading,
    
 } from './dialog';
-import { navigateTo, redirectTo , navigateBack, makePhoneCall } from './router';
+import { navigateTo, redirectTo ,reLaunch, navigateBack, makePhoneCall } from './router';
 import { vibrateLong, vibrateShort } from './vibrator';
 import { share } from './share';
 
@@ -65,6 +65,7 @@ export var facade = {
     // 导航
     navigateTo, 
     redirectTo , 
+    reLaunch,
     navigateBack,
     // 震动
     vibrateLong, 
