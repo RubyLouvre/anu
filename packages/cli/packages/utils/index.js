@@ -19,6 +19,7 @@ const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const queue = require('../queue');
 const userConfig = pkg.nanachi || pkg.mpreact || {};
+const generate = require('@babel/generator').default;
 process.on('unhandledRejection', error => {
   // eslint-disable-next-line
   console.error('unhandledRejection', error);
@@ -46,7 +47,9 @@ let utils = {
       return config['useYarn'];
     }
     try {
-      execSync('yarn --version', { stdio: 'ignore' });
+      execSync('yarn --version', {
+        stdio: 'ignore'
+      });
       config['useYarn'] = true;
     } catch (e) {
       config['useYarn'] = false;
@@ -58,7 +61,9 @@ let utils = {
       return config['useCnpm'];
     }
     try {
-      execSync('cnpm -v', { stdio: 'ignore' });
+      execSync('cnpm -v', {
+        stdio: 'ignore'
+      });
       config['useCnpm'] = true;
     } catch (e) {
       config['useCnpm'] = false;
@@ -69,26 +74,26 @@ let utils = {
     return 'var h = React.createElement;';
   },
   //传入path.node, 得到标签名
-  getNodeName(node){
-    var openTag =  node.openingElement
+  getNodeName(node) {
+    var openTag = node.openingElement
     return openTag && Object(openTag.name).name
   },
   getEventName(eventName, nodeName, buildType) {
     if (eventName == 'Click' || eventName == 'Tap') {
-        if (buildType === 'quick' || buildType === 'h5'){
-           return 'Click';
-        }else{
-          return 'Tap';
-        }
+      if (buildType === 'quick' || buildType === 'h5') {
+        return 'Click';
+      } else {
+        return 'Tap';
+      }
     }
-    if( buildType === 'quick'){
-       if(eventName === 'ScrollToLower' ){
-        return 'ScrollBottom'//快应用的list标签的事件
-       }else if(eventName === 'ScrollToUpper'){
+    if (buildType === 'quick') {
+      if (eventName === 'ScrollToLower') {
+        return 'ScrollBottom' //快应用的list标签的事件
+      } else if (eventName === 'ScrollToUpper') {
         return 'ScrollTop'
-       }
+      }
     }
-    
+
     if (eventName === 'Change') {
       if (nodeName === 'input' || nodeName === 'textarea') {
         if (buildType !== 'quick') {
@@ -116,10 +121,10 @@ let utils = {
     const UIName = 'schnee-ui';
     const cache = {};
     //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
-    return (astPath, modules)=>{
+    return (astPath, modules) => {
       var orig = astPath.node.name.name;
       var fileId = modules.sourcePath;
-      var isPatchNode =  patchNode[fileId] && patchNode[fileId].includes(orig);
+      var isPatchNode = patchNode[fileId] && patchNode[fileId].includes(orig);
       var prefix = 'X';
       var patchName = '';
       //组件名肯定大写开头
@@ -129,22 +134,24 @@ let utils = {
       //schnee-ui补丁
       if (isPatchNode) {
         if (/\-/.test(orig)) {
-           //'rich-text' ==> RichText;
-           patchName = orig.split('-').map((el)=>{
-              return el.replace(/^[a-z]/, (match)=>{
-                return match.toUpperCase()
-              })
-           }).join('');
-           patchName = prefix + patchName;
+          //'rich-text' ==> RichText;
+          patchName = orig.split('-').map((el) => {
+            return el.replace(/^[a-z]/, (match) => {
+              return match.toUpperCase()
+            })
+          }).join('');
+          patchName = prefix + patchName;
         } else {
-           //button ==> XButton
-           patchName = prefix + orig.charAt(0).toUpperCase() + orig.substring(1);
+          //button ==> XButton
+          patchName = prefix + orig.charAt(0).toUpperCase() + orig.substring(1);
         }
-        modules.importComponents[patchName] = { source: UIName };
-        
+        modules.importComponents[patchName] = {
+          source: UIName
+        };
+
         if (!cache[orig]) {
-          let patchPath = path.join(cwd, 'node_modules', UIName, 'components', patchName , 'index.js');
-          this.emit('compliePatch', patchPath);  //再次经过编译
+          let patchPath = path.join(cwd, 'node_modules', UIName, 'components', patchName, 'index.js');
+          this.emit('compliePatch', patchPath); //再次经过编译
           cache[orig] = true;
         }
         return patchName;
@@ -153,28 +160,28 @@ let utils = {
     }
   },
   getUsedComponentsPath(bag, nodeName, modules) {
-      let isNpm = this.isNpm(bag.source);
-      let sourcePath = modules.sourcePath;
-      let isNodeModulePathReg = this.isWin() ? /\\node_modules\\/ : /\/node_modules\//;
+    let isNpm = this.isNpm(bag.source);
+    let sourcePath = modules.sourcePath;
+    let isNodeModulePathReg = this.isWin() ? /\\node_modules\\/ : /\/node_modules\//;
 
-      //引用的npm ui库 
-      //import { xxx } from 'schnee-ui';
-      if (isNpm) {
-          return '/npm/' + bag.source + '/components/' + nodeName + '/index';
-      }
-      //在ui components中可能存在相对引用其他components
-      //如果XPicker中存在 import XOverlay from '../XOverlay/index';
-      if ( 
-        isNodeModulePathReg.test(sourcePath)
-        && /^\./.test(bag.source)
-      ) {
-        //获取用组件的绝对路径 ==> /path/xxx/node_modules/schnee-ui/components/XOverlay/index
-        let importerAbPath = path.join( path.dirname(modules.sourcePath), bag.source);
-        // ==>/npm/schnee-ui/components/XOverlay/index
-        return '/npm/' + importerAbPath.split( `${path.sep}node_modules${path.sep}` )[1]
-      }
+    //引用的npm ui库 
+    //import { xxx } from 'schnee-ui';
+    if (isNpm) {
+      return '/npm/' + bag.source + '/components/' + nodeName + '/index';
+    }
+    //在ui components中可能存在相对引用其他components
+    //如果XPicker中存在 import XOverlay from '../XOverlay/index';
+    if (
+      isNodeModulePathReg.test(sourcePath) &&
+      /^\./.test(bag.source)
+    ) {
+      //获取用组件的绝对路径 ==> /path/xxx/node_modules/schnee-ui/components/XOverlay/index
+      let importerAbPath = path.join(path.dirname(modules.sourcePath), bag.source);
+      // ==>/npm/schnee-ui/components/XOverlay/index
+      return '/npm/' + importerAbPath.split(`${path.sep}node_modules${path.sep}`)[1]
+    }
 
-      return `/components/${nodeName}/index`;
+    return `/components/${nodeName}/index`;
   },
   createAttribute(name, value) {
     return t.JSXAttribute(
@@ -248,12 +255,12 @@ let utils = {
   },
   isNpm(name) {
     // ./
-    if ( /^\/|\./.test(name) ) {
+    if (/^\/|\./.test(name)) {
       return false;
     }
     //非自定义alias, @components ...
     let aliasKeys = Object.keys(this.getAliasConfig());
-    if (aliasKeys.includes( name.split('/')[0])) {
+    if (aliasKeys.includes(name.split('/')[0])) {
       return false;
     }
     return true;
@@ -267,9 +274,9 @@ let utils = {
      * that should be considered placeholders. 'false' will disable placeholder searching
      * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
      */
-    var templateString = isPage
-      ? 'Page(React.registerPage(CLASSNAME,ASTPATH))'
-      : 'Component(React.registerComponent(CLASSNAME,ASTPATH))';
+    var templateString = isPage ?
+      'Page(React.registerPage(CLASSNAME,ASTPATH))' :
+      'Component(React.registerComponent(CLASSNAME,ASTPATH))';
     return template(templateString)({
       CLASSNAME: t.identifier(className),
       ASTPATH: t.stringLiteral(path)
@@ -285,7 +292,7 @@ let utils = {
   updatePath(spath, segement, newSegement, newExt, ext) {
     var lastSegement = '',
       replaced = false;
-    var arr = spath.split(path.sep).map(function(el) {
+    var arr = spath.split(path.sep).map(function (el) {
       lastSegement = el;
       if (segement === el && !replaced) {
         replaced = true;
@@ -308,7 +315,9 @@ let utils = {
     let libs = new Set(require('repl')._builtinLibs);
     if (libs.has(name)) {
       //如果是内置模块，先查找本地node_modules是否有对应重名模块
-      let isLocalBuildInLib = /\/node_modules\//.test(nodeResolve.sync(name, { basedir: cwd }));
+      let isLocalBuildInLib = /\/node_modules\//.test(nodeResolve.sync(name, {
+        basedir: cwd
+      }));
       if (isLocalBuildInLib) {
         return false;
       } else {
@@ -329,7 +338,9 @@ let utils = {
         options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
       }
 
-      let result = spawn.sync(bin, options, { stdio: 'inherit' });
+      let result = spawn.sync(bin, options, {
+        stdio: 'inherit'
+      });
       if (result.error) {
         console.log(result.error);
         process.exit(1);
@@ -349,8 +360,8 @@ let utils = {
             return pkg;
           }
         });
-      } 
-      
+      }
+
       resolve(npmPath);
     });
   },
@@ -434,53 +445,55 @@ let utils = {
     let ret = {}
 
     //用户自定义的alias配置设置成绝对路径
-    Object.keys(userAlias).forEach((key)=>{
-        ret[key] = path.join(cwd, userAlias[key])
+    Object.keys(userAlias).forEach((key) => {
+      ret[key] = path.join(cwd, userAlias[key])
     });
 
     let defaultAlias = {
-        'react': path.join(cwd, `${config.sourceDir}/${React}`),
-        '@react': path.join(cwd, `${config.sourceDir}/${React}`),
-        '@components': path.join(cwd, `${config.sourceDir}/components`),
-        ...ret
+      'react': path.join(cwd, `${config.sourceDir}/${React}`),
+      '@react': path.join(cwd, `${config.sourceDir}/${React}`),
+      '@components': path.join(cwd, `${config.sourceDir}/components`),
+      ...ret
     }
     return defaultAlias;
   },
-  resolveDistPath(filePath){
-    let dist = config.buildType === 'quick' ? 'src': (config.buildDir || 'dist');
+  resolveDistPath(filePath) {
+    let dist = config.buildType === 'quick' ? 'src' : (config.buildDir || 'dist');
     let sep = path.sep;
     let reg = this.isWin() ? /\\node_modules\\/g : /\/node_modules\//g;
     filePath = utils.updatePath(filePath, 'dist', dist); //待优化
-    return reg.test(filePath)
-    ? utils.updatePath(filePath, 'node_modules', `${dist}${sep}npm`)
-    : utils.updatePath(filePath, config.sourceDir, dist);
+    return reg.test(filePath) ?
+      utils.updatePath(filePath, 'node_modules', `${dist}${sep}npm`) :
+      utils.updatePath(filePath, config.sourceDir, dist);
   },
-  resolveAliasPath(id, deps){
-     let ret = {};
-     Object.keys(deps).forEach( (depKey)=>{
-        ret[depKey] = path.relative( 
-          path.dirname(this.resolveDistPath(id)),
-          this.resolveDistPath(deps[depKey])
-         )
-     });
-     return ret;
+  resolveAliasPath(id, deps) {
+    let ret = {};
+    Object.keys(deps).forEach((depKey) => {
+      ret[depKey] = path.relative(
+        path.dirname(this.resolveDistPath(id)),
+        this.resolveDistPath(deps[depKey])
+      )
+    });
+    return ret;
   },
-  getRegeneratorRuntimePath: function(sourcePath) {
+  getRegeneratorRuntimePath: function (sourcePath) {
     //小程序async/await语法依赖regenerator-runtime/runtime
     try {
-      return nodeResolve.sync('regenerator-runtime/runtime', { basedir: process.cwd() });
+      return nodeResolve.sync('regenerator-runtime/runtime', {
+        basedir: process.cwd()
+      });
     } catch (err) {
       // eslint-disable-next-line
       console.log(
         'Error: ' +
-          sourcePath +
-          '\n' +
-          'Msg: ' +
-          chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
+        sourcePath +
+        '\n' +
+        'Msg: ' +
+        chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
       );
     }
   },
-  mergeQuickAppJson: function() { 
+  mergeQuickAppJson: function () {
     let projectPkgPath = path.join(cwd, 'package.json');
     let projectPkg = require(projectPkgPath);
     let quickPkg = require(path.join(
@@ -494,11 +507,11 @@ let utils = {
     projectPkg.scripts = projectPkg.scripts || {};
     projectPkg.devDependencies = projectPkg.devDependencies || {};
 
-    Object.assign(projectPkg.scripts, quickPkg.scripts);  //注入快应用scripts命令
+    Object.assign(projectPkg.scripts, quickPkg.scripts); //注入快应用scripts命令
     Object.assign(projectPkg.devDependencies, quickPkg.devDependencies); //注入快应用开发依赖
     fs.writeFileSync(projectPkgPath, JSON.stringify(projectPkg, null, 4));
   },
-  initQuickAppConfig: function() {
+  initQuickAppConfig: function () {
     //merge快应用依赖的package.json配置
     this.mergeQuickAppJson();
     let baseDir = path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig');
@@ -521,11 +534,11 @@ let utils = {
       console.log(err);
     });
   },
-  cleanDir: function() {
+  cleanDir: function () {
     let fileList = ['package-lock.json', 'yarn.lock'];
-    config.buildType === 'quick'
-      ? (fileList = fileList.concat([config.buildDir]))
-      : (fileList = fileList.concat(['dist', 'build', 'sign', 'src']));
+    config.buildType === 'quick' ?
+      (fileList = fileList.concat([config.buildDir])) :
+      (fileList = fileList.concat(['dist', 'build', 'sign', 'src']));
     fileList.forEach(item => {
       try {
         fs.removeSync(path.join(cwd, item));
@@ -535,33 +548,33 @@ let utils = {
       }
     });
   },
-  compress: function() {
+  compress: function () {
     return {
-      js: function(code) {
+      js: function (code) {
         let result = uglifyJS.minify(code);
         if (result.error) {
           throw result.error;
         }
         return result.code;
       },
-      npm: function(code) {
+      npm: function (code) {
         return this.js.call(this, code);
       },
-      css: function(code) {
+      css: function (code) {
         let result = new cleanCSS().minify(code);
         if (result.errors.length) {
           throw result.errors;
         }
         return result.styles;
       },
-      ux: function(code) {
+      ux: function (code) {
         return code;
       },
-      wxml: function(code) {
+      wxml: function (code) {
         //TODO: comporess xml file;
         return code;
       },
-      json: function(code) {
+      json: function (code) {
         return JSON.stringify(JSON.parse(code));
       }
     };
@@ -597,8 +610,7 @@ let utils = {
     let flag = false;
     try {
       nodeResolve.sync(
-        npmName, 
-        { 
+        npmName, {
           moduleDirectory: path.join(cwd, 'node_modules'),
         }
       );
@@ -609,122 +621,149 @@ let utils = {
     return flag;
   },
   decodeChinise(code) {
-    return code.replace(/\\?(?:\\u)([\da-f]{4})/gi, function(a, b) {
+    return code.replace(/\\?(?:\\u)([\da-f]{4})/gi, function (a, b) {
       return unescape(`%u${b}`);
     });
   },
   setWebViewConfig(routes) {
     let code = `module.exports = ${JSON.stringify(routes)};`;
     queue.push({
-        code: code,
-        type: 'js',
-        path: path.join(process.cwd(), 'dist', 'webviewConfig.js')
+      code: code,
+      type: 'js',
+      path: path.join(process.cwd(), 'dist', 'webviewConfig.js')
     });
   },
   getWebViewRoutesConfig(jsFiles) {
-    let ret = {}, pkg = null, host = '';
+    let ret = {},
+      pkg = null,
+      host = '';
     try {
-       pkg = require( path.join(cwd, 'package.json') );
+      pkg = require(path.join(cwd, 'package.json'));
     } catch (err) {
 
     }
-    if ( pkg && pkg.nanachi) {
+    if (pkg && pkg.nanachi) {
       host = pkg.nanachi.H5_HOST
     }
-    
+
     if (!host) {
       console.log(chalk.red('Error: H5请在package.json中nanachi字段里配置H5_HOST字段'));
       process.exit(1);
     }
 
-    jsFiles.forEach((el)=>{
-      let route = path.relative( path.join( cwd, config.sourceDir ), el.id ).replace(/\.js$/, '');
+    jsFiles.forEach((el) => {
+      let route = path.relative(path.join(cwd, config.sourceDir), el.id).replace(/\.js$/, '');
       ret[route] = host + '/' + route;
 
     })
     return ret;
   },
-  setH5CompileConfig(jsFiles){
+  setH5CompileConfig(jsFiles) {
     let H5_COMPILE_JSON_FILE = path.join(cwd, config.sourceDir, 'H5_COMPILE_CONFIG.json');
     fs.ensureFileSync(H5_COMPILE_JSON_FILE)
     fs.writeFileSync(
-        H5_COMPILE_JSON_FILE,
-        JSON.stringify({
-            webviewPages: jsFiles.map((item)=>{
-                return item.id
-            })
+      H5_COMPILE_JSON_FILE,
+      JSON.stringify({
+        webviewPages: jsFiles.map((item) => {
+          return item.id
         })
+      })
     )
   },
-  deleteWebViewConifg(){
+  deleteWebViewConifg() {
     let list = [
-       'H5_COMPILE_CONFIG.json',
-       'webviewConfig.js'
+      'H5_COMPILE_CONFIG.json',
+      'webviewConfig.js'
     ];
-    list = list.map((file)=>{
+    list = list.map((file) => {
       return path.join(cwd, config.sourceDir, file);
     });
 
-    list.forEach((fileId)=>{
+    list.forEach((fileId) => {
       try {
         fs.removeSync(fileId);
-      } catch (err) {
-      }
+      } catch (err) {}
     })
-   
+
   },
-  isWebView(fileId){
-    if ( config['buildType'] != 'quick' &&  !config['webview'] ) return;
+  isWebView(fileId) {
+    if (config['buildType'] != 'quick' && !config['webview']) return;
     if (!config['webview']) return;
-    let isWebView = 
-    config['webview'].includes(fileId) ||
-    config['webview'].some((reg)=>{
+    let isWebView =
+      config['webview'].includes(fileId) ||
+      config['webview'].some((reg) => {
         //如果是webview设置成true, 则用增则匹配
-        return Object.prototype.toString.call(reg) === '[object RegExp]' 
-               && reg.test(fileId)
-    });
+        return Object.prototype.toString.call(reg) === '[object RegExp]' &&
+          reg.test(fileId)
+      });
     return isWebView;
   },
   huaWeiStyleTransform(code) {
-    // var obj = eval("0,"+code);
-    var obj = json_parse(code);
-    var str = '';
-    var rpx = /(\d[\d\.]*)(r?px)/gi;
-    var rhyphen = /([a-z\d])([A-Z]+)/g;
-    function json_parse(code) {
-        code = code.replace(/^{\s*|\s*}$/gi, '');
-        let codeArr = code.split(/[:,]/gi);
-        let ret = {}
-        for(let i = 0 ; i<codeArr.length; i+=2) {
-            let name = codeArr[i];
-            let value= codeArr[i+1];
-            if(name) {
-                ret[name] = value
-            }
+    // console.log('code value', code.properties)
+    var obj = code.properties;
+    var str = ''
+    for (var i in obj) {
+      var name = hyphen(obj[i].key.name);
+      var value = ''
+      var type = obj[i].value.type
+      if (type === 'MemberExpression') {
+        value = generate(obj[i].value).code
+      } else if(type === 'BinaryExpression') {
+        // 形如 style= {{height: this.state.height + 'px'}}
+        let left = generate(obj[i].value.left).code;
+        let right = generate(obj[i].value.right).code;
+        if(/rpx/gi.test(right)) {
+          value = replaceWithExpr(left) + 'px'
+        } else {
+          value = replaceWithExpr(left+ '*2') + 'px';
         }
-
-        return ret
+      } else {
+        value = obj[i].value.value;
+      }
+      str += name + ":" + this.transform(value) + ";"
     }
-    function hyphen(target) {
-    //转换为连字符风格
-     return target.replace(rhyphen, '$1-$2').toLowerCase();
-    }   
-    for(var i in obj){
-        let value = obj[i]+'';
-             value = value.replace(rpx, (str, match, unit) => {
-            if ( unit.toLowerCase() === 'px') {
-                match = parseFloat(match) * 2;
-            } 
-            return match + 'px';
-        });
-
-        str += hyphen(i)+":"+value+";"
-    }
-
-    return str;
+    return str; 
   },
+   transform(val) {
+    var rpx = /(\d[\d\.]*)(r?px)/gi;
+    val = val.replace(rpx, (str, match, unit) => {
+      if (unit.toLowerCase() === 'px') {
+        match = parseFloat(match) * 2;
+      }
+      return match + 'px';
+    })
   
+    return replaceWithExpr(val)
+  },
+
   sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
+
+function hyphen(target) {
+  //转换为连字符风格
+  var rhyphen = /([a-z\d])([A-Z]+)/g;
+  return target.replace(rhyphen, '$1-$2').toLowerCase();
+}
+// 将形如 this.state.value 变成 {{state.value}}
+function replaceWithExpr(value) {
+  if (value.indexOf('this.') >= 0) {
+    value = `{{${value.replace(/this\.(\s*)/gi, `$1`)}}}`;
+  }
+  return value;
+
+}
+
+function transform(val) {
+  var rpx = /(\d[\d\.]*)(r?px)/gi;
+  val = val.replace(rpx, (str, match, unit) => {
+    if (unit.toLowerCase() === 'px') {
+      match = parseFloat(match) * 2;
+    }
+    return match + 'px';
+  })
+
+  return replaceWithExpr(val)
+}
+
 
 module.exports = Object.assign(module.exports, utils);

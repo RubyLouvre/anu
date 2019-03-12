@@ -630,6 +630,17 @@ module.exports = {
                 );
                 astPath.node.value.value = relativePath;
             }
+            // 快应用下 string类型的行内样式 rpx 会换算成px
+            if (buildType == 'quick' && attrName === 'style' && attrValue.type === 'StringLiteral') {
+                
+                let value = utils.transform(attrValue.value);
+                parentPath.node.attributes.push(
+                    utils.createAttribute(
+                        'style',`${value}`   
+                    )
+                );
+                astPath.remove();
+            }
 
             if (t.isJSXExpressionContainer(attrValue)) {
                 let modules = utils.getAnu(state);
@@ -684,11 +695,9 @@ module.exports = {
                     var MemberExpression = styleType === 'MemberExpression';
                     var isIdentifier = styleType === 'Identifier';
                     // 华为编辑器行内样式特殊处理
-                    if(config.huawei ) {
-                        if(styleType === 'ObjectExpression') {
-                            var code = generate(expr).code;
-                            code = utils.huaWeiStyleTransform(code);
-                            console.log('code', code);
+                    if (config.huawei ) {
+                        if (styleType === 'ObjectExpression') {
+                            let code = utils.huaWeiStyleTransform(expr);
                             attrs.push(
                                 utils.createAttribute(
                                     'style',`${code}`   
