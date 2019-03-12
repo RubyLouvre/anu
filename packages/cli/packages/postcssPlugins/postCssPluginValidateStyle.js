@@ -215,6 +215,7 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
             // 再进行一次遍历保证所有px都被正确转换
             root.walkDecls(decl => {
                 decl.value = rpxToPx(decl.value);
+                
             });
         }
         root.walkRules(rule => {

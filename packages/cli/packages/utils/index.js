@@ -19,6 +19,8 @@ const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const queue = require('../queue');
 const userConfig = pkg.nanachi || pkg.mpreact || {};
+const { REACT_LIB_MAP } = require('../../consts/index');
+
 process.on('unhandledRejection', error => {
   // eslint-disable-next-line
   console.error('unhandledRejection', error);
@@ -370,8 +372,8 @@ let utils = {
       })
     );
   },
-  async getReactLibPath(isBeta) {
-    let React = this.getReactLibName();
+  async getReactLibPath(buildType, isBeta) {
+    let React = this.getReactLibName(buildType);
     let reactTargetPath = path.join(cwd, config.sourceDir, React);
     if (isBeta) {
       let spinner = this.spinner(`正在下载最新的${React}`);
@@ -394,12 +396,11 @@ let utils = {
     }
     return reactTargetPath;
   },
-  async asyncReact(option) {
-    await this.getReactLibPath(option);
-    let ReactLibName = this.getReactLibName();
-    let map = this.getReactMap();
-    Object.keys(map).forEach(key => {
-      let ReactName = map[key];
+  async asyncReact(buildType, isBeta) {
+    await this.getReactLibPath(buildType, isBeta);
+    let ReactLibName = this.getReactLibName(buildType);
+    Object.keys(REACT_LIB_MAP).forEach(key => {
+      let ReactName = REACT_LIB_MAP[key];
       if (ReactName != ReactLibName) {
         fs.remove(path.join(cwd, config.sourceDir, ReactName), err => {
           if (err) {
@@ -414,22 +415,11 @@ let utils = {
       }
     });
   },
-  getReactMap() {
-    return {
-      wx: 'ReactWX.js',
-      ali: 'ReactAli.js',
-      bu: 'ReactBu.js',
-      quick: 'ReactQuick.js',
-      h5: 'ReactH5.js',
-      tt: 'ReactWX.js'
-    };
-  },
-  getReactLibName() {
-    let buildType = config.buildType;
-    return this.getReactMap()[buildType];
+  getReactLibName(buildType) {
+    return REACT_LIB_MAP[buildType];
   },
   getAliasConfig() {
-    let React = this.getReactLibName();
+    let React = this.getReactLibName(config.buildType);
     let userAlias = userConfig.alias ? userConfig.alias : {};
     let ret = {}
 
