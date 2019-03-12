@@ -215,7 +215,14 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
             // 再进行一次遍历保证所有px都被正确转换
             root.walkDecls(decl => {
                 decl.value = rpxToPx(decl.value);
-                
+                // 快应用不支持!important
+                if (decl.important) { 
+                    // eslint-disable-next-line
+                    console.warn(
+                        chalk`快应用不支持!important`
+                    );
+                    decl.important = false;
+                }
             });
         }
         root.walkRules(rule => {
