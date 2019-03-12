@@ -2,7 +2,7 @@ const postCss = require('postcss');
 const chalk = require('chalk');
 const config = require('../config');
 const parser = require('postcss-selector-parser');
-const { ignoreCss }= require('./ignoreCss');
+const ignoreCss = require('../quickHelpers/ignoreCss');
 
 function removeCss(declaration) {
     let value = declaration.value;

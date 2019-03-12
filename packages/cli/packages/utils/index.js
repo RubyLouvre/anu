@@ -25,6 +25,7 @@ process.on('unhandledRejection', error => {
     console.error('unhandledRejection', error);
     process.exit(1); // To exit with a 'failure' code
 });
+// 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
     on() {
         Event.on.apply(global, arguments);
@@ -698,65 +699,10 @@ let utils = {
             });
         return isWebView;
     },
-    huaWeiStyleTransform(code) {
-        // console.log('code value', code.properties)
-        var obj = code.properties;
-        var str = ''
-        for (var i in obj) {
-            var name = hyphen(obj[i].key.name);
-            var value = ''
-            var type = obj[i].value.type;
-            switch (type) {
-                case 'MemberExpression': // style={{backgroundColor: this.state.color}}
-                case 'ConditionalExpression': // style={{ height: this.state.arr && this.state.arr.length > 0 ? '100%' : 'auto' }}
-                    value = generate(obj[i].value).code;
-                    break;
-                case 'BinaryExpression': // 形如 style= {{height: this.state.height + 'px'}}
-                    let left = generate(obj[i].value.left).code;
-                    let right = generate(obj[i].value.right).code;
-                    if (/rpx/gi.test(right)) {
-                        value = replaceWithExpr(left) + 'px'
-                    } else {
-                        value = replaceWithExpr(left + '*2') + 'px';
-                    }
-                    break;
-                default:
-                    value = obj[i].value.value;
-
-            }
-            str += name + ":" + this.transform(value) + ";"
-        }
-        return str;
-    },
-    transform(val) {
-        val = val + ''
-        var rpx = /(\d[\d\.]*)(r?px)/gi;
-        val = val.replace(rpx, (str, match, unit) => {
-            if (unit.toLowerCase() === 'px') {
-                match = parseFloat(match) * 2;
-            }
-            return match + 'px';
-        })
-
-        return replaceWithExpr(val)
-    },
+   
 
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
-
-function hyphen(target) {
-    //转换为连字符风格
-    var rhyphen = /([a-z\d])([A-Z]+)/g;
-    return target.replace(rhyphen, '$1-$2').toLowerCase();
-}
-// 将形如 this.state.value 变成 {{state.value}}
-function replaceWithExpr(value) {
-    if (value.indexOf('this.') >= 0) {
-        value = `{{${value.replace(/this\.(\s*)/gi, `$1`)}}}`;
-    }
-    return value;
-
-}
 
 
 

@@ -8,6 +8,8 @@ const fs = require('fs-extra');
 const deps = [];
 const config = require('../config');
 const buildType = config['buildType'];
+const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
+
 const quickFiles = require('../quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
@@ -618,35 +620,31 @@ module.exports = {
             let modules = utils.getAnu(state);
 
             let srcValue = attrValue && attrValue.value;
+            console.log(attrName, attrValue.type)
             //处理静态资源@assets/xxx.png别名
-            if (attrName === 'src' && srcValue && /^(@assets)/.test(srcValue)) {
-                let realAssetsPath = path.join(
-                    process.cwd(),
-                    srcValue.replace(/@/, '')
-                );
-                let relativePath = path.relative(
-                    path.dirname(modules.sourcePath),
-                    realAssetsPath
-                );
-                astPath.node.value.value = relativePath;
-            }
-            // 快应用下 string类型的行内样式 rpx 会换算成px
-            if (buildType == 'quick' && attrName === 'style' && attrValue.type === 'StringLiteral') {
-                
-                let value = utils.transform(attrValue.value);
-                parentPath.node.attributes.push(
-                    utils.createAttribute(
-                        'style',`${value}`   
-                    )
-                );
-                astPath.remove();
-            }
-
-            if (t.isJSXExpressionContainer(attrValue)) {
-                let modules = utils.getAnu(state);
+            if(attrValue.type === 'StringLiteral'){
+                if (attrName === 'src' && /^(@assets)/.test(srcValue)) {
+                    let realAssetsPath = path.join(
+                        process.cwd(),
+                        srcValue.replace(/@/, '')
+                    );
+                    let relativePath = path.relative(
+                        path.dirname(modules.sourcePath),
+                        realAssetsPath
+                    );
+                    astPath.node.value.value = relativePath;
+                }
+                 // 快应用下 string类型的行内样式 rpx 会换算成px
+                if(attrName === 'style' && buildType == 'quick' ){
+                    let value = quickhuaweiStyle(attrValue.value, true);
+                    astPath.node.value =  t.stringLiteral(value)
+                }
+            }else if (t.isJSXExpressionContainer(attrValue)) {
+              
                 let attrs = parentPath.node.attributes;
                 let expr = attrValue.expression;
                 let nodeName = parentPath.node.name.name;
+                //如果这是普通标签上的事件名
                 if (
                     /^(?:on|catch)[A-Z]/.test(attrName) &&
                     !/[A-Z]/.test(nodeName)
@@ -658,12 +656,13 @@ module.exports = {
                         nodeName,
                         buildType
                     );
+                    //改事件名， onTap与onClick, onChange与onInput
                     if (otherEventName !== eventName) {
                         astPath.node.name.name = prefix + otherEventName;
                         eventName = otherEventName;
                     }
 
-                    //事件存在的标签，必须添加上data-eventName-uid, data-class-uid, data-instance-uid
+                    //事件存在的标签，必须添加上data-eventName-uid, data-beacon-uid
                     var name = `data-${eventName.toLowerCase()}-uid`;
                     attrs.push(
                         utils.createAttribute(
@@ -673,10 +672,9 @@ module.exports = {
                                 astPath,
                                 modules.indexArr
                             )
-                            //  "e" + utils.createUUID(astPath)
                         )
                     );
-                    //以下标签，如果绑定了事件，我们会加上data-beacon-uid，实现日志自动上传
+                    //data-beacon-uid是用于实现日志自动上传
                     if (
                         !attrs.setClassCode &&
                         !attrs.some(function(el) {
@@ -689,22 +687,19 @@ module.exports = {
                         );
                     }
                     attrs.setClassCode = true;
+
                 } else if (attrName === 'style') {
                     //将动态样式封装到React.toStyle中
                     var styleType = expr.type;
                     var MemberExpression = styleType === 'MemberExpression';
                     var isIdentifier = styleType === 'Identifier';
                     // 华为编辑器行内样式特殊处理
+                 
                     if (config.huawei ) {
                         if (styleType === 'ObjectExpression') {
-                            let code = utils.huaWeiStyleTransform(expr);
-                            attrs.push(
-                                utils.createAttribute(
-                                    'style',`${code}`   
-                                )
-                            );
-                            astPath.remove();
-                            return;
+                           let code = quickhuaweiStyle(expr);
+                           astPath.node.value =  t.stringLiteral(code)
+                           return
                         }
                         
                     }
