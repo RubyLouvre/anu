@@ -6,7 +6,7 @@ module.exports = function huaWeiStyleTransform(expr, isString) {
         
         return transform(generate(expr).code);
     }
-    // console.log('code value', code.properties)
+    // 华为1040之前不支持style={ props.style123 },需要特殊处理
     var obj = expr.properties;
     var str = '';
     for (let i in obj) {
