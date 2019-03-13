@@ -14,5 +14,20 @@ module.exports = {
     'max-width': true,
     display: function (value) {
         return !(value === 'flex' || value === 'none');
+    },
+    'font-weight': function(value) {
+        return !(value === 'normal' || value === 'bold');
+    },
+    'align-items': function(value) {
+        let rule = /stretch|flex-start|flex-end|center/gi;
+        return !rule.test(value);
+    },
+    'animation-fill-mode': function(value) {
+        // none | forwards
+        return !(value === 'none' || value === 'forwards');
+    },
+    'flex': function(value) {
+        console.log('value', parseInt(value) == value);
+        return !(parseInt(value) == value);
     }
 };
