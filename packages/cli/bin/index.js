@@ -53,12 +53,12 @@ function getArgValue(cmd){
 }
 
 function injectBuildEnv(buildArgs){
-    const { buildType } = buildArgs;
+    const { buildType, compress, huawei } = buildArgs;
     process.env.ANU_ENV = buildType;
     config['buildType'] = buildType;
-    config['compress'] = buildArgs['compress'];
+    config['compress'] = compress;
     if (buildType === 'quick') {
-        config['huawei'] = buildArgs['huawei'] || false;
+        config['huawei'] = huawei || false;
     }
 }
 
