@@ -218,8 +218,8 @@ const visitors = {
         }
     },
     'border'(decl) {
-        
         if (decl.value === 'none') {
+            // eslint-disable-next-line
             console.warn(
                 chalk`快应用不支持border: none`
             );

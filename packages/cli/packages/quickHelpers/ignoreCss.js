@@ -25,5 +25,9 @@ module.exports = {
     'animation-fill-mode': function(value) {
         // none | forwards
         return !(value === 'none' || value === 'forwards');
+    },
+    'flex': function(value) {
+        console.log('value', parseInt(value) == value);
+        return !(parseInt(value) == value);
     }
 };
