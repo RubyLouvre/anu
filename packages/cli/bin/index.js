@@ -29,7 +29,9 @@ checkNodeVersion('8.6.0');
 function registeCommand(command, desc, options = {}, action) {
     const cmd = program.command(command).description(desc);
     Object.keys(options).forEach(key => {
-        cmd.option(`--${key}`, options[key]);
+        const option = options[key];
+
+        cmd.option(`${option.alias ? '-' + option.alias + ' ,' : ''}--${key}`, option.desc);
     });
     cmd.action(action);
 }
@@ -69,7 +71,6 @@ program
 registeCommand('init <app-name>', 'description: 初始化项目', {}, (appName)=>{
     require('../commands/init')(appName);
 });
-
 
 ['page', 'component'].forEach(type => {
     registeCommand(

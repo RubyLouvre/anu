@@ -7,10 +7,19 @@ const REACT_LIB_MAP = {
     tt: 'ReactWX.js'
 };
 const BUILD_OPTIONS = {
-    'compress': '压缩资源',
-    'beta': '同步react runtime',
-    'beta-ui': '同步schnee-ui',
-    'huawei': '补丁华为快应用'
+    'compress': {
+        alias: 'c',
+        desc: '压缩资源'
+    },
+    'beta': {
+        desc: '同步react runtime'
+    },
+    'beta-ui': {
+        desc: '同步schnee-ui'
+    },
+    'huawei': {
+        desc: '补丁华为快应用'
+    }
 };
 
 module.exports = {
