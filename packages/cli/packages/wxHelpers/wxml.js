@@ -47,18 +47,7 @@ let visitor = {
         exit: function(astPath) {
             let openTag = astPath.node.name;
             if (openTag.type === 'JSXMemberExpression' && openTag.object.name === 'React') {
-                if (openTag.property.name === 'toRenderProps') {
-                    //在使用了render props的组件中添加<anu-render />
-                    let attributes = [];
-                    //实现render props;
-                    let template = utils.createElement('anu-render', attributes, []);
-                    attributes.push(utils.createAttribute('renderUid', '{{props.renderUid}}'));
-                    let children = astPath.parentPath.parentPath.node.children;
-                    //去掉后面的{{this.props.render()}}
-                    let i = children.indexOf(astPath.parentPath.node);
-                    children.splice(i + 1, 1);
-                    astPath.parentPath.replaceWith(template);
-                } else if (openTag.property.name === 'useComponent') {
+                if (openTag.property.name === 'useComponent') {
                     let is, instanceUid;
                     let attributes = [];
                     astPath.node.attributes.forEach(function(el) {
@@ -92,6 +81,19 @@ let visitor = {
                     astPath.parentPath.replaceWith(template);
                 }
             }
+            // iconfont 各小程序匹配
+            // else if (buildType === 'ali' &&openTag&& openTag.name === 'text') {
+            //    var children = astPath.parentPath.node.children;
+            //    if(children.length === 1){
+            //         let iconValue = children[0].extra.raw
+            //         let iconReg = /\s*&#x/gi
+            //         if(iconReg.test(iconValue)) {
+            //             children.length = 0;
+
+            //         }
+            //    }
+
+            // }
         }
     },
     JSXAttribute(astPath, state) {

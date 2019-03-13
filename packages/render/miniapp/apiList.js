@@ -41,7 +41,7 @@ export var noPromiseApis = {
     createInnerAudioContext: true,
     createVideoContext: true,
     createCameraContext: true,
-  
+    wxpayGetType:true,
     navigateBack: true,
   
     // 位置
