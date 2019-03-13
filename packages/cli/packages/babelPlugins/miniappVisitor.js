@@ -554,9 +554,7 @@ module.exports = {
                 }
                 // 快应用下 string类型的行内样式 rpx 会换算成px
                 if (attrName === 'style' && buildType == 'quick') {
-
                     let value = quickhuaweiStyle(attrValue, true);
-                    console.log('attrValue', typeof value);
                     astPath.node.value = t.stringLiteral(value.slice(1, -1));
                 }
             } else if (t.isJSXExpressionContainer(attrValue)) {
