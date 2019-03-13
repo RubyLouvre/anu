@@ -9,6 +9,7 @@ const deps = [];
 const config = require('../config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
+const ignoreAttri = require('../quickHelpers/ignoreAttri');
 
 const quickFiles = require('../quickFiles');
 const quickConfig = require('../quickHelpers/config');
@@ -336,7 +337,7 @@ module.exports = {
             }
         }
     },
-    
+
     // visitor 中的 ClassProperty 没有访问, 
     // 使用 AssignmentExpression 解析 config 和 globalData
     // static 属性会自动挂载到 类
@@ -480,6 +481,11 @@ module.exports = {
                     bag = modules.importComponents[nodeName];
                 }
             }
+            if (buildType === 'quick') {
+                ignoreAttri(astPath, nodeName);
+            }
+
+
             if (bag) {
                 deps[nodeName] ||
                     (deps[nodeName] = {
@@ -609,7 +615,7 @@ module.exports = {
                         );
                         astPath.remove();
                     }
-                }  else if (attrName == 'hidden') {
+                } else if (attrName == 'hidden') {
                     if (buildType === 'quick') {
                         //在快应用下hidden={a}变成show={!a}
                         astPath.node.name.name = 'show';

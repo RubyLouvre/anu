@@ -12,6 +12,8 @@ module.exports = {
     'clear': true,
     'min-width': true,
     'max-width': true,
+    'flex-flow': true,
+    'word-break': true,
     display: function (value) {
         return !(value === 'flex' || value === 'none');
     },
@@ -19,7 +21,7 @@ module.exports = {
         return !(value === 'normal' || value === 'bold');
     },
     'align-items': function(value) {
-        let rule = /stretch|flex-start|flex-end|center/gi;
+        let rule = /stretch|flex-start|flex-end|center/i;
         return !rule.test(value);
     },
     'animation-fill-mode': function(value) {
@@ -27,7 +29,6 @@ module.exports = {
         return !(value === 'none' || value === 'forwards');
     },
     'flex': function(value) {
-        console.log('value', parseInt(value) == value);
         return !(parseInt(value) == value);
     }
 };

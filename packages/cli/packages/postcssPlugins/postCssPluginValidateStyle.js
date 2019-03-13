@@ -275,23 +275,23 @@ let transformAnimation = (declaration) => {
     },
     {
         name: 'duration',
-        reg: /(\d[\d\.]*)(m?s)/gi
+        reg: /(\d[\d\.]*)(m?s)/i
     },
     {
         name: 'timing-function',
-        reg: /linear|ease|ease-in|ease-out|ease-in-out/gi
+        reg: /linear|ease|ease-in|ease-out|ease-in-out/i
     },
     {
         name: 'delay',
-        reg: /(\d[\d\.]*)(m?s)/gi
+        reg: /(\d[\d\.]*)(m?s)/i
     },
     {
         name: 'iteration-count',
-        reg: /^\d|infinite/gi
+        reg: /^\d|infinite/i
     },
     {
         name: 'fill-mode',
-        reg: /none|forwards/gi
+        reg: /none|forwards/i
     }
     ];
     let decl = declaration.value.split(',')[0];   // 多个片段的animation动画的情况 quick好像不支持
@@ -356,7 +356,7 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 removeCss(decl);
             });
             // 快应用移除包含before、after伪类的选择器
-            const invalidatePseudos = ['after', 'before', 'hover'];
+            const invalidatePseudos = ['after', 'before', 'hover', 'first-child','active', 'last-child'];
             root.walkRules(rule => {
                 const find = findInvalidateRule(rule.selector, { invalidatePseudos });
                 if (find) { rule.remove(); }
