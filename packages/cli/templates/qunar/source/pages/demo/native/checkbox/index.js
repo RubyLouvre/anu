@@ -42,8 +42,10 @@ class P extends React.Component {
                                 <checkbox
                                     value={item.name}
                                     checked={item.checked}
+                                    text={item.value}
+                                    isRight={true}
                                 />
-                                <text>{item.value}</text>
+                                {/* <text>{item.value}</text> */}
                             </label>
                         );
                     })}

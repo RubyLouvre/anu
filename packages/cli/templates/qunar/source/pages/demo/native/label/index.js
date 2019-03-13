@@ -65,12 +65,14 @@ class P extends React.Component {
                             return (
                                 <view className="label-1" key={index}>
                                     <label>
-                                        <text className="label-1__text">
+                                        {/* <text className="label-1__text">
                                             {item.value}
-                                        </text>
+                                        </text> */}
                                         <checkbox
                                             value={item.name}
                                             checked={item.checked}
+                                            text={item.value}
+                                            isRight={true}
                                         />
                                     </label>
                                 </view>
@@ -85,15 +87,17 @@ class P extends React.Component {
                         {this.state.radioItems.map(function(item, index) {
                             return (
                                 <view className="label-2" key={index}>
-                                    <div className="label-2__text">
+                                    {/* <div className="label-2__text">
                                         <label for={item.name}>
                                             <text>{item.name}</text>
                                         </label>
-                                    </div>
+                                    </div> */}
                                     <radio
                                         id={item.name}
                                         value={item.name}
                                         checked={item.checked}
+                                        text={item.value}
+                                        isRight={true}
                                     />
                                 </view>
                             );
