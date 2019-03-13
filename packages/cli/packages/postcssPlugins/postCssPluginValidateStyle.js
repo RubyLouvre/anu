@@ -95,6 +95,13 @@ function validateMargin(decl) {
 }
 
 function splitBorder(decl) {
+    if (decl.value === 'none') {
+        // eslint-disable-next-line
+        console.warn(
+            chalk`快应用不支持border: none`
+        );
+        decl.value = '0';
+    }
     const properties = ['width', 'style', 'color'];
     let values = decl.value.replace(/(,\s+)/g, ',').trim().split(/\s+/);
     if (values) {
