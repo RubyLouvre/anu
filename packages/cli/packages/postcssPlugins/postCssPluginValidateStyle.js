@@ -95,6 +95,13 @@ function validateMargin(decl) {
 }
 
 function splitBorder(decl) {
+    if (decl.value === 'none') {
+        // eslint-disable-next-line
+        console.warn(
+            chalk`快应用不支持border: none`
+        );
+        decl.value = '0';
+    }
     const properties = ['width', 'style', 'color'];
     let values = decl.value.replace(/(,\s+)/g, ',').trim().split(/\s+/);
     if (values) {
@@ -113,7 +120,6 @@ function splitBorder(decl) {
             if (properties[index] === 'style') {
                 prop = 'border-style';
             }
-
             res[prop] = value;
             decl.cloneBefore(postCss.decl({
                 prop,
@@ -179,6 +185,9 @@ function transformBorderRadius(decl) {
 
 function transformBackground(decl) {
     const value = decl.value;
+    if (value == 0) {
+        decl.remove();  // 不支持 background: 0
+    }
     let match = [
         /^#[a-zA-Z0-9]{3,6}$/i, //16进制
         /^[a-z]{3,}$/i //语意化颜色 [ blue | green | ...]
@@ -214,6 +223,16 @@ const visitors = {
             );
             decl.value = match[0];
         }
+    },
+    'border'(decl) {
+        if (decl.value === 'none') {
+            // eslint-disable-next-line
+            console.warn(
+                chalk`快应用不支持border: none`
+            );
+            decl.value = '0';
+        }
+
     },
     'border-radius'(decl) {
         generateConflictDeclarations(
@@ -275,8 +294,8 @@ let transformAnimation = (declaration) => {
         reg: /none|forwards/gi
     }
     ];
-
-    let values = declaration.value.replace(/(,\s+)/g, ',').trim().split(/\s+/);
+    let decl = declaration.value.split(',')[0];   // 多个片段的animation动画的情况 quick好像不支持
+    let values = decl.replace(/(,\s+)/g, ',').trim().split(/\s+/);
     let index = 0;
     for (let i = 0; i < properties.length; i++) {
         const {
