@@ -59,7 +59,9 @@ function findInvalidateRule(css, { invalidatePseudos }) {
                             return true;
                         }
                     }
+                    return false;
                 });
+                // 如果找到非法属性，停止查找
                 if (find) {
                     return;
                 }
