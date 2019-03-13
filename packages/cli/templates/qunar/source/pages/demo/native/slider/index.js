@@ -34,20 +34,20 @@ class P extends React.Component {
         return (
             <div class='anu-block'>
                 <div class="anu-item">
-                    <div class="anu-page-header">设置step</div>
+                    <text class="anu-page-header">设置step</text>
                     <div class="anu-block">
                         <slider onChange={this.slider2change} step="5" />
                     </div>
                 </div>
                 <div class="anu-item">
-                    <div class="anu-page-header">显示当前value</div>
+                    <text class="anu-page-header">显示当前value</text>
                     <div class="anu-block">
                         <slider onChange={this.slider3change} show-value />
                     </div>
                 </div>
 
                 <div class="anu-item">
-                    <div class="anu-page-header">设置最小/最大值</div>
+                    <text class="anu-page-header">设置最小/最大值</text>
                     <div class="anu-block">
                         <slider
                             onChange={this.slider4change}
@@ -58,8 +58,10 @@ class P extends React.Component {
                     </div>
                 </div>
                 <div class="anu-item">
-                    <switch checked onChange={this.switch1Change} />
-                    <switch onChange={this.switch2Change} />
+                    <div>
+                        <switch checked onChange={this.switch1Change} />
+                        <switch onChange={this.switch2Change} />
+                    </div>
                 </div>
             </div>
         );
