@@ -7,6 +7,11 @@ module.exports = {
     'transition': true,
     'vertical-align': true,
     'white-space': true,
+    'max-height': true,
+    'float': true,
+    'clear': true,
+    'min-width': true,
+    'max-width': true,
     display: function (value) {
         return !(value === 'flex' || value === 'none');
     }

@@ -100,20 +100,22 @@ class P extends React.Component {
                     <span style={this.state.color}>{this.state.state}</span>
                 </div>
                 <scroll-view>
-                    {this.state.modes.map(function(mode) {
+                    {this.state.modes.map(function(mode, idx) {
                         return (
-                            <div style="font-size: 32rpx;" >
-                                <button
-                                    style="color: #999;"
-                                    onTap={this.changeType.bind(
-                                        this,
-                                        mode.mode
-                                    )}
-                                >
-                                    使用 {mode.mode}
-                                </button>
-                                <div>{mode.text}</div>
-                            </div>
+                            <list-item type={'image' + idx}>
+                                <div style="font-size: 32rpx;" >
+                                    <button
+                                        style="color: #999;"
+                                        onTap={this.changeType.bind(
+                                            this,
+                                            mode.mode
+                                        )}
+                                    >
+                                        使用 {mode.mode}
+                                    </button>
+                                    <div>{mode.text}</div>
+                                </div>
+                            </list-item>
                         );
                     }, this)}
                 </scroll-view>
