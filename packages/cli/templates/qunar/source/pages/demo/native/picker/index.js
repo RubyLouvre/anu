@@ -1,5 +1,5 @@
 import React from '@react';
-
+import './index.scss';
 class P extends React.Component {
     constructor(props) {
         super(props);

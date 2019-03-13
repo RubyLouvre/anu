@@ -15,8 +15,8 @@ class P extends React.Component {
 
     render() {
         return (
-            <view class="page-body">
-                <view class="page-section">
+            <view class="page-body column-layout">
+                <view class="page-section column-layout">
                     <view class="page-section-title">
                         输入区域高度自适应，不会出现滚动条
                     </view>
@@ -25,12 +25,12 @@ class P extends React.Component {
                     </view>
                 </view>
 
-                <view class="page-section">
+                <view class="page-section column-layout">
                     <view class="page-section-title">
                         这是一个可以自动聚焦的textarea
                     </view>
                     <view class="textarea-wrp">
-                        <textarea autoFocus={true} style="height: 3em" />
+                        <textarea autoFocus={true} style="height: 200rpx" />
                     </view>
                 </view>
             </view>
