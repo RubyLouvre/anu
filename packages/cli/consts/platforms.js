@@ -1,27 +1,27 @@
 module.exports = [
     {
-        type: 'wx',
+        buildType: 'wx',
         des: '微信小程序',
         isDefault: true
     },
     {
-        type: 'ali',
+        buildType: 'ali',
         des: '支付宝小程序'
     },
     {
-        type: 'bu',
+        buildType: 'bu',
         des: '百度智能小程序'
     },
     {
-        type: 'tt',
+        buildType: 'tt',
         des: '头条小程序'
     },
     {
-        type: 'quick',
+        buildType: 'quick',
         des: '快应用'
     },
     {
-        type: 'h5',
+        buildType: 'h5',
         des: 'H5'
     },
 ];
