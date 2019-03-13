@@ -251,7 +251,7 @@ let transformAnimation = (declaration) => {
     },
     {
         name: 'iteration-count',
-        reg: /\d|infinite/gi
+        reg: /^\d|infinite/gi
     },
     {
         name: 'fill-mode',
@@ -259,8 +259,7 @@ let transformAnimation = (declaration) => {
     }
     ];
 
-    let value = declaration.value;
-    let values = value.replace(/(,\s+)/g, ',').trim().split(/\s+/);
+    let values = declaration.value.replace(/(,\s+)/g, ',').trim().split(/\s+/);
     let index = 0;
     for (let i = 0; i < properties.length; i++) {
         const {
@@ -270,6 +269,10 @@ let transformAnimation = (declaration) => {
         const res = {};
         const value = values[index];
         if (!reg.test(value)) {
+            if (i === properties.length-1) {
+                i = index;
+                index++;
+            }
             continue;
         }
         const prop = declaration.prop + '-' + name;
@@ -288,6 +291,7 @@ let transformAnimation = (declaration) => {
 const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style', () => {
     return (root) => {
         if (config.buildType === 'quick') {
+            
             root.walkAtRules(atrule => {
                 if (atrule.name === 'media') {
                     atrule.params = rpxToPx(atrule.params);
