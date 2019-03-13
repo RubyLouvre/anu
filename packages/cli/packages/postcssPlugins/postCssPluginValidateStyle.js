@@ -356,7 +356,7 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 removeCss(decl);
             });
             // 快应用移除包含before、after伪类的选择器
-            const invalidatePseudos = ['after', 'before', 'hover', 'first-child'];
+            const invalidatePseudos = ['after', 'before', 'hover', 'first-child','active', 'last-child'];
             root.walkRules(rule => {
                 const find = findInvalidateRule(rule.selector, { invalidatePseudos });
                 if (find) { rule.remove(); }

@@ -13,6 +13,7 @@ module.exports = {
     'min-width': true,
     'max-width': true,
     'flex-flow': true,
+    'word-break': true,
     display: function (value) {
         return !(value === 'flex' || value === 'none');
     },
