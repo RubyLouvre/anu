@@ -38,13 +38,30 @@ function parseSelector(css) {
     return result;
 }
 
-function findPseudo(css, pseudoReg) {
-    let find;
+function findInvalidateRule(css, { invalidatePseudos }) {
+    const selectorReg = /^tag|class|id$/;
+    let find = false;
     parser((selector) => {
         if (selector.nodes && selector.nodes.length) {
             // 遍历选择器
             for (var i = 0, length = selector.nodes.length; i < length; i++) {
-                find = selector.nodes[i].nodes.find(node => node.type === 'pseudo' && node.value.match(pseudoReg));
+                find = selector.nodes[i].nodes.some(node => {
+                    if (node.type === 'pseudo' && node.value.match(new RegExp(invalidatePseudos.join('|')))) {
+                        // eslint-disable-next-line
+                        console.warn(chalk.red(`快应用不支持${invalidatePseudos.join('、')}伪类选择器`));
+                        return true;
+                    }
+                    if (selectorReg.test(node.type)) {
+                        const next = node.next();
+                        if (next && selectorReg.test(next.type)) {
+                            // eslint-disable-next-line
+                            console.warn(chalk.red(`快应用不支持${selector.toString()}选择器`));
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+                // 如果找到非法属性，停止查找
                 if (find) {
                     return;
                 }
@@ -53,7 +70,7 @@ function findPseudo(css, pseudoReg) {
     }).processSync(css, {
         lossless: false
     });
-    return find ? true : false;
+    return find;
 }
 
 function rpxToPx(value) {
@@ -309,7 +326,7 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 if (decl.important) { 
                     // eslint-disable-next-line
                     console.warn(
-                        chalk`快应用不支持!important`
+                        chalk.red('快应用不支持!important')
                     );
                     decl.important = false;
                 }
@@ -320,8 +337,9 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 removeCss(decl);
             });
             // 快应用移除包含before、after伪类的选择器
+            const invalidatePseudos = ['after', 'before', 'hover'];
             root.walkRules(rule => {
-                const find = findPseudo(rule.selector, /after|before/);
+                const find = findInvalidateRule(rule.selector, { invalidatePseudos });
                 if (find) { rule.remove(); }
             });
         }
