@@ -38,6 +38,24 @@ function parseSelector(css) {
     return result;
 }
 
+function findPseudo(css, pseudoReg) {
+    let find;
+    parser((selector) => {
+        if (selector.nodes && selector.nodes.length) {
+            // 遍历选择器
+            for (var i = 0, length = selector.nodes.length; i < length; i++) {
+                find = selector.nodes[i].nodes.find(node => node.type === 'pseudo' && node.value.match(pseudoReg));
+                if (find) {
+                    return;
+                }
+            }
+        }
+    }).processSync(css, {
+        lossless: false
+    });
+    return find ? true : false;
+}
+
 function rpxToPx(value) {
     return value.replace(/(-?\d*\.?\d+)(r?px)/g, function (match, numberStr, unit) {
 
@@ -301,8 +319,11 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
             root.walkDecls(decl => {
                 removeCss(decl);
             });
-
-
+            // 快应用移除包含before、after伪类的选择器
+            root.walkRules(rule => {
+                const find = findPseudo(rule.selector, /after|before/);
+                if (find) { rule.remove(); }
+            });
         }
         root.walkRules(rule => {
             const selectors = parseSelector(rule.selector);
