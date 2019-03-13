@@ -4,6 +4,7 @@ const chalk = require('chalk');
 const semver = require('semver');
 const program = require('commander');
 const platforms = require('../consts/platforms');
+const { BUILD_OPTIONS } = require('../consts/index');
 let config = require('../packages/config');
 function checkNodeVersion(version){
     if (semver.lt(process.version, version)) {
@@ -17,6 +18,21 @@ function checkNodeVersion(version){
     }
 }
 checkNodeVersion('8.6.0');
+
+/**
+ * 注册命令
+ * @param {String} command 命令名
+ * @param {String} desc 命令描述
+ * @param {Object} options 命令参数
+ * @param {Function} action 回调函数
+ */
+function registeCommand(command, desc, options = {}, action) {
+    const cmd = program.command(command).description(desc);
+    Object.keys(options).forEach(key => {
+        cmd.option(`--${key}`, options[key]);
+    });
+    cmd.action(action);
+}
 
 //获取参数的布尔值
 function getArgValue(cmd){
@@ -50,19 +66,17 @@ program
     .version(require('../package.json').version)
     .usage('<command> [options]');
 
-program
-    .command('init <app-name>')
-    .description('description: 初始化项目')
-    .action((appName)=>{
-        require('../commands/init')(appName);
-    });
+registeCommand('init <app-name>', 'description: 初始化项目', {}, (appName)=>{
+    require('../commands/init')(appName);
+});
 
 
 ['page', 'component'].forEach(type => {
-    program
-        .command(`${type} <page-name>`)
-        .description(`description: 创建${type}s/<${type}-name>/index.js模版`)
-        .action((name)=>{
+    registeCommand(
+        `${type} <page-name>`,
+        `description: 创建${type}s/<${type}-name>/index.js模版`,
+        {}, 
+        (name)=>{
             const isPage = type === 'page';
             require('../commands/createPage')( {name, isPage} );
         });
@@ -80,22 +94,27 @@ function buildAction(buildType, compileType) {
     };
 }
 
-function registeBuildfCommand(compileType, buildType, isDefault, des) {
-    program
-        .command(`${compileType}${isDefault ? '' : ':' + buildType}`)
-        .description(`description: 构建${des}`)
-        .option('--compress', '压缩资源')
-        .option('--beta', '同步react runtime')
-        .option('--beta-ui', '同步schnee-ui')
-        .option('--huawei','补丁华为快应用')
-        .action(buildAction(buildType, compileType));
+function registeBuildfCommand({compileType, buildType, isDefault, desc}) {
+    registeCommand(`${compileType}${isDefault ? '' : ':' + buildType}`, desc, BUILD_OPTIONS, buildAction(buildType, compileType));
 }
 //注册其他命令
 platforms.forEach(function(el){
-    const { type, des, isDefault } = el;
+    const { buildType, des, isDefault } = el;
     ['build', 'watch'].forEach(function (compileType) {
-        if (isDefault) { registeBuildfCommand(compileType, type, isDefault, des); }
-        registeBuildfCommand(compileType, type, false, des);
+        if (isDefault) { 
+            registeBuildfCommand({
+                compileType, 
+                buildType, 
+                isDefault, 
+                des
+            }); 
+        }
+        registeBuildfCommand({
+            compileType, 
+            buildType, 
+            isDefault: false, 
+            des
+        });
     });
 });
 
