@@ -17,6 +17,9 @@ module.exports = {
     'word-wrap': true,
     'zoom': true,
     'box-flex': true,
+    'background-clip': true,
+    'outline': true,
+    'line-clamp': true,
     display: function (value) {
         return !(value === 'flex' || value === 'none');
     },
