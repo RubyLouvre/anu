@@ -23,5 +23,5 @@ const attributes = {
     div: 'animation,hover-class,formtype,type,open-type',
     input: 'placeholder-style,placeholder-class',
     image: 'mode',
-    swiper: 'indicator-dots'
+    swiper: 'indicator-dots,duration,indicator-active-color'
 };
