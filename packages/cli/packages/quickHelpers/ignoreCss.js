@@ -20,6 +20,8 @@ module.exports = {
     'background-clip': true,
     'outline': true,
     'line-clamp': true,
+    'text-shadow': true,
+    'appearance': true,
     display: function (value) {
         return !(value === 'flex' || value === 'none');
     },
