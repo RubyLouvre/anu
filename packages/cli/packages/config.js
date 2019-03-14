@@ -38,7 +38,9 @@ module.exports = {
         helpers: 'quickHelpers',
         patchComponents: [
             'radio',
+            'radio-group',
             'checkbox',
+            'checkbox-group',
             'label',
             'navigator',
             'picker'
