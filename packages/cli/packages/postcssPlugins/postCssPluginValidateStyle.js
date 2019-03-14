@@ -7,7 +7,7 @@ const ignoreCss = require('../quickHelpers/ignoreCss');
 function removeCss(declaration) {
     let value = declaration.value;
     let prop = declaration.prop;
-    let webkitReg = /^\-webkit/gi;
+    let webkitReg = /^-webkit|^-moz|^-ms/i;
     var isRemove = false;
 
     if (ignoreCss[prop] && ignoreCss[prop] === true) {

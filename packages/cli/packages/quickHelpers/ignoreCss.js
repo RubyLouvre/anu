@@ -14,6 +14,9 @@ module.exports = {
     'max-width': true,
     'flex-flow': true,
     'word-break': true,
+    'word-wrap': true,
+    'zoom': true,
+    'box-flex': true,
     display: function (value) {
         return !(value === 'flex' || value === 'none');
     },
