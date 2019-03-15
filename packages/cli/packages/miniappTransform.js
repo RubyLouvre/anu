@@ -1,7 +1,8 @@
+/* eslint-disable no-console */
 /*!
  * 生成js文件, ux文件
  */
-let babel = require('babel-core');
+let babel = require('@babel/core');
 let path = require('path');
 let config = require('./config');
 let quickFiles = require('./quickFiles');
@@ -30,18 +31,42 @@ function transform(sourcePath, resolvedIds, originalCode) {
     babel.transformFile(
         sourcePath,
         {
+            configFile: false,
             babelrc: false,
             comments: false,
+            ast: true,
             plugins: [
-                require('babel-plugin-syntax-jsx'),
-                require('babel-plugin-transform-decorators-legacy').default,
-                require('babel-plugin-transform-object-rest-spread'),
-                require('babel-plugin-transform-es2015-template-literals'),
+                /**
+                 * If you are including your plugins manually and using
+                 * @babel/plugin-proposal-class-properties, make sure that
+                 * @babel/plugin-proposal-decorators comes before
+                 * @babel/plugin-proposal-class-properties.
+                 * 
+                 * When using the legacy: true mode,
+                 * @babel/plugin-proposal-class-properties must be used in loose mode
+                 * to support the @babel/plugin-proposal-decorators.
+                 * 
+                 * [babel 6 to 7] 
+                 * In anticipation of the new decorators proposal implementation,
+                 * we've decided to make it the new default behavior.
+                 * This means that to continue using the current decorators syntax/behavior,
+                 * you must set the legacy option as true.
+                 */
+                [require('@babel/plugin-proposal-decorators'), { legacy: true }],
+                /**
+                 * [babel 6 to 7] 
+                 * v6 default config: ["plugin", { "loose": true }]
+                 * v7 default config: ["plugin"]
+                 */
+                [require('@babel/plugin-proposal-class-properties'), { loose: true }],
+                require('@babel/plugin-syntax-jsx'),
+                require('@babel/plugin-proposal-object-rest-spread'),
+                [require('@babel/plugin-transform-template-literals'), { loose: true }],
                 ...require('./babelPlugins/transformMiniApp')(sourcePath),
                 ...require('./babelPlugins/transformEnv'),
                 ...require('./babelPlugins/injectRegeneratorRuntime'),
                 require('./babelPlugins/transformIfImport'),
-                require('./babelPlugins/trasnformAlias')( {sourcePath,resolvedIds} ),
+                require('./babelPlugins/trasnformAlias')( {sourcePath,resolvedIds} )
             ]
         },
         async function(err, result) {

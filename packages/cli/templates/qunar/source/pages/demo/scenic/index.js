@@ -32,7 +32,7 @@ class P extends React.Component {
         });
     }
   config = {
-      backgrounColor: '#FFF',
+      backgroundColor: '#FFF',
       navigationBarBackgroundColor: '#1890ff',
       navigationBarTitleText: '景点门票',
       navigationBarTextStyle: '#d5d6d6'

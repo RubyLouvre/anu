@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-01
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -2322,6 +2322,7 @@ var otherApis = {
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,
+  request: true,
   login: true,
   checkSession: true,
   authorize: true,
@@ -2345,60 +2346,6 @@ var otherApis = {
   checkIsSoterEnrolledInDevice: true
 };
 
-var RequestQueue = {
-    MAX_REQUEST: 5,
-    queue: [],
-    request: function request(options) {
-        this.push(options);
-        this.run();
-    },
-    push: function push(options) {
-        this.queue.push(options);
-    },
-    run: function run() {
-        if (!this.queue.length) {
-            return;
-        }
-        if (this.queue.length <= this.MAX_REQUEST) {
-            var options = this.queue.shift();
-            var completeFn = options.complete;
-            var self = this;
-            options.complete = function () {
-                completeFn && completeFn.apply(null, arguments);
-                self.run();
-            };
-            if (this.facade.httpRequest) {
-                this.facade.httpRequest(options);
-            } else if (this.facade.request) {
-                this.facade.request(options);
-            }
-        }
-    }
-};
-function request(options) {
-    options = options || {};
-    options.headers = options.headers || options.header;
-    var originSuccess = options.success || noop;
-    var originFail = options.fail || noop;
-    var originComplete = options.complete || noop;
-    var p = new Promise(function (resolve, reject) {
-        options.success = function (res) {
-            res.statusCode = res.status || res.statusCode;
-            res.header = res.headers || res.header;
-            originSuccess(res);
-            resolve(res);
-        };
-        options['fail'] = function (res) {
-            originFail(res);
-            reject(res);
-        };
-        options['complete'] = function (res) {
-            originComplete(res);
-        };
-        RequestQueue.request(options);
-    });
-    return p;
-}
 function promisefyApis(ReactWX, facade, more) {
     var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis, more);
     Object.keys(weApis).forEach(function (key) {
@@ -2477,8 +2424,6 @@ function initPxTransform(facade) {
 }
 function registerAPIs(ReactWX, facade, override) {
     registerAPIsQuick(ReactWX, facade, override);
-    RequestQueue.facade = facade;
-    ReactWX.api.request = request;
     initPxTransform(ReactWX.api);
     ReactWX.api.pxTransform = ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
@@ -2487,6 +2432,7 @@ function registerAPIsQuick(ReactWX, facade, override) {
     promisefyApis(ReactWX, facade, override(facade));
 }
 
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 var more = function more(api) {
     return {
         showModal: function _(a) {
@@ -2620,6 +2566,34 @@ var more = function more(api) {
         setScreenBrightness: function _(a) {
             a.brightness = a.value;
             return api.setScreenBrightness(a);
+        },
+        request: function request(_a) {
+            var originSuccess = _a.success || noop;
+            var originFail = _a.fail || noop;
+            var originComplete = _a.complete || noop;
+            _a.success = function (res) {
+                var _res = res,
+                    status = _res.status,
+                    headers = _res.headers,
+                    rest = _objectWithoutProperties(_res, ['status', 'headers']);
+                if (typeof status !== 'undefined' && typeof headers !== 'undefined') {
+                    res = Object.assign({ statusCode: status, header: headers }, rest);
+                }
+                originSuccess.call(this, res);
+                originComplete.call(this, res);
+            };
+            _a.fail = function (res) {
+                var _res2 = res,
+                    status = _res2.status,
+                    headers = _res2.headers,
+                    rest = _objectWithoutProperties(_res2, ['status', 'headers']);
+                if (typeof status !== 'undefined' && typeof headers !== 'undefined') {
+                    res = Object.assign({ statusCode: status, header: headers }, rest);
+                }
+                originFail.call(this, res);
+                originComplete.call(this, res);
+            };
+            return api.httpRequest(_a);
         }
     };
 };

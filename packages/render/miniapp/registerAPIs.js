@@ -1,68 +1,5 @@
 import { onAndSyncApis, noPromiseApis, otherApis } from './apiList';
-import { isFn, noop } from 'react-core/util';
-
-
-
-const RequestQueue = {
-    MAX_REQUEST: typeof wx !== 'undefined' ? 10 : Infinity,
-    queue: [],
-    request(options) {
-        this.push(options);
-        this.run();
-    },
-
-    push(options) {
-        this.queue.push(options);
-    },
-
-    run() {
-        if (!this.queue.length) {
-            return;
-        }
-        if (this.queue.length <= this.MAX_REQUEST) {
-            let options = this.queue.shift();
-            let completeFn = options.complete;
-            var self = this;
-            options.complete = function() {
-                completeFn && completeFn.apply(null, arguments);
-                self.run();
-            };
-            if (this.facade.httpRequest) {
-                this.facade.httpRequest(options);
-            } else if (this.facade.request) {
-                this.facade.request(options);
-            }
-        }
-    }
-};
-
-function request(options) {
-    options = options || {};
-    options.headers = options.headers || options.header;
-    const originSuccess = options.success || noop;
-    const originFail = options.fail || noop;
-    const originComplete = options.complete || noop;
-    const p = new Promise((resolve, reject) => {
-        options.success = res => {
-            //  支付宝返回字段不相同
-            res.statusCode = res.status || res.statusCode;
-            res.header = res.headers || res.header;
-            originSuccess(res);
-            resolve(res);
-        };
-        options['fail'] = res => {
-            originFail(res);
-            reject(res);
-        };
-
-        options['complete'] = res => {
-            originComplete(res);
-        };
-
-        RequestQueue.request(options);
-    });
-    return p;
-}
+import { noop } from 'react-core/util';
 
 export function promisefyApis(ReactWX, facade, more) {
     const weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis, more);
@@ -149,8 +86,6 @@ function initPxTransform(facade) {
 
 export function registerAPIs(ReactWX, facade, override) {
     registerAPIsQuick(ReactWX, facade, override);
-    RequestQueue.facade = facade;
-    ReactWX.api.request = request;
     initPxTransform(ReactWX.api);
     ReactWX.api.pxTransform =  ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }

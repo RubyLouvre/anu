@@ -1,4 +1,3 @@
-let syntaxClassProperties = require('babel-plugin-syntax-class-properties');
 let visitor = require('./miniappVisitor');
 let config = require('../config');
 let quickFiles = require('../quickFiles');
@@ -7,7 +6,6 @@ let reg = utils.getComponentOrAppOrPageReg();
 
 let miniAppPlugin = function(){
     return {
-        inherits: syntaxClassProperties,
         visitor: visitor,
         manipulateOptions(opts) {
             //解析每个文件前执行一次
@@ -20,8 +18,8 @@ let miniAppPlugin = function(){
                 usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
                 customComponents: [] //定义在page.json中usingComponents对象的自定义组件
             });
-
-            let filePath = opts.filename; //windows: D:/x/y/z
+            
+            let filePath = opts.filename.replace(/\\/g, '/');
             modules.sourcePath = filePath;
             modules.current = filePath.replace(process.cwd(), '');
             if (

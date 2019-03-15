@@ -1,9 +1,9 @@
 /* eslint no-console: 0 */
-const t = require('babel-types');
+const t = require('@babel/types');
 const wxmlHelper = require('./wxml');
-const babel = require('babel-core');
+const babel = require('@babel/core');
 const path = require('path');
-const generate = require('babel-generator').default;
+const generate = require('@babel/generator').default;
 const quickFiles = require('../quickFiles');
 const config = require('../config');
 const utils = require('../utils');
@@ -36,9 +36,16 @@ exports.exit = function (astPath, type, componentName, modules) {
         case t.isReturnStatement(expr):
             var needWrap = expr.argument.type !== 'JSXElement';
             var jsx = generate(expr.argument).code;
+            /**
+             * [babel 6 to 7]
+             * babel -> Options
+             * babel7 default ast:false
+             */
             var jsxAst = babel.transform(jsx, {
+                configFile: false,
                 babelrc: false,
-                plugins: [[require('babel-plugin-transform-react-jsx'), { pragma: 'h' }]]
+                plugins: [[require('@babel/plugin-transform-react-jsx'), { pragma: 'h' }]],
+                ast: true
             });
 
             expr.argument = jsxAst.ast.program.body[0];
@@ -58,10 +65,6 @@ exports.exit = function (astPath, type, componentName, modules) {
                 if (modules.usedComponents[i]) {
                     wxml = `<import src="${ modules.importComponents[i]}.ux" />\n${wxml}`;
                 }
-            }
-            if (type == 'RenderProps') {
-                handleRenderProps(wxml, componentName, modules);
-                return;
             }
             var quickFile = quickFiles[modules.sourcePath];
             if (quickFile) {
@@ -90,53 +93,6 @@ ${wxml}
     }
 };
 
-function handleRenderProps(wxml, componentName, modules) {
-    let dep =
-        deps['renderProps'] ||
-        (deps['renderProps'] = {
-            json: {
-                component: true,
-                usingComponents: {}
-            },
-            wxml: ''
-        });
-
-    //生成render props的模板
-    dep.wxml =
-        dep.wxml +
-        `<block if="{{renderUid === '${componentName}'}}">${wxml}</block>`;
-    //生成render props的json
-    var importTag = '';
-    for (let i in modules.importComponents) {
-        importTag += `<import name="anu-${ i.toLowerCase() }" src="/components/${ i }/index"></import>\n`;
-    }
-    queue.push({
-        path: utils.updatePath(
-            modules.sourcePath,
-            config.sourceDir,
-            'dist',
-            'ux'
-        ),
-        code: `${importTag}<template>
-${dep.wxml}
-</template>
-<script>
-export default {
-    data: function(){
-    return {
-        renderUid: "",
-        props: {},
-        state: {},
-        context: {}
-    }
-    },
-    onInit: function () { },
-    onDistory: function () { }
-};
-</script>
-        `
-    });
-}
 
 function transformIfStatementToConditionalExpression(node) {
     const { test, consequent, alternate } = node;

@@ -3,6 +3,8 @@
 const chalk = require('chalk');
 const semver = require('semver');
 const program = require('commander');
+const platforms = require('../consts/platforms');
+const { BUILD_OPTIONS } = require('../consts/index');
 let config = require('../packages/config');
 function checkNodeVersion(version){
     if (semver.lt(process.version, version)) {
@@ -16,6 +18,23 @@ function checkNodeVersion(version){
     }
 }
 checkNodeVersion('8.6.0');
+
+/**
+ * 注册命令
+ * @param {String} command 命令名
+ * @param {String} desc 命令描述
+ * @param {Object} options 命令参数
+ * @param {Function} action 回调函数
+ */
+function registeCommand(command, desc, options = {}, action) {
+    const cmd = program.command(command).description(desc);
+    Object.keys(options).forEach(key => {
+        const option = options[key];
+
+        cmd.option(`${option.alias ? '-' + option.alias + ' ,' : ''}--${key}`, option.desc);
+    });
+    cmd.action(action);
+}
 
 //获取参数的布尔值
 function getArgValue(cmd){
@@ -32,139 +51,73 @@ function getArgValue(cmd){
             args[key] = cmd[key];
         }
     });
-   
     return args;
 }
 
-function getBuildType(cmd){
-    return cmd['_name'].split(':').pop();
-}
-
-function injectBuildEnv(cmd){
-    let buildType = getBuildType(cmd);
+function injectBuildEnv(buildArgs){
+    const { buildType, compress, huawei } = buildArgs;
     process.env.ANU_ENV = buildType;
     config['buildType'] = buildType;
-    config['compress'] = getArgValue(cmd)['compress'];
+    config['compress'] = compress;
+    if (buildType === 'quick') {
+        config['huawei'] = huawei || false;
+    }
 }
-
-let buildCommonds = [
-    {
-        type: 'wx',
-        des: '微信小程序'
-    },
-    {
-        type: 'ali',
-        des: '支付宝小程序'
-    },
-    {
-        type: 'bu',
-        des: '百度智能小程序'
-    },
-    {
-        type: 'tt',
-        des: '头条小程序'
-    },
-    {
-        type: 'quick',
-        des: '快应用'
-    },
-    {
-        type: 'h5',
-        des: 'H5'
-    },
-];
 
 program
     .version(require('../package.json').version)
     .usage('<command> [options]');
 
-program
-    .command('init <app-name>')
-    .description('description: 初始化项目')
-    .action((appName)=>{
-        require('../commonds/init')(appName);
-    });
+registeCommand('init <app-name>', 'description: 初始化项目', {}, (appName)=>{
+    require('../commands/init')(appName);
+});
 
-
-
-program
-    .command('page <page-name>')
-    .description('description: 创建pages/<page-name>/index.js模版')
-    .action((name)=>{
-        let isPage = true;
-        require('../commonds/createPage')( {name, isPage} );
-    });
-
-program
-    .command('component <component-name>')
-    .description('description: 创建components/<component-name>/index.js组件')
-    .action((name)=>{
-        let isPage = false;
-        require('../commonds/createPage')( {name, isPage});
-    });
-
-
-//默认注册wx
-program
-    .command('build')
-    .description('description: 默认构建微信小程序')
-    .option('-c, --compress', '压缩资源')
-    .option('-b, --beta', '同步react runtime')
-    .option('-ui, --beta-ui', '同步schnee-ui')
-    .action(function(cmd){
-        cmd['_name'] = 'build:wx';
-        let args = getArgValue(cmd);
-        injectBuildEnv(cmd);
-        require('../commonds/build')(args);
-    });
-
-//默认注册wx
-program
-    .command('watch')
-    .description('description: 默认监听微信小程序')
-    .option('-c, --compress', '压缩资源')
-    .option('-b, --beta', '同步react runtime')
-    .option('-ui, --beta-ui', '同步schnee-ui')
-    .action(function(cmd){
-        cmd['_name'] = 'watch:wx';
-        let args = getArgValue(cmd);
-        args['watch'] = true;
-        injectBuildEnv(cmd);
-        require('../commonds/build')(args);
-    });
-
-//注册其他命令
-buildCommonds.forEach(function(el){
-    let {type, des} = el;
-    program
-        .command(`build:${type}`)
-        .description(`description: 构建${des}`)
-        .option('-c, --compress', '压缩资源')
-        .option('-b, --beta', '同步react runtime')
-        .option('-ui, --beta-ui', '同步schnee-ui')
-        .action(function(cmd){
-            let args = getArgValue(cmd);
-            injectBuildEnv(cmd);
-            getBuildType(cmd) === 'h5'
-                ? require('mini-html5/runkit/build')
-                : require('../commonds/build')(args);
-        });
-    program
-        .command(`watch:${type}`)
-        .description(`description: 监听${des}`)
-        .option('-c, --compress', '压缩资源')
-        .option('-b, --beta', '同步react runtime')
-        .option('-ui, --beta-ui', '同步schnee-ui')
-        .action(function(cmd){
-            let args = getArgValue(cmd);
-            args['watch'] = true;
-            injectBuildEnv(cmd);
-            getBuildType(cmd) === 'h5'
-                ? require('mini-html5/runkit/run')
-                : require('../commonds/build')(args);
+['page', 'component'].forEach(type => {
+    registeCommand(
+        `${type} <page-name>`,
+        `description: 创建${type}s/<${type}-name>/index.js模版`,
+        {}, 
+        (name)=>{
+            const isPage = type === 'page';
+            require('../commands/createPage')( {name, isPage} );
         });
 });
 
+function buildAction(buildType, compileType) {
+    return function(cmd) {
+        const args = getArgValue(cmd);
+        args['buildType'] = buildType;
+        if (compileType === 'watch') { args['watch'] = true; }
+        injectBuildEnv(args);
+        buildType === 'h5'
+            ? require('mini-html5/runkit/build')
+            : require('../commands/build')(args);
+    };
+}
+
+function registeBuildfCommand({compileType, buildType, isDefault, desc}) {
+    registeCommand(`${compileType}${isDefault ? '' : ':' + buildType}`, desc, BUILD_OPTIONS, buildAction(buildType, compileType));
+}
+//注册其他命令
+platforms.forEach(function(el){
+    const { buildType, des, isDefault } = el;
+    ['build', 'watch'].forEach(function (compileType) {
+        if (isDefault) { 
+            registeBuildfCommand({
+                compileType, 
+                buildType, 
+                isDefault, 
+                des
+            }); 
+        }
+        registeBuildfCommand({
+            compileType, 
+            buildType, 
+            isDefault: false, 
+            des
+        });
+    });
+});
 
 program
     .arguments('<command>')

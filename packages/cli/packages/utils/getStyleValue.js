@@ -1,7 +1,7 @@
 //将<view style={{ borderColor: this.state.custom_field1_rule ? '#f5222d' : '', borderWidth: '1px', borderStyle: 'solid'}}>
 // 转换成 <view style="border-color: {{state.custom_field1_rule ? '#f5222d' : ''}};border-width: 1rpx;border-style: solid">
 
-const generate = require('babel-generator').default;
+const generate = require('@babel/generator').default;
 
 const rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {

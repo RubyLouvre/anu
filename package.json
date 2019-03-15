@@ -8,22 +8,7 @@
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
     "sync": "node ./scripts/build/syncAntd.js",
-    "buildIE": "webpack --config ./scripts/build/buildIE.js",
-  },
-  "lint-staged": {
-    "linters": {
-      "packages/cli/**/*.js": [
-        "eslint --fix",
-        "git add"
-      ]
-    },
-    "ignore": [
-      "__tests1__/**/*",
-      "**/node_modules/**/*",
-      "**/ReactWX.js",
-      "**/__tests__/**/*",
-      "**/lib/**/*"
-    ]
+    "buildIE": "webpack --config ./scripts/build/buildIE.js"
   },
   "repository": {
     "type": "git",
@@ -79,7 +64,6 @@
     "eslint-plugin-react": "^7.1.0",
     "fs-extra": "^4.0.3",
     "glob": "^7.1.2",
-    "husky": "^0.14.3",
     "jasmine-check": "^1.0.0-rc.0",
     "jest": "^22.4.3",
     "lerna": "^3.5.1",

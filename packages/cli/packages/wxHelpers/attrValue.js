@@ -1,7 +1,7 @@
 //将<view aaa={this.state.xxx}> 转换成 <view aaa="{{xxx}}">
 
-const t = require('babel-types');
-const generate = require('babel-generator').default;
+const t = require('@babel/types');
+const generate = require('@babel/generator').default;
 const getStyleValue = require('../utils/getStyleValue');
 const buildType = require('../config').buildType;
 
@@ -65,18 +65,6 @@ module.exports = function (astPath) {
             if (attrName === 'class' || attrName === 'className') {
                 let { left, right } = expr;
                 if (t.isStringLiteral(left) || t.isStringLiteral(right)) {
-                    // 快应用的 bug
-                    // class={{this.className0 + ' dynamicClassName'}} 快应用会将后者的空格吞掉
-                    // 影响 class 的求值
-                    /*  let className =
-                        buildType == 'quick'
-                            ? `${toString(
-                                expr.left
-                            )} ${toString(expr.right)}`
-                            : `${toString(
-                                expr.left
-                            )}${toString(expr.right)}`;
-                            */
                     let className = `${toString(
                         expr.left
                     )}${toString(expr.right)}`;

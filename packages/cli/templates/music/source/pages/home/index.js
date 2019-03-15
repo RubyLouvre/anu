@@ -353,7 +353,7 @@ class P extends React.Component {
                     {/* 歌单 */}
                     <div class={this.state.tabidx !== 1 ? 'tab_cnt hidden' : 'tab_cnt'}>
                         <div class="st_title" id="plc_header">
-                            {this.state.catelist &&this.state.catelist.checked && this.state.catelist.checked.name}
+                            <text>{this.state.catelist && this.state.catelist.checked && this.state.catelist.checked.name}</text>
                             <text onTap={this.togglePtype.bind(this)} id="catselectbtn">选择分类</text>
                         </div>
 
@@ -453,6 +453,7 @@ class P extends React.Component {
                             <Loading />
                         )}
                     </div>
+
                 </div>
                 {/* 选择分类 */}
                 <scroll-view
@@ -461,13 +462,16 @@ class P extends React.Component {
                     scroll-y="true"
                     class={this.state.cateisShow ? 'cat-modal hidden' : 'cat-modal'}
                 >
-                    {!this.state.cateisShow && (
-                        <CateModal
-                            togglePtype={this.togglePtype.bind(this)}
-                            cateselect={this.cateselect}
-                            catelist={this.state.catelist}
-                        />
-                    )}
+                    <list-item type="catewrap-item" >
+
+                        {!this.state.cateisShow && (
+                            <CateModal
+                                togglePtype={this.togglePtype.bind(this)}
+                                cateselect={this.cateselect}
+                                catelist={this.state.catelist}
+                            />
+                        )}
+                    </list-item>
                 </scroll-view>
             </div>
         );

@@ -8,6 +8,6 @@
         "watch": "hap watch"
     },
     "devDependencies": {
-        "hap-toolkit": "^0.2.0"
+        "hap-toolkit": "latest"
     }
 }

@@ -56,7 +56,9 @@ let ignoreStyleParsePlugin = ()=>{
         transform: function(code, id){
             let styleExtList = ['.css', '.less', '.scss', '.sass'];
             let ext = path.extname(id);
-            if (styleExtList.includes(ext)) return false;
+            if (styleExtList.includes(ext)) return {
+                code: ''
+            };
         }
     };
 };
@@ -96,13 +98,18 @@ class Parser {
             plugins: [
                 alias(this.customAliasConfig), //搜集依赖时候，能找到对应的alias配置路径
                 resolve({
-                    jail: path.join(cwd),   //从项目根目录中搜索npm模块, 防止向父级查找
+                    
+                    jail: path.join(cwd, 'node_modules'),   //从项目根目录中搜索npm模块, 防止向父级查找
                     preferBuiltins: false,  //防止查找内置模块
                     customResolveOptions: {
-                        moduleDirectory: [
-                            path.join(cwd, 'node_modules')
-                        ]
-                    }
+                        packageFilter: function(pkg, pkgFile){
+                            if (  !pkg.main && !pkg.module ) {
+                                pkg.main = pkg.module = './index.js';
+                            }
+                            return pkg;
+                        }
+                    },
+                   
                 }),
                 ignoreStyleParsePlugin(),
                 commonjs({
@@ -112,10 +119,28 @@ class Parser {
                 rbabel({
                     babelrc: false,
                     only: ['**/*.js'],
-                    presets: [require('babel-preset-react')],
+                    // exclude: 'node_modules/**',
+                    /**
+                     * root
+                     * 防止读取外部 babel 配置文件，如去掉 root 配置在快应用下会
+                     * 读取 babel.config.js 文件导致报错
+                     */
+                    root: path.join(__dirname, '..'),
+                    configFile: false,
+                    presets: [
+                        require('@babel/preset-react')
+                    ],
                     plugins: [
-                        require('babel-plugin-transform-class-properties'),
-                        require('babel-plugin-transform-object-rest-spread'),
+                        /**
+                         * [babel 6 to 7] 
+                         * v6 default config: ["plugin", { "loose": true }]
+                         * v7 default config: ["plugin"]
+                         */
+                        [
+                            require('@babel/plugin-proposal-class-properties'),
+                            { loose: true }
+                        ],
+                        require('@babel/plugin-proposal-object-rest-spread'),
                         [
                             //重要,import { Xbutton } from 'schnee-ui' //按需引入
                             require('babel-plugin-import').default,
@@ -173,7 +198,7 @@ class Parser {
     
         let moduleMap = this.moduleMap();
         bundle.modules.forEach(item => {
-            if (/commonjsHelpers/.test(item.id)) return;
+            if (/commonjsHelpers|rollupPluginBabelHelpers\.js/.test(item.id)) return;
             let hander = moduleMap[getFileType(item.id)];
             if (hander) {
                 hander(item);
@@ -361,7 +386,10 @@ class Parser {
     updateJsQueue(jsFiles) {
         while (jsFiles.length) {
             let item = jsFiles.shift();
-            if (/commonjs-proxy:/.test(item.id)) item.id = item.id.split(':')[1];
+            
+            if (/commonjs-proxy:/.test(item.id)) {
+                item.id = item.id.replace('commonjs-proxy:', '').replace('\u0000','')
+            }
             let { id, originalCode, resolvedIds } = item;
             needUpdate(id, originalCode, function(){
                 miniTransform(id, resolvedIds, originalCode);

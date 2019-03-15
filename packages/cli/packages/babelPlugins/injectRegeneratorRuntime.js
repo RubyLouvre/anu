@@ -1,9 +1,8 @@
 let config = require('../config');
-let t = require('babel-types');
+let t = require('@babel/types');
 let hackList = ['wx', 'bu', 'tt', 'quick'];
 
-
-//插入regenerator-runtime/runtime'
+//插入regenerator-runtime/runtime
 let visitor = {
     FunctionDeclaration: {
         exit(astPath) {
@@ -27,52 +26,8 @@ let visitor = {
     }
 };
 
-/**
- *  async function a(){
- *      var t =  await m();
- *  }
- *  
- *  转换成
- * 
- *  let a = async function(){
- *     var t =  await m();
- *  }
- * 
- */
-let visitor2 = {
-    FunctionDeclaration: {
-        enter(astPath){
-            let node = astPath.node;
-            if (!node.async) return;
-            let id = node.id.name;
-            let params = node.params;
-            let body = node.body;
-            astPath.replaceWith(
-                t.variableDeclaration('let', [
-                    t.variableDeclarator(
-                        t.identifier(id),
-                        t.functionExpression(
-                            null,
-                            params,
-                            body,
-                            false,  //generator
-                            true    //async
-                        )
-                    )
-                ])
-            );
-        },
-    }
-};
-
-
 module.exports = [
-    function(){
-        return {
-            visitor: visitor2
-        };
-    },
-    require('babel-plugin-transform-async-to-generator'),
+    require('@babel/plugin-transform-async-to-generator'),
     function(){
         return {
             visitor: visitor

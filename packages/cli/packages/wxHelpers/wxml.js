@@ -1,8 +1,7 @@
 /* eslint no-console: 0 */
-const syntaxJSX = require('babel-plugin-syntax-jsx');
-const babel = require('babel-core');
-const t = require('babel-types');
-const generate = require('babel-generator').default;
+const babel = require('@babel/core');
+const t = require('@babel/types');
+const generate = require('@babel/generator').default;
 const utils = require('../utils');
 const config = require('../config');
 const buildType = config.buildType;
@@ -23,11 +22,12 @@ const quickTextContainer = {
 
 function wxml(code, modules) {
     let result = babel.transform(code, {
+        configFile: false,
         babelrc: false,
         plugins: [
+            require('@babel/plugin-syntax-jsx'),
             function wxmlPlugin() {
                 return {
-                    inherits: syntaxJSX,
                     visitor: visitor,
                     manipulateOptions(opts) {
                         //解析每个文件前执行一次
@@ -47,18 +47,7 @@ let visitor = {
         exit: function(astPath) {
             let openTag = astPath.node.name;
             if (openTag.type === 'JSXMemberExpression' && openTag.object.name === 'React') {
-                if (openTag.property.name === 'toRenderProps') {
-                    //在使用了render props的组件中添加<anu-render />
-                    let attributes = [];
-                    //实现render props;
-                    let template = utils.createElement('anu-render', attributes, []);
-                    attributes.push(utils.createAttribute('renderUid', '{{props.renderUid}}'));
-                    let children = astPath.parentPath.parentPath.node.children;
-                    //去掉后面的{{this.props.render()}}
-                    let i = children.indexOf(astPath.parentPath.node);
-                    children.splice(i + 1, 1);
-                    astPath.parentPath.replaceWith(template);
-                } else if (openTag.property.name === 'useComponent') {
+                if (openTag.property.name === 'useComponent') {
                     let is, instanceUid;
                     let attributes = [];
                     astPath.node.attributes.forEach(function(el) {
@@ -91,7 +80,7 @@ let visitor = {
                     //将组件变成template标签
                     astPath.parentPath.replaceWith(template);
                 }
-            }
+            } 
         }
     },
     JSXAttribute(astPath, state) {
@@ -182,11 +171,13 @@ let visitor = {
                     let tagName = tag && tag.name && tag.name.name;
                     //对<text>{aaa ? 111: 2}</text>的情况进行优化，不插入block标签
                     //只是将单花括号变成双花括号
-                    if (tagName === 'text'){
-                        isWrapText = true;
+                    if (tagName === 'text' || tagName === 'span'){
+                        if (t.isConditionalExpression(expr) || t.isLogicalExpression(expr)) {
+                            var hasTag = /<[^>]+>/.test( generate(expr).code);
+                            isWrapText = !hasTag;
+                        } 
                     }
                 }
-               
                 let block = logicHelper(expr, modules, isWrapText);
                 try {
                     astPath.replaceWithMultiple(block);
@@ -199,3 +190,4 @@ let visitor = {
     }
 };
 module.exports = wxml;
+

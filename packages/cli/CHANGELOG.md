@@ -1,6 +1,35 @@
 # Changelog
 
 
+
+# 1.1.5 (2019-03-08)
+
+## 核心库
+
+#### Feature
+- 增加快应用的打电话API: `makePhoneCall`。
+- 重写 `setNavigationBarTitle`, `stopPullDownRefresh`, `createAnimation`。
+
+#### Bug fix
+- 修正所有小程序与快应用的 request 实现， 非微信系的 request 不做并发处理，只做 Promsie 处理。
+
+
+## CLI  
+
+#### Feature
+- 升级到 babel7。
+- 支持快应用下自定义项目配置。
+- 支持 span 标签下三元运算表达式。
+
+
+#### Bug fix
+- 修复转换快应用 px 转换 bug。
+- 修复转换快应用下 getDeviceId 接口 bug。
+- 修复初始化模板 bug。
+- 修复 windows 平台 js 模块引用 bug。
+
+
+
 # 1.1.4 (2019-03-01)
 
 ## 核心库

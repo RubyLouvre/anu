@@ -1,4 +1,4 @@
-import { noop } from 'react-core/util';
+import { runCallbacks } from '../utils';
 import { 
     uploadFile, 
     downloadFile,
@@ -28,29 +28,32 @@ import {
     getNetworkType, 
     onNetworkStatusChange 
 } from './network.js';
+import { setNavigationBarTitle } from './title';
 import { 
     getSystemInfo, 
     getDeviceId 
 } from './device.js';
 import { chooseImage } from './media.js';
 import { createShortcut } from './shortcut.js';
-import { runFunction, _getApp } from '../utils';
+
 import { 
     showModal,
     showActionSheet,
     showToast,
-  
     showLoading,
    
 } from './dialog';
-import { navigateTo, redirectTo , navigateBack } from './router';
+import { navigateTo, redirectTo ,reLaunch, navigateBack, makePhoneCall } from './router';
 import { vibrateLong, vibrateShort } from './vibrator';
 import { share } from './share';
 
 import { createCanvasContext } from './canvas.js';
 
-import { pay, getProvider, wxpayGetType, wxpay, alipay} from './pay.js'
-
+import { pay, getProvider, wxpayGetType, wxpay, alipay} from './pay.js';
+function stopPullDownRefresh({success, fail, complete } = {}) {
+    // 停止刷新没有作用
+    runCallbacks(function(){}, success, fail, complete );
+}
 export var facade = {
     // 交互
     showModal,
@@ -62,6 +65,7 @@ export var facade = {
     // 导航
     navigateTo, 
     redirectTo , 
+    reLaunch,
     navigateBack,
     // 震动
     vibrateLong, 
@@ -74,6 +78,7 @@ export var facade = {
     downloadFile,
     // 网络请求
     request,
+    makePhoneCall,
     // 二维码
     scanCode({ success, fail, complete }) {
         const barcode = require('@system.barcode');
@@ -103,7 +108,7 @@ export var facade = {
     //剪切板
     setClipboardData,
     getClipboardData,
-    getDeviceId,
+    
     // 位置
     getLocation(obj) {
         const geolocation = require('@system.geolocation');
@@ -113,50 +118,11 @@ export var facade = {
     onNetworkStatusChange,
     getSystemInfo,
     chooseImage,
-    setNavigationBarTitle({ title, success, fail, complete }) {
-        try {
-            let currentPage = _getApp().$$page; //相当于getCurrentPage()
-            currentPage.$page.setTitleBar({ text: title });
-            runFunction(success);
-        } catch (error) {
-            runFunction(fail, error);
-        } finally {
-            runFunction(complete);
-        }
-    },
-   
+    //设置标题
+    setNavigationBarTitle,
     createCanvasContext,
-    stopPullDownRefresh(obj) {
-        obj = obj || {};
-        let success = obj.success || noop,
-            fail= obj.fail|| noop,
-            complete = obj.complete || noop;
-
-        try {
-            // 停止刷新没有作用
-            // let currentPage = _getApp().$$page; //相当于getCurrentPage()
-            // console.log('currentPage', currentPage)
-            runFunction(success );
-        } catch (error){
-            runFunction(fail, error);
-        } finally {
-            runFunction(complete);
-        }
-    },
-    createAnimation(obj) {
-        obj = obj || {};
-        let success = obj.success || noop,
-            fail= obj.fail|| noop,
-            complete = obj.complete || noop;
-
-        try {
-            runFunction(success );
-        } catch (error){
-            runFunction(fail, error);
-        } finally {
-            runFunction(complete);
-        }
-    }
+    stopPullDownRefresh,
+    createAnimation: stopPullDownRefresh
 
 };
 export function more(){
@@ -168,6 +134,7 @@ export function more(){
         getProvider, 
         wxpayGetType, 
         wxpay, 
-        alipay
+        alipay,
+        getDeviceId,
     };
 } 

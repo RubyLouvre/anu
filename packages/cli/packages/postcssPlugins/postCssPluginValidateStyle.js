@@ -2,6 +2,26 @@ const postCss = require('postcss');
 const chalk = require('chalk');
 const config = require('../config');
 const parser = require('postcss-selector-parser');
+const ignoreCss = require('../quickHelpers/ignoreCss');
+
+function removeCss(declaration) {
+    let value = declaration.value;
+    let prop = declaration.prop;
+    let webkitReg = /^-webkit|^-moz|^-ms/i;
+    var isRemove = false;
+
+    if (ignoreCss[prop] && ignoreCss[prop] === true) {
+        isRemove = true;
+    } else if (ignoreCss[prop] && ignoreCss[prop](value)) {
+        isRemove = true;
+    } else if (webkitReg.test(prop)) {
+        isRemove = true;
+    }
+
+    if (isRemove) {
+        declaration.remove();
+    }
+}
 
 function parseSelector(css) {
     let result = [];
@@ -18,9 +38,44 @@ function parseSelector(css) {
     return result;
 }
 
+function findInvalidateRule(css, { invalidatePseudos }) {
+    const selectorReg = /^tag|class|id$/;
+    let find = false;
+    parser((selector) => {
+        if (selector.nodes && selector.nodes.length) {
+            // 遍历选择器
+            for (var i = 0, length = selector.nodes.length; i < length; i++) {
+                find = selector.nodes[i].nodes.some(node => {
+                    if (node.type === 'pseudo' && node.value.match(new RegExp(invalidatePseudos.join('|')))) {
+                        // eslint-disable-next-line
+                        console.warn(chalk.red(`快应用不支持${invalidatePseudos.join('、')}伪类选择器`));
+                        return true;
+                    }
+                    if (selectorReg.test(node.type)) {
+                        const next = node.next();
+                        if (next && selectorReg.test(next.type)) {
+                            // eslint-disable-next-line
+                            console.warn(chalk.red(`快应用不支持${selector.toString()}选择器`));
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+                // 如果找到非法属性，停止查找
+                if (find) {
+                    return;
+                }
+            }
+        }
+    }).processSync(css, {
+        lossless: false
+    });
+    return find;
+}
+
 function rpxToPx(value) {
-    return value.replace(/(-?\d*\.?\d+)(r?px)/g, function(match, numberStr, unit) {
-        
+    return value.replace(/(-?\d*\.?\d+)(r?px)/g, function (match, numberStr, unit) {
+
         const number = Number(numberStr.trim());
         if (unit === 'rpx') {
             return `${number}px`;
@@ -34,28 +89,42 @@ function validateMargin(decl) {
     if (decl.value.indexOf('auto') !== -1) {
         // eslint-disable-next-line
         console.warn(
-            chalk.yellow`在快应用中无法在 margin 中使用 auto 居中，请使用 flex 布局。`
+            chalk.yellow `在快应用中无法在 margin 中使用 auto 居中，请使用 flex 布局。`
         );
     }
 }
 
 function splitBorder(decl) {
+    if (decl.value === 'none') {
+        // eslint-disable-next-line
+        console.warn(
+            chalk`快应用不支持border: none`
+        );
+        decl.value = '0';
+    }
     const properties = ['width', 'style', 'color'];
     let values = decl.value.replace(/(,\s+)/g, ',').trim().split(/\s+/);
     if (values) {
         if (values.length > 3) {
             // eslint-disable-next-line
             console.warn(
-                chalk`{red ${decl.prop}} 参数个数错误, {red ${values}, }` + 
-                    chalk` 只保留前三个参数 ({cyan ${values.slice(0, 3)}})`
+                chalk `{red ${decl.prop}} 参数个数错误, {red ${values}, }` +
+                chalk ` 只保留前三个参数 ({cyan ${values.slice(0, 3)}})`
             );
             values = values.slice(0, 3);
         }
         values.map((value, index) => {
             const res = {};
-            const prop = decl.prop + '-' + properties[index];
+            let prop = decl.prop + '-' + properties[index];
+            // border-style  情况特殊
+            if (properties[index] === 'style') {
+                prop = 'border-style';
+            }
             res[prop] = value;
-            decl.cloneBefore(postCss.decl({prop, value}));
+            decl.cloneBefore(postCss.decl({
+                prop,
+                value
+            }));
         });
         decl.remove();
     }
@@ -68,7 +137,7 @@ function generateConflictDeclarations(declName, conflictRegex) {
             if (conflictRegex.test(node.prop)) {
                 // eslint-disable-next-line
                 console.log(
-                    chalk`if {red ${declName}} is set, {red ${node.prop}} will be removed.`
+                    chalk `if {red ${declName}} is set, {red ${node.prop}} will be removed.`
                 );
                 node.remove();
             }
@@ -88,18 +157,18 @@ function transformBorderRadius(decl) {
     if (values.length > 4) {
         // eslint-disable-next-line
         console.warn(
-            chalk`{red ${decl.prop}} 参数个数错误, {red ${values}, }`
+            chalk `{red ${decl.prop}} 参数个数错误, {red ${values}, }`
         );
         return;
     }
     switch (values.length) {
-        case 1: 
+        case 1:
             res = transformSingle(values);
             break;
-        case 2: 
+        case 2:
             res = transformDouble(values);
             break;
-        case 3: 
+        case 3:
             res = transformTriple(values);
             break;
         default:
@@ -113,13 +182,17 @@ function transformBorderRadius(decl) {
     });
     decl.remove();
 }
+
 function transformBackground(decl) {
     const value = decl.value;
+    if (value == 0) {
+        decl.remove();  // 不支持 background: 0
+    }
     let match = [
-        /^#[a-zA-Z0-9]{3,6}$/i,   //16进制
-        /^[a-z]{3,}$/i            //语意化颜色 [ blue | green | ...]
+        /^#[a-zA-Z0-9]{3,6}$/i, //16进制
+        /^[a-z]{3,}$/i //语意化颜色 [ blue | green | ...]
     ];
-    for (let i = 0; i < match.length; i++){
+    for (let i = 0; i < match.length; i++) {
         if (match[i].test(value)) {
             decl.prop = 'background-color';
             break;
@@ -145,11 +218,21 @@ const visitors = {
         if (match && match.length > 1) {
             // eslint-disable-next-line
             console.log(
-                chalk`{red border-style} should only have one value, got {red ${decl.value}},` +
-                    chalk` only keeps the first value ({cyan ${match[0]}})`
+                chalk `{red border-style} should only have one value, got {red ${decl.value}},` +
+                chalk ` only keeps the first value ({cyan ${match[0]}})`
             );
             decl.value = match[0];
         }
+    },
+    'border'(decl) {
+        if (decl.value === 'none') {
+            // eslint-disable-next-line
+            console.warn(
+                chalk`快应用不支持border: none`
+            );
+            decl.value = '0';
+        }
+
     },
     'border-radius'(decl) {
         generateConflictDeclarations(
@@ -158,7 +241,7 @@ const visitors = {
         )(decl);
         transformBorderRadius(decl);
     },
-    'background': (decl)=>{
+    'background': (decl) => {
         generateConflictDeclarations(
             'background',
             /(background|border)-color/i
@@ -175,12 +258,76 @@ const visitors = {
     'border-left': splitBorder,
     'border-right': splitBorder,
     'border-bottom': splitBorder,
-    'border-top': splitBorder
+    'border-top': splitBorder,
+    'animation': (declaration) => {
+        generateConflictDeclarations(
+            'animation',
+            /animation-(name|duration|timing-function|delay|iteration-count|direction)/i
+        )(declaration);
+        transformAnimation(declaration);
+    }
 };
 
-const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style', ()=> {
+let transformAnimation = (declaration) => {
+    const properties = [{
+        name: 'name',
+        reg: /[a-zA-Z0-9]/gi
+    },
+    {
+        name: 'duration',
+        reg: /(\d[\d\.]*)(m?s)/i
+    },
+    {
+        name: 'timing-function',
+        reg: /linear|ease|ease-in|ease-out|ease-in-out/i
+    },
+    {
+        name: 'delay',
+        reg: /(\d[\d\.]*)(m?s)/i
+    },
+    {
+        name: 'iteration-count',
+        reg: /^\d|infinite/i
+    },
+    {
+        name: 'fill-mode',
+        reg: /none|forwards/i
+    }
+    ];
+    let decl = declaration.value.split(',')[0];   // 多个片段的animation动画的情况 quick好像不支持
+    let values = decl.replace(/(,\s+)/g, ',').trim().split(/\s+/);
+    let index = 0;
+    for (let i = 0; i < properties.length; i++) {
+        const {
+            name,
+            reg
+        } = properties[i];
+        const res = {};
+        const value = values[index];
+        if (!reg.test(value)) {
+            if (i === properties.length-1) {
+                i = index;
+                index++;
+            }
+            continue;
+        }
+        const prop = declaration.prop + '-' + name;
+        res[prop] = value;
+        declaration.cloneBefore(postCss.decl({
+            prop,
+            value
+        }));
+        index++;
+    }
+
+    declaration.remove();
+};
+
+
+const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style', () => {
     return (root) => {
         if (config.buildType === 'quick') {
+            
             root.walkAtRules(atrule => {
                 if (atrule.name === 'media') {
                     atrule.params = rpxToPx(atrule.params);
@@ -190,7 +337,29 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 if (visitors[decl.prop]) {
                     visitors[decl.prop](decl);
                 }
+            });
+            // 再进行一次遍历保证所有px都被正确转换
+            root.walkDecls(decl => {
                 decl.value = rpxToPx(decl.value);
+                // 快应用不支持!important
+                if (decl.important) { 
+                    // eslint-disable-next-line
+                    console.warn(
+                        chalk.red('快应用不支持!important')
+                    );
+                    decl.important = false;
+                }
+            });
+
+            // 对快应用没有用的属性进行过滤
+            root.walkDecls(decl => {
+                removeCss(decl);
+            });
+            // 快应用移除包含before、after伪类的选择器
+            const invalidatePseudos = ['after', 'before', 'hover', 'first-child','active', 'last-child'];
+            root.walkRules(rule => {
+                const find = findInvalidateRule(rule.selector, { invalidatePseudos });
+                if (find) { rule.remove(); }
             });
         }
         root.walkRules(rule => {
@@ -200,11 +369,11 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 if (selectors.indexOf(comp) !== -1) {
                     // eslint-disable-next-line
                     console.warn(
-                        chalk`补丁组件{red ${comp}}不支持标签选择器`
+                        chalk `补丁组件{red ${comp}}不支持标签选择器`
                     );
                 }
             });
-            
+
         });
     };
 });
