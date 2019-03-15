@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-08
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-15
  */
 
 var arrayPush = Array.prototype.push;
@@ -2202,6 +2202,7 @@ var noPromiseApis = {
   createInnerAudioContext: true,
   createVideoContext: true,
   createCameraContext: true,
+  wxpayGetType: true,
   navigateBack: true,
   createMapContext: true,
   canIUse: true,

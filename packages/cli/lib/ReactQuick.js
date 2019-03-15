@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-03-08
+ * 运行于快应用的React by 司徒正美 Copyright 2019-03-15
  */
 
 var arrayPush = Array.prototype.push;
@@ -627,7 +627,7 @@ function createContext(defaultValue, calculateChangedBits) {
     return getContext;
 }
 
-function getDataSet(obj) {
+function getDataSetFromAttr(obj) {
     var ret = {};
     for (var name in obj) {
         if (name.slice(0, 4) == 'data') {
@@ -643,9 +643,9 @@ function dispatchEvent(e) {
     if (!instance || !instance.$$eventCached) {
         return;
     }
-    var eventType = toLowerCase(e._type);
+    var eventType = toLowerCase(e._type || e.type);
     var target = e.target;
-    var dataset = getDataSet(target._attr);
+    var dataset = target.dataset || getDataSetFromAttr(target._attr || target.attr);
     var app = this.$app.$def;
     var eventUid = dataset[eventType + 'Uid'];
     var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
@@ -662,7 +662,7 @@ function dispatchEvent(e) {
     }
     var safeTarget = {
         dataset: dataset,
-        nodeName: target._nodeName,
+        nodeName: target._nodeName || target.nodeName,
         value: e.value
     };
     Renderer.batchedUpdates(function () {
@@ -690,7 +690,11 @@ function createEvent(e, target, type) {
     }
     event.nativeEvent = e;
     event.stopPropagation = e.stopPropagation.bind(e);
-    event.preventDefault = e.preventDefault.bind(e);
+    if (e.preventDefault) {
+        event.preventDefault = e.preventDefault.bind(e);
+    } else {
+        event.preventDefault = Date;
+    }
     event.target = target;
     event.type = type;
     event.timeStamp = Date.now();
@@ -1406,6 +1410,10 @@ function createRouter(name) {
 var navigateTo = createRouter('push');
 var redirectTo = createRouter('replace');
 var navigateBack = createRouter('back');
+var reLaunch = function reLaunch(obj) {
+    router.clear();
+    redirectTo(obj);
+};
 function makePhoneCall(_ref) {
     var phoneNumber = _ref.phoneNumber,
         success = _ref.success,
@@ -1507,6 +1515,7 @@ var facade = {
     showLoading: showLoading,
     navigateTo: navigateTo,
     redirectTo: redirectTo,
+    reLaunch: reLaunch,
     navigateBack: navigateBack,
     vibrateLong: vibrateLong,
     vibrateShort: vibrateShort,
@@ -1609,6 +1618,7 @@ var noPromiseApis = {
   createInnerAudioContext: true,
   createVideoContext: true,
   createCameraContext: true,
+  wxpayGetType: true,
   navigateBack: true,
   createMapContext: true,
   canIUse: true,
@@ -3271,62 +3281,62 @@ function onUnload() {
 }
 
 var globalHooks = {
-    onShareAppMessage: 'onGlobalShare',
-    onShow: 'onGlobalShow',
-    onHide: 'onGlobalHide'
+  onShareAppMessage: 'onGlobalShare',
+  onShow: 'onGlobalShow',
+  onHide: 'onGlobalHide'
 };
 function getUrlAndQuery(page) {
-    var path = page.path;
-    var query = {};
-    page.uri.replace(/\?(.*)/, function (a, b) {
-        b.split('&').forEach(function (param) {
-            param = param.split('=');
-            query[param[0]] = param[1];
-        });
-        return '';
+  var path = page.path;
+  var query = {};
+  String(page.uri).replace(/\?(.*)/, function (a, b) {
+    b.split('&').forEach(function (param) {
+      param = param.split('=');
+      query[param[0]] = param[1];
     });
-    return [path, query];
+    return '';
+  });
+  return [path, query];
 }
 function registerPage(PageClass) {
-    PageClass.reactInstances = [];
-    var config = {
-        private: {
-            props: Object,
-            context: Object,
-            state: Object
-        },
-        dispatchEvent: dispatchEvent,
-        onInit: function onInit() {
-            var $app = this.$app;
-            var array = getUrlAndQuery(this.$page);
-            var instance = onLoad.call(this, PageClass, array[0], array[1]);
-            var pageConfig = instance.config || PageClass.config;
-            $app.$$pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
-        },
-        onReady: onReady,
-        onDestroy: onUnload
+  PageClass.reactInstances = [];
+  var config = {
+    private: {
+      props: Object,
+      context: Object,
+      state: Object
+    },
+    dispatchEvent: dispatchEvent,
+    onInit: function onInit() {
+      var $app = this.$app;
+      var array = getUrlAndQuery(this.$page);
+      var instance = onLoad.call(this, PageClass, array[0], array[1]);
+      var pageConfig = instance.config || PageClass.config;
+      $app.$$pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
+    },
+    onReady: onReady,
+    onDestroy: onUnload
+  };
+  Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
+    config[hook] = function (e) {
+      var instance = this.reactInstance;
+      var fn = instance[hook];
+      var app = _getApp();
+      if (hook === 'onShow') {
+        app.$$page = instance.wx;
+        app.$$pagePath = instance.props.path;
+      }
+      if (hook === 'onMenuPress') {
+        app.onShowMenu && app.onShowMenu(instance, this.$app);
+      } else if (isFn(fn)) {
+        fn.call(instance, e);
+      }
+      var globalHook = globalHooks[hook];
+      if (globalHook) {
+        callGlobalHook(globalHook, e);
+      }
     };
-    Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
-        config[hook] = function (e) {
-            var instance = this.reactInstance;
-            var fn = instance[hook];
-            var app = _getApp();
-            if (hook === 'onShow') {
-                app.$$page = instance.wx;
-                app.$$pagePath = instance.props.path;
-            }
-            if (hook === 'onMenuPress') {
-                app.onShowMenu && app.onShowMenu(instance, this.$app);
-            } else if (isFn(fn)) {
-                fn.call(instance, e);
-            }
-            var globalHook = globalHooks[hook];
-            if (globalHook) {
-                callGlobalHook(globalHook, e);
-            }
-        };
-    });
-    return config;
+  });
+  return config;
 }
 
 var appMethods = {

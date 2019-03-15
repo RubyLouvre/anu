@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-08T07
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-15T07
  * IE9+
  */
 
@@ -669,6 +669,7 @@ var noPromiseApis = {
   createInnerAudioContext: true,
   createVideoContext: true,
   createCameraContext: true,
+  wxpayGetType: true,
   navigateBack: true,
   createMapContext: true,
   canIUse: true,
