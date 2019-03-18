@@ -15,7 +15,7 @@ let isReact = function(sourcePath){
     return /^(React)/.test( path.basename(sourcePath) );
 };
 
-function transform(sourcePath, resolvedIds, originalCode) {
+async function transform(sourcePath, resolvedIds, originalCode) {
 
     //跳过 React 编译
     if ( isReact(sourcePath) ) {
@@ -28,7 +28,7 @@ function transform(sourcePath, resolvedIds, originalCode) {
         return;
     }
 
-    babel.transformFile(
+    var result = babel.transformFileSync(
         sourcePath,
         {
             configFile: false,
@@ -68,48 +68,45 @@ function transform(sourcePath, resolvedIds, originalCode) {
                 require('./babelPlugins/transformIfImport'),
                 require('./babelPlugins/trasnformAlias')( {sourcePath,resolvedIds} )
             ]
-        },
-        async function(err, result) {
-            if (err) {
-                //eslint-disable-next-line
-                console.log(sourcePath, '\n', err);
-                process.exit(1);
-            }
-            //处理中文转义问题
-            result.code = utils.decodeChinise(result.code);
-            let queueData = {
-                code: result.code,
-                path: utils.updatePath(sourcePath, config.sourceDir, 'dist'),
-                type: 'js'
-            };
-
-            if (config.buildType == 'quick' && quickFiles[sourcePath] ) {
-
-                // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
-                const placeholder = {
-                    code: '',
-                    path: utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux')
-                };
-                queue.push(placeholder);
-                // 补丁 END
-                
-                //ux处理
-                let {code, type} = await mergeUx({
-                    sourcePath: sourcePath,
-                    result: result
-                });
-                let distPath = utils.updatePath(sourcePath, config.sourceDir, 'dist',  type == 'ux' ? 'ux' : 'js');
-                
-                queueData = {
-                    code: code,
-                    path: distPath
-                };
-            } 
-
-            queue.push(queueData);
-
         }
     );
+    // if (err) {
+    //     //eslint-disable-next-line
+    //     console.log(sourcePath, '\n', err);
+    //     process.exit(1);
+    // }
+    //处理中文转义问题
+    result.code = utils.decodeChinise(result.code);
+    let queueData = {
+        code: result.code,
+        path: utils.updatePath(sourcePath, config.sourceDir, 'dist'),
+        type: 'js'
+    };
+
+    if (config.buildType == 'quick' && quickFiles[sourcePath] ) {
+
+        // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
+        const placeholder = {
+            code: '',
+            path: utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux')
+        };
+        queue.push(placeholder);
+        // 补丁 END
+        
+        //ux处理
+        let {code, type} = await mergeUx({
+            sourcePath: sourcePath,
+            result: result
+        });
+        let distPath = utils.updatePath(sourcePath, config.sourceDir, 'dist',  type == 'ux' ? 'ux' : 'js');
+        
+        queueData = {
+            code: code,
+            path: distPath
+        };
+    } 
+
+    queue.push(queueData);
 }
 
 module.exports = transform;

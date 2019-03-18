@@ -46,9 +46,9 @@ async function beforeParseTask({ buildType, beta, betaUi }){
 
 module.exports = async function(args){
     await beforeParseTask(args);
-    let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
+    // let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
     await parser.parse();
-    spinner.succeed(chalk.green('依赖分析成功'));
+    // spinner.succeed(chalk.green('依赖分析成功'));
     if (args['watch']) {
         parser.watching();
     }

@@ -18,18 +18,20 @@ const quickFiles = require('./quickFiles');
 const miniTransform = require('./miniappTransform');
 const styleTransform = require('./styleTransform');
 const generate = require('./generate');
+const queue = require('./queue');
 let cwd = process.cwd();
 let inputPath = path.join(cwd,  config.sourceDir);
 let cache = {};
-let needUpdate = (id, code, fn) => {
+let needUpdate = (id, code) => {
     let sha1 = crypto
         .createHash('sha1')
         .update(code)
         .digest('hex');
     if (!cache[id] || cache[id] != sha1) {
         cache[id] = sha1;
-        fn();
+        return true;
     }
+    return false;
 };
 const isStyle = path => {
     return /\.(?:less|scss|sass)$/.test(path);
@@ -64,8 +66,13 @@ let ignoreStyleParsePlugin = ()=>{
 };
 
 //监听打包资源
-utils.on('build', ()=>{
-    generate();
+utils.on('build', (data)=>{
+    const { filepath, size, index } = data;
+    console.log(
+        chalk.gray(`[${index}] `) + 
+        chalk.green(`build success: ${path.relative(cwd, filepath)} `) +
+        chalk.gray(`[${size}]`)
+    );
 });
 
 class Parser {
@@ -177,6 +184,7 @@ class Parser {
         
     }
     async parse() {
+        const startTime = +new Date();
         let bundle = await rollup.rollup(this.inputConfig);
         //如果有需要打补丁的组件并且本地没有安装schnee-ui
         if (this.needInstallUiLib()) {
@@ -194,7 +202,6 @@ class Parser {
                 '--save-dev'
             );
         }
-        
     
         let moduleMap = this.moduleMap();
         bundle.modules.forEach(item => {
@@ -206,12 +213,18 @@ class Parser {
             this.collectDeps(item);
         });
 
-        this.check(()=>{
-            this.transform();
-        });
-        
+        this.check();
+        await this.transform();
         this.copyAssets();
         this.copyProjectConfig();
+        generate();
+        const endTime = +new Date();
+        console.log(`构建时间: ${(endTime - startTime) / 1000}s`);
+        utils.spinner('').succeed('构建结束\n');
+        if (config.buildType === 'quick'){
+            console.log(chalk.magentaBright('请打开另一个窗口, 执行构建快应用命令'), chalk.greenBright('npm run build'));
+            console.log(chalk.magentaBright('在打开另一个窗口, 执行启动快应用调试服务'), chalk.greenBright('npm run server'));
+        }
     }
     needInstallUiLib() {
         if ( !config[config.buildType].jsxPatchNode ) return false; //没有需要patch的组件
@@ -296,12 +309,13 @@ class Parser {
             }
         }
     }
-    transform() {
-        this.updateJsQueue(this.jsFiles);
+    async transform() {
+        await this.updateJsQueue(this.jsFiles);
         this.updateWebViewRoutes(this.webViewFiles);
-        this.updateStyleQueue(this.styleFiles);
+        await this.updateStyleQueue(this.styleFiles);
+        
     }
-    check( cb ) {
+    check() {
         let errorMsg = '';
         let warningMsg = '';
         Object.keys(this.collectError).forEach((key)=>{
@@ -325,7 +339,6 @@ class Parser {
             console.log(chalk.red(errorMsg));
             process.exit(1);
         }
-        cb && cb();
     }
     collectQuickDepStyle(data){
         if (config.buildType === 'quick') {
@@ -383,7 +396,7 @@ class Parser {
             msg: `${id} 文件中不能@import 组件(components)样式, 组件样式请在组件中引用, 请修复.`
         });
     }
-    updateJsQueue(jsFiles) {
+    async updateJsQueue(jsFiles) {
         while (jsFiles.length) {
             let item = jsFiles.shift();
             
@@ -391,11 +404,10 @@ class Parser {
                 item.id = item.id.replace('commonjs-proxy:', '').replace('\u0000','')
             }
             let { id, originalCode, resolvedIds } = item;
-            needUpdate(id, originalCode, function(){
-                miniTransform(id, resolvedIds, originalCode);
-            });
+            if (needUpdate(id, originalCode)) {
+                await miniTransform(id, resolvedIds, originalCode);
+            }
         }
-       
     }
     updateWebViewRoutes(webViewRoutes){
         
@@ -409,15 +421,15 @@ class Parser {
         //注入运行时 webview 各route配置
         utils.setWebViewConfig(utils.getWebViewRoutesConfig(webViewRoutes));
     }
-    updateStyleQueue(styleFiles) {
+    async updateStyleQueue(styleFiles) {
         while (styleFiles.length) {
             let { id, originalCode } = styleFiles.shift(); 
-            needUpdate(id, originalCode, function(){
-                styleTransform({
+            if (needUpdate(id, originalCode)) {
+                await styleTransform({
                     id: id,
                     originalCode: originalCode
-                });   
-            });
+                }); 
+            }
         }
     }
     copyAssets() {
