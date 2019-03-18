@@ -1,9 +1,5 @@
 /**
-<<<<<<< HEAD
- * by 司徒正美 Copyright 2019-03-12
-=======
- * by 司徒正美 Copyright 2019-03-15
->>>>>>> b239674eb72dfc56ef2d8933a70e1af626395a75
+ * by 司徒正美 Copyright 2019-03-18
  * IE9+
  */
 
