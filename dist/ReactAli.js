@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-15
  */
@@ -2433,77 +2432,202 @@ function registerAPIsQuick(ReactWX, facade, override) {
     promisefyApis(ReactWX, facade, override(facade));
 }
 
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 var more = function more(api) {
     return {
-        showActionSheet: function _(a) {
-            var success = a['success'],
-                complete = a['complete'];
-            a['success'] = function (res) {
-                success && success({ index: res.tapIndex });
-            };
-            a['complete'] = function (res) {
-                complete && complete({ index: res.tapIndex });
-            };
-            return api.showActionSheet.apply(api, arguments);
+        showModal: function _(a) {
+            a.cancelButtonText = a.cancelText;
+            a.confirmButtonText = a.confirmText || '好的';
+            if (a.showCancel === false) {
+                a.buttonText = a.confirmText || '好的';
+                return api.alert(a);
+            }
+            return api.confirm(a);
         },
-        connectSocket: function _(a) {
-            a.protocolsArray = a.protocols;
-            return api.connectSocket.apply(api, arguments);
+        showActionSheet: function _(a) {
+            a.items = a.itemList;
+            return api.showActionSheet(a);
+        },
+        showToast: function _(a) {
+            a.content = a.title;
+            a.type = a.icon;
+            return api.showToast(a);
         },
         showLoading: function _(a) {
             a = a || {};
-            a.title = a.title || '加载中...';
+            a.content = a.title || '加载中...';
             return api.showLoading(a);
         },
-        setMetaDescription: function _(a) {
-            var empty = function empty(res) {};
-            var defailt = {
-                content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
-            };
-            var options = Object.assign(defailt, a);
-            return api.setMetaDescription && api.setMetaDescription(options);
+        setNavigationBarTitle: function _(a) {
+            return api.setNavigationBar(a);
         },
-        setMetaKeywords: function _(a) {
-            var empty = function empty(res) {};
-            var defailt = {
-                content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
-            };
-            var options = Object.assign(defailt, a);
-            return api.setMetaKeywords && api.setMetaKeywords(options);
+        setNavigationBarColor: function _(a) {
+            return api.setNavigationBar(a);
         },
-        setDocumentTitle: function _(a) {
-            var defailt = {
-                title: ''
+        vibrateLong: function _(a) {
+            return api.vibrate(a);
+        },
+        vibrateShort: function _(a) {
+            return api.vibrate(a);
+        },
+        saveImageToPhotosAlbum: function _(a) {
+            a.url = a.filePath;
+            return api.saveImage(a);
+        },
+        previewImage: function _(a) {
+            var index = a.urls.indexOf(a.current || a.urls[0]);
+            a.current = index;
+            return api.previewImage(a);
+        },
+        getFileInfo: function _(a) {
+            a.apFilePath = a.filePath;
+            return api.getFileInfo(a);
+        },
+        getSavedFileInfo: function _(a) {
+            a.apFilePath = a.filePath;
+            return api.getSavedFileInfo(a);
+        },
+        removeSavedFile: function _(a) {
+            a.apFilePath = a.filePath;
+            return api.removeSavedFile(a);
+        },
+        saveFile: function _(a) {
+            a.apFilePath = a.tempFilePath;
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.savedFilePath = res.apFilePath;
+                fn && fn(res);
             };
-            var options = Object.assign(defailt, a);
-            return api.setDocumentTitle && api.setDocumentTitle(options);
+            return api.saveFile(a);
+        },
+        openLocation: function _(a) {
+            a.latitude = a.latitude + '';
+            a.longitude = a.longitude + '';
+            return api.openLocation(a);
+        },
+        getStorageSync: function _(a) {
+            if (a == null) throw new Error('key 不能是 undefined或者是空');
+            var res = api.getStorageSync({ key: a });
+            return res.data || '';
+        },
+        setStorageSync: function _(a1, a2) {
+            if (a1 == null) throw new Error('key 不能是 undefined或者是空');
+            var k = {};
+            k.key = a1;
+            k.data = a2;
+            return api.setStorageSync(k);
+        },
+        uploadFile: function _(a) {
+            a.fileName = a.name;
+            return api.uploadFile(a);
+        },
+        downloadFile: function _(a) {
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.tempFilePath = res.apFilePath;
+                fn && fn(res);
+            };
+            return api.downloadFile(a);
+        },
+        chooseImage: function _(a) {
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.tempFilePaths = res.apFilePaths;
+                fn && fn(res);
+            };
+            return api.chooseImage(a);
+        },
+        getClipboardData: function _(a) {
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.data = res.text;
+                fn && fn(res);
+            };
+            return api.getClipboard(a);
+        },
+        setClipboardData: function _(a) {
+            a.text = a.data;
+            return api.setClipboard(a);
+        },
+        makePhoneCall: function _(a) {
+            a.number = a.phoneNumber;
+            return api.makePhoneCall(a);
+        },
+        scanCode: function _(a) {
+            a.hideAlbum = a.onlyFromCamera;
+            a.type = a.scanType && a.scanType[0].slice(0, -4) || 'qr';
+            var fn = a['success'];
+            a['success'] = function (res) {
+                res.result = res.code;
+                fn && fn(res);
+            };
+            return api.scan(a);
+        },
+        setScreenBrightness: function _(a) {
+            a.brightness = a.value;
+            return api.setScreenBrightness(a);
+        },
+        request: function request(_a) {
+            var originSuccess = _a.success || noop;
+            var originFail = _a.fail || noop;
+            var originComplete = _a.complete || noop;
+            _a.success = function (res) {
+                var _res = res,
+                    status = _res.status,
+                    headers = _res.headers,
+                    rest = _objectWithoutProperties(_res, ['status', 'headers']);
+                if (typeof status !== 'undefined' && typeof headers !== 'undefined') {
+                    res = Object.assign({ statusCode: status, header: headers }, rest);
+                }
+                originSuccess.call(this, res);
+                originComplete.call(this, res);
+            };
+            _a.fail = function (res) {
+                var _res2 = res,
+                    status = _res2.status,
+                    headers = _res2.headers,
+                    rest = _objectWithoutProperties(_res2, ['status', 'headers']);
+                if (typeof status !== 'undefined' && typeof headers !== 'undefined') {
+                    res = Object.assign({ statusCode: status, header: headers }, rest);
+                }
+                originFail.call(this, res);
+                originComplete.call(this, res);
+            };
+            return api.httpRequest(_a);
         }
     };
 };
 
 function registerComponent(type, name) {
+    type.wxInstances = {};
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    type.wxInstances = {};
+    var hasInit = false;
+    function didUpdate() {
+        usingComponents[name] = type;
+        var uuid = this.props['data-instance-uid'] || null;
+        refreshComponent(reactInstances, this, uuid);
+    }
     return {
         data: {
             props: {},
             state: {},
             context: {}
         },
-        attached: function attached() {
-            usingComponents[name] = type;
-            var uuid = this.dataset.instanceUid || null;
-            refreshComponent(reactInstances, this, uuid);
+        onInit: function onInit() {
+            hasInit = true;
+            didUpdate.call(this);
         },
-        detached: detachComponent,
-        dispatchEvent: dispatchEvent
+        didMount: function didMount() {
+            if (!hasInit) {
+                didUpdate.call(this);
+            }
+        },
+        didUpdate: didUpdate,
+        didUnmount: detachComponent,
+        methods: {
+            dispatchEvent: dispatchEvent
+        }
     };
 }
 
@@ -2648,26 +2772,26 @@ var React = getWindow().React = {
     Children: Children,
     Component: Component,
     createPortal: createPortal,
-    createContext: createContext,
     createElement: createElement,
     createFactory: createFactory,
+    createContext: createContext,
     cloneElement: cloneElement,
     PureComponent: PureComponent,
     isValidElement: isValidElement,
     toClass: miniCreateClass,
     toRenderProps: toRenderProps,
     useComponent: useComponent,
-    registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
+    registerComponent: registerComponent,
     registerPage: registerPage,
     toStyle: toStyle,
-    appType: 'bu'
+    appType: 'ali'
 };
 var apiContainer = {};
-if (typeof swan != 'undefined') {
-    apiContainer = swan;
+if (typeof my != 'undefined') {
+    apiContainer = my;
 }
 registerAPIs(React, apiContainer, more);
 

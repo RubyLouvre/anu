@@ -477,6 +477,22 @@ module.exports = {
                     return;
                 }
             }
+            
+            // if (buildType !== 'quick' && nodeName === 'text') {
+            //     //  iconfont 各小程序匹配 去掉小程序下 <text>&#xf1f3;</text>
+            //     var children = astPath.parentPath.node.children;
+            //     if (children.length === 1){
+            //         let iconValue = t.isJSXText(children[0]) ? children[0].extra.raw : '';
+            //         let iconReg = /\s*&#x/i;
+            //         if (iconReg.test(iconValue)) {
+            //             children.length = 0;
+
+            //         }
+            //     }
+
+            // }
+
+
             let modules = utils.getAnu(state);
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
             let bag = modules.importComponents[nodeName];

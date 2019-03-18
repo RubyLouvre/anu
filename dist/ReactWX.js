@@ -1,6 +1,6 @@
-/* eslint-disable */
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-15
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-15T07
+ * IE9+
  */
 
 var arrayPush = Array.prototype.push;
@@ -626,6 +626,314 @@ function createContext(defaultValue, calculateChangedBits) {
     getContext.Consumer = Consumer;
     return getContext;
 }
+
+var onAndSyncApis = {
+  onSocketOpen: true,
+  onSocketError: true,
+  onSocketMessage: true,
+  onSocketClose: true,
+  onBackgroundAudioPlay: true,
+  onBackgroundAudioPause: true,
+  onBackgroundAudioStop: true,
+  onNetworkStatusChange: true,
+  onAccelerometerChange: true,
+  onCompassChange: true,
+  onBluetoothAdapterStateChange: true,
+  onBluetoothDeviceFound: true,
+  onBLEConnectionStateChange: true,
+  onBLECharacteristicValueChange: true,
+  onBeaconUpdate: true,
+  onBeaconServiceChange: true,
+  onUserCaptureScreen: true,
+  onHCEMessage: true,
+  onGetWifiList: true,
+  onWifiConnected: true,
+  setStorageSync: true,
+  getStorageSync: true,
+  getStorageInfoSync: true,
+  removeStorageSync: true,
+  clearStorageSync: true,
+  getSystemInfoSync: true,
+  getExtConfigSync: true,
+  getLogManager: true
+};
+var noPromiseApis = {
+  stopRecord: true,
+  getRecorderManager: true,
+  pauseVoice: true,
+  stopVoice: true,
+  pauseBackgroundAudio: true,
+  stopBackgroundAudio: true,
+  getBackgroundAudioManager: true,
+  createAudioContext: true,
+  createInnerAudioContext: true,
+  createVideoContext: true,
+  createCameraContext: true,
+  wxpayGetType: true,
+  navigateBack: true,
+  createMapContext: true,
+  canIUse: true,
+  startAccelerometer: true,
+  stopAccelerometer: true,
+  startCompass: true,
+  stopCompass: true,
+  hideToast: true,
+  hideLoading: true,
+  showNavigationBarLoading: true,
+  hideNavigationBarLoading: true,
+  createAnimation: true,
+  pageScrollTo: true,
+  createSelectorQuery: true,
+  createCanvasContext: true,
+  createContext: true,
+  drawCanvas: true,
+  hideKeyboard: true,
+  stopPullDownRefresh: true,
+  arrayBufferToBase64: true,
+  base64ToArrayBuffer: true,
+  getUpdateManager: true,
+  createWorker: true
+};
+var otherApis = {
+  uploadFile: true,
+  downloadFile: true,
+  connectSocket: true,
+  sendSocketMessage: true,
+  closeSocket: true,
+  chooseImage: true,
+  previewImage: true,
+  getImageInfo: true,
+  saveImageToPhotosAlbum: true,
+  startRecord: true,
+  playVoice: true,
+  getBackgroundAudioPlayerState: true,
+  playBackgroundAudio: true,
+  seekBackgroundAudio: true,
+  chooseVideo: true,
+  saveVideoToPhotosAlbum: true,
+  loadFontFace: true,
+  saveFile: true,
+  getFileInfo: true,
+  getSavedFileList: true,
+  getSavedFileInfo: true,
+  removeSavedFile: true,
+  openDocument: true,
+  setStorage: true,
+  getStorage: true,
+  getStorageInfo: true,
+  removeStorage: true,
+  clearStorage: true,
+  navigateTo: true,
+  redirectTo: true,
+  switchTab: true,
+  reLaunch: true,
+  getLocation: true,
+  chooseLocation: true,
+  openLocation: true,
+  getSystemInfo: true,
+  getNetworkType: true,
+  makePhoneCall: true,
+  scanCode: true,
+  setClipboardData: true,
+  getClipboardData: true,
+  openBluetoothAdapter: true,
+  closeBluetoothAdapter: true,
+  getBluetoothAdapterState: true,
+  startBluetoothDevicesDiscovery: true,
+  stopBluetoothDevicesDiscovery: true,
+  getBluetoothDevices: true,
+  getConnectedBluetoothDevices: true,
+  createBLEConnection: true,
+  closeBLEConnection: true,
+  getBLEDeviceServices: true,
+  getBLEDeviceCharacteristics: true,
+  readBLECharacteristicValue: true,
+  writeBLECharacteristicValue: true,
+  notifyBLECharacteristicValueChange: true,
+  startBeaconDiscovery: true,
+  stopBeaconDiscovery: true,
+  getBeacons: true,
+  setScreenBrightness: true,
+  getScreenBrightness: true,
+  setKeepScreenOn: true,
+  vibrateLong: true,
+  vibrateShort: true,
+  addPhoneContact: true,
+  getHCEState: true,
+  startHCE: true,
+  stopHCE: true,
+  sendHCEMessage: true,
+  startWifi: true,
+  stopWifi: true,
+  connectWifi: true,
+  getWifiList: true,
+  setWifiList: true,
+  getConnectedWifi: true,
+  showToast: true,
+  showLoading: true,
+  showModal: true,
+  showActionSheet: true,
+  setNavigationBarTitle: true,
+  setNavigationBarColor: true,
+  setTabBarBadge: true,
+  removeTabBarBadge: true,
+  showTabBarRedDot: true,
+  hideTabBarRedDot: true,
+  setTabBarStyle: true,
+  setTabBarItem: true,
+  showTabBar: true,
+  hideTabBar: true,
+  setTopBarText: true,
+  startPullDownRefresh: true,
+  canvasToTempFilePath: true,
+  canvasGetImageData: true,
+  canvasPutImageData: true,
+  getExtConfig: true,
+  request: true,
+  login: true,
+  checkSession: true,
+  authorize: true,
+  getUserInfo: true,
+  requestPayment: true,
+  showShareMenu: true,
+  hideShareMenu: true,
+  updateShareMenu: true,
+  getShareInfo: true,
+  chooseAddress: true,
+  addCard: true,
+  openCard: true,
+  openSetting: true,
+  getSetting: true,
+  getWeRunData: true,
+  navigateToMiniProgram: true,
+  navigateBackMiniProgram: true,
+  chooseInvoiceTitle: true,
+  checkIsSupportSoterAuthentication: true,
+  startSoterAuthentication: true,
+  checkIsSoterEnrolledInDevice: true
+};
+
+function promisefyApis(ReactWX, facade, more) {
+    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis, more);
+    Object.keys(weApis).forEach(function (key) {
+        var needWrapper = more[key] || facade[key] || noop;
+        if (!onAndSyncApis[key] && !noPromiseApis[key]) {
+            ReactWX.api[key] = function (options) {
+                options = options || {};
+                if (options + '' === options) {
+                    return needWrapper(options);
+                }
+                var task = null;
+                var obj = Object.assign({}, options);
+                var p = new Promise(function (resolve, reject) {
+                    ['fail', 'success', 'complete'].forEach(function (k) {
+                        obj[k] = function (res) {
+                            options[k] && options[k](res);
+                            if (k === 'success') {
+                                if (key === 'connectSocket') {
+                                    resolve(task);
+                                } else {
+                                    resolve(res);
+                                }
+                            } else if (k === 'fail') {
+                                reject(res);
+                            }
+                        };
+                    });
+                    if (needWrapper === noop) {
+                        console.warn('平台未不支持', key, '方法');
+                    } else {
+                        task = needWrapper(obj);
+                    }
+                });
+                if (key === 'uploadFile' || key === 'downloadFile') {
+                    p.progress = function (cb) {
+                        task.onProgressUpdate(cb);
+                        return p;
+                    };
+                    p.abort = function (cb) {
+                        cb && cb();
+                        task.abort();
+                        return p;
+                    };
+                }
+                return p;
+            };
+        } else {
+            if (needWrapper == noop) {
+                ReactWX.api[key] = noop;
+            } else {
+                ReactWX.api[key] = function () {
+                    return needWrapper.apply(facade, arguments);
+                };
+            }
+        }
+    });
+}
+function pxTransform(size) {
+    var deviceRatio = this.api.deviceRatio;
+    return parseInt(size, 10) / deviceRatio + 'rpx';
+}
+function initPxTransform(facade) {
+    function fallback(windowWidth) {
+        facade.designWidth = windowWidth;
+        facade.deviceRatio = 750 / windowWidth / 2;
+    }
+    if (facade.getSystemInfo) {
+        facade.getSystemInfo({
+            success: function success(res) {
+                fallback(res.windowWidth);
+            }
+        });
+    } else {
+        fallback(375);
+    }
+}
+function registerAPIs(ReactWX, facade, override) {
+    registerAPIsQuick(ReactWX, facade, override);
+    initPxTransform(ReactWX.api);
+    ReactWX.api.pxTransform = ReactWX.pxTransform = pxTransform.bind(ReactWX);
+}
+function registerAPIsQuick(ReactWX, facade, override) {
+    ReactWX.api = {};
+    promisefyApis(ReactWX, facade, override(facade));
+}
+
+var RequestQueue = {
+    MAX_REQUEST: 10,
+    queue: [],
+    request: function request(options) {
+        this.push(options);
+        this.run();
+    },
+    push: function push(options) {
+        this.queue.push(options);
+    },
+    run: function run() {
+        if (!this.queue.length) {
+            return;
+        }
+        if (this.queue.length <= this.MAX_REQUEST) {
+            var options = this.queue.shift();
+            var completeFn = options.complete;
+            var self = this;
+            options.complete = function () {
+                completeFn && completeFn.apply(null, arguments);
+                self.run();
+            };
+            this.facade.request(options);
+        }
+    }
+};
+var more = function more(api) {
+    return {
+        request: function request(_a) {
+            RequestQueue.facade = api;
+            RequestQueue.request(_a);
+            return RequestQueue.request(_a);
+        }
+    };
+};
 
 var fakeApp = {
     app: {
@@ -2161,352 +2469,6 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
-var onAndSyncApis = {
-  onSocketOpen: true,
-  onSocketError: true,
-  onSocketMessage: true,
-  onSocketClose: true,
-  onBackgroundAudioPlay: true,
-  onBackgroundAudioPause: true,
-  onBackgroundAudioStop: true,
-  onNetworkStatusChange: true,
-  onAccelerometerChange: true,
-  onCompassChange: true,
-  onBluetoothAdapterStateChange: true,
-  onBluetoothDeviceFound: true,
-  onBLEConnectionStateChange: true,
-  onBLECharacteristicValueChange: true,
-  onBeaconUpdate: true,
-  onBeaconServiceChange: true,
-  onUserCaptureScreen: true,
-  onHCEMessage: true,
-  onGetWifiList: true,
-  onWifiConnected: true,
-  setStorageSync: true,
-  getStorageSync: true,
-  getStorageInfoSync: true,
-  removeStorageSync: true,
-  clearStorageSync: true,
-  getSystemInfoSync: true,
-  getExtConfigSync: true,
-  getLogManager: true
-};
-var noPromiseApis = {
-  stopRecord: true,
-  getRecorderManager: true,
-  pauseVoice: true,
-  stopVoice: true,
-  pauseBackgroundAudio: true,
-  stopBackgroundAudio: true,
-  getBackgroundAudioManager: true,
-  createAudioContext: true,
-  createInnerAudioContext: true,
-  createVideoContext: true,
-  createCameraContext: true,
-  wxpayGetType: true,
-  navigateBack: true,
-  createMapContext: true,
-  canIUse: true,
-  startAccelerometer: true,
-  stopAccelerometer: true,
-  startCompass: true,
-  stopCompass: true,
-  hideToast: true,
-  hideLoading: true,
-  showNavigationBarLoading: true,
-  hideNavigationBarLoading: true,
-  createAnimation: true,
-  pageScrollTo: true,
-  createSelectorQuery: true,
-  createCanvasContext: true,
-  createContext: true,
-  drawCanvas: true,
-  hideKeyboard: true,
-  stopPullDownRefresh: true,
-  arrayBufferToBase64: true,
-  base64ToArrayBuffer: true,
-  getUpdateManager: true,
-  createWorker: true
-};
-var otherApis = {
-  uploadFile: true,
-  downloadFile: true,
-  connectSocket: true,
-  sendSocketMessage: true,
-  closeSocket: true,
-  chooseImage: true,
-  previewImage: true,
-  getImageInfo: true,
-  saveImageToPhotosAlbum: true,
-  startRecord: true,
-  playVoice: true,
-  getBackgroundAudioPlayerState: true,
-  playBackgroundAudio: true,
-  seekBackgroundAudio: true,
-  chooseVideo: true,
-  saveVideoToPhotosAlbum: true,
-  loadFontFace: true,
-  saveFile: true,
-  getFileInfo: true,
-  getSavedFileList: true,
-  getSavedFileInfo: true,
-  removeSavedFile: true,
-  openDocument: true,
-  setStorage: true,
-  getStorage: true,
-  getStorageInfo: true,
-  removeStorage: true,
-  clearStorage: true,
-  navigateTo: true,
-  redirectTo: true,
-  switchTab: true,
-  reLaunch: true,
-  getLocation: true,
-  chooseLocation: true,
-  openLocation: true,
-  getSystemInfo: true,
-  getNetworkType: true,
-  makePhoneCall: true,
-  scanCode: true,
-  setClipboardData: true,
-  getClipboardData: true,
-  openBluetoothAdapter: true,
-  closeBluetoothAdapter: true,
-  getBluetoothAdapterState: true,
-  startBluetoothDevicesDiscovery: true,
-  stopBluetoothDevicesDiscovery: true,
-  getBluetoothDevices: true,
-  getConnectedBluetoothDevices: true,
-  createBLEConnection: true,
-  closeBLEConnection: true,
-  getBLEDeviceServices: true,
-  getBLEDeviceCharacteristics: true,
-  readBLECharacteristicValue: true,
-  writeBLECharacteristicValue: true,
-  notifyBLECharacteristicValueChange: true,
-  startBeaconDiscovery: true,
-  stopBeaconDiscovery: true,
-  getBeacons: true,
-  setScreenBrightness: true,
-  getScreenBrightness: true,
-  setKeepScreenOn: true,
-  vibrateLong: true,
-  vibrateShort: true,
-  addPhoneContact: true,
-  getHCEState: true,
-  startHCE: true,
-  stopHCE: true,
-  sendHCEMessage: true,
-  startWifi: true,
-  stopWifi: true,
-  connectWifi: true,
-  getWifiList: true,
-  setWifiList: true,
-  getConnectedWifi: true,
-  showToast: true,
-  showLoading: true,
-  showModal: true,
-  showActionSheet: true,
-  setNavigationBarTitle: true,
-  setNavigationBarColor: true,
-  setTabBarBadge: true,
-  removeTabBarBadge: true,
-  showTabBarRedDot: true,
-  hideTabBarRedDot: true,
-  setTabBarStyle: true,
-  setTabBarItem: true,
-  showTabBar: true,
-  hideTabBar: true,
-  setTopBarText: true,
-  startPullDownRefresh: true,
-  canvasToTempFilePath: true,
-  canvasGetImageData: true,
-  canvasPutImageData: true,
-  getExtConfig: true,
-  request: true,
-  login: true,
-  checkSession: true,
-  authorize: true,
-  getUserInfo: true,
-  requestPayment: true,
-  showShareMenu: true,
-  hideShareMenu: true,
-  updateShareMenu: true,
-  getShareInfo: true,
-  chooseAddress: true,
-  addCard: true,
-  openCard: true,
-  openSetting: true,
-  getSetting: true,
-  getWeRunData: true,
-  navigateToMiniProgram: true,
-  navigateBackMiniProgram: true,
-  chooseInvoiceTitle: true,
-  checkIsSupportSoterAuthentication: true,
-  startSoterAuthentication: true,
-  checkIsSoterEnrolledInDevice: true
-};
-
-function promisefyApis(ReactWX, facade, more) {
-    var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis, more);
-    Object.keys(weApis).forEach(function (key) {
-        var needWrapper = more[key] || facade[key] || noop;
-        if (!onAndSyncApis[key] && !noPromiseApis[key]) {
-            ReactWX.api[key] = function (options) {
-                options = options || {};
-                if (options + '' === options) {
-                    return needWrapper(options);
-                }
-                var task = null;
-                var obj = Object.assign({}, options);
-                var p = new Promise(function (resolve, reject) {
-                    ['fail', 'success', 'complete'].forEach(function (k) {
-                        obj[k] = function (res) {
-                            options[k] && options[k](res);
-                            if (k === 'success') {
-                                if (key === 'connectSocket') {
-                                    resolve(task);
-                                } else {
-                                    resolve(res);
-                                }
-                            } else if (k === 'fail') {
-                                reject(res);
-                            }
-                        };
-                    });
-                    if (needWrapper === noop) {
-                        console.warn('平台未不支持', key, '方法');
-                    } else {
-                        task = needWrapper(obj);
-                    }
-                });
-                if (key === 'uploadFile' || key === 'downloadFile') {
-                    p.progress = function (cb) {
-                        task.onProgressUpdate(cb);
-                        return p;
-                    };
-                    p.abort = function (cb) {
-                        cb && cb();
-                        task.abort();
-                        return p;
-                    };
-                }
-                return p;
-            };
-        } else {
-            if (needWrapper == noop) {
-                ReactWX.api[key] = noop;
-            } else {
-                ReactWX.api[key] = function () {
-                    return needWrapper.apply(facade, arguments);
-                };
-            }
-        }
-    });
-}
-function pxTransform(size) {
-    var deviceRatio = this.api.deviceRatio;
-    return parseInt(size, 10) / deviceRatio + 'rpx';
-}
-function initPxTransform(facade) {
-    function fallback(windowWidth) {
-        facade.designWidth = windowWidth;
-        facade.deviceRatio = 750 / windowWidth / 2;
-    }
-    if (facade.getSystemInfo) {
-        facade.getSystemInfo({
-            success: function success(res) {
-                fallback(res.windowWidth);
-            }
-        });
-    } else {
-        fallback(375);
-    }
-}
-function registerAPIs(ReactWX, facade, override) {
-    registerAPIsQuick(ReactWX, facade, override);
-    initPxTransform(ReactWX.api);
-    ReactWX.api.pxTransform = ReactWX.pxTransform = pxTransform.bind(ReactWX);
-}
-function registerAPIsQuick(ReactWX, facade, override) {
-    ReactWX.api = {};
-    promisefyApis(ReactWX, facade, override(facade));
-}
-
-var more = function more(api) {
-    return {
-        showActionSheet: function _(a) {
-            var success = a['success'],
-                complete = a['complete'];
-            a['success'] = function (res) {
-                success && success({ index: res.tapIndex });
-            };
-            a['complete'] = function (res) {
-                complete && complete({ index: res.tapIndex });
-            };
-            return api.showActionSheet.apply(api, arguments);
-        },
-        connectSocket: function _(a) {
-            a.protocolsArray = a.protocols;
-            return api.connectSocket.apply(api, arguments);
-        },
-        showLoading: function _(a) {
-            a = a || {};
-            a.title = a.title || '加载中...';
-            return api.showLoading(a);
-        },
-        setMetaDescription: function _(a) {
-            var empty = function empty(res) {};
-            var defailt = {
-                content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
-            };
-            var options = Object.assign(defailt, a);
-            return api.setMetaDescription && api.setMetaDescription(options);
-        },
-        setMetaKeywords: function _(a) {
-            var empty = function empty(res) {};
-            var defailt = {
-                content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
-            };
-            var options = Object.assign(defailt, a);
-            return api.setMetaKeywords && api.setMetaKeywords(options);
-        },
-        setDocumentTitle: function _(a) {
-            var defailt = {
-                title: ''
-            };
-            var options = Object.assign(defailt, a);
-            return api.setDocumentTitle && api.setDocumentTitle(options);
-        }
-    };
-};
-
-function registerComponent(type, name) {
-    registeredComponents[name] = type;
-    var reactInstances = type.reactInstances = [];
-    type.wxInstances = {};
-    return {
-        data: {
-            props: {},
-            state: {},
-            context: {}
-        },
-        attached: function attached() {
-            usingComponents[name] = type;
-            var uuid = this.dataset.instanceUid || null;
-            refreshComponent(reactInstances, this, uuid);
-        },
-        detached: detachComponent,
-        dispatchEvent: dispatchEvent
-    };
-}
-
 function onLoad(PageClass, path, query) {
     var app = _getApp();
     app.$$pageIsReady = false;
@@ -2631,15 +2593,44 @@ function registerPage(PageClass, path, testObject) {
     return config;
 }
 
+var defer = Promise.resolve().then.bind(Promise.resolve());
+function registerComponent(type, name) {
+    type.wxInstances = {};
+    registeredComponents[name] = type;
+    var reactInstances = type.reactInstances = [];
+    var config = {
+        data: {
+            props: {},
+            state: {},
+            context: {}
+        },
+        lifetimes: {
+            attached: function attached() {
+                var wx = this;
+                defer(function () {
+                    usingComponents[name] = type;
+                    var uuid = wx.dataset.instanceUid || null;
+                    refreshComponent(reactInstances, wx, uuid);
+                });
+            },
+            detached: detachComponent
+        },
+        methods: {
+            dispatchEvent: dispatchEvent
+        }
+    };
+    Object.assign(config, config.lifetimes);
+    return config;
+}
+
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {
         dispatchEvent: dispatchEvent
     },
     findDOMNode: function findDOMNode() {
-        console.log("小程序不支持findDOMNode");
+        console.log('小程序不支持findDOMNode');
     },
-    version: '1.5.0',
     render: render$1,
     hydrate: render$1,
     webview: webview,
@@ -2648,12 +2639,12 @@ var React = getWindow().React = {
     Children: Children,
     Component: Component,
     createPortal: createPortal,
-    createContext: createContext,
     createElement: createElement,
     createFactory: createFactory,
     cloneElement: cloneElement,
     PureComponent: PureComponent,
     isValidElement: isValidElement,
+    createContext: createContext,
     toClass: miniCreateClass,
     toRenderProps: toRenderProps,
     useComponent: useComponent,
@@ -2663,11 +2654,14 @@ var React = getWindow().React = {
     getApp: _getApp,
     registerPage: registerPage,
     toStyle: toStyle,
-    appType: 'bu'
+    appType: 'wx'
 };
 var apiContainer = {};
-if (typeof swan != 'undefined') {
-    apiContainer = swan;
+if (typeof wx != 'undefined') {
+    apiContainer = wx;
+} else if (typeof tt != 'undefined') {
+    apiContainer = tt;
+    React.appType = 'tt';
 }
 registerAPIs(React, apiContainer, more);
 

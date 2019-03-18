@@ -1,6 +1,22 @@
 # Changelog
 
 
+# 1.1.6 (2019-03-15)
+
+## 核心库
+#### Bug fix
+- 修复华为快应用事件系统 bug。
+
+
+## CLI  
+
+#### Feature
+- 支持不同平台自定义 `tabBar`。
+- 支持快应用平台自定义项目配置，详见[文档](https://rubylouvre.github.io/nanachi/documents/userProjectConfig.html#%E5%BF%AB%E5%BA%94%E7%94%A8)。
+
+#### Bug fix
+- 过滤快应用不支持的样式编译，避免华为快应用平台报错。
+
 
 # 1.1.5 (2019-03-08)
 
