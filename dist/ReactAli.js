@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-18
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-19
  */
 
 var arrayPush = Array.prototype.push;
@@ -679,6 +679,9 @@ function refreshComponent(reactInstances, wx, uuid) {
     for (var i = 0, n = reactInstances.length; i < n; i++) {
         var reactInstance = reactInstances[i];
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
+            if (get(reactInstance).disposed) {
+                continue;
+            }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
             updateMiniApp(reactInstance);
