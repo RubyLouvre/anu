@@ -27,7 +27,7 @@ module.exports = {
         return !(value === 'none' || value === 'forwards');
     },
     'flex': function(value) {
-        console.log('value', parseInt(value) == value);
+        // console.log('value', parseInt(value) == value);
         return !(parseInt(value) == value);
     }
 };

@@ -67,10 +67,11 @@ let ignoreStyleParsePlugin = ()=>{
 
 //监听打包资源
 utils.on('build', (data)=>{
-    const { filepath, size, index } = data;
+    const { size, index, filepath } = data;
+    const outputPath = utils.resolveDistPath(filepath);
     console.log(
         chalk.gray(`[${index}] `) + 
-        chalk.green(`build success: ${path.relative(cwd, filepath)} `) +
+        chalk.green(`build success: ${path.relative(cwd, outputPath)} `) +
         chalk.gray(`[${size}]`)
     );
 });
@@ -184,7 +185,6 @@ class Parser {
         
     }
     async parse() {
-        const startTime = +new Date();
         let bundle = await rollup.rollup(this.inputConfig);
         //如果有需要打补丁的组件并且本地没有安装schnee-ui
         if (this.needInstallUiLib()) {
@@ -218,8 +218,6 @@ class Parser {
         this.copyAssets();
         this.copyProjectConfig();
         generate();
-        const endTime = +new Date();
-        console.log(`构建时间: ${(endTime - startTime) / 1000}s`);
         utils.spinner('').succeed('构建结束\n');
         if (config.buildType === 'quick'){
             console.log(chalk.magentaBright('请打开另一个窗口, 执行构建快应用命令'), chalk.greenBright('npm run build'));

@@ -28,85 +28,87 @@ async function transform(sourcePath, resolvedIds, originalCode) {
         return;
     }
 
-    var result = babel.transformFileSync(
-        sourcePath,
-        {
-            configFile: false,
-            babelrc: false,
-            comments: false,
-            ast: true,
-            plugins: [
-                /**
-                 * If you are including your plugins manually and using
-                 * @babel/plugin-proposal-class-properties, make sure that
-                 * @babel/plugin-proposal-decorators comes before
-                 * @babel/plugin-proposal-class-properties.
-                 * 
-                 * When using the legacy: true mode,
-                 * @babel/plugin-proposal-class-properties must be used in loose mode
-                 * to support the @babel/plugin-proposal-decorators.
-                 * 
-                 * [babel 6 to 7] 
-                 * In anticipation of the new decorators proposal implementation,
-                 * we've decided to make it the new default behavior.
-                 * This means that to continue using the current decorators syntax/behavior,
-                 * you must set the legacy option as true.
-                 */
-                [require('@babel/plugin-proposal-decorators'), { legacy: true }],
-                /**
-                 * [babel 6 to 7] 
-                 * v6 default config: ["plugin", { "loose": true }]
-                 * v7 default config: ["plugin"]
-                 */
-                [require('@babel/plugin-proposal-class-properties'), { loose: true }],
-                require('@babel/plugin-syntax-jsx'),
-                require('@babel/plugin-proposal-object-rest-spread'),
-                [require('@babel/plugin-transform-template-literals'), { loose: true }],
-                ...require('./babelPlugins/transformMiniApp')(sourcePath),
-                ...require('./babelPlugins/transformEnv'),
-                ...require('./babelPlugins/injectRegeneratorRuntime'),
-                require('./babelPlugins/transformIfImport'),
-                require('./babelPlugins/trasnformAlias')( {sourcePath,resolvedIds} )
-            ]
-        }
-    );
-    // if (err) {
-    //     //eslint-disable-next-line
-    //     console.log(sourcePath, '\n', err);
-    //     process.exit(1);
-    // }
-    //处理中文转义问题
-    result.code = utils.decodeChinise(result.code);
-    let queueData = {
-        code: result.code,
-        path: utils.updatePath(sourcePath, config.sourceDir, 'dist'),
-        type: 'js'
-    };
-
-    if (config.buildType == 'quick' && quickFiles[sourcePath] ) {
-
-        // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
-        const placeholder = {
-            code: '',
-            path: utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux')
+    try {
+        const result = babel.transformFileSync(
+            sourcePath,
+            {
+                configFile: false,
+                babelrc: false,
+                comments: false,
+                ast: true,
+                plugins: [
+                    /**
+                     * If you are including your plugins manually and using
+                     * @babel/plugin-proposal-class-properties, make sure that
+                     * @babel/plugin-proposal-decorators comes before
+                     * @babel/plugin-proposal-class-properties.
+                     * 
+                     * When using the legacy: true mode,
+                     * @babel/plugin-proposal-class-properties must be used in loose mode
+                     * to support the @babel/plugin-proposal-decorators.
+                     * 
+                     * [babel 6 to 7] 
+                     * In anticipation of the new decorators proposal implementation,
+                     * we've decided to make it the new default behavior.
+                     * This means that to continue using the current decorators syntax/behavior,
+                     * you must set the legacy option as true.
+                     */
+                    [require('@babel/plugin-proposal-decorators'), { legacy: true }],
+                    /**
+                     * [babel 6 to 7] 
+                     * v6 default config: ["plugin", { "loose": true }]
+                     * v7 default config: ["plugin"]
+                     */
+                    [require('@babel/plugin-proposal-class-properties'), { loose: true }],
+                    require('@babel/plugin-syntax-jsx'),
+                    require('@babel/plugin-proposal-object-rest-spread'),
+                    [require('@babel/plugin-transform-template-literals'), { loose: true }],
+                    ...require('./babelPlugins/transformMiniApp')(sourcePath),
+                    ...require('./babelPlugins/transformEnv'),
+                    ...require('./babelPlugins/injectRegeneratorRuntime'),
+                    require('./babelPlugins/transformIfImport'),
+                    require('./babelPlugins/trasnformAlias')( {sourcePath,resolvedIds} )
+                ]
+            }
+        );
+        //处理中文转义问题
+        result.code = utils.decodeChinise(result.code);
+        let queueData = {
+            code: result.code,
+            path: utils.updatePath(sourcePath, config.sourceDir, 'dist'),
+            type: 'js'
         };
-        queue.push(placeholder);
-        // 补丁 END
-        
-        //ux处理
-        let {code, type} = await mergeUx({
-            sourcePath: sourcePath,
-            result: result
-        });
-        let distPath = utils.updatePath(sourcePath, config.sourceDir, 'dist',  type == 'ux' ? 'ux' : 'js');
-        
-        queueData = {
-            code: code,
-            path: distPath
-        };
-    } 
-
-    queue.push(queueData);
+    
+        if (config.buildType == 'quick' && quickFiles[sourcePath] ) {
+    
+            // // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
+            // const placeholder = {
+            //     code: '',
+            //     path: utils.updatePath(sourcePath, config.sourceDir, 'dist', 'ux')
+            // };
+            // queue.push(placeholder);
+            // // 补丁 END
+            
+            //ux处理
+            let {code, type} = await mergeUx({
+                sourcePath: sourcePath,
+                result: result
+            });
+            let distPath = utils.updatePath(sourcePath, config.sourceDir, 'dist',  type == 'ux' ? 'ux' : 'js');
+            
+            queueData = {
+                code: code,
+                path: distPath
+            };
+        } 
+    
+        queue.push(queueData);
+    } catch (err) {
+        //eslint-disable-next-line
+        console.log(sourcePath, '\n', err);
+        process.exit(1);
+    }
+    
 }
 
 module.exports = transform;
