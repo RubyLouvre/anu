@@ -1,7 +1,7 @@
 const path = require('path');
 let userConfig = {};
 try {
-    const pkg = require( path.join(process.cwd(), 'package.json') );
+    const pkg = require(path.join(process.cwd(), 'package.json'));
     userConfig = pkg.nanachi || pkg.mpreact || userConfig;
 } catch (err) {
     // eslint-disable-next-line
@@ -22,7 +22,7 @@ module.exports = {
         xmlExt: 'axml',
         helpers: 'aliHelpers',
         patchComponents: [
-            'rich-text'
+            'rich-text' //年前还不支持这标签 https://docs.alipay.com/mini/component/rich-text
         ]
     },
     bu: {
@@ -36,15 +36,7 @@ module.exports = {
         libName: 'ReactWX',
         jsExt: 'ux',
         helpers: 'quickHelpers',
-        patchComponents: [
-            'radio',
-            'radio-group',
-            'checkbox',
-            'checkbox-group',
-            'label',
-            'navigator',
-            'picker'
-        ]
+        patchComponents: ['radio', 'radio-group', 'checkbox', 'checkbox-group', 'label', 'navigator', 'picker']
     },
     tt: {
         libName: 'ReactWX',
@@ -54,8 +46,8 @@ module.exports = {
         helpers: 'ttHelpers',
         patchComponents: []
     },
-    buildType: 'wx',      //构建类型默认微信小程序
-    buildDir: buildDir,   //非快应用项目默认构建目录为dist
-    sourceDir: sourceDir,  //默认生成的源码目录
+    buildType: 'wx', //构建类型默认微信小程序
+    buildDir: buildDir, //非快应用项目默认构建目录为dist
+    sourceDir: sourceDir, //默认生成的源码目录
     huawei: false
 };
