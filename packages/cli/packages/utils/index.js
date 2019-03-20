@@ -2,7 +2,6 @@
 /* eslint-disable*/
 const execSync = require('child_process').execSync;
 const t = require('@babel/types');
-const fs = require('fs-extra');
 const path = require('path');
 const cwd = process.cwd();
 const chalk = require('chalk');
@@ -11,22 +10,13 @@ const uglifyJS = require('uglify-es');
 const cleanCSS = require('clean-css');
 const nodeResolve = require('resolve');
 const template = require('@babel/template').default;
-const axios = require('axios');
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
 const config = require('../config');
 const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
-const queue = require('../queue');
 const userConfig = pkg.nanachi || pkg.mpreact || {};
 const { REACT_LIB_MAP } = require('../../consts/index');
-const generate = require('@babel/generator').default;
-
-process.on('unhandledRejection', error => {
-    // eslint-disable-next-line
-    console.error('unhandledRejection', error);
-    process.exit(1); // To exit with a 'failure' code
-});
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
     on() {
@@ -34,9 +24,6 @@ let utils = {
     },
     emit() {
         Event.emit.apply(global, arguments);
-    },
-    getNodeVersion() {
-        return Number(process.version.match(/v(\d+)/)[1]);
     },
     spinner(text) {
         return ora(text);
@@ -146,23 +133,16 @@ let utils = {
         let sourcePath = modules.sourcePath;
         let isNodeModulePathReg = this.isWin() ? /\\node_modules\\/ : /\/node_modules\//;
 
-        //引用的npm ui库 
         //import { xxx } from 'schnee-ui';
         if (isNpm) {
             return '/npm/' + bag.source + '/components/' + nodeName + '/index';
         }
-        //在ui components中可能存在相对引用其他components
         //如果XPicker中存在 import XOverlay from '../XOverlay/index';
-        if (
-            isNodeModulePathReg.test(sourcePath) &&
-            /^\./.test(bag.source)
-        ) {
-            //获取用组件的绝对路径 ==> /path/xxx/node_modules/schnee-ui/components/XOverlay/index
-            let importerAbPath = path.join(path.dirname(modules.sourcePath), bag.source);
-            // ==>/npm/schnee-ui/components/XOverlay/index
+        if ( isNodeModulePathReg.test(sourcePath) && /^\./.test(bag.source) ) {
+            //获取用组件的绝对路径
+            let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
             return '/npm/' + importerAbPath.split(`${path.sep}node_modules${path.sep}`)[1]
         }
-
         return `/components/${nodeName}/index`;
     },
     createAttribute(name, value) {
@@ -280,20 +260,6 @@ let utils = {
         }
         return resolvedPath;
     },
-    isBuildInLibs(name) {
-        let libs = new Set(require('repl')._builtinLibs);
-        if (libs.has(name)) {
-            //如果是内置模块，先查找本地node_modules是否有对应重名模块
-            let isLocalBuildInLib = /\/node_modules\//.test(nodeResolve.sync(name, {
-                basedir: cwd
-            }));
-            if (isLocalBuildInLib) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-    },
     installer(npmName, dev, needModuleEntryPath) {
         needModuleEntryPath = needModuleEntryPath || false;
         return new Promise(resolve => {
@@ -332,109 +298,6 @@ let utils = {
             }
 
             resolve(npmPath);
-        });
-    },
-    installDeps(missModules) {
-        /**
-         * installMap: { npmName: importerPath }
-         */
-        return Promise.all(
-            missModules.map(async item => {
-                let npmPath = await this.installer(item.resolveName);
-                return {
-                    id: npmPath, //缺失npm模块绝对路径
-                    npmName: item.resolveName, //缺失模块名
-                    importerPath: item.id, //依赖该缺失模块的文件路径
-                    originalCode: fs.readFileSync(npmPath).toString()
-                };
-            })
-        );
-    },
-    async getReactLibPath(isBeta) {
-        let React = this.getReactLibName();
-        let reactTargetPath = path.join(cwd, config.sourceDir, React);
-        if (isBeta) {
-            let spinner = this.spinner(`正在下载最新的${React}`);
-            spinner.start();
-            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/branch3/dist/${React}`;
-            let ReactLib = await axios.get(remoteUrl);
-            fs.ensureFileSync(reactTargetPath);
-            fs.writeFileSync(reactTargetPath, ReactLib.data);
-            spinner.succeed(`下载${React}成功`);
-        } else {
-            try {
-                nodeResolve.sync(reactTargetPath, {
-                    basedir: cwd,
-                    moduleDirectory: path.join(cwd, config.sourceDir)
-                });
-            } catch (err) {
-                let ReactLibPath = path.join(__dirname, '..', '..', 'lib', `${React}`);
-                fs.copyFileSync(ReactLibPath, reactTargetPath);
-            }
-        }
-        return reactTargetPath;
-    },
-    async asyncReact(option) {
-        await this.getReactLibPath(option);
-        let ReactLibName = this.getReactLibName();
-        let map = this.getReactMap();
-        Object.keys(map).forEach(key => {
-            let ReactName = map[key];
-            if (ReactName != ReactLibName) {
-                fs.remove(path.join(cwd, config.sourceDir, ReactName), err => {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-                fs.remove(path.join(cwd, 'dist', ReactName), err => {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-            }
-        });
-    },
-    async getReactLibPath(buildType, isBeta) {
-        let React = this.getReactLibName(buildType);
-        let reactTargetPath = path.join(cwd, config.sourceDir, React);
-        if (isBeta) {
-            let spinner = this.spinner(`正在下载最新的${React}`);
-            spinner.start();
-            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/branch3/dist/${React}`;
-            let ReactLib = await axios.get(remoteUrl);
-            fs.ensureFileSync(reactTargetPath);
-            fs.writeFileSync(reactTargetPath, ReactLib.data);
-            spinner.succeed(`下载${React}成功`);
-        } else {
-            try {
-                nodeResolve.sync(reactTargetPath, {
-                    basedir: cwd,
-                    moduleDirectory: path.join(cwd, config.sourceDir)
-                });
-            } catch (err) {
-                let ReactLibPath = path.join(__dirname, '..', '..', 'lib', `${React}`);
-                fs.copyFileSync(ReactLibPath, reactTargetPath);
-            }
-        }
-        return reactTargetPath;
-    },
-    async asyncReact(buildType, isBeta) {
-        await this.getReactLibPath(buildType, isBeta);
-        let ReactLibName = this.getReactLibName(buildType);
-        Object.keys(REACT_LIB_MAP).forEach(key => {
-            let ReactName = REACT_LIB_MAP[key];
-            if (ReactName != ReactLibName) {
-                fs.remove(path.join(cwd, config.sourceDir, ReactName), err => {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-                fs.remove(path.join(cwd, 'dist', ReactName), err => {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-            }
         });
     },
     getReactLibName(buildType) {
@@ -493,61 +356,6 @@ let utils = {
                 chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
             );
         }
-    },
-    mergeQuickAppJson: function () {
-        let projectPkgPath = path.join(cwd, 'package.json');
-        let projectPkg = require(projectPkgPath);
-        let quickPkg = require(path.join(
-            __dirname,
-            '..',
-            'quickHelpers',
-            'quickInitConfig',
-            'package.json'
-        ));
-
-        projectPkg.scripts = projectPkg.scripts || {};
-        projectPkg.devDependencies = projectPkg.devDependencies || {};
-
-        Object.assign(projectPkg.scripts, quickPkg.scripts); //注入快应用scripts命令
-        Object.assign(projectPkg.devDependencies, quickPkg.devDependencies); //注入快应用开发依赖
-        fs.writeFileSync(projectPkgPath, JSON.stringify(projectPkg, null, 4));
-    },
-    initQuickAppConfig: function () {
-        //merge快应用依赖的package.json配置
-        this.mergeQuickAppJson();
-        let baseDir = path.join(__dirname, '..', 'quickHelpers', 'quickInitConfig');
-
-        //copy快应用秘钥
-        let signSourceDir = path.join(baseDir, 'sign');
-        let signDistDir = path.join(cwd, 'sign');
-        let babelConifgPath = path.join(baseDir, 'babel.config.js');
-        let babelConfigDist = path.join(cwd, 'babel.config.js');
-
-        fs.ensureDirSync(signDistDir);
-        fs.copy(signSourceDir, signDistDir).catch(err => {
-            // eslint-disable-next-line
-            console.log(err);
-        });
-
-        fs.ensureFileSync(babelConifgPath);
-        fs.copy(babelConifgPath, babelConfigDist).catch(err => {
-            // eslint-disable-next-line
-            console.log(err);
-        });
-    },
-    cleanDir: function () {
-        let fileList = ['package-lock.json', 'yarn.lock'];
-        config.buildType === 'quick' ?
-            (fileList = fileList.concat([config.buildDir])) :
-            (fileList = fileList.concat(['dist', 'build', 'sign', 'src']));
-        fileList.forEach(item => {
-            try {
-                fs.removeSync(path.join(cwd, item));
-            } catch (err) {
-                // eslint-disable-next-line
-                console.log(err);
-            }
-        });
     },
     compress: function () {
         return {
@@ -626,67 +434,6 @@ let utils = {
             return unescape(`%u${b}`);
         });
     },
-    setWebViewConfig(routes) {
-        let code = `module.exports = ${JSON.stringify(routes)};`;
-        queue.push({
-            code: code,
-            type: 'js',
-            path: path.join(process.cwd(), 'dist', 'webviewConfig.js')
-        });
-    },
-    getWebViewRoutesConfig(jsFiles) {
-        let ret = {},
-            pkg = null,
-            host = '';
-        try {
-            pkg = require(path.join(cwd, 'package.json'));
-        } catch (err) {
-
-        }
-        if (pkg && pkg.nanachi) {
-            host = pkg.nanachi.H5_HOST
-        }
-
-        if (!host) {
-            console.log(chalk.red('Error: H5请在package.json中nanachi字段里配置H5_HOST字段'));
-            process.exit(1);
-        }
-
-        jsFiles.forEach((el) => {
-            let route = path.relative(path.join(cwd, config.sourceDir), el.id).replace(/\.js$/, '');
-            ret[route] = host + '/' + route;
-
-        })
-        return ret;
-    },
-    setH5CompileConfig(jsFiles) {
-        let H5_COMPILE_JSON_FILE = path.join(cwd, config.sourceDir, 'H5_COMPILE_CONFIG.json');
-        fs.ensureFileSync(H5_COMPILE_JSON_FILE)
-        fs.writeFileSync(
-            H5_COMPILE_JSON_FILE,
-            JSON.stringify({
-                webviewPages: jsFiles.map((item) => {
-                    return item.id
-                })
-            })
-        )
-    },
-    deleteWebViewConifg() {
-        let list = [
-            'H5_COMPILE_CONFIG.json',
-            'webviewConfig.js'
-        ];
-        list = list.map((file) => {
-            return path.join(cwd, config.sourceDir, file);
-        });
-
-        list.forEach((fileId) => {
-            try {
-                fs.removeSync(fileId);
-            } catch (err) {}
-        })
-
-    },
     isWebView(fileId) {
         if (config['buildType'] != 'quick' && !config['webview']) return;
         if (!config['webview']) return;
@@ -699,12 +446,29 @@ let utils = {
             });
         return isWebView;
     },
-   
-
+    parseCamel(str) {
+        return str
+            .replace(/-([a-z])/g, function(match, first) {
+                return first.toUpperCase();
+            })
+            .replace(/^[a-z]/, function(match) {
+                return match.toUpperCase();
+            });
+    },
+    uniquefilter(arr, key = '') {
+        const map = {};
+        return arr.filter(item => {
+            if (!item[key]) {
+                return true;
+            }
+            if (!map[item[key]]) {
+                map[item[key]] = 1;
+                return true;
+            }
+            return false;
+        });
+    },
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
 };
 
-
-
-
-module.exports = Object.assign(module.exports, utils);
+exports = module.exports = utils;

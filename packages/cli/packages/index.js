@@ -18,7 +18,7 @@ const quickFiles = require('./quickFiles');
 const miniTransform = require('./miniappTransform');
 const styleTransform = require('./styleTransform');
 const generate = require('./generate');
-const queue = require('./queue');
+const Timer = require('./utils/timer');
 let cwd = process.cwd();
 let inputPath = path.join(cwd,  config.sourceDir);
 let cache = {};
@@ -65,21 +65,6 @@ let ignoreStyleParsePlugin = ()=>{
     };
 };
 
-// TODO: 放到utils中
-function uniquefilter(arr, key = '') {
-    const map = {};
-    return arr.filter(item => {
-        if (!item[key]) {
-            return true;
-        }
-        if (!map[item[key]]) {
-            map[item[key]] = 1;
-            return true;
-        }
-        return false;
-    });
-}
-
 //监听打包资源
 utils.on('build', (data)=>{
     const { size, index, filepath } = data;
@@ -90,26 +75,6 @@ utils.on('build', (data)=>{
         chalk.gray(`[${size}]`)
     );
 });
-
-// TODO: utils
-class Timer {
-    constructor() {
-        this.startTime = process.hrtime();
-    }
-    start() {
-        this.startTime = process.hrtime();
-    }
-    end() {
-        this.endTime = process.hrtime(this.startTime);
-    }
-    getProcessTime(precision = 2) {
-        const NS_PER_SEC = 1e9;
-        if (!this.endTime) {
-            throw new Error('Timer did not end.');
-        }
-        return (this.endTime[0] + this.endTime[1] / NS_PER_SEC).toFixed(precision);
-    }
-}
 
 class Parser {
     constructor(entry) {
@@ -248,7 +213,7 @@ class Parser {
         // 分析补丁组件依赖
         const patchModules = await this.resolvePatchComponentModules();
         // 合并依赖，去重
-        bundle.modules = uniquefilter(bundle.modules.concat(patchModules), 'id');
+        bundle.modules = utils.uniquefilter(bundle.modules.concat(patchModules), 'id');
         timer.end();
         spinner.succeed(`依赖分析成功, 用时: ${timer.getProcessTime()}s`);
     
@@ -265,8 +230,6 @@ class Parser {
 
         this.check();
         await this.transform();
-        this.copyAssets();
-        this.copyProjectConfig();
         generate();
         timer.end();
         utils.spinner('').succeed(`构建结束, 用时: ${timer.getProcessTime()}s\n`);
@@ -460,16 +423,7 @@ class Parser {
         }
     }
     updateWebViewRoutes(webViewRoutes){
-        
-        //删除各 route 编译 or 运行 配置文件
-        utils.deleteWebViewConifg();
-
-        if (!webViewRoutes.length) return;
-        //注入h5编译route配置
-        utils.setH5CompileConfig(webViewRoutes);
-
-        //注入运行时 webview 各route配置
-        utils.setWebViewConfig(utils.getWebViewRoutesConfig(webViewRoutes));
+        require('./utils/setWebVeiw')(webViewRoutes);
     }
     async updateStyleQueue(styleFiles) {
         while (styleFiles.length) {
