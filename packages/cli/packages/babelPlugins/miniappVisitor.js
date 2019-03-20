@@ -5,6 +5,7 @@ const path = require('path');
 const queue = require('../queue');
 const utils = require('../utils');
 const fs = require('fs-extra');
+const platforms = require('../../consts/platforms');
 const deps = [];
 const config = require('../config');
 const buildType = config['buildType'];
@@ -357,7 +358,11 @@ module.exports = {
                         //如果存在以buildType+"List"的列表，那么将它改成默认的list
                         if (tabBar && tabBar[buildType+'List']){
                             tabBar.list = tabBar[buildType+'List'];
-                            delete tabBar[buildType+'List'];
+                            
+                            platforms.forEach(function(el){
+                                delete tabBar[el.buildType+'List'];
+                            });
+
                         }
                     } catch (e) {
                         console.log('eval json error', e);
