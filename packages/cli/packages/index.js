@@ -204,8 +204,9 @@ class Parser {
         return modules;
     }
     async parse() {
+        const bundleStartTime = +new Date();
         let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
-        
+
         // 分析依赖
         let bundle = await rollup.rollup(this.inputConfig);
         //如果有需要打补丁的组件并且本地没有安装schnee-ui
@@ -228,8 +229,8 @@ class Parser {
         const patchModules = await this.resolvePatchComponentModules();
         // 合并依赖，去重
         bundle.modules = uniquefilter(bundle.modules.concat(patchModules), 'id');
-        
-        spinner.succeed(`依赖分析成功, 用时: ${process.uptime()}s`);
+        const bundleEndTime = +new Date(), parseStartTime = bundleEndTime;
+        spinner.succeed(`依赖分析成功, 用时: ${(bundleEndTime - bundleStartTime) / 1000}s`);
     
         let moduleMap = this.moduleMap();
         bundle.modules.forEach(item => {
@@ -246,7 +247,8 @@ class Parser {
         this.copyAssets();
         this.copyProjectConfig();
         generate();
-        utils.spinner('').succeed(`构建结束, 用时: ${process.uptime()}s\n`);
+        const parseEndTime = +new Date();
+        utils.spinner('').succeed(`构建结束, 用时: ${(parseEndTime - parseStartTime) / 1000}s\n`);
         if (config.buildType === 'quick'){
             console.log(chalk.magentaBright('请打开另一个窗口, 执行构建快应用命令'), chalk.greenBright('npm run build'));
             console.log(chalk.magentaBright('在打开另一个窗口, 执行启动快应用调试服务'), chalk.greenBright('npm run server'));
