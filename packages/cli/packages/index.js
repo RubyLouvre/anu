@@ -176,16 +176,18 @@ class Parser {
                 }
             }
         };
-
-        //监听是否有patchComponent解析
-        utils.on('compliePatch', (id)=>{
-            this.inputConfig.input = id;
-            this.parse();
-        });
         
     }
     async parse() {
+        // 分析依赖
         let bundle = await rollup.rollup(this.inputConfig);
+        // 分析补丁组件依赖
+        const patchComponents = config.patchComponents;
+        for (let key in patchComponents) {
+            this.inputConfig.input = patchComponents[key];
+            const patchBundle = await rollup.rollup(this.inputConfig);
+            bundle.modules = bundle.modules.concat(patchBundle.modules);
+        }
         //如果有需要打补丁的组件并且本地没有安装schnee-ui
         if (this.needInstallUiLib()) {
             console.log(chalk.green('缺少补丁组件, 正在安装, 请稍候...'));
@@ -223,6 +225,7 @@ class Parser {
             console.log(chalk.magentaBright('请打开另一个窗口, 执行构建快应用命令'), chalk.greenBright('npm run build'));
             console.log(chalk.magentaBright('在打开另一个窗口, 执行启动快应用调试服务'), chalk.greenBright('npm run server'));
         }
+
     }
     needInstallUiLib() {
         if ( !config[config.buildType].jsxPatchNode ) return false; //没有需要patch的组件
