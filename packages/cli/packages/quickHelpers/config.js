@@ -135,6 +135,22 @@ function setRouter(config) {
 //配置titlebar
 function setTitleBar(config) {
     var display = manifest.display;
+    let userConfig = {};
+    try {
+        userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+    } catch (err) {
+        // eslint-disable-next-line
+    }
+    
+    if (
+        userConfig.display 
+        && Object.prototype.toString.call(userConfig.display.titleBar) === '[object Boolean]'
+        && !userConfig.display.titleBar
+    ) 
+    {
+        display.titleBar = false;
+        return;
+    }
     var win = config.window || {};
     var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages || [];
     disabledTitleBarPages.forEach(function(el){
@@ -157,6 +173,15 @@ function setOtherConfig() {
         userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
     } catch (err) {
         // eslint-disable-next-line
+    }
+
+    if (
+        userConfig.display 
+        && Object.prototype.toString.call(userConfig.display.menu) === '[object Boolean]'
+        && !userConfig.display.menu
+    ) 
+    {
+        manifest.display.menu = false;
     }
    
     //配置各支付签名
