@@ -91,6 +91,26 @@ utils.on('build', (data)=>{
     );
 });
 
+// TODO: utils
+class Timer {
+    constructor() {
+        this.startTime = process.hrtime();
+    }
+    start() {
+        this.startTime = process.hrtime();
+    }
+    end() {
+        this.endTime = process.hrtime(this.startTime);
+    }
+    getProcessTime(precision = 2) {
+        const NS_PER_SEC = 1e9;
+        if (!this.endTime) {
+            throw new Error('Timer did not end.');
+        }
+        return (this.endTime[0] + this.endTime[1] / NS_PER_SEC).toFixed(precision);
+    }
+}
+
 class Parser {
     constructor(entry) {
         this.entry = entry;
@@ -204,7 +224,7 @@ class Parser {
         return modules;
     }
     async parse() {
-        const bundleStartTime = +new Date();
+        let timer = new Timer();
         let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
 
         // 分析依赖
@@ -229,9 +249,10 @@ class Parser {
         const patchModules = await this.resolvePatchComponentModules();
         // 合并依赖，去重
         bundle.modules = uniquefilter(bundle.modules.concat(patchModules), 'id');
-        const bundleEndTime = +new Date(), parseStartTime = bundleEndTime;
-        spinner.succeed(`依赖分析成功, 用时: ${(bundleEndTime - bundleStartTime) / 1000}s`);
+        timer.end();
+        spinner.succeed(`依赖分析成功, 用时: ${timer.getProcessTime()}s`);
     
+        timer = new Timer();
         let moduleMap = this.moduleMap();
         bundle.modules.forEach(item => {
             if (/commonjsHelpers|rollupPluginBabelHelpers\.js/.test(item.id)) return;
@@ -247,8 +268,8 @@ class Parser {
         this.copyAssets();
         this.copyProjectConfig();
         generate();
-        const parseEndTime = +new Date();
-        utils.spinner('').succeed(`构建结束, 用时: ${(parseEndTime - parseStartTime) / 1000}s\n`);
+        timer.end();
+        utils.spinner('').succeed(`构建结束, 用时: ${timer.getProcessTime()}s\n`);
         if (config.buildType === 'quick'){
             console.log(chalk.magentaBright('请打开另一个窗口, 执行构建快应用命令'), chalk.greenBright('npm run build'));
             console.log(chalk.magentaBright('在打开另一个窗口, 执行启动快应用调试服务'), chalk.greenBright('npm run server'));
