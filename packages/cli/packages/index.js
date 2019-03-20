@@ -65,6 +65,21 @@ let ignoreStyleParsePlugin = ()=>{
     };
 };
 
+// TODO: 放到utils中
+function uniquefilter(arr, key = '') {
+    const map = {};
+    return arr.filter(item => {
+        if (!item[key]) {
+            return true;
+        }
+        if (!map[item[key]]) {
+            map[item[key]] = 1;
+            return true;
+        }
+        return false;
+    });
+}
+
 //监听打包资源
 utils.on('build', (data)=>{
     const { size, index, filepath } = data;
@@ -178,18 +193,21 @@ class Parser {
         };
         
     }
-    async parse() {
-        let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
-        // 分析依赖
-        let bundle = await rollup.rollup(this.inputConfig);
-        // 分析补丁组件依赖
+    async resolvePatchComponentModules() {
+        let modules = [];
         const patchComponents = config.patchComponents;
         for (let key in patchComponents) {
             this.inputConfig.input = patchComponents[key];
             const patchBundle = await rollup.rollup(this.inputConfig);
-            bundle.modules = bundle.modules.concat(patchBundle.modules);
+            modules = modules.concat(patchBundle.modules);
         }
-        spinner.succeed(chalk.green(`依赖分析成功, 用时: ${process.uptime()}s`));
+        return modules;
+    }
+    async parse() {
+        let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
+        
+        // 分析依赖
+        let bundle = await rollup.rollup(this.inputConfig);
         //如果有需要打补丁的组件并且本地没有安装schnee-ui
         if (this.needInstallUiLib()) {
             console.log(chalk.green('缺少补丁组件, 正在安装, 请稍候...'));
@@ -206,6 +224,12 @@ class Parser {
                 '--save-dev'
             );
         }
+        // 分析补丁组件依赖
+        const patchModules = await this.resolvePatchComponentModules();
+        // 合并依赖，去重
+        bundle.modules = uniquefilter(bundle.modules.concat(patchModules), 'id');
+        
+        spinner.succeed(`依赖分析成功, 用时: ${process.uptime()}s`);
     
         let moduleMap = this.moduleMap();
         bundle.modules.forEach(item => {
