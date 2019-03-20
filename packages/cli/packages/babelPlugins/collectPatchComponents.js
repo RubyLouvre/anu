@@ -17,7 +17,7 @@ function getPatchComponentPath(name) {
 }
 function parseCamel(str) {
     return str
-        .replace(/^-([a-z])/g, function(match, first) {
+        .replace(/-([a-z])/g, function(match, first) {
             return first.toUpperCase();
         })
         .replace(/^[a-z]/, function(match) {

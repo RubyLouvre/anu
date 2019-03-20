@@ -45,7 +45,7 @@ const styleCompilerMap = {
 function beautifyUx(code){
     return beautify.html(code, {
         indent: 4,
-        'wrap-line-length': 100
+        //'wrap-line-length': 100
     });
 }
 

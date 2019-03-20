@@ -59,20 +59,6 @@ let utils = {
         }
         return config['useYarn'];
     },
-    useCnpm() {
-        if (config['useCnpm'] != undefined) {
-            return config['useCnpm'];
-        }
-        try {
-            execSync('cnpm -v', {
-                stdio: 'ignore'
-            });
-            config['useCnpm'] = true;
-        } catch (e) {
-            config['useCnpm'] = false;
-        }
-        return config['useCnpm'];
-    },
     shortcutOfCreateElement() {
         return 'var h = React.createElement;';
     },
@@ -237,20 +223,7 @@ let utils = {
             return template(`module.exports["${name}"] = ${name};`)();
         }
     },
-    copyCustomComponents(conf, modules) {
-        Object.keys(conf).forEach(componentName => {
-            //对usingComponents直接copy目录
-            let componentDir = path.dirname(conf[componentName]);
-            let src = path.join(cwd, config.sourceDir, componentDir);
-            let dest = path.join(cwd, 'dist', componentDir);
-            let list = modules.customComponents;
-            fs.ensureDirSync(dest);
-            fs.copySync(src, dest);
-            if (!list.includes(componentName)) list.push(componentName);
-        });
-    },
     isNpm(name) {
-        // ./
         if (/^\/|\./.test(name)) {
             return false;
         }

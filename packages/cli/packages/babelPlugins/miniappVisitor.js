@@ -5,10 +5,12 @@ const path = require('path');
 const queue = require('../queue');
 const utils = require('../utils');
 const fs = require('fs-extra');
+const platforms = require('../../consts/platforms');
 const deps = [];
 const config = require('../config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
+const ignoreAttri = require('../quickHelpers/ignoreAttri');
 
 const quickFiles = require('../quickFiles');
 const quickConfig = require('../quickHelpers/config');
@@ -336,7 +338,7 @@ module.exports = {
             }
         }
     },
-    
+
     // visitor 中的 ClassProperty 没有访问, 
     // 使用 AssignmentExpression 解析 config 和 globalData
     // static 属性会自动挂载到 类
@@ -351,6 +353,17 @@ module.exports = {
                     try {
                         var json = eval('0,' + generate(astPath.get('right').node).code);
                         Object.assign(modules.config, json);
+                        //不同小程序的tabBar数量可能不存在，默认使用list
+                        var tabBar = modules.config.tabBar;
+                       //如果存在以buildType+"List"的列表，那么将它改成默认的list
+                        if(tabBar && tabBar[buildType+"List"]){
+                            tabBar.list = tabBar[buildType+"List"];
+                            
+                            platforms.forEach(function(el){
+                                delete tabBar[el.buildType+"List"];
+                            });
+
+                        }
                     } catch (e) {
                         console.log('eval json error', e);
                     }
@@ -469,6 +482,22 @@ module.exports = {
                     return;
                 }
             }
+            
+            // if (buildType !== 'quick' && nodeName === 'text') {
+            //     //  iconfont 各小程序匹配 去掉小程序下 <text>&#xf1f3;</text>
+            //     var children = astPath.parentPath.node.children;
+            //     if (children.length === 1){
+            //         let iconValue = t.isJSXText(children[0]) ? children[0].extra.raw : '';
+            //         let iconReg = /\s*&#x/i;
+            //         if (iconReg.test(iconValue)) {
+            //             children.length = 0;
+
+            //         }
+            //     }
+
+            // }
+
+
             let modules = utils.getAnu(state);
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
             let bag = modules.importComponents[nodeName];
@@ -480,6 +509,11 @@ module.exports = {
                     bag = modules.importComponents[nodeName];
                 }
             }
+            if (buildType === 'quick') {
+                ignoreAttri(astPath, nodeName);
+            }
+
+
             if (bag) {
                 deps[nodeName] ||
                     (deps[nodeName] = {
@@ -609,7 +643,7 @@ module.exports = {
                         );
                         astPath.remove();
                     }
-                }  else if (attrName == 'hidden') {
+                } else if (attrName == 'hidden') {
                     if (buildType === 'quick') {
                         //在快应用下hidden={a}变成show={!a}
                         astPath.node.name.name = 'show';

@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-08T07
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-19T09
  * IE9+
  */
 
@@ -669,6 +669,7 @@ var noPromiseApis = {
   createInnerAudioContext: true,
   createVideoContext: true,
   createCameraContext: true,
+  wxpayGetType: true,
   navigateBack: true,
   createMapContext: true,
   canIUse: true,
@@ -987,6 +988,9 @@ function refreshComponent(reactInstances, wx, uuid) {
     for (var i = 0, n = reactInstances.length; i < n; i++) {
         var reactInstance = reactInstances[i];
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
+            if (get(reactInstance).disposed) {
+                continue;
+            }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
             updateMiniApp(reactInstance);
