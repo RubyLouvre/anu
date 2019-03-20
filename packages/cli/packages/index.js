@@ -179,6 +179,7 @@ class Parser {
         
     }
     async parse() {
+        let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
         // 分析依赖
         let bundle = await rollup.rollup(this.inputConfig);
         // 分析补丁组件依赖
@@ -188,6 +189,7 @@ class Parser {
             const patchBundle = await rollup.rollup(this.inputConfig);
             bundle.modules = bundle.modules.concat(patchBundle.modules);
         }
+        spinner.succeed(chalk.green(`依赖分析成功, 用时: ${process.uptime()}s`));
         //如果有需要打补丁的组件并且本地没有安装schnee-ui
         if (this.needInstallUiLib()) {
             console.log(chalk.green('缺少补丁组件, 正在安装, 请稍候...'));
@@ -220,7 +222,7 @@ class Parser {
         this.copyAssets();
         this.copyProjectConfig();
         generate();
-        utils.spinner('').succeed('构建结束\n');
+        utils.spinner('').succeed(`构建结束, 用时: ${process.uptime()}s\n`);
         if (config.buildType === 'quick'){
             console.log(chalk.magentaBright('请打开另一个窗口, 执行构建快应用命令'), chalk.greenBright('npm run build'));
             console.log(chalk.magentaBright('在打开另一个窗口, 执行启动快应用调试服务'), chalk.greenBright('npm run server'));

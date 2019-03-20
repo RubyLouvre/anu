@@ -62,7 +62,7 @@ async function runCompileStyle(filePath, originalCode){
         // };
         // queue.push(placeholder);
         // // 补丁 END
-        const result = await compilerMap[exitName](filePath, originalCode)
+        const result = await compilerMap[exitName](filePath, originalCode);
         let { code, deps } = result;
         queue.push({
             code: code,
