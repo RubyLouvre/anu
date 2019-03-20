@@ -108,7 +108,6 @@ let utils = {
     createNodeName(map, backup) {
         const patchNode = config[config.buildType].jsxPatchNode || {};
         const UIName = 'schnee-ui';
-        const cache = {};
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return (astPath, modules) => {
             var orig = astPath.node.name.name;
@@ -137,12 +136,6 @@ let utils = {
                 modules.importComponents[patchName] = {
                     source: UIName
                 };
-
-                if (!cache[orig]) {
-                    let patchPath = path.join(cwd, 'node_modules', UIName, 'components', patchName, 'index.js');
-                    this.emit('compliePatch', patchPath); //再次经过编译
-                    cache[orig] = true;
-                }
                 return patchName;
             }
             return (astPath.node.name.name = map[orig] || backup);
