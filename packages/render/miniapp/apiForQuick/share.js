@@ -1,5 +1,5 @@
 export function share(obj) {
-    var share = require('@system.share');
+    var share = require('@service.share');
     share.getAvailablePlatforms({
         success: function(data) {
             let shareType = 0;

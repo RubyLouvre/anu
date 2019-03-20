@@ -354,10 +354,10 @@ module.exports = {
                         Object.assign(modules.config, json);
                         //不同小程序的tabBar数量可能不存在，默认使用list
                         var tabBar = modules.config.tabBar;
-                       //如果存在以buildType+"List"的列表，那么将它改成默认的list
-                        if(tabBar && tabBar[buildType+"List"]){
-                            tabBar.list = tabBar[buildType+"List"];
-                            delete tabBar[buildType+"List"];
+                        //如果存在以buildType+"List"的列表，那么将它改成默认的list
+                        if (tabBar && tabBar[buildType+'List']){
+                            tabBar.list = tabBar[buildType+'List'];
+                            delete tabBar[buildType+'List'];
                         }
                     } catch (e) {
                         console.log('eval json error', e);
@@ -478,19 +478,19 @@ module.exports = {
                 }
             }
             
-            // if (buildType !== 'quick' && nodeName === 'text') {
-            //     //  iconfont 各小程序匹配 去掉小程序下 <text>&#xf1f3;</text>
-            //     var children = astPath.parentPath.node.children;
-            //     if (children.length === 1){
-            //         let iconValue = t.isJSXText(children[0]) ? children[0].extra.raw : '';
-            //         let iconReg = /\s*&#x/i;
-            //         if (iconReg.test(iconValue)) {
-            //             children.length = 0;
+            if (buildType !== 'quick' && nodeName === 'text') {
+                //  iconfont 各小程序匹配 去掉小程序下 <text>&#xf1f3;</text>
+                var children = astPath.parentPath.node.children;
+                if (children.length === 1){
+                    let iconValue = t.isJSXText(children[0]) ? children[0].extra.raw : '';
+                    let iconReg = /\s*&#x/i;
+                    if (iconReg.test(iconValue)) {
+                        children.length = 0;
 
-            //         }
-            //     }
+                    }
+                }
 
-            // }
+            }
 
 
             let modules = utils.getAnu(state);
