@@ -142,7 +142,12 @@ function setTitleBar(config) {
         // eslint-disable-next-line
     }
     
-    if (userConfig.display && !userConfig.display.titleBar) {
+    if (
+        userConfig.display 
+        && Object.prototype.toString.call(userConfig.display.titleBar) === '[object Boolean]'
+        && !userConfig.display.titleBar
+    ) 
+    {
         display.titleBar = false;
         return;
     }
@@ -170,7 +175,12 @@ function setOtherConfig() {
         // eslint-disable-next-line
     }
 
-    if (userConfig.display && !userConfig.display.menu) {
+    if (
+        userConfig.display 
+        && Object.prototype.toString.call(userConfig.display.menu) === '[object Boolean]'
+        && !userConfig.display.menu
+    ) 
+    {
         manifest.display.menu = false;
     }
    
