@@ -195,9 +195,11 @@ function setOtherConfig() {
     });
     
     manifest.features = features;
-    
+
     [
         'name', 
+        'versionName',
+        'versionCode',
         'permissions', 
         'config', 
         'subpackages',
