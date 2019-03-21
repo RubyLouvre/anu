@@ -11,6 +11,7 @@ const platConfig = require('../config');
 var manifest = {
     package: 'org.hapjs.demo.sample',
     name: 'nanachi转快应用',
+    versionName: '1.0.0',
     versionCode: 1,
     minPlatformVersion: 1030,
     icon: '/assets/logo.png',
@@ -194,9 +195,19 @@ function setOtherConfig() {
     });
     
     manifest.features = features;
-
-    ['name', 'permissions', 'config', 'subpackages'].forEach(function(el){
-        manifest[el] = userConfig[el] ? userConfig[el] : manifest[el];
+    
+    [
+        'name', 
+        'permissions', 
+        'config', 
+        'subpackages',
+        'package',
+        'minPlatformVersion',
+        'icon'
+    ].forEach(function(el){
+        if (userConfig[el]) {
+            manifest[el] = userConfig[el];
+        }
     });
 }
 
