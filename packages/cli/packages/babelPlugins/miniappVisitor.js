@@ -290,6 +290,10 @@ module.exports = {
 
             //只有非空才生成json文件
             if (Object.keys(json).length) {
+                
+                //配置分包
+                json = require('../utils/setSubPackage')(modules, json);
+                
                 queue.push({
                     path: utils.updatePath(
                         modules.sourcePath,
