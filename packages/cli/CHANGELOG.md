@@ -1,6 +1,25 @@
 # Changelog
 
 
+# 1.1.7 (2019-03-22)
+
+## 核心库
+#### Bug fix
+- 修复快应用与React实例匹对的bug, 如果一个页面的组件被销毁`(get(reactInstance).disposed === true)`, 那么它将不会被小程序重复利用。
+
+
+## CLI  
+
+#### Feature
+- 优化CLI构建速度、流畅性。
+
+#### Bug fix
+- 修复CLI构建结束回调 bug。
+- 修复自定义 `tabBar` 构建后有冗余配置 bug。
+- 修复快应用下`manifest.json`配置拷贝不全的 bug。。
+
+
+
 # 1.1.6 (2019-03-15)
 
 ## 核心库
