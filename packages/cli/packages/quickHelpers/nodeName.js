@@ -15,7 +15,7 @@ builtInStr.replace(rword, function(el) {
 
 
 let map = Object.assign({}, builtIn);
-'p,div,h1,h2,h3,h4,h5,h6,quoteblock,label'.replace(rword, function(el) {
+'p,div,h1,h2,h3,h4,h5,h6,quoteblock,label,radio,radio-group'.replace(rword, function(el) {
     map[el] = 'div';
 });
 'span,b,s,code,quote,cite,icon'.replace(rword, function(el) {
