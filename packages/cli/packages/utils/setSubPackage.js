@@ -13,7 +13,6 @@ module.exports = function(modules, json) {
         return json;
     }
     if (!supportPlat.includes(buildType)) {
-        console.log(json, '23');
         return json;
     }
     
