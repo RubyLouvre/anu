@@ -3,12 +3,20 @@
  */
 let utils = require('./utils/index');
 let queue = [];
-queue.size = 0;
+const getSize = (code)=>{
+    let Bytes = Buffer.byteLength(code, 'utf8');
+    return Bytes < 1000 ? `${Bytes} Bytes` : `${(Bytes/1000).toFixed(1)} Kb`;
+};
 let _push = queue.push;
 queue.push = function(data){
     _push.call(this, data);
-    queue.size++;
-    utils.emit('build');
+    const { code, path: filepath } = data;
+    const size = getSize(code);
+    utils.emit('build', {
+        filepath,
+        size,
+        index: queue.length
+    });
 };
 module.exports = queue;
 

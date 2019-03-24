@@ -66,6 +66,9 @@ export function refreshComponent (reactInstances, wx, uuid) {
         let reactInstance = reactInstances[i];
         //处理组件A包含组件时B，当出现多个A组件，B组件会串的问题
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
+            if(get(reactInstance).disposed){
+               continue;
+            }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
             updateMiniApp(reactInstance);

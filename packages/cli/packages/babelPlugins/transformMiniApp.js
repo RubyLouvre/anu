@@ -18,8 +18,8 @@ let miniAppPlugin = function(){
                 usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
                 customComponents: [] //定义在page.json中usingComponents对象的自定义组件
             });
-
-            let filePath = opts.filename; //windows: D:/x/y/z
+            
+            let filePath = opts.filename.replace(/\\/g, '/');
             modules.sourcePath = filePath;
             modules.current = filePath.replace(process.cwd(), '');
             if (

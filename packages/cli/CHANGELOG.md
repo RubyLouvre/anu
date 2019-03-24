@@ -1,6 +1,41 @@
 # Changelog
 
 
+# 1.1.7 (2019-03-22)
+
+## 核心库
+#### Bug fix
+- 修复快应用与React实例匹对的bug, 如果一个页面的组件被销毁`(get(reactInstance).disposed === true)`, 那么它将不会被小程序重复利用。
+
+
+## CLI  
+
+#### Feature
+- 优化CLI构建速度、流畅性。
+
+#### Bug fix
+- 修复CLI构建结束回调 bug。
+- 修复自定义 `tabBar` 构建后有冗余配置 bug。
+- 修复快应用下`manifest.json`配置拷贝不全的 bug。。
+
+
+
+# 1.1.6 (2019-03-15)
+
+## 核心库
+#### Bug fix
+- 修复华为快应用事件系统 bug。
+
+
+## CLI  
+
+#### Feature
+- 支持不同平台自定义 `tabBar`。
+- 支持快应用平台自定义项目配置，详见[文档](https://rubylouvre.github.io/nanachi/documents/userProjectConfig.html#%E5%BF%AB%E5%BA%94%E7%94%A8)。
+
+#### Bug fix
+- 过滤快应用不支持的样式编译，避免华为快应用平台报错。
+
 
 # 1.1.5 (2019-03-08)
 
@@ -26,6 +61,7 @@
 - 修复转换快应用 px 转换 bug。
 - 修复转换快应用下 getDeviceId 接口 bug。
 - 修复初始化模板 bug。
+- 修复 windows 平台 js 模块引用 bug。
 
 
 

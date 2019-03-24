@@ -54,8 +54,7 @@ class P extends React.Component {
     };
 
     componentDidMount() {
-        console.log('componentDidMount');
-        // !this.state.rec.loading && this.init();
+        !this.state.rec.loading && this.init();
     }
 
     init() {
@@ -190,9 +189,6 @@ class P extends React.Component {
     cateselect() {}
 
     render() {
-        console.log('this.state', this.state);
-
-
         return (
             <div class="anu-col">
                 <div id="header" class="tab">
@@ -460,20 +456,23 @@ class P extends React.Component {
 
                 </div>
                 {/* 选择分类 */}
-                {/* <scroll-view
+                <scroll-view
                     id="catewrap"
                     scroll-into-view="c2"
                     scroll-y="true"
                     class={this.state.cateisShow ? 'cat-modal hidden' : 'cat-modal'}
                 >
-                    {!this.state.cateisShow && (
-                        <CateModal
-                            togglePtype={this.togglePtype.bind(this)}
-                            cateselect={this.cateselect}
-                            catelist={this.state.catelist}
-                        />
-                    )}
-                </scroll-view> */}
+                    <list-item type="catewrap-item" >
+
+                        {!this.state.cateisShow && (
+                            <CateModal
+                                togglePtype={this.togglePtype.bind(this)}
+                                cateselect={this.cateselect}
+                                catelist={this.state.catelist}
+                            />
+                        )}
+                    </list-item>
+                </scroll-view>
             </div>
         );
     }

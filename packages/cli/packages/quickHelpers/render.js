@@ -66,10 +66,6 @@ exports.exit = function (astPath, type, componentName, modules) {
                     wxml = `<import src="${ modules.importComponents[i]}.ux" />\n${wxml}`;
                 }
             }
-            if (type == 'RenderProps') {
-                handleRenderProps(wxml, componentName, modules);
-                return;
-            }
             var quickFile = quickFiles[modules.sourcePath];
             if (quickFile) {
                 if (modules.componentType === 'Page') {
@@ -97,53 +93,6 @@ ${wxml}
     }
 };
 
-function handleRenderProps(wxml, componentName, modules) {
-    let dep =
-        deps['renderProps'] ||
-        (deps['renderProps'] = {
-            json: {
-                component: true,
-                usingComponents: {}
-            },
-            wxml: ''
-        });
-
-    //生成render props的模板
-    dep.wxml =
-        dep.wxml +
-        `<block if="{{renderUid === '${componentName}'}}">${wxml}</block>`;
-    //生成render props的json
-    var importTag = '';
-    for (let i in modules.importComponents) {
-        importTag += `<import name="anu-${ i.toLowerCase() }" src="/components/${ i }/index"></import>\n`;
-    }
-    queue.push({
-        path: utils.updatePath(
-            modules.sourcePath,
-            config.sourceDir,
-            'dist',
-            'ux'
-        ),
-        code: `${importTag}<template>
-${dep.wxml}
-</template>
-<script>
-export default {
-    data: function(){
-    return {
-        renderUid: "",
-        props: {},
-        state: {},
-        context: {}
-    }
-    },
-    onInit: function () { },
-    onDistory: function () { }
-};
-</script>
-        `
-    });
-}
 
 function transformIfStatementToConditionalExpression(node) {
     const { test, consequent, alternate } = node;

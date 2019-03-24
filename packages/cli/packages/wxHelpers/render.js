@@ -87,9 +87,7 @@ exports.exit = function(astPath, type, componentName, modules) {
                 }.wxml" />\n${wxml}`;
             }
         }
-        if (type == 'RenderProps') {
-            handleRenderProps(wxml, componentName, modules);
-        } else if (modules.componentType === 'Component') {
+        if (modules.componentType === 'Component') {
             deps[componentName] = deps[componentName] || {
                 set: new Set()
             };
@@ -123,41 +121,6 @@ exports.exit = function(astPath, type, componentName, modules) {
     }
 };
 
-function handleRenderProps(wxml, componentName, modules) {
-    queue.push({
-        path: utils.updatePath(modules.sourcePath, config.sourceDir, 'dist'),
-        code: renderText,
-        type: 'wxml'
-    });
-    let dep =
-        deps['renderProps'] ||
-        (deps['renderProps'] = {
-            json: {
-                component: true,
-                usingComponents: {}
-            },
-            wxml: ''
-        });
-
-    //生成render props的模板
-    dep.wxml =
-        dep.wxml +
-        `<block wx:if="{{renderUid === '${componentName}'}}">${wxml}</block>`;
-    //生成render props的json
-    for (let i in modules.importComponents) {
-        dep.json.usingComponents['anu-' + i.toLowerCase()] =
-            '/components/' + i + '/index';
-    }
-    queue.push({
-        path: utils.updatePath(
-            modules.sourcePath,
-            config.sourceDir,
-            'dist',
-            'json'
-        ),
-        code: JSON.stringify(dep.json, null, 4) //prettifyXml(wxml, { indent: 2 })
-    });
-}
 
 function transformIfStatementToConditionalExpression(node) {
     const { test, consequent, alternate } = node;

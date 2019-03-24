@@ -11,15 +11,16 @@ let fs = require('fs');
 const crypto = require('crypto');
 let cache = {};
 //缓存层，避免重复编译
-let needUpdate = (id, originalCode, fn) => {
+let needUpdate = (id, originalCode) => {
     let sha1 = crypto
         .createHash('sha1')
         .update(originalCode)
         .digest('hex');
     if (!cache[id] || cache[id] != sha1) {
         cache[id] = sha1;
-        fn();
+        return true;
     }
+    return false;
 };
 
 //获取dist路径
@@ -44,7 +45,7 @@ const styleCompilerMap = {
 function beautifyUx(code){
     return beautify.html(code, {
         indent: 4,
-        'wrap-line-length': 100
+        //'wrap-line-length': 100
     });
 }
 
@@ -89,21 +90,34 @@ let map = {
         let {cssType, cssPath} = uxFile;
        
         return styleCompilerMap[cssType](cssPath)
-            .then((res)=>{
+            .then(async (res)=>{
+                // // 递归编译@import依赖文件
+                // res.deps.forEach(dep => {
+                //     const code = fs.readFileSync(dep.file, 'utf-8');
+                //     needUpdate(dep.file, code,  ()=>{
+                //         let exitName = path.extname(dep.file).replace(/\./, '');
+                //         styleCompilerMap[exitName](dep.file, code).then(res => {
+                //             queue.push({
+                //                 code: res.code,
+                //                 path: getDist(dep.file),
+                //                 type: 'css'
+                //             });
+                //         });
+                //     });
+                // });
                 // 递归编译@import依赖文件
-                res.deps.forEach(dep => {
+                for (let i = 0; i < res.deps.length; i++) {
+                    const dep = res.deps[i];
                     const code = fs.readFileSync(dep.file, 'utf-8');
-                    needUpdate(dep.file, code,  ()=>{
-                        let exitName = path.extname(dep.file).replace(/\./, '');
-                        styleCompilerMap[exitName](dep.file, code).then(res => {
-                            queue.push({
-                                code: res.code,
-                                path: getDist(dep.file),
-                                type: 'css'
-                            });
+                    if (needUpdate(dep.file, code)) {
+                        const res = await styleCompilerMap[cssType](dep.file, code);
+                        queue.push({
+                            code: res.code,
+                            path: getDist(dep.file),
+                            type: 'css'
                         });
-                    });
-                });
+                    }
+                }
                 return `<style>\n${res.code}\n</style>`;
             });
     },

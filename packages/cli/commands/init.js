@@ -8,6 +8,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const cwd = process.cwd();
 const inquirer = require('inquirer');
+const templates = require('../consts/templates');
 
 function checkAppName(appName){
     let appPath = path.join(cwd, appName);
@@ -20,32 +21,12 @@ function checkAppName(appName){
 }
 
 const askTemplate = () => {
-    const q = [];
-    const list = [
-        {
-            name: '去哪儿',
-            value: 'qunar'
-        },
-        {
-            name: '网易云音乐',
-            value: 'music'
-        },
-        {
-            name: '拼多多',
-            value: 'pdd'
-        },
-        {
-            name: '默认模板',
-            value: 'helloNanachi'
-        }
-    ];
-    q.push({
+    return inquirer.prompt({
         type: 'list',
         name: 'appTplName',
         message: '请选择模板',
-        choices: list
+        choices: templates
     });
-    return inquirer.prompt(q);
 };
 
 function copyTemplate(data){
@@ -59,6 +40,9 @@ function copyTemplate(data){
 
     fs.ensureDirSync(appPath);
     fs.copySync(tplSrc, appPath);
+}
+
+function outputLog({ appName, appPath }) {
     console.log(
         `\n项目 ${chalk.green(appName)} 创建成功, 路径: ${chalk.green(
             appPath
@@ -70,6 +54,7 @@ function copyTemplate(data){
                    \t或使用nanachi watch:ali 构建支付宝小程序
                    \t或使用nanachi watch:tt 构建头条小程序
                    \t或使用nanachi watch:quick 构建快应用
+                   \t或使用nanachi watch:quick --huawei 构建快应用
                    \t或使用nanachi watch:bu 构建百度智能小程序
                    \t或使用nanachi watch:h5 构建h5`);
     console.log();
@@ -78,6 +63,7 @@ function copyTemplate(data){
                    \t或使用nanachi build:ali 构建支付宝小程序
                    \t或使用nanachi build:tt 构建头条小程序
                    \t或使用nanachi build:quick 构建快应用
+                   \t或使用nanachi watch:quick --huawei 构建快应用
                    \t或使用nanachi build:bu 构建百度智能小程序
                    \t或使用nanachi build:h5 构建h5`);
     console.log();
@@ -96,7 +82,8 @@ function copyTemplate(data){
 async function init(appName){
     const appPath = checkAppName(appName);
     const { appTplName } = await askTemplate();
-    copyTemplate({ appPath, appTplName})
+    copyTemplate({ appPath, appTplName});
+    outputLog({ appName, appPath });
 }
 
 module.exports = init;

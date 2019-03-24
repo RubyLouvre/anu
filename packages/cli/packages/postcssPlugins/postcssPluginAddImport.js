@@ -13,7 +13,7 @@ const postcssPluginAddImport = postCss.plugin('postcss-plugin-add-import', funct
                 .replace(/(^\w)/, './$1') + 
                 '\'';
         }
-        if (!deps) {
+        if (!deps.length) {
             return;
         }
         // 保证只有一条css规则的情况下也有分号（有些平台@import语句必须以分号结束）

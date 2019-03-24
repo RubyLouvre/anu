@@ -90,13 +90,13 @@ const renderLess = (filePath, originalCode)=>{
                     let importer = dep;
                     let abPath = path.resolve(path.dirname(filePath), importer);
                     if (cache[abPath]) return;
-                    // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
-                    let placeholder = {
-                        path:  getDist(abPath),
-                        code: ''
-                    };
-                    queue.push(placeholder);
-                    // 补丁 END
+                    // // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
+                    // let placeholder = {
+                    //     path:  getDist(abPath),
+                    //     code: ''
+                    // };
+                    // queue.push(placeholder);
+                    // // 补丁 END
                     renderLess(abPath, fs.readFileSync(abPath).toString())
                         .then((res)=>{
                             queue.push({

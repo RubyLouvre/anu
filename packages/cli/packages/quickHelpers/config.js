@@ -11,6 +11,7 @@ const platConfig = require('../config');
 var manifest = {
     package: 'org.hapjs.demo.sample',
     name: 'nanachi转快应用',
+    versionName: '1.0.0',
     versionCode: 1,
     minPlatformVersion: 1030,
     icon: '/assets/logo.png',
@@ -135,6 +136,22 @@ function setRouter(config) {
 //配置titlebar
 function setTitleBar(config) {
     var display = manifest.display;
+    let userConfig = {};
+    try {
+        userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+    } catch (err) {
+        // eslint-disable-next-line
+    }
+    
+    if (
+        userConfig.display 
+        && Object.prototype.toString.call(userConfig.display.titleBar) === '[object Boolean]'
+        && !userConfig.display.titleBar
+    ) 
+    {
+        display.titleBar = false;
+        return;
+    }
     var win = config.window || {};
     var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages || [];
     disabledTitleBarPages.forEach(function(el){
@@ -158,6 +175,15 @@ function setOtherConfig() {
     } catch (err) {
         // eslint-disable-next-line
     }
+
+    if (
+        userConfig.display 
+        && Object.prototype.toString.call(userConfig.display.menu) === '[object Boolean]'
+        && !userConfig.display.menu
+    ) 
+    {
+        manifest.display.menu = false;
+    }
    
     //配置各支付签名
     let userFeatures = userConfig.features || [];
@@ -170,8 +196,20 @@ function setOtherConfig() {
     
     manifest.features = features;
 
-    ['name', 'permissions', 'config', 'subpackages'].forEach(function(el){
-        manifest[el] = userConfig[el] ? userConfig[el] : manifest[el];
+    [
+        'name', 
+        'versionName',
+        'versionCode',
+        'permissions', 
+        'config', 
+        'subpackages',
+        'package',
+        'minPlatformVersion',
+        'icon'
+    ].forEach(function(el){
+        if (userConfig[el]) {
+            manifest[el] = userConfig[el];
+        }
     });
 }
 
