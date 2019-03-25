@@ -183,17 +183,23 @@ module.exports = {
         let modules = utils.getAnu(state);
         let source = node.source.value;
         let specifiers = node.specifiers;
+        var extraModules = modules.extraModules;
 
         if (modules.componentType === 'App') {
             //收集页面上的依赖，构成app.json的pages数组或manifest.json中routes数组
             if (/\/pages\//.test(source)) {
                 var pages = modules.pages || (modules.pages = []);
                 pages.push(source.replace(/^\.\//, ''));
+                // 存下删除的依赖路径
+                extraModules.push(source);
+
                 astPath.remove(); //移除分析依赖用的引用
             }
         }
 
         if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
+            // 存下删除的依赖路径
+            extraModules.push(source);
             astPath.remove();
         }
 

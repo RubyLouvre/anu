@@ -13,10 +13,21 @@ module.exports = async function(args){
         //     parser.watching();
         // }
         const compiler = webpack(webpackOptions);
-        compiler.run((err, res) => {
+        compiler.run((err, stats) => {
             if (err) {
                 console.log(err);
             }
+
+            const info = stats.toJson();
+            if (stats.hasErrors()) {
+                info.errors.forEach(e => {
+                    console.error(e);
+                });
+            }
+            
+            // if (stats.hasWarnings()) {
+            //     console.warn(info.warnings);
+            // }
         });
 
     } catch (e) {

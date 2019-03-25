@@ -47,22 +47,18 @@ module.exports = function(code, map, meta) {
                 // require('../../cli/packages/babelPlugins/trasnformAlias')( {sourcePath,resolvedIds} )
             ]
         });
-        console.log(res.code);
     
         return [{
             isDefault: true,
             type: 'js',
             path: relativePath,
-            code: res.code
-        }, {
-            type: 'css',
-            path: relativePath,
-            code: '.test { color: red }'
+            code: res.code,
+            extraModules: res.options.anu.extraModules
         }];
     } catch (e) {
         console.log(e);
         return [{
-            type: 'css',
+            type: 'error',
             path: relativePath,
             code: e
         }];

@@ -27,12 +27,13 @@ module.exports = {
                 test: /\.s[ca]ss$/,
                 use: [
                     require.resolve('../../nanachi-loader/loaders/fileLoader'),
-                    {
-                        loader: 'postcss-sass-loader',
-                        options: {
-                            plugins: []
-                        }
-                    }
+                    // {
+                    //     loader: 'postcss-sass-loader',
+                    //     options: {
+                    //         plugins: []
+                    //     }
+                    // },
+                    require.resolve('../../nanachi-loader/loaders/nanachiStyleLoader'),
                 ]
             }
         ]
