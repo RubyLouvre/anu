@@ -117,7 +117,7 @@ function getReactLibFile(ReactLibName) {
 }
 
 
-function getAssetsFile() {
+function getAssetsFile( buildType ) {
     const assetsDir = path.join(cwd, 'source', 'assets');
     let files = glob.sync( assetsDir+'/**', {nodir: true});
 
@@ -127,9 +127,10 @@ function getAssetsFile() {
         return !/\.(js|scss|sass|less|css|json)$/.test(id)
     })
     .map(function(id){
+        let dist = id.replace('source', buildType === 'quick' ? 'src' : 'dist');
         return {
             id: id,
-            dist: id.replace('source', 'dist') ,
+            dist: dist ,
             ACTION_TYPE: 'COPY'
         }
     });
@@ -202,7 +203,7 @@ async function runTask(args){
     tasks = tasks.concat(getProjectConfigFile(buildType));
 
     //copy assets目录下静态资源
-    tasks = tasks.concat(getAssetsFile());
+    tasks = tasks.concat(getAssetsFile(buildType));
 
     try {
         //每次build时候, 必须先删除'dist', 'build', 'sign', 'src', 'babel.config.js'等等冗余文件或者目录

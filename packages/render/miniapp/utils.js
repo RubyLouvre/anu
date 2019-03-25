@@ -127,6 +127,7 @@ export function useComponent(props) {
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key :  (props['data-instance-uid'] || new Date() - 0);
     delete props.is;
+    clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
     }

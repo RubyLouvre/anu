@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-19T09
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-22T11
  * IE9+
  */
 
@@ -1018,6 +1018,7 @@ function useComponent(props) {
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
     delete props.is;
+    clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
     }

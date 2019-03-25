@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-19
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-22
  */
 
 var arrayPush = Array.prototype.push;
@@ -710,6 +710,7 @@ function useComponent(props) {
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
     delete props.is;
+    clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
     }
