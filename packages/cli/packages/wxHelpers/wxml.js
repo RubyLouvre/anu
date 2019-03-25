@@ -3,6 +3,8 @@ const babel = require('@babel/core');
 const t = require('@babel/types');
 const generate = require('@babel/generator').default;
 const beautify = require('js-beautify');
+const he = require('he');
+
 const utils = require('../utils');
 const config = require('../config');
 const buildType = config.buildType;
@@ -44,11 +46,11 @@ function wxml(code, modules) {
             }
         ]
     });
-    var text = result.code.replace(/&yen;/g, "￥");
+    var text =  he.decode( result.code ) //.replace(/&yen;/g, "￥");
     //这里处理中文
-    text = text.replace(/\\?(?:\\u)([\da-f]{4})/gi, function(a, b) {
-        return unescape(`%u${b}`);
-    });
+  // text = text.replace(/\\?(?:\\u)([\da-f]{4})/gi, function(a, b) {
+  //      return unescape(`%u${b}`);
+  //  });
     return beautifyXml(text).trim();
 }
 
