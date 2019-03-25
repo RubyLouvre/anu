@@ -41,7 +41,6 @@ module.exports = {
          * 使用 babel-types 完成如下语法
          * var Global = React.toClass(Global, React.Component, {});
          */
-
         
         const classDeclarationAst = t.assignmentExpression(
             '=', 

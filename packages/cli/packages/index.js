@@ -144,6 +144,7 @@ class Parser {
                          * v6 default config: ["plugin", { "loose": true }]
                          * v7 default config: ["plugin"]
                          */
+                        require('@babel/plugin-syntax-jsx'),
                         [
                             require('@babel/plugin-proposal-class-properties'),
                             { loose: true }
