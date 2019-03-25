@@ -2,12 +2,19 @@
 const babel = require('@babel/core');
 const t = require('@babel/types');
 const generate = require('@babel/generator').default;
+const beautify = require('js-beautify');
 const utils = require('../utils');
 const config = require('../config');
 const buildType = config.buildType;
 const attrNameHelper = require(`../${buildType}Helpers/attrName`);
 const attrValueHelper = require(`../${buildType}Helpers/attrValue`);
 const logicHelper = require(`../${buildType}Helpers/logic`);
+
+function beautifyXml(code){
+    return beautify.html(code, {
+        indent: 4
+    });
+}
 
 const quickTextContainer = {
     text: 1,
@@ -37,9 +44,11 @@ function wxml(code, modules) {
             }
         ]
     });
-    return result.code.replace(/\\?(?:\\u)([\da-f]{4})/gi, function(a, b) {
+    let ret = result.code.replace(/\\?(?:\\u)([\da-f]{4})/gi, function(a, b) {
         return unescape(`%u${b}`);
     });
+
+    return beautifyXml(ret).trim();
 }
 
 let visitor = {
