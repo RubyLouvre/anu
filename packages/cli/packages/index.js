@@ -144,6 +144,7 @@ class Parser {
                          * v6 default config: ["plugin", { "loose": true }]
                          * v7 default config: ["plugin"]
                          */
+                        require('@babel/plugin-syntax-jsx'),
                         [
                             require('@babel/plugin-proposal-class-properties'),
                             { loose: true }
@@ -183,17 +184,25 @@ class Parser {
         const patchComponents = config.patchComponents;
         for (let key in patchComponents) {
             this.inputConfig.input = patchComponents[key];
-            const patchBundle = await rollup.rollup(this.inputConfig);
+            const patchBundle = await this.bundleAnalysis();
             modules = modules.concat(patchBundle.modules);
         }
         return modules;
+    }
+    async bundleAnalysis() {
+        try {
+            const bundle = await rollup.rollup(this.inputConfig);
+            return bundle;
+        } catch (e) {
+            throw new Error('依赖分析失败, ' + e);
+        }
     }
     async parse() {
         let timer = new Timer();
         let spinner = utils.spinner(chalk.green('正在分析依赖...\n')).start();
 
-        // 分析依赖
         let bundle = await rollup.rollup(this.inputConfig);
+        
         //如果有需要打补丁的组件并且本地没有安装schnee-ui
         if (this.needInstallUiLib()) {
             console.log(chalk.green('缺少补丁组件, 正在安装, 请稍候...'));
@@ -323,10 +332,13 @@ class Parser {
         }
     }
     async transform() {
-        await this.updateJsQueue(this.jsFiles);
-        this.updateWebViewRoutes(this.webViewFiles);
-        await this.updateStyleQueue(this.styleFiles);
-        
+        try {
+            await this.updateJsQueue(this.jsFiles);
+            this.updateWebViewRoutes(this.webViewFiles);
+            await this.updateStyleQueue(this.styleFiles);
+        } catch (e) {
+            throw new Error('代码解析失败, 原因: ' + e);
+        }
     }
     check() {
         let errorMsg = '';

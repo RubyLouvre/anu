@@ -45,6 +45,7 @@
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
     "clean-css": "^4.2.1",
+    "clean-webpack-plugin": "^2.0.1",
     "commander": "^2.17.0",
     "cross-spawn": "^6.0.5",
     "css": "^2.2.4",
@@ -68,6 +69,7 @@
     "postcss-less-engine-latest": "^1.0.0",
     "postcss-nested": "^4.1.0",
     "postcss-nested-props": "^2.0.0",
+    "postcss-sass-loader": "^1.1.0",
     "postcss-scss": "^2.0.0",
     "postcss-selector-parser": "^5.0.0",
     "precss": "^3.1.2",
@@ -80,6 +82,7 @@
     "rollup-plugin-node-resolve": "^3.3.0",
     "sass": "^1.16.1",
     "uglify-es": "^3.3.9",
-    "validate-npm-package-name": "^3.0.0"
+    "validate-npm-package-name": "^3.0.0",
+    "webpack": "^4.29.6"
   }
 }

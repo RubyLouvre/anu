@@ -16,7 +16,8 @@ let miniAppPlugin = function(){
                 config: {}, //用于生成对象
                 importComponents: {}, //import xxx form path进来的组件
                 usedComponents: {}, //在<wxml/>中使用<import src="path">的组件
-                customComponents: [] //定义在page.json中usingComponents对象的自定义组件
+                customComponents: [], //定义在page.json中usingComponents对象的自定义组件
+                extraModules: [] // 用于webpack分析依赖，将babel中删除的依赖关系暂存
             });
             
             let filePath = opts.filename.replace(/\\/g, '/');
