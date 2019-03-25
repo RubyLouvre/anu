@@ -519,6 +519,8 @@ module.exports = {
                 astPath.componentName = nodeName;
 
                 try {
+                    // 存下删除的依赖路径
+                    modules.extraModules.push(bag.source);
                     bag.astPath.remove();
                     bag.astPath = null;
                 } catch (err) {

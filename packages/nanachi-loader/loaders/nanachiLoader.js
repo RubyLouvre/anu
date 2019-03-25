@@ -23,22 +23,21 @@ module.exports = function(code, map, meta) {
                     require('@babel/plugin-proposal-class-properties'),
                     { loose: true }
                 ],
-                // require('@babel/plugin-proposal-object-rest-spread'),
-                // [
-                //     //重要,import { Xbutton } from 'schnee-ui' //按需引入
-                //     require('babel-plugin-import').default,
-                //     {
-                //         libraryName: 'schnee-ui',
-                //         libraryDirectory: 'components',
-                //         camel2DashComponentName: false
-                //     }
-                // ],
-                require('@babel/plugin-syntax-jsx'),
-                // require('../packages/babelPlugins/collectTitleBarConfig'),
-                // require('../packages/babelPlugins/collectWebViewPage'),
-                // require('../packages/babelPlugins/collectPatchComponents'),
-                // ...require('../packages/babelPlugins/validateJsx')(this.collectError),
                 require('@babel/plugin-proposal-object-rest-spread'),
+                [
+                    //重要,import { Xbutton } from 'schnee-ui' //按需引入
+                    require('babel-plugin-import').default,
+                    {
+                        libraryName: 'schnee-ui',
+                        libraryDirectory: 'components',
+                        camel2DashComponentName: false
+                    }
+                ],
+                require('@babel/plugin-syntax-jsx'),
+                require('../../cli/packages/babelPlugins/collectTitleBarConfig'),
+                require('../../cli/packages/babelPlugins/collectWebViewPage'),
+                require('../../cli/packages/babelPlugins/collectPatchComponents'),
+                // ...require('../../cli/packages/babelPlugins/validateJsx')(this.collectError),
                 [require('@babel/plugin-transform-template-literals'), { loose: true }],
                 ...require('../../cli/packages/babelPlugins/transformMiniApp')(this.resourcePath),
                 ...require('../../cli/packages/babelPlugins/transformEnv'),
