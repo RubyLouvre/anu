@@ -37,7 +37,9 @@ function wxml(code, modules) {
             }
         ]
     });
-    return result.code.replace(/\\?(?:\\u)([\da-f]{4})/gi, function(a, b) {
+    var text = result.code.replace(/&yen;/g, "￥");
+    //这里处理中文
+    return text.replace(/\\?(?:\\u)([\da-f]{4})/gi, function(a, b) {
         return unescape(`%u${b}`);
     });
 }
