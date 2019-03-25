@@ -6,6 +6,7 @@ const REACT_LIB_MAP = {
     h5: 'ReactH5.js',
     tt: 'ReactWX.js'
 };
+
 const BUILD_OPTIONS = {
     'compress': {
         alias: 'c',

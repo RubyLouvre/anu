@@ -4,6 +4,8 @@ let path = require('path');
 let config = require('../config');
 let queue = require('../queue');
 let cache = {};
+const cwd = process.cwd();
+const { REACT_LIB_MAP } = require('../../consts');
 
 //对路径的一些兼容
 let compatiblePath = (value)=>{
@@ -11,8 +13,14 @@ let compatiblePath = (value)=>{
     return utils.isWin() ? value.replace(/\\/g, '/') : value;
 };
 module.exports = (metaData)=>{
-    let {sourcePath, resolvedIds} = metaData;
-    let aliasMap = utils.resolveAliasPath(sourcePath, resolvedIds);
+    let { sourcePath } = metaData;
+    console.log(sourcePath);
+    const buildType = 'wx';
+    const aliasMap = {
+        '@react': path.relative(path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]), this.resource),
+        '@components': path.relative(path.resolve(cwd, 'source', 'components'), this.resource)
+    };
+    // let aliasMap = utils.resolveAliasPath(sourcePath, resolvedIds);
     
     return [
         require('babel-plugin-module-resolver'),        //计算别名配置以及处理npm路径计算

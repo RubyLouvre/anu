@@ -4,6 +4,10 @@ const distPath = path.resolve(cwd, './dist');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const NanachiWebpackPlugin = require('../../nanachi-loader/plugin');
 
+const buildType = 'wx';
+
+const { REACT_LIB_MAP } = require('../consts');
+
 module.exports = {
     mode: 'development',
     context: cwd,
@@ -39,5 +43,12 @@ module.exports = {
             cleanOnceBeforeBuildPatterns: [distPath]
         }),
         new NanachiWebpackPlugin()
-    ]
+    ],
+    resolve: {
+        alias: {
+            'react': path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]),
+            '@react': path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]),
+            '@components': path.resolve(cwd, 'source/components')
+        }
+    }
 };
