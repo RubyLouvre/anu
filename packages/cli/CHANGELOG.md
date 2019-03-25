@@ -1,6 +1,19 @@
 # Changelog
 
 
+# 1.1.8 (2019-03-25)
+
+## 核心库
+#### Bug fix
+- 让`ctor.displayName`能代替`fiber.name`。
+
+
+## CLI
+#### Bug fix
+- 修复快应用下`assets`目录copy路径出错 bug。
+
+
+
 # 1.1.7 (2019-03-22)
 
 ## 核心库
