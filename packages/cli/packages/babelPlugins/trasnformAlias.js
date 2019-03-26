@@ -12,15 +12,16 @@ let compatiblePath = (value)=>{
     value = /^\w/.test(value) ? `./${value}` : value; // import xx from 'A' => import xx from './A'
     return utils.isWin() ? value.replace(/\\/g, '/') : value;
 };
+const getDirname = (dir) => path.dirname(dir);
 module.exports = (metaData)=>{
     let { sourcePath } = metaData;
-    console.log(sourcePath);
+    
     const buildType = 'wx';
     const aliasMap = {
-        '@react': path.relative(path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]), this.resource),
-        '@components': path.relative(path.resolve(cwd, 'source', 'components'), this.resource)
+        '@react': path.relative(getDirname(sourcePath), path.resolve(cwd, 'source', REACT_LIB_MAP[buildType])),
+        '@components': path.relative(getDirname(sourcePath), path.resolve(cwd, 'source', 'components'))
     };
-    // let aliasMap = utils.resolveAliasPath(sourcePath, resolvedIds);
+    console.log(sourcePath, aliasMap);
     
     return [
         require('babel-plugin-module-resolver'),        //计算别名配置以及处理npm路径计算
