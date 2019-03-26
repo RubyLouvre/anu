@@ -30,8 +30,6 @@ module.exports = {
             {
                 test: /\.s[ca]ss$/,
                 use: [
-                    // require.resolve('style-loader'),
-                    // require.resolve('css-loader'),
                     require.resolve('../../nanachi-loader/loaders/fileLoader'),
                     require.resolve('../../nanachi-loader/loaders/nanachiStyleLoader'),
                 ]
