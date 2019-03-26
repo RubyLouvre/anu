@@ -6,6 +6,16 @@ const REACT_LIB_MAP = {
     h5: 'ReactH5.js',
     tt: 'ReactWX.js'
 };
+
+const EXT_MAP = new Map([
+    ['css', 'wxss'],
+    ['scss', 'wxss'],
+    ['sass', 'wxss'],
+    ['less', 'wxss'],
+    ['html', 'wxml'],
+    ['jsx', 'js']
+]);
+
 const BUILD_OPTIONS = {
     'compress': {
         alias: 'c',
@@ -24,5 +34,6 @@ const BUILD_OPTIONS = {
 
 module.exports = {
     REACT_LIB_MAP,
-    BUILD_OPTIONS
+    BUILD_OPTIONS,
+    EXT_MAP
 };

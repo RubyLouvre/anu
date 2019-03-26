@@ -2,10 +2,23 @@ const path = require('path');
 const babel = require('@babel/core');
 const cwd = process.cwd();
 
+const isReact = function(sourcePath){
+    return /React\w+\.js$/.test(path.basename(sourcePath));
+};
+
 module.exports = function(code, map, meta) {
     const relativePath = path.relative(path.resolve(this.rootContext, 'source'), this.resourcePath);
     try {
         // TODO 抽离路径，纯净plugin
+        
+        if (isReact(this.resourcePath)) {
+            return [{
+                isDefault: true,
+                type: 'js',
+                path: relativePath,
+                code: code
+            }];
+        }
         const res = babel.transformFileSync(this.resourcePath, {
             configFile: false,
             babelrc: false,
@@ -43,17 +56,22 @@ module.exports = function(code, map, meta) {
                 ...require('../../cli/packages/babelPlugins/transformEnv'),
                 ...require('../../cli/packages/babelPlugins/injectRegeneratorRuntime'),
                 require('../../cli/packages/babelPlugins/transformIfImport'),
-                // require('../../cli/packages/babelPlugins/trasnformAlias')( {sourcePath,resolvedIds} )
+                require('../../cli/packages/babelPlugins/trasnformAlias')( {sourcePath: this.resourcePath } )
             ]
         });
-    
-        return [{
+        if (!res.options.anu) {
+            res.options.anu = {};
+            res.options.anu.queue = [];
+        }
+        res.options.anu.queue.push({
             isDefault: true,
             type: 'js',
             path: relativePath,
             code: res.code,
             extraModules: res.options.anu.extraModules
-        }];
+        });
+    
+        return res.options.anu.queue;
     } catch (e) {
         console.log(e);
         return [{

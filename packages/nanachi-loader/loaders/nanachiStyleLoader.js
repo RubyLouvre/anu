@@ -1,11 +1,11 @@
 const path = require('path');
 const postCss = require('postcss');
 const utils = require('../../cli/packages/utils/index');
+const { EXT_MAP } = require('../../cli/consts/index');
 
 module.exports = function(code, map, meta) {
     const relativePath = path.relative(path.resolve(this.rootContext, 'source'), this.resourcePath);
     const callback = this.async();
-
     postCss([
         require('postcss-import')({
             resolve: function(importer, baseDir){
@@ -22,7 +22,7 @@ module.exports = function(code, map, meta) {
         }),
         require('@csstools/postcss-sass'),
         require('../../cli/packages/postcssPlugins/postcssPluginAddImport')({
-            extName: path.extname(relativePath).replace(/^\./, ''),
+            extName: EXT_MAP.get(path.extname(relativePath).replace(/^\./, '')),
             type: 'sass'
         }), // 添加@import规则，小程序可以解析原有依赖
         require('../../cli/packages/postcssPlugins/postCssPluginFixNumber'), // 数字精度插件
@@ -35,7 +35,8 @@ module.exports = function(code, map, meta) {
             isDefault: true,
             type: 'css',
             code: res.css,
-            path: relativePath
+            path: relativePath,
+            extraModules: utils.getDeps(res.messages).map(item=>item.file)
         }], map, meta);
     }).catch(function(err) {
         console.error(err);

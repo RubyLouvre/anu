@@ -5,30 +5,33 @@ const parser = require('../packages/index')(entry);
 const webpack = require('webpack');
 const webpackOptions = require('../config/webpack');
 
+function callback(err, stats) {
+    if (err) {
+        console.log(err);
+        return;
+    }
+
+    const info = stats.toJson();
+    if (stats.hasErrors()) {
+        info.errors.forEach(e => {
+            console.error(e);
+            process.exit();
+        });
+    }
+}
+
 module.exports = async function(args){
     try {
-        // await runBeforeParseTasks(args);
+        await runBeforeParseTasks(args);
         // await parser.parse();
-        // if (args['watch']) {
-        //     parser.watching();
-        // }
+        
         const compiler = webpack(webpackOptions);
-        compiler.run((err, stats) => {
-            if (err) {
-                console.log(err);
-            }
-
-            const info = stats.toJson();
-            if (stats.hasErrors()) {
-                info.errors.forEach(e => {
-                    console.error(e);
-                });
-            }
-            
-            // if (stats.hasWarnings()) {
-            //     console.warn(info.warnings);
-            // }
-        });
+        
+        if (args['watch']) {
+            compiler.watch({}, callback.bind(this));
+        } else {
+            compiler.run(callback.bind(this));
+        }
 
     } catch (e) {
         // eslint-disable-next-line

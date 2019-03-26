@@ -11,6 +11,7 @@ const config = require('../config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
 const ignoreAttri = require('../quickHelpers/ignoreAttri');
+const cwd = process.cwd();
 
 const quickFiles = require('../quickFiles');
 const quickConfig = require('../quickHelpers/config');
@@ -78,14 +79,12 @@ module.exports = {
                         methodName = 'onCreate';
                     }
                     let dist = path.join(
-                        process.cwd(),
-                        'dist',
                         'components',
                         'PageWrapper',
                         'index.ux'
                     );
                     if (!cache[dist]) {
-                        queue.push({
+                        modules.queue.push({
                             code: fs.readFileSync(
                                 path.resolve(
                                     __dirname,
@@ -291,13 +290,8 @@ module.exports = {
                 //配置分包
                 json = require('../utils/setSubPackage')(modules, json);
                 
-                queue.push({
-                    path: utils.updatePath(
-                        modules.sourcePath,
-                        config.sourceDir,
-                        'dist',
-                        'json'
-                    ),
+                modules.queue.push({
+                    path: path.relative(path.resolve(cwd, 'source'), modules.sourcePath),
                     code: JSON.stringify(json, null, 4),
                     type: 'json'
                 });

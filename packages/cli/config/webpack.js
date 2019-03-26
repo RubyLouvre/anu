@@ -4,6 +4,10 @@ const distPath = path.resolve(cwd, './dist');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const NanachiWebpackPlugin = require('../../nanachi-loader/plugin');
 
+const buildType = 'wx';
+
+const { REACT_LIB_MAP } = require('../consts');
+
 module.exports = {
     mode: 'development',
     context: cwd,
@@ -26,8 +30,8 @@ module.exports = {
             {
                 test: /\.s[ca]ss$/,
                 use: [
-                    require.resolve('style-loader'),
-                    require.resolve('css-loader'),
+                    // require.resolve('style-loader'),
+                    // require.resolve('css-loader'),
                     require.resolve('../../nanachi-loader/loaders/fileLoader'),
                     require.resolve('../../nanachi-loader/loaders/nanachiStyleLoader'),
                 ]
@@ -36,8 +40,16 @@ module.exports = {
     },
     plugins: [
         new CleanWebpackPlugin({
-            cleanOnceBeforeBuildPatterns: [distPath]
+            verbose: true,
+            cleanOnceBeforeBuildPatterns: ['!assets']
         }),
         new NanachiWebpackPlugin()
-    ]
+    ],
+    resolve: {
+        alias: {
+            'react': path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]),
+            '@react': path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]),
+            '@components': path.resolve(cwd, 'source/components')
+        }
+    }
 };
