@@ -22,7 +22,7 @@ function callback(err, stats) {
 
 module.exports = async function(args){
     try {
-        // await runBeforeParseTasks(args);
+        await runBeforeParseTasks(args);
         // await parser.parse();
         
         const compiler = webpack(webpackOptions);

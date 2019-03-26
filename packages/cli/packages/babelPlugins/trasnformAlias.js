@@ -39,11 +39,11 @@ module.exports = (metaData)=>{
                 moduleName = moduleName.replace(new RegExp(`^(${Object.keys(aliasMap).join('|')})`), function(match, name) {
                     return aliasMap[name];
                 });
-                // console.log(resolveRelativePath(sourcePath, path.resolve(cwd, getDirname(moduleName))));
-                // console.log(resolveRelativePath(sourcePath, path.resolve(cwd, moduleName)));
                 //针对async/await语法依赖的npm路径做处理
+                let targetPath = path.resolve(cwd, moduleName);
                 if (/regenerator-runtime\/runtime/.test(moduleName)) {
-                    // let regeneratorRuntimePath = utils.getRegeneratorRuntimePath(sourcePath);
+                    let regeneratorRuntimePath = utils.getRegeneratorRuntimePath(sourcePath);
+                    targetPath = regeneratorRuntimePath;
                     // console.log(moduleName, regeneratorRuntimePath);
                     // let distDir = config['buildType'] === 'quick' ? 'src': 'dist';
                     // let dist  = utils.updatePath(
@@ -66,7 +66,7 @@ module.exports = (metaData)=>{
                     // }
                 }
                 // let value = compatiblePath(aliasMap[moduleName]);
-                return resolveRelativePath(getDirname(sourcePath), path.resolve(cwd, moduleName));
+                return resolveRelativePath(getDirname(sourcePath), targetPath);
             }
         }
     ];

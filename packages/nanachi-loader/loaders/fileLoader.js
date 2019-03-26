@@ -6,7 +6,7 @@ const extMap = new Map([
 
 module.exports = function(queues, map, meta) {
     if (queues) {
-        queues.forEach(({ code, path: filePath, type, isDefault, extraModules }) => {
+        queues.forEach(({ code, path: filePath, type }) => {
             const relativePath = filePath.replace(/\.\w+$/, `.${extMap.get(type) || type}`);
             this.emitFile(relativePath, code, map);
             console.log(chalk`{green webpack生成：${relativePath}}`);

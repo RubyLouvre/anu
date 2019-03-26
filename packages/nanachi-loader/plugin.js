@@ -67,6 +67,10 @@ class NanachiWebpackPlugin {
         compiler.hooks.emit.tap(id, (compilation) => {
             delete compilation.assets[compiler.options.output.filename];
         });
+        
+        compiler.hooks.done.tap(id, () => {
+            console.log(`编译完成，耗时：${process.uptime()}s`);
+        });
     }
 }
 

@@ -40,7 +40,8 @@ module.exports = {
     },
     plugins: [
         new CleanWebpackPlugin({
-            cleanOnceBeforeBuildPatterns: [distPath]
+            verbose: true,
+            cleanOnceBeforeBuildPatterns: ['!assets']
         }),
         new NanachiWebpackPlugin()
     ],
