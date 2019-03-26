@@ -94,21 +94,19 @@ let visitor = {
     },
     JSXAttribute(astPath, state) {
         let attrName = astPath.node.name.name;
-
+        let attrValue = astPath.node.value;
         if (attrName === 'key') {
-            let node = astPath.node.value;
             let value;
             let modules = utils.getAnu(state);
-            if (t.isStringLiteral(node)) {
-                value = node.value;
+            if (t.isStringLiteral(attrValue)) {
+                value = attrValue.value;
             } else {
-                value = generate(node.expression).code;
+                value = generate(attrValue.expression).code;
             }
             modules.key = value;
             astPath.remove();
             return;
         }
-
         attrNameHelper(astPath, attrName, astPath.parentPath.node.name.name);
     },
     JSXText: {
