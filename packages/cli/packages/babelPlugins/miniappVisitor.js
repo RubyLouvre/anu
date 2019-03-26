@@ -702,9 +702,9 @@ module.exports = {
     JSXText(astPath) {
         //去掉内联元素内部的所有换行符
         if (astPath.parentPath.type == 'JSXElement') {
-
             var parentTagName = utils.getNodeName(astPath.parentPath.node);
-            var value = astPath.node.value.trim();
+            var value = astPath.node.extra.raw =  astPath.node.extra.rawValue
+            value = value.trim();
             if (value === '') {
                 astPath.remove();
                 return;
