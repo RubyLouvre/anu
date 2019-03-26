@@ -3,7 +3,7 @@ const babel = require('@babel/core');
 const cwd = process.cwd();
 
 const isReact = function(sourcePath){
-    return /^(React)/.test(path.basename(sourcePath));
+    return /React\w+\.js$/.test(path.basename(sourcePath));
 };
 
 module.exports = function(code, map, meta) {
@@ -59,6 +59,10 @@ module.exports = function(code, map, meta) {
                 require('../../cli/packages/babelPlugins/trasnformAlias')( {sourcePath: this.resourcePath } )
             ]
         });
+        if (!res.options.anu) {
+            res.options.anu = {};
+            res.options.anu.queue = [];
+        }
         res.options.anu.queue.push({
             isDefault: true,
             type: 'js',
