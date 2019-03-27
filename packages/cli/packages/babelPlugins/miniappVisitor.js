@@ -596,7 +596,6 @@ module.exports = {
                     astPath.node.value = t.stringLiteral(value.slice(1, -1));
                 }
             } else if (t.isJSXExpressionContainer(attrValue)) {
-
                 let attrs = parentPath.node.attributes;
                 let expr = attrValue.expression;
                 let nodeName = parentPath.node.name.name;
@@ -709,18 +708,18 @@ module.exports = {
     JSXText(astPath) {
         //去掉内联元素内部的所有换行符
         if (astPath.parentPath.type == 'JSXElement') {
-
-            var parentTagName = utils.getNodeName(astPath.parentPath.node);
-            var value = astPath.node.value.trim();
+            var textNode = astPath.node;
+            var value = textNode.extra.raw = textNode.extra.rawValue.trim();
             if (value === '') {
                 astPath.remove();
                 return;
             }
+            var parentTagName = utils.getNodeName(astPath.parentPath.node);
             if (
                 /quick|wx/.test(config.buildType) &&
                 inlineElement[parentTagName]
             ) {
-                astPath.node.value = value;
+                textNode.value = value;
             }
         }
     },

@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-03-22
+ * 运行于快应用的React by 司徒正美 Copyright 2019-03-26
  */
 
 var arrayPush = Array.prototype.push;
@@ -3344,7 +3344,7 @@ function registerPage(PageClass) {
 
 var appMethods = {
     onLaunch: 'onCreate',
-    onHide: 'onDestory'
+    onHide: 'onDestroy'
 };
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {

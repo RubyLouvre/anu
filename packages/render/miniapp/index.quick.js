@@ -27,7 +27,7 @@ import { registerComponent } from './registerComponent.quick';
 import { registerPage } from './registerPage.quick';
 let appMethods = {
     onLaunch: 'onCreate',
-    onHide: 'onDestory'
+    onHide: 'onDestroy'
 };
 let { render } = Renderer;
 let React = getWindow().React = {
