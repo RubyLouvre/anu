@@ -736,7 +736,7 @@
             }
             return updateQueue[key] = { current: initValue };
         },
-        useEffect: function useEffect(create, deps, EffectTag, createList, destoryList) {
+        useEffect: function useEffect(create, deps, EffectTag, createList, destroyList) {
             var fiber = getCurrentFiber();
             var cb = dispatcher.useCallbackOrMemo(create, deps);
             if (fiber.effectTag % EffectTag) {
@@ -744,7 +744,7 @@
             }
             var updateQueue = fiber.updateQueue;
             var list = updateQueue[createList] || (updateQueue[createList] = []);
-            updateQueue[destoryList] || (updateQueue[destoryList] = []);
+            updateQueue[destroyList] || (updateQueue[destroyList] = []);
             list.push(cb);
         },
         useImperativeHandle: function useImperativeHandle(ref, create, deps) {
