@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-03-18
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-03-27
  */
 
 (function (global, factory) {
@@ -1979,7 +1979,7 @@
             }
             return updateQueue[key] = { current: initValue };
         },
-        useEffect: function useEffect(create, deps, EffectTag, createList, destoryList) {
+        useEffect: function useEffect(create, deps, EffectTag, createList, destroyList) {
             var fiber = getCurrentFiber();
             var cb = dispatcher.useCallbackOrMemo(create, deps);
             if (fiber.effectTag % EffectTag) {
@@ -1987,7 +1987,7 @@
             }
             var updateQueue = fiber.updateQueue;
             var list = updateQueue[createList] || (updateQueue[createList] = []);
-            updateQueue[destoryList] || (updateQueue[destoryList] = []);
+            updateQueue[destroyList] || (updateQueue[destroyList] = []);
             list.push(cb);
         },
         useImperativeHandle: function useImperativeHandle(ref, create, deps) {
