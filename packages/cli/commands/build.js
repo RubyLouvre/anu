@@ -18,6 +18,7 @@ function callback(err, stats) {
             process.exit();
         });
     }
+    console.log(stats.toString());
 }
 
 module.exports = async function(args){

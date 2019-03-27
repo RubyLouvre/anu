@@ -28,10 +28,8 @@ module.exports = {
                 exclude: /node_modules/
             },
             {
-                test: /\.s[ca]ss$/,
+                test: /\.(s[ca]ss|less|css)$/,
                 use: [
-                    // require.resolve('style-loader'),
-                    // require.resolve('css-loader'),
                     require.resolve('../../nanachi-loader/loaders/fileLoader'),
                     require.resolve('../../nanachi-loader/loaders/nanachiStyleLoader'),
                 ]
