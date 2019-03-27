@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * 运行于快应用的React by 司徒正美 Copyright 2019-03-27
  */
