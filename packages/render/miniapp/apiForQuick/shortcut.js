@@ -13,7 +13,11 @@ export function createShortcut () {
                         showToast({ title: '成功创建桌面图标' });
                     },
                     fail: function (errmsg, errcode) {
-                        showToast({ title: 'error: ' + errcode + '---' + errmsg });
+                        if (errcode === 200) {
+                            showToast({ title: '请打开系统授权后再试' });
+                            return;
+                        }
+                        console.log(errcode, errmsg);
                     }
                 });
             }
