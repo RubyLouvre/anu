@@ -189,7 +189,7 @@ describe('loop 简单情况', () => {
                 <block tt:if="{{state.isOk}}">
                   <text>{{item2}}</text>
                 </block>
-                <block tt:else="true">
+                <block tt:elif="true">
                   <view>noOk</view>
                 </block>
               </block>
