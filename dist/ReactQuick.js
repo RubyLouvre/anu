@@ -1362,7 +1362,9 @@ function createShortcut() {
                     fail: function fail(errmsg, errcode) {
                         if (errcode === 200) {
                             showToast({ title: '请打开系统授权后再试' });
+                            return;
                         }
+                        console.log(errcode, errmsg);
                     }
                 });
             }
