@@ -14,28 +14,28 @@ class StyleParserFactory {
         switch (type) {
             case 'sass':
             case 'scss':
-                return SassParser.getParser({
-                    platform,
+                return new SassParser({
                     code,
                     map,
                     meta,
-                    filepath
+                    filepath,
+                    platform
                 });
             case 'css':
-                return CssParser.getParser({
-                    platform,
+                return new CssParser({
                     code,
                     map,
                     meta,
-                    filepath
+                    filepath,
+                    platform
                 });
             case 'less':
-                return LessParser.getParser({
-                    platform,
+                return new LessParser({
                     code,
                     map,
                     meta,
-                    filepath
+                    filepath,
+                    platform
                 });
         }
     }

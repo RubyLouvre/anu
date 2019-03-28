@@ -1,7 +1,6 @@
 const path = require('path');
-const postcss = require('postcss');
 
-class StyleParser {
+class JavascriptParser {
     constructor({
         code,
         map,
@@ -15,19 +14,14 @@ class StyleParser {
         this.filepath = filepath;
         this.platform = platform;
         this.relativePath = path.relative(path.resolve(process.cwd(), 'source'), filepath);
-        this._postcssPlugins = [];
-        this._postcssOptions = {};
+        this._instance = null;
     }
     
     parse() {
         return new Promise((resolve, reject) => {
-            postcss(this._postcssPlugins).process(this.code, this._postcssOptions).then((res) => {
-                resolve(res);
-            }).catch((err) => {
-                reject(err);
-            });
+            
         });
     }
 }
 
-module.exports = StyleParser;
+module.exports = JavascriptParser;

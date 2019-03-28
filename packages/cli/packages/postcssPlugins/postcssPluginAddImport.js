@@ -3,9 +3,9 @@ const path = require('path');
 const utils = require('../utils');
 const config = require('../config');
 
-const postcssPluginAddImport = postCss.plugin('postcss-plugin-add-import', function({ extName, type, dependencies } = {}) {
+const postcssPluginAddImport = postCss.plugin('postcss-plugin-add-import', function({ extName, type } = {}) {
     return function(root, res) {
-        const deps = dependencies || utils.getDeps(res.messages);
+        const deps = utils.getDeps(res.messages);
         function getRelativeImportPath(dirname, filepath) {
             const reg = (type === 'sass' ? /\.(s[c|a]ss)$/ : /\.(less)$/);
             return '\'' + path.relative(dirname, filepath)
