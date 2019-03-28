@@ -23,9 +23,9 @@ export var more = function(api) {
             return api.showToast(a);
         },
         showLoading: function _(a) {
-          a = a || {}
-          a.content =  a.title || '加载中...';
-          return api.showLoading(a);
+            a = a || {};
+            a.content =  a.title || '加载中...';
+            return api.showLoading(a);
         },
         // 导航类
         setNavigationBarTitle: function _(a) {
@@ -36,10 +36,10 @@ export var more = function(api) {
         },
         // 震动
         vibrateLong: function _(a) {
-          return api.vibrate(a);
+            return api.vibrate(a);
         },
         vibrateShort: function _(a) {
-          return api.vibrate(a);
+            return api.vibrate(a);
         },
         // 图片保存到本地
         saveImageToPhotosAlbum: function _(a) {
@@ -161,6 +161,7 @@ export var more = function(api) {
             const originSuccess = _a.success || noop;
             const originFail = _a.fail || noop;
             const originComplete = _a.complete || noop;
+            _a.headers = _a.header;     // ali 是用headers来传数据的 
             _a.success = function(res) {
                 const { status, headers, ...rest } = res;
                 if (typeof status !== 'undefined' && typeof headers !== 'undefined') {
