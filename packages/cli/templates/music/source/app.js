@@ -10,7 +10,7 @@ let bsurl = url.bsurl;
 class Demo extends React.Component {
   config = {
       window: {
-          navigationBarTextStyle: '#fff',
+          navigationBarTextStyle: 'white',
           navigationBarTitleText: 'Music',
           backgroundColor: '#fbfcfd',
           navigationBarBackgroundColor: '#BB2C08'

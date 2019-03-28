@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-03-19
+ * 运行于快应用的React by 司徒正美 Copyright 2019-03-27
  */
 
 var arrayPush = Array.prototype.push;
@@ -794,6 +794,7 @@ function useComponent(props) {
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
     delete props.is;
+    clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
     }
@@ -1360,7 +1361,11 @@ function createShortcut() {
                         showToast({ title: '成功创建桌面图标' });
                     },
                     fail: function fail(errmsg, errcode) {
-                        showToast({ title: 'error: ' + errcode + '---' + errmsg });
+                        if (errcode === 200) {
+                            showToast({ title: '请打开系统授权后再试' });
+                            return;
+                        }
+                        console.log(errcode, errmsg);
                     }
                 });
             }
@@ -1442,7 +1447,7 @@ function vibrateShort() {
 }
 
 function share(obj) {
-    var share = require('@system.share');
+    var share = require('@service.share');
     share.getAvailablePlatforms({
         success: function success(data) {
             var shareType = 0;
@@ -3344,7 +3349,7 @@ function registerPage(PageClass) {
 
 var appMethods = {
     onLaunch: 'onCreate',
-    onHide: 'onDestory'
+    onHide: 'onDestroy'
 };
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {

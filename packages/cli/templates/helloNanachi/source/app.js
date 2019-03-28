@@ -6,7 +6,7 @@ class Global extends React.Component {
             navigationBarBackgroundColor: '#00afc7',
             backgroundTextStyle: 'light',
             navigationBarTitleText: 'nanachi',
-            navigationBarTextStyle: '#00afc7'
+            navigationBarTextStyle: 'white'
         }
     };
     onLaunch() {

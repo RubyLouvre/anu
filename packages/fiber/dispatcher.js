@@ -75,7 +75,7 @@ export var dispatcher = {
         }
         return updateQueue[key] = { current: initValue };
     },
-    useEffect(create, deps, EffectTag, createList, destoryList) {//ok
+    useEffect(create, deps, EffectTag, createList, destroyList) {//ok
         let fiber = getCurrentFiber();
         let cb = dispatcher.useCallbackOrMemo(create, deps);
         if (fiber.effectTag % EffectTag) {
@@ -83,7 +83,7 @@ export var dispatcher = {
         }
         let updateQueue = fiber.updateQueue;
         let list = updateQueue[createList] ||  (updateQueue[createList] = []);
-        updateQueue[destoryList] ||  (updateQueue[destoryList] = []);
+        updateQueue[destroyList] ||  (updateQueue[destroyList] = []);
         list.push(cb);
     },
     useImperativeHandle(ref, create, deps) {
