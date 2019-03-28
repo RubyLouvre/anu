@@ -3,10 +3,7 @@ const cwd = process.cwd();
 const distPath = path.resolve(cwd, './dist');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const NanachiWebpackPlugin = require('../../nanachi-loader/plugin');
-
-const buildType = 'wx';
-
-const { REACT_LIB_MAP } = require('../consts');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     mode: 'development',
@@ -17,6 +14,7 @@ module.exports = {
         filename: 'index.bundle.js'
     },
     module: {
+        noParse: /node_modules/,
         rules: [
             {
                 test: /\.jsx?$/,
@@ -38,16 +36,22 @@ module.exports = {
     },
     plugins: [
         new CleanWebpackPlugin({
-            verbose: true,
-            cleanOnceBeforeBuildPatterns: ['!assets']
+            // verbose: true, // 是否开启删除log
+            // cleanOnceBeforeBuildPatterns: []
         }),
+        new CopyWebpackPlugin([
+            {
+                from: path.resolve(cwd, 'source/assets'),
+                to: path.resolve(cwd, 'dist/assets')
+            }
+        ]),
         new NanachiWebpackPlugin()
     ],
-    resolve: {
-        alias: {
-            'react': path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]),
-            '@react': path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]),
-            '@components': path.resolve(cwd, 'source/components')
-        }
-    }
+    // resolve: {
+    //     alias: {
+    //         'react': path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]),
+    //         '@react': path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]),
+    //         '@components': path.resolve(cwd, 'source/components')
+    //     }
+    // }
 };

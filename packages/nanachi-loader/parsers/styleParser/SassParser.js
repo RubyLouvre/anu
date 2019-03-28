@@ -33,24 +33,6 @@ class SassParser extends StyleParser {
             syntax: require('postcss-scss')
         };
     }
-    static getParser({
-        code,
-        map,
-        meta,
-        filepath,
-        platform
-    }) {
-        if (!this._instance) {
-            this._instance = new SassParser({
-                code,
-                map,
-                meta,
-                filepath,
-                platform
-            });
-        }
-        return this._instance;
-    }
 }
 
 module.exports = SassParser;

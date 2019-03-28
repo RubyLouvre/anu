@@ -6,25 +6,26 @@ const isReact = function(sourcePath){
     return /React\w+\.js$/.test(path.basename(sourcePath));
 };
 
-module.exports = function(code, map, meta) {
+module.exports = async function(code, map, meta) {
     const relativePath = path.relative(path.resolve(this.rootContext, 'source'), this.resourcePath);
+    const callback = this.async();
     try {
         // TODO 抽离路径，纯净plugin
         
         if (isReact(this.resourcePath)) {
-            return [{
+            callback(null, [{
                 isDefault: true,
                 type: 'js',
                 path: relativePath,
                 code: code
-            }];
+            }], map, meta);
+            return;
         }
-        const res = babel.transformFileSync(this.resourcePath, {
+        const res = await babel.transformFileAsync(this.resourcePath, {
             configFile: false,
             babelrc: false,
             comments: false,
             ast: true,
-            // presets: [require('@babel/preset-react')],
             plugins: [
                 [require('@babel/plugin-proposal-decorators'), { legacy: true }],
                 /**
@@ -70,15 +71,13 @@ module.exports = function(code, map, meta) {
             code: res.code,
             extraModules: res.options.anu.extraModules
         });
-    
-        return res.options.anu.queue;
+
+        callback(null, res.options.anu.queue, map, meta);
+        return;
     } catch (e) {
         console.log(e);
-        return [{
-            type: 'error',
-            path: relativePath,
-            code: e
-        }];
+        callback(e, '', map, meta);
+        return;
     }
     
 };
