@@ -303,7 +303,7 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                     reg
                 } = properties[i];
                 const res = {};
-                const value = values[index];
+                let value = values[index];
                 if (!reg.test(value)) {
                     if (i === properties.length-1) {
                         i = index;
@@ -312,6 +312,7 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                     continue;
                 }
                 const prop = declaration.prop + '-' + name;
+                value = value.replace(/^(\d+(?:\.\d+)?)s$/, (match, value) => value * 1000 + 'ms'); // 1s -> 1000ms
                 res[prop] = value;
                 declaration.cloneBefore(postCss.decl({
                     prop,
