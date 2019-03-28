@@ -47,6 +47,7 @@
     "clean-css": "^4.2.1",
     "clean-webpack-plugin": "^2.0.1",
     "commander": "^2.17.0",
+    "copy-webpack-plugin": "^5.0.2",
     "cross-spawn": "^6.0.5",
     "css": "^2.2.4",
     "css-node-extract": "^3.0.2",

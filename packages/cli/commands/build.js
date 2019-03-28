@@ -18,11 +18,12 @@ function callback(err, stats) {
             process.exit();
         });
     }
-    console.log(stats.toString());
+    // console.log(stats.toString());
 }
 
 module.exports = async function(args){
     try {
+        // TODO：移除复制assets目录操作，使用copy-webpack-plugin插件完成
         await runBeforeParseTasks(args);
         // await parser.parse();
         

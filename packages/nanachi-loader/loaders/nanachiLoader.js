@@ -13,12 +13,6 @@ module.exports = async function(code, map, meta) {
         // TODO 抽离路径，纯净plugin
         
         if (isReact(this.resourcePath)) {
-            // return [{
-            //     isDefault: true,
-            //     type: 'js',
-            //     path: relativePath,
-            //     code: code
-            // }];
             callback(null, [{
                 isDefault: true,
                 type: 'js',
@@ -32,7 +26,6 @@ module.exports = async function(code, map, meta) {
             babelrc: false,
             comments: false,
             ast: true,
-            // presets: [require('@babel/preset-react')],
             plugins: [
                 [require('@babel/plugin-proposal-decorators'), { legacy: true }],
                 /**
@@ -81,8 +74,6 @@ module.exports = async function(code, map, meta) {
 
         callback(null, res.options.anu.queue, map, meta);
         return;
-    
-        // return res.options.anu.queue;
     } catch (e) {
         console.log(e);
         callback(e, '', map, meta);
