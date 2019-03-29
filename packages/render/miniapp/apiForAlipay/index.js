@@ -179,7 +179,12 @@ export var more = function(api) {
                 originComplete.call(this, res);
             };
             
-            return api.httpRequest(_a);
+            // return api.httpRequest(_a) ;
+            if (api.request) {
+                return api.request(_a);
+            } 
+            return api.httpRequest(_a) ;
+
         }
     };
 };
