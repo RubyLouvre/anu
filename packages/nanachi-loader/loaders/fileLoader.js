@@ -1,15 +1,9 @@
 const chalk = require('chalk');
 const { EXT_MAP } = require('../../cli/consts/index');
 
-module.exports = function(queues, map, meta) {
-    const callback = this.callback.bind(this);
+module.exports = async function(queues, map, meta) {
+    const callback = this.async();
     if (queues) {
-        // queues.then((res) => {
-        //     console.log(res);
-        // }).catch((e) => {
-        //     console.log(err)
-        // })
-        // console.log(queues);
         queues.forEach(({ code, path: filePath, type }) => {
             const relativePath = filePath.replace(/\.\w+$/, `.${EXT_MAP.get(type) || type}`);
             this.emitFile(relativePath, code, map);

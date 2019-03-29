@@ -1,5 +1,4 @@
 const path = require('path');
-const babel = require('@babel/core');
 const cwd = process.cwd();
 const JavascriptParserFactory = require('../parsers/jsParser/JavascriptParserFactory');
 
