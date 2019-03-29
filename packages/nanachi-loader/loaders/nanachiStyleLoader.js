@@ -1,11 +1,11 @@
 const path = require('path');
 const utils = require('../../cli/packages/utils/index');
-const ParserFactory = require('../parsers/styleParser/StyleParserFactory');
+const StyleParserFactory = require('../parsers/styleParser/StyleParserFactory');
 
 module.exports = async function(code, map, meta) {
     const relativePath = path.relative(path.resolve(this.rootContext, 'source'), this.resourcePath);
     const callback = this.async();
-    const parser = ParserFactory.create({
+    const parser = StyleParserFactory.create({
         type: path.extname(this.resourcePath).replace(/^\./, ''), // sass less css
         platform: 'wx',
         code,

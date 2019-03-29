@@ -1,9 +1,13 @@
 const path = require('path');
 const cwd = process.cwd();
+const os = require('os');
 const distPath = path.resolve(cwd, './dist');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const NanachiWebpackPlugin = require('../../nanachi-loader/plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HappyPack = require('happypack');
+const happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length });
+
 
 module.exports = {
     mode: 'development',
@@ -19,9 +23,9 @@ module.exports = {
             {
                 test: /\.jsx?$/,
                 use: [
+                    // require.resolve('happypack/loader'),
                     require.resolve('../../nanachi-loader/loaders/fileLoader'),
                     require.resolve('../../nanachi-loader')
-                    
                 ],
                 exclude: /node_modules/
             },
@@ -45,7 +49,15 @@ module.exports = {
                 to: path.resolve(cwd, 'dist/assets')
             }
         ]),
-        new NanachiWebpackPlugin()
+        new NanachiWebpackPlugin(),
+        // new HappyPack({
+        //     // id: 'happy-pack-js',
+        //     threadPool: happyThreadPool,
+        //     loaders: [
+        //         require.resolve('../../nanachi-loader/loaders/fileLoader'),
+        //         require.resolve('../../nanachi-loader')
+        //     ]
+        // })
     ],
     // resolve: {
     //     alias: {
