@@ -22,6 +22,7 @@ module.exports = {
     'line-clamp': true,
     'text-shadow': true,
     'appearance': true,
+    'overflow-y': true,
     display: function (value) {
         return !(value === 'flex' || value === 'none');
     },
