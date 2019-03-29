@@ -33,6 +33,7 @@ class WxParser extends JavascriptParser{
                 require('../../../cli/packages/babelPlugins/collectTitleBarConfig'),
                 require('../../../cli/packages/babelPlugins/collectWebViewPage'),
                 require('../../../cli/packages/babelPlugins/collectPatchComponents'),
+                require('../../../cli/packages/babelPlugins/collectDependencies'),
                 // ...require('../../../cli/packages/babelPlugins/validateJsx')(this.collectError),
                 [require('@babel/plugin-transform-template-literals'), { loose: true }],
                 ...require('../../../cli/packages/babelPlugins/transformMiniApp')(this.filepath),

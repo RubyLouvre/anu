@@ -65,6 +65,7 @@
     "mathjs": "^5.2.3",
     "mini-html5": "latest",
     "ora": "^3.0.0",
+    "parallel-webpack": "^2.3.0",
     "postcss": "^7.0.6",
     "postcss-automath-latest": "^1.0.0",
     "postcss-import": "^12.0.1",

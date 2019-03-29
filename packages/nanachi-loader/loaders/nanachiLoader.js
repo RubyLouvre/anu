@@ -29,10 +29,8 @@ module.exports = async function(code, map, meta) {
             meta
         });
         const res = await parser.parse();
-        if (!res.options.anu) {
-            res.options.anu = {};
-            res.options.anu.queue = [];
-        }
+        res.options.anu = res.options.anu || {};
+        res.options.anu.queue = res.options.anu.queue || [];
         res.options.anu.queue.push({
             isDefault: true,
             type: 'js',
