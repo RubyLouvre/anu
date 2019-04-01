@@ -1,9 +1,12 @@
 const runBeforeParseTasks = require('./runBeforeParseTasks');
 const path = require('path');
-const entry = path.join(process.cwd(), 'source', 'app.js');
-const parser = require('../packages/index')(entry);
+// const entry = path.join(process.cwd(), 'source', 'app.js');
+// const parser = require('../packages/index')(entry);
 const webpack = require('webpack');
 const webpackOptions = require('../config/webpack');
+// const cwd = process.cwd();
+// const JavascriptParserFactory = require('../../nanachi-loader/parsers/jsParser/JavascriptParserFactory');
+// const pWebpack = require('parallel-webpack');
 
 function callback(err, stats) {
     if (err) {
@@ -18,15 +21,17 @@ function callback(err, stats) {
             process.exit();
         });
     }
-    // console.log(stats.toString());
 }
 
 module.exports = async function(args){
     try {
         // TODO：移除复制assets目录操作，使用copy-webpack-plugin插件完成
         await runBeforeParseTasks(args);
-        // await parser.parse();
-        
+        // const parser = JavascriptParserFactory.create({
+        //     platform: 'wx',
+        //     filepath: path.resolve(cwd, 'source/app.js')
+        // });
+        // const { options: { anu: {dependencies} }} = await parser.parse();
         const compiler = webpack(webpackOptions);
         
         if (args['watch']) {

@@ -1,4 +1,4 @@
-// const WxParser = require('./WxParser');
+const WxParser = require('./WxParser');
 // const AliParser = require('./AliParser');
 // const BuParser = require('./BuParser');
 
@@ -11,14 +11,14 @@ class JavascriptParserFactory {
         filepath
     }) {
         switch (platform) {
-            // case 'wx':
-            //     return WxParser.getParser({
-            //         platform,
-            //         code,
-            //         map,
-            //         meta,
-            //         filepath
-            //     });
+            case 'wx':
+                return new WxParser({
+                    platform,
+                    code,
+                    map,
+                    meta,
+                    filepath
+                });
             // case 'ali':
             //     return AliParser.getParser({
             //         platform,

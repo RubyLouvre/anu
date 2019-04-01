@@ -2,7 +2,7 @@ const path = require('path');
 const cwd = process.cwd();
 const distPath = path.resolve(cwd, './dist');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-const NanachiWebpackPlugin = require('../../nanachi-loader/plugin');
+const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
@@ -19,17 +19,16 @@ module.exports = {
             {
                 test: /\.jsx?$/,
                 use: [
-                    require.resolve('../../nanachi-loader/loaders/fileLoader'),
-                    require.resolve('../../nanachi-loader')
-                    
+                    require.resolve('../nanachi-loader/loaders/fileLoader'),
+                    require.resolve('../nanachi-loader'),
                 ],
                 exclude: /node_modules/
             },
             {
                 test: /\.(s[ca]ss|less|css)$/,
                 use: [
-                    require.resolve('../../nanachi-loader/loaders/fileLoader'),
-                    require.resolve('../../nanachi-loader/loaders/nanachiStyleLoader'),
+                    require.resolve('../nanachi-loader/loaders/fileLoader'),
+                    require.resolve('../nanachi-loader/loaders/nanachiStyleLoader'),
                 ]
             }
         ]
