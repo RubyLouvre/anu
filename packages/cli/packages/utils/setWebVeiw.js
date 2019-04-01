@@ -6,10 +6,9 @@ const chalk = require('chalk');
 
 function writeWebViewConfig(routes) {
     let code = `module.exports = ${JSON.stringify(routes)};`;
-    fs.writeFileSync(
-        path.join(cwd, 'dist', 'webviewConfig.js'),
-        code
-    )
+    let filePath = path.join(cwd, 'src', 'webviewConfig.js');
+    fs.ensureFileSync(filePath);
+    fs.writeFileSync( filePath, code );
 }
 
 //获取 H5 路由配置
@@ -70,8 +69,9 @@ function deleteWebViewConifg() {
 
 }
 
- exports = module.exports = function(routes){
-
+module.exports = function(routes){
+     
+   
      if (!routes.length) return;
      //每次build先删除配置文件
      deleteWebViewConifg();
