@@ -44,6 +44,16 @@ class WxParser extends JavascriptParser{
             ]
         };
     }
+    async parse() {
+        const res = await super.parse();
+        this.queues = res.options.anu.queue || this.queues;
+        this.queues.push({
+            type: 'js',
+            path: this.relativePath,
+            code: res.code,
+            extraModules: res.options.anu.extraModules
+        });
+    }
 }
 
 module.exports = WxParser;
