@@ -2598,6 +2598,9 @@ var more = function more(api) {
                 originFail.call(this, res);
                 originComplete.call(this, res);
             };
+            if (api.request) {
+                return api.request(_a);
+            }
             return api.httpRequest(_a);
         }
     };
