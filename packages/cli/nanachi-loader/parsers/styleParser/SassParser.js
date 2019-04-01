@@ -22,8 +22,8 @@ class SassParser extends StyleParser {
             }),
             require('@csstools/postcss-sass'),
             require('../../../packages/postcssPlugins/postcssPluginAddImport')({
-                extName: EXT_MAP.get(path.extname(this.relativePath).replace(/^\./, '')),
-                type: 'sass'
+                extName: EXT_MAP[this.platform][this.type],
+                type: this.type
             }), // 添加@import规则，小程序可以解析原有依赖
             require('../../../packages/postcssPlugins/postCssPluginFixNumber'), // 数字精度插件
             require('../../../packages/postcssPlugins/postCssPluginValidateStyle')

@@ -7,12 +7,14 @@ class StyleParser {
         map,
         meta,
         filepath,
-        platform
+        platform,
+        type
     }) {
         this.code = code;
         this.map = map;
         this.meta = meta;
         this.filepath = filepath;
+        this.type = type;
         this.platform = platform;
         this.relativePath = path.relative(path.resolve(process.cwd(), 'source'), filepath);
         this._postcssPlugins = [];

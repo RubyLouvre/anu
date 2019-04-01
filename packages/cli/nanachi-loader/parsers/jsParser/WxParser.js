@@ -40,7 +40,7 @@ class WxParser extends JavascriptParser{
                 ...require('../../../packages/babelPlugins/transformEnv'),
                 ...require('../../../packages/babelPlugins/injectRegeneratorRuntime'),
                 require('../../../packages/babelPlugins/transformIfImport'),
-                require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath } )
+                require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
             ]
         };
     }

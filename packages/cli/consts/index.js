@@ -7,14 +7,43 @@ const REACT_LIB_MAP = {
     tt: 'ReactWX.js'
 };
 
-const EXT_MAP = new Map([
-    ['css', 'wxss'],
-    ['scss', 'wxss'],
-    ['sass', 'wxss'],
-    ['less', 'wxss'],
-    ['html', 'wxml'],
-    ['jsx', 'js']
-]);
+const EXT_MAP = {
+    'wx': {
+        'css': 'wxss',
+        'scss': 'wxss',
+        'sass': 'wxss',
+        'less': 'wxss',
+        'html': 'wxml',
+        'jsx': 'js',
+    },
+    'ali': {
+        'css': 'acss',
+        'scss': 'acss',
+        'sass': 'acss',
+        'less': 'acss',
+        'html': 'axml',
+        'jsx': 'js',
+    },
+    'bu': {
+        'css': 'css',
+        'scss': 'css',
+        'sass': 'css',
+        'less': 'css',
+        'html': 'swan',
+        'jsx': 'js',
+    },
+    'tt': {
+        'css': 'ttss',
+        'scss': 'ttss',
+        'sass': 'ttss',
+        'less': 'ttss',
+        'html': 'ttml',
+        'jsx': 'js',
+    },
+    'quick': {
+        'jsx': 'ux',
+    }
+};
 
 const BUILD_OPTIONS = {
     'compress': {

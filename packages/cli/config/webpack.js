@@ -4,6 +4,7 @@ const distPath = path.resolve(cwd, './dist');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const config = require('../packages/config.js');
 
 module.exports = {
     mode: 'development',
@@ -44,7 +45,9 @@ module.exports = {
                 to: path.resolve(cwd, 'dist/assets')
             }
         ]),
-        new NanachiWebpackPlugin()
+        new NanachiWebpackPlugin({
+            platform: config['buildType']
+        })
     ],
     // resolve: {
     //     alias: {

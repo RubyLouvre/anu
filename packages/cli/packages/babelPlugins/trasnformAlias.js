@@ -1,9 +1,6 @@
 let utils = require('../utils');
 let fs = require('fs');
 let path = require('path');
-let config = require('../config');
-let queue = require('../queue');
-let cache = {};
 const cwd = process.cwd();
 const { REACT_LIB_MAP } = require('../../consts');
 
@@ -20,11 +17,10 @@ const getUserAlias = () => {
 };
 const resolveRelativePath = (from, to) => parsePath(path.relative(from, to));
 module.exports = (metaData)=>{
-    let { sourcePath } = metaData;
+    let { sourcePath, platform } = metaData;
     
-    const buildType = 'wx';
     const aliasMap = {
-        '@react': 'source/' + REACT_LIB_MAP[buildType],
+        '@react': 'source/' + REACT_LIB_MAP[platform],
         '@components': 'source/components'
     };
     Object.assign(aliasMap, getUserAlias());

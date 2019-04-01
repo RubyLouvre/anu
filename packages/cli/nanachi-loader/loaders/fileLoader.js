@@ -5,7 +5,7 @@ module.exports = async function(queues, map, meta) {
     const callback = this.async();
     if (queues) {
         queues.forEach(({ code, path: filePath, type }) => {
-            const relativePath = filePath.replace(/\.\w+$/, `.${EXT_MAP.get(type) || type}`);
+            const relativePath = filePath.replace(/\.\w+$/, `.${EXT_MAP[this.nanachiOptions.platform][type] || type}`);
             this.emitFile(relativePath, code, map);
             successLog(relativePath, code);
         });

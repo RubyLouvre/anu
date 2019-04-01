@@ -1,12 +1,11 @@
 const runBeforeParseTasks = require('./runBeforeParseTasks');
-const path = require('path');
+// const path = require('path');
 // const entry = path.join(process.cwd(), 'source', 'app.js');
 // const parser = require('../packages/index')(entry);
 const webpack = require('webpack');
 const webpackOptions = require('../config/webpack');
 // const cwd = process.cwd();
-// const JavascriptParserFactory = require('../../nanachi-loader/parsers/jsParser/JavascriptParserFactory');
-// const pWebpack = require('parallel-webpack');
+// const JavascriptParserFactory = require('../nanachi-loader/parsers/jsParser/JavascriptParserFactory');
 
 function callback(err, stats) {
     if (err) {
@@ -31,7 +30,12 @@ module.exports = async function(args){
         //     platform: 'wx',
         //     filepath: path.resolve(cwd, 'source/app.js')
         // });
-        // const { options: { anu: {dependencies} }} = await parser.parse();
+        // const { options: { anu: { dependencies } }} = await parser.parse();
+        // const entry = {};
+        // dependencies.forEach((dep, index) => {
+        //     entry[index] = path.join('source', dep).replace(/^(\w)/, './$1');
+        // });
+        // webpackOptions.entry = entry;
         const compiler = webpack(webpackOptions);
         
         if (args['watch']) {

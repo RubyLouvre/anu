@@ -7,7 +7,7 @@ module.exports = async function(code, map, meta) {
     const callback = this.async();
     const parser = StyleParserFactory.create({
         type: path.extname(this.resourcePath).replace(/^\./, ''), // sass less css
-        platform: 'wx',
+        platform: this.nanachiOptions.platform,
         code,
         map,
         meta,

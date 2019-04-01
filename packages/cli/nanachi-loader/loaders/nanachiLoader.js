@@ -21,7 +21,7 @@ module.exports = async function(code, map, meta) {
             return;
         }
         const parser = JavascriptParserFactory.create({
-            platform: 'wx',
+            platform: this.nanachiOptions.platform,
             filepath: this.resourcePath,
             code,
             map,
