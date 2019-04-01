@@ -1,5 +1,5 @@
 const path = require('path');
-const utils = require('../../cli/packages/utils/index');
+const utils = require('../../packages/utils/index');
 const StyleParserFactory = require('../parsers/styleParser/StyleParserFactory');
 
 module.exports = async function(code, map, meta) {

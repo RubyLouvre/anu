@@ -84,6 +84,7 @@
     "rollup-plugin-commonjs": "^9.1.6",
     "rollup-plugin-node-resolve": "^3.3.0",
     "sass": "^1.16.1",
+    "thread-loader": "^2.1.2",
     "uglify-es": "^3.3.9",
     "validate-npm-package-name": "^3.0.0",
     "webpack": "^4.29.6"

@@ -1,5 +1,5 @@
-const chalk = require('chalk');
-const { EXT_MAP } = require('../../cli/consts/index');
+const { EXT_MAP } = require('../../consts/index');
+const { successLog } = require('../logger/index');
 
 module.exports = async function(queues, map, meta) {
     const callback = this.async();
@@ -7,7 +7,7 @@ module.exports = async function(queues, map, meta) {
         queues.forEach(({ code, path: filePath, type }) => {
             const relativePath = filePath.replace(/\.\w+$/, `.${EXT_MAP.get(type) || type}`);
             this.emitFile(relativePath, code, map);
-            console.log(chalk`{green webpack生成：${relativePath}}`);
+            successLog(relativePath, code);
         });
         const defaultFile = queues.find(({ isDefault }) => isDefault);
         if (defaultFile) {

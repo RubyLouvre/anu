@@ -30,17 +30,17 @@ class WxParser extends JavascriptParser{
                     }
                 ],
                 require('@babel/plugin-syntax-jsx'),
-                require('../../../cli/packages/babelPlugins/collectTitleBarConfig'),
-                require('../../../cli/packages/babelPlugins/collectWebViewPage'),
-                require('../../../cli/packages/babelPlugins/collectPatchComponents'),
-                require('../../../cli/packages/babelPlugins/collectDependencies'),
-                // ...require('../../../cli/packages/babelPlugins/validateJsx')(this.collectError),
+                require('../../../packages/babelPlugins/collectTitleBarConfig'),
+                require('../../../packages/babelPlugins/collectWebViewPage'),
+                require('../../../packages/babelPlugins/collectPatchComponents'),
+                require('../../../packages/babelPlugins/collectDependencies'),
+                // ...require('../../../packages/babelPlugins/validateJsx')(this.collectError),
                 [require('@babel/plugin-transform-template-literals'), { loose: true }],
-                ...require('../../../cli/packages/babelPlugins/transformMiniApp')(this.filepath),
-                ...require('../../../cli/packages/babelPlugins/transformEnv'),
-                ...require('../../../cli/packages/babelPlugins/injectRegeneratorRuntime'),
-                require('../../../cli/packages/babelPlugins/transformIfImport'),
-                require('../../../cli/packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath } )
+                ...require('../../../packages/babelPlugins/transformMiniApp')(this.filepath),
+                ...require('../../../packages/babelPlugins/transformEnv'),
+                ...require('../../../packages/babelPlugins/injectRegeneratorRuntime'),
+                require('../../../packages/babelPlugins/transformIfImport'),
+                require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath } )
             ]
         };
     }
