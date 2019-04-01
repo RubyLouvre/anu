@@ -42,6 +42,7 @@ const EXT_MAP = {
     },
     'quick': {
         'jsx': 'ux',
+        'js': 'ux'
     }
 };
 
