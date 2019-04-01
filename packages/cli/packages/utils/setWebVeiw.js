@@ -38,6 +38,27 @@ function getWebViewRoutes(routes) {
     return ret;
 }
 
+function writeWebViewContainer(routes){
+
+
+
+    Object.keys(routes).forEach(function(key){
+        let template = `
+            <template>
+                <web src="${routes[key]}"  allowthirdpartycookies="false"></web>
+            </template>
+        `.trim();
+        let distPath =  path.join(cwd, 'src', key) + '.ux';
+        fs.ensureFileSync(distPath);
+        fs.writeFile(distPath, template, function(err){
+            if (err) {
+                console.log(err);
+            }
+        })
+        
+    });
+}
+
 //配置 H5_COMPILE_CONFIG.json, H5编译读该文件路由配置进行按需编译。
 function writeH5CompileConfig(routes) {
     let H5_COMPILE_JSON_FILE = path.join(cwd, 'source', 'H5_COMPILE_CONFIG.json');
@@ -79,7 +100,11 @@ module.exports = function(routes){
      //注入h5编译route配置
      writeH5CompileConfig(routes);
 
+     let webViewRoutes = getWebViewRoutes(routes);
+
+     writeWebViewContainer(webViewRoutes)
+
      //注入运行时 webview 各route配置
-     writeWebViewConfig(getWebViewRoutes(routes))
+     writeWebViewConfig(webViewRoutes)
     
  }
