@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-27
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-01
  */
 
 var arrayPush = Array.prototype.push;
@@ -2575,6 +2575,7 @@ var more = function more(api) {
             var originSuccess = _a.success || noop;
             var originFail = _a.fail || noop;
             var originComplete = _a.complete || noop;
+            _a.headers = _a.header;
             _a.success = function (res) {
                 var _res = res,
                     status = _res.status,

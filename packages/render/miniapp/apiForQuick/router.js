@@ -55,6 +55,7 @@ function createRouter(name) {
 export var navigateTo = createRouter('push');
 export var redirectTo = createRouter('replace');
 export var navigateBack = createRouter('back');
+
 //wx.reLaunch 与 wx.redirectTo()的用途基本相同， 
 //只是 wx.reLaunch()先关闭了内存中所有保留的页面，再跳转到目标页面。
 export var reLaunch = function(obj){
