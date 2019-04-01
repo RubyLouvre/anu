@@ -81,8 +81,8 @@ class Parser {
         this.entry = entry;
         this.jsFiles = [];
         this.styleFiles = [];
-        this.webViewFiles = [];
         this.npmFiles = [];
+        this.webViewRoutes = [];
         this.depTree = {};
         this.collectError = {
             //样式@import引用错误, 如page中引用component样式
@@ -200,6 +200,8 @@ class Parser {
             utils.installer('schnee-ui');
         }
 
+       
+
         //校验是否需要安装快应用hap-toolkit工具
         if (this.needInstallHapToolkit()) {
             //获取package.json中hap-toolkit版本，并安装
@@ -230,6 +232,7 @@ class Parser {
 
         this.check();
         await this.transform();
+        this.updateWebViewRoutes(this.webViewRoutes);
         generate();
         timer.end();
         utils.spinner('').succeed(`构建结束, 用时: ${timer.getProcessTime()}s\n`);
@@ -292,7 +295,7 @@ class Parser {
                 this.checkImportComponent(data);
 
                 if (utils.isWebView(data.id)) {
-                    this.webViewFiles.push({
+                    this.webViewRoutes.push({
                         id: data.id
                     });
                 } else {
@@ -323,10 +326,9 @@ class Parser {
         }
     }
     async transform() {
+       
         await this.updateJsQueue(this.jsFiles);
-        this.updateWebViewRoutes(this.webViewFiles);
         await this.updateStyleQueue(this.styleFiles);
-        
     }
     check() {
         let errorMsg = '';

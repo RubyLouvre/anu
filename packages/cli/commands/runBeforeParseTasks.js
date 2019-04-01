@@ -26,7 +26,6 @@ function getRubbishFiles(buildType){
         return libName.split('/')[1] != REACT_LIB_MAP[buildType];
     });
     fileList = fileList.concat(libList);
-    
     return fileList.map(function(file){
         return {
             id: path.join(cwd, file),
@@ -167,7 +166,6 @@ const helpers = {
     },
     WRITE: function( {id, content} ) {
         fs.ensureFileSync(id);
-        
         return fs.writeFile(id, content);
     },
     REMOVE: function( {id} ) {
@@ -207,15 +205,20 @@ async function runTask(args){
 
     try {
         //每次build时候, 必须先删除'dist', 'build', 'sign', 'src', 'babel.config.js'等等冗余文件或者目录
-        await Promise.all(getRubbishFiles().map(function(task){
-            return helpers[task.ACTION_TYPE](task);
+        await Promise.all(getRubbishFiles(buildType).map(function(task){
+            if (helpers[task.ACTION_TYPE]) {
+                return helpers[task.ACTION_TYPE](task);
+            }
         }));
 
         await Promise.all(tasks.map(function(task){
-            return helpers[task.ACTION_TYPE](task);
+            if (helpers[task.ACTION_TYPE]) {
+                return helpers[task.ACTION_TYPE](task);
+            }
         }));
     } catch (err) {
-        
+        console.log(err);
+        process.exit(1);
     }
 };
 
