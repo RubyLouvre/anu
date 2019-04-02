@@ -1,9 +1,11 @@
 const path = require('path');
 const cwd = process.cwd();
-const distPath = path.resolve(cwd, './dist');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const config = require('../packages/config.js');
+const { REACT_LIB_MAP } = require('../consts/index');
+const distPath = path.resolve(cwd, config['buildType'] === 'quick' ? './src' : './dist');
 
 module.exports = {
     mode: 'development',
@@ -14,7 +16,7 @@ module.exports = {
         filename: 'index.bundle.js'
     },
     module: {
-        noParse: /node_modules/,
+        noParse: /node_modules|React/,
         rules: [
             {
                 test: /\.jsx?$/,
@@ -22,7 +24,7 @@ module.exports = {
                     require.resolve('../nanachi-loader/loaders/fileLoader'),
                     require.resolve('../nanachi-loader'),
                 ],
-                exclude: /node_modules/
+                exclude: /node_modules|React/
             },
             {
                 test: /\.(s[ca]ss|less|css)$/,
@@ -39,12 +41,22 @@ module.exports = {
             // cleanOnceBeforeBuildPatterns: []
         }),
         new CopyWebpackPlugin([
+            // copy assets
             {
                 from: path.resolve(cwd, 'source/assets'),
-                to: path.resolve(cwd, 'dist/assets')
+                to: path.resolve(distPath, 'assets')
+            },
+            // copy core react
+            {
+                from: path.resolve(cwd, 'source', REACT_LIB_MAP[config['buildType']]),
+                to: distPath
             }
-        ]),
-        new NanachiWebpackPlugin()
+        ], {
+            copyUnmodified: true
+        }),
+        new NanachiWebpackPlugin({
+            platform: config['buildType']
+        })
     ],
     // resolve: {
     //     alias: {

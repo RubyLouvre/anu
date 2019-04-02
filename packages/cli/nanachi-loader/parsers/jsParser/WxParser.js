@@ -40,9 +40,19 @@ class WxParser extends JavascriptParser{
                 ...require('../../../packages/babelPlugins/transformEnv'),
                 ...require('../../../packages/babelPlugins/injectRegeneratorRuntime'),
                 require('../../../packages/babelPlugins/transformIfImport'),
-                require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath } )
+                require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
             ]
         };
+    }
+    async parse() {
+        const res = await super.parse();
+        this.queues = res.options.anu.queue || this.queues;
+        this.queues.push({
+            type: 'js',
+            path: this.relativePath,
+            code: res.code,
+            extraModules: res.options.anu.extraModules
+        });
     }
 }
 

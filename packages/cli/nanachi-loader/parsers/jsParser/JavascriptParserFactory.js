@@ -1,6 +1,8 @@
 const WxParser = require('./WxParser');
-// const AliParser = require('./AliParser');
-// const BuParser = require('./BuParser');
+const AliParser = require('./AliParser');
+const BuParser = require('./BuParser');
+const TtParser = require('./TtParser');
+const QuickParser = require('./QuickParser');
 
 class JavascriptParserFactory {
     static create({
@@ -19,38 +21,38 @@ class JavascriptParserFactory {
                     meta,
                     filepath
                 });
-            // case 'ali':
-            //     return AliParser.getParser({
-            //         platform,
-            //         code,
-            //         map,
-            //         meta,
-            //         filepath
-            //     });
-            // case 'bu':
-            //     return BuParser.getParser({
-            //         platform,
-            //         code,
-            //         map,
-            //         meta,
-            //         filepath
-            //     });
-            // case 'tt':
-            //     return TtParser.getParser({
-            //         platform,
-            //         code,
-            //         map,
-            //         meta,
-            //         filepath
-            //     });
-            // case 'quick':
-            //     return QuickParser.getParser({
-            //         platform,
-            //         code,
-            //         map,
-            //         meta,
-            //         filepath
-            //     });
+            case 'ali':
+                return new AliParser({
+                    platform,
+                    code,
+                    map,
+                    meta,
+                    filepath
+                });
+            case 'bu':
+                return new BuParser({
+                    platform,
+                    code,
+                    map,
+                    meta,
+                    filepath
+                });
+            case 'tt':
+                return new TtParser({
+                    platform,
+                    code,
+                    map,
+                    meta,
+                    filepath
+                });
+            case 'quick':
+                return new QuickParser({
+                    platform,
+                    code,
+                    map,
+                    meta,
+                    filepath
+                });
         }
         
     }

@@ -8,9 +8,21 @@ const getSize = (code)=>{
 };
 
 const successLog = (path, code) => {
+    // eslint-disable-next-line
     console.log(chalk`{green [${++successNum}] 编译完成} ${path} {green [${getSize(code)}]}`);
 };
 
+const timerLog = (timer) => {
+    // eslint-disable-next-line
+    console.log(`编译完成，耗时：${timer.getProcessTime()}s`);
+};
+
+const resetNum = () => {
+    successNum = 0;
+};
+
 module.exports = {
-    successLog
+    successLog,
+    resetNum,
+    timerLog
 };

@@ -1,7 +1,6 @@
 const StyleParser = require('./StyleParser');
 const utils = require('../../../packages/utils/index');
 const { EXT_MAP } = require('../../../consts/index');
-const path = require('path');
 
 class LessParser extends StyleParser {
     constructor(props) {
@@ -22,8 +21,8 @@ class LessParser extends StyleParser {
             }),
             require('../../../packages/postcssPlugins/postcssPluginLessParser'),
             require('../../../packages/postcssPlugins/postcssPluginAddImport')({
-                extName: EXT_MAP.get(path.extname(this.relativePath).replace(/^\./, '')),
-                type: 'less',
+                extName: EXT_MAP[this.platform][this.type],
+                type: this.type,
             }),
             require('../../../packages/postcssPlugins/postCssPluginFixNumber'),
             require('../../../packages/postcssPlugins/postCssPluginValidateStyle')

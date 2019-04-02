@@ -19,7 +19,8 @@ class StyleParserFactory {
                     map,
                     meta,
                     filepath,
-                    platform
+                    platform,
+                    type: 'sass'
                 });
             case 'css':
                 return new CssParser({
@@ -27,7 +28,8 @@ class StyleParserFactory {
                     map,
                     meta,
                     filepath,
-                    platform
+                    platform,
+                    type
                 });
             case 'less':
                 return new LessParser({
@@ -35,7 +37,8 @@ class StyleParserFactory {
                     map,
                     meta,
                     filepath,
-                    platform
+                    platform,
+                    type
                 });
         }
     }

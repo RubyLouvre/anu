@@ -17,10 +17,28 @@ class JavascriptParser {
         this.platform = platform;
         this.relativePath = path.relative(path.resolve(process.cwd(), 'source'), filepath);
         this._babelPlugin = {};
+        this.queues = [];
+        this.extraModules = [];
+        this.parsedCode = '';
     }
     
     async parse() {
-        return await babel.transformFileAsync(this.filepath, this._babelPlugin);
+        const res = await babel.transformFileAsync(this.filepath, this._babelPlugin);
+        this.extraModules = res.options.anu.extraModules;
+        this.parsedCode = res.code;
+        return res;
+    }
+
+    getExtraFiles() {
+        return this.queues;
+    }
+
+    getExportCode() {
+        let res = this.parsedCode;
+        this.extraModules.forEach(module => {
+            res = `import '${module}';\n` + res;
+        });
+        return res;
     }
 }
 
