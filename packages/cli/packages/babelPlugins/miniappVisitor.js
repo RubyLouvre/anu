@@ -382,7 +382,8 @@ module.exports = {
                         );
                         if (queue.length > 0){
                             const index = queue.findIndex(item => item.path === distJsonPath);
-                            const configJSON = JSON.parse(queue[index].code);
+                            if ( index === -1 ) return;
+                            const configJSON = JSON.parse(queue[index] && queue[index].code || '{}');
                             Object.keys(json).map(key => {
                                 configJSON[key] = json[key];
                             });
