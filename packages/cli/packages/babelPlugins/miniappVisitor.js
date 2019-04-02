@@ -352,7 +352,7 @@ module.exports = {
             const isObj = t.isObjectExpression(astPath.get('right').node);
             let modules = utils.getAnu(state);
             // 判断格式是否为： this.config = {}
-            if (member === 'this.config' && isObj) {
+            if ([`${modules.className}.config`, 'this.config'].includes(member) && isObj) {
                 if (/App|Page|Component/.test(modules.componentType)) {
                     try {
                         var json = eval('0,' + generate(astPath.get('right').node).code);
@@ -367,6 +367,26 @@ module.exports = {
                                 delete tabBar[el.buildType+'List'];
                             });
 
+                        }
+                        /**
+                         * 根据代码生成的ast树，ExportDefaultDeclaration 应该为最后执行的visitor，
+                         * 然而 ExportDefaultDeclaration 在 AssignmentExpression 之前执行了，
+                         * 导致写入 json 文件时，config 中的变量还没有赋值到正确的地方
+                         * 此处 找到对应的 queue 中的 json 文件把相应的 config 写入
+                         */
+                        const distJsonPath = utils.updatePath(
+                            modules.sourcePath,
+                            config.sourceDir,
+                            'dist',
+                            'json'
+                        );
+                        if (queue.length > 0){
+                            const index = queue.findIndex(item => item.path === distJsonPath);
+                            const configJSON = JSON.parse(queue[index].code);
+                            Object.keys(json).map(key => {
+                                configJSON[key] = json[key];
+                            });
+                            queue[index].code = JSON.stringify(configJSON, null, 4);
                         }
                     } catch (e) {
                         console.log('eval json error', e);
