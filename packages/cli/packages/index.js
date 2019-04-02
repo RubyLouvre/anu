@@ -168,10 +168,9 @@ class Parser {
             onwarn: warning => {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
+                
                 if (warning.code === 'UNRESOLVED_IMPORT') {
-                    let key = warning.source.split(path.sep)[0];
-                    if (this.customAliasConfig[key]) return;
-                    console.log(chalk.red(`缺少运行依赖模块: ${key}, 请安装.`));
+                    console.log(warning);
                     process.exit(1);
                 }
             }
