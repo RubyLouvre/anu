@@ -1400,6 +1400,9 @@ function createRouter(name) {
                 };
             }
         } catch (err) {}
+        if (webViewRoutes[uri]) {
+            uri = '/pages/__web__view__';
+        }
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('&').forEach(function (param) {
                 param = param.split('=');
@@ -1409,9 +1412,6 @@ function createRouter(name) {
         }).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
-        }
-        if (Object.keys(webViewRoutes).length) {
-            uri = '/pages/__web__view__';
         }
         router[name]({
             uri: uri,
