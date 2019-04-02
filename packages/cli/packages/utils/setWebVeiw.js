@@ -2,10 +2,21 @@ const fs = require('fs-extra');
 const path = require('path');
 const cwd = process.cwd();
 const chalk = require('chalk');
+const globalConfig = require('../config');
+
 
 
 function writeWebViewConfig(routes) {
-    let code = `module.exports = ${JSON.stringify(routes)};`;
+    let { allowthirdpartycookies,  trustedurl } = globalConfig.webview;
+    let ret = {};
+    for(let key in routes) {
+        ret[key] = {
+            src: routes[key],
+            allowthirdpartycookies: allowthirdpartycookies,
+            trustedurl: trustedurl
+        }
+    }
+    let code = `module.exports = ${JSON.stringify(ret)};`;
     let filePath = path.join(cwd, 'src', 'webviewConfig.js');
     fs.ensureFileSync(filePath);
     fs.writeFileSync( filePath, code );
@@ -38,25 +49,14 @@ function getWebViewRoutes(routes) {
     return ret;
 }
 
-function writeWebViewContainer(routes){
-
-
-
-    Object.keys(routes).forEach(function(key){
-        let template = `
-            <template>
-                <web src="${routes[key]}"  allowthirdpartycookies="false"></web>
-            </template>
-        `.trim();
-        let distPath =  path.join(cwd, 'src', key) + '.ux';
-        fs.ensureFileSync(distPath);
-        fs.writeFile(distPath, template, function(err){
-            if (err) {
-                console.log(err);
-            }
-        })
-        
-    });
+function writeWebViewContainer(){
+    let src = path.join(__dirname, '../quickHelpers/WebViewPageWrapper.ux');
+    let dist = path.join(cwd, '/src/pages/__web__view__/index.ux');
+    fs.copy(src, dist, function(err){
+        if (err) {
+            console.log(err);
+        }
+    })
 }
 
 //配置 H5_COMPILE_CONFIG.json, H5编译读该文件路由配置进行按需编译。
@@ -92,8 +92,7 @@ function deleteWebViewConifg() {
 
 module.exports = function(routes){
      
-   
-     if (!routes.length) return;
+     if (!Object.keys(routes).length) return;
      //每次build先删除配置文件
      deleteWebViewConifg();
 

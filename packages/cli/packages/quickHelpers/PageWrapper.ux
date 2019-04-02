@@ -196,7 +196,7 @@
             text: mixin.navigationBarTitleText,
             textColor: mixin.navigationBarTextStyle,
             backgroundColor: mixin.navigationBarBackgroundColor,
-            menu: true
+            menu: mixin.menu
         })
         
         var tabBar = pageConfig.tabBar;
