@@ -1,6 +1,6 @@
 /*eslint-disabled*/
 
-let babel = require('babel-core');
+let babel = require('@babel/core');
 let queue = require('../../packages/queue');
 let config = require('../../packages/config');
 let mergeUx = require('../../packages/quickHelpers/mergeUx');
@@ -46,9 +46,9 @@ function transform(code, buildType) {
             comments: false,
             plugins: [
                 require('@babel/plugin-syntax-jsx'),
-                require('@babel/plugin-transform-decorators-legacy').default,
-                require('@babel/plugin-transform-object-rest-spread'),
-                require('@babel/plugin-transform-es2015-template-literals'),
+                [require('@babel/plugin-proposal-decorators'), { legacy: true }],
+                require('@babel/plugin-proposal-object-rest-spread'),
+                [require('@babel/plugin-transform-template-literals'), { loose: true }],
                 require('@babel/plugin-transform-async-to-generator'),
 
                 () => {

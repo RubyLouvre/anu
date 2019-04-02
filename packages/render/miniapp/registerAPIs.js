@@ -59,8 +59,6 @@ export function promisefyApis(ReactWX, facade, more) {
             }
         }
     });
-
-    
 }
 
 function pxTransform(size) {
