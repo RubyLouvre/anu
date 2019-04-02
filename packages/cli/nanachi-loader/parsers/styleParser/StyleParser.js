@@ -1,6 +1,8 @@
 const path = require('path');
 const postcss = require('postcss');
 const utils = require('../../../packages/utils/index');
+const quickFiles = require('../../../packages/quickFiles');
+const fs = require('fs');
 
 class StyleParser {
     constructor({
@@ -11,7 +13,7 @@ class StyleParser {
         platform,
         type
     }) {
-        this.code = code;
+        this.code = code || fs.readFileSync(filepath, 'utf-8');
         this.map = map;
         this.meta = meta;
         this.filepath = filepath;

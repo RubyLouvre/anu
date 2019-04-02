@@ -1,7 +1,6 @@
 const StyleParser = require('./StyleParser');
 const utils = require('../../../packages/utils/index');
 const { EXT_MAP } = require('../../../consts/index');
-const path = require('path');
 
 class SassParser extends StyleParser {
     constructor(props) {

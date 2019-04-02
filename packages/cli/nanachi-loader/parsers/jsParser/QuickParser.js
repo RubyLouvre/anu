@@ -1,5 +1,13 @@
 const JavascriptParser = require('./JavascriptParser');
 const mergeUx = require('../../../packages/quickHelpers/mergeUx');
+const quickFiles = require('../../../packages/quickFiles');
+const StyleParserFactory = require('../styleParser/StyleParserFactory');
+const path = require('path');
+const cwd = process.cwd();
+
+const isStyle = path => {
+    return /\.(?:less|scss|sass|css)$/.test(path);
+};
 
 class QuickParser extends JavascriptParser {
     constructor(props) {
@@ -47,6 +55,26 @@ class QuickParser extends JavascriptParser {
     }
     async parse() {
         const result = await super.parse();
+        
+        // 解析快应用依赖的样式文件
+        let cssPath = result.options.anu.dependencies.filter((fileId)=>{
+            return isStyle(fileId);
+        })[0];
+        if (cssPath) {
+            cssPath = path.resolve(path.dirname(this.filepath), cssPath);
+            const extname = path.extname(cssPath).replace(/^\./, '');
+            const styleParser = StyleParserFactory.create({
+                type: extname === 'scss' ? 'sass' : extname,
+                filepath: cssPath,
+                platform: this.platform
+            });
+            const cssCode = await styleParser.parse();
+            
+            Object.assign(quickFiles[this.filepath], {
+                cssCode
+            });
+        }
+        // 合并ux文件
         const uxRes = await mergeUx({
             sourcePath: this.filepath,
             result
