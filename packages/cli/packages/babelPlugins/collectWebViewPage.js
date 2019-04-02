@@ -4,6 +4,7 @@ const g = require('@babel/generator').default;
 const json5 = require('json5');
 const path = require('path');
 const buildType = process.env.ANU_ENV;
+const cwd = process.cwd();
 
 module.exports = ()=>{
     return {
@@ -32,14 +33,11 @@ module.exports = ()=>{
                             }
                             
                             Object.assign(globalConfig.webview, {
-                                pages:  webViewConfig.pages,
                                 allowthirdpartycookies: webViewConfig.allowthirdpartycookies,
                                 trustedurl: webViewConfig.trustedurl,
                                 showTitleBar: webViewConfig.showTitleBar
                             })
 
-                            
-                            
                             /**
                              * webview: {
                              *    quick: {
@@ -48,18 +46,20 @@ module.exports = ()=>{
                              * }
                              */
                             if (Array.isArray(webViewConfig.pages)) {
-                                globalConfig.webview.pages = webViewConfig.pages.map((el)=>{
-                                    return path.join(
-                                        cwd,
-                                        'source',
-                                        /\.js$/.test(el) ? el : el.value + '.js'
-                                    )
-                                });
                                 
+                                globalConfig.webview.pages = globalConfig.webview.pages.concat(
+                                    webViewConfig.pages.map((el)=>{
+                                        return path.join(
+                                            cwd,
+                                            'source',
+                                            /\.js$/.test(el) ? el : el + '.js'
+                                        )
+                                    })
+                                )
+                               
                                 return;
                             }
                             
-
                             /**
                              * webview: {
                              *    quick: {
@@ -73,10 +73,8 @@ module.exports = ()=>{
                             ) {
                                 let startPath = path.join(path.dirname(fileId), '..');
                                 let reg = new RegExp('^' + startPath );
-                                globalConfig.webview.pages = [ reg ];
-                               
+                                globalConfig.webview.pages.push(reg);
                             }
-                            
                         }
                     },
                     astPath.scope
