@@ -1377,6 +1377,7 @@ function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
+        var webViewRoutes = {};
         var params = {};
         var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
         if (urlReg.test(href)) {
@@ -1388,14 +1389,14 @@ function createRouter(name) {
             return;
         }
         try {
-            var webViewRoutes = require('./webviewConfig.js');
-            if (webViewRoutes[uri]) {
-                uri = '/pages/__web__view__';
-                params = Object.assign({}, params, {
-                    src: webViewRoutes[uri].src || '',
-                    allowthirdpartycookies: webViewRoutes[uri].allowthirdpartycookies || false,
-                    trustedurl: allowthirdpartycookies[uri].trustedurl || []
-                });
+            webViewRoutes = require('./webviewConfig.js');
+            if (!!webViewRoutes[uri]) {
+                var config = webViewRoutes[uri];
+                params = {
+                    src: config.src || '',
+                    allowthirdpartycookies: config.allowthirdpartycookies || false,
+                    trustedurl: config.trustedurl || []
+                };
             }
         } catch (err) {}
         uri = uri.replace(/\?(.*)/, function (a, b) {
@@ -1407,6 +1408,9 @@ function createRouter(name) {
         }).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
+        }
+        if (Object.keys(webViewRoutes).length) {
+            uri = '/pages/__web__view__';
         }
         router[name]({
             uri: uri,
