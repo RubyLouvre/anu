@@ -51,7 +51,8 @@ class QuickParser extends JavascriptParser {
             sourcePath: this.filepath,
             result
         });
-        result.options.anu.queue.push({
+        this.queues = result.options.anu.queue || this.queues;
+        this.queues.push({
             type: 'ux',
             path: this.relativePath,
             code: uxRes.code,
