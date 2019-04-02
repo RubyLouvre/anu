@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-01
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-02
  */
 
 var arrayPush = Array.prototype.push;
@@ -1377,27 +1377,28 @@ function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
-        var webViewUrls = {};
-        var webViewRoute = '';
+        var webViewRoutes = {};
+        var params = {};
         var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
         if (urlReg.test(href)) {
-            webViewRoute = href;
-        } else {
-            try {
-                webViewUrls = require('./webviewConfig.js');
-                webViewRoute = webViewUrls[uri];
-            } catch (err) {
-            }
-        }
-        if (webViewRoute) {
             var webview = require('@system.webview');
             webview.loadUrl({
-                url: webViewRoute,
+                url: href,
                 allowthirdpartycookies: true
             });
             return;
         }
-        var params = {};
+        try {
+            webViewRoutes = require('./webviewConfig.js');
+            if (!!webViewRoutes[uri]) {
+                var config = webViewRoutes[uri];
+                params = {
+                    src: config.src || '',
+                    allowthirdpartycookies: config.allowthirdpartycookies || false,
+                    trustedurl: config.trustedurl || []
+                };
+            }
+        } catch (err) {}
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('&').forEach(function (param) {
                 param = param.split('=');
@@ -1407,6 +1408,9 @@ function createRouter(name) {
         }).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
+        }
+        if (Object.keys(webViewRoutes).length) {
+            uri = '/pages/__web__view__';
         }
         router[name]({
             uri: uri,

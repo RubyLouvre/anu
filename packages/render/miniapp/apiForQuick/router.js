@@ -4,51 +4,54 @@ function createRouter(name) {
     return function(obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
-        var webViewUrls = {};
-        var webViewRoute = '';
-        //from https://www.regextester.com/98192
+        var webViewRoutes = {};
+        var params = {};
         var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
-        //如果是http地址
+        
+        //如果是http地址, 直接跳
         if (urlReg.test(href)) {
-            webViewRoute = href;
-        } else {
-            //查找是否有webview配置
-            try {
-                webViewUrls = require('./webviewConfig.js');
-                webViewRoute = webViewUrls[uri];
-            } catch (err) {
-        //eslint-disable-line
-            }
-        }
-
-        //如果webViewRoute有值, 走@system.webview跳转
-        if (webViewRoute) {
             var webview = require('@system.webview');
             webview.loadUrl({
-                url: webViewRoute,
+                url: href,
                 allowthirdpartycookies: true
             });
             return;
         }
 
-        //其他按普通跳转处理
-   
-        var params = {};
-        uri = uri
-            .replace(/\?(.*)/, function(a, b) {
-                b.split('&').forEach(function(param) {
-                    param = param.split('=');
-                    params[param[0]] = param[1];
-                });
-                return '';
-            })
-            .replace(/\/index$/, '');
+        //如果是webview, 跳转到/pages/__web__view__/__web__view__.ux页面
+        try {
+            webViewRoutes = require('./webviewConfig.js');
+            if (!!webViewRoutes[uri]) {
+                let config = webViewRoutes[uri];
+                params = {
+                    src: config.src || '',
+                    allowthirdpartycookies: config.allowthirdpartycookies || false,
+                    trustedurl: config.trustedurl || []
+                }
+            }
+            
+        } catch (err) {
+
+        }
+       
+        uri = uri.replace(/\?(.*)/, function (a, b) {
+            b.split('&').forEach(function (param) {
+                param = param.split('=');
+                params[param[0]] = param[1];
+            });
+            return '';
+        }).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
+
+        if (Object.keys(webViewRoutes).length) {
+            uri = '/pages/__web__view__';
+        }
+
         router[name]({
-            uri,
-            params
+            uri: uri,
+            params: params
         });
     };
 }
