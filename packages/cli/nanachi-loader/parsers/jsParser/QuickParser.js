@@ -3,7 +3,7 @@ const mergeUx = require('../../../packages/quickHelpers/mergeUx');
 const quickFiles = require('../../../packages/quickFiles');
 const StyleParserFactory = require('../styleParser/StyleParserFactory');
 const path = require('path');
-const cwd = process.cwd();
+const utils = require('../../../packages/utils/index');
 
 const isStyle = path => {
     return /\.(?:less|scss|sass|css)$/.test(path);
@@ -57,7 +57,7 @@ class QuickParser extends JavascriptParser {
         const result = await super.parse();
         
         // 解析快应用依赖的样式文件
-        let cssPath = result.options.anu.dependencies.filter((fileId)=>{
+        let cssPath = this.extraModules.filter((fileId)=>{
             return isStyle(fileId);
         })[0];
         if (cssPath) {
@@ -68,10 +68,19 @@ class QuickParser extends JavascriptParser {
                 filepath: cssPath,
                 platform: this.platform
             });
-            const cssCode = await styleParser.parse();
-            
+            const cssRes = await styleParser.parse();
+            // 快应用移除一级样式依赖
+            this.extraModules = this.extraModules.filter((fileId)=>{
+                return !isStyle(fileId);
+            });
+            // 将样式文件中的依赖添加到extraModules中
+            const deps = utils.getDeps(cssRes.messages);
+            if (deps) {
+                this.extraModules = this.extraModules.concat(deps.map(d => d.file));
+            }
+           
             Object.assign(quickFiles[this.filepath], {
-                cssCode
+                cssRes
             });
         }
         // 合并ux文件
@@ -84,7 +93,7 @@ class QuickParser extends JavascriptParser {
             type: 'ux',
             path: this.relativePath,
             code: uxRes.code,
-            extraModules: result.options.anu.extraModules
+            extraModules: this.extraModules
         });
     }
 }

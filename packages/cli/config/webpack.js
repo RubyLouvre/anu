@@ -44,11 +44,12 @@ module.exports = {
             // copy assets
             {
                 from: path.resolve(cwd, 'source/assets'),
-                to: path.resolve(cwd, 'dist/assets')
+                to: path.resolve(distPath, 'assets')
             },
             // copy core react
             {
-                from: path.resolve(cwd, 'source', REACT_LIB_MAP[config['buildType']])
+                from: path.resolve(cwd, 'source', REACT_LIB_MAP[config['buildType']]),
+                to: distPath
             }
         ]),
         new NanachiWebpackPlugin({

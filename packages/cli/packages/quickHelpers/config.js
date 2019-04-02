@@ -224,9 +224,8 @@ module.exports = function quickConfig(config, modules, queue){
 
     //配置name, permissions, config, subpackages, 各支付签名
     setOtherConfig();
-    
-    queue.push({
-        path: path.join(process.cwd(), 'src', 'manifest.json'),
+    modules.queue.push({
+        path: 'manifest.json',
         code: JSON.stringify(manifest, null, 4),
         type: 'json'
     });

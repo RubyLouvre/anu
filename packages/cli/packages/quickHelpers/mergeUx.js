@@ -86,9 +86,9 @@ let map = {
         return `<script>\n${code}\n</script>`;
     },
     getCssCode:  function(uxFile){
-        let { cssCode } = uxFile;
-        if (!cssCode) return '';
-        return `<style>\n${cssCode}\n</style>`;
+        let { cssRes } = uxFile;
+        if (!cssRes) return '';
+        return `<style>\n${cssRes.css}\n</style>`;
         // return styleCompilerMap[cssType](cssPath)
         //     .then(async (res)=>{
         //         // // 递归编译@import依赖文件
