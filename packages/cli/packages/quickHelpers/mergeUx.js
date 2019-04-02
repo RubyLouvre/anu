@@ -4,7 +4,6 @@ let beautify = require('js-beautify');
 let config = require('../config');
 let quickFiles = require('../quickFiles');
 let utils = require('../utils');
-let queue = require('../queue');
 let cwd = process.cwd();
 let fs = require('fs');
 
@@ -121,13 +120,14 @@ let map = {
         //         return `<style>\n${res.code}\n</style>`;
         //     });
     },
-    resolveComponents: function(data){
-        let {result, sourcePath} = data;
+    resolveComponents: function(data, queue){
+        let { result, sourcePath, relativePath } = data;
         let isComponentReg = utils.isWin() ? /\\components\\/ : /\/components\// ;
         if (!isComponentReg.test(sourcePath)) return;
         queue.push({
             code: beautify.js(result.code.replace('console.log(nanachi)', 'export {React}')),
-            path:  utils.updatePath(sourcePath, config.sourceDir, 'dist') 
+            path: relativePath,
+            type: 'js'
         });
         let reg = utils.isWin() ? /components\\(\w+)/ :  /components\/(\w+)/;
         var componentName =  sourcePath.match(reg)[1];
@@ -137,8 +137,8 @@ let map = {
 
 };
 
-module.exports = async (data)=>{
-    let {sourcePath, result} = data;
+module.exports = async (data, queue)=>{
+    let { sourcePath, result } = data;
     var uxFile = quickFiles[sourcePath];
     
     //如果没有模板, 并且不是app，则认为这是个纯js模块。
@@ -152,7 +152,7 @@ module.exports = async (data)=>{
     if (!uxFile) return;
     //假设假设存在<template>
     var ux = `${uxFile.template || ''}`;
-    map.resolveComponents(data);
+    map.resolveComponents(data, queue);
     ux = beautifyUx(map.getImportTag(uxFile, sourcePath) + ux) + '\n'; 
     ux = ux + map.getJsCode(result.code) + '\n'; 
     ux = ux + await map.getCssCode(uxFile);

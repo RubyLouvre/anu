@@ -51,7 +51,9 @@ module.exports = {
                 from: path.resolve(cwd, 'source', REACT_LIB_MAP[config['buildType']]),
                 to: distPath
             }
-        ]),
+        ], {
+            copyUnmodified: true
+        }),
         new NanachiWebpackPlugin({
             platform: config['buildType']
         })
