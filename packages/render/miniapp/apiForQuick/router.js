@@ -21,8 +21,9 @@ function createRouter(name) {
         //如果是webview, 跳转到/pages/__web__view__/__web__view__.ux页面
         try {
             webViewRoutes = require('./webviewConfig.js');
-            if (!!webViewRoutes[uri]) {
-                let config = webViewRoutes[uri];
+            let effectPath = uri.split('?')[0];
+            if (!!webViewRoutes[effectPath]) {
+                let config = webViewRoutes[effectPath];
                 params = {
                     src: config.src || '',
                     allowthirdpartycookies: config.allowthirdpartycookies || false,
@@ -34,7 +35,7 @@ function createRouter(name) {
 
         }
 
-        if (webViewRoutes[uri]) {
+        if (webViewRoutes[uri.split('?')[0]]) {
             uri = '/pages/__web__view__';
         }
        
