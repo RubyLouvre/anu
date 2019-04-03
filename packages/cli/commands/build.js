@@ -1,4 +1,3 @@
-const runBeforeParseTasks = require('./runBeforeParseTasks');
 // const path = require('path');
 // const entry = path.join(process.cwd(), 'source', 'app.js');
 // const parser = require('../packages/index')(entry);
@@ -25,8 +24,6 @@ function callback(err, stats) {
 
 module.exports = async function(args){
     try {
-        
-        // await runBeforeParseTasks(args);
         const { buildType, beta, betaUi, watch, compress } = args;
         // const parser = JavascriptParserFactory.create({
         //     platform: 'wx',

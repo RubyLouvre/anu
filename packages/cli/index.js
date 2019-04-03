@@ -6,6 +6,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const globalConfig = require('./packages/config.js');
 const { REACT_LIB_MAP } = require('./consts/index');
 const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
+const nanachiBaseConfig = require('./config/nanachiBaseConfig');
 
 function injectBuildEnv({ buildType, compress, huawei } = {}){
     process.env.ANU_ENV = buildType;
@@ -14,6 +15,42 @@ function injectBuildEnv({ buildType, compress, huawei } = {}){
     if (buildType === 'quick') {
         globalConfig['huawei'] = huawei || false;
     }
+}
+
+function mergeNanachiConfig(nanachiBaseConfig, {
+    entry,
+    distPath,
+    platform,
+    compress,
+    plugins
+}) {
+    Object.assign(nanachiBaseConfig, {
+        entry,
+        output: {
+            path: distPath,
+            filename: 'index.bundle.js'
+        },
+        plugins: [
+            new CopyWebpackPlugin([
+                // copy assets
+                {
+                    from: path.resolve(cwd, 'source/assets'),
+                    to: path.resolve(distPath, 'assets')
+                },
+                // copy core react
+                {
+                    from: path.resolve(cwd, 'source', REACT_LIB_MAP[platform]),
+                    to: distPath
+                }
+            ], {
+                copyUnmodified: true
+            }),
+            new NanachiWebpackPlugin({
+                platform,
+                compress
+            })
+        ].concat(plugins)
+    });
 }
 
 async function nanachi({
@@ -40,57 +77,15 @@ async function nanachi({
         beta,
         betaUi
     });
-    const nanachiOptions = {
-        mode: 'development',
+    mergeNanachiConfig(nanachiBaseConfig, {
         entry,
-        output: {
-            path: distPath,
-            filename: 'index.bundle.js'
-        },
-        module: {
-            noParse: /node_modules|React/,
-            rules: [
-                {
-                    test: /\.jsx?$/,
-                    use: [
-                        require.resolve('./nanachi-loader/loaders/fileLoader'),
-                        require.resolve('./nanachi-loader'),
-                    ],
-                    exclude: /node_modules|React/
-                },
-                {
-                    test: /\.(s[ca]ss|less|css)$/,
-                    use: [
-                        require.resolve('./nanachi-loader/loaders/fileLoader'),
-                        require.resolve('./nanachi-loader/loaders/nanachiStyleLoader'),
-                    ]
-                }
-            ]
-        },
-        plugins: [
-            // new CleanWebpackPlugin(),
-            new CopyWebpackPlugin([
-                // copy assets
-                {
-                    from: path.resolve(cwd, 'source/assets'),
-                    to: path.resolve(distPath, 'assets')
-                },
-                // copy core react
-                {
-                    from: path.resolve(cwd, 'source', REACT_LIB_MAP[platform]),
-                    to: distPath
-                }
-            ], {
-                copyUnmodified: true
-            }),
-            new NanachiWebpackPlugin({
-                platform,
-                compress
-            })
-        ]
-    };
-    nanachiOptions.plugins = nanachiOptions.plugins.concat(plugins);
-    const compiler = webpack(nanachiOptions);
+        distPath,
+        platform,
+        compress,
+        plugins
+    });
+    
+    const compiler = webpack(nanachiBaseConfig);
     
     if (watch) {
         compiler.watch({}, complete);
