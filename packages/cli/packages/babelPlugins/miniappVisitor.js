@@ -218,22 +218,14 @@ module.exports = {
             };
         });
     },
-    ExportDefaultDeclaration: {
-        exit(astPath, state) {
+
+    Program: {
+        exit(astPath, state){
             var modules = utils.getAnu(state);
-            if (/Page|Component/.test(modules.componentType)) {
-                let declaration = astPath.node.declaration;
-
-                if (declaration.type == 'FunctionDeclaration') {
-                    //将export default function AAA(){}的方法提到前面
-                    astPath.insertBefore(declaration);
-                    astPath.node.declaration = declaration.id;
-                }
-                //延后插入createPage语句在其同名的export语句前
-                registerPageOrComponent(declaration.name, astPath, modules);
-            }
-
-            //将配置对象生成JSON文件
+            /**
+             * 将生成 JSON 文件的逻辑从 ExportDefaultDeclaration 移除
+             * 放入 Program，确保在 babel 的 ast 树解析的最后才执行生成 JSON 文件的逻辑
+             */
             if (!/App|Page|Component/.test(modules.componentType)) {
                 return;
             }
@@ -307,6 +299,21 @@ module.exports = {
             }
         }
     },
+    ExportDefaultDeclaration: {
+        exit(astPath, state) {
+            var modules = utils.getAnu(state);
+            if (/Page|Component/.test(modules.componentType)) {
+                let declaration = astPath.node.declaration;
+                if (declaration.type == 'FunctionDeclaration') {
+                    //将export default function AAA(){}的方法提到前面
+                    astPath.insertBefore(declaration);
+                    astPath.node.declaration = declaration.id;
+                }
+                //延后插入createPage语句在其同名的export语句前
+                registerPageOrComponent(declaration.name, astPath, modules);
+            }
+        }
+    },
 
     ExportNamedDeclaration: {
         exit(astPath) {
@@ -367,27 +374,6 @@ module.exports = {
                                 delete tabBar[el.buildType+'List'];
                             });
 
-                        }
-                        /**
-                         * 根据代码生成的ast树，ExportDefaultDeclaration 应该为最后执行的visitor，
-                         * 然而 ExportDefaultDeclaration 在 AssignmentExpression 之前执行了，
-                         * 导致写入 json 文件时，config 中的变量还没有赋值到正确的地方
-                         * 此处 找到对应的 queue 中的 json 文件把相应的 config 写入
-                         */
-                        const distJsonPath = utils.updatePath(
-                            modules.sourcePath,
-                            config.sourceDir,
-                            'dist',
-                            'json'
-                        );
-                        if (queue.length > 0){
-                            const index = queue.findIndex(item => item.path === distJsonPath);
-                            if ( index === -1 ) return;
-                            const configJSON = JSON.parse(queue[index] && queue[index].code || '{}');
-                            Object.keys(json).map(key => {
-                                configJSON[key] = json[key];
-                            });
-                            queue[index].code = JSON.stringify(configJSON, null, 4);
                         }
                     } catch (e) {
                         console.log('eval json error', e);
