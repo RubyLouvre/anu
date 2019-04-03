@@ -421,13 +421,15 @@ module.exports = {
                         //不同小程序的tabBar数量可能不存在，默认使用list
                         var tabBar = modules.config.tabBar;
                         //如果存在以buildType+"List"的列表，那么将它改成默认的list
-                        if (tabBar && tabBar[buildType+'List']){
-                            tabBar.list = tabBar[buildType+'List'];
-                            
-                            platforms.forEach(function(el){
-                                delete tabBar[el.buildType+'List'];
-                            });
-
+                        if (tabBar){
+                            if (!tabBar[buildType+'List']){
+                                delete modules.config.tabBar;
+                            } else {
+                                tabBar.list = tabBar[buildType+'List'];
+                                platforms.forEach(function(el){
+                                    delete tabBar[el.buildType+'List'];
+                                });
+                            }
                         }
                     } catch (e) {
                         console.log('eval json error', e);

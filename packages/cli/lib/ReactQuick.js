@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-02
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-03
  */
 
 var arrayPush = Array.prototype.push;
@@ -821,9 +821,6 @@ function safeClone(originVal) {
     }
     return temp;
 }
-function toRenderProps() {
-    return null;
-}
 
 var HTTP_OK_CODE = 200;
 var JSON_TYPE_STRING = 'json';
@@ -1391,8 +1388,9 @@ function createRouter(name) {
         }
         try {
             webViewRoutes = require('./webviewConfig.js');
-            if (!!webViewRoutes[uri]) {
-                var config = webViewRoutes[uri];
+            var effectPath = uri.split('?')[0];
+            if (!!webViewRoutes[effectPath]) {
+                var config = webViewRoutes[effectPath];
                 params = {
                     src: config.src || '',
                     allowthirdpartycookies: config.allowthirdpartycookies || false,
@@ -1400,7 +1398,7 @@ function createRouter(name) {
                 };
             }
         } catch (err) {}
-        if (webViewRoutes[uri]) {
+        if (webViewRoutes[uri.split('?')[0]]) {
             uri = '/pages/__web__view__';
         }
         uri = uri.replace(/\?(.*)/, function (a, b) {
@@ -3378,7 +3376,6 @@ var React = getWindow().React = {
     isValidElement: isValidElement,
     createContext: createContext,
     toClass: miniCreateClass,
-    toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,

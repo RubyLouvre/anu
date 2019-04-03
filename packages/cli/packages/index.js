@@ -415,7 +415,7 @@ class Parser {
             let item = jsFiles.shift();
             
             if (/commonjs-proxy:/.test(item.id)) {
-                item.id = item.id.replace('commonjs-proxy:', '').replace('\u0000','')
+                item.id = item.id.replace('commonjs-proxy:', '').replace('\u0000','');
             }
             let { id, originalCode, resolvedIds } = item;
             if (needUpdate(id, originalCode)) {
@@ -481,7 +481,7 @@ class Parser {
     watching() {
         let watchDir = path.dirname(this.entry);
         let watchConfig = {
-            ignored: /\.DS_Store|\.gitignore|\.git/,
+            ignored: /(\.DS_Store|\.gitignore|\.git|\.json$)/,
             awaitWriteFinish: {
                 stabilityThreshold: 700,
                 pollInterval: 100
