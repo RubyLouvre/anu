@@ -7,6 +7,15 @@ const globalConfig = require('./packages/config.js');
 const { REACT_LIB_MAP } = require('./consts/index');
 const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
 
+function injectBuildEnv({ buildType, compress, huawei } = {}){
+    process.env.ANU_ENV = buildType;
+    globalConfig['buildType'] = buildType;
+    globalConfig['compress'] = compress;
+    if (buildType === 'quick') {
+        globalConfig['huawei'] = huawei || false;
+    }
+}
+
 async function nanachi({
     entry = './source/app',
     watch = false,
@@ -14,19 +23,24 @@ async function nanachi({
     beta = false,
     betaUi = false,
     compress = false,
+    huawei = false,
     // loaders,
     plugins = [],
     complete = () => {}
 } = {}) {
+    const distPath = path.resolve(cwd, platform === 'quick' ? './src' : './dist');
+    injectBuildEnv({
+        buildType: platform,
+        compress,
+        huawei
+    });
     // TODO：移除复制assets目录操作，使用copy-webpack-plugin插件完成
     await runBeforeParseTasks({
         buildType: platform,
         beta,
         betaUi
     });
-    const distPath = path.resolve(cwd, platform === 'quick' ? './src' : './dist');
-    globalConfig['buildType'] = platform;
-    globalConfig['compress'] = compress;
+    
     const nanachiOptions = {
         mode: 'development',
         context: cwd,
@@ -71,7 +85,8 @@ async function nanachi({
                 copyUnmodified: true
             }),
             new NanachiWebpackPlugin({
-                platform
+                platform,
+                compress
             })
         ]
     };
