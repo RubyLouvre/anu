@@ -1387,8 +1387,9 @@ function createRouter(name) {
         }
         try {
             webViewRoutes = require('./webviewConfig.js');
-            if (!!webViewRoutes[uri]) {
-                var config = webViewRoutes[uri];
+            var effectPath = uri.split('?')[0];
+            if (!!webViewRoutes[effectPath]) {
+                var config = webViewRoutes[effectPath];
                 params = {
                     src: config.src || '',
                     allowthirdpartycookies: config.allowthirdpartycookies || false,
@@ -1396,7 +1397,7 @@ function createRouter(name) {
                 };
             }
         } catch (err) {}
-        if (webViewRoutes[uri]) {
+        if (webViewRoutes[uri.split('?')[0]]) {
             uri = '/pages/__web__view__';
         }
         uri = uri.replace(/\?(.*)/, function (a, b) {
