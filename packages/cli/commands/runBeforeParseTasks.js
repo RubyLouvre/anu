@@ -175,8 +175,7 @@ const helpers = {
     }
 }
 
-async function runTask(args){
-    const { buildType, beta,  betaUi } = args;
+async function runTask({ buildType, beta,  betaUi }){
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
     let tasks  = [];
