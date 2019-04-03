@@ -40,10 +40,9 @@ async function nanachi({
         beta,
         betaUi
     });
-    
     const nanachiOptions = {
         mode: 'development',
-        context: cwd,
+        entry,
         output: {
             path: distPath,
             filename: 'index.bundle.js'
@@ -91,7 +90,6 @@ async function nanachi({
         ]
     };
     nanachiOptions.plugins = nanachiOptions.plugins.concat(plugins);
-    nanachiOptions.entry = entry;
     const compiler = webpack(nanachiOptions);
     
     if (watch) {
