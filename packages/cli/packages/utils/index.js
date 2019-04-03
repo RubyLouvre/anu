@@ -362,7 +362,8 @@ let utils = {
             js: function (code) {
                 let result = uglifyJS.minify(code);
                 if (result.error) {
-                    throw result.error;
+                    return code;
+                    // throw result.error;
                 }
                 return result.code;
             },
@@ -372,7 +373,8 @@ let utils = {
             css: function (code) {
                 let result = new cleanCSS().minify(code);
                 if (result.errors.length) {
-                    throw result.errors;
+                    return code;
+                    // throw result.errors;
                 }
                 return result.styles;
             },

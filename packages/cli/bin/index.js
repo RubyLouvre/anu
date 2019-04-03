@@ -54,16 +54,6 @@ function getArgValue(cmd){
     return args;
 }
 
-function injectBuildEnv(buildArgs){
-    const { buildType, compress, huawei } = buildArgs;
-    process.env.ANU_ENV = buildType;
-    config['buildType'] = buildType;
-    config['compress'] = compress;
-    if (buildType === 'quick') {
-        config['huawei'] = huawei || false;
-    }
-}
-
 program
     .version(require('../package.json').version)
     .usage('<command> [options]');
@@ -88,7 +78,6 @@ function buildAction(buildType, compileType) {
         const args = getArgValue(cmd);
         args['buildType'] = buildType;
         if (compileType === 'watch') { args['watch'] = true; }
-        injectBuildEnv(args);
         buildType === 'h5'
             ? require('mini-html5/runkit/build')
             : require('../commands/build')(args);

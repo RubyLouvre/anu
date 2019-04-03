@@ -6,11 +6,13 @@ const id = 'NanachiWebpackPlugin';
 
 class NanachiWebpackPlugin {
     constructor({
-        platform
-    }) {
+        platform = 'wx',
+        compress = false
+    } = {}) {
         this.timer = new Timer();
         this.nanachiOptions = {
-            platform
+            platform,
+            compress
         };
     }
     apply(compiler) {

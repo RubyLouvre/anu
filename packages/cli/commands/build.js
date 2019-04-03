@@ -46,17 +46,11 @@ module.exports = async function(args){
             compress,
             watch,
             plugins: [
-                new CleanWebpackPlugin()     
+                new CleanWebpackPlugin()
+                
             ],
             complete: callback
         });
-        // const compiler = webpack(webpackOptions);
-        
-        // if (args['watch']) {
-        //     compiler.watch({}, callback.bind(this));
-        // } else {
-        //     compiler.run(callback.bind(this));
-        // }
 
     } catch (e) {
         // eslint-disable-next-line
