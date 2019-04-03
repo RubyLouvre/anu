@@ -25,8 +25,9 @@ function callback(err, stats) {
 
 module.exports = async function(args){
     try {
-        // TODO：移除复制assets目录操作，使用copy-webpack-plugin插件完成
-        await runBeforeParseTasks(args);
+        
+        // await runBeforeParseTasks(args);
+        const { buildType, beta, betaUi } = args;
         // const parser = JavascriptParserFactory.create({
         //     platform: 'wx',
         //     filepath: path.resolve(cwd, 'source/app.js')
@@ -39,7 +40,9 @@ module.exports = async function(args){
         // webpackOptions.entry = entry;
         nanachi({
             entry: './source/app.js',
-            platform: config['buildType'],
+            platform: buildType,
+            beta,
+            betaUi,
             compress: config['compress'],
             watch: args['watch'] ? true : false,
             plugins: [

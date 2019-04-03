@@ -5,16 +5,25 @@ const NanachiWebpackPlugin = require('./nanachi-loader/plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const globalConfig = require('./packages/config.js');
 const { REACT_LIB_MAP } = require('./consts/index');
+const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
 
-function nanachi({
+async function nanachi({
     entry = './source/app',
     watch = false,
     platform = 'wx',
+    beta = false,
+    betaUi = false,
     compress = false,
     // loaders,
     plugins = [],
-    complete
+    complete = () => {}
 } = {}) {
+    // TODO：移除复制assets目录操作，使用copy-webpack-plugin插件完成
+    await runBeforeParseTasks({
+        buildType: platform,
+        beta,
+        betaUi
+    });
     const distPath = path.resolve(cwd, platform === 'quick' ? './src' : './dist');
     globalConfig['buildType'] = platform;
     globalConfig['compress'] = compress;
