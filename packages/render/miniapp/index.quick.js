@@ -21,8 +21,11 @@ import { registerAPIsQuick } from './registerAPIs';
 import { Renderer } from './render.all';
 
 import { toStyle } from './toStyle.quick';
-import { toRenderProps, getCurrentPage, _getApp, _getCurrentPages, useComponent } from './utils';
-
+import { 
+    _getApp , 
+    getCurrentPage, 
+    _getCurrentPages, 
+    useComponent } from './utils';
 import { registerComponent } from './registerComponent.quick';
 import { registerPage } from './registerPage.quick';
 let appMethods = {
@@ -55,7 +58,6 @@ let React = getWindow().React = {
     isValidElement,
     createContext,
     toClass: miniCreateClass,
-    toRenderProps,
     useComponent,
     registerComponent,
     getCurrentPage,

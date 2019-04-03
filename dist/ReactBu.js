@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-01
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-03
  */
 
 var arrayPush = Array.prototype.push;
@@ -735,9 +735,6 @@ function safeClone(originVal) {
         }
     }
     return temp;
-}
-function toRenderProps() {
-    return null;
 }
 
 var webview = {};
@@ -2658,7 +2655,6 @@ var React = getWindow().React = {
     PureComponent: PureComponent,
     isValidElement: isValidElement,
     toClass: miniCreateClass,
-    toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,

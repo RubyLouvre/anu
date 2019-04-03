@@ -155,7 +155,3 @@ function safeClone (originVal) {
     }
     return temp;
 }
-
-export function toRenderProps () {
-    return null;
-}

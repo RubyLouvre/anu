@@ -20,7 +20,11 @@ import { dispatchEvent, webview } from './eventSystem';
 import { Renderer } from './render.all';
 
 import { toStyle } from './toStyle';
-import { toRenderProps, _getApp, getCurrentPage, _getCurrentPages, useComponent } from './utils';
+import { 
+    _getApp , 
+    getCurrentPage, 
+    _getCurrentPages, 
+    useComponent } from './utils';
 import { registerPage } from './registerPage.wx';
 import { registerComponent } from './registerComponent.wx';
 
@@ -53,7 +57,6 @@ let React = getWindow().React =  {
     isValidElement,
     createContext,
     toClass: miniCreateClass,
-    toRenderProps,
     useComponent,
     registerComponent,
     getCurrentPage,

@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-02
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-03
  */
 
 var arrayPush = Array.prototype.push;
@@ -819,9 +819,6 @@ function safeClone(originVal) {
         }
     }
     return temp;
-}
-function toRenderProps() {
-    return null;
 }
 
 var HTTP_OK_CODE = 200;
@@ -3377,7 +3374,6 @@ var React = getWindow().React = {
     isValidElement: isValidElement,
     createContext: createContext,
     toClass: miniCreateClass,
-    toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,

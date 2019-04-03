@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-01T04
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-03T03
  * IE9+
  */
 
@@ -1044,9 +1044,6 @@ function safeClone(originVal) {
         }
     }
     return temp;
-}
-function toRenderProps() {
-    return null;
 }
 
 var webview = {};
@@ -2650,7 +2647,6 @@ var React = getWindow().React = {
     isValidElement: isValidElement,
     createContext: createContext,
     toClass: miniCreateClass,
-    toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
