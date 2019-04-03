@@ -54,7 +54,7 @@ module.exports = function mapConfigName(config) {
     if (tabBar) {
         tabBar = config.tabBar;
         swapProperty(tabBar, barNames);
-        if (Array.isArray(tabBar.items)) {
+        if (Array.isArray(tabBar.list)) {
             tabBar.items.forEach(function(tab) {
                 swapProperty(tab, tabNames);
             });
