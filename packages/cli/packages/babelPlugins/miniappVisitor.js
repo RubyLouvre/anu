@@ -5,8 +5,6 @@ const path = require('path');
 const queue = require('../queue');
 const utils = require('../utils');
 const fs = require('fs-extra');
-const platforms = require('../../consts/platforms');
-const deps = [];
 const config = require('../config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
@@ -16,6 +14,7 @@ const quickFiles = require('../quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
 const helpers = require(`../${buildType}Helpers/index`);
+const deps = [];
 //微信的文本节点，需要处理换行符
 const inlineElement = {
     text: 1,
@@ -236,7 +235,6 @@ module.exports = {
             if (modules.componentType === 'App') {
                 json.pages = modules.pages;
                 delete modules.pages;
-               
             }
             //支付宝在这里会做属性名转换
             helpers.configName(json, modules.componentType);
@@ -251,33 +249,12 @@ module.exports = {
             }
             if (buildType == 'quick') {
                 var obj = quickFiles[modules.sourcePath];
-
                 if (obj) {
                     quickConfig(json, modules, queue, utils);
                     obj.config = Object.assign({}, json);
                 }
                 // delete json.usingComponents;
-              //  if (Object.keys(json).length) {
-                   
-                    /**
-                     * placeholderPattern:false
-                     * 因为 json 中可能会有大写(如API)的形式字符串
-                     * 模板项目中 pages/demo/apis/index.js 的 config(navigationBarTitleText: 'API')
-                     * placeholderPattern 默认行为 /^[_$A-Z0-9]+$/， 会匹配(API), 
-                     * 就会去 template() 返回的函数中找 API 这个变量导致报错
-                     * template 用法 -> https://babeljs.io/docs/en/babel-template
-                     */
-                  /*  var a = template('0,' + JSON.stringify(json, null, 4), {
-                        placeholderPattern: false
-                    })();
-                    var keyValue = t.ObjectProperty(
-                        t.identifier('config'),
-                        a.expression.expressions[1]
-                    );
-                    console.log("创建this config")
-                    modules.thisMethods.push(keyValue);
-                    */
-               // }
+        
                 return;
             } else {
                 if (modules.componentType === 'Component') {
@@ -287,7 +264,6 @@ module.exports = {
 
             //只有非空才生成json文件
             if (Object.keys(json).length) {
-                
                 //配置分包
                 json = require('../utils/setSubPackage')(modules, json);
                 
@@ -402,65 +378,7 @@ module.exports = {
             }
         }
     },
-    // visitor 中的 ClassProperty 没有访问, 
-    // 使用 AssignmentExpression 解析 config 和 globalData
-    // static 属性会自动挂载到 类
-    /*
-    AssignmentExpression: {
-      
-        exit(astPath, state) {
-            const member = generate(astPath.get('left').node).code;
-            const isObj = t.isObjectExpression(astPath.get('right').node);
-            let modules = utils.getAnu(state);
-            // 判断格式是否为： this.config = {}
-            if ([`${modules.className}.config`, 'this.config'].includes(member) && isObj) {
-                if (/App|Page|Component/.test(modules.componentType)) {
-                    try {
-                        var json = eval('0,' + generate(astPath.get('right').node).code);
-                        Object.assign(modules.config, json);
-                        //不同小程序的tabBar数量可能不存在，默认使用list
-                        var tabBar = modules.config.tabBar;
-                        //如果存在以buildType+"List"的列表，那么将它改成默认的list
-                        if (tabBar){
-                            if (!tabBar[buildType+'List']){
-                                delete modules.config.tabBar;
-                            } else {
-                                tabBar.list = tabBar[buildType+'List'];
-                                platforms.forEach(function(el){
-                                    delete tabBar[el.buildType+'List'];
-                                });
-                            }
-                        }
-                    } catch (e) {
-                        console.log('eval json error', e);
-                    }
-                }
-            }
-            // 判断格式是否为： this.globalData = {}
-            if (member === 'this.globalData' && isObj && modules.componentType === 'App') {
-                // 如果没有 buildType 属性, 在 globalData 中插入平台buildType
-                if (!generate(astPath.get('right').node).code.includes('buildType')) {
-                    astPath.get('right').node.properties.push(
-                        t.objectProperty(
-                            t.identifier('buildType'),
-                            t.stringLiteral(config.buildType)
-                        )
-                    );
-                    var thisMember = t.assignmentExpression(
-                        '=',
-                        t.memberExpression(
-                            t.identifier('this'),
-                            t.identifier('globalData')
-                        ),
-                        astPath.get('right').node
-                    );
-                    modules.thisProperties.push(thisMember);
-                }
-            }
-        }
-        
-    },
-    */
+    
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
@@ -560,12 +478,9 @@ module.exports = {
                     let iconReg = /\s*&#x/i;
                     if (iconReg.test(iconValue)) {
                         children.length = 0;
-
                     }
                 }
-
             }
-
 
             let modules = utils.getAnu(state);
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
