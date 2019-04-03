@@ -27,7 +27,7 @@ module.exports = async function(args){
     try {
         
         // await runBeforeParseTasks(args);
-        const { buildType, beta, betaUi } = args;
+        const { buildType, beta, betaUi, watch, compress } = args;
         // const parser = JavascriptParserFactory.create({
         //     platform: 'wx',
         //     filepath: path.resolve(cwd, 'source/app.js')
@@ -43,8 +43,8 @@ module.exports = async function(args){
             platform: buildType,
             beta,
             betaUi,
-            compress: config['compress'],
-            watch: args['watch'] ? true : false,
+            compress,
+            watch,
             plugins: [
                 new CleanWebpackPlugin()     
             ],
