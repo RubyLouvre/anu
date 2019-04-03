@@ -36,10 +36,7 @@ module.exports = {
         ]
     },
     plugins: [
-        new CleanWebpackPlugin({
-            // verbose: true, // 是否开启删除log
-            // cleanOnceBeforeBuildPatterns: []
-        }),
+        // new CleanWebpackPlugin(),
         new CopyWebpackPlugin([
             // copy assets
             {
@@ -57,12 +54,5 @@ module.exports = {
         new NanachiWebpackPlugin({
             platform: config['buildType']
         })
-    ],
-    // resolve: {
-    //     alias: {
-    //         'react': path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]),
-    //         '@react': path.resolve(cwd, 'source', REACT_LIB_MAP[buildType]),
-    //         '@components': path.resolve(cwd, 'source/components')
-    //     }
-    // }
+    ]
 };
