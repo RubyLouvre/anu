@@ -2,8 +2,9 @@ const runBeforeParseTasks = require('./runBeforeParseTasks');
 // const path = require('path');
 // const entry = path.join(process.cwd(), 'source', 'app.js');
 // const parser = require('../packages/index')(entry);
-const webpack = require('webpack');
-const webpackOptions = require('../config/webpack');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const config = require('../packages/config');
+const nanachi = require('../index');
 // const cwd = process.cwd();
 // const JavascriptParserFactory = require('../nanachi-loader/parsers/jsParser/JavascriptParserFactory');
 
@@ -36,13 +37,23 @@ module.exports = async function(args){
         //     entry[index] = path.join('source', dep).replace(/^(\w)/, './$1');
         // });
         // webpackOptions.entry = entry;
-        const compiler = webpack(webpackOptions);
+        nanachi({
+            entry: './source/app.js',
+            platform: config['buildType'],
+            compress: config['compress'],
+            watch: args['watch'] ? true : false,
+            plugins: [
+                new CleanWebpackPlugin()     
+            ],
+            complete: callback
+        });
+        // const compiler = webpack(webpackOptions);
         
-        if (args['watch']) {
-            compiler.watch({}, callback.bind(this));
-        } else {
-            compiler.run(callback.bind(this));
-        }
+        // if (args['watch']) {
+        //     compiler.watch({}, callback.bind(this));
+        // } else {
+        //     compiler.run(callback.bind(this));
+        // }
 
     } catch (e) {
         // eslint-disable-next-line
