@@ -11,7 +11,7 @@ const config = require('../config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
 const ignoreAttri = require('../quickHelpers/ignoreAttri');
-
+const transformConfig = require('./transformConfig')
 const quickFiles = require('../quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
@@ -157,6 +157,7 @@ module.exports = {
             }
         }
     },
+
     FunctionDeclaration: {
         //enter里面会转换jsx中的JSXExpressionContainer
         exit(astPath, state) {
@@ -235,10 +236,11 @@ module.exports = {
             if (modules.componentType === 'App') {
                 json.pages = modules.pages;
                 delete modules.pages;
+               
             }
-
+            //支付宝在这里会做属性名转换
             helpers.configName(json, modules.componentType);
-
+       
             var keys = Object.keys(modules.usedComponents),
                 usings;
             if (keys.length) {
@@ -255,7 +257,8 @@ module.exports = {
                     obj.config = Object.assign({}, json);
                 }
                 // delete json.usingComponents;
-                if (Object.keys(json).length) {
+              //  if (Object.keys(json).length) {
+                   
                     /**
                      * placeholderPattern:false
                      * 因为 json 中可能会有大写(如API)的形式字符串
@@ -264,15 +267,17 @@ module.exports = {
                      * 就会去 template() 返回的函数中找 API 这个变量导致报错
                      * template 用法 -> https://babeljs.io/docs/en/babel-template
                      */
-                    var a = template('0,' + JSON.stringify(json, null, 4), {
+                  /*  var a = template('0,' + JSON.stringify(json, null, 4), {
                         placeholderPattern: false
                     })();
                     var keyValue = t.ObjectProperty(
                         t.identifier('config'),
                         a.expression.expressions[1]
                     );
+                    console.log("创建this config")
                     modules.thisMethods.push(keyValue);
-                }
+                    */
+               // }
                 return;
             } else {
                 if (modules.componentType === 'Component') {
@@ -349,11 +354,60 @@ module.exports = {
             }
         }
     },
-
+    ThisExpression:{
+        exit(astPath,state){
+            let modules = utils.getAnu(state);
+            if( modules.walkingMethod == 'constructor' ){
+                var expression = astPath.parentPath.parentPath
+                if(expression.type === 'AssignmentExpression'){
+                    var right = expression.node.right
+                    if(!t.isObjectExpression(right)){
+                       return
+                    }
+                    //处理  this.config = {}
+                    var propertyName = astPath.container.property.name
+                    if( propertyName === 'config' && !modules.configIsReady ){                      
+                        transformConfig(modules, expression, buildType)
+                    }
+                    // 为this.globalData添加buildType
+                    if( propertyName === 'globalData'){
+                       if(modules.componentType === 'App'){
+                           var properties = right.properties
+                           var hasBuildType = properties.some(function(el){
+                             return el.key.name === 'buildType'
+                           });
+                           if(!hasBuildType){
+                                properties.push( t.objectProperty(
+                                    t.identifier('buildType'),
+                                    t.stringLiteral(buildType)
+                                ))
+                           }
+                       }
+                    }
+                }
+               
+            }
+           
+        }
+    },
+    MemberExpression(astPath,state){
+        //处理 static config = {}
+        let modules = utils.getAnu(state);
+        if(astPath.parentPath.type === 'AssignmentExpression'){
+            if(!modules.configIsReady &&
+                astPath.node.object.name === modules.className &&
+                astPath.node.property.name === "config"
+                ){ 
+                transformConfig(modules, astPath.parentPath, buildType)
+            }
+        }
+    },
     // visitor 中的 ClassProperty 没有访问, 
     // 使用 AssignmentExpression 解析 config 和 globalData
     // static 属性会自动挂载到 类
+    /*
     AssignmentExpression: {
+      
         exit(astPath, state) {
             const member = generate(astPath.get('left').node).code;
             const isObj = t.isObjectExpression(astPath.get('right').node);
@@ -402,7 +456,9 @@ module.exports = {
                 }
             }
         }
+        
     },
+    */
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
