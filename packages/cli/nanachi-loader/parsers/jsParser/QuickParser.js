@@ -41,7 +41,7 @@ class QuickParser extends JavascriptParser {
                 require('@babel/plugin-syntax-jsx'),
                 require('../../../packages/babelPlugins/collectTitleBarConfig'),
                 require('../../../packages/babelPlugins/collectWebViewPage'),
-                require('../../../packages/babelPlugins/collectPatchComponents'),
+                // require('../../../packages/babelPlugins/collectPatchComponents'), // 不在分析过程中收集是否需要安装补丁组件，分析代码前就确定是否需要安装
                 require('../../../packages/babelPlugins/collectDependencies'),
                 // ...require('../../../packages/babelPlugins/validateJsx')(this.collectError),
                 [require('@babel/plugin-transform-template-literals'), { loose: true }],
@@ -84,14 +84,14 @@ class QuickParser extends JavascriptParser {
             });
         }
         // 合并ux文件
-        this.queues = result.options.anu.queue || this.queues;
+        this.queues = result.options.anu && result.options.anu.queue || this.queues;
         const uxRes = await mergeUx({
             sourcePath: this.filepath,
             result,
             relativePath: this.relativePath
         }, this.queues);
         this.queues.push({
-            type: 'ux',
+            type: uxRes.type,
             path: this.relativePath,
             code: uxRes.code,
             extraModules: this.extraModules

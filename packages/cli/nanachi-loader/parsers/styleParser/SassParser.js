@@ -1,6 +1,6 @@
 const StyleParser = require('./StyleParser');
 const utils = require('../../../packages/utils/index');
-const { EXT_MAP } = require('../../../consts/index');
+const { MAP } = require('../../../consts/index');
 
 class SassParser extends StyleParser {
     constructor(props) {
@@ -21,7 +21,7 @@ class SassParser extends StyleParser {
             }),
             require('@csstools/postcss-sass'),
             require('../../../packages/postcssPlugins/postcssPluginAddImport')({
-                extName: EXT_MAP[this.platform][this.type],
+                extName: MAP[this.platform]['EXT_NAME'][this.type],
                 type: this.type
             }), // 添加@import规则，小程序可以解析原有依赖
             require('../../../packages/postcssPlugins/postCssPluginFixNumber'), // 数字精度插件

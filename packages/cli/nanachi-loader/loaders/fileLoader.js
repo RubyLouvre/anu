@@ -1,4 +1,4 @@
-const { EXT_MAP } = require('../../consts/index');
+const { MAP } = require('../../consts/index');
 const { successLog } = require('../logger/index');
 const utils = require('../../packages/utils/index');
 const compress = utils.compress();
@@ -10,7 +10,7 @@ const compress = utils.compress();
 module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
     const callback = this.async();
     queues.forEach(({ code, path: filePath, type }) => {
-        const relativePath = filePath.replace(/\.\w+$/, `.${EXT_MAP[this.nanachiOptions.platform][type] || type}`);
+        const relativePath = filePath.replace(/\.\w+$/, `.${MAP[this.nanachiOptions.platform]['EXT_NAME'][type] || type}`);
         if (this.nanachiOptions.compress) {
             code = typeof compress[type] === 'function' && compress[type](code) || code;
         }
