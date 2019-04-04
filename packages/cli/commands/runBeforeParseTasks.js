@@ -179,6 +179,7 @@ function needInstallUiLib(jsxPatchNode) {
     if ( jsxPatchNode.length === 0 ) return false; //没有需要patch的组件
     try {
         nodeResolve.sync('schnee-ui', { basedir: process.cwd() });
+        
         return false;
     } catch (err) {
         return true;
@@ -197,7 +198,13 @@ function needInstallHapToolkit(){
     }
 }
 
-async function runTask({ buildType, beta,  betaUi }){
+function copyNpmFile(buildType) {
+    const distPath = path.resolve(cwd, buildType === 'quick' ? './src' : './dist');
+    fs.copySync(path.resolve(cwd, './node_modules/regenerator-runtime'), path.resolve(distPath, './npm/regenerator-runtime'));
+    fs.copySync(path.resolve(cwd, './node_modules/schnee-ui'), path.resolve(distPath, './npm/schnee-ui'));
+}
+
+async function runTask({ buildType, beta, betaUi }){
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
     let tasks  = [];
@@ -242,6 +249,8 @@ async function runTask({ buildType, beta,  betaUi }){
     //copy assets目录下静态资源
     tasks = tasks.concat(getAssetsFile(buildType));
 
+    //copy 
+
     try {
         //每次build时候, 必须先删除'dist', 'build', 'sign', 'src', 'babel.config.js'等等冗余文件或者目录
         await Promise.all(getRubbishFiles().map(function(task){
@@ -251,6 +260,8 @@ async function runTask({ buildType, beta,  betaUi }){
         await Promise.all(tasks.map(function(task){
             return helpers[task.ACTION_TYPE](task);
         }));
+        copyNpmFile(buildType);
+
     } catch (err) {
         
     }

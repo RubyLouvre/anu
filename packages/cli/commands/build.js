@@ -43,8 +43,10 @@ module.exports = async function(args){
             compress,
             watch,
             plugins: [
-                new CleanWebpackPlugin()
-                
+                // new CleanWebpackPlugin({
+                //     verbose: true,
+                //     cleanOnceBeforeBuildPatterns: ['!src/npm/*'],
+                // })
             ],
             complete: callback
         });

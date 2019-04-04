@@ -124,6 +124,8 @@ let utils = {
                 modules.importComponents[patchName] = {
                     source: UIName
                 };
+                const dist = path.resolve(cwd, config['buildType'] === 'quick' ? 'src' : 'dist');
+                modules.extraModules.push(path.resolve(dist, './npm', UIName, 'components', patchName));
                 return patchName;
             }
             return (astPath.node.name.name = map[orig] || backup);

@@ -41,7 +41,17 @@ function mergeNanachiConfig(nanachiBaseConfig, {
                 {
                     from: path.resolve(cwd, 'source', REACT_LIB_MAP[platform]),
                     to: distPath
-                }
+                },
+                // // copy regenerator-runtime
+                // {
+                //     from: path.resolve(cwd, './node_modules/regenerator-runtime'),
+                //     to: path.resolve(distPath, './npm/regenerator-runtime')
+                // },
+                // // copy schnee-ui
+                // {
+                //     from: path.resolve(cwd, './node_modules/schnee-ui'),
+                //     to: path.resolve(distPath, './npm/schnee-ui')
+                // }
             ], {
                 copyUnmodified: true
             }),
