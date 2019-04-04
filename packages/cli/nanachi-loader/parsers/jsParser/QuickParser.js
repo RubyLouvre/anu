@@ -41,7 +41,7 @@ class QuickParser extends JavascriptParser {
                 require('@babel/plugin-syntax-jsx'),
                 require('../../../packages/babelPlugins/collectTitleBarConfig'),
                 require('../../../packages/babelPlugins/collectWebViewPage'),
-                // require('../../../packages/babelPlugins/collectPatchComponents'), // 不在分析过程中收集是否需要安装补丁组件，分析代码前就确定是否需要安装
+                require('../../../packages/babelPlugins/collectPatchComponents'),
                 require('../../../packages/babelPlugins/collectDependencies'),
                 // ...require('../../../packages/babelPlugins/validateJsx')(this.collectError),
                 [require('@babel/plugin-transform-template-literals'), { loose: true }],

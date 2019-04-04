@@ -93,10 +93,11 @@ let utils = {
         );
     },
     createNodeName(map, backup) {
-        const patchNode = config[config.buildType].jsxPatchNode || {};
-        const UIName = 'schnee-ui';
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return (astPath, modules) => {
+            // 在回调函数中取patchNode，在外层取会比babel插件逻辑先执行，导致一直为{}
+            const patchNode = config[config.buildType].jsxPatchNode || {}; 
+            const UIName = 'schnee-ui';
             var orig = astPath.node.name.name;
             var fileId = modules.sourcePath;
             var isPatchNode = patchNode[fileId] && patchNode[fileId].includes(orig);
