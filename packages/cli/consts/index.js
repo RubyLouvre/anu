@@ -7,41 +7,56 @@ const REACT_LIB_MAP = {
     tt: 'ReactWX.js'
 };
 
-const EXT_MAP = {
+const MAP = {
     'wx': {
-        'css': 'wxss',
-        'scss': 'wxss',
-        'sass': 'wxss',
-        'less': 'wxss',
-        'html': 'wxml',
-        'jsx': 'js',
+        EXT_NAME: {
+            'css': 'wxss',
+            'scss': 'wxss',
+            'sass': 'wxss',
+            'less': 'wxss',
+            'html': 'wxml',
+            'jsx': 'js',
+        },
+        patchComponents: []
     },
     'ali': {
-        'css': 'acss',
-        'scss': 'acss',
-        'sass': 'acss',
-        'less': 'acss',
-        'html': 'axml',
-        'jsx': 'js',
+        EXT_NAME: {
+            'css': 'acss',
+            'scss': 'acss',
+            'sass': 'acss',
+            'less': 'acss',
+            'html': 'axml',
+            'jsx': 'js',
+        },
+        patchComponents: [
+            'rich-text' //年前还不支持这标签 https://docs.alipay.com/mini/component/rich-text
+        ]
     },
     'bu': {
-        'css': 'css',
-        'scss': 'css',
-        'sass': 'css',
-        'less': 'css',
-        'html': 'swan',
-        'jsx': 'js',
+        EXT_NAME: {
+            'css': 'css',
+            'scss': 'css',
+            'sass': 'css',
+            'less': 'css',
+            'html': 'swan',
+            'jsx': 'js',
+        },
+        patchComponents: []
     },
     'tt': {
-        'css': 'ttss',
-        'scss': 'ttss',
-        'sass': 'ttss',
-        'less': 'ttss',
-        'html': 'ttml',
-        'jsx': 'js',
+        EXT_NAME: {
+            'css': 'ttss',
+            'scss': 'ttss',
+            'sass': 'ttss',
+            'less': 'ttss',
+            'html': 'ttml',
+            'jsx': 'js',
+        },
+        patchComponents: []
     },
     'quick': {
-        
+        EXT_NAME: {},
+        patchComponents: ['radio', 'radio-group', 'checkbox', 'checkbox-group', 'label', 'navigator', 'picker']
     }
 };
 
@@ -64,5 +79,5 @@ const BUILD_OPTIONS = {
 module.exports = {
     REACT_LIB_MAP,
     BUILD_OPTIONS,
-    EXT_MAP
+    MAP
 };

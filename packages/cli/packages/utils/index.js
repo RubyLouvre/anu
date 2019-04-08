@@ -17,6 +17,7 @@ const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const userConfig = pkg.nanachi || pkg.mpreact || {};
 const { REACT_LIB_MAP } = require('../../consts/index');
+const fs = require('fs-extra');
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
     on() {
@@ -93,10 +94,11 @@ let utils = {
         );
     },
     createNodeName(map, backup) {
-        const patchNode = config[config.buildType].jsxPatchNode || {};
-        const UIName = 'schnee-ui';
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return (astPath, modules) => {
+            // 在回调函数中取patchNode，在外层取会比babel插件逻辑先执行，导致一直为{}
+            const patchNode = config[config.buildType].jsxPatchNode || {}; 
+            const UIName = 'schnee-ui';
             var orig = astPath.node.name.name;
             var fileId = modules.sourcePath;
             var isPatchNode = patchNode[fileId] && patchNode[fileId].includes(orig);
@@ -131,7 +133,7 @@ let utils = {
     getUsedComponentsPath(bag, nodeName, modules) {
         let isNpm = this.isNpm(bag.source);
         let sourcePath = modules.sourcePath;
-        let isNodeModulePathReg = this.isWin() ? /\\node_modules\\/ : /\/node_modules\//;
+        let isNodeModulePathReg = this.isWin() ? /\\npm\\/ : /\/npm\//;
 
         //import { xxx } from 'schnee-ui';
         if (isNpm) {
@@ -141,7 +143,7 @@ let utils = {
         if ( isNodeModulePathReg.test(sourcePath) && /^\./.test(bag.source) ) {
             //获取用组件的绝对路径
             let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
-            return '/npm/' + importerAbPath.split(`${path.sep}node_modules${path.sep}`)[1]
+            return '/npm/' + importerAbPath.split(`${path.sep}npm${path.sep}`)[1]
         }
         return `/components/${nodeName}/index`;
     },
@@ -344,8 +346,22 @@ let utils = {
         //小程序async/await语法依赖regenerator-runtime/runtime
         try {
             return nodeResolve.sync('regenerator-runtime/runtime', {
-                basedir: process.cwd()
+                basedir: path.resolve(process.cwd(), 'source')
             });
+            // const distPath = path.resolve(cwd, config.buildType === 'quick' ? './src' : './dist');
+            // console.log(path.resolve(distPath, './regenerator-runtime/runtime.js'));
+            // if (fs.ensureFileSync(path.resolve(distPath, 'regenerator-runtime/runtime.js'))) {
+            //     return path.resolve(distPath, 'regenerator-runtime/runtime');
+            // } else {
+            //     // eslint-disable-next-line
+            //     console.log(
+            //         'Error: ' +
+            //         sourcePath +
+            //         '\n' +
+            //         'Msg: ' +
+            //         chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
+            //     );
+            // }
         } catch (err) {
             // eslint-disable-next-line
             console.log(

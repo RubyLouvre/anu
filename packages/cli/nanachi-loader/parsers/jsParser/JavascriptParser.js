@@ -24,7 +24,7 @@ class JavascriptParser {
     
     async parse() {
         const res = await babel.transformFileAsync(this.filepath, this._babelPlugin);
-        this.extraModules = res.options.anu.extraModules;
+        this.extraModules = res.options.anu && res.options.anu.extraModules || this.extraModules;
         this.parsedCode = res.code;
         return res;
     }

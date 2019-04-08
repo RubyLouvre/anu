@@ -84,14 +84,14 @@ class QuickParser extends JavascriptParser {
             });
         }
         // 合并ux文件
-        this.queues = result.options.anu.queue || this.queues;
+        this.queues = result.options.anu && result.options.anu.queue || this.queues;
         const uxRes = await mergeUx({
             sourcePath: this.filepath,
             result,
             relativePath: this.relativePath
         }, this.queues);
         this.queues.push({
-            type: 'ux',
+            type: uxRes.type,
             path: this.relativePath,
             code: uxRes.code,
             extraModules: this.extraModules

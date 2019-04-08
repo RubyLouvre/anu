@@ -7,6 +7,9 @@ const axios = require('axios');
 const ora = require('ora');
 const glob = require('glob');
 const { REACT_LIB_MAP } = require('../consts/index');
+const utils = require('../packages/utils/index');
+const { MAP } = require('../consts/index');
+const nodeResolve = require('resolve');
 
 const cliRoot = path.resolve(__dirname, '..');
 
@@ -14,26 +17,26 @@ const cliRoot = path.resolve(__dirname, '..');
 function getRubbishFiles(buildType){
     let fileList = ['package-lock.json', 'yarn.lock'];
     buildType !== 'quick'
-    ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
-    : fileList = fileList.concat(['dist']);
-    
+        ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
+        : fileList = fileList.concat(['dist']);
+
     //构建应用时，要删除source目录下其他的 React lib 文件。
     let libList = Object.keys(REACT_LIB_MAP)
-    .map(function(key){
-        return `source/${REACT_LIB_MAP[key]}`;
-    })
-    .filter(function(libName){
-        return libName.split('/')[1] != REACT_LIB_MAP[buildType];
-    });
+        .map(function(key){
+            return `source/${REACT_LIB_MAP[key]}`;
+        })
+        .filter(function(libName){
+            return libName.split('/')[1] != REACT_LIB_MAP[buildType];
+        });
     fileList = fileList.concat(libList);
-    
+
     return fileList.map(function(file){
         return {
             id: path.join(cwd, file),
             ACTION_TYPE: 'REMOVE'
-        }
+        };
     });
-};
+}
 
 
 //合并快应用构建json
@@ -54,8 +57,7 @@ function getQuickPkgFile() {
             ACTION_TYPE: 'WRITE'
         }
     ];
-};
-
+}
 
 //copy 快应用构建的基础依赖
 function getQuickBuildConfigFile(){
@@ -73,7 +75,7 @@ function getQuickBuildConfigFile(){
             ACTION_TYPE: 'COPY'
         }
     ];
-};
+}
 
 //从 github 同步UI
 function downloadSchneeUI(){
@@ -122,18 +124,18 @@ function getAssetsFile( buildType ) {
     let files = glob.sync( assetsDir+'/**', {nodir: true});
 
     files = files
-    .filter(function(id){
-        //过滤js, css, sass, scss, less, json文件
-        return !/\.(js|scss|sass|less|css|json)$/.test(id)
-    })
-    .map(function(id){
-        let dist = id.replace('source', buildType === 'quick' ? 'src' : 'dist');
-        return {
-            id: id,
-            dist: dist ,
-            ACTION_TYPE: 'COPY'
-        }
-    });
+        .filter(function(id){
+            //过滤js, css, sass, scss, less, json文件
+            return !/\.(js|scss|sass|less|css|json)$/.test(id);
+        })
+        .map(function(id){
+            let dist = id.replace('source', buildType === 'quick' ? 'src' : 'dist');
+            return {
+                id: id,
+                dist: dist ,
+                ACTION_TYPE: 'COPY'
+            };
+        });
     
     return files;
 
@@ -158,12 +160,10 @@ function getProjectConfigFile(buildType) {
     }
 }
 
-
-
 //fs-extra 各文件I/O操作返回Promise
 const helpers = {
     COPY: function( { id, dist } ) {
-        return fs.copy(id, dist)
+        return fs.copy(id, dist);
     },
     WRITE: function( {id, content} ) {
         fs.ensureFileSync(id);
@@ -173,12 +173,48 @@ const helpers = {
     REMOVE: function( {id} ) {
         return fs.remove(id);
     }
+};
+
+function needInstallUiLib(jsxPatchNode) {
+    if ( jsxPatchNode.length === 0 ) return false; //没有需要patch的组件
+    try {
+        nodeResolve.sync('schnee-ui', { basedir: process.cwd() });
+        
+        return false;
+    } catch (err) {
+        return true;
+    }
+}
+function needInstallHapToolkit(){
+    //检查本地是否安装快应用的hap-toolkit工具
+    try {
+        //hap-toolkit中package.json没有main或者module字段, 无法用 nodeResolve 来判断是否存在。
+        //nodeResolve.sync('hap-toolkit', { basedir: process.cwd() });
+        let hapToolKitPath = path.join(cwd, 'node_modules', 'hap-toolkit');
+        fs.accessSync(hapToolKitPath);
+        return false;
+    } catch (err) {
+        return true;
+    }
 }
 
-async function runTask({ buildType, beta,  betaUi }){
+function copyNpmFile(buildType) {
+    const distPath = path.resolve(cwd, buildType === 'quick' ? './src' : './dist');
+    const sourcePath = path.resolve(cwd, 'source');
+    fs.copySync(path.resolve(cwd, './node_modules/regenerator-runtime'), path.resolve(sourcePath, './npm/regenerator-runtime'));
+    fs.copySync(path.resolve(cwd, './node_modules/schnee-ui'), path.resolve(sourcePath, './npm/schnee-ui'));
+}
+
+async function runTask({ buildType, beta, betaUi }){
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
     let tasks  = [];
+
+    if (needInstallUiLib(MAP[buildType]['patchComponents'])) {
+        // eslint-disable-next-line
+        console.log(chalk.green('缺少补丁组件, 正在安装, 请稍候...'));
+        utils.installer('schnee-ui');
+    }
 
     if (betaUi) {
         downloadSchneeUI();
@@ -195,7 +231,17 @@ async function runTask({ buildType, beta,  betaUi }){
     
     //快应用下需要copy babel.config.js, 合并package.json等
     if (isQuick) {
-        tasks = tasks.concat(getQuickBuildConfigFile(), getQuickPkgFile())
+        tasks = tasks.concat(getQuickBuildConfigFile(), getQuickPkgFile());
+        if (needInstallHapToolkit()) {
+            //获取package.json中hap-toolkit版本，并安装
+            let toolName = 'hap-toolkit';
+            // eslint-disable-next-line
+            console.log(chalk.green(`缺少快应用构建工具${toolName}, 正在安装, 请稍候...`));
+            utils.installer(
+                `${toolName}@${require( path.join(cwd, 'package.json'))['devDependencies'][toolName] }`,
+                '--save-dev'
+            );
+        }
     }
     
     //copy project.config.json
@@ -203,6 +249,8 @@ async function runTask({ buildType, beta,  betaUi }){
 
     //copy assets目录下静态资源
     tasks = tasks.concat(getAssetsFile(buildType));
+
+    //copy 
 
     try {
         //每次build时候, 必须先删除'dist', 'build', 'sign', 'src', 'babel.config.js'等等冗余文件或者目录
@@ -213,6 +261,8 @@ async function runTask({ buildType, beta,  betaUi }){
         await Promise.all(tasks.map(function(task){
             return helpers[task.ACTION_TYPE](task);
         }));
+        copyNpmFile(buildType);
+
     } catch (err) {
         
     }

@@ -3,6 +3,7 @@ let fs = require('fs');
 let path = require('path');
 const cwd = process.cwd();
 const { REACT_LIB_MAP } = require('../../consts');
+const config = require('../config');
 
 //对路径的一些兼容
 let compatiblePath = (value)=>{
@@ -40,28 +41,13 @@ module.exports = (metaData)=>{
                 if (/regenerator-runtime\/runtime/.test(moduleName)) {
                     let regeneratorRuntimePath = utils.getRegeneratorRuntimePath(sourcePath);
                     targetPath = regeneratorRuntimePath;
-                    // console.log(moduleName, regeneratorRuntimePath);
-                    // let distDir = config['buildType'] === 'quick' ? 'src': 'dist';
-                    // let dist  = utils.updatePath(
-                    //     regeneratorRuntimePath, 
-                    //     'node_modules', 
-                    //     distDir + path.sep + 'npm'
-                    // );
-                    // Object.assign(
-                    //     aliasMap,
-                    //     utils.resolveAliasPath(sourcePath, { 'regenerator-runtime/runtime': regeneratorRuntimePath } )
-                    // );
-                    
-                    // if (!cache[dist]) {
-                    //     queue.push({
-                    //         code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
-                    //         path: dist,
-                    //         type: 'npm'
-                    //     });
-                    //     cache[dist] = true;
-                    // }
+                    targetPath  = utils.updatePath(
+                        regeneratorRuntimePath, 
+                        'node_modules', 
+                        'source' + path.sep + 'npm'
+                    );
+                   
                 }
-                // let value = compatiblePath(aliasMap[moduleName]);
                 return resolveRelativePath(getDirname(sourcePath), targetPath);
             }
         }

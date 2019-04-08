@@ -25,7 +25,7 @@ module.exports = ()=>{
                 let nodeName = astPath.node.name.name;
                 let platConfig = config[config.buildType];
                 let patchComponents = platConfig.patchComponents || [];
-                
+                const modules = utils.getAnu(state);
                 if ( !patchComponents.includes(nodeName) ) return;
                 // 添加依赖的补丁组件
                 const patchComponentPath = getPatchComponentPath('X' + utils.parseCamel(nodeName));
@@ -33,11 +33,14 @@ module.exports = ()=>{
                 //做一些初始化工作
                 platConfig.jsxPatchNode = platConfig.jsxPatchNode || {};
                 platConfig.jsxPatchNode[fileId] = platConfig.jsxPatchNode[fileId] || [];
-
                 //防止重复添加
                 if (platConfig.jsxPatchNode[fileId].includes(nodeName)) return;
                 platConfig.jsxPatchNode[fileId].push(nodeName);
-                
+
+                const nodeModulePath = path.resolve(cwd, 'node_modules');
+                const npmPath = path.resolve(cwd, 'source/npm');
+                const relativePath = path.relative(nodeModulePath, patchComponentPath);
+                modules.extraModules.push(path.resolve(npmPath, relativePath));
             }
         }
     };

@@ -63,17 +63,21 @@ function fixPath(fileId, dep){
     return path.join(cwd, retPath); 
 }
 
-
+// TODO: 合并到QuickParser中
 let map = {
     getImportTag: function(uxFile, sourcePath){
         //假设存在<import>
         let importTag = '';
         let using = uxFile.config && uxFile.config.usingComponents || {};
         Object.keys(using).forEach((i)=>{
+            const isWin = utils.isWin();
+            const reg = isWin ? /^(\\)/ : /^(\/)/;
+            const relativePath = using[i].replace(reg, '.$1');
             let importSrc = path.relative(
                 path.dirname(sourcePath),
-                fixPath(sourcePath, using[i])
+                path.resolve(cwd, 'source', relativePath)
             );
+            // console.log(relativePath);
             importSrc = utils.isWin() ? importSrc.replace(/\\/g, '/'): importSrc;
             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
         });
@@ -140,16 +144,14 @@ let map = {
 module.exports = async (data, queue)=>{
     let { sourcePath, result } = data;
     var uxFile = quickFiles[sourcePath];
-    
     //如果没有模板, 并且不是app，则认为这是个纯js模块。
-    if (!uxFile.template && uxFile.type != 'App') {
+    if (!uxFile || (!uxFile.template && uxFile.type != 'App')) {
         return {
             type: 'js',
             code: result.code
         };
     }
 
-    if (!uxFile) return;
     //假设假设存在<template>
     var ux = `${uxFile.template || ''}`;
     map.resolveComponents(data, queue);

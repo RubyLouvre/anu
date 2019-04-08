@@ -526,7 +526,6 @@ module.exports = {
                 }
 
                 let useComponentsPath = utils.getUsedComponentsPath(bag, nodeName, modules);
-
                 modules.usedComponents['anu-' + nodeName.toLowerCase()] = useComponentsPath;
                 astPath.node.name.name = 'React.useComponent';
 
