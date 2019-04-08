@@ -63,17 +63,21 @@ function fixPath(fileId, dep){
     return path.join(cwd, retPath); 
 }
 
-
+// TODO: 合并到QuickParser中
 let map = {
     getImportTag: function(uxFile, sourcePath){
         //假设存在<import>
         let importTag = '';
         let using = uxFile.config && uxFile.config.usingComponents || {};
         Object.keys(using).forEach((i)=>{
+            const isWin = utils.isWin();
+            const reg = isWin ? /^(\\)/ : /^(\/)/;
+            const relativePath = using[i].replace(reg, '.$1');
             let importSrc = path.relative(
                 path.dirname(sourcePath),
-                fixPath(sourcePath, using[i])
+                path.resolve(cwd, 'source', relativePath)
             );
+            // console.log(relativePath);
             importSrc = utils.isWin() ? importSrc.replace(/\\/g, '/'): importSrc;
             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
         });

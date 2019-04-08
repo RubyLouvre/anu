@@ -124,8 +124,6 @@ let utils = {
                 modules.importComponents[patchName] = {
                     source: UIName
                 };
-                const dist = path.resolve(cwd, config['buildType'] === 'quick' ? 'src' : 'dist');
-                modules.extraModules.push(path.resolve(dist, './npm', UIName, 'components', patchName));
                 return patchName;
             }
             return (astPath.node.name.name = map[orig] || backup);
@@ -134,7 +132,7 @@ let utils = {
     getUsedComponentsPath(bag, nodeName, modules) {
         let isNpm = this.isNpm(bag.source);
         let sourcePath = modules.sourcePath;
-        let isNodeModulePathReg = this.isWin() ? /\\node_modules\\/ : /\/node_modules\//;
+        let isNodeModulePathReg = this.isWin() ? /\\npm\\/ : /\/npm\//;
 
         //import { xxx } from 'schnee-ui';
         if (isNpm) {
@@ -144,7 +142,7 @@ let utils = {
         if ( isNodeModulePathReg.test(sourcePath) && /^\./.test(bag.source) ) {
             //获取用组件的绝对路径
             let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
-            return '/npm/' + importerAbPath.split(`${path.sep}node_modules${path.sep}`)[1]
+            return '/npm/' + importerAbPath.split(`${path.sep}npm${path.sep}`)[1]
         }
         return `/components/${nodeName}/index`;
     },

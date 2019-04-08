@@ -200,8 +200,9 @@ function needInstallHapToolkit(){
 
 function copyNpmFile(buildType) {
     const distPath = path.resolve(cwd, buildType === 'quick' ? './src' : './dist');
+    const sourcePath = path.resolve(cwd, 'source');
     fs.copySync(path.resolve(cwd, './node_modules/regenerator-runtime'), path.resolve(distPath, './npm/regenerator-runtime'));
-    fs.copySync(path.resolve(cwd, './node_modules/schnee-ui'), path.resolve(distPath, './npm/schnee-ui'));
+    fs.copySync(path.resolve(cwd, './node_modules/schnee-ui'), path.resolve(sourcePath, './npm/schnee-ui'));
 }
 
 async function runTask({ buildType, beta, betaUi }){
