@@ -67,6 +67,9 @@ module.exports = {
     ClassExpression: helpers.classDeclaration,
     ClassMethod: {
         enter(astPath, state) {
+            if(!astPath.node){
+                return
+            }
             let modules = utils.getAnu(state);
             let methodName = astPath.node.key.name;
             modules.walkingMethod = methodName;
@@ -107,7 +110,23 @@ module.exports = {
                     }
                 }
                 let fn = utils.createMethod(astPath, methodName);
-                modules.thisMethods.push(fn);
+                let isStaticMethod = astPath.node.static
+                if (methodName === 'render') {
+                    helpers.render.enter(
+                        astPath,
+                        '有状态组件',
+                        modules.className,
+                        modules
+                    );
+                 }else{
+                    astPath.remove()
+                 }
+                if (isStaticMethod) {
+                    // 处理静态方法
+                    modules.staticMethods.push(fn);
+                }else{
+                    modules.thisMethods.push(fn);
+                }
             } else {
                 let node = astPath.node;
                 modules.ctorFn = t.functionDeclaration(
@@ -118,30 +137,12 @@ module.exports = {
                     false
                 );
             }
-
-            helpers.render.enter(
-                astPath,
-                '有状态组件',
-                modules.className,
-                modules
-            );
+           
         },
         exit(astPath, state) {
-            var modules = utils.getAnu(state);
-            const methodName = astPath.node.key.name;
-            if (astPath.node.static) {
-                // 处理静态方法
-                var keyValue = t.ObjectProperty(
-                    t.identifier(methodName),
-                    t.functionExpression(
-                        t.identifier('_'),
-                        astPath.node.params,
-                        astPath.node.body
-                    )
-                );
-                modules.staticMethods.push(keyValue);
-            }
+            let methodName = astPath.node.key.name;
             if (methodName === 'render') {
+                let modules = utils.getAnu(state);
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,
                 //而是VariableDeclaration
                 helpers.render.exit(
@@ -150,6 +151,7 @@ module.exports = {
                     modules.className,
                     modules
                 );
+                //在render的前面加入var h = React.createElement;
                 astPath.node.body.body.unshift(
                     template(utils.shortcutOfCreateElement())()
                 );
@@ -254,7 +256,6 @@ module.exports = {
                     obj.config = Object.assign({}, json);
                 }
                 // delete json.usingComponents;
-        
                 return;
             } else {
                 if (modules.componentType === 'Component') {
@@ -368,8 +369,8 @@ module.exports = {
     },
     MemberExpression(astPath,state){
         //处理 static config = {}
-        let modules = utils.getAnu(state);
         if(astPath.parentPath.type === 'AssignmentExpression'){
+            let modules = utils.getAnu(state);
             if(!modules.configIsReady &&
                 astPath.node.object.name === modules.className &&
                 astPath.node.property.name === "config"
@@ -499,6 +500,7 @@ module.exports = {
 
 
             if (bag) {
+             //好像不支持render props后，它就没有用了
                 deps[nodeName] ||
                     (deps[nodeName] = {
                         set: new Set()
@@ -519,6 +521,7 @@ module.exports = {
 
                 // eslint-disable-next-line
                 var attrs = astPath.node.attributes;
+                // ?？？这个还有用吗
                 modules.is && modules.is.push(nodeName);
                 attrs.push(
                     t.JSXAttribute(
@@ -556,9 +559,10 @@ module.exports = {
             let parentPath = astPath.parentPath;
             let modules = utils.getAnu(state);
 
-            let srcValue = attrValue && attrValue.value;
+          
             //处理静态资源@assets/xxx.png别名
             if (t.isStringLiteral(attrValue)) {
+                let srcValue = attrValue && attrValue.value;
                 if (attrName === 'src' && /^(@assets)/.test(srcValue)) {
                     let realAssetsPath = path.join(
                         process.cwd(),
@@ -593,7 +597,6 @@ module.exports = {
                             astPath.node.value = t.stringLiteral(code);
                             return;
                         }
-
                     }
                     if (
                         isIdentifier ||
