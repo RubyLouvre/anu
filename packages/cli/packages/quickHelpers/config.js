@@ -155,7 +155,8 @@ function setTitleBar(config) {
 
     //webview配置titlebar
     var globalConfig = require('../config');
-    if ( !globalConfig.showTitleBar ) {
+
+    if ( globalConfig.webview && Object.prototype.toString.call(globalConfig.webview.showTitleBar) === '[object Boolean]' && !globalConfig.webview.showTitleBar ) {
         let routePath = 'pages/__web__view__';
         display['pages'] = display['pages'] || {};
         display['pages'][routePath] = {
