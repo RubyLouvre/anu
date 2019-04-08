@@ -230,8 +230,8 @@ class Parser {
         });
 
         this.check();
-        await this.transform();
         this.updateWebViewRoutes(this.webViewRoutes);
+        await this.transform();
         generate();
         timer.end();
         utils.spinner('').succeed(`构建结束, 用时: ${timer.getProcessTime()}s\n`);

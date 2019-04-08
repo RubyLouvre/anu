@@ -92,7 +92,13 @@ function deleteWebViewConifg() {
 
 module.exports = function(routes){
      
-     if (!Object.keys(routes).length) return;
+     if (!Object.keys(routes).length) {
+        process.env.ANU_WEBVIEW = '';
+        return;
+     }
+
+     process.env.ANU_WEBVIEW = 'need_require_webview_file';
+   
      //每次build先删除配置文件
      deleteWebViewConifg();
 
