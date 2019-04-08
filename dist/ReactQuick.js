@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-03
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -1374,7 +1374,6 @@ function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
-        var webViewRoutes = {};
         var params = {};
         var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
         if (urlReg.test(href)) {
@@ -1385,20 +1384,23 @@ function createRouter(name) {
             });
             return;
         }
-        try {
-            webViewRoutes = require('./webviewConfig.js');
-            var effectPath = uri.split('?')[0];
-            if (!!webViewRoutes[effectPath]) {
-                var config = webViewRoutes[effectPath];
-                params = {
-                    src: config.src || '',
-                    allowthirdpartycookies: config.allowthirdpartycookies || false,
-                    trustedurl: config.trustedurl || []
-                };
+        if (process.env.ANU_WEBVIEW) {
+            var webViewRoutes = {};
+            try {
+                webViewRoutes = require('./webviewConfig.js');
+                var effectPath = uri.split('?')[0];
+                if (!!webViewRoutes[effectPath]) {
+                    var config = webViewRoutes[effectPath];
+                    params = {
+                        src: config.src || '',
+                        allowthirdpartycookies: config.allowthirdpartycookies || false,
+                        trustedurl: config.trustedurl || []
+                    };
+                }
+            } catch (err) {}
+            if (webViewRoutes[uri.split('?')[0]]) {
+                uri = '/pages/__web__view__';
             }
-        } catch (err) {}
-        if (webViewRoutes[uri.split('?')[0]]) {
-            uri = '/pages/__web__view__';
         }
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('&').forEach(function (param) {

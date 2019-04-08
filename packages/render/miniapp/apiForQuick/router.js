@@ -4,7 +4,7 @@ function createRouter(name) {
     return function(obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
-        var webViewRoutes = {};
+        
         var params = {};
         var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
         
@@ -18,26 +18,31 @@ function createRouter(name) {
             return;
         }
 
-        //如果是webview, 跳转到/pages/__web__view__/__web__view__.ux页面
-        try {
-            webViewRoutes = require('./webviewConfig.js');
-            let effectPath = uri.split('?')[0];
-            if (!!webViewRoutes[effectPath]) {
-                let config = webViewRoutes[effectPath];
-                params = {
-                    src: config.src || '',
-                    allowthirdpartycookies: config.allowthirdpartycookies || false,
-                    trustedurl: config.trustedurl || []
+        if ( process.env.ANU_WEBVIEW ) {
+            var webViewRoutes = {};
+            //如果是webview, 跳转到/pages/__web__view__/__web__view__.ux页面
+            try {
+                webViewRoutes = require('./webviewConfig.js');
+                let effectPath = uri.split('?')[0];
+                if (!!webViewRoutes[effectPath]) {
+                    let config = webViewRoutes[effectPath];
+                    params = {
+                        src: config.src || '',
+                        allowthirdpartycookies: config.allowthirdpartycookies || false,
+                        trustedurl: config.trustedurl || []
+                    }
                 }
+                
+            } catch (err) {
+
             }
-            
-        } catch (err) {
 
+            if (webViewRoutes[uri.split('?')[0]]) {
+                uri = '/pages/__web__view__';
+            }
         }
 
-        if (webViewRoutes[uri.split('?')[0]]) {
-            uri = '/pages/__web__view__';
-        }
+        
        
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('&').forEach(function (param) {
