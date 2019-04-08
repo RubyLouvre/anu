@@ -2,7 +2,7 @@ import { runCallbacks } from '../utils.js';
 var router = require('@system.router');
 var device = require('@system.device');
 function createRouter(name) {
-    var brand =  device.getInfoSync && device.getInfoSync() || {};
+    var info =  device.getInfoSync && device.getInfoSync() || {};
     return function(obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);

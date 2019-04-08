@@ -1372,7 +1372,7 @@ function createShortcut() {
 var router = require('@system.router');
 var device$1 = require('@system.device');
 function createRouter(name) {
-    var brand = device$1.getInfoSync && device$1.getInfoSync() || {};
+    var info = device$1.getInfoSync && device$1.getInfoSync() || {};
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
