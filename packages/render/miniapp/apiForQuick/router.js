@@ -1,6 +1,8 @@
 import { runCallbacks } from '../utils.js';
 var router = require('@system.router');
+var device = require('@system.device');
 function createRouter(name) {
+    var brand =  device.getInfoSync && device.getInfoSync() || {};
     return function(obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
@@ -42,7 +44,6 @@ function createRouter(name) {
             }
         }
 
-        
        
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('&').forEach(function (param) {
@@ -54,8 +55,11 @@ function createRouter(name) {
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
-        
-
+        if(info.brand === 'HUAWEI' && typeof getApp !== 'undefined' ){
+           var globalData =  getApp().globalData;
+           var queryObject = globalData.__huaweiQuery || (globalData.__huaweiQuery = {}); 
+           queryObject[uri] = JSON.stringify(params);
+        }
         router[name]({
             uri: uri,
             params: params

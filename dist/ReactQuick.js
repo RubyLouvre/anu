@@ -1370,7 +1370,9 @@ function createShortcut() {
 }
 
 var router = require('@system.router');
+var device$1 = require('@system.device');
 function createRouter(name) {
+    var brand = device$1.getInfoSync && device$1.getInfoSync() || {};
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
@@ -1411,6 +1413,11 @@ function createRouter(name) {
         }).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
+        }
+        if (info.brand === 'HUAWEI' && typeof getApp !== 'undefined') {
+            var globalData = getApp().globalData;
+            var queryObject = globalData.__huaweiQuery || (globalData.__huaweiQuery = {});
+            queryObject[uri] = JSON.stringify(params);
         }
         router[name]({
             uri: uri,
@@ -3299,13 +3306,20 @@ var globalHooks = {
 function getUrlAndQuery(page) {
   var path = page.path;
   var query = {};
-  String(page.uri).replace(/\?(.*)/, function (a, b) {
-    b.split('&').forEach(function (param) {
-      param = param.split('=');
-      query[param[0]] = param[1];
+  if (page.uri) {
+    page.uri.replace(/\?(.*)/, function (a, b) {
+      b.split('&').forEach(function (param) {
+        param = param.split('=');
+        query[param[0]] = param[1];
+      });
+      return '';
     });
-    return '';
-  });
+  } else {
+    var queryObject = getApp().globalData.__huaweiQuery;
+    if (queryObject) {
+      query = queryObject[path];
+    }
+  }
   return [path, query];
 }
 function registerPage(PageClass) {
