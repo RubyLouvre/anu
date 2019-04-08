@@ -21,12 +21,12 @@ const mapColor = {
     '#000000': 'dark',
  };
 function modifyValue(object, patch) {
-    var barColor = object.blacknavigationBarTextStyle, color, bg;
+    var barColor = object.navigationBarTextStyle, color, bg;
     if(barColor!== 'white' && barColor !== 'black'){
         color = mapColor[barColor] 
         if(barColor){
-            cconsole.log(chalk.magenta(`navigationBarTextStyle的值为${barColor},强制转换为${color}`));
-            object.blacknavigationBarTextStyle = color;
+            console.log(chalk.magenta(`navigationBarTextStyle的值为${barColor},强制转换为${color}`));
+            object.navigationBarTextStyle = color;
         }
     }else{
         color = barColor;
