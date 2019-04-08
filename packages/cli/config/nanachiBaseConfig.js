@@ -9,7 +9,7 @@ module.exports = {
                     require.resolve('../nanachi-loader/loaders/fileLoader'),
                     require.resolve('../nanachi-loader'),
                 ],
-                exclude: /node_modules|React/
+                exclude: /node_modules|React|dist|src/,
             },
             {
                 test: /\.(s[ca]ss|less|css)$/,
