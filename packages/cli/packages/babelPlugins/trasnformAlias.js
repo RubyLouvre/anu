@@ -41,27 +41,13 @@ module.exports = (metaData)=>{
                 if (/regenerator-runtime\/runtime/.test(moduleName)) {
                     let regeneratorRuntimePath = utils.getRegeneratorRuntimePath(sourcePath);
                     targetPath = regeneratorRuntimePath;
-                    let distDir = config['buildType'] === 'quick' ? 'src': 'dist';
                     targetPath  = utils.updatePath(
                         regeneratorRuntimePath, 
                         'node_modules', 
-                        distDir + path.sep + 'npm'
+                        'source' + path.sep + 'npm'
                     );
-                    Object.assign(
-                        aliasMap,
-                        utils.resolveAliasPath(sourcePath, { 'regenerator-runtime/runtime': regeneratorRuntimePath } )
-                    );
-                    
-                    // if (!cache[dist]) {
-                    //     queue.push({
-                    //         code: fs.readFileSync(regeneratorRuntimePath, 'utf-8'),
-                    //         path: dist,
-                    //         type: 'npm'
-                    //     });
-                    //     cache[dist] = true;
-                    // }
+                   
                 }
-                // let value = compatiblePath(aliasMap[moduleName]);
                 return resolveRelativePath(getDirname(sourcePath), targetPath);
             }
         }
