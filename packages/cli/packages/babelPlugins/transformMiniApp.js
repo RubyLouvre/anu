@@ -12,7 +12,7 @@ let miniAppPlugin = function(){
             var modules = (opts.anu = {
                 thisMethods: [],
                 staticMethods: [],
-                thisProperties: [],
+                thisProperties: [],//bable7中好像没有用了
                 config: {}, //用于生成对象
                 importComponents: {}, //import xxx form path进来的组件
                 usedComponents: {}, //在<wxml/>中使用<import src="path">的组件

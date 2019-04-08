@@ -19,7 +19,7 @@ class Express extends React.Component {
     };
   }
   config = {
-    navigationBarTextStyle: '#fff',
+    navigationBarTextStyle: 'white',
     navigationBarBackgroundColor: '#0088a4',
     navigationBarTitleText: 'API',
     'background-color': '#eeeeee',
