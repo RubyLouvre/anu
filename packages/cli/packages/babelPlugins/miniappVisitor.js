@@ -341,10 +341,21 @@ module.exports = {
                     if(!t.isObjectExpression(right)){
                        return
                     }
-                    //处理  this.config = {}
+                    //将  this.config 变成 static config
                     var propertyName = astPath.container.property.name
-                    if( propertyName === 'config' && !modules.configIsReady ){                      
-                        transformConfig(modules, expression, buildType)
+                    if( propertyName === 'config' && !modules.configIsReady ){     
+                        //对配置项进行映射                 
+                        transformConfig(modules, expression, buildType);                      
+                        var staticConfig = template(`${modules.className}.config = %%CONFIGS%%;`,{
+                            syntacticPlaceholders: true
+                        })({
+                          CONFIGS: right
+                        }) ;
+                        var classAstPath =  expression.findParent(function (parent) {
+                            return parent.type === 'ClassDeclaration';
+                        });
+                        classAstPath.insertAfter(staticConfig);
+                        expression.remove();
                     }
                     // 为this.globalData添加buildType
                     if( propertyName === 'globalData'){
@@ -501,11 +512,11 @@ module.exports = {
 
             if (bag) {
              //好像不支持render props后，它就没有用了
-                deps[nodeName] ||
-                    (deps[nodeName] = {
-                        set: new Set()
-                    });
-                astPath.componentName = nodeName;
+               // deps[nodeName] ||
+               //     (deps[nodeName] = {
+               //         set: new Set()
+               //     });
+               // astPath.componentName = nodeName;
 
                 try {
                     bag.astPath.remove();
