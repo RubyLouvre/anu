@@ -1357,7 +1357,6 @@ function createShortcut() {
 }
 
 var router = require('@system.router');
-var device$1 = require('@system.device');
 function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';

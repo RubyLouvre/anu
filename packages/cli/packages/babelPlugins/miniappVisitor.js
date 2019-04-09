@@ -13,7 +13,7 @@ const transformConfig = require('./transformConfig')
 const quickFiles = require('../quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
-const helpers = require(`../${buildType}Helpers/index`);
+const helpers = require(`../${config[buildType].helpers}/index`);
 const deps = [];
 //微信的文本节点，需要处理换行符
 const inlineElement = {

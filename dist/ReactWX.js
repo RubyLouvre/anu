@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-09T07
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-09T09
  * IE9+
  */
 
@@ -2614,7 +2614,10 @@ function registerComponent(type, name) {
                     refreshComponent(reactInstances, wx, uuid);
                 });
             },
-            detached: detachComponent
+            detached: detachComponent,
+            error: function error(e) {
+                console.log(e, name);
+            }
         },
         methods: {
             dispatchEvent: dispatchEvent

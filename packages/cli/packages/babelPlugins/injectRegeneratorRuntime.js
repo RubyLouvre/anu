@@ -1,6 +1,6 @@
 let config = require('../config');
 let t = require('@babel/types');
-let hackList = ['wx', 'bu', 'tt', 'quick'];
+let hackList = ['wx', 'bu', 'tt', 'quick','qq'];//这些都不支持async/await
 
 //插入regenerator-runtime/runtime
 let visitor = {

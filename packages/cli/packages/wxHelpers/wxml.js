@@ -7,9 +7,10 @@ const beautify = require('js-beautify');
 const utils = require('../utils');
 const config = require('../config');
 const buildType = config.buildType;
-const attrNameHelper = require(`../${buildType}Helpers/attrName`);
-const attrValueHelper = require(`../${buildType}Helpers/attrValue`);
-const logicHelper = require(`../${buildType}Helpers/logic`);
+const helper = config[buildType].helpers
+const attrNameHelper = require(`../${helper}/attrName`);
+const attrValueHelper = require(`../${helper}/attrValue`);
+const logicHelper = require(`../${helper}/logic`);
 
 function beautifyXml(code){
     return beautify.html(code, {

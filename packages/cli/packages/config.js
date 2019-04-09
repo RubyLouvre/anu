@@ -18,8 +18,8 @@ module.exports = {
     },
     qq: {
         libName: 'ReactWX',
-        styleExt: 'wxss',
-        xmlExt: 'wxml',
+        styleExt: 'qss',
+        xmlExt: 'qml',
         helpers: 'wxHelpers',
         patchComponents: []
     },
