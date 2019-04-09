@@ -1,5 +1,6 @@
 import { toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
+import { getBrandSync } from './apiForQuick/device';
 
 function getDataSetFromAttr(obj) {
     let ret = {};
@@ -19,7 +20,7 @@ export function dispatchEvent(e) {
         return;
     }
     const eventType = toLowerCase(e._type || e.type);
-    const target = e.target;
+    const target = getBrandSync() === 'HUAWEI' ? e.currentTarget: e.target;
     // 小米1040 || 小米1040之前 || 华为在1050前
     var dataset = target.dataset || getDataSetFromAttr(target._attr || target.attr);
     const app = this.$app.$def;

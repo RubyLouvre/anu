@@ -59,7 +59,14 @@ function getSystemInfo(options) {
 }
 
 function getDeviceId(options) {
-    device.getDeviceId(options);
+   return device.getDeviceId(options);
 }
-
-export { getSystemInfo ,getDeviceId};
+var cacheBrand
+function getBrandSync(){
+    if(!cacheBrand && device.getInfoSync){
+       return cacheBrand = device.getInfoSync().brand
+    }else{
+       return cacheBrand
+    }
+}
+export { getSystemInfo ,getDeviceId, getBrandSync};
