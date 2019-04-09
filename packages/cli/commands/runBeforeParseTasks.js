@@ -142,8 +142,8 @@ function getAssetsFile( buildType ) {
 function getProjectConfigFile(buildType) {
     if (buildType === 'quick') return [];
     let fileName = 'project.config.json';
-    let dist = path.join(cwd, 'source', fileName);
     let src = path.join(cwd, fileName);
+    let dist = path.join(cwd, 'dist', fileName);
     if (fs.existsSync(src)) {
         return [
             {
