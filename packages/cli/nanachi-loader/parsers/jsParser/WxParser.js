@@ -30,15 +30,16 @@ class WxParser extends JavascriptParser{
                     }
                 ],
                 require('@babel/plugin-syntax-jsx'),
+                require('../../../packages/babelPlugins/syntaxValidate'),
                 require('../../../packages/babelPlugins/collectTitleBarConfig'),
                 require('../../../packages/babelPlugins/collectWebViewPage'),
                 require('../../../packages/babelPlugins/collectPatchComponents'),
+                ...require('../../../packages/babelPlugins/collectAsyncAwait'),
                 require('../../../packages/babelPlugins/collectDependencies'),
-                // ...require('../../../packages/babelPlugins/validateJsx')(this.collectError),
-                [require('@babel/plugin-transform-template-literals'), { loose: true }],
+                [ require('@babel/plugin-transform-template-literals'), { loose: true }],
                 ...require('../../../packages/babelPlugins/transformMiniApp')(this.filepath),
                 ...require('../../../packages/babelPlugins/transformEnv'),
-                ...require('../../../packages/babelPlugins/injectRegeneratorRuntime'),
+                //...require('../../../packages/babelPlugins/injectRegeneratorRuntime'),
                 require('../../../packages/babelPlugins/transformIfImport'),
                 require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
             ]
@@ -46,6 +47,7 @@ class WxParser extends JavascriptParser{
     }
     async parse() {
         const res = await super.parse();
+        
         this.queues = res.options.anu && res.options.anu.queue || this.queues;
         this.extraModules = res.options.anu && res.options.anu.extraModules || this.extraModules;
         this.queues.push({

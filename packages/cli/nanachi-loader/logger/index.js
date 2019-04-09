@@ -17,6 +17,14 @@ const timerLog = (timer) => {
     console.log(`编译完成，耗时：${timer.getProcessTime()}s`);
 };
 
+const warningLog = ( {id, msg} ) => {
+    console.log(chalk.yellow(`Warning: ${msg}`));
+}
+
+const errorLog = ( {msg} ) => {
+    console.log(chalk.red(`Error: ${msg}`));
+}
+
 const resetNum = () => {
     successNum = 0;
 };
@@ -24,5 +32,7 @@ const resetNum = () => {
 module.exports = {
     successLog,
     resetNum,
-    timerLog
+    timerLog,
+    warningLog,
+    errorLog
 };
