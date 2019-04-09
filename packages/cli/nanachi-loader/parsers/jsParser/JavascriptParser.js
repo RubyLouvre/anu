@@ -16,6 +16,11 @@ class JavascriptParser {
         this.code = code || fs.readFileSync(this.filepath, 'utf-8');
         this.platform = platform;
         this.relativePath = path.relative(path.resolve(process.cwd(), 'source'), filepath);
+        if (/node_modules\/schnee-ui/.test(filepath)) {
+            this.relativePath = path.join('npm', path.relative(path.resolve(process.cwd(), 'node_modules'), filepath));
+        } else {
+            this.relativePath = path.relative(path.resolve(process.cwd(), 'source'), filepath);
+        }
         this._babelPlugin = {};
         this.queues = [];
         this.extraModules = [];

@@ -2,6 +2,10 @@ let config = require('../config');
 const path = require('path');
 const cwd = process.cwd();
 const utils = require('../utils/index');
+
+// 补丁组件目录缓存
+const patchCache = new Set();
+
 /**
  * patchComponents用于搜集文件中的patch components
  * {
@@ -37,10 +41,13 @@ module.exports = ()=>{
                 if (platConfig.jsxPatchNode[fileId].includes(nodeName)) return;
                 platConfig.jsxPatchNode[fileId].push(nodeName);
 
-                const nodeModulePath = path.resolve(cwd, 'node_modules');
-                const npmPath = path.resolve(cwd, 'source/npm');
-                const relativePath = path.relative(nodeModulePath, patchComponentPath);
-                modules.extraModules.push(path.resolve(npmPath, relativePath));
+                // const nodeModulePath = path.resolve(cwd, 'node_modules');
+                // const npmPath = path.resolve(cwd, `${config.buildType === 'quick' ? 'src' : 'dist'}/npm`);
+                // const relativePath = path.relative(nodeModulePath, patchComponentPath);
+                if (!patchCache.has(patchComponentPath)) {
+                    patchCache.add(patchComponentPath);
+                    modules.extraModules.push(patchComponentPath);
+                }
             }
         }
     };

@@ -63,6 +63,11 @@ function fixPath(fileId, dep){
     return path.join(cwd, retPath); 
 }
 
+function nodeModules2Npm(p) {
+    const relativePath = path.relative(path.resolve(cwd, 'node_modules'), p);
+    return path.resolve(cwd, 'source/npm', relativePath);
+}
+
 // TODO: 合并到QuickParser中
 let map = {
     getImportTag: function(uxFile, sourcePath){
@@ -73,11 +78,17 @@ let map = {
             const isWin = utils.isWin();
             const reg = isWin ? /^(\\)/ : /^(\/)/;
             const relativePath = using[i].replace(reg, '.$1');
+            let targetPath = path.resolve(cwd, 'source', relativePath);
+            if (/(node_modules|npm)\/schnee-ui/.test(sourcePath)) {
+                if (/node_modules/.test(sourcePath)) {
+                    sourcePath = nodeModules2Npm(sourcePath);
+                }
+                targetPath = path.resolve(cwd, 'source/npm/schnee-ui', relativePath);
+            }
             let importSrc = path.relative(
                 path.dirname(sourcePath),
-                path.resolve(cwd, 'source', relativePath)
+                targetPath
             );
-            // console.log(relativePath);
             importSrc = utils.isWin() ? importSrc.replace(/\\/g, '/'): importSrc;
             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
         });
@@ -92,37 +103,6 @@ let map = {
         let { cssRes } = uxFile;
         if (!cssRes) return '';
         return `<style>\n${cssRes.css}\n</style>`;
-        // return styleCompilerMap[cssType](cssPath)
-        //     .then(async (res)=>{
-        //         // // 递归编译@import依赖文件
-        //         // res.deps.forEach(dep => {
-        //         //     const code = fs.readFileSync(dep.file, 'utf-8');
-        //         //     needUpdate(dep.file, code,  ()=>{
-        //         //         let exitName = path.extname(dep.file).replace(/\./, '');
-        //         //         styleCompilerMap[exitName](dep.file, code).then(res => {
-        //         //             queue.push({
-        //         //                 code: res.code,
-        //         //                 path: getDist(dep.file),
-        //         //                 type: 'css'
-        //         //             });
-        //         //         });
-        //         //     });
-        //         // });
-        //         // 递归编译@import依赖文件
-        //         for (let i = 0; i < res.deps.length; i++) {
-        //             const dep = res.deps[i];
-        //             const code = fs.readFileSync(dep.file, 'utf-8');
-        //             if (needUpdate(dep.file, code)) {
-        //                 const res = await styleCompilerMap[cssType](dep.file, code);
-        //                 queue.push({
-        //                     code: res.code,
-        //                     path: getDist(dep.file),
-        //                     type: 'css'
-        //                 });
-        //             }
-        //         }
-        //         return `<style>\n${res.code}\n</style>`;
-        //     });
     },
     resolveComponents: function(data, queue){
         let { result, sourcePath, relativePath } = data;
@@ -142,7 +122,7 @@ let map = {
 };
 
 module.exports = async (data, queue)=>{
-    let { sourcePath, result } = data;
+    let { sourcePath, result, relativePath } = data;
     var uxFile = quickFiles[sourcePath];
     //如果没有模板, 并且不是app，则认为这是个纯js模块。
     if (!uxFile || (!uxFile.template && uxFile.type != 'App')) {

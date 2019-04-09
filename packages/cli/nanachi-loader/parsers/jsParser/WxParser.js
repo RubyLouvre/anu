@@ -38,9 +38,9 @@ class WxParser extends JavascriptParser{
                 [require('@babel/plugin-transform-template-literals'), { loose: true }],
                 ...require('../../../packages/babelPlugins/transformMiniApp')(this.filepath),
                 ...require('../../../packages/babelPlugins/transformEnv'),
-                ...require('../../../packages/babelPlugins/injectRegeneratorRuntime'),
+                ...require('../../../packages/babelPlugins/collectRegeneratorRuntime'),
                 require('../../../packages/babelPlugins/transformIfImport'),
-                require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
+                // require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
             ]
         };
     }
