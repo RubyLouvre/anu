@@ -26,13 +26,13 @@ function createRouter(name) {
             try {
                 webViewRoutes = require('./webviewConfig.js');
                 let effectPath = uri.split('?')[0];
-                if (!!webViewRoutes[effectPath]) {
+                if (webViewRoutes[effectPath]) {
                     let config = webViewRoutes[effectPath];
                     params = {
                         src: config.src || '',
                         allowthirdpartycookies: config.allowthirdpartycookies || false,
                         trustedurl: config.trustedurl || []
-                    }
+                    };
                 }
                 
             } catch (err) {
@@ -55,10 +55,10 @@ function createRouter(name) {
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
-        if(info.brand === 'HUAWEI' && typeof getApp !== 'undefined' ){
-           var globalData =  getApp().globalData;
-           var queryObject = globalData.__huaweiQuery || (globalData.__huaweiQuery = {}); 
-           queryObject[uri] = JSON.stringify(params);
+        if (info.brand === 'HUAWEI' && typeof getApp !== 'undefined' ){
+            var globalData =  getApp().globalData;
+            var queryObject = globalData.__huaweiQuery || (globalData.__huaweiQuery = {}); 
+            queryObject[uri] = params;
         }
         router[name]({
             uri: uri,
@@ -75,7 +75,7 @@ export var navigateBack = createRouter('back');
 export var reLaunch = function(obj){
     router.clear();
     redirectTo(obj);
-} 
+}; 
 
 export function makePhoneCall({ phoneNumber, success , fail , complete  }) {
     runCallbacks(function(){
