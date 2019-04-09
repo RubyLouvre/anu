@@ -1,7 +1,6 @@
 import { runCallbacks } from '../utils.js';
 import { getBrandSync } from './device'
 var router = require('@system.router');
-var device = require('@system.device');
 function createRouter(name) {
     return function(obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
@@ -55,17 +54,10 @@ function createRouter(name) {
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
-<<<<<<< HEAD
         if( getBrandSync() === 'HUAWEI' && typeof getApp !== 'undefined' ){
            var globalData =  getApp().globalData;
            var queryObject = globalData.__huaweiQuery || (globalData.__huaweiQuery = {}); 
            queryObject[uri] = JSON.stringify(params);
-=======
-        if (info.brand === 'HUAWEI' && typeof getApp !== 'undefined' ){
-            var globalData =  getApp().globalData;
-            var queryObject = globalData.__huaweiQuery || (globalData.__huaweiQuery = {}); 
-            queryObject[uri] = params;
->>>>>>> 240e382d6c5e491fc67b94ba752fb4f70efda10c
         }
         router[name]({
             uri: uri,

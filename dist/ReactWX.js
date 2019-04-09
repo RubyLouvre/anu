@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-03T03
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-09T07
  * IE9+
  */
 
@@ -2659,6 +2659,9 @@ var React = getWindow().React = {
 var apiContainer = {};
 if (typeof wx != 'undefined') {
     apiContainer = wx;
+} else if (typeof qq != 'undefined') {
+    apiContainer = qq;
+    React.appType = 'qq';
 } else if (typeof tt != 'undefined') {
     apiContainer = tt;
     React.appType = 'tt';

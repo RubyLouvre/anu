@@ -5,6 +5,10 @@ module.exports = [
         isDefault: true
     },
     {
+        buildType: 'qq',
+        des: 'QQ小程序'
+    },
+    {
         buildType: 'ali',
         des: '支付宝小程序'
     },
