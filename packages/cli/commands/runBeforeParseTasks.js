@@ -198,7 +198,7 @@ async function runTask(args){
     }
     
     //copy project.config.json
-    tasks = tasks.concat(getProjectConfigFile(buildType));
+    //tasks = tasks.concat(getProjectConfigFile(buildType));
 
     //copy assets目录下静态资源
     tasks = tasks.concat(getAssetsFile(buildType));
