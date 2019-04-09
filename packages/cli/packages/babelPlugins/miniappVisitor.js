@@ -9,7 +9,7 @@ const config = require('../config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
 const ignoreAttri = require('../quickHelpers/ignoreAttri');
-const transformConfig = require('./transformConfig')
+const transformConfig = require('./transformConfig');
 const quickFiles = require('../quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
@@ -67,8 +67,8 @@ module.exports = {
     ClassExpression: helpers.classDeclaration,
     ClassMethod: {
         enter(astPath, state) {
-            if(!astPath.node){
-                return
+            if (!astPath.node){
+                return;
             }
             let modules = utils.getAnu(state);
             let methodName = astPath.node.key.name;
@@ -110,7 +110,7 @@ module.exports = {
                     }
                 }
                 let fn = utils.createMethod(astPath, methodName);
-                let isStaticMethod = astPath.node.static
+                let isStaticMethod = astPath.node.static;
                 if (methodName === 'render') {
                     helpers.render.enter(
                         astPath,
@@ -118,13 +118,13 @@ module.exports = {
                         modules.className,
                         modules
                     );
-                 }else{
-                    astPath.remove()
-                 }
+                } else {
+                    astPath.remove();
+                }
                 if (isStaticMethod) {
                     // 处理静态方法
                     modules.staticMethods.push(fn);
-                }else{
+                } else {
                     modules.thisMethods.push(fn);
                 }
             } else {
@@ -334,22 +334,22 @@ module.exports = {
     ThisExpression:{
         exit(astPath,state){
             let modules = utils.getAnu(state);
-            if( modules.walkingMethod == 'constructor' ){
-                var expression = astPath.parentPath.parentPath
-                if(expression.type === 'AssignmentExpression'){
-                    var right = expression.node.right
-                    if(!t.isObjectExpression(right)){
-                       return
+            if ( modules.walkingMethod == 'constructor' ){
+                var expression = astPath.parentPath.parentPath;
+                if (expression.type === 'AssignmentExpression'){
+                    var right = expression.node.right;
+                    if (!t.isObjectExpression(right)){
+                        return;
                     }
                     //将  this.config 变成 static config
-                    var propertyName = astPath.container.property.name
-                    if( propertyName === 'config' && !modules.configIsReady ){     
+                    var propertyName = astPath.container.property.name;
+                    if ( propertyName === 'config' && !modules.configIsReady ){     
                         //对配置项进行映射                 
                         transformConfig(modules, expression, buildType);                      
                         var staticConfig = template(`${modules.className}.config = %%CONFIGS%%;`,{
                             syntacticPlaceholders: true
                         })({
-                          CONFIGS: right
+                            CONFIGS: right
                         }) ;
                         var classAstPath =  expression.findParent(function (parent) {
                             return parent.type === 'ClassDeclaration';
@@ -358,19 +358,19 @@ module.exports = {
                         expression.remove();
                     }
                     // 为this.globalData添加buildType
-                    if( propertyName === 'globalData'){
-                       if(modules.componentType === 'App'){
-                           var properties = right.properties
-                           var hasBuildType = properties.some(function(el){
-                             return el.key.name === 'buildType'
-                           });
-                           if(!hasBuildType){
+                    if ( propertyName === 'globalData'){
+                        if (modules.componentType === 'App'){
+                            var properties = right.properties;
+                            var hasBuildType = properties.some(function(el){
+                                return el.key.name === 'buildType';
+                            });
+                            if (!hasBuildType){
                                 properties.push( t.objectProperty(
                                     t.identifier('buildType'),
                                     t.stringLiteral(buildType)
-                                ))
-                           }
-                       }
+                                ));
+                            }
+                        }
                     }
                 }
                
@@ -380,13 +380,13 @@ module.exports = {
     },
     MemberExpression(astPath,state){
         //处理 static config = {}
-        if(astPath.parentPath.type === 'AssignmentExpression'){
+        if (astPath.parentPath.type === 'AssignmentExpression'){
             let modules = utils.getAnu(state);
-            if(!modules.configIsReady &&
+            if (!modules.configIsReady &&
                 astPath.node.object.name === modules.className &&
-                astPath.node.property.name === "config"
-                ){ 
-                transformConfig(modules, astPath.parentPath, buildType)
+                astPath.node.property.name === 'config'
+            ){ 
+                transformConfig(modules, astPath.parentPath, buildType);
             }
         }
     },
@@ -511,12 +511,12 @@ module.exports = {
 
 
             if (bag) {
-             //好像不支持render props后，它就没有用了
-               // deps[nodeName] ||
-               //     (deps[nodeName] = {
-               //         set: new Set()
-               //     });
-               // astPath.componentName = nodeName;
+                //好像不支持render props后，它就没有用了
+                // deps[nodeName] ||
+                //     (deps[nodeName] = {
+                //         set: new Set()
+                //     });
+                // astPath.componentName = nodeName;
 
                 try {
                     bag.astPath.remove();
@@ -602,13 +602,13 @@ module.exports = {
                     var isIdentifier = styleType === 'Identifier';
                     // 华为编辑器行内样式特殊处理
 
-                    if (config.huawei) {
-                        if (styleType === 'ObjectExpression') {
-                            let code = quickhuaweiStyle(expr);
-                            astPath.node.value = t.stringLiteral(code);
-                            return;
-                        }
-                    }
+                    // if (config.huawei) {
+                    //     if (styleType === 'ObjectExpression') {
+                    //         let code = quickhuaweiStyle(expr);
+                    //         astPath.node.value = t.stringLiteral(code);
+                    //         return;
+                    //     }
+                    // }
                     if (
                         isIdentifier ||
                         MemberExpression ||
