@@ -2,7 +2,6 @@ const t = require('@babel/types');
 const generate = require('@babel/generator').default;
 const template = require('@babel/template').default;
 const path = require('path');
-const queue = require('../queue');
 const utils = require('../utils');
 const fs = require('fs-extra');
 const platforms = require('../../consts/platforms');
@@ -255,7 +254,7 @@ module.exports = {
                 var obj = quickFiles[modules.sourcePath];
 
                 if (obj) {
-                    quickConfig(json, modules, queue, utils);
+                    quickConfig(json, modules, modules.queue, utils);
                     obj.config = Object.assign({}, json);
                 }
                 // delete json.usingComponents;

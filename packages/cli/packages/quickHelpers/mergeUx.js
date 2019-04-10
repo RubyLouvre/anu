@@ -30,24 +30,12 @@ let getDist = (filePath) =>{
     return distPath;
 };
 
-const compileSassByPostCss = require('../stylesTransformer/postcssTransformSass');
-const compileLessByPostCss = require('../stylesTransformer/postcssTransformLess');
-
-const styleCompilerMap = {
-    'less': compileLessByPostCss,
-    'css':  compileLessByPostCss,
-    'sass': compileSassByPostCss,
-    'scss': compileSassByPostCss
-};
-
-
 function beautifyUx(code){
     return beautify.html(code, {
         indent: 4,
         //'wrap-line-length': 100
     });
 }
-
 
 function isNodeModulePath(fileId){
     let isWin = utils.isWin();

@@ -4,7 +4,6 @@ const generate = require('@babel/generator').default;
 const t = require('@babel/types');
 const wxmlHelper = require('./wxml');
 const babel = require('@babel/core');
-const queue = require('../queue');
 const utils = require('../utils');
 const config = require('../config');
 //const minifier = require('html-minifier').minify;
