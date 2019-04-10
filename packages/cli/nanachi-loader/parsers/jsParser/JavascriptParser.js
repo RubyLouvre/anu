@@ -1,8 +1,6 @@
 const path = require('path');
 const fs = require('fs');
 const babel = require('@babel/core');
-const generate = require('@babel/generator').default;
-const traverse = require('@babel/traverse').default;
 const cwd = process.cwd();
 
 const getRelativePath = (from, to) => {
