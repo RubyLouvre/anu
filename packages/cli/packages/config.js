@@ -20,7 +20,7 @@ module.exports = {
         libName: 'ReactWX',
         styleExt: 'qss',
         xmlExt: 'qml',
-        helpers: 'wxHelpers',
+        helpers: 'qqHelpers',
         patchComponents: []
     },
     ali: {

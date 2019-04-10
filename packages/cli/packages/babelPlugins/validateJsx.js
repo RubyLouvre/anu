@@ -61,7 +61,7 @@ const visitor = {
 };
 module.exports = (errorStack)=>{
     collectError = errorStack;
-    if (['wx', 'tt'].includes(config.buildType)) {
+    if (['wx', 'tt', 'qq'].includes(config.buildType)) {
         return [
             ()=>{
                 return {
