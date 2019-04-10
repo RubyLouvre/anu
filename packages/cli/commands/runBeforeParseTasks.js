@@ -106,13 +106,19 @@ async function getRemoteReactFile(ReactLibName) {
     ];
 }
 
-function getReactLibFile(ReactLibName) {
+function getReactLibFile(ReactLibName, buildType) {
     let src = path.join(cliRoot, 'lib', ReactLibName);
     let dist = path.join(cwd, 'source', ReactLibName);
-    return [
+    const distPath = path.join(cwd, buildType === 'quick' ? 'src' : 'dist', ReactLibName);
+    return [ 
         {
             id: src,
             dist: dist,
+            ACTION_TYPE: 'COPY'
+        },
+        {
+            id: src,
+            dist: distPath,
             ACTION_TYPE: 'COPY'
         }
     ];
@@ -198,18 +204,10 @@ function needInstallHapToolkit(){
     }
 }
 
-function copyNpmFile(buildType) {
-    const distPath = path.resolve(cwd, buildType === 'quick' ? './src' : './dist');
-    const sourcePath = path.resolve(cwd, 'source');
-    fs.copySync(path.resolve(cwd, './node_modules/regenerator-runtime'), path.resolve(sourcePath, './npm/regenerator-runtime'));
-    fs.copySync(path.resolve(cwd, './node_modules/schnee-ui'), path.resolve(sourcePath, './npm/schnee-ui'));
-}
-
 async function runTask({ buildType, beta, betaUi }){
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
     let tasks  = [];
-
     if (needInstallUiLib(MAP[buildType]['patchComponents'])) {
         // eslint-disable-next-line
         console.log(chalk.green('缺少补丁组件, 正在安装, 请稍候...'));
@@ -226,7 +224,7 @@ async function runTask({ buildType, beta, betaUi }){
         tasks = tasks.concat(await getRemoteReactFile(ReactLibName));
         spinner.succeed(chalk.green.bold(`同步最新的${ReactLibName}成功!`));
     } else {
-        tasks = tasks.concat(getReactLibFile(ReactLibName));
+        tasks = tasks.concat(getReactLibFile(ReactLibName, buildType));
     }
     
     //快应用下需要copy babel.config.js, 合并package.json等
@@ -261,10 +259,10 @@ async function runTask({ buildType, beta, betaUi }){
         await Promise.all(tasks.map(function(task){
             return helpers[task.ACTION_TYPE](task);
         }));
-        copyNpmFile(buildType);
+        // copyNpmFile(buildType);
 
     } catch (err) {
-        
+        console.log(err);
     }
 };
 

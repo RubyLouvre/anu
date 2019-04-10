@@ -47,9 +47,9 @@ class QuickParser extends JavascriptParser {
                 [require('@babel/plugin-transform-template-literals'), { loose: true }],
                 ...require('../../../packages/babelPlugins/transformMiniApp')(this.filepath),
                 ...require('../../../packages/babelPlugins/transformEnv'),
-                ...require('../../../packages/babelPlugins/injectRegeneratorRuntime'),
+                ...require('../../../packages/babelPlugins/collectRegeneratorRuntime'),
                 require('../../../packages/babelPlugins/transformIfImport'),
-                require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
+                // require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
             ]
         };
     }
@@ -85,6 +85,8 @@ class QuickParser extends JavascriptParser {
         }
         // 合并ux文件
         this.queues = result.options.anu && result.options.anu.queue || this.queues;
+        // 解析别名
+        result.code = this.resolveAlias();
         const uxRes = await mergeUx({
             sourcePath: this.filepath,
             result,
@@ -96,7 +98,9 @@ class QuickParser extends JavascriptParser {
             code: uxRes.code,
             extraModules: this.extraModules
         });
+
     }
+    
 }
 
 module.exports = QuickParser;

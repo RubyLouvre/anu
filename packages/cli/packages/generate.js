@@ -14,7 +14,6 @@ module.exports = ()=>{
         if (config.compress && compress[type]) {
             code = compress[type](code);
         }
-        
         path = utils.resolveDistPath(path);
         fs.ensureFileSync(path);
         try {

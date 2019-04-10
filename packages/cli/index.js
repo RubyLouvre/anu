@@ -5,7 +5,6 @@ const NanachiWebpackPlugin = require('./nanachi-loader/plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const globalConfig = require('./packages/config.js');
 const { REACT_LIB_MAP } = require('./consts/index');
-const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
 const nanachiBaseConfig = require('./config/nanachiBaseConfig');
 
 function injectBuildEnv({ buildType, compress, huawei } = {}){
@@ -17,6 +16,11 @@ function injectBuildEnv({ buildType, compress, huawei } = {}){
     }
 }
 
+function getUserAlias(){
+    const json = require(path.resolve(cwd, './package.json'));
+    return json && json.nanachi && json.nanachi.alias || {};
+}
+
 function mergeNanachiConfig(nanachiBaseConfig, {
     entry,
     distPath,
@@ -24,7 +28,16 @@ function mergeNanachiConfig(nanachiBaseConfig, {
     compress,
     plugins
 }) {
-    Object.assign(nanachiBaseConfig, {
+    // 解析别名绝对路径
+    const aliasMap = {
+        '@react': 'source/' + REACT_LIB_MAP[platform],
+        '@components': 'source/components'
+    };
+    Object.assign(aliasMap, getUserAlias());
+    Object.keys(aliasMap).forEach(alias => {
+        aliasMap[alias] = path.resolve(cwd, aliasMap[alias]);
+    });
+    return Object.assign({}, nanachiBaseConfig, {
         entry,
         output: {
             path: distPath,
@@ -37,20 +50,10 @@ function mergeNanachiConfig(nanachiBaseConfig, {
                     from: path.resolve(cwd, 'source/assets'),
                     to: path.resolve(distPath, 'assets')
                 },
-                // copy core react
-                {
-                    from: path.resolve(cwd, 'source', REACT_LIB_MAP[platform]),
-                    to: distPath
-                },
-                // // copy regenerator-runtime
+                // // copy core react
                 // {
-                //     from: path.resolve(cwd, './node_modules/regenerator-runtime'),
-                //     to: path.resolve(distPath, './npm/regenerator-runtime')
-                // },
-                // // copy schnee-ui
-                // {
-                //     from: path.resolve(cwd, './node_modules/schnee-ui'),
-                //     to: path.resolve(distPath, './npm/schnee-ui')
+                //     from: path.resolve(cwd, 'source', REACT_LIB_MAP[platform]),
+                //     to: distPath
                 // }
             ], {
                 copyUnmodified: true
@@ -59,7 +62,10 @@ function mergeNanachiConfig(nanachiBaseConfig, {
                 platform,
                 compress
             })
-        ].concat(plugins)
+        ].concat(plugins),
+        resolve: {
+            alias: aliasMap
+        }
     });
 }
 
@@ -81,21 +87,17 @@ async function nanachi({
         compress,
         huawei
     });
-    // TODO：移除复制assets目录操作，使用copy-webpack-plugin插件完成
-    await runBeforeParseTasks({
-        buildType: platform,
-        beta,
-        betaUi
-    });
-    mergeNanachiConfig(nanachiBaseConfig, {
+    const webpackConfig = mergeNanachiConfig(nanachiBaseConfig, {
         entry,
         distPath,
         platform,
         compress,
+        beta,
+        betaUi,
         plugins
     });
-    
-    const compiler = webpack(nanachiBaseConfig);
+
+    const compiler = webpack(webpackConfig);
     
     if (watch) {
         compiler.watch({}, complete);

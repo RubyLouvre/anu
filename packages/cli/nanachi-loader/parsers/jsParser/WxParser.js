@@ -34,14 +34,14 @@ class WxParser extends JavascriptParser{
                 require('../../../packages/babelPlugins/collectTitleBarConfig'),
                 require('../../../packages/babelPlugins/collectWebViewPage'),
                 require('../../../packages/babelPlugins/collectPatchComponents'),
-                ...require('../../../packages/babelPlugins/collectAsyncAwait'),
+                // ...require('../../../packages/babelPlugins/collectAsyncAwait'),
                 require('../../../packages/babelPlugins/collectDependencies'),
                 [ require('@babel/plugin-transform-template-literals'), { loose: true }],
                 ...require('../../../packages/babelPlugins/transformMiniApp')(this.filepath),
                 ...require('../../../packages/babelPlugins/transformEnv'),
-                //...require('../../../packages/babelPlugins/injectRegeneratorRuntime'),
+                ...require('../../../packages/babelPlugins/collectRegeneratorRuntime'),
                 require('../../../packages/babelPlugins/transformIfImport'),
-                require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
+                // require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
             ]
         };
     }
@@ -53,7 +53,7 @@ class WxParser extends JavascriptParser{
         this.queues.push({
             type: 'js',
             path: this.relativePath,
-            code: res.code,
+            code: this.resolveAlias(res.code),
             extraModules: this.extraModules
         });
     }

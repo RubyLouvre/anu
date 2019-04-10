@@ -41,13 +41,22 @@ module.exports = (metaData)=>{
                 if (/regenerator-runtime\/runtime/.test(moduleName)) {
                     let regeneratorRuntimePath = utils.getRegeneratorRuntimePath(sourcePath);
                     targetPath = regeneratorRuntimePath;
-                    targetPath  = utils.updatePath(
+                    targetPath = utils.updatePath(
                         regeneratorRuntimePath, 
                         'node_modules', 
                         'source' + path.sep + 'npm'
                     );
                    
                 }
+
+
+                if (/\/node_modules\//.test(sourcePath) ) {
+                    sourcePath = sourcePath.replace(/\/node_modules\//, '/dist/npm/');
+                }
+
+                targetPath = targetPath.replace(/\/source\//, '/dist/');
+
+                
                 return resolveRelativePath(getDirname(sourcePath), targetPath);
             }
         }
