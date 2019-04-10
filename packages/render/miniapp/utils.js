@@ -1,4 +1,4 @@
-import { hasOwnProperty, noop, typeNumber, isFn, get } from 'react-core/util';
+import { hasOwnProperty, typeNumber, isFn, get } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 import { Renderer } from 'react-core/createRenderer';
 
@@ -123,11 +123,11 @@ export function runCallbacks ( cb, success, fail, complete ) {
 }
 
 export function useComponent(props) {
-    var is = props.is;
+    //var is = props.is;
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key :  (props['data-instance-uid'] || new Date() - 0);
-    delete props.is;
-    clazz.displayName = is;
+    //delete props.is;
+    clazz.displayName = props.is;
     if (this.ref !== null) {
         props.ref = this.ref;
     }

@@ -1,4 +1,4 @@
-import { isFn } from 'react-core/util'
+import { isFn, emptyObject } from 'react-core/util'
 import { dispatchEvent } from './eventSystem.quick'
 import { onLoad, onUnload, onReady } from './registerPage.all'
 import { callGlobalHook, _getApp } from './utils'
@@ -8,8 +8,7 @@ var globalHooks = {
   onShow: 'onGlobalShow',
   onHide: 'onGlobalHide'
 }
-function getUrlAndQuery (page) {
-  var path = page.path
+function getQuery (page) {
   var query = {}
   if(page.uri){
     page.uri.replace(/\?(.*)/, function (a, b) {
@@ -22,13 +21,13 @@ function getUrlAndQuery (page) {
   }else{
     var queryObject = getApp().globalData.__huaweiQuery;
     if(queryObject){
-      query = queryObject[path]
+      query = queryObject[page.path]
     }
   }
-  return [path, query]
+  return query
 }
 
-export function registerPage (PageClass) {
+export function registerPage (PageClass, path) {
   PageClass.reactInstances = []
   let config = {
     private: {
@@ -38,24 +37,21 @@ export function registerPage (PageClass) {
     },
     dispatchEvent,
     onInit() {
-      var $app = this.$app; // .$def || this.$app._def)
-      var array = getUrlAndQuery(this.$page)
-      var instance = onLoad.call(this, PageClass, array[0], array[1])
-      var pageConfig = instance.config || PageClass.config
-      $app.$$pageConfig =
-        pageConfig && Object.keys(pageConfig).length
+      let app = this.$app; 
+      let instance = onLoad.call(this, PageClass, path, getQuery(this.$page));
+      let pageConfig = PageClass.config || instance.config || emptyObject;
+      app.$$pageConfig = Object.keys(pageConfig).length
           ? pageConfig
-          : null
-    // $app.$$pagePath = array[0]
+          : null;
     },
     onReady: onReady,
     onDestroy: onUnload
   }
   Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
     config[hook] = function (e) {
-      let instance = this.reactInstance
-      let fn = instance[hook]
-      let app = _getApp()
+      let instance = this.reactInstance;
+      let fn = instance[hook];
+      let app = _getApp();
       if (hook === 'onShow') {
         app.$$page = instance.wx
         app.$$pagePath = instance.props.path

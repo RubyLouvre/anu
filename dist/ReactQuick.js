@@ -832,11 +832,9 @@ function runCallbacks(cb, success, fail, complete) {
     }
 }
 function useComponent(props) {
-    var is = props.is;
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    delete props.is;
-    clazz.displayName = is;
+    clazz.displayName = props.is;
     if (this.ref !== null) {
         props.ref = this.ref;
     }
@@ -3289,8 +3287,7 @@ var globalHooks = {
   onShow: 'onGlobalShow',
   onHide: 'onGlobalHide'
 };
-function getUrlAndQuery(page) {
-  var path = page.path;
+function getQuery(page) {
   var query = {};
   if (page.uri) {
     page.uri.replace(/\?(.*)/, function (a, b) {
@@ -3303,12 +3300,12 @@ function getUrlAndQuery(page) {
   } else {
     var queryObject = getApp().globalData.__huaweiQuery;
     if (queryObject) {
-      query = queryObject[path];
+      query = queryObject[page.path];
     }
   }
-  return [path, query];
+  return query;
 }
-function registerPage(PageClass) {
+function registerPage(PageClass, path) {
   PageClass.reactInstances = [];
   var config = {
     private: {
@@ -3318,11 +3315,10 @@ function registerPage(PageClass) {
     },
     dispatchEvent: dispatchEvent,
     onInit: function onInit() {
-      var $app = this.$app;
-      var array = getUrlAndQuery(this.$page);
-      var instance = onLoad.call(this, PageClass, array[0], array[1]);
-      var pageConfig = instance.config || PageClass.config;
-      $app.$$pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
+      var app = this.$app;
+      var instance = onLoad.call(this, PageClass, path, getQuery(this.$page));
+      var pageConfig = PageClass.config || instance.config || emptyObject;
+      app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
     },
     onReady: onReady,
     onDestroy: onUnload
