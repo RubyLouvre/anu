@@ -1,9 +1,12 @@
 const path = require('path');
 const Timer = require('../packages/utils/timer');
-const { resetNum, timerLog } = require('./logger/index');
 const runBeforeParseTasks = require('../commands/runBeforeParseTasks');
 const fs = require('fs-extra');
 const cwd = process.cwd();
+const { resetNum, timerLog, errorLog, warningLog } = require('./logger/index');
+
+
+const errorStack = require('./logger/queue');
 
 const id = 'NanachiWebpackPlugin';
 
@@ -59,6 +62,19 @@ class NanachiWebpackPlugin {
         
         compiler.hooks.done.tap(id, () => {
             this.timer.end();
+
+            
+            errorStack.warning.forEach(function(warning){
+                warningLog(warning);
+            });
+
+            if (errorStack.error.length) {
+                errorStack.error.forEach(function(error){
+                    errorLog(error);
+                });
+                process.exit(1);
+            }
+
             timerLog(this.timer);
             // 删除__npm__目录
             // const npmDir = path.resolve(cwd, 'source/npm');
