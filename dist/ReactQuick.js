@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-03-22
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-10
  */
 
 var arrayPush = Array.prototype.push;
@@ -626,6 +626,49 @@ function createContext(defaultValue, calculateChangedBits) {
     return getContext;
 }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+var device = require('@system.device');
+var DEFAULT_FONT_SIZE = 14;
+function getSystemInfo(options) {
+    if (!options) {
+        console.error('参数格式错误');
+        return;
+    }
+    var success = options.success,
+        fail = options.fail,
+        complete = options.complete;
+    function gotSuccessInfo(rawObject) {
+        var result = {
+            fontSizeSetting: DEFAULT_FONT_SIZE
+        };
+        for (var name in rawObject) {
+            result[mapName[name] || name] = rawObject[name];
+        }
+        success && success(result);
+    }
+    device.getInfo({
+        success: gotSuccessInfo,
+        fail: fail,
+        complete: complete
+    });
+}
+var mapName = _defineProperty({
+    platformVersionCode: "version",
+    osVersionCode: "system",
+    platformVersionName: "platform"
+}, 'platformVersionCode', "SDKVersion");
+function getDeviceId(options) {
+    return device.getDeviceId(options);
+}
+var cacheBrand;
+function getBrandSync() {
+    if (!cacheBrand && device.getInfoSync) {
+        return cacheBrand = device.getInfoSync().brand;
+    } else {
+        return cacheBrand;
+    }
+}
+
 function getDataSetFromAttr(obj) {
     var ret = {};
     for (var name in obj) {
@@ -643,7 +686,7 @@ function dispatchEvent(e) {
         return;
     }
     var eventType = toLowerCase(e._type || e.type);
-    var target = e.target;
+    var target = getBrandSync() === 'HUAWEI' ? e.currentTarget : e.target;
     var dataset = target.dataset || getDataSetFromAttr(target._attr || target.attr);
     var app = this.$app.$def;
     var eventUid = dataset[eventType + 'Uid'];
@@ -820,9 +863,6 @@ function safeClone(originVal) {
     }
     return temp;
 }
-function toRenderProps() {
-    return null;
-}
 
 var HTTP_OK_CODE = 200;
 var JSON_TYPE_STRING = 'json';
@@ -921,9 +961,7 @@ function request(_ref6) {
         if (dataType === JSON_TYPE_STRING) {
             try {
                 data = JSON.parse(data);
-            } catch (error) {
-                return fail(error);
-            }
+            } catch (error) {}
         }
         success({
             statusCode: statusCode,
@@ -1207,60 +1245,6 @@ function setNavigationBarTitle(_ref) {
     }, success, fail, complete);
 }
 
-var device = require('@system.device');
-var DEFAULT_FONT_SIZE = 14;
-function getSystemInfo(options) {
-    if (!options) {
-        console.error('参数格式错误');
-        return;
-    }
-    var success = options.success,
-        fail = options.fail,
-        complete = options.complete;
-    function gotSuccessInfo(_ref) {
-        var brand = _ref.brand,
-            manufacturer = _ref.manufacturer,
-            model = _ref.model,
-            product = _ref.product,
-            osType = _ref.osType,
-            osVersionName = _ref.osVersionName,
-            osVersionCode = _ref.osVersionCode,
-            platformVersionName = _ref.platformVersionName,
-            platformVersionCode = _ref.platformVersionCode,
-            language = _ref.language,
-            region = _ref.region,
-            screenWidth = _ref.screenWidth,
-            screenHeight = _ref.screenHeight,
-            windowWidth = _ref.windowWidth,
-            windowHeight = _ref.windowHeight,
-            screenDensity = _ref.screenDensity;
-        success && success({
-            pixelRatio: screenDensity,
-            brand: brand,
-            model: model,
-            screenWidth: screenWidth,
-            screenHeight: screenHeight,
-            windowWidth: windowWidth,
-            windowHeight: windowHeight,
-            statusBarHeight: 0,
-            language: language,
-            version: platformVersionCode,
-            system: osVersionCode,
-            platform: platformVersionName,
-            fontSizeSetting: DEFAULT_FONT_SIZE,
-            SDKVersion: platformVersionCode
-        });
-    }
-    device.getInfo({
-        success: gotSuccessInfo,
-        fail: fail,
-        complete: complete
-    });
-}
-function getDeviceId(options) {
-    device.getDeviceId(options);
-}
-
 function chooseImage(_ref) {
     var _ref$count = _ref.count,
         count = _ref$count === undefined ? 1 : _ref$count,
@@ -1360,7 +1344,11 @@ function createShortcut() {
                         showToast({ title: '成功创建桌面图标' });
                     },
                     fail: function fail(errmsg, errcode) {
-                        showToast({ title: 'error: ' + errcode + '---' + errmsg });
+                        if (errcode === 200) {
+                            showToast({ title: '请打开系统授权后再试' });
+                            return;
+                        }
+                        console.log(errcode, errmsg);
                     }
                 });
             }
@@ -1373,27 +1361,35 @@ function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
-        var webViewUrls = {};
-        var webViewRoute = '';
+        var params = {};
         var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
         if (urlReg.test(href)) {
-            webViewRoute = href;
-        } else {
-            try {
-                webViewUrls = require('./webviewConfig.js');
-                webViewRoute = webViewUrls[uri];
-            } catch (err) {
-            }
-        }
-        if (webViewRoute) {
             var webview = require('@system.webview');
             webview.loadUrl({
-                url: webViewRoute,
+                url: href,
                 allowthirdpartycookies: true
             });
             return;
         }
-        var params = {};
+        if (process.env.ANU_WEBVIEW) {
+            var webViewRoutes = {};
+            try {
+                webViewRoutes = require('./webviewConfig.js');
+                var effectPath = uri.split('?')[0];
+                if (webViewRoutes[effectPath]) {
+                    var config = webViewRoutes[effectPath];
+                    params = {
+                        src: config.src || '',
+                        allowthirdpartycookies: config.allowthirdpartycookies || false,
+                        trustedurl: config.trustedurl || []
+                    };
+                }
+            } catch (err) {
+            }
+            if (webViewRoutes[uri.split('?')[0]]) {
+                uri = '/pages/__web__view__';
+            }
+        }
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('&').forEach(function (param) {
                 param = param.split('=');
@@ -1403,6 +1399,11 @@ function createRouter(name) {
         }).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
+        }
+        if (getBrandSync() === 'HUAWEI' && typeof getApp !== 'undefined') {
+            var globalData = getApp().globalData;
+            var queryObject = globalData.__huaweiQuery || (globalData.__huaweiQuery = {});
+            queryObject[uri] = params;
         }
         router[name]({
             uri: uri,
@@ -3291,13 +3292,20 @@ var globalHooks = {
 function getUrlAndQuery(page) {
   var path = page.path;
   var query = {};
-  String(page.uri).replace(/\?(.*)/, function (a, b) {
-    b.split('&').forEach(function (param) {
-      param = param.split('=');
-      query[param[0]] = param[1];
+  if (page.uri) {
+    page.uri.replace(/\?(.*)/, function (a, b) {
+      b.split('&').forEach(function (param) {
+        param = param.split('=');
+        query[param[0]] = param[1];
+      });
+      return '';
     });
-    return '';
-  });
+  } else {
+    var queryObject = getApp().globalData.__huaweiQuery;
+    if (queryObject) {
+      query = queryObject[path];
+    }
+  }
   return [path, query];
 }
 function registerPage(PageClass) {
@@ -3344,7 +3352,7 @@ function registerPage(PageClass) {
 
 var appMethods = {
     onLaunch: 'onCreate',
-    onHide: 'onDestory'
+    onHide: 'onDestroy'
 };
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
@@ -3369,7 +3377,6 @@ var React = getWindow().React = {
     isValidElement: isValidElement,
     createContext: createContext,
     toClass: miniCreateClass,
-    toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,

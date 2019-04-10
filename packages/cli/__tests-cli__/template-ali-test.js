@@ -78,3 +78,22 @@ describe('slot', () => {
         );
     });
 });
+
+describe('字符实体 -ali', () => {
+    test('字符实体 -ali', async () => {
+        let code = `return (
+            <div class='page' >
+                 <text>&yen;</text>
+                 <text>&cent;</text>
+                 <text>&pound;</text>
+                 <text>&euro;</text>
+                <text>&copy;</text>
+            </div>
+        );`;
+
+        let template = await getXml(code, BUILD_TYPE);
+        expect(prettifyXml(template)).toMatch(
+            prettifyXml('<view class=\'page\'><text>¥</text><text>¢</text><text>£</text><text>€</text><text>©</text></view>')
+        );
+    });
+});

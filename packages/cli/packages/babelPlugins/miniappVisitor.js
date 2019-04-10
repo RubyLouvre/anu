@@ -4,18 +4,18 @@ const template = require('@babel/template').default;
 const path = require('path');
 const utils = require('../utils');
 const fs = require('fs-extra');
-const platforms = require('../../consts/platforms');
-const deps = [];
 const config = require('../config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
 const ignoreAttri = require('../quickHelpers/ignoreAttri');
 const cwd = process.cwd();
 
+const transformConfig = require('./transformConfig');
 const quickFiles = require('../quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
-const helpers = require(`../${buildType}Helpers/index`);
+const helpers = require(`../${config[buildType].helpers}/index`);
+const deps = [];
 //微信的文本节点，需要处理换行符
 const inlineElement = {
     text: 1,
@@ -68,6 +68,9 @@ module.exports = {
     ClassExpression: helpers.classDeclaration,
     ClassMethod: {
         enter(astPath, state) {
+            if (!astPath.node){
+                return;
+            }
             let modules = utils.getAnu(state);
             let methodName = astPath.node.key.name;
             modules.walkingMethod = methodName;
@@ -97,7 +100,23 @@ module.exports = {
                     }
                 }
                 let fn = utils.createMethod(astPath, methodName);
-                modules.thisMethods.push(fn);
+                let isStaticMethod = astPath.node.static;
+                if (methodName === 'render') {
+                    helpers.render.enter(
+                        astPath,
+                        '有状态组件',
+                        modules.className,
+                        modules
+                    );
+                } else {
+                    astPath.remove();
+                }
+                if (isStaticMethod) {
+                    // 处理静态方法
+                    modules.staticMethods.push(fn);
+                } else {
+                    modules.thisMethods.push(fn);
+                }
             } else {
                 let node = astPath.node;
                 modules.ctorFn = t.functionDeclaration(
@@ -108,30 +127,12 @@ module.exports = {
                     false
                 );
             }
-
-            helpers.render.enter(
-                astPath,
-                '有状态组件',
-                modules.className,
-                modules
-            );
+           
         },
         exit(astPath, state) {
-            var modules = utils.getAnu(state);
-            const methodName = astPath.node.key.name;
-            if (astPath.node.static) {
-                // 处理静态方法
-                var keyValue = t.ObjectProperty(
-                    t.identifier(methodName),
-                    t.functionExpression(
-                        t.identifier('_'),
-                        astPath.node.params,
-                        astPath.node.body
-                    )
-                );
-                modules.staticMethods.push(keyValue);
-            }
+            let methodName = astPath.node.key.name;
             if (methodName === 'render') {
+                let modules = utils.getAnu(state);
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,
                 //而是VariableDeclaration
                 helpers.render.exit(
@@ -140,12 +141,14 @@ module.exports = {
                     modules.className,
                     modules
                 );
+                //在render的前面加入var h = React.createElement;
                 astPath.node.body.body.unshift(
                     template(utils.shortcutOfCreateElement())()
                 );
             }
         }
     },
+
     FunctionDeclaration: {
         //enter里面会转换jsx中的JSXExpressionContainer
         exit(astPath, state) {
@@ -213,22 +216,14 @@ module.exports = {
             };
         });
     },
-    ExportDefaultDeclaration: {
-        exit(astPath, state) {
+
+    Program: {
+        exit(astPath, state){
             var modules = utils.getAnu(state);
-            if (/Page|Component/.test(modules.componentType)) {
-                let declaration = astPath.node.declaration;
-
-                if (declaration.type == 'FunctionDeclaration') {
-                    //将export default function AAA(){}的方法提到前面
-                    astPath.insertBefore(declaration);
-                    astPath.node.declaration = declaration.id;
-                }
-                //延后插入createPage语句在其同名的export语句前
-                registerPageOrComponent(declaration.name, astPath, modules);
-            }
-
-            //将配置对象生成JSON文件
+            /**
+             * 将生成 JSON 文件的逻辑从 ExportDefaultDeclaration 移除
+             * 放入 Program，确保在 babel 的 ast 树解析的最后才执行生成 JSON 文件的逻辑
+             */
             if (!/App|Page|Component/.test(modules.componentType)) {
                 return;
             }
@@ -239,9 +234,9 @@ module.exports = {
                 json.pages = modules.pages;
                 delete modules.pages;
             }
-
+            //支付宝在这里会做属性名转换
             helpers.configName(json, modules.componentType);
-
+       
             var keys = Object.keys(modules.usedComponents),
                 usings;
             if (keys.length) {
@@ -252,30 +247,11 @@ module.exports = {
             }
             if (buildType == 'quick') {
                 var obj = quickFiles[modules.sourcePath];
-
                 if (obj) {
                     quickConfig(json, modules, modules.queue, utils);
                     obj.config = Object.assign({}, json);
                 }
                 // delete json.usingComponents;
-                if (Object.keys(json).length) {
-                    /**
-                     * placeholderPattern:false
-                     * 因为 json 中可能会有大写(如API)的形式字符串
-                     * 模板项目中 pages/demo/apis/index.js 的 config(navigationBarTitleText: 'API')
-                     * placeholderPattern 默认行为 /^[_$A-Z0-9]+$/， 会匹配(API), 
-                     * 就会去 template() 返回的函数中找 API 这个变量导致报错
-                     * template 用法 -> https://babeljs.io/docs/en/babel-template
-                     */
-                    var a = template('0,' + JSON.stringify(json, null, 4), {
-                        placeholderPattern: false
-                    })();
-                    var keyValue = t.ObjectProperty(
-                        t.identifier('config'),
-                        a.expression.expressions[1]
-                    );
-                    modules.thisMethods.push(keyValue);
-                }
                 return;
             } else {
                 if (modules.componentType === 'Component') {
@@ -285,7 +261,6 @@ module.exports = {
 
             //只有非空才生成json文件
             if (Object.keys(json).length) {
-                
                 //配置分包
                 json = require('../utils/setSubPackage')(modules, json);
                 
@@ -294,6 +269,21 @@ module.exports = {
                     code: JSON.stringify(json, null, 4),
                     type: 'json'
                 });
+            }
+        }
+    },
+    ExportDefaultDeclaration: {
+        exit(astPath, state) {
+            var modules = utils.getAnu(state);
+            if (/Page|Component/.test(modules.componentType)) {
+                let declaration = astPath.node.declaration;
+                if (declaration.type == 'FunctionDeclaration') {
+                    //将export default function AAA(){}的方法提到前面
+                    astPath.insertBefore(declaration);
+                    astPath.node.declaration = declaration.id;
+                }
+                //延后插入createPage语句在其同名的export语句前
+                registerPageOrComponent(declaration.name, astPath, modules);
             }
         }
     },
@@ -332,60 +322,66 @@ module.exports = {
             }
         }
     },
-
-    // visitor 中的 ClassProperty 没有访问, 
-    // 使用 AssignmentExpression 解析 config 和 globalData
-    // static 属性会自动挂载到 类
-    AssignmentExpression: {
-        exit(astPath, state) {
-            const member = generate(astPath.get('left').node).code;
-            const isObj = t.isObjectExpression(astPath.get('right').node);
+    ThisExpression:{
+        exit(astPath,state){
             let modules = utils.getAnu(state);
-            // 判断格式是否为： this.config = {}
-            if (member === 'this.config' && isObj) {
-                if (/App|Page|Component/.test(modules.componentType)) {
-                    try {
-                        var json = eval('0,' + generate(astPath.get('right').node).code);
-                        Object.assign(modules.config, json);
-                        //不同小程序的tabBar数量可能不存在，默认使用list
-                        var tabBar = modules.config.tabBar;
-                        //如果存在以buildType+"List"的列表，那么将它改成默认的list
-                        if (tabBar && tabBar[buildType+'List']){
-                            tabBar.list = tabBar[buildType+'List'];
-                            
-                            platforms.forEach(function(el){
-                                delete tabBar[el.buildType+'List'];
+            if ( modules.walkingMethod == 'constructor' ){
+                var expression = astPath.parentPath.parentPath;
+                if (expression.type === 'AssignmentExpression'){
+                    var right = expression.node.right;
+                    if (!t.isObjectExpression(right)){
+                        return;
+                    }
+                    //将  this.config 变成 static config
+                    var propertyName = astPath.container.property.name;
+                    if ( propertyName === 'config' && !modules.configIsReady ){     
+                        //对配置项进行映射                 
+                        transformConfig(modules, expression, buildType);                      
+                        var staticConfig = template(`${modules.className}.config = %%CONFIGS%%;`,{
+                            syntacticPlaceholders: true
+                        })({
+                            CONFIGS: right
+                        }) ;
+                        var classAstPath =  expression.findParent(function (parent) {
+                            return parent.type === 'ClassDeclaration';
+                        });
+                        classAstPath.insertAfter(staticConfig);
+                        expression.remove();
+                    }
+                    // 为this.globalData添加buildType
+                    if ( propertyName === 'globalData'){
+                        if (modules.componentType === 'App'){
+                            var properties = right.properties;
+                            var hasBuildType = properties.some(function(el){
+                                return el.key.name === 'buildType';
                             });
-
+                            if (!hasBuildType){
+                                properties.push( t.objectProperty(
+                                    t.identifier('buildType'),
+                                    t.stringLiteral(buildType)
+                                ));
+                            }
                         }
-                    } catch (e) {
-                        console.log('eval json error', e);
                     }
                 }
+               
             }
-            // 判断格式是否为： this.globalData = {}
-            if (member === 'this.globalData' && isObj && modules.componentType === 'App') {
-                // 如果没有 buildType 属性, 在 globalData 中插入平台buildType
-                if (!generate(astPath.get('right').node).code.includes('buildType')) {
-                    astPath.get('right').node.properties.push(
-                        t.objectProperty(
-                            t.identifier('buildType'),
-                            t.stringLiteral(config.buildType)
-                        )
-                    );
-                    var thisMember = t.assignmentExpression(
-                        '=',
-                        t.memberExpression(
-                            t.identifier('this'),
-                            t.identifier('globalData')
-                        ),
-                        astPath.get('right').node
-                    );
-                    modules.thisProperties.push(thisMember);
-                }
+           
+        }
+    },
+    MemberExpression(astPath,state){
+        //处理 static config = {}
+        if (astPath.parentPath.type === 'AssignmentExpression'){
+            let modules = utils.getAnu(state);
+            if (!modules.configIsReady &&
+                astPath.node.object.name === modules.className &&
+                astPath.node.property.name === 'config'
+            ){ 
+                transformConfig(modules, astPath.parentPath, buildType);
             }
         }
     },
+    
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
@@ -485,12 +481,9 @@ module.exports = {
                     let iconReg = /\s*&#x/i;
                     if (iconReg.test(iconValue)) {
                         children.length = 0;
-
                     }
                 }
-
             }
-
 
             let modules = utils.getAnu(state);
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
@@ -509,11 +502,12 @@ module.exports = {
 
 
             if (bag) {
-                deps[nodeName] ||
-                    (deps[nodeName] = {
-                        set: new Set()
-                    });
-                astPath.componentName = nodeName;
+                //好像不支持render props后，它就没有用了
+                // deps[nodeName] ||
+                //     (deps[nodeName] = {
+                //         set: new Set()
+                //     });
+                // astPath.componentName = nodeName;
 
                 try {
                     // 存下删除的依赖路径
@@ -530,6 +524,7 @@ module.exports = {
 
                 // eslint-disable-next-line
                 var attrs = astPath.node.attributes;
+                // ?？？这个还有用吗
                 modules.is && modules.is.push(nodeName);
                 attrs.push(
                     t.JSXAttribute(
@@ -567,9 +562,10 @@ module.exports = {
             let parentPath = astPath.parentPath;
             let modules = utils.getAnu(state);
 
-            let srcValue = attrValue && attrValue.value;
+          
             //处理静态资源@assets/xxx.png别名
             if (t.isStringLiteral(attrValue)) {
+                let srcValue = attrValue && attrValue.value;
                 if (attrName === 'src' && /^(@assets)/.test(srcValue)) {
                     let realAssetsPath = path.join(
                         process.cwd(),
@@ -587,7 +583,6 @@ module.exports = {
                     astPath.node.value = t.stringLiteral(value.slice(1, -1));
                 }
             } else if (t.isJSXExpressionContainer(attrValue)) {
-
                 let attrs = parentPath.node.attributes;
                 let expr = attrValue.expression;
                 let nodeName = parentPath.node.name.name;
@@ -599,14 +594,13 @@ module.exports = {
                     var isIdentifier = styleType === 'Identifier';
                     // 华为编辑器行内样式特殊处理
 
-                    if (config.huawei) {
-                        if (styleType === 'ObjectExpression') {
-                            let code = quickhuaweiStyle(expr);
-                            astPath.node.value = t.stringLiteral(code);
-                            return;
-                        }
-
-                    }
+                    // if (config.huawei) {
+                    //     if (styleType === 'ObjectExpression') {
+                    //         let code = quickhuaweiStyle(expr);
+                    //         astPath.node.value = t.stringLiteral(code);
+                    //         return;
+                    //     }
+                    // }
                     if (
                         isIdentifier ||
                         MemberExpression ||
@@ -700,18 +694,18 @@ module.exports = {
     JSXText(astPath) {
         //去掉内联元素内部的所有换行符
         if (astPath.parentPath.type == 'JSXElement') {
-            var parentTagName = utils.getNodeName(astPath.parentPath.node);
-            var value = astPath.node.extra.raw =  astPath.node.extra.rawValue
-            value = value.trim();
+            var textNode = astPath.node;
+            var value = textNode.extra.raw = textNode.extra.rawValue.trim();
             if (value === '') {
                 astPath.remove();
                 return;
             }
+            var parentTagName = utils.getNodeName(astPath.parentPath.node);
             if (
                 /quick|wx/.test(config.buildType) &&
                 inlineElement[parentTagName]
             ) {
-                astPath.node.value = value;
+                textNode.value = value;
             }
         }
     },

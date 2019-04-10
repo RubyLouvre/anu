@@ -127,7 +127,7 @@ describe('loop 简单情况', () => {
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
-          <block s-if="state.array.length">
+          <block s-if="{{state.array.length}}">
           <block s-for="{{state.array}}" s-for-item="item" s-for-index="index" s-key="*this">
           <view>{{item.item}}</view>
           </block>
@@ -154,7 +154,7 @@ describe('loop 简单情况', () => {
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
-          <block s-if="state.array && state.array.length">
+          <block s-if="{{state.array && state.array.length}}">
             <block s-for="{{state.array}}" s-for-item="item" s-for-index="i253">
               <view>{{item.item}}</view>
             </block>
@@ -187,7 +187,7 @@ describe('loop 简单情况', () => {
           <block s-for="{{state.multiArr}}" s-for-item="item" s-for-index="i185">
             <view>
               <block s-for="{{item.list}}" s-for-item="item2" s-for-index="i284">
-                <block s-if="state.isOk">
+                <block s-if="{{state.isOk}}">
                   <text>{{item2}}</text>
                 </block>
                 <block s-elif="true">

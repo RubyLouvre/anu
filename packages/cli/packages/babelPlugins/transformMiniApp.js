@@ -10,9 +10,11 @@ let miniAppPlugin = function(){
         manipulateOptions(opts) {
             //解析每个文件前执行一次
             var modules = (opts.anu = {
+               // className: "",//组件的名字
+               // parentName: "",//组件的父类的名字
                 thisMethods: [],
                 staticMethods: [],
-                thisProperties: [],
+                thisProperties: [],//bable7中好像没有用了
                 config: {}, //用于生成对象
                 importComponents: {}, //import xxx form path进来的组件
                 usedComponents: {}, //在<wxml/>中使用<import src="path">的组件

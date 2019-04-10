@@ -1,7 +1,6 @@
 // 过滤快应用中不支持的属性
 
 module.exports = function ignoreAttri(astPath, nodeName) {
-
     
     if (attributes[nodeName]) {
         astPath.node.attributes = astPath.node.attributes.filter(function (el) {

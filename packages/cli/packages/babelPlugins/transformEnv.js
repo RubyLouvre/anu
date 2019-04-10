@@ -7,7 +7,8 @@ module.exports = [
         {
             env: {
                 ANU_ENV: config['buildType'],
-                BUILD_ENV: process.env.BUILD_ENV
+                ANU_WEBVIEW: process.env.ANU_WEBVIEW,  //在快应用 createRouter 中用
+                BUILD_ENV: process.env.BUILD_ENV,
             }
         }
     ],

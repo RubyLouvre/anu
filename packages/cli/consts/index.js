@@ -4,6 +4,7 @@ const REACT_LIB_MAP = {
     bu: 'ReactBu.js',
     quick: 'ReactQuick.js',
     h5: 'ReactH5.js',
+    qq: 'ReactWX.js',
     tt: 'ReactWX.js'
 };
 
