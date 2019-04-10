@@ -23,7 +23,7 @@ module.exports = function({
             filename: 'index.bundle.js'
         },
         module: {
-            noParse: /node_modules\/(?!schnee-ui\/)|React/,
+            noParse: /React/,
             rules: [
                 {
                     test: /\.jsx?$/,
@@ -31,7 +31,23 @@ module.exports = function({
                         require.resolve('../nanachi-loader/loaders/fileLoader'),
                         require.resolve('../nanachi-loader'),
                     ],
-                    exclude: /node_modules\/(?!schnee-ui\/)|React/,
+                    exclude: /node_modules\/(?!schnee-ui\/)/,
+                },
+                {
+                    test: /node_modules\/(?!schnee-ui\/)/,
+                    use: [
+                        require.resolve('../nanachi-loader/loaders/nodeFileLoader'),
+                        // {
+                        //     loader: 'file-loader',
+                        //     options: {
+                        //         outputPath(url, resourcePath) {
+                        //             // 删除第一个node_modules前的路径
+                        //             const relativePath = resourcePath.replace(/^.+?\/node_modules\//, '');
+                        //             return path.join('npm', relativePath);
+                        //         },
+                        //     }
+                        // }
+                    ]
                 },
                 {
                     test: /\.(s[ca]ss|less|css)$/,
