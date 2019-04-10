@@ -85,6 +85,8 @@ class QuickParser extends JavascriptParser {
         }
         // 合并ux文件
         this.queues = result.options.anu && result.options.anu.queue || this.queues;
+        // 解析别名
+        result.code = this.resolveAlias();
         const uxRes = await mergeUx({
             sourcePath: this.filepath,
             result,
@@ -96,7 +98,9 @@ class QuickParser extends JavascriptParser {
             code: uxRes.code,
             extraModules: this.extraModules
         });
+
     }
+    
 }
 
 module.exports = QuickParser;

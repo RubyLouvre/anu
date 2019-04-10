@@ -51,7 +51,7 @@ class WxParser extends JavascriptParser{
         this.queues.push({
             type: 'js',
             path: this.relativePath,
-            code: res.code,
+            code: this.resolveAlias(res.code),
             extraModules: this.extraModules
         });
     }

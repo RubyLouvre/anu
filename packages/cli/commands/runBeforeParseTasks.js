@@ -106,11 +106,11 @@ async function getRemoteReactFile(ReactLibName) {
     ];
 }
 
-function getReactLibFile(ReactLibName) {
+function getReactLibFile(ReactLibName, buildType) {
     let src = path.join(cliRoot, 'lib', ReactLibName);
     let dist = path.join(cwd, 'source', ReactLibName);
-    const patchPath = path.join(cwd, 'node_modules/schnee-ui', ReactLibName);
-    return [
+    const distPath = path.join(cwd, buildType === 'quick' ? 'src' : 'dist', ReactLibName);
+    return [ 
         {
             id: src,
             dist: dist,
@@ -118,7 +118,7 @@ function getReactLibFile(ReactLibName) {
         },
         {
             id: src,
-            dist: patchPath,
+            dist: distPath,
             ACTION_TYPE: 'COPY'
         }
     ];
@@ -204,13 +204,6 @@ function needInstallHapToolkit(){
     }
 }
 
-function copyNpmFile(buildType) {
-    const distPath = path.resolve(cwd, buildType === 'quick' ? './src' : './dist');
-    // const sourcePath = path.resolve(cwd, 'source');
-    fs.copySync(path.resolve(cwd, './node_modules/regenerator-runtime'), path.resolve(distPath, './npm/regenerator-runtime'));
-    fs.copySync(path.resolve(cwd, './node_modules/schnee-ui'), path.resolve(distPath, './npm/schnee-ui'));
-}
-
 async function runTask({ buildType, beta, betaUi }){
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
@@ -231,7 +224,7 @@ async function runTask({ buildType, beta, betaUi }){
         tasks = tasks.concat(await getRemoteReactFile(ReactLibName));
         spinner.succeed(chalk.green.bold(`同步最新的${ReactLibName}成功!`));
     } else {
-        tasks = tasks.concat(getReactLibFile(ReactLibName));
+        tasks = tasks.concat(getReactLibFile(ReactLibName, buildType));
     }
     
     //快应用下需要copy babel.config.js, 合并package.json等
