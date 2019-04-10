@@ -39,15 +39,16 @@ class QuickParser extends JavascriptParser {
                     }
                 ],
                 require('@babel/plugin-syntax-jsx'),
+                require('../../../packages/babelPlugins/syntaxValidate'),
+                require('../../../packages/babelPlugins/collectDependencies'),
                 require('../../../packages/babelPlugins/collectTitleBarConfig'),
                 require('../../../packages/babelPlugins/collectWebViewPage'),
-                require('../../../packages/babelPlugins/collectPatchComponents'),
-                require('../../../packages/babelPlugins/collectDependencies'),
-                // ...require('../../../packages/babelPlugins/validateJsx')(this.collectError),
-                [require('@babel/plugin-transform-template-literals'), { loose: true }],
-                ...require('../../../packages/babelPlugins/transformMiniApp')(this.filepath),
+                require('../../../packages/babelPlugins/patchComponents'),
+                ...require('../../../packages/babelPlugins/patchAsyncAwait'),
                 ...require('../../../packages/babelPlugins/transformEnv'),
-                ...require('../../../packages/babelPlugins/collectRegeneratorRuntime'),
+                
+                [ require('@babel/plugin-transform-template-literals'), { loose: true }],
+                ...require('../../../packages/babelPlugins/transformMiniApp')(this.filepath),
                 require('../../../packages/babelPlugins/transformIfImport'),
                 // require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
             ]
