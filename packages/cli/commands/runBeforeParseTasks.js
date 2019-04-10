@@ -181,16 +181,6 @@ const helpers = {
     }
 };
 
-function needInstallUiLib(jsxPatchNode) {
-    if ( jsxPatchNode.length === 0 ) return false; //没有需要patch的组件
-    try {
-        nodeResolve.sync('schnee-ui', { basedir: process.cwd() });
-        
-        return false;
-    } catch (err) {
-        return true;
-    }
-}
 function needInstallHapToolkit(){
     //检查本地是否安装快应用的hap-toolkit工具
     try {
@@ -208,11 +198,7 @@ async function runTask({ buildType, beta, betaUi }){
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
     let tasks  = [];
-    if (needInstallUiLib(MAP[buildType]['patchComponents'])) {
-        // eslint-disable-next-line
-        console.log(chalk.green('缺少补丁组件, 正在安装, 请稍候...'));
-        utils.installer('schnee-ui');
-    }
+    
 
     if (betaUi) {
         downloadSchneeUI();
