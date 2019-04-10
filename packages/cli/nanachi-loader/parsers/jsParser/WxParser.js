@@ -33,13 +33,11 @@ class WxParser extends JavascriptParser{
                 require('../../../packages/babelPlugins/syntaxValidate'),
                 require('../../../packages/babelPlugins/collectTitleBarConfig'),
                 require('../../../packages/babelPlugins/collectWebViewPage'),
-                require('../../../packages/babelPlugins/collectPatchComponents'),
-                // ...require('../../../packages/babelPlugins/collectAsyncAwait'),
                 require('../../../packages/babelPlugins/collectDependencies'),
                 [ require('@babel/plugin-transform-template-literals'), { loose: true }],
                 ...require('../../../packages/babelPlugins/transformMiniApp')(this.filepath),
                 ...require('../../../packages/babelPlugins/transformEnv'),
-                ...require('../../../packages/babelPlugins/collectRegeneratorRuntime'),
+                ...require('../../../packages/babelPlugins/patchAsyncAwait'),
                 require('../../../packages/babelPlugins/transformIfImport'),
                 // require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
             ]
