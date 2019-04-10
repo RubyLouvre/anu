@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-09
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-10
  */
 
 var arrayPush = Array.prototype.push;
@@ -1403,7 +1403,7 @@ function createRouter(name) {
         if (getBrandSync() === 'HUAWEI' && typeof getApp !== 'undefined') {
             var globalData = getApp().globalData;
             var queryObject = globalData.__huaweiQuery || (globalData.__huaweiQuery = {});
-            queryObject[uri] = JSON.stringify(params);
+            queryObject[uri] = params;
         }
         router[name]({
             uri: uri,
