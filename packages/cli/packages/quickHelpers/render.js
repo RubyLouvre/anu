@@ -80,6 +80,17 @@ exports.exit = function (astPath, type, componentName, modules) {
      ${wxml}
    </anu-page-wrapper>
 </template>`;
+                    if (config.huawei) {
+                        quickFile.template = `
+<import name="anu-page-wrapper" src="${pageWraperPath}"></import>
+<template>
+   <div>
+   <anu-page-wrapper>
+     ${wxml}
+   </anu-page-wrapper>
+   </div>
+</template>`;
+                    }
                 } else {
                     quickFile.template = `
 <template>
