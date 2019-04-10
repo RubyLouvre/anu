@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-03-22
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -821,9 +821,6 @@ function safeClone(originVal) {
     }
     return temp;
 }
-function toRenderProps() {
-    return null;
-}
 
 var HTTP_OK_CODE = 200;
 var JSON_TYPE_STRING = 'json';
@@ -1361,7 +1358,11 @@ function createShortcut() {
                         showToast({ title: '成功创建桌面图标' });
                     },
                     fail: function fail(errmsg, errcode) {
-                        showToast({ title: 'error: ' + errcode + '---' + errmsg });
+                        if (errcode === 200) {
+                            showToast({ title: '请打开系统授权后再试' });
+                            return;
+                        }
+                        console.log(errcode, errmsg);
                     }
                 });
             }
@@ -1374,27 +1375,34 @@ function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
-        var webViewUrls = {};
-        var webViewRoute = '';
+        var params = {};
         var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
         if (urlReg.test(href)) {
-            webViewRoute = href;
-        } else {
-            try {
-                webViewUrls = require('./webviewConfig.js');
-                webViewRoute = webViewUrls[uri];
-            } catch (err) {
-            }
-        }
-        if (webViewRoute) {
             var webview = require('@system.webview');
             webview.loadUrl({
-                url: webViewRoute,
+                url: href,
                 allowthirdpartycookies: true
             });
             return;
         }
-        var params = {};
+        if (process.env.ANU_WEBVIEW) {
+            var webViewRoutes = {};
+            try {
+                webViewRoutes = require('./webviewConfig.js');
+                var effectPath = uri.split('?')[0];
+                if (!!webViewRoutes[effectPath]) {
+                    var config = webViewRoutes[effectPath];
+                    params = {
+                        src: config.src || '',
+                        allowthirdpartycookies: config.allowthirdpartycookies || false,
+                        trustedurl: config.trustedurl || []
+                    };
+                }
+            } catch (err) {}
+            if (webViewRoutes[uri.split('?')[0]]) {
+                uri = '/pages/__web__view__';
+            }
+        }
         uri = uri.replace(/\?(.*)/, function (a, b) {
             b.split('&').forEach(function (param) {
                 param = param.split('=');
@@ -3345,7 +3353,7 @@ function registerPage(PageClass) {
 
 var appMethods = {
     onLaunch: 'onCreate',
-    onHide: 'onDestory'
+    onHide: 'onDestroy'
 };
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
@@ -3370,7 +3378,6 @@ var React = getWindow().React = {
     isValidElement: isValidElement,
     createContext: createContext,
     toClass: miniCreateClass,
-    toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,

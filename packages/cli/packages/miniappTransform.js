@@ -19,12 +19,29 @@ async function transform(sourcePath, resolvedIds, originalCode) {
 
     //跳过 React 编译
     if ( isReact(sourcePath) ) {
-        queue.push({
-            code: originalCode,
-            type: 'js',
-            path: utils.updatePath(sourcePath, config.sourceDir, 'dist') 
-        });
-       
+        babel.transform(
+            originalCode, 
+            {
+                configFile: false,
+                babelrc: false,
+                comments: false,
+                plugins: [
+                    ...require('./babelPlugins/transformEnv'),
+                ]
+            },
+            function(err, result){
+                if (err) {
+                    console.log(err);
+                    process.exit(1);
+                }
+
+                queue.push({
+                    code: result.code,
+                    type: 'js',
+                    path: utils.updatePath(sourcePath, config.sourceDir, 'dist') 
+                });
+            }
+        );
         return;
     }
 

@@ -11,14 +11,20 @@ var globalHooks = {
 function getUrlAndQuery (page) {
   var path = page.path
   var query = {}
-  String(page.uri).replace(/\?(.*)/, function (a, b) {
-    b.split('&').forEach(function (param) {
-      param = param.split('=')
-      query[param[0]] = param[1]
+  if(page.uri){
+    page.uri.replace(/\?(.*)/, function (a, b) {
+      b.split('&').forEach(function (param) {
+        param = param.split('=')
+        query[param[0]] = param[1]
+      })
+      return ''
     })
-    return ''
-  })
-
+  }else{
+    var queryObject = getApp().globalData.__huaweiQuery;
+    if(queryObject){
+      query = queryObject[path]
+    }
+  }
   return [path, query]
 }
 

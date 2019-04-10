@@ -24,7 +24,10 @@ export function registerComponent (type, name) {
                     refreshComponent(reactInstances, wx, uuid);
                 });
             },
-            detached: detachComponent
+            detached: detachComponent,
+            error: function(e){
+                console.log(e, name)
+            }
         },
         methods: {
             dispatchEvent: dispatchEvent

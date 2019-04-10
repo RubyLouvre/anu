@@ -99,9 +99,7 @@ export function request({
         if (dataType === JSON_TYPE_STRING) {
             try {
                 data = JSON.parse(data);
-            } catch (error) {
-                return fail(error);
-            }
+            } catch (error) {}
         }
 
         success({

@@ -70,7 +70,7 @@ class Global extends React.Component {
 	        backgroundTextStyle: 'light',
 	        // navigationBarBackgroundColor: '#0088a4',
 	        navigationBarTitleText: 'mpreact',
-	        navigationBarTextStyle: '#fff'
+			navigationBarTextStyle: 'white'
 	    },
 	    tabBar: {
 	        color: '#929292',

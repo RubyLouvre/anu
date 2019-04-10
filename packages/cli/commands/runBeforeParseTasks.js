@@ -151,8 +151,8 @@ function getAssetsFile( buildType ) {
 function getProjectConfigFile(buildType) {
     if (buildType === 'quick') return [];
     let fileName = 'project.config.json';
-    let dist = path.join(cwd, 'source', fileName);
     let src = path.join(cwd, fileName);
+    let dist = path.join(cwd, 'dist', fileName);
     if (fs.existsSync(src)) {
         return [
             {
@@ -173,7 +173,6 @@ const helpers = {
     },
     WRITE: function( {id, content} ) {
         fs.ensureFileSync(id);
-        
         return fs.writeFile(id, content);
     },
     REMOVE: function( {id} ) {
@@ -243,29 +242,30 @@ async function runTask({ buildType, beta, betaUi }){
     }
     
     //copy project.config.json
-    tasks = tasks.concat(getProjectConfigFile(buildType));
+    //tasks = tasks.concat(getProjectConfigFile(buildType));
 
     //copy assets目录下静态资源
     tasks = tasks.concat(getAssetsFile(buildType));
 
-    //copy 
-
     try {
         //每次build时候, 必须先删除'dist', 'build', 'sign', 'src', 'babel.config.js'等等冗余文件或者目录
-        await Promise.all(getRubbishFiles().map(function(task){
-            return helpers[task.ACTION_TYPE](task);
+        await Promise.all(getRubbishFiles(buildType).map(function(task){
+            if (helpers[task.ACTION_TYPE]) {
+                return helpers[task.ACTION_TYPE](task);
+            }
         }));
 
         await Promise.all(tasks.map(function(task){
-            return helpers[task.ACTION_TYPE](task);
+            if (helpers[task.ACTION_TYPE]) {
+                return helpers[task.ACTION_TYPE](task);
+            }
         }));
-        // copyNpmFile(buildType);
-
     } catch (err) {
+        // eslint-disable-next-line
         console.log(err);
+        process.exit(1);
     }
-};
-
+}
 
 module.exports = async function(args){
     await runTask(args);

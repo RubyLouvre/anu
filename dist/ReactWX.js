@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-03-22T11
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-09T09
  * IE9+
  */
 
@@ -1044,9 +1044,6 @@ function safeClone(originVal) {
         }
     }
     return temp;
-}
-function toRenderProps() {
-    return null;
 }
 
 var webview = {};
@@ -2617,7 +2614,10 @@ function registerComponent(type, name) {
                     refreshComponent(reactInstances, wx, uuid);
                 });
             },
-            detached: detachComponent
+            detached: detachComponent,
+            error: function error(e) {
+                console.log(e, name);
+            }
         },
         methods: {
             dispatchEvent: dispatchEvent
@@ -2650,7 +2650,6 @@ var React = getWindow().React = {
     isValidElement: isValidElement,
     createContext: createContext,
     toClass: miniCreateClass,
-    toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
@@ -2663,6 +2662,9 @@ var React = getWindow().React = {
 var apiContainer = {};
 if (typeof wx != 'undefined') {
     apiContainer = wx;
+} else if (typeof qq != 'undefined') {
+    apiContainer = qq;
+    React.appType = 'qq';
 } else if (typeof tt != 'undefined') {
     apiContainer = tt;
     React.appType = 'tt';

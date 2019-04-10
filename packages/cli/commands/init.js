@@ -56,6 +56,7 @@ function outputLog({ appName, appPath }) {
                    \t或使用nanachi watch:quick 构建快应用
                    \t或使用nanachi watch:quick --huawei 构建快应用
                    \t或使用nanachi watch:bu 构建百度智能小程序
+                   \t或使用nanachi watch:qq 构建QQ小程序
                    \t或使用nanachi watch:h5 构建h5`);
     console.log();
     console.log(chalk.green('nanachi build'));
@@ -63,8 +64,9 @@ function outputLog({ appName, appPath }) {
                    \t或使用nanachi build:ali 构建支付宝小程序
                    \t或使用nanachi build:tt 构建头条小程序
                    \t或使用nanachi build:quick 构建快应用
-                   \t或使用nanachi watch:quick --huawei 构建快应用
+                   \t或使用nanachi build:quick --huawei 构建快应用
                    \t或使用nanachi build:bu 构建百度智能小程序
+                   \t或使用nanachi build:qq 构建QQ小程序
                    \t或使用nanachi build:h5 构建h5`);
     console.log();
     console.log(

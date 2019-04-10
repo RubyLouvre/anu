@@ -79,7 +79,7 @@ function buildAction(buildType, compileType) {
         args['buildType'] = buildType;
         if (compileType === 'watch') { args['watch'] = true; }
         buildType === 'h5'
-            ? require('mini-html5/runkit/build')
+            ? require(`mini-html5/runkit/${compileType === 'watch' ? 'run' : 'build'}`)
             : require('../commands/build')(args);
     };
 }

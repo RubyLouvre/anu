@@ -1,5 +1,5 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+// const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
 
@@ -29,7 +29,7 @@ module.exports = function({
                     test: /\.jsx?$/,
                     use: [
                         require.resolve('../nanachi-loader/loaders/fileLoader'),
-                        require.resolve('../nanachi-loader'),
+                        require.resolve('../nanachi-loader/loaders/nanachiLoader'),
                     ],
                     exclude: /node_modules\/(?!schnee-ui\/)|React/,
                 },
@@ -43,20 +43,15 @@ module.exports = function({
             ]
         },
         plugins: [
-            new CopyWebpackPlugin([
-                // copy assets
-                {
-                    from: path.resolve(cwd, 'source/assets'),
-                    to: path.resolve(distPath, 'assets')
-                },
-                // // copy core react
-                // {
-                //     from: path.resolve(cwd, 'source', REACT_LIB_MAP[platform]),
-                //     to: distPath
-                // }
-            ], {
-                copyUnmodified: true
-            }),
+            // new CopyWebpackPlugin([
+            //     // copy assets
+            //     {
+            //         from: path.resolve(cwd, 'source/assets'),
+            //         to: path.resolve(distPath, 'assets')
+            //     }
+            // ], {
+            //     copyUnmodified: true
+            // }),
             new NanachiWebpackPlugin({
                 platform,
                 compress
