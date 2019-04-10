@@ -81,8 +81,8 @@ class Parser {
         this.entry = entry;
         this.jsFiles = [];
         this.styleFiles = [];
-        this.webViewFiles = [];
         this.npmFiles = [];
+        this.webViewRoutes = [];
         this.depTree = {};
         this.collectError = {
             //样式@import引用错误, 如page中引用component样式
@@ -169,10 +169,9 @@ class Parser {
             onwarn: warning => {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
+                
                 if (warning.code === 'UNRESOLVED_IMPORT') {
-                    let key = warning.source.split(path.sep)[0];
-                    if (this.customAliasConfig[key]) return;
-                    console.log(chalk.red(`缺少运行依赖模块: ${key}, 请安装.`));
+                    console.log(warning);
                     process.exit(1);
                 }
             }
@@ -209,6 +208,8 @@ class Parser {
             utils.installer('schnee-ui');
         }
 
+       
+
         //校验是否需要安装快应用hap-toolkit工具
         if (this.needInstallHapToolkit()) {
             //获取package.json中hap-toolkit版本，并安装
@@ -238,6 +239,7 @@ class Parser {
         });
 
         this.check();
+        this.updateWebViewRoutes(this.webViewRoutes);
         await this.transform();
         generate();
         timer.end();
@@ -301,7 +303,7 @@ class Parser {
                 this.checkImportComponent(data);
 
                 if (utils.isWebView(data.id)) {
-                    this.webViewFiles.push({
+                    this.webViewRoutes.push({
                         id: data.id
                     });
                 } else {
@@ -332,13 +334,9 @@ class Parser {
         }
     }
     async transform() {
-        try {
-            await this.updateJsQueue(this.jsFiles);
-            this.updateWebViewRoutes(this.webViewFiles);
-            await this.updateStyleQueue(this.styleFiles);
-        } catch (e) {
-            throw new Error('代码解析失败, 原因: ' + e);
-        }
+       
+        await this.updateJsQueue(this.jsFiles);
+        await this.updateStyleQueue(this.styleFiles);
     }
     check() {
         let errorMsg = '';
@@ -426,7 +424,7 @@ class Parser {
             let item = jsFiles.shift();
             
             if (/commonjs-proxy:/.test(item.id)) {
-                item.id = item.id.replace('commonjs-proxy:', '').replace('\u0000','')
+                item.id = item.id.replace('commonjs-proxy:', '').replace('\u0000','');
             }
             let { id, originalCode, resolvedIds } = item;
             if (needUpdate(id, originalCode)) {
@@ -492,7 +490,7 @@ class Parser {
     watching() {
         let watchDir = path.dirname(this.entry);
         let watchConfig = {
-            ignored: /\.DS_Store|\.gitignore|\.git/,
+            ignored: /(\.DS_Store|\.gitignore|\.git|\.json$)/,
             awaitWriteFinish: {
                 stabilityThreshold: 700,
                 pollInterval: 100

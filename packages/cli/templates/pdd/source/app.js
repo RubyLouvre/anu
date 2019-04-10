@@ -17,7 +17,7 @@ class Demo extends React.Component {
             backgroundTextStyle: 'light',
             navigationBarBackgroundColor: '#0088a4',
             navigationBarTitleText: 'mpreact',
-            navigationBarTextStyle: '#fff',
+            navigationBarTextStyle: 'white',
             backgroundColor: '#F2F2F2'
         },
         tabBar: {

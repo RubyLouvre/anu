@@ -189,7 +189,7 @@ describe('loop 简单情况', () => {
               <block wx:if="{{state.isOk}}">
                 <text>{{item2}}</text>
               </block>
-              <block wx:else="true">
+              <block wx:elif="true">
                 <view>noOk</view>
               </block>
             </block>

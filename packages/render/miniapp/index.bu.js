@@ -19,7 +19,6 @@ import { Renderer } from './render.all';
 
 import { toStyle } from './toStyle';
 import { 
-    toRenderProps, 
     _getApp , 
     getCurrentPage, 
     _getCurrentPages, 
@@ -60,7 +59,6 @@ let React = (getWindow().React = {
     isValidElement,
 
     toClass: miniCreateClass,
-    toRenderProps,
     useComponent,
     registerComponent,
     getCurrentPage,

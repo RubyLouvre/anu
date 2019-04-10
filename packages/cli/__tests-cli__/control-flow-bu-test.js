@@ -6,7 +6,7 @@ describe('if statement', () => {
     test('if 简单情况-bu', async () => {
         let code = ` 
     if (this.state.tasks !== null) {
-      return <view class='page-body'>tasks</view>
+      return <view class="page-body">tasks</view>
     }
     return (
         <div class="page-body"><span>Hello world!</span></div>
@@ -16,7 +16,7 @@ describe('if statement', () => {
         let templateBu = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateBu)).toMatch(
             prettifyXml(
-                `<block s-if="state.tasks !== null">
+                `<block s-if="{{state.tasks !== null}}">
         <view class="page-body">tasks</view>
         </block>
         <block s-elif="true">
@@ -50,11 +50,11 @@ describe('if statement', () => {
         let templateWX = await getXml(code, BUILD_TYPE);
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
-                `<block s-if="state.tasks !== null">
+                `<block s-if="{{state.tasks !== null}}">
             <view class="page-body">tasks</view>
         </block>
         <block s-elif="true">
-            <block s-if="state.task.length === 0">
+            <block s-if="{{state.task.length === 0}}">
               <view class="page-body">
                 <text>{{tasks.length}}</text>
               </view>
@@ -77,7 +77,7 @@ describe('逻辑表达式-二元', () => {
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
-        <block s-if="state.show">
+        <block s-if="{{state.show}}">
           <view>hello word</view>
         </block>
       </view>`
@@ -91,7 +91,7 @@ describe('逻辑表达式-二元', () => {
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
-        <block s-if="state.show && state.isOk">
+        <block s-if="{{state.show && state.isOk}}">
           <view>hello word</view>
         </block>
       </view>`
@@ -105,7 +105,7 @@ describe('逻辑表达式-二元', () => {
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
-      <block s-if="state.show || state.isOk">
+      <block s-if="{{state.show || state.isOk}}">
         <view>hello word</view>
       </block>
     </view>`
@@ -121,7 +121,7 @@ describe('逻辑表达式-三元', () => {
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
-        <block s-if="state.show">
+        <block s-if="{{state.show}}">
           <view>hello word</view>
         </block>
         <block s-elif="true">
@@ -150,8 +150,8 @@ describe('逻辑表达式-三元', () => {
         expect(prettifyXml(templateWX)).toMatch(
             prettifyXml(
                 `<view>
-        <block s-if="state.show">
-          <block s-if="state.isOk">
+        <block s-if="{{state.show}}">
+          <block s-if="{{state.isOk}}">
             <view>hello word</view>
           </block>
           <block s-elif="true">

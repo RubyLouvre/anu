@@ -7,9 +7,10 @@ const beautify = require('js-beautify');
 const utils = require('../utils');
 const config = require('../config');
 const buildType = config.buildType;
-const attrNameHelper = require(`../${buildType}Helpers/attrName`);
-const attrValueHelper = require(`../${buildType}Helpers/attrValue`);
-const logicHelper = require(`../${buildType}Helpers/logic`);
+const helper = config[buildType].helpers
+const attrNameHelper = require(`../${helper}/attrName`);
+const attrValueHelper = require(`../${helper}/attrValue`);
+const logicHelper = require(`../${helper}/logic`);
 
 function beautifyXml(code){
     return beautify.html(code, {
@@ -94,21 +95,19 @@ let visitor = {
     },
     JSXAttribute(astPath, state) {
         let attrName = astPath.node.name.name;
-
+        let attrValue = astPath.node.value;
         if (attrName === 'key') {
-            let node = astPath.node.value;
             let value;
             let modules = utils.getAnu(state);
-            if (t.isStringLiteral(node)) {
-                value = node.value;
+            if (t.isStringLiteral(attrValue)) {
+                value = attrValue.value;
             } else {
-                value = generate(node.expression).code;
+                value = generate(attrValue.expression).code;
             }
             modules.key = value;
             astPath.remove();
             return;
         }
-
         attrNameHelper(astPath, attrName, astPath.parentPath.node.name.name);
     },
     JSXText: {

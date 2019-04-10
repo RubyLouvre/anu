@@ -16,6 +16,13 @@ module.exports = {
         helpers: 'wxHelpers',
         patchComponents: []
     },
+    qq: {
+        libName: 'ReactWX',
+        styleExt: 'qss',
+        xmlExt: 'qml',
+        helpers: 'wxHelpers',
+        patchComponents: []
+    },
     ali: {
         libName: 'ReactAli',
         styleExt: 'acss',

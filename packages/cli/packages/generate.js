@@ -15,7 +15,17 @@ module.exports = ()=>{
             code = compress[type](code);
         }
         path = utils.resolveDistPath(path);
+
+        
+
         fs.ensureFileSync(path);
+
+        
+        //qq轻应用，页面必须有样式，否则页面无法渲染，这是qq轻应用bug
+        if ( config.buildType === 'qq' && /\/(pages|components)\//.test(path.replace(/\\/g, '/')) && nPath.parse(path).base === 'index.js' ) {
+            fs.ensureFileSync(nPath.join( nPath.dirname(path), 'index.qss'));
+        }
+
         try {
             fs.writeFileSync(path, code);
         } catch (err) {
