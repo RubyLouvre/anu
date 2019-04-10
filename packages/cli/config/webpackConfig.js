@@ -1,5 +1,5 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+// const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
 
@@ -23,7 +23,7 @@ module.exports = function({
             filename: 'index.bundle.js'
         },
         module: {
-            noParse: /React/,
+            // noParse: /React/,
             rules: [
                 {
                     test: /\.jsx?$/,
@@ -31,22 +31,12 @@ module.exports = function({
                         require.resolve('../nanachi-loader/loaders/fileLoader'),
                         require.resolve('../nanachi-loader'),
                     ],
-                    exclude: /node_modules\/(?!schnee-ui\/)/,
+                    exclude: /node_modules\/(?!schnee-ui\/)|React/,
                 },
                 {
-                    test: /node_modules\/(?!schnee-ui\/)/,
+                    test: /node_modules\/(?!schnee-ui\/)|React/,
                     use: [
                         require.resolve('../nanachi-loader/loaders/nodeFileLoader'),
-                        // {
-                        //     loader: 'file-loader',
-                        //     options: {
-                        //         outputPath(url, resourcePath) {
-                        //             // 删除第一个node_modules前的路径
-                        //             const relativePath = resourcePath.replace(/^.+?\/node_modules\//, '');
-                        //             return path.join('npm', relativePath);
-                        //         },
-                        //     }
-                        // }
                     ]
                 },
                 {
@@ -59,20 +49,20 @@ module.exports = function({
             ]
         },
         plugins: [
-            new CopyWebpackPlugin([
-                // copy assets
-                {
-                    from: path.resolve(cwd, 'source/assets'),
-                    to: path.resolve(distPath, 'assets')
-                },
-                // // copy core react
-                // {
-                //     from: path.resolve(cwd, 'source', REACT_LIB_MAP[platform]),
-                //     to: distPath
-                // }
-            ], {
-                copyUnmodified: true
-            }),
+            // new CopyWebpackPlugin([
+            //     // copy assets
+            //     {
+            //         from: path.resolve(cwd, 'source/assets'),
+            //         to: path.resolve(distPath, 'assets')
+            //     },
+            //     // // copy core react
+            //     // {
+            //     //     from: path.resolve(cwd, 'source', REACT_LIB_MAP[platform]),
+            //     //     to: distPath
+            //     // }
+            // ], {
+            //     copyUnmodified: true
+            // }),
             new NanachiWebpackPlugin({
                 platform,
                 compress

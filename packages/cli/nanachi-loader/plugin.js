@@ -41,22 +41,22 @@ class NanachiWebpackPlugin {
         compiler.hooks.run.tapAsync(id, async (compilation, callback) => {
             this.timer.start();
             resetNum();
-            await runBeforeParseTasks({
-                buildType: this.nanachiOptions.platform,
-                beta: this.nanachiOptions.beta,
-                betaUi: this.nanachiOptions.betaUi
-            });
+            // await runBeforeParseTasks({
+            //     buildType: this.nanachiOptions.platform,
+            //     beta: this.nanachiOptions.beta,
+            //     betaUi: this.nanachiOptions.betaUi
+            // });
             callback();
         });
 
         compiler.hooks.watchRun.tapAsync(id, async (compilation, callback) => {
             this.timer.start();
             resetNum();
-            await runBeforeParseTasks({
-                buildType: this.nanachiOptions.platform,
-                beta: this.nanachiOptions.beta,
-                betaUi: this.nanachiOptions.betaUi
-            });
+            // await runBeforeParseTasks({
+            //     buildType: this.nanachiOptions.platform,
+            //     beta: this.nanachiOptions.beta,
+            //     betaUi: this.nanachiOptions.betaUi
+            // });
             callback();
         });
         

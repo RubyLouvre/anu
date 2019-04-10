@@ -109,18 +109,18 @@ async function getRemoteReactFile(ReactLibName) {
 function getReactLibFile(ReactLibName, buildType) {
     let src = path.join(cliRoot, 'lib', ReactLibName);
     let dist = path.join(cwd, 'source', ReactLibName);
-    const distPath = path.join(cwd, buildType === 'quick' ? 'src' : 'dist', ReactLibName);
+    // const distPath = path.join(cwd, buildType === 'quick' ? 'src' : 'dist', ReactLibName);
     return [ 
         {
             id: src,
             dist: dist,
             ACTION_TYPE: 'COPY'
         },
-        {
-            id: src,
-            dist: distPath,
-            ACTION_TYPE: 'COPY'
-        }
+        // {
+        //     id: src,
+        //     dist: distPath,
+        //     ACTION_TYPE: 'COPY'
+        // }
     ];
 }
 
