@@ -29,7 +29,12 @@ class Data extends React.Component {
         };
         this.isFirst = false; // 是否是重新渲染的第一天，只有门票需要重新渲染
     }
-
+    static config = {
+        backgroundColor: '#FFF',
+        navigationBarBackgroundColor: '#00BCD4',
+        navigationBarTitleText: '选择日期',
+        navigationBarTextStyle: 'white'
+    };
     _changeNetwork(networkData = { status: 0 }) {  // 网络数据请求结果
         this.setState({
             networkData
@@ -155,17 +160,6 @@ class Data extends React.Component {
             showButton: true
         });
     }
-
-    networkRetry() {
-
-    }
-
-    config = {
-        backgroungColor: '#FFF',
-        navigationBarBackgroundColor: '#00BCD4',
-        navigationBarTitleText: '选择日期',
-        navigationBarTextStyle: 'white'
-    };
 
     render() {
         return (

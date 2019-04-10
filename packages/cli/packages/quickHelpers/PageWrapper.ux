@@ -184,7 +184,6 @@
   function setTitleAndTabs(instance, app) {
       instance.pagePath = app.$$pagePath;
       var appConfig = getAppConfig(app.$def)
-      console.log("app.config",getAppConfig(app.$def))
       var pageConfig = Object(app.$$pageConfig);
       var mixin = Object.assign({
         navigationBarTitleText: "",
