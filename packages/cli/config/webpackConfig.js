@@ -6,7 +6,8 @@ module.exports = function({
     entry,
     platform,
     compress,
-    plugins
+    plugins,
+    rules
 }) {
     let aliasMap = require('../consts/alias')(platform);
     // aliasMap 解析成绝对路径
@@ -22,7 +23,6 @@ module.exports = function({
             filename: 'index.bundle.js'
         },
         module: {
-            // noParse: /React/,
             rules: [
                 {
                     test: /\.jsx?$/,
@@ -45,7 +45,7 @@ module.exports = function({
                         require.resolve('../nanachi-loader/loaders/nanachiStyleLoader'),
                     ]
                 }
-            ]
+            ].concat(rules)
         },
         plugins: [
             new NanachiWebpackPlugin({
