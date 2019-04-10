@@ -1,14 +1,27 @@
-let config = require('../config');
 let fs = require('fs-extra');
 let path = require('path');
 let cwd = process.cwd();
-
+let nodeResolve = require('resolve');
 let t = require('@babel/types');
+
 let hackList = ['wx', 'bu', 'tt', 'quick', 'qq'];
+let utils = require('../utils');
+let config = require('../config');
 
 let copyFlag = false;
 let patchAsync = false;
-const patchName = 'regenerator-runtime/runtime.js';
+const pkgName = 'regenerator-runtime';
+
+
+function needInstall( pkgName ){
+    try {
+        nodeResolve.sync(pkgName, { basedir: process.cwd() });
+        return false;
+    } catch (err) {
+        return true;
+    }
+}
+
 
 module.exports  = [
     require('@babel/plugin-transform-async-to-generator'),
@@ -40,13 +53,20 @@ module.exports  = [
                 }
             },
             post: function(){
+
                 if ( patchAsync &&  !copyFlag ) {
-                    let dist = path.join( cwd, 'dist', 'npm', patchName);
-                    let src =  path.join( cwd, 'node_modules', patchName);
+
+                    if ( needInstall(pkgName) ) {
+                        utils.installer(pkgName);
+                    }
+
+                    let dist = path.join( cwd, 'dist', 'npm', `${pkgName}/runtime.js`);
+                    let src =  path.join( cwd, 'node_modules', `${pkgName}/runtime.js`);
                     fs.ensureFileSync(dist);
                     fs.copyFileSync(src, dist);
                     copyFlag = true;
                 }
+
             }
         }
     }
