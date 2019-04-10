@@ -57,19 +57,49 @@ class JavascriptParser {
     resolveAlias() {
         const aliasMap = require('../../../consts/alias')(this.platform);
         const from = path.resolve(cwd, 'source', this.relativePath);
-        traverse(this.ast, {
-            ImportDeclaration(astPath, state) {
-                const node = astPath.node;
-                node.source.value = node.source.value.replace(/^(@\w+)/, function(match, alias, str) {
-                    return aliasMap[alias] || alias;
-                });
-                if (/^source/.test(node.source.value)) {
-                    node.source.value = path.resolve(cwd, node.source.value);
-                    node.source.value = getRelativePath(path.dirname(from), node.source.value);
-                }
-            }
+
+        const result = babel.transformFromAstSync(this.ast, null, {
+            configFile: false,
+            babelrc: false,
+            comments: false,
+            ast: true,
+            plugins: [
+                [
+                    require('babel-plugin-module-resolver'),        //计算别名配置以及处理npm路径计算
+                    {
+                        resolvePath(moduleName) {
+                            // TODO: 处理node_modules -> npm
+                            if (/^(\/|\.|\w)/.test(moduleName) ) {
+                                return moduleName;
+                            }
+                            // if (/^\w/.test(moduleName)) {
+                            //     moduleName = 'source/npm' + moduleName;
+                            // }
+                            moduleName = moduleName.replace(/^(@\w+)/, function(match, alias) {
+                                return aliasMap[alias] || alias;
+                            });
+                            moduleName = path.resolve(cwd, moduleName);
+                            return getRelativePath(path.dirname(from), moduleName);
+                        }
+                    }
+                ]
+            ]
         });
-        return generate(this.ast).code;
+        // traverse(this.ast, {
+        //     ImportDeclaration(astPath, state) {
+        //         const node = astPath.node;
+        //         node.source.value = node.source.value.replace(/^(@\w+)/, function(match, alias, str) {
+        //             return aliasMap[alias] || alias;
+        //         });
+        //         if (/^source/.test(node.source.value)) {
+        //             node.source.value = path.resolve(cwd, node.source.value);
+        //             node.source.value = getRelativePath(path.dirname(from), node.source.value);
+        //         }
+        //     }
+
+        // });
+        // return generate(this.ast).code;
+        return result.code;
     }
 }
 
