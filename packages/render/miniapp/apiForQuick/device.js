@@ -1,15 +1,7 @@
 const device = require('@system.device');
 const DEFAULT_FONT_SIZE = 14;
 
-function getSystemInfo(options) {
-    if (!options) {
-        console.error('参数格式错误');//eslint-disable-line
-        return;
-    }
-    const {
-        success, fail, complete
-    } = options;
-
+function getSystemInfo({success, fail, complete}) {
     function gotSuccessInfo(rawObject) {
         let result = {
             fontSizeSetting: DEFAULT_FONT_SIZE,

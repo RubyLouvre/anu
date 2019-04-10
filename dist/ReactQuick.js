@@ -629,14 +629,10 @@ function createContext(defaultValue, calculateChangedBits) {
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 var device = require('@system.device');
 var DEFAULT_FONT_SIZE = 14;
-function getSystemInfo(options) {
-    if (!options) {
-        console.error('参数格式错误');
-        return;
-    }
-    var success = options.success,
-        fail = options.fail,
-        complete = options.complete;
+function getSystemInfo(_ref) {
+    var success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
     function gotSuccessInfo(rawObject) {
         var result = {
             fontSizeSetting: DEFAULT_FONT_SIZE
@@ -656,7 +652,7 @@ var mapName = _defineProperty({
     platformVersionCode: "version",
     osVersionCode: "system",
     platformVersionName: "platform"
-}, 'platformVersionCode', "SDKVersion");
+}, "platformVersionCode", "SDKVersion");
 function getDeviceId(options) {
     return device.getDeviceId(options);
 }
@@ -1006,15 +1002,14 @@ function setStorage(_ref) {
 }
 function getStorage(_ref2) {
     var key = _ref2.key,
-        success = _ref2.success,
+        _success = _ref2.success,
         fail = _ref2.fail,
         complete = _ref2.complete;
-    function dataObj(data) {
-        success({
-            data: saveParse(data)
-        });
-    }
-    storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
+    storage.get({ key: key, success: function success(data) {
+            _success({
+                data: saveParse(data)
+            });
+        }, fail: fail, complete: complete });
 }
 function removeStorage(obj) {
     storage.delete(obj);
@@ -1210,19 +1205,17 @@ function getNetworkType(_ref) {
     var success = _ref.success,
         fail = _ref.fail,
         complete = _ref.complete;
-    function networkTypeGot(_ref2) {
-        var networkType = _ref2.type;
-        success({ networkType: networkType });
-    }
     network.getType({
-        success: networkTypeGot,
+        success: function networkTypeGot(res) {
+            success({ networkType: res.type });
+        },
         fail: fail,
         complete: complete
     });
 }
 function onNetworkStatusChange(callback) {
-    function networkChanged(_ref3) {
-        var networkType = _ref3.type;
+    function networkChanged(_ref2) {
+        var networkType = _ref2.type;
         var connectedTypes = ['wifi', '4g', '3g', '2g'];
         callback({
             isConnected: connectedTypes.includes(networkType),
