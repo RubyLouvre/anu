@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-10
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-11
  */
 
 var arrayPush = Array.prototype.push;
@@ -629,14 +629,10 @@ function createContext(defaultValue, calculateChangedBits) {
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 var device = require('@system.device');
 var DEFAULT_FONT_SIZE = 14;
-function getSystemInfo(options) {
-    if (!options) {
-        console.error('参数格式错误');
-        return;
-    }
-    var success = options.success,
-        fail = options.fail,
-        complete = options.complete;
+function getSystemInfo(_ref) {
+    var success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
     function gotSuccessInfo(rawObject) {
         var result = {
             fontSizeSetting: DEFAULT_FONT_SIZE
@@ -656,7 +652,7 @@ var mapName = _defineProperty({
     platformVersionCode: "version",
     osVersionCode: "system",
     platformVersionName: "platform"
-}, 'platformVersionCode', "SDKVersion");
+}, "platformVersionCode", "SDKVersion");
 function getDeviceId(options) {
     return device.getDeviceId(options);
 }
@@ -835,7 +831,6 @@ function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    delete props.is;
     clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
@@ -1008,15 +1003,14 @@ function setStorage(_ref) {
 }
 function getStorage(_ref2) {
     var key = _ref2.key,
-        success = _ref2.success,
+        _success = _ref2.success,
         fail = _ref2.fail,
         complete = _ref2.complete;
-    function dataObj(data) {
-        success({
-            data: saveParse(data)
-        });
-    }
-    storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
+    storage.get({ key: key, success: function success(data) {
+            _success({
+                data: saveParse(data)
+            });
+        }, fail: fail, complete: complete });
 }
 function removeStorage(obj) {
     storage.delete(obj);
@@ -1212,19 +1206,17 @@ function getNetworkType(_ref) {
     var success = _ref.success,
         fail = _ref.fail,
         complete = _ref.complete;
-    function networkTypeGot(_ref2) {
-        var networkType = _ref2.type;
-        success({ networkType: networkType });
-    }
     network.getType({
-        success: networkTypeGot,
+        success: function networkTypeGot(res) {
+            success({ networkType: res.type });
+        },
         fail: fail,
         complete: complete
     });
 }
 function onNetworkStatusChange(callback) {
-    function networkChanged(_ref3) {
-        var networkType = _ref3.type;
+    function networkChanged(_ref2) {
+        var networkType = _ref2.type;
         var connectedTypes = ['wifi', '4g', '3g', '2g'];
         callback({
             isConnected: connectedTypes.includes(networkType),
@@ -3289,8 +3281,7 @@ var globalHooks = {
   onShow: 'onGlobalShow',
   onHide: 'onGlobalHide'
 };
-function getUrlAndQuery(page) {
-  var path = page.path;
+function getQuery(page) {
   var query = {};
   if (page.uri) {
     page.uri.replace(/\?(.*)/, function (a, b) {
@@ -3303,12 +3294,12 @@ function getUrlAndQuery(page) {
   } else {
     var queryObject = getApp().globalData.__huaweiQuery;
     if (queryObject) {
-      query = queryObject[path];
+      query = queryObject[page.path];
     }
   }
-  return [path, query];
+  return query;
 }
-function registerPage(PageClass) {
+function registerPage(PageClass, path) {
   PageClass.reactInstances = [];
   var config = {
     private: {
@@ -3318,11 +3309,10 @@ function registerPage(PageClass) {
     },
     dispatchEvent: dispatchEvent,
     onInit: function onInit() {
-      var $app = this.$app;
-      var array = getUrlAndQuery(this.$page);
-      var instance = onLoad.call(this, PageClass, array[0], array[1]);
-      var pageConfig = instance.config || PageClass.config;
-      $app.$$pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
+      var app = this.$app;
+      var instance = onLoad.call(this, PageClass, path, getQuery(this.$page));
+      var pageConfig = PageClass.config || instance.config || emptyObject;
+      app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
     },
     onReady: onReady,
     onDestroy: onUnload

@@ -25,7 +25,8 @@ class LessParser extends StyleParser {
                 type: this.type,
             }),
             require('../../../packages/postcssPlugins/postCssPluginFixNumber'),
-            require('../../../packages/postcssPlugins/postCssPluginValidateStyle')
+            require('../../../packages/postcssPlugins/postCssPluginValidateStyle'),
+            require('../../../packages/postcssPlugins/postcssPluginRemoveComments')
         ];
         this._postcssOptions = {
             from: this.filepath,

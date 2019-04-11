@@ -7,12 +7,10 @@ function getNetworkType({
     fail,
     complete
 }) {
-    function networkTypeGot({ type: networkType }) {
-        success({ networkType });
-    }
-
     network.getType({
-        success: networkTypeGot,
+        success: function networkTypeGot(res) {
+            success({ networkType: res.type });
+        } ,
         fail,
         complete
     });

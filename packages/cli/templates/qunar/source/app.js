@@ -80,23 +80,22 @@ class Global extends React.Component {
 	        list: [
 	            {
 	                pagePath: 'pages/index/index',
-	                iconPath: 'assets/image/homepage_normal.png',
-	                selectedIconPath: 'assets/image/homepage_select.png',
+	                iconPath: '/assets/image/homepage_normal.png',
+	                selectedIconPath: '/assets/image/homepage_select.png',
 	                text: '首页',
-	                name: 'Home',
-	                selected: true
+					name: 'Home'
 	            },
 	            {
 	                pagePath: 'pages/demo/question/index/index',
-	                iconPath: 'assets/image/question_normal.png',
-	                selectedIconPath: 'assets/image/question_select.png',
+	                iconPath: '/assets/image/question_normal.png',
+	                selectedIconPath: '/assets/image/question_select.png',
 	                text: '问答社区',
 	                name: 'questionAndAnswer'
 	            },
 	            {
 	                pagePath: 'pages/demo/userCenter/index',
-	                iconPath: 'assets/image/uc_normal.png',
-	                selectedIconPath: 'assets/image/uc_select.png',
+	                iconPath: '/assets/image/uc_normal.png',
+	                selectedIconPath: '/assets/image/uc_select.png',
 	                text: '我的',
 	                name: 'My'
 	            }

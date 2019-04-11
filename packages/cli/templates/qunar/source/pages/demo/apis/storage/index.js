@@ -15,15 +15,16 @@ class P extends React.Component {
   constructor() {
     super();
     this.state = {
-      data: '1234455',
-      copy: ''
+      value: ''
     };
   }
-
+  setValue(e){
+     this.setState({value: e.target.value})
+  }
   setStorage() {
     React.api.setStorage({
-      key: 'v1',
-      data: { key: 12 },
+      key: 'value',
+      data: this.state.value,
       success: function(data) {
         alert('handling success');
       },
@@ -35,11 +36,23 @@ class P extends React.Component {
 
   getStorage() {
     React.api.getStorage({
-      key: 'key',
+      key: 'value',
       success: function(res) {
         alert(`handling success, ${res.data}`);
       },
-      fail: function(data, code) {
+      fail: function(data, code) {//不存在永远不会进入fail，只有没有权限才出错
+        alert(`handling fail, code = ${code}`);
+      }
+    });
+  }
+
+  getStorageFail() {
+    React.api.getStorage({
+      key: 'aaa',
+      success: function(res) {
+        alert(`handling success, ${res.data}`);
+      },
+      fail: function(data, code) {//不存在永远不会进入fail, 只有没有权限才出错
         alert(`handling fail, code = ${code}`);
       }
     });
@@ -47,7 +60,7 @@ class P extends React.Component {
 
   removeStorage() {
     React.api.removeStorage({
-      key: 'v1',
+      key: 'value',
       success: function(data) {
         alert('handling success');
       },
@@ -58,28 +71,31 @@ class P extends React.Component {
   }
 
   setStorageSync() {
-    let data = React.api.setStorageSync('key', 'value');
+    let data = React.api.setStorageSync('value', this.state.value);
     console.log('data', data);
   }
 
   getStorageSync() {
-    let data = React.api.getStorageSync('v1');
-    console.log(111111111,React.api.getStorageSync+"")
+    let data = React.api.getStorageSync('value');
     alert(`handling success, ${data}`);
   }
 
   removeStorageSync() {
-    let remove = React.api.removeStorageSync('key');
+    React.api.removeStorageSync('value');
   }
 
   render() {
     return (
       <div class="col">
+        <div><text>输入要储存的内容, 放value中</text><input value={this.state.value} onChange={this.setValue.bind(this)} /></div>
         <div onClick={this.setStorage} class="item">
           <text>setStorage</text>
         </div>
         <div onClick={this.getStorage} class="item">
-          <text>getStorage</text>
+          <text>getStorage('value')</text>
+        </div>
+        <div onClick={this.getStorageFail} class="item">
+          <text>getStorage( 'aaa' )</text>
         </div>
         <div onClick={this.removeStorage} class="item">
           <text>removeStorage</text>
