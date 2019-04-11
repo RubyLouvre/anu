@@ -1,10 +1,5 @@
-const path = require('path');
 const Timer = require('../packages/utils/timer');
-const runBeforeParseTasks = require('../commands/runBeforeParseTasks');
-const fs = require('fs-extra');
-const cwd = process.cwd();
 const { resetNum, timerLog, errorLog, warningLog } = require('./logger/index');
-
 
 const errorStack = require('./logger/queue');
 
@@ -41,22 +36,12 @@ class NanachiWebpackPlugin {
         compiler.hooks.run.tapAsync(id, async (compilation, callback) => {
             this.timer.start();
             resetNum();
-            // await runBeforeParseTasks({
-            //     buildType: this.nanachiOptions.platform,
-            //     beta: this.nanachiOptions.beta,
-            //     betaUi: this.nanachiOptions.betaUi
-            // });
             callback();
         });
 
         compiler.hooks.watchRun.tapAsync(id, async (compilation, callback) => {
             this.timer.start();
             resetNum();
-            // await runBeforeParseTasks({
-            //     buildType: this.nanachiOptions.platform,
-            //     beta: this.nanachiOptions.beta,
-            //     betaUi: this.nanachiOptions.betaUi
-            // });
             callback();
         });
         
@@ -76,9 +61,6 @@ class NanachiWebpackPlugin {
             }
 
             timerLog(this.timer);
-            // 删除__npm__目录
-            // const npmDir = path.resolve(cwd, 'source/npm');
-            // fs.remove(npmDir);
         });
         
     }
