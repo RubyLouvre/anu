@@ -22,6 +22,8 @@ async function nanachi({
     compress = false,
     huawei = false,
     rules = [],
+    preLoaders = [], // 自定义预处理loaders
+    postLoaders = [], // 自定义后处理loaders
     plugins = [],
     complete = () => {}
 } = {}) {
@@ -37,6 +39,8 @@ async function nanachi({
         beta,
         betaUi,
         plugins,
+        preLoaders,
+        postLoaders,
         rules
     });
     await runBeforeParseTasks({ buildType: platform, beta, betaUi });

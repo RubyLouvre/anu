@@ -1,5 +1,3 @@
-const path = require('path');
-const cwd = process.cwd();
 const JavascriptParserFactory = require('../parsers/jsParser/JavascriptParserFactory');
 const errorStack = require('../logger/queue');
 
