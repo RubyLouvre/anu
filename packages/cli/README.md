@@ -70,6 +70,16 @@ nanachi({
     huawei,
     /**
      * @Array
+     * 自定义预处理loaders，默认值：[]
+     */
+    preLoaders,
+    /**
+     * @Array
+     * 自定义后处理loaders，默认值：[]
+     */
+    postloaders,
+    /**
+     * @Array
      * 自定义添加webpack module.rules规则，默认值：[]
      */
     rules,

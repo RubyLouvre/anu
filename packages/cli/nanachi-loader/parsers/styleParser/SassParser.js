@@ -25,7 +25,8 @@ class SassParser extends StyleParser {
                 type: this.type
             }), // 添加@import规则，小程序可以解析原有依赖
             require('../../../packages/postcssPlugins/postCssPluginFixNumber'), // 数字精度插件
-            require('../../../packages/postcssPlugins/postCssPluginValidateStyle')
+            require('../../../packages/postcssPlugins/postCssPluginValidateStyle'),
+            require('../../../packages/postcssPlugins/postcssPluginRemoveComments')
         ];
         this._postcssOptions = {
             from: this.filepath,

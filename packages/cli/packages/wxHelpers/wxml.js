@@ -11,6 +11,7 @@ const helper = config[buildType].helpers
 const attrNameHelper = require(`../${helper}/attrName`);
 const attrValueHelper = require(`../${helper}/attrValue`);
 const logicHelper = require(`../${helper}/logic`);
+const chalk = require('chalk');
 
 function beautifyXml(code){
     return beautify.html(code, {
@@ -103,6 +104,11 @@ let visitor = {
                 value = attrValue.value;
             } else {
                 value = generate(attrValue.expression).code;
+                if((buildType === 'qq' || buildType === 'wx') && value.indexOf('+') > 0){
+                    var fixKey = value.replace(/\+.+/, '').trim();
+                    console.log(chalk.cyan(`微信/QQ小程序的key不支持加号表达式${value}-->${fixKey}`));
+                    value = fixKey;
+                }
             }
             modules.key = value;
             astPath.remove();

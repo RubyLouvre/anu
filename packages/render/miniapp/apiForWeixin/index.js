@@ -34,6 +34,20 @@ export var more = function(api) {
             RequestQueue.facade = api;
             RequestQueue.request(_a);
             return RequestQueue.request(_a);
+        },
+        getStorage: function({key, success, fail, complete}){
+            return api.getStorage({
+                key,
+                complete,
+                success,
+                fail: function(e){//QQ小程序如果找不到数据会报错，而不是返回一个空对象
+                    if(e.errMsg ===  "getStorage:fail data not found"){
+                        success && success({})
+                    }else{
+                        fail && fail(e)
+                    }
+                }
+            })
         }
     };
 };

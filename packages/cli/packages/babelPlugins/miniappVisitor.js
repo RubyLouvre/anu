@@ -360,6 +360,12 @@ module.exports = {
                                     t.identifier('buildType'),
                                     t.stringLiteral(buildType)
                                 ));
+                                if(buildType === 'quick'){
+                                    properties.push( t.objectProperty(
+                                        t.identifier('__quickQuery'),
+                                        t.objectExpression([])
+                                    ));
+                                }
                             }
                         }
                     }

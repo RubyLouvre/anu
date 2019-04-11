@@ -54,9 +54,9 @@ function createRouter(name) {
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
-        if ( getBrandSync() === 'HUAWEI' && typeof getApp !== 'undefined' ){
-            var globalData =  getApp().globalData;
-            var queryObject = globalData.__huaweiQuery || (globalData.__huaweiQuery = {}); 
+        if (typeof getApp !== 'undefined') {
+            var globalData = getApp().globalData;
+            var queryObject = globalData.__quickQuery || (globalData.__quickQuery = {});
             queryObject[uri] = params;
         }
         router[name]({

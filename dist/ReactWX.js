@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-09T09
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-11T03
  * IE9+
  */
 
@@ -931,6 +931,24 @@ var more = function more(api) {
             RequestQueue.facade = api;
             RequestQueue.request(_a);
             return RequestQueue.request(_a);
+        },
+        getStorage: function getStorage(_ref) {
+            var key = _ref.key,
+                success = _ref.success,
+                _fail = _ref.fail,
+                complete = _ref.complete;
+            return api.getStorage({
+                key: key,
+                complete: complete,
+                success: success,
+                fail: function fail(e) {
+                    if (e.errMsg === "getStorage:fail data not found") {
+                        success && success({});
+                    } else {
+                        _fail && _fail(e);
+                    }
+                }
+            });
         }
     };
 };
@@ -1017,7 +1035,6 @@ function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    delete props.is;
     clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
