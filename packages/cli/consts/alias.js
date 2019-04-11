@@ -5,6 +5,7 @@ module.exports = (platform) => {
     const { REACT_LIB_MAP } = require('./index');
 
     const baseAlias = {
+        'react': './source/' + REACT_LIB_MAP[platform],
         '@react': './source/' + REACT_LIB_MAP[platform],
         '@components': './source/components'
     };

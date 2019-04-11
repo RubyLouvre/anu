@@ -46,11 +46,9 @@ class QuickParser extends JavascriptParser {
                 require('../../../packages/babelPlugins/patchComponents'),
                 ...require('../../../packages/babelPlugins/patchAsyncAwait'),
                 ...require('../../../packages/babelPlugins/transformEnv'),
-                
                 [ require('@babel/plugin-transform-template-literals'), { loose: true }],
                 ...require('../../../packages/babelPlugins/transformMiniApp')(this.filepath),
                 require('../../../packages/babelPlugins/transformIfImport'),
-                // require('../../../packages/babelPlugins/trasnformAlias')( {sourcePath: this.filepath, platform: this.platform } )
             ]
         };
     }

@@ -70,7 +70,8 @@ class JavascriptParser {
                             if (/^\./.test(moduleName)) {
                                 return moduleName;
                             }
-                            moduleName = moduleName.replace(/^(@\w+)/, function(match, alias) {
+                            // 替换别名
+                            moduleName = moduleName.replace(/^[@-\w]+/, function(alias) {
                                 return aliasMap[alias] || alias;
                             });
                             // 如果是 import babel from '@babel' 这种node_modules引入，处理路径 node_modules -> npm
