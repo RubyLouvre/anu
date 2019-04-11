@@ -1392,9 +1392,9 @@ function createRouter(name) {
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
-        if (getBrandSync() === 'HUAWEI' && typeof getApp !== 'undefined') {
+        if (typeof getApp !== 'undefined') {
             var globalData = getApp().globalData;
-            var queryObject = globalData.__huaweiQuery || (globalData.__huaweiQuery = {});
+            var queryObject = globalData.__quickQuery || (globalData.__quickQuery = {});
             queryObject[uri] = params;
         }
         router[name]({
@@ -3283,20 +3283,13 @@ var globalHooks = {
 };
 function getQuery(page) {
   var query = {};
-  if (page.uri) {
-    page.uri.replace(/\?(.*)/, function (a, b) {
-      b.split('&').forEach(function (param) {
-        param = param.split('=');
-        query[param[0]] = param[1];
-      });
-      return '';
+  String(page.uri).replace(/\?(.*)/, function (a, b) {
+    b.split('&').forEach(function (param) {
+      param = param.split('=');
+      query[param[0]] = param[1];
     });
-  } else {
-    var queryObject = getApp().globalData.__huaweiQuery;
-    if (queryObject) {
-      query = queryObject[page.path];
-    }
-  }
+    return '';
+  });
   return query;
 }
 function registerPage(PageClass, path) {
@@ -3318,22 +3311,24 @@ function registerPage(PageClass, path) {
     onDestroy: onUnload
   };
   Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
-    config[hook] = function (e) {
+    config[hook] = function () {
       var instance = this.reactInstance;
       var fn = instance[hook];
       var app = _getApp();
+      var query = getQuery(this.$page);
       if (hook === 'onShow') {
+        instance.props.query = query;
         app.$$page = instance.wx;
         app.$$pagePath = instance.props.path;
       }
       if (hook === 'onMenuPress') {
         app.onShowMenu && app.onShowMenu(instance, this.$app);
       } else if (isFn(fn)) {
-        fn.call(instance, e);
+        fn.call(instance, query);
       }
       var globalHook = globalHooks[hook];
       if (globalHook) {
-        callGlobalHook(globalHook, e);
+        callGlobalHook(globalHook, query);
       }
     };
   });
