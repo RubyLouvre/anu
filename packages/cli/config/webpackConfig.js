@@ -7,7 +7,9 @@ module.exports = function({
     platform,
     compress,
     plugins,
-    rules
+    rules,
+    preLoaders, // 自定义预处理loaders
+    postLoaders // 自定义后处理loaders
 }) {
     let aliasMap = require('../consts/alias')(platform);
     // aliasMap 解析成绝对路径
@@ -28,7 +30,9 @@ module.exports = function({
                     test: /\.jsx?$/,
                     use: [
                         require.resolve('../nanachi-loader/loaders/fileLoader'),
+                        ...postLoaders,
                         require.resolve('../nanachi-loader/loaders/nanachiLoader'),
+                        ...preLoaders
                     ],
                     exclude: /node_modules\/(?!schnee-ui\/)|React/,
                 },
@@ -42,17 +46,21 @@ module.exports = function({
                     test: /\.(s[ca]ss|less|css)$/,
                     use: [
                         require.resolve('../nanachi-loader/loaders/fileLoader'),
+                        ...postLoaders,
                         require.resolve('../nanachi-loader/loaders/nanachiStyleLoader'),
+                        ...preLoaders
                     ]
-                }
-            ].concat(rules)
+                },
+                ...rules
+            ]
         },
         plugins: [
             new NanachiWebpackPlugin({
                 platform,
                 compress
-            })
-        ].concat(plugins),
+            }),
+            ...plugins
+        ],
         resolve: {
             alias: aliasMap
         }

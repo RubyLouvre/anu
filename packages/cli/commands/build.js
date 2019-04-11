@@ -27,6 +27,9 @@ module.exports = async function(args){
             betaUi,
             compress,
             watch,
+            postLoaders: [
+                require.resolve('../nanachi-loader/loaders/decodeChineseLoader'), // 测试自定义解码中文字符插件
+            ],
             plugins: [],
             complete: callback
         });
