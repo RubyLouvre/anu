@@ -70,7 +70,8 @@ const compileLessByPostCss = (filePath, originalCode)=>{
                 dependencies: deps
             }),
             require('../postcssPlugins/postCssPluginFixNumber'),
-            require('../postcssPlugins/postCssPluginValidateStyle')
+            require('../postcssPlugins/postCssPluginValidateStyle'),
+            require('../postcssPlugins/postcssPluginRemoveComments')
         ])
             .process(
                 originalCode,
