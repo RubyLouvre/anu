@@ -59,7 +59,7 @@ class P extends React.Component {
                 </div>
                 <div class="anu-item">
                     <div>
-                        <switch checked onChange={this.switch1Change} />
+                        <switch checked={false} onChange={this.switch1Change} />
                         <switch onChange={this.switch2Change} />
                     </div>
                 </div>
