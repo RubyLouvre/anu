@@ -2,8 +2,15 @@ const postCss = require('postcss');
 
 const postcssPluginRemoveRules = postCss.plugin('postcss-plugin-remove-rules', function() {
     return function(root) {
-        root.walkRules(function(node) {
-            node.remove();
+        root.each(node => {
+            // 删除最上层的所有rules
+            if (node.type === 'rule') {
+                node.remove();
+            }
+            // 删除@keyframes
+            if (node.type === 'atrule' && node.name === 'keyframes') {
+                node.remove();
+            }
         });
     };
 });
