@@ -1,5 +1,4 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
-// const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
 
@@ -7,7 +6,8 @@ module.exports = function({
     entry,
     platform,
     compress,
-    plugins
+    plugins,
+    rules
 }) {
     let aliasMap = require('../consts/alias')(platform);
     // aliasMap 解析成绝对路径
@@ -23,7 +23,6 @@ module.exports = function({
             filename: 'index.bundle.js'
         },
         module: {
-            noParse: /node_modules\/(?!schnee-ui\/)|React/,
             rules: [
                 {
                     test: /\.jsx?$/,
@@ -34,24 +33,21 @@ module.exports = function({
                     exclude: /node_modules\/(?!schnee-ui\/)|React/,
                 },
                 {
+                    test: /node_modules\/(?!schnee-ui\/)|React/,
+                    use: [
+                        require.resolve('../nanachi-loader/loaders/nodeFileLoader'),
+                    ]
+                },
+                {
                     test: /\.(s[ca]ss|less|css)$/,
                     use: [
                         require.resolve('../nanachi-loader/loaders/fileLoader'),
                         require.resolve('../nanachi-loader/loaders/nanachiStyleLoader'),
                     ]
                 }
-            ]
+            ].concat(rules)
         },
         plugins: [
-            // new CopyWebpackPlugin([
-            //     // copy assets
-            //     {
-            //         from: path.resolve(cwd, 'source/assets'),
-            //         to: path.resolve(distPath, 'assets')
-            //     }
-            // ], {
-            //     copyUnmodified: true
-            // }),
             new NanachiWebpackPlugin({
                 platform,
                 compress

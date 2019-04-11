@@ -7,7 +7,6 @@ const generate = require('@babel/generator').default;
 const quickFiles = require('../quickFiles');
 const config = require('../config');
 const utils = require('../utils');
-const queue = require('../queue');
 
 const deps = [];
 

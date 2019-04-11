@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const path = require('path');
 const cwd = process.cwd();
 const globalConfig = require('./packages/config.js');
+const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
 
 function injectBuildEnv({ buildType, compress, huawei } = {}){
     process.env.ANU_ENV = buildType;
@@ -20,7 +21,7 @@ async function nanachi({
     betaUi = false,
     compress = false,
     huawei = false,
-    // loaders,
+    rules = [],
     plugins = [],
     complete = () => {}
 } = {}) {
@@ -35,8 +36,11 @@ async function nanachi({
         compress,
         beta,
         betaUi,
-        plugins
+        plugins,
+        rules
     });
+    await runBeforeParseTasks({ buildType: platform, beta, betaUi });
+    
     const compiler = webpack(webpackConfig);
     
     if (watch) {

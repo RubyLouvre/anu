@@ -29,6 +29,66 @@ yarn global add nanachi-cli
 3. npm run server <br />
 详情请见快应用文档
 
+## nanachi api
+```javascript
+const nanachi = require('nanachi-cli');
+nanachi({
+    /**
+     * @String
+     * 项目入口，默认值：./source/app
+     */ 
+    entry,
+    /**
+     * @Boolean
+     * 是否使用watch模式，默认值：false
+     */
+    watch,
+    /**
+     * @Enum ['wx', 'ali', 'bu', 'tt', 'quick']
+     * 平台，默认值：wx
+     */
+    platform,
+    /**
+     * @Boolean
+     * 是否使用线上beta核心库，默认值：false
+     */
+    beta,
+    /**
+     * @Boolean
+     * 是否使用最新schnee-ui，默认值：false
+     */
+    betaUi,
+    /**
+     * @Boolean
+     * 是否使用压缩模式，默认值：false
+     */
+    compress,
+    /**
+     * @Boolean
+     * 是否是huawei平台，默认值：false
+     */
+    huawei,
+    /**
+     * @Array
+     * 自定义添加webpack module.rules规则，默认值：[]
+     */
+    rules,
+    /**
+     * @Array
+     * 自定义webpack插件，默认值：[]
+     */
+    plugins,
+    /**
+     * @function complete
+     * 解析完成回调
+     * (err, result) => { }
+     * err: 错误
+     * result: webpack打包信息
+     */ 
+    complete
+});
+```
+
 详见 https://rubylouvre.github.io/nanachi/index.html 或  https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
 
 
