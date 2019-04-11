@@ -3,6 +3,7 @@ const path = require('path');
 const cwd = process.cwd();
 const utils = require('../utils/index');
 const pkgName = 'schnee-ui';
+const nodeResolve = require('resolve');
 
 let installFlag = false;
 let patchSchneeUi = false;
