@@ -15,6 +15,10 @@ module.exports = {
     'flex-flow': true,
     'word-break': true,
     'word-wrap': true,
+    'border-bottom-style':true,
+    'border-top-style':true,
+    'border-left-style':true,
+    'border-right-style':true,
     'zoom': true,
     'box-flex': true,
     'background-clip': true,
@@ -25,6 +29,12 @@ module.exports = {
     'overflow-y': true,
     display: function (value) {
         return !(value === 'flex' || value === 'none');
+    },
+    width: function(value){
+         return /calc/.test(value)
+    },
+    margin: function(value){
+        return value === '0 1%'
     },
     'font-weight': function(value) {
         return !(value === 'normal' || value === 'bold');

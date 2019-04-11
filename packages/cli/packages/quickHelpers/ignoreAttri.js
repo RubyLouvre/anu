@@ -19,7 +19,7 @@ const attributes = {
     text: 'animation,size,content,decode,color,open-type',
     switch: 'color',
     stack: 'animation',
-    div: 'animation,hover-class,formtype,type,open-type,src,action,submit',
+    div: 'animation,hover-class,formtype,type,open-type,src,action,submit,onchange,ongetuserinfo,onscale',
     input: 'placeholder-style,placeholder-class',
     image: 'mode,width,height,confirm,focus,confirm-type',
     swiper: 'indicator-dots,duration,indicator-active-color,indicator-color,circular',
