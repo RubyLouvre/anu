@@ -3283,13 +3283,17 @@ var globalHooks = {
 };
 function getQuery(page) {
   var query = {};
-  String(page.uri).replace(/\?(.*)/, function (a, b) {
-    b.split('&').forEach(function (param) {
-      param = param.split('=');
-      query[param[0]] = param[1];
+  if (page.uri) {
+    page.uri.replace(/\?(.*)/, function (a, b) {
+      b.split('&').forEach(function (param) {
+        param = param.split('=');
+        query[param[0]] = param[1];
+      });
+      return '';
     });
-    return '';
-  });
+  } else {
+    query = _getApp().globalData.__quickQuery;
+  }
   return query;
 }
 function registerPage(PageClass, path) {
@@ -3324,11 +3328,11 @@ function registerPage(PageClass, path) {
       if (hook === 'onMenuPress') {
         app.onShowMenu && app.onShowMenu(instance, this.$app);
       } else if (isFn(fn)) {
-        fn.call(instance, query);
+        fn.call(instance, { query: query });
       }
       var globalHook = globalHooks[hook];
       if (globalHook) {
-        callGlobalHook(globalHook, query);
+        callGlobalHook(globalHook, { query: query });
       }
     };
   });

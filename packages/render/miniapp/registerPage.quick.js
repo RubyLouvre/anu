@@ -11,13 +11,17 @@ var globalHooks = {
 function getQuery (page) {
   var query = {};//必须在manifest.json的 router.pages.page设置filter
   //https://doc.quickapp.cn/framework/manifest.html
-  String(page.uri).replace(/\?(.*)/, function (a, b) {
-      b.split('&').forEach(function (param) {
-          param = param.split('=');
-          query[param[0]] = param[1];
-      });
-      return '';
-  })
+  if(page.uri){
+      page.uri.replace(/\?(.*)/, function (a, b) {
+        b.split('&').forEach(function (param) {
+            param = param.split('=');
+            query[param[0]] = param[1];
+        });
+        return '';
+      })
+  }else{
+      query = _getApp().globalData.__quickQuery
+  }
   return query
 }
 
@@ -55,12 +59,12 @@ export function registerPage (PageClass, path) {
       if (hook === 'onMenuPress') {
         app.onShowMenu && app.onShowMenu(instance, this.$app)
       } else if (isFn(fn)) {
-        fn.call(instance, query)
+        fn.call(instance, {query})
       }
 
       let globalHook = globalHooks[hook]
       if (globalHook) {
-        callGlobalHook(globalHook, query)
+        callGlobalHook(globalHook, {query})
       }
     }
   })
