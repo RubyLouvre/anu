@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-10T12
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-11T03
  * IE9+
  */
 
@@ -1032,9 +1032,10 @@ function isReferenceType(val) {
     return typeNumber(val) > 6;
 }
 function useComponent(props) {
+    var is = props.is;
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    clazz.displayName = props.is;
+    clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
     }

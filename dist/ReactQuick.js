@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-10
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-11
  */
 
 var arrayPush = Array.prototype.push;
@@ -828,9 +828,10 @@ function runCallbacks(cb, success, fail, complete) {
     }
 }
 function useComponent(props) {
+    var is = props.is;
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    clazz.displayName = props.is;
+    clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
     }
