@@ -1,3 +1,5 @@
+const chalk = require('chalk');
+
 module.exports = {
     'box-sizing': true,
     'overflow': true,
@@ -19,6 +21,38 @@ module.exports = {
     'border-top-style':true,
     'border-left-style':true,
     'border-right-style':true,
+    'border-top-left-radius': function(value) {
+        if (/^\d+%$/.test(value)) {
+            // eslint-disable-next-line
+            console.log(chalk.yellow('Warning: 快应用不支持border-radius百分比属性，已删除 '));
+            return true;
+        }
+        return false;
+    },
+    'border-top-right-radius': function(value) {
+        if (/^\d+%$/.test(value)) {
+            // eslint-disable-next-line
+            console.log(chalk.yellow('Warning: 快应用不支持border-radius百分比属性，已删除 '));
+            return true;
+        }
+        return false;
+    },
+    'border-bottom-left-radius': function(value) {
+        if (/^\d+%$/.test(value)) {
+            // eslint-disable-next-line
+            console.log(chalk.yellow('Warning: 快应用不支持border-radius百分比属性，已删除 '));
+            return true;
+        }
+        return false;
+    },
+    'border-bottom-right-radius': function(value) {
+        if (/^\d+%$/.test(value)) {
+            // eslint-disable-next-line
+            console.log(chalk.yellow('Warning: 快应用不支持border-radius百分比属性，已删除 '));
+            return true;
+        }
+        return false;
+    },
     'zoom': true,
     'box-flex': true,
     'background-clip': true,
