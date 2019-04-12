@@ -1,6 +1,18 @@
 import { runCallbacks } from '../utils.js';
-import { getBrandSync } from './device';
+//import { getBrandSync } from './device';
 var router = require('@system.router');
+
+var rQuery = /\?(.*)/
+export function getQueryFromUri(uri, query){
+  return uri.replace(rQuery, function (a, b) {
+    b.split('&').forEach(function (param) {
+        param = param.split('=');
+        query[param[0]] = param[1];
+    });
+    return '';
+  })
+}
+
 function createRouter(name) {
     return function(obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
@@ -43,14 +55,7 @@ function createRouter(name) {
             }
         }
 
-       
-        uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('&').forEach(function (param) {
-                param = param.split('=');
-                params[param[0]] = param[1];
-            });
-            return '';
-        }).replace(/\/index$/, '');
+        uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }

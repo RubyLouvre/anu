@@ -2,27 +2,32 @@ import { isFn, emptyObject } from 'react-core/util'
 import { dispatchEvent } from './eventSystem.quick'
 import { onLoad, onUnload, onReady } from './registerPage.all'
 import { callGlobalHook, _getApp } from './utils'
+import { getQueryFromUri } from './apiForQuick/router'
+
 // import { showMenu } from './apiForQuick/showMenu'
 var globalHooks = {
   onShareAppMessage: 'onGlobalShare',
   onShow: 'onGlobalShow',
   onHide: 'onGlobalHide'
 }
+
+
 function getQuery (page) {
-  var query = {};//必须在manifest.json的 router.pages.page设置filter
+  if(page.query){//小米快应用新规范，this.$page.query 返回页面启动时的参数数据；
+    return page.query;
+  }
+  var query = {};
+  //如果在manifest.json的router.pages[view]设置filter, 就可以从page.uri中抽取参数
   //https://doc.quickapp.cn/framework/manifest.html
   if(page.uri){
-      page.uri.replace(/\?(.*)/, function (a, b) {
-        b.split('&').forEach(function (param) {
-            param = param.split('=');
-            query[param[0]] = param[1];
-        });
-        return '';
-      })
-  }else{
-      query = _getApp().globalData.__quickQuery
+     getQueryFromUri(page.uri, query )
   }
-  return query
+  //如果能拿到就立即返回
+  for(var param in query){
+     return query;
+  }
+  //否则返回navigateTo/redirectTo/navigateBack中储存起来的参数
+  return _getApp().globalData.__quickQuery 
 }
 
 export function registerPage (PageClass, path) {
@@ -52,19 +57,19 @@ export function registerPage (PageClass, path) {
       let app = _getApp();
       let query = getQuery(this.$page);
       if (hook === 'onShow') {
-        instance.props.query = query
-        app.$$page = instance.wx
-        app.$$pagePath = instance.props.path
+        instance.props.query = query;
+        app.$$page = instance.wx;
+        app.$$pagePath = instance.props.path;
       }
       if (hook === 'onMenuPress') {
-        app.onShowMenu && app.onShowMenu(instance, this.$app)
+        app.onShowMenu && app.onShowMenu(instance, this.$app);
       } else if (isFn(fn)) {
-        fn.call(instance, {query})
+        fn.call(instance, {query});
       }
 
-      let globalHook = globalHooks[hook]
+      let globalHook = globalHooks[hook];
       if (globalHook) {
-        callGlobalHook(globalHook, {query})
+        callGlobalHook(globalHook, {query});
       }
     }
   })
