@@ -1,7 +1,7 @@
 let config = require('../config');
 let path = require('path');
+let g = require('@babel/generator').default;
 let cwd = process.cwd();
-
 let logQueue = require('../../nanachi-loader/logger/queue');
 
 
@@ -69,18 +69,13 @@ function checkImportComponent( filePath ){
 function validateJsx(astPath, state){
     
     let expression =  astPath.node.expression;
-
-    //忽略组件调用
-    if (/^[A-Z]\w*$/.test(expression.value)) {
-        return;
-    }
-
-    if (typeof expression.value === 'undefined') {
-        return;
-    }
-   
     let callee = expression.callee;
     let type = expression.type;
+
+    if (type === 'StringLiteral') return;
+    if (typeof astPath.node.loc === 'undefined') return;
+
+    
     let fileId = path.relative(cwd, state.filename);
     let { line, column } = astPath.node.loc.start;
 
@@ -108,7 +103,7 @@ function validateJsx(astPath, state){
         logQueue.error.push({
             id: fileId,
             level: 'error',
-            msg: `jsx属性中无法调用非map函数.\nat ${fileId}:${line}:${column}\n ${g(astPath.node).code}\n`,
+            msg: `jsx属性中无法调用函数.\nat ${fileId}:${line}:${column}\n ${g(astPath.node).code}\n`,
         });
         return;
     }
