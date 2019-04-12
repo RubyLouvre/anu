@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-11
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-12
  */
 
 var arrayPush = Array.prototype.push;
@@ -2055,8 +2055,7 @@ var Renderer$1 = createRenderer({
             if (!instance.instanceUid) {
                 instance.instanceUid = uuid;
             }
-            var wxInstances = type.wxInstances;
-            if (wxInstances) {
+            if (type.isMPComponent) {
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
@@ -2068,7 +2067,7 @@ var Renderer$1 = createRenderer({
                 instance: instance,
                 fn: instance.componentDidMount
             });
-            instance.componentDidMount = Date;
+            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -2603,7 +2602,6 @@ var more = function more(api) {
 };
 
 function registerComponent(type, name) {
-    type.wxInstances = {};
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
     var hasInit = false;
@@ -2675,7 +2673,6 @@ function onUnload() {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }

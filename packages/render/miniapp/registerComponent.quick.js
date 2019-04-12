@@ -2,7 +2,7 @@ import { registeredComponents, usingComponents, refreshComponent, detachComponen
 import { dispatchEvent } from './eventSystem.quick';
 
 export function registerComponent (type, name) {
-    type.wxInstances = {};
+    type.isMPComponent = true;
     registeredComponents[name] = type;
     let reactInstances = type.reactInstances = [];
     return {
