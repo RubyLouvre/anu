@@ -15,7 +15,10 @@ const pkgName = 'regenerator-runtime';
 
 function needInstall( pkgName ){
     try {
-        nodeResolve.sync(pkgName, { basedir: process.cwd() });
+        nodeResolve.sync(pkgName, { 
+            basedir: process.cwd(),
+            moduleDirectory: path.resolve(cwd, 'node_modules')
+        });
         return false;
     } catch (err) {
         return true;
@@ -53,9 +56,7 @@ module.exports  = [
                 }
             },
             post: function(){
-
                 if ( patchAsync &&  !copyFlag ) {
-
                     if ( needInstall(pkgName) ) {
                         utils.installer(pkgName);
                     }

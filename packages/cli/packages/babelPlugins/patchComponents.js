@@ -10,7 +10,10 @@ let patchSchneeUi = false;
 
 function needInstall( pkgName ){
     try {
-        nodeResolve.sync(pkgName, { basedir: process.cwd() });
+        nodeResolve.sync(pkgName, { 
+            basedir: process.cwd(),
+            moduleDirectory: path.resolve(cwd, 'node_modules')
+        });
         return false;
     } catch (err) {
         return true;
