@@ -2587,9 +2587,10 @@ function registerPage(PageClass, path, testObject) {
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
         config[hook] = function (e) {
-            var instance = this.reactInstance;
-            var fn = instance[hook],
-                fired = false;
+            var instance = this.reactInstance,
+                fn = instance[hook],
+                fired = false,
+                param = e || { query: this.options };
             if (hook === 'onShareAppMessage') {
                 hook = 'onShare';
                 fn = fn || instance[hook];
@@ -2599,14 +2600,14 @@ function registerPage(PageClass, path, testObject) {
             }
             if (isFn(fn)) {
                 fired = true;
-                var ret = fn.call(instance, e);
+                var ret = fn.call(instance, param);
                 if (hook === 'onShare') {
                     return ret;
                 }
             }
             var globalHook = globalHooks[hook];
             if (globalHook) {
-                ret = callGlobalHook(globalHook, e);
+                ret = callGlobalHook(globalHook, param);
                 if (hook === 'onShare') {
                     return ret;
                 }
@@ -2614,7 +2615,7 @@ function registerPage(PageClass, path, testObject) {
             var discarded = showHideHooks[hook];
             if (!fired && instance[discarded]) {
                 console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
-                instance[discarded](e);
+                instance[discarded](param);
             }
         };
     });

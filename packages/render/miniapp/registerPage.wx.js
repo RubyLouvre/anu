@@ -32,8 +32,10 @@ export function registerPage(PageClass, path, testObject) {
         'onHide'
     ).forEach(function(hook) {
         config[hook] = function(e) {
-            let instance = this.reactInstance;
-            let fn = instance[hook], fired = false;
+            let instance = this.reactInstance,
+             fn = instance[hook], 
+             fired = false,
+             param = e || {query: this.options};
             if (hook === 'onShareAppMessage'){
                 hook = 'onShare';
                 fn = fn || instance[hook];
@@ -46,14 +48,14 @@ export function registerPage(PageClass, path, testObject) {
             }
             if (isFn(fn)) {//页面级别
                 fired = true;
-                var ret =  fn.call(instance, e);
+                var ret =  fn.call(instance, param);
                 if (hook === 'onShare'){
                     return ret;
                 }
             }
             var globalHook = globalHooks[hook];
             if (globalHook){//应用级别
-                ret = callGlobalHook(globalHook, e);
+                ret = callGlobalHook(globalHook, param);
                 if (hook === 'onShare'){
                     return ret;
                 }
@@ -62,7 +64,7 @@ export function registerPage(PageClass, path, testObject) {
             let discarded = showHideHooks[hook];
             if (!fired && instance[discarded]){
                 console.warn(`${discarded} 已经被废弃，请使用${hook}`); //eslint-disable-line
-                instance[discarded](e);
+                instance[discarded](param);
             }
         };
     });
