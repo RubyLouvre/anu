@@ -106,13 +106,23 @@ async function getRemoteReactFile(ReactLibName) {
 function getReactLibFile(ReactLibName) {
     let src = path.join(cliRoot, 'lib', ReactLibName);
     let dist = path.join(cwd, 'source', ReactLibName);
-    return [
-        {
-            id: src,
-            dist: dist,
-            ACTION_TYPE: 'COPY'
-        }
-    ];
+
+    try {
+        //文件有就不COPY
+        fs.accessSync(dist);
+        return [];
+    } catch (err) {
+        return [
+            {
+                id: src,
+                dist: dist,
+                ACTION_TYPE: 'COPY'
+            }
+        ];
+    }
+
+   
+   
 }
 
 
