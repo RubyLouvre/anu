@@ -4,7 +4,6 @@ import { onLoad, onUnload, onReady } from './registerPage.all'
 import { callGlobalHook, _getApp } from './utils'
 import { getQueryFromUri } from './apiForQuick/router'
 
-// import { showMenu } from './apiForQuick/showMenu'
 var globalHooks = {
   onShareAppMessage: 'onGlobalShare',
   onShow: 'onGlobalShow',

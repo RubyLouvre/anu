@@ -626,33 +626,31 @@ function createContext(defaultValue, calculateChangedBits) {
     return getContext;
 }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 var device = require('@system.device');
-var DEFAULT_FONT_SIZE = 14;
+var mapNames = {
+    osVersionName: "version",
+    osVersionCode: "system",
+    platformVersionName: "platform",
+    platformVersionCode: "SDKVersion"
+};
 function getSystemInfo(_ref) {
-    var success = _ref.success,
+    var _success = _ref.success,
         fail = _ref.fail,
         complete = _ref.complete;
-    function gotSuccessInfo(rawObject) {
-        var result = {
-            fontSizeSetting: DEFAULT_FONT_SIZE
-        };
-        for (var name in rawObject) {
-            result[mapName[name] || name] = rawObject[name];
-        }
-        success && success(result);
-    }
     device.getInfo({
-        success: gotSuccessInfo,
+        success: function success(rawObject) {
+            var result = {
+                fontSizeSetting: 14
+            };
+            for (var name in rawObject) {
+                result[mapNames[name] || name] = rawObject[name];
+            }
+            _success && _success(result);
+        },
         fail: fail,
         complete: complete
     });
 }
-var mapName = _defineProperty({
-    platformVersionCode: "version",
-    osVersionCode: "system",
-    platformVersionName: "platform"
-}, "platformVersionCode", "SDKVersion");
 function getDeviceId(options) {
     return device.getDeviceId(options);
 }
