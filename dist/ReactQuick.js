@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-11
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-12
  */
 
 var arrayPush = Array.prototype.push;
@@ -1349,6 +1349,16 @@ function createShortcut() {
 }
 
 var router = require('@system.router');
+var rQuery = /\?(.*)/;
+function getQueryFromUri(uri, query) {
+    return uri.replace(rQuery, function (a, b) {
+        b.split('&').forEach(function (param) {
+            param = param.split('=');
+            query[param[0]] = param[1];
+        });
+        return '';
+    });
+}
 function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
@@ -1382,13 +1392,7 @@ function createRouter(name) {
                 uri = '/pages/__web__view__';
             }
         }
-        uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('&').forEach(function (param) {
-                param = param.split('=');
-                params[param[0]] = param[1];
-            });
-            return '';
-        }).replace(/\/index$/, '');
+        uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
@@ -3073,8 +3077,7 @@ var Renderer$1 = createRenderer({
             if (!instance.instanceUid) {
                 instance.instanceUid = uuid;
             }
-            var wxInstances = type.wxInstances;
-            if (wxInstances) {
+            if (type.isMPComponent) {
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
@@ -3086,7 +3089,7 @@ var Renderer$1 = createRenderer({
                 instance: instance,
                 fn: instance.componentDidMount
             });
-            instance.componentDidMount = Date;
+            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -3194,7 +3197,7 @@ function toStyle(obj, props, key) {
 }
 
 function registerComponent(type, name) {
-    type.wxInstances = {};
+    type.isMPComponent = true;
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
     return {
@@ -3255,7 +3258,6 @@ function onUnload() {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }
@@ -3282,19 +3284,17 @@ var globalHooks = {
   onHide: 'onGlobalHide'
 };
 function getQuery(page) {
+  if (page.query) {
+    return page.query;
+  }
   var query = {};
   if (page.uri) {
-    page.uri.replace(/\?(.*)/, function (a, b) {
-      b.split('&').forEach(function (param) {
-        param = param.split('=');
-        query[param[0]] = param[1];
-      });
-      return '';
-    });
-  } else {
-    query = _getApp().globalData.__quickQuery;
+    getQueryFromUri(page.uri, query);
   }
-  return query;
+  for (var param in query) {
+    return query;
+  }
+  return _getApp().globalData.__quickQuery;
 }
 function registerPage(PageClass, path) {
   PageClass.reactInstances = [];

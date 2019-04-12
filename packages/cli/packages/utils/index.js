@@ -63,7 +63,7 @@ let utils = {
                 return 'Tap';
             }
         }
-        if (buildType === 'quick') {
+        if (buildType === 'quick' && nodeName === 'list') {
             if (eventName === 'ScrollToLower') {
                 return 'ScrollBottom' //快应用的list标签的事件
             } else if (eventName === 'ScrollToUpper') {
