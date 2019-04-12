@@ -24,7 +24,6 @@ async function transform(sourcePath, resolvedIds, originalCode) {
             {
                 configFile: false,
                 babelrc: false,
-                comments: false,
                 plugins: [
                     ...require('./babelPlugins/transformEnv'),
                 ]
