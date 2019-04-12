@@ -50,25 +50,25 @@ export function registerPage (PageClass, path) {
     onDestroy: onUnload
   }
   Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
-    config[hook] = function () {
-      let instance = this.reactInstance;
-      let fn = instance[hook];
-      let app = _getApp();
-      let query = getQuery(this.$page);
+    config[hook] = function (e) {
+      let instance = this.reactInstance,
+       fn = instance[hook],
+       app = _getApp(),
+       param = e
       if (hook === 'onShow') {
-        instance.props.query = query;
+        param = instance.props.query = getQuery(this.$page);
         app.$$page = instance.wx;
         app.$$pagePath = instance.props.path;
       }
       if (hook === 'onMenuPress') {
         app.onShowMenu && app.onShowMenu(instance, this.$app);
       } else if (isFn(fn)) {
-        fn.call(instance, {query});
+        fn.call(instance, param);
       }
 
       let globalHook = globalHooks[hook];
       if (globalHook) {
-        callGlobalHook(globalHook, {query});
+        callGlobalHook(globalHook, param);
       }
     }
   })

@@ -2590,11 +2590,15 @@ function registerPage(PageClass, path, testObject) {
             var instance = this.reactInstance,
                 fn = instance[hook],
                 fired = false,
-                param = e || { query: this.options };
+                param = e;
             if (hook === 'onShareAppMessage') {
                 hook = 'onShare';
                 fn = fn || instance[hook];
             } else if (hook === 'onShow') {
+                if (this.options) {
+                    instance.props.query = this.options;
+                }
+                param = instance.props.query;
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }

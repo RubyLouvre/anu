@@ -3313,24 +3313,24 @@ function registerPage(PageClass, path) {
     onDestroy: onUnload
   };
   Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
-    config[hook] = function () {
-      var instance = this.reactInstance;
-      var fn = instance[hook];
-      var app = _getApp();
-      var query = getQuery(this.$page);
+    config[hook] = function (e) {
+      var instance = this.reactInstance,
+          fn = instance[hook],
+          app = _getApp(),
+          param = e;
       if (hook === 'onShow') {
-        instance.props.query = query;
+        param = instance.props.query = getQuery(this.$page);
         app.$$page = instance.wx;
         app.$$pagePath = instance.props.path;
       }
       if (hook === 'onMenuPress') {
         app.onShowMenu && app.onShowMenu(instance, this.$app);
       } else if (isFn(fn)) {
-        fn.call(instance, { query: query });
+        fn.call(instance, param);
       }
       var globalHook = globalHooks[hook];
       if (globalHook) {
-        callGlobalHook(globalHook, { query: query });
+        callGlobalHook(globalHook, param);
       }
     };
   });
