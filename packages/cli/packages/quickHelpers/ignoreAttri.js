@@ -59,7 +59,7 @@ const attributes = {
         rules: ['placeholder-style','placeholder-class'],
         ruleFunc: function(props, node) {
             if (config.huawei) {
-                if (/type/.test(props)) {
+                if (props === 'type') {
                     const validValues = ['button', 'checkbox', 'radio', 'text', 'email', 'date', 'time', 'number', 'password'];
                     if (node.type !== 'StringLiteral' || !validValues.includes(node.value))  {
                         return false;
@@ -73,7 +73,7 @@ const attributes = {
         rules: ['mode','width','height','confirm','focus','confirm-type'],
         ruleFunc: function(props, node) {
             if (config.huawei) {
-                if (/onload/.test(props)) {
+                if (props === 'onload') {
                     return false;
                 }
             }
