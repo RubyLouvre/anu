@@ -1,7 +1,8 @@
 import { showToast }  from './dialog';
+var shortcut = require('@system.shortcut');
 //桌面图标
 export function createShortcut() {
-    var shortcut = require('@system.shortcut');
+    
     shortcut.hasInstalled({
         success: function success(ok) {
             if (ok) {
@@ -22,4 +23,8 @@ export function createShortcut() {
             }
         }
     });
+}
+
+export function hasInstalled(obj) {
+    return shortcut.hasInstalled(obj);
 }
