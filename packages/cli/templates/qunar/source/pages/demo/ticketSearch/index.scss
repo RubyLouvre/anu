@@ -32,7 +32,7 @@ page {
     width: 750rpx;
     height: 230rpx;
     background-color: #feb64e;
-    overflow: visible;
+    // overflow: visible;
   }
   .search-container {
     background-color: #fff;
@@ -58,14 +58,14 @@ page {
         .depCityContent {
           height: 100%;
           line-height: 60px;
-          overflow: hidden;
+          // overflow: hidden;
           transition: transform 0.3s ease;
           -webkit-transition: -webkit-transform 0.3s ease;
         }
         .arrCityContent {
           height: 100%;
           line-height: 60px;
-          overflow: hidden;
+          // overflow: hidden;
           text-align: right;
           transition: transform 0.3s ease;
           -webkit-transition: -webkit-transform 0.3s ease;
