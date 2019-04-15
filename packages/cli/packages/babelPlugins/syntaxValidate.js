@@ -142,7 +142,7 @@ module.exports = function(){
         visitor: {
             JSXExpressionContainer: {
                 enter: function(astPath, state){
-                    if (['wx', 'tt'].includes(config.buildType)) {
+                    if (['wx', 'tt', 'qq'].includes(config.buildType)) {
                         validateJsx(astPath, state);
                     }
                 }
