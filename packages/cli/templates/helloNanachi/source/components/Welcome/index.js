@@ -7,9 +7,12 @@ class Welcome extends React.Component {
             text: props.text
         };
     }
+    onClick(e) {
+        console.log(e.target, 'onClick');
+    }
     render() {
         return (
-            <h2 class='welcome-text'>Hello, {this.state.text}.</h2>
+            <h2 class='welcome-text' onClick={this.onClick}>Hello, {this.state.text}.</h2>
         );
     }
 }
