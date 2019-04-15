@@ -1337,6 +1337,9 @@ function createShortcut() {
         }
     });
 }
+function shortcutInstall(obj) {
+    return shortcut.install(obj);
+}
 function hasInstalled(obj) {
     return shortcut.hasInstalled(obj);
 }
@@ -1561,6 +1564,7 @@ function more() {
         createShortcut: createShortcut,
         share: share,
         hasInstalled: hasInstalled,
+        shortcutInstall: shortcutInstall,
         pay: pay,
         getProvider: getProvider,
         wxpayGetType: wxpayGetType,
