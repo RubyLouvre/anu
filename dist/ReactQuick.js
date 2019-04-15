@@ -690,7 +690,7 @@ function dispatchEvent(e) {
     }
     var safeTarget = {
         dataset: dataset,
-        nodeName: target._nodeName || target.nodeName,
+        nodeName: target._nodeName || target.nodeName || target.type,
         value: e.value
     };
     Renderer.batchedUpdates(function () {
