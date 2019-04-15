@@ -20,9 +20,9 @@ export function dispatchEvent(e) {
         return;
     }
     const eventType = toLowerCase(e._type || e.type);
-    const target = getBrandSync() === 'HUAWEI' ? e.currentTarget: e.target;
+    const target =  e.currentTarget || e.target;
     // 小米1040 || 小米1040之前 || 华为在1050前
-    var dataset = target.dataset || getDataSetFromAttr(target._attr || target.attr);
+    var dataset = target.dataset || getDataSetFromAttr(target.attr || target._attr);
     const app = this.$app.$def;
     let eventUid = dataset[eventType + 'Uid'];
     const fiber = instance.$$eventCached[eventUid + 'Fiber'] || {

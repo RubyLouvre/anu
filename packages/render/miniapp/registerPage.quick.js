@@ -26,7 +26,7 @@ function getQuery (page) {
      return query;
   }
   //否则返回navigateTo/redirectTo/navigateBack中储存起来的参数
-  return Object(_getApp().globalData.__quickQuery)[page.path] || {};
+  return Object((_getApp().globalData || {}).__quickQuery)[page.path] || {};
 }
 
 export function registerPage (PageClass, path) {

@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-12
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-15
  */
 
 var arrayPush = Array.prototype.push;
@@ -654,14 +654,6 @@ function getSystemInfo(_ref) {
 function getDeviceId(options) {
     return device.getDeviceId(options);
 }
-var cacheBrand;
-function getBrandSync() {
-    if (!cacheBrand && device.getInfoSync) {
-        return cacheBrand = device.getInfoSync().brand;
-    } else {
-        return cacheBrand;
-    }
-}
 
 function getDataSetFromAttr(obj) {
     var ret = {};
@@ -680,8 +672,8 @@ function dispatchEvent(e) {
         return;
     }
     var eventType = toLowerCase(e._type || e.type);
-    var target = getBrandSync() === 'HUAWEI' ? e.currentTarget : e.target;
-    var dataset = target.dataset || getDataSetFromAttr(target._attr || target.attr);
+    var target = e.currentTarget || e.target;
+    var dataset = target.dataset || getDataSetFromAttr(target.attr || target._attr);
     var app = this.$app.$def;
     var eventUid = dataset[eventType + 'Uid'];
     var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
@@ -3292,7 +3284,7 @@ function getQuery(page) {
   for (var param in query) {
     return query;
   }
-  return Object(_getApp().globalData.__quickQuery)[page.path] || {};
+  return Object((_getApp().globalData || {}).__quickQuery)[page.path] || {};
 }
 function registerPage(PageClass, path) {
   PageClass.reactInstances = [];

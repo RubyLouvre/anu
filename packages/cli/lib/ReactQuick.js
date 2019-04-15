@@ -3293,7 +3293,7 @@ function getQuery(page) {
   for (var param in query) {
     return query;
   }
-  return Object(_getApp().globalData.__quickQuery)[page.path] || {};
+  return Object((_getApp().globalData || {}).__quickQuery)[page.path] || {};
 }
 function registerPage(PageClass, path) {
   PageClass.reactInstances = [];
