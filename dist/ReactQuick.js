@@ -1314,8 +1314,8 @@ function showLoading(obj) {
     prompt.showToast(obj);
 }
 
+var shortcut = require('@system.shortcut');
 function createShortcut() {
-    var shortcut = require('@system.shortcut');
     shortcut.hasInstalled({
         success: function success(ok) {
             if (ok) {
@@ -1336,6 +1336,9 @@ function createShortcut() {
             }
         }
     });
+}
+function hasInstalled(obj) {
+    return shortcut.hasInstalled(obj);
 }
 
 var router = require('@system.router');
@@ -1557,6 +1560,7 @@ function more() {
         initStorageSync: initStorageSync,
         createShortcut: createShortcut,
         share: share,
+        hasInstalled: hasInstalled,
         pay: pay,
         getProvider: getProvider,
         wxpayGetType: wxpayGetType,
