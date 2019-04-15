@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-24
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-15
  */
 
 var arrayPush = Array.prototype.push;
@@ -708,7 +708,7 @@ function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    delete props.is;
+    clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
     }
@@ -734,9 +734,6 @@ function safeClone(originVal) {
         }
     }
     return temp;
-}
-function toRenderProps() {
-    return null;
 }
 
 var webview = {};
@@ -2058,8 +2055,7 @@ var Renderer$1 = createRenderer({
             if (!instance.instanceUid) {
                 instance.instanceUid = uuid;
             }
-            var wxInstances = type.wxInstances;
-            if (wxInstances) {
+            if (type.isMPComponent) {
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
@@ -2071,7 +2067,7 @@ var Renderer$1 = createRenderer({
                 instance: instance,
                 fn: instance.componentDidMount
             });
-            instance.componentDidMount = Date;
+            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -2574,6 +2570,7 @@ var more = function more(api) {
             var originSuccess = _a.success || noop;
             var originFail = _a.fail || noop;
             var originComplete = _a.complete || noop;
+            _a.headers = _a.header;
             _a.success = function (res) {
                 var _res = res,
                     status = _res.status,
@@ -2596,13 +2593,16 @@ var more = function more(api) {
                 originFail.call(this, res);
                 originComplete.call(this, res);
             };
+            if (api.request) {
+                return api.request(_a);
+            }
             return api.httpRequest(_a);
         }
     };
 };
 
 function registerComponent(type, name) {
-    type.wxInstances = {};
+    type.isMPComponent = true;
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
     var hasInit = false;
@@ -2674,7 +2674,6 @@ function onUnload() {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }
@@ -2717,26 +2716,31 @@ function registerPage(PageClass, path, testObject) {
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
         config[hook] = function (e) {
-            var instance = this.reactInstance;
-            var fn = instance[hook],
-                fired = false;
+            var instance = this.reactInstance,
+                fn = instance[hook],
+                fired = false,
+                param = e;
             if (hook === 'onShareAppMessage') {
                 hook = 'onShare';
                 fn = fn || instance[hook];
             } else if (hook === 'onShow') {
+                if (this.options) {
+                    instance.props.query = this.options;
+                }
+                param = instance.props.query;
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }
             if (isFn(fn)) {
                 fired = true;
-                var ret = fn.call(instance, e);
+                var ret = fn.call(instance, param);
                 if (hook === 'onShare') {
                     return ret;
                 }
             }
             var globalHook = globalHooks[hook];
             if (globalHook) {
-                ret = callGlobalHook(globalHook, e);
+                ret = callGlobalHook(globalHook, param);
                 if (hook === 'onShare') {
                     return ret;
                 }
@@ -2744,7 +2748,7 @@ function registerPage(PageClass, path, testObject) {
             var discarded = showHideHooks[hook];
             if (!fired && instance[discarded]) {
                 console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
-                instance[discarded](e);
+                instance[discarded](param);
             }
         };
     });
@@ -2782,7 +2786,6 @@ var React = getWindow().React = {
     PureComponent: PureComponent,
     isValidElement: isValidElement,
     toClass: miniCreateClass,
-    toRenderProps: toRenderProps,
     useComponent: useComponent,
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
