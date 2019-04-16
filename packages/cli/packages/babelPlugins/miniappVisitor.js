@@ -268,6 +268,10 @@ module.exports = {
                 //配置分包
                 json = require('../utils/setSubPackage')(modules, json);
                 
+                //merge ${buildType}Config.json
+                json = require('../utils/mergeConfigJson')(modules, json);
+                
+                
                 queue.push({
                     path: utils.updatePath(
                         modules.sourcePath,
