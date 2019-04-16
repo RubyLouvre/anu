@@ -90,9 +90,9 @@ function deleteWebViewConifg() {
 
 }
 
-module.exports = function(routes){
-     
-     if (!Object.keys(routes).length) {
+module.exports = function(routes=[]){
+   
+    if (!routes.length) {
         process.env.ANU_WEBVIEW = '';
         return;
      }
@@ -106,7 +106,7 @@ module.exports = function(routes){
      writeH5CompileConfig(routes);
 
      let webViewRoutes = getWebViewRoutes(routes);
-
+    
      writeWebViewContainer(webViewRoutes)
 
      //注入运行时 webview 各route配置
