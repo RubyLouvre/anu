@@ -25,6 +25,10 @@ export function createShortcut() {
     });
 }
 
+export function shortcutInstall(obj) {
+    return shortcut.install(obj);
+}
+
 export function hasInstalled(obj) {
     return shortcut.hasInstalled(obj);
 }
