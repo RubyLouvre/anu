@@ -43,7 +43,7 @@ function getWebViewRules(){
     });
 
 
-    if (globalConfig.WebViewRules.pages.length) {
+    if (globalConfig.WebViewRules && globalConfig.WebViewRules.pages.length) {
         process.env.ANU_WEBVIEW = 'need_require_webview_file';
     } else {
         process.env.ANU_WEBVIEW = '';

@@ -20,10 +20,11 @@ module.exports = function(modules, json) {
     let subPackages = [];
     try {
         appRootConfig = require( path.join(process.cwd(), `${buildType}Config.json`) );
-        subPackages = appRootConfig.subpackages || appRootConfig.subPackages;
+        subPackages = appRootConfig.subpackages || appRootConfig.subPackages || [];
     } catch (err) {
        
     }
+
 
     let routes = json.pages.slice();
     subPackages.forEach(function(el){

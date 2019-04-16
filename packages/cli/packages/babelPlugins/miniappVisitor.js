@@ -264,8 +264,17 @@ module.exports = {
                 //配置分包
                 json = require('../utils/setSubPackage')(modules, json);
                 
-                modules.queue.push({
-                    path: path.relative(path.resolve(cwd, 'source'), modules.sourcePath),
+                //merge ${buildType}Config.json
+                json = require('../utils/mergeConfigJson')(modules, json);
+                
+                
+                module.queue.push({
+                    path: utils.updatePath(
+                        modules.sourcePath,
+                        config.sourceDir,
+                        'dist',
+                        'json'
+                    ),
                     code: JSON.stringify(json, null, 4),
                     type: 'json'
                 });
