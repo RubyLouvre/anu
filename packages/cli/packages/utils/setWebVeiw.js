@@ -7,7 +7,7 @@ const globalConfig = require('../config');
 
 
 function writeWebViewConfig(routes) {
-    let { allowthirdpartycookies,  trustedurl } = globalConfig.webview;
+    let { allowthirdpartycookies, trustedurl } = globalConfig.WebViewRules;
     let ret = {};
     for(let key in routes) {
         ret[key] = {
@@ -90,14 +90,50 @@ function deleteWebViewConifg() {
 
 }
 
-module.exports = function(routes){
-     
-     if (!Object.keys(routes).length) {
-        process.env.ANU_WEBVIEW = '';
+
+
+
+function writeManifest(webViewRoutes){
+    let manifestPath = path.join(cwd, 'src', 'manifest.json');
+    let originManifest = require(manifestPath);
+
+    let webViewRoutesAry = Object.keys(webViewRoutes).map(function(route){
+        return route.replace(/\\/, '/').replace(/(\/index)$/, '');
+    });
+
+    
+    for (let i in originManifest.router.pages) {
+        if (webViewRoutesAry.includes(i)) {
+            delete originManifest.router.pages[i];
+        }
+    }
+
+    let routePath = 'pages/__web__view__';
+    originManifest.router.pages[routePath] = {
+        component: 'index'
+    }
+  
+    if ( !globalConfig.WebViewRules.showTitleBar ) {
+        let routePath = 'pages/__web__view__';
+        let display = originManifest.display || {};
+        display.pages = display.pages || {};
+        display.pages[routePath] = {
+            titleBar: false
+        }
+    }
+
+    
+    fs.writeFileSync(manifestPath, JSON.stringify(originManifest, null, 4))
+
+   
+  
+}
+
+module.exports = function(routes=[]){
+   
+     if (!routes.length) {
         return;
      }
-
-     process.env.ANU_WEBVIEW = 'need_require_webview_file';
    
      //每次build先删除配置文件
      deleteWebViewConifg();
@@ -109,7 +145,11 @@ module.exports = function(routes){
 
      writeWebViewContainer(webViewRoutes)
 
-     //注入运行时 webview 各route配置
-     writeWebViewConfig(webViewRoutes)
+     //注入运行时 webview 各route 运行时配置
+     writeWebViewConfig(webViewRoutes);
+
+     
+     
+     writeManifest(webViewRoutes);
     
  }

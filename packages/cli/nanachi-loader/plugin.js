@@ -1,9 +1,27 @@
 const Timer = require('../packages/utils/timer');
 const { resetNum, timerLog, errorLog, warningLog } = require('./logger/index');
-
-const errorStack = require('./logger/queue');
-
+const setWebView = require('../packages/utils/setWebVeiw');
 const id = 'NanachiWebpackPlugin';
+
+
+function showLog() {
+    const errorStack = require('./logger/queue');
+    errorStack.warning.forEach(function(warning){
+        warningLog(warning);
+    });
+
+    if (errorStack.error.length) {
+        errorStack.error.forEach(function(error){
+            errorLog(error);
+        });
+        process.exit(1);
+    }
+};
+
+
+
+
+
 
 class NanachiWebpackPlugin {
     constructor({
@@ -44,21 +62,20 @@ class NanachiWebpackPlugin {
             resetNum();
             callback();
         });
+
+      
         
         compiler.hooks.done.tap(id, () => {
+
+
+
             this.timer.end();
 
             
-            errorStack.warning.forEach(function(warning){
-                warningLog(warning);
-            });
+            showLog();
 
-            if (errorStack.error.length) {
-                errorStack.error.forEach(function(error){
-                    errorLog(error);
-                });
-                process.exit(1);
-            }
+            
+            setWebView(compiler.NANACHI.webviews);
 
             timerLog(this.timer);
         });

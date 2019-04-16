@@ -33,10 +33,8 @@ class WxParser extends JavascriptParser{
                 require('../../../packages/babelPlugins/syntaxValidate'),
                 require('../../../packages/babelPlugins/collectDependencies'),
                 require('../../../packages/babelPlugins/collectTitleBarConfig'),
-                require('../../../packages/babelPlugins/collectWebViewPage'),
                 require('../../../packages/babelPlugins/patchComponents'),
                 ...require('../../../packages/babelPlugins/transformEnv'),
-                
                 [ require('@babel/plugin-transform-template-literals'), { loose: true }],
                 ...require('../../../packages/babelPlugins/transformMiniApp')(this.filepath),
                 ...require('../../../packages/babelPlugins/patchAsyncAwait'),
@@ -46,7 +44,6 @@ class WxParser extends JavascriptParser{
     }
     async parse() {
         const res = await super.parse();
-        
         this.queues = res.options.anu && res.options.anu.queue || this.queues;
         this.extraModules = res.options.anu && res.options.anu.extraModules || this.extraModules;
         this.queues.push({

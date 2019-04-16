@@ -37,9 +37,16 @@ module.exports = function({
                     exclude: /node_modules\/(?!schnee-ui\/)|React/,
                 },
                 {
-                    test: /node_modules\/(?!schnee-ui\/)|React/,
+                    test: /node_modules\/(?!schnee-ui\/)/,
                     use: [
                         require.resolve('../nanachi-loader/loaders/nodeFileLoader'),
+                    ]
+                },
+                {
+                    test: /React/,
+                    use: [
+                        require.resolve('../nanachi-loader/loaders/nodeFileLoader'),
+                        require.resolve('../nanachi-loader/loaders/reactLoader'),
                     ]
                 },
                 {

@@ -451,22 +451,27 @@ let utils = {
         });
     },
     isWebView(fileId) {
+        
         if (config.buildType != 'quick') {
             return false;
         }
 
-        if ( !(config.webview && config.webview.pages.length) ) {
+        let rules = config.WebViewRules && config.WebViewRules.pages || [];
+        
+        if ( !rules.length ) {
             return false;
         }
        
+       
         let isWebView =
-            config.webview.pages.includes(fileId) ||
-            config.webview.pages.some((reg) => {
+        rules.includes(fileId) ||
+        rules.some((rule) => {
                 //如果是webview设置成true, 则用增则匹配
-                return Object.prototype.toString.call(reg) === '[object RegExp]' &&
-                    reg.test(fileId)
+                return Object.prototype.toString.call(rule) === '[object RegExp]' && rule.test(fileId);
             });
+       
         return isWebView;
+
     },
     parseCamel(str) {
         return str

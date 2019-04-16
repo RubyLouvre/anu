@@ -42,7 +42,7 @@ class QuickParser extends JavascriptParser {
                 require('../../../packages/babelPlugins/syntaxValidate'),
                 require('../../../packages/babelPlugins/collectDependencies'),
                 require('../../../packages/babelPlugins/collectTitleBarConfig'),
-                require('../../../packages/babelPlugins/collectWebViewPage'),
+                //require('../../../packages/babelPlugins/collectWebViewPage'),
                 require('../../../packages/babelPlugins/patchComponents'),
                 ...require('../../../packages/babelPlugins/transformEnv'),
                 [ require('@babel/plugin-transform-template-literals'), { loose: true }],
