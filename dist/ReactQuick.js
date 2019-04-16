@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-11
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-15
  */
 
 var arrayPush = Array.prototype.push;
@@ -626,43 +626,33 @@ function createContext(defaultValue, calculateChangedBits) {
     return getContext;
 }
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 var device = require('@system.device');
-var DEFAULT_FONT_SIZE = 14;
+var mapNames = {
+    osVersionName: "version",
+    osVersionCode: "system",
+    platformVersionName: "platform",
+    platformVersionCode: "SDKVersion"
+};
 function getSystemInfo(_ref) {
-    var success = _ref.success,
+    var _success = _ref.success,
         fail = _ref.fail,
         complete = _ref.complete;
-    function gotSuccessInfo(rawObject) {
-        var result = {
-            fontSizeSetting: DEFAULT_FONT_SIZE
-        };
-        for (var name in rawObject) {
-            result[mapName[name] || name] = rawObject[name];
-        }
-        success && success(result);
-    }
     device.getInfo({
-        success: gotSuccessInfo,
+        success: function success(rawObject) {
+            var result = {
+                fontSizeSetting: 14
+            };
+            for (var name in rawObject) {
+                result[mapNames[name] || name] = rawObject[name];
+            }
+            _success && _success(result);
+        },
         fail: fail,
         complete: complete
     });
 }
-var mapName = _defineProperty({
-    platformVersionCode: "version",
-    osVersionCode: "system",
-    platformVersionName: "platform"
-}, "platformVersionCode", "SDKVersion");
 function getDeviceId(options) {
     return device.getDeviceId(options);
-}
-var cacheBrand;
-function getBrandSync() {
-    if (!cacheBrand && device.getInfoSync) {
-        return cacheBrand = device.getInfoSync().brand;
-    } else {
-        return cacheBrand;
-    }
 }
 
 function getDataSetFromAttr(obj) {
@@ -682,8 +672,8 @@ function dispatchEvent(e) {
         return;
     }
     var eventType = toLowerCase(e._type || e.type);
-    var target = getBrandSync() === 'HUAWEI' ? e.currentTarget : e.target;
-    var dataset = target.dataset || getDataSetFromAttr(target._attr || target.attr);
+    var target = e.currentTarget || e.target;
+    var dataset = target.dataset || getDataSetFromAttr(target.attr || target._attr);
     var app = this.$app.$def;
     var eventUid = dataset[eventType + 'Uid'];
     var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
@@ -700,7 +690,7 @@ function dispatchEvent(e) {
     }
     var safeTarget = {
         dataset: dataset,
-        nodeName: target._nodeName || target.nodeName,
+        nodeName: target._nodeName || target.nodeName || target.type,
         value: e.value
     };
     Renderer.batchedUpdates(function () {
@@ -1324,8 +1314,8 @@ function showLoading(obj) {
     prompt.showToast(obj);
 }
 
+var shortcut = require('@system.shortcut');
 function createShortcut() {
-    var shortcut = require('@system.shortcut');
     shortcut.hasInstalled({
         success: function success(ok) {
             if (ok) {
@@ -1347,8 +1337,24 @@ function createShortcut() {
         }
     });
 }
+function shortcutInstall(obj) {
+    return shortcut.install(obj);
+}
+function hasInstalled(obj) {
+    return shortcut.hasInstalled(obj);
+}
 
 var router = require('@system.router');
+var rQuery = /\?(.*)/;
+function getQueryFromUri(uri, query) {
+    return uri.replace(rQuery, function (a, b) {
+        b.split('&').forEach(function (param) {
+            param = param.split('=');
+            query[param[0]] = param[1];
+        });
+        return '';
+    });
+}
 function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
@@ -1382,13 +1388,7 @@ function createRouter(name) {
                 uri = '/pages/__web__view__';
             }
         }
-        uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('&').forEach(function (param) {
-                param = param.split('=');
-                params[param[0]] = param[1];
-            });
-            return '';
-        }).replace(/\/index$/, '');
+        uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
         }
@@ -1563,6 +1563,8 @@ function more() {
         initStorageSync: initStorageSync,
         createShortcut: createShortcut,
         share: share,
+        hasInstalled: hasInstalled,
+        shortcutInstall: shortcutInstall,
         pay: pay,
         getProvider: getProvider,
         wxpayGetType: wxpayGetType,
@@ -3073,8 +3075,7 @@ var Renderer$1 = createRenderer({
             if (!instance.instanceUid) {
                 instance.instanceUid = uuid;
             }
-            var wxInstances = type.wxInstances;
-            if (wxInstances) {
+            if (type.isMPComponent) {
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
@@ -3086,7 +3087,7 @@ var Renderer$1 = createRenderer({
                 instance: instance,
                 fn: instance.componentDidMount
             });
-            instance.componentDidMount = Date;
+            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -3194,7 +3195,7 @@ function toStyle(obj, props, key) {
 }
 
 function registerComponent(type, name) {
-    type.wxInstances = {};
+    type.isMPComponent = true;
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
     return {
@@ -3255,7 +3256,6 @@ function onUnload() {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }
@@ -3282,19 +3282,17 @@ var globalHooks = {
   onHide: 'onGlobalHide'
 };
 function getQuery(page) {
+  if (page.query) {
+    return page.query;
+  }
   var query = {};
   if (page.uri) {
-    page.uri.replace(/\?(.*)/, function (a, b) {
-      b.split('&').forEach(function (param) {
-        param = param.split('=');
-        query[param[0]] = param[1];
-      });
-      return '';
-    });
-  } else {
-    query = _getApp().globalData.__quickQuery;
+    getQueryFromUri(page.uri, query);
   }
-  return query;
+  for (var param in query) {
+    return query;
+  }
+  return Object((_getApp().globalData || {}).__quickQuery)[page.path] || {};
 }
 function registerPage(PageClass, path) {
   PageClass.reactInstances = [];
@@ -3315,24 +3313,24 @@ function registerPage(PageClass, path) {
     onDestroy: onUnload
   };
   Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
-    config[hook] = function () {
-      var instance = this.reactInstance;
-      var fn = instance[hook];
-      var app = _getApp();
-      var query = getQuery(this.$page);
+    config[hook] = function (e) {
+      var instance = this.reactInstance,
+          fn = instance[hook],
+          app = _getApp(),
+          param = e;
       if (hook === 'onShow') {
-        instance.props.query = query;
+        param = instance.props.query = getQuery(this.$page);
         app.$$page = instance.wx;
         app.$$pagePath = instance.props.path;
       }
       if (hook === 'onMenuPress') {
         app.onShowMenu && app.onShowMenu(instance, this.$app);
       } else if (isFn(fn)) {
-        fn.call(instance, { query: query });
+        fn.call(instance, param);
       }
       var globalHook = globalHooks[hook];
       if (globalHook) {
-        callGlobalHook(globalHook, { query: query });
+        callGlobalHook(globalHook, param);
       }
     };
   });

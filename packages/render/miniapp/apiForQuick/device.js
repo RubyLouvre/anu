@@ -1,23 +1,42 @@
 const device = require('@system.device');
-const DEFAULT_FONT_SIZE = 14;
-
+var mapNames = {
+    osVersionName: "version",
+    osVersionCode: "system",
+    platformVersionName: "platform" ,
+    platformVersionCode: "SDKVersion"
+}
 function getSystemInfo({success, fail, complete}) {
-    function gotSuccessInfo(rawObject) {
-        let result = {
-            fontSizeSetting: DEFAULT_FONT_SIZE,
-        }
-        for(let name in rawObject){
-            result[mapName[name] || name] = rawObject[name]
-        }
-        success && success(result);
-    }
-
+   
     device.getInfo({
-        success: gotSuccessInfo,
+        success: function(rawObject) {
+            var result = {
+                fontSizeSetting: 14,
+            }
+
+            for(let name in rawObject){
+               result[mapNames[name] || name] = rawObject[name];
+            }
+            success && success(result);
+        },
         fail,
         complete
     });
 }
+
+
+function getDeviceId(options) {
+   return device.getDeviceId(options);
+}
+var cacheBrand
+function getBrandSync(){
+    if(!cacheBrand && device.getInfoSync){
+       return cacheBrand = device.getInfoSync().brand
+    }else{
+       return cacheBrand
+    }
+}
+export { getSystemInfo ,getDeviceId, getBrandSync};
+
 // https://doc.quickapp.cn/features/system/device.html
 /* 快应用
 brand	String	设备品牌
@@ -38,22 +57,3 @@ windowHeight 1030+	Integer	可使用窗口高度
 statusBarHeight 1030+	Integer	状态栏高度
 screenDensity 1040+	Float	设备的屏幕密度
 */
-var mapName = {
-    platformVersionCode: "version",
-    osVersionCode: "system",
-    platformVersionName: "platform" ,
-    platformVersionCode: "SDKVersion"
-}
-
-function getDeviceId(options) {
-   return device.getDeviceId(options);
-}
-var cacheBrand
-function getBrandSync(){
-    if(!cacheBrand && device.getInfoSync){
-       return cacheBrand = device.getInfoSync().brand
-    }else{
-       return cacheBrand
-    }
-}
-export { getSystemInfo ,getDeviceId, getBrandSync};

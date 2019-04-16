@@ -34,7 +34,7 @@ import {
     getDeviceId 
 } from './device.js';
 import { chooseImage } from './media.js';
-import { createShortcut } from './shortcut.js';
+import { createShortcut, hasInstalled, shortcutInstall } from './shortcut.js';
 
 import { 
     showModal,
@@ -130,6 +130,8 @@ export function more(){
         initStorageSync,
         createShortcut,//快应用专用
         share, //快应用专用
+        hasInstalled, //快应用专用
+        shortcutInstall,//快应用专用
         pay, 
         getProvider, 
         wxpayGetType, 

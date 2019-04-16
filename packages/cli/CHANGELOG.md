@@ -1,6 +1,35 @@
 # Changelog
 
 
+# 1.2.0 (2019-04-12)
+
+## 核心库
+
+#### Bug fix
+- 修复支付宝小程的 React.api.request 中 header 头 bug。
+
+
+## CLI
+#### Feature
+- 支持 QQ 轻应用。
+- 优化快应用智能化 webview 逻辑，更加灵活。
+- 将实例 config 变成静态 config 以提高性能。
+- 更新快应用获取参数机制
+
+
+
+#### Bug fix
+- 修复微信, QQ小程序遍历节点上 key 属性的 bug。
+- 修复华为快应用无法获取页面参数 bug。
+- 修复华为快应用行内样式处理 bug。
+- 修复华为快应用 PageWrapper 组件模版 bug。
+- 修复样式 @import bug。
+- 修复 React 组件类中 config 属性逻辑处理 bug。
+
+
+
+
+
 # 1.1.8 (2019-03-25)
 
 ## 核心库
@@ -29,7 +58,7 @@
 #### Bug fix
 - 修复CLI构建结束回调 bug。
 - 修复自定义 `tabBar` 构建后有冗余配置 bug。
-- 修复快应用下`manifest.json`配置拷贝不全的 bug。。
+- 修复快应用下`manifest.json`配置拷贝不全的 bug。
 
 
 
