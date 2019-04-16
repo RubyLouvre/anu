@@ -332,6 +332,8 @@ class Parser {
                       + `\n例如: import ${componentsFolderName} from \'@components/${componentsFolderName}/index\'`;
                  msg += `\nerror at: ${item.id}`
              }
+
+             if (!msg) return;
              
              this.collectError.componentsStandardError.push({
                  id: item.id,
