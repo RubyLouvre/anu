@@ -308,21 +308,37 @@ class Parser {
     }
 
     checkImportComponent(item){
-        // const path = item.id;
-        const componentsDir = path.join(cwd, config.sourceDir, 'components');
-        // 如果是 components 中的组件需要校验
-        if (item.id.indexOf(componentsDir) === 0) {
-            const restComponentsPath = item.id.replace(componentsDir, '');
-            if (!/^(\/|\\)[A-Z][a-zA-Z0-9]*(\/|\\)index\.js/.test(restComponentsPath)) {
-                this.collectError.componentsStandardError.push({
-                    id: item.id,
-                    level: 'error',
-                    msg: item.id.replace(`${cwd}${path.sep}`, '')
-                        + '\n组件名必须首字母大写\nimport [组件名] from \'@components/[组件名]/[此处必须index]\''
-                        + '\neg. import Loading from \'@components/Loading/index\'\n'
-                });
-            }
-        }
+        let importList = item.code.match(/^(?:import)\s+([^;]+)/igm) || [];
+      
+        importList = importList.filter((importer)=>{
+            return /[/|@]components\//.test(importer);
+        });
+
+        importList.forEach((importer)=>{
+             // import Welcome from '@components/Welcome/index' => ['Welcome', '@components/Welcome/index']
+             let [importName, importValue] = importer.replace(/(import|from|\'|\")/g, '').trim().split(/\s+/);
+            
+             // @components/Welcome/index ==》Welcome
+             let componentsFolderName = path.dirname(importValue).replace(/\\/, '/').split('/').pop();
+             let fileName = path.parse(importValue).name;
+ 
+             let msg = '';
+             if ( fileName!='index' ) {
+                 msg = '组件文件名必须是index';
+
+                 msg += `\nerror at: ${importValue}`
+             } else if ( importName != componentsFolderName){
+                 msg = '引用的组件名必须和组件所在的文件夹名保持一致'
+                      + `\n例如: import ${componentsFolderName} from \'@components/${componentsFolderName}/index\'`;
+                 msg += `\nerror at: ${item.id}`
+             }
+             
+             this.collectError.componentsStandardError.push({
+                 id: item.id,
+                 level: 'error',
+                 msg: msg
+             });
+        });
     }
     async transform() {
        
