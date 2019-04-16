@@ -173,7 +173,7 @@ page {
         color: rgb(175, 174, 174);
       }
       .hide-text {
-        overflow: hidden;
+        // overflow: hidden;
         text-overflow: ellipsis; //文本溢出显示省略号
         display: -webkit-box;
         -webkit-line-clamp: 2;

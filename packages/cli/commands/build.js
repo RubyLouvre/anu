@@ -19,7 +19,7 @@ function callback(err, stats) {
 
 module.exports = async function(args){
     try {
-        const { buildType, beta, betaUi, watch, compress } = args;
+        const { buildType, beta, betaUi, watch, compress, huawei } = args;
         nanachi({
             entry: './source/app.js',
             platform: buildType,
@@ -27,6 +27,7 @@ module.exports = async function(args){
             betaUi,
             compress,
             watch,
+            huawei,
             postLoaders: [
                 require.resolve('../nanachi-loader/loaders/decodeChineseLoader'), // 测试自定义解码中文字符插件
             ],

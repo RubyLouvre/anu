@@ -124,12 +124,7 @@ function setRouter(config) {
         }
         var routePath = el.slice(0, -6);
         manifest.router.pages[routePath] = {
-            component: 'index',
-            filter: {
-                view: {
-                  uri: "https?://.*"
-                }
-            }
+            component: 'index'
         };
         //设置首页
         if (index === 0){

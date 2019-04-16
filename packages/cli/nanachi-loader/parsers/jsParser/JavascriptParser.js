@@ -78,7 +78,9 @@ class JavascriptParser {
                             // 如果是 import babel from '@babel' 这种node_modules引入，处理路径 node_modules -> npm
                             if (/^(?=[^./\\])/.test(moduleName)) {
                                 try {
-                                    const nodePath = nodeResolve.sync(moduleName, { basedir: cwd });
+                                    const nodePath = nodeResolve.sync(moduleName, {
+                                        basedir: cwd
+                                    });
                                     moduleName = path.resolve(cwd, 'source/npm', path.relative(path.resolve(cwd, 'node_modules'), nodePath));
                                 } catch (e) {
                                     console.log(e);

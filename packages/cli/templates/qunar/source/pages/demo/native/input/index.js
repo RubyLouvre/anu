@@ -81,7 +81,7 @@ class P extends React.Component {
                         <input
                             class="weui-input"
                             maxlength="10"
-                            onInput={this.bindKeyInput}
+                            onChange={this.bindKeyInput}
                             placeholder="输入同步到view中"
                         />
                     </view>
@@ -91,7 +91,7 @@ class P extends React.Component {
                     <view class="weui-cell weui-cell_input">
                         <input
                             class="weui-input"
-                            onInput={this.bindReplaceInput}
+                            onChange={this.bindReplaceInput}
                             placeholder="连续的两个1会变成2"
                         />
                     </view>
@@ -101,7 +101,7 @@ class P extends React.Component {
                     <view class="weui-cell weui-cell_input">
                         <input
                             class="weui-input"
-                            onInput={this.bindHideKeyboard}
+                            onChange={this.bindHideKeyboard}
                             placeholder="输入123自动收起键盘"
                         />
                     </view>

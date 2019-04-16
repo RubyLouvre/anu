@@ -105,22 +105,23 @@ async function getRemoteReactFile(ReactLibName) {
     ];
 }
 
-function getReactLibFile(ReactLibName, buildType) {
+function getReactLibFile(ReactLibName) {
     let src = path.join(cliRoot, 'lib', ReactLibName);
     let dist = path.join(cwd, 'source', ReactLibName);
-    // const distPath = path.join(cwd, buildType === 'quick' ? 'src' : 'dist', ReactLibName);
-    return [ 
-        {
-            id: src,
-            dist: dist,
-            ACTION_TYPE: 'COPY'
-        },
-        // {
-        //     id: src,
-        //     dist: distPath,
-        //     ACTION_TYPE: 'COPY'
-        // }
-    ];
+
+    try {
+        //文件有就不COPY
+        fs.accessSync(dist);
+        return [];
+    } catch (err) {
+        return [
+            {
+                id: src,
+                dist: dist,
+                ACTION_TYPE: 'COPY'
+            }
+        ];
+    }
 }
 
 
@@ -208,7 +209,7 @@ async function runTask({ buildType, beta, betaUi }){
         tasks = tasks.concat(await getRemoteReactFile(ReactLibName));
         spinner.succeed(chalk.green.bold(`同步最新的${ReactLibName}成功!`));
     } else {
-        tasks = tasks.concat(getReactLibFile(ReactLibName, buildType));
+        tasks = tasks.concat(getReactLibFile(ReactLibName));
     }
     
     //快应用下需要copy babel.config.js, 合并package.json等

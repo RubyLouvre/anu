@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-09T09
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-15T13
  * IE9+
  */
 
@@ -932,6 +932,24 @@ var more = function more(api) {
             RequestQueue.facade = api;
             RequestQueue.request(_a);
             return RequestQueue.request(_a);
+        },
+        getStorage: function getStorage(_ref) {
+            var key = _ref.key,
+                success = _ref.success,
+                _fail = _ref.fail,
+                complete = _ref.complete;
+            return api.getStorage({
+                key: key,
+                complete: complete,
+                success: success,
+                fail: function fail(e) {
+                    if (e.errMsg === "getStorage:fail data not found") {
+                        success && success({});
+                    } else {
+                        _fail && _fail(e);
+                    }
+                }
+            });
         }
     };
 };
@@ -1018,7 +1036,6 @@ function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    delete props.is;
     clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
@@ -2366,8 +2383,7 @@ var Renderer$1 = createRenderer({
             if (!instance.instanceUid) {
                 instance.instanceUid = uuid;
             }
-            var wxInstances = type.wxInstances;
-            if (wxInstances) {
+            if (type.isMPComponent) {
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
@@ -2379,7 +2395,7 @@ var Renderer$1 = createRenderer({
                 instance: instance,
                 fn: instance.componentDidMount
             });
-            instance.componentDidMount = Date;
+            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -2511,7 +2527,6 @@ function onUnload() {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }
@@ -2554,26 +2569,31 @@ function registerPage(PageClass, path, testObject) {
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
         config[hook] = function (e) {
-            var instance = this.reactInstance;
-            var fn = instance[hook],
-                fired = false;
+            var instance = this.reactInstance,
+                fn = instance[hook],
+                fired = false,
+                param = e;
             if (hook === 'onShareAppMessage') {
                 hook = 'onShare';
                 fn = fn || instance[hook];
             } else if (hook === 'onShow') {
+                if (this.options) {
+                    instance.props.query = this.options;
+                }
+                param = instance.props.query;
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }
             if (isFn(fn)) {
                 fired = true;
-                var ret = fn.call(instance, e);
+                var ret = fn.call(instance, param);
                 if (hook === 'onShare') {
                     return ret;
                 }
             }
             var globalHook = globalHooks[hook];
             if (globalHook) {
-                ret = callGlobalHook(globalHook, e);
+                ret = callGlobalHook(globalHook, param);
                 if (hook === 'onShare') {
                     return ret;
                 }
@@ -2581,7 +2601,7 @@ function registerPage(PageClass, path, testObject) {
             var discarded = showHideHooks[hook];
             if (!fired && instance[discarded]) {
                 console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
-                instance[discarded](e);
+                instance[discarded](param);
             }
         };
     });
@@ -2597,7 +2617,7 @@ function registerPage(PageClass, path, testObject) {
 
 var defer = Promise.resolve().then.bind(Promise.resolve());
 function registerComponent(type, name) {
-    type.wxInstances = {};
+    type.isMPComponent = true;
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
     var config = {

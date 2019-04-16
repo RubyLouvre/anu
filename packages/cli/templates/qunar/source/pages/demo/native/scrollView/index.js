@@ -51,9 +51,9 @@ class P extends React.Component {
                     <div class="section__title">vertical scroll</div>
                     <scroll-view
                         scroll-y
-                        style="height: 200px; overflow: hidden;"
-                        onScrolltoupper={this.upper}
-                        onScrolltolower={this.lower}
+                        style="height: 200px"
+                        onScrollToUpper={this.upper}
+                        onScrollToLower={this.lower}
                         onScroll={this.scroll}
                         scroll-into-div={this.state.todiv}
                         scroll-top={this.state.scrollTop}
