@@ -268,13 +268,8 @@ module.exports = {
                 json = require('../utils/mergeConfigJson')(modules, json);
                 
                 
-                module.queue.push({
-                    path: utils.updatePath(
-                        modules.sourcePath,
-                        config.sourceDir,
-                        'dist',
-                        'json'
-                    ),
+                modules.queue.push({
+                    path: path.relative(path.resolve(cwd, 'source'), modules.sourcePath),
                     code: JSON.stringify(json, null, 4),
                     type: 'json'
                 });

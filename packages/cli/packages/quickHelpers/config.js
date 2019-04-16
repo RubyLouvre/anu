@@ -225,14 +225,14 @@ module.exports = function quickConfig(config, modules){
 
     //配置titlebar
     setTitleBar(config);
-    if(platConfig.huawei){
+    if (platConfig.huawei){
         manifest.minPlatformVersion = 1040;
-     }
+    }
     //配置name, permissions, config, subpackages, 各支付签名
     setOtherConfig();
     //manifest要序列化的对象
     modules.queue.push({
-        path: path.join(process.cwd(), 'src', 'manifest.json'),
+        path: 'manifest.json',
         code: JSON.stringify(manifest, null, 4),
         type: 'json'
     });
