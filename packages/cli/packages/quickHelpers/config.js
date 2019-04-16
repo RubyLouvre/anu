@@ -131,7 +131,7 @@ function setRouter(config) {
             manifest.router.entry = routePath;
         } 
     });
-
+  
     //webview路由跳转
     var globalConfig = require('../config');
     if (globalConfig.webview && globalConfig.webview.pages.length) {
@@ -245,10 +245,12 @@ module.exports = function quickConfig(config, modules, queue){
 
     //配置titlebar
     setTitleBar(config);
-
+    if(platConfig.huawei){
+        manifest.minPlatformVersion = 1040;
+     }
     //配置name, permissions, config, subpackages, 各支付签名
     setOtherConfig();
-    
+    //manifest要序列化的对象
     queue.push({
         path: path.join(process.cwd(), 'src', 'manifest.json'),
         code: JSON.stringify(manifest, null, 4),
