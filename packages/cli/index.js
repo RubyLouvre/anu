@@ -4,6 +4,56 @@ const cwd = process.cwd();
 const globalConfig = require('./packages/config.js');
 const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
 
+const babel = require('@babel/core');
+const spawn = require('child_process').spawnSync;
+
+
+//获取 WEBVIEW 配置
+function getWebViewRules(){
+    if (globalConfig.buildType != 'quick') return;
+    let bin = 'grep';
+    let opts = ['-r', "pages:\\s*true", path.join(cwd, 'source', 'pages' )];
+    let result = spawn(bin, opts);
+    let ret = result.stdout.toString();
+
+    let webViewRoutes = ret.split(/\s/)
+    .filter(function(el){
+        return /\/pages\//.test(el)
+    }).map(function(el){
+        return el.replace(/\:$/g, '')
+    });
+
+    webViewRoutes.forEach(async function(pagePath){
+       babel.transformFileSync(pagePath, {
+            configFile: false,
+            babelrc: false,
+            comments: false,
+            ast: true,
+            presets: [
+                require('@babel/preset-react')
+            ],
+            plugins: [
+                [require('@babel/plugin-proposal-decorators'), { legacy: true }],
+                [require('@babel/plugin-proposal-class-properties'), { loose: true }],
+                require('@babel/plugin-proposal-object-rest-spread'),
+                require('@babel/plugin-syntax-jsx'),
+                require('./packages/babelPlugins/collectWebViewPage'),
+            ]
+        });
+    });
+
+
+    if (globalConfig.WebViewRules.pages.length) {
+        process.env.ANU_WEBVIEW = 'need_require_webview_file';
+    } else {
+        process.env.ANU_WEBVIEW = '';
+    }
+    
+}
+
+
+
+
 function injectBuildEnv({ buildType, compress, huawei } = {}){
     process.env.ANU_ENV = buildType;
     globalConfig['buildType'] = buildType;
@@ -32,6 +82,9 @@ async function nanachi({
         compress,
         huawei
     });
+
+    getWebViewRules();
+
     const webpackConfig = require('./config/webpackConfig')({
         entry,
         platform,

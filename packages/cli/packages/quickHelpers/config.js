@@ -117,11 +117,10 @@ var manifest = {
 
 //配置页面路由
 function setRouter(config) {
+
+
     config.pages.forEach(function(el ,index){
-        //如果是webview, 不注入router配置
-        if (utils.isWebView(path.join(process.cwd(), platConfig.sourceDir, el + '.js' ))) {
-            return;
-        }
+        
         var routePath = el.slice(0, -6);
         manifest.router.pages[routePath] = {
             component: 'index'
@@ -132,14 +131,6 @@ function setRouter(config) {
         } 
     });
 
-    //webview路由跳转
-    var globalConfig = require('../config');
-    if (globalConfig.webview && globalConfig.webview.pages.length) {
-        let routePath = 'pages/__web__view__';
-        manifest.router.pages[routePath] = {
-            component: 'index'
-        }
-    }
 }
 
 
@@ -151,17 +142,6 @@ function setTitleBar(config) {
         userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
     } catch (err) {
         // eslint-disable-next-line
-    }
-
-    //webview配置titlebar
-    var globalConfig = require('../config');
-
-    if ( globalConfig.webview && Object.prototype.toString.call(globalConfig.webview.showTitleBar) === '[object Boolean]' && !globalConfig.webview.showTitleBar ) {
-        let routePath = 'pages/__web__view__';
-        display['pages'] = display['pages'] || {};
-        display['pages'][routePath] = {
-            titleBar: false
-        }
     }
     
     if (
@@ -238,8 +218,9 @@ function setOtherConfig() {
 }
 
 
-module.exports = function quickConfig(config, modules, queue){
+module.exports = function quickConfig(config, modules){
     if (modules.componentType !== 'App') return;
+   
     //配置页面路由
     setRouter(config);
 
