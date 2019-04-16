@@ -11,7 +11,7 @@ class P extends React.Component {
         let that = this;
         console.log(React.api.request+'');
         let data  = await React.api.request({
-            url: 'http://yapi.demo.qunar.com/mock/18752/qunar/city'
+            url: 'http://yapi.demo.qunar.com/mock/11595/qunar/city'
         });
         let curData = that.cleanData(data.data);
         that.setState({data: curData});
