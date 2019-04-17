@@ -1,6 +1,6 @@
 const JavascriptParser = require('./JavascriptParser');
 const mergeUx = require('../../../packages/quickHelpers/mergeUx');
-const quickFiles = require('../../../packages/quickFiles');
+const quickFiles = require('../../../packages/quickHelpers/quickFiles');
 const StyleParserFactory = require('../styleParser/StyleParserFactory');
 const path = require('path');
 const utils = require('../../../packages/utils/index');

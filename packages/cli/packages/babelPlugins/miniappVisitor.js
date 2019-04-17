@@ -11,7 +11,7 @@ const ignoreAttri = require('../quickHelpers/ignoreAttri');
 const cwd = process.cwd();
 
 const transformConfig = require('./transformConfig');
-const quickFiles = require('../quickFiles');
+const quickFiles = require('../quickHelpers/quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
 const helpers = require(`../${config[buildType].helpers}/index`);

@@ -2,7 +2,7 @@ const path = require('path');
 const postcss = require('postcss');
 const utils = require('../../../packages/utils/index');
 const fs = require('fs');
-const quickFiles = require('../../../packages/quickFiles');
+const quickFiles = require('../../../packages/quickHelpers/quickFiles');
 
 class StyleParser {
     constructor({
