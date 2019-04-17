@@ -118,7 +118,6 @@ module.exports = (data, queue)=>{
     //假设假设存在<template>
     var ux = `${uxFile.template || ''}`;
     map.resolveComponents(data, queue);
-    ux = beautifyUx(map.getImportTag(uxFile, sourcePath) + ux) + '\n'; 
     uxFile.header = beautifyUx(map.getImportTag(uxFile, sourcePath) + ux);
     uxFile.jsCode = map.getJsCode(result.code);
     uxFile.cssCode = uxFile.cssCode || '';

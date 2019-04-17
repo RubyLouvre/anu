@@ -4,8 +4,6 @@ const utils = require('../../../packages/utils/index');
 const fs = require('fs');
 const quickFiles = require('../../../packages/quickFiles');
 
-const sourcePath = path.resolve(process.cwd(), 'source');
-
 class StyleParser {
     constructor({
         code,
@@ -21,15 +19,18 @@ class StyleParser {
         this.filepath = filepath;
         this.type = type;
         this.platform = platform;
-        if (/node_modules\/schnee-ui/.test(filepath)) {
-            this.relativePath = path.join('npm', path.relative(path.resolve(process.cwd(), 'node_modules'), filepath));
-        } else {
-            this.relativePath = path.relative(path.resolve(process.cwd(), 'source'), filepath);
-        }
+        this.relativePath = this.getRelativePath(filepath);
         this._postcssPlugins = [];
         this._postcssOptions = {};
         this.parsedCode = '';
         this.extraModules = [];
+    }
+    getRelativePath(filepath) {
+        if (/node_modules\/schnee-ui/.test(filepath)) {
+            return path.join('npm', path.relative(path.resolve(process.cwd(), 'node_modules'), filepath));
+        } else {
+            return path.relative(path.resolve(process.cwd(), 'source'), filepath);
+        }
     }
     
     async parse() {
@@ -53,7 +54,7 @@ class StyleParser {
             if (find) {
                 return [{
                     type: 'ux',
-                    path: path.relative(sourcePath, find),
+                    path: this.getRelativePath(find),
                     code: this.getUxCode(find)
                 }];
             }
