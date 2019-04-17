@@ -2,6 +2,9 @@ const path = require('path');
 const postcss = require('postcss');
 const utils = require('../../../packages/utils/index');
 const fs = require('fs');
+const quickFiles = require('../../../packages/quickFiles');
+
+const sourcePath = path.resolve(process.cwd(), 'source');
 
 class StyleParser {
     constructor({
@@ -45,6 +48,16 @@ class StyleParser {
         return res;
     }
     getExtraFiles() {
+        if (this.platform === 'quick') {
+            const find = Object.keys(quickFiles).find(file => quickFiles[file].cssPath === this.filepath);
+            if (find) {
+                return [{
+                    type: 'ux',
+                    path: path.relative(sourcePath, find),
+                    code: this.getUxCode(find)
+                }];
+            }
+        }
         return [{
             type: 'css',
             path: this.relativePath,
@@ -57,6 +70,11 @@ class StyleParser {
             res = `import '${module}';\n` + res;
         });
         return res;
+    }
+    getUxCode(path) {
+        const obj = quickFiles[path];
+        obj.cssCode = this.parsedCode ? `<style>\n${this.parsedCode}\n</style>` : '';
+        return obj.header + '\n' + obj.jsCode + '\n' + obj.cssCode;
     }
 }
 

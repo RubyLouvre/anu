@@ -17,7 +17,7 @@ module.exports = async function(code, map, meta) {
             queues: parser.getExtraFiles(),
             exportCode: parser.getExportCode()
         };
-
+        
         callback(null, result, map, meta);
         return;
     } catch (e) {

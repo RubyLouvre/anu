@@ -1,4 +1,5 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
 
@@ -66,6 +67,7 @@ module.exports = function({
                 platform,
                 compress
             }),
+            new CleanWebpackPlugin(),
             ...plugins
         ],
         resolve: {
