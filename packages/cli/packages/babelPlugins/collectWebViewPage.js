@@ -1,4 +1,4 @@
-const globalConfig = require('../config');
+const globalConfig = require('../../config/config');
 const traverse = require('@babel/traverse').default;
 const g = require('@babel/generator').default;
 const json5 = require('json5');

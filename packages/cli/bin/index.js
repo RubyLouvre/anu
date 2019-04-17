@@ -5,7 +5,6 @@ const semver = require('semver');
 const program = require('commander');
 const platforms = require('../consts/platforms');
 const { BUILD_OPTIONS } = require('../consts/index');
-let config = require('../packages/config');
 function checkNodeVersion(version){
     if (semver.lt(process.version, version)) {
         // eslint-disable-next-line

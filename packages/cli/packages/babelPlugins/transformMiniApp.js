@@ -1,5 +1,5 @@
 let visitor = require('./miniappVisitor');
-let config = require('../config');
+let config = require('../../config/config');
 let quickFiles = require('../quickHelpers/quickFiles');
 let utils = require('../utils');
 let reg = utils.getComponentOrAppOrPageReg();

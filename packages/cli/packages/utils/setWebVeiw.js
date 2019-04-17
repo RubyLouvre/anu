@@ -2,7 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const cwd = process.cwd();
 const chalk = require('chalk');
-const globalConfig = require('../config');
+const globalConfig = require('../../config/config');
 
 
 

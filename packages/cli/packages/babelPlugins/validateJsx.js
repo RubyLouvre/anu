@@ -1,6 +1,6 @@
 const g = require('@babel/generator').default;
 const path = require('path');
-const config = require('../config');
+const config = require('../../config/config');
 const cwd = process.cwd();
 let collectError;
 const visitor = {

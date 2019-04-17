@@ -1,7 +1,7 @@
 
 let path = require('path');
 let beautify = require('js-beautify');
-let config = require('../config');
+let config = require('../../config/config');
 let quickFiles = require('./quickFiles');
 let utils = require('../utils');
 let cwd = process.cwd();

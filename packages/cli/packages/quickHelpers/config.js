@@ -5,7 +5,7 @@
 */
 const path = require('path');
 const utils = require('../utils');
-const platConfig = require('../config');
+const platConfig = require('../../config/config');
 
 //默认manifest.json
 var manifest = {

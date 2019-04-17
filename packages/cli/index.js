@@ -1,7 +1,7 @@
 const webpack = require('webpack');
 const path = require('path');
 const cwd = process.cwd();
-const globalConfig = require('./packages/config.js');
+const globalConfig = require('./config/config.js');
 const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
 
 const babel = require('@babel/core');

@@ -1,4 +1,4 @@
-let config = require('../config');
+let config = require('../../config/config');
 const path = require('path');
 const cwd = process.cwd();
 const utils = require('../utils/index');

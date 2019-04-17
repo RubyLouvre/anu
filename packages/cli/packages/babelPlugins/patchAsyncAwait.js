@@ -6,7 +6,7 @@ let t = require('@babel/types');
 
 let hackList = ['wx', 'bu', 'tt', 'quick', 'qq'];
 let utils = require('../utils');
-let config = require('../config');
+let config = require('../../config/config');
 
 let copyFlag = false;
 let patchAsync = false;

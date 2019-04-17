@@ -1,5 +1,5 @@
 // 过滤快应用中不支持的属性
-const config = require('../config');
+const config = require('../../config/config');
 
 module.exports = function ignoreAttri(astPath, nodeName) {
     
