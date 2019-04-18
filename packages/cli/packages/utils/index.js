@@ -6,8 +6,6 @@ const path = require('path');
 const cwd = process.cwd();
 const chalk = require('chalk');
 const spawn = require('cross-spawn');
-const uglifyJS = require('uglify-es');
-const cleanCSS = require('clean-css');
 const nodeResolve = require('resolve');
 const template = require('@babel/template').default;
 const ora = require('ora');
@@ -372,37 +370,6 @@ let utils = {
                 chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
             );
         }
-    },
-    compress: function () {
-        return {
-            js: function (code) {
-                let result = uglifyJS.minify(code);
-                if (result.error) {
-                   return code;
-                }
-                return result.code;
-            },
-            npm: function (code) {
-                return this.js.call(this, code);
-            },
-            css: function (code) {
-                let result = new cleanCSS().minify(code);
-                if (result.errors.length) {
-                    return code;
-                }
-                return result.styles;
-            },
-            ux: function (code) {
-                return code;
-            },
-            wxml: function (code) {
-                //TODO: comporess xml file;
-                return code;
-            },
-            json: function (code) {
-                return JSON.stringify(JSON.parse(code));
-            }
-        };
     },
     resolveStyleAlias(importer, basedir) {
         //解析样式中的alias别名配置

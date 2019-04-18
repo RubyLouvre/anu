@@ -28,10 +28,6 @@ module.exports = async function(args){
             compress,
             watch,
             huawei,
-            postLoaders: [
-                require.resolve('../nanachi-loader/loaders/decodeChineseLoader'), // 测试自定义解码中文字符插件
-            ],
-            plugins: [],
             complete: callback
         });
 
