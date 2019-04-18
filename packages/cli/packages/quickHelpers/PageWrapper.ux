@@ -210,7 +210,7 @@
           tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
           instance.tabBar = tabBar;
           tabBar.list.forEach(function(el){
-             el.selected = el.pagePath === instance.pagePath;
+             el.selected = handlePageUri(el.pagePath) === handlePageUri(instance.pagePath);
           })
       }   
   }
@@ -225,5 +225,10 @@
       }
     }
     return {}
+  }
+
+  // 处理/pages/这种形式的pagePath
+  function handlePageUri(href) {
+    return href.slice(href.indexOf('/pages') + 1);
   }
 </script>
