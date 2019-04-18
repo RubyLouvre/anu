@@ -35,8 +35,8 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
     }
 
     const callback = this.async();
-    queues.forEach(({ code, path: filePath, type }) => {
-        const relativePath = filePath.replace(/\.\w+$/, `.${MAP[this.nanachiOptions.platform]['EXT_NAME'][type] || type}`);
+    queues.forEach(({ code = '', path: filePath, type }) => {
+        const relativePath = type ? filePath.replace(/\.\w+$/, `.${MAP[this.nanachiOptions.platform]['EXT_NAME'][type] || type}`) : filePath;
         if (this.nanachiOptions.compress) {
             code = typeof compress[type] === 'function' && compress[type](code) || code;
         }
