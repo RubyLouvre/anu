@@ -22,7 +22,7 @@ class List extends React.Component {
       // console.log(this.props.query)
       React.api.request({
           url:
-        'http://yapi.demo.qunar.com/mock/17668/wemall/goods/inqGoodsByTypeBrand?brand=' +
+        'http://yapi.demo.qunar.com/mock/11550/wemall/goods/inqGoodsByTypeBrand?brand=' +
         this.props.query.brand +
         '&typeid=' +
         this.props.query.brand,

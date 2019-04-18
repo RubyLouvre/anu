@@ -23,7 +23,7 @@ class Brand extends React.Component {
         //sliderList
         var that = this;
         React.api.request({
-            url: 'http://yapi.demo.qunar.com/mock/17668/wemall/venues/getBrandAndType',
+            url: 'http://yapi.demo.qunar.com/mock/11550/wemall/venues/getBrandAndType',
             method: 'GET',
             data: {},
             header: {

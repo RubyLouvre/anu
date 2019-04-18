@@ -31,7 +31,7 @@ class P extends React.Component {
         this._isMounted = true;
         var that = this;
         React.api.request({
-            url: 'http://yapi.demo.qunar.com/mock/17668/wemall/venues/venuesList',
+            url: 'http://yapi.demo.qunar.com/mock/11550/wemall/venues/venuesList',
             method: 'GET',
             data: {},
             header: {
@@ -46,7 +46,7 @@ class P extends React.Component {
 
         //choiceList
         React.api.request({
-            url: 'http://yapi.demo.qunar.com/mock/17668/wemall/venues/choiceList',
+            url: 'http://yapi.demo.qunar.com/mock/11550/wemall/venues/choiceList',
             method: 'GET',
             data: {},
             header: {

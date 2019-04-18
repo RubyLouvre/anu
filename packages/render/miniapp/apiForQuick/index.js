@@ -35,7 +35,7 @@ import {
 } from './device.js';
 import { chooseImage } from './media.js';
 import { createShortcut, hasInstalled, shortcutInstall } from './shortcut.js';
-
+import {getPushProvider, subscribe, unsubscribe, pushOn, pushOff} from './push.js';
 import { 
     showModal,
     showActionSheet,
@@ -132,6 +132,7 @@ export function more(){
         share, //快应用专用
         hasInstalled, //快应用专用
         shortcutInstall,//快应用专用
+        getPushProvider, subscribe, unsubscribe, pushOn, pushOff,
         pay, 
         getProvider, 
         wxpayGetType, 
