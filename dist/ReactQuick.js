@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-15
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-17
  */
 
 var arrayPush = Array.prototype.push;
@@ -1344,6 +1344,23 @@ function hasInstalled(obj) {
     return shortcut.hasInstalled(obj);
 }
 
+var push = require('@service.push');
+function getPushProvider() {
+    return push.getProvider();
+}
+function subscribe(obj) {
+    return push.subscribe(obj);
+}
+function unsubscribe(obj) {
+    return push.unsubscribe(obj);
+}
+function pushOn(obj) {
+    return push.on(obj);
+}
+function pushOff() {
+    return push.off();
+}
+
 var router = require('@system.router');
 var rQuery = /\?(.*)/;
 function getQueryFromUri(uri, query) {
@@ -1565,6 +1582,7 @@ function more() {
         share: share,
         hasInstalled: hasInstalled,
         shortcutInstall: shortcutInstall,
+        getPushProvider: getPushProvider, subscribe: subscribe, unsubscribe: unsubscribe, pushOn: pushOn, pushOff: pushOff,
         pay: pay,
         getProvider: getProvider,
         wxpayGetType: wxpayGetType,
