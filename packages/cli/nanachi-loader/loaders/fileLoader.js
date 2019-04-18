@@ -4,16 +4,11 @@ const utils = require('../../packages/utils/index');
 const errorStack = require('../logger/queue');
 const compress = utils.compress();
 
-
-
-
 const isBrokenFile = function(fildId){
     return errorStack.error.some(function(error){
         return error.id === fildId;
     });
 };
-
-
 
 /**
  * queues 存放需要输出的文件
