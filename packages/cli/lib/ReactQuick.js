@@ -1,5 +1,6 @@
+/* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-17
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-18
  */
 
 var arrayPush = Array.prototype.push;
@@ -142,7 +143,7 @@ var Renderer = {
     fireMiddlewares: function fireMiddlewares(begin) {
         var index = begin ? middlewares.length - 1 : 0,
             delta = begin ? -1 : 1,
-            method = begin ? 'begin' : 'end',
+            method = begin ? "begin" : "end",
             obj = void 0;
         while (obj = middlewares[index]) {
             obj[method]();
@@ -167,11 +168,11 @@ function Component(props, context) {
 Component.prototype = {
     constructor: Component,
     replaceState: function replaceState() {
-        toWarnDev('replaceState', true);
+        toWarnDev("replaceState", true);
     },
     isReactComponent: returnTrue,
     isMounted: function isMounted$$1() {
-        toWarnDev('isMounted', true);
+        toWarnDev("isMounted", true);
         return this.updater.isMounted(this);
     },
     setState: function setState(state, cb) {
@@ -181,11 +182,11 @@ Component.prototype = {
         this.updater.enqueueSetState(get(this), true, cb);
     },
     render: function render() {
-        throw 'must implement render';
+        throw "must implement render";
     }
 };
 
-var _typeof = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var RESERVED_PROPS = {
     key: true,
     ref: true,
@@ -384,7 +385,7 @@ function traverseAllChildren(children, nameSoFar, callback, bookKeeping) {
     }
     if (invokeCallback) {
         callback(bookKeeping, children,
-            nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
+        nameSoFar === '' ? SEPARATOR + getComponentKey(children, 0) : nameSoFar, childType);
         return 1;
     }
     var subtreeCount = 0;
@@ -426,13 +427,13 @@ var Children = {
         if (isValidElement(children)) {
             return children;
         }
-        throw new Error('expect only one child');
+        throw new Error("expect only one child");
     },
     count: function count(children) {
         if (children == null) {
             return 0;
         }
-        return traverseAllChildren(children, '', noop);
+        return traverseAllChildren(children, "", noop);
     },
     map: function map(children, func, context) {
         return proxyIt(children, func, [], context);
@@ -455,11 +456,11 @@ function K(el) {
     return el;
 }
 function mapChildren(children, prefix, func, result, context) {
-    var keyPrefix = '';
+    var keyPrefix = "";
     if (prefix != null) {
-        keyPrefix = escapeUserProvidedKey(prefix) + '/';
+        keyPrefix = escapeUserProvidedKey(prefix) + "/";
     }
-    traverseAllChildren(children, '', traverseCallback, {
+    traverseAllChildren(children, "", traverseCallback, {
         context: context,
         keyPrefix: keyPrefix,
         func: func,
@@ -469,7 +470,7 @@ function mapChildren(children, prefix, func, result, context) {
 }
 var userProvidedKeyEscapeRegex = /\/+/g;
 function escapeUserProvidedKey(text) {
-    return ('' + text).replace(userProvidedKeyEscapeRegex, '$&/');
+    return ("" + text).replace(userProvidedKeyEscapeRegex, "$&/");
 }
 function traverseCallback(bookKeeping, child, childKey) {
     var result = bookKeeping.result,
@@ -485,7 +486,7 @@ function traverseCallback(bookKeeping, child, childKey) {
     } else if (mappedChild != null) {
         if (isValidElement(mappedChild)) {
             mappedChild = extend({}, mappedChild);
-            mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + '/' : '') + childKey;
+            mappedChild.key = keyPrefix + (mappedChild.key && (!child || child.key !== mappedChild.key) ? escapeUserProvidedKey(mappedChild.key) + "/" : "") + childKey;
         }
         result.push(mappedChild);
     }
@@ -628,10 +629,10 @@ function createContext(defaultValue, calculateChangedBits) {
 
 var device = require('@system.device');
 var mapNames = {
-    osVersionName: 'version',
-    osVersionCode: 'system',
-    platformVersionName: 'platform',
-    platformVersionCode: 'SDKVersion'
+    osVersionName: "version",
+    osVersionCode: "system",
+    platformVersionName: "platform",
+    platformVersionCode: "SDKVersion"
 };
 function getSystemInfo(_ref) {
     var _success = _ref.success,
@@ -965,7 +966,7 @@ function request(_ref6) {
     });
 }
 
-var _typeof$1 = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj; };
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
 function saveParse(str) {
     try {
@@ -997,10 +998,10 @@ function getStorage(_ref2) {
         fail = _ref2.fail,
         complete = _ref2.complete;
     storage.get({ key: key, success: function success(data) {
-        _success({
-            data: saveParse(data)
-        });
-    }, fail: fail, complete: complete });
+            _success({
+                data: saveParse(data)
+            });
+        }, fail: fail, complete: complete });
 }
 function removeStorage(obj) {
     storage.delete(obj);
@@ -1593,189 +1594,191 @@ function more() {
 }
 
 var onAndSyncApis = {
-    onSocketOpen: true,
-    onSocketError: true,
-    onSocketMessage: true,
-    onSocketClose: true,
-    onBackgroundAudioPlay: true,
-    onBackgroundAudioPause: true,
-    onBackgroundAudioStop: true,
-    onNetworkStatusChange: true,
-    onAccelerometerChange: true,
-    onCompassChange: true,
-    onBluetoothAdapterStateChange: true,
-    onBluetoothDeviceFound: true,
-    onBLEConnectionStateChange: true,
-    onBLECharacteristicValueChange: true,
-    onBeaconUpdate: true,
-    onBeaconServiceChange: true,
-    onUserCaptureScreen: true,
-    onHCEMessage: true,
-    onGetWifiList: true,
-    onWifiConnected: true,
-    setStorageSync: true,
-    getStorageSync: true,
-    getStorageInfoSync: true,
-    removeStorageSync: true,
-    clearStorageSync: true,
-    getSystemInfoSync: true,
-    getExtConfigSync: true,
-    getLogManager: true
+  onSocketOpen: true,
+  onSocketError: true,
+  onSocketMessage: true,
+  onSocketClose: true,
+  onBackgroundAudioPlay: true,
+  onBackgroundAudioPause: true,
+  onBackgroundAudioStop: true,
+  onNetworkStatusChange: true,
+  onAccelerometerChange: true,
+  onCompassChange: true,
+  onBluetoothAdapterStateChange: true,
+  onBluetoothDeviceFound: true,
+  onBLEConnectionStateChange: true,
+  onBLECharacteristicValueChange: true,
+  onBeaconUpdate: true,
+  onBeaconServiceChange: true,
+  onUserCaptureScreen: true,
+  onHCEMessage: true,
+  onGetWifiList: true,
+  onWifiConnected: true,
+  setStorageSync: true,
+  getStorageSync: true,
+  getStorageInfoSync: true,
+  removeStorageSync: true,
+  clearStorageSync: true,
+  getSystemInfoSync: true,
+  getExtConfigSync: true,
+  getLogManager: true
 };
 var noPromiseApis = {
-    stopRecord: true,
-    getRecorderManager: true,
-    pauseVoice: true,
-    stopVoice: true,
-    pauseBackgroundAudio: true,
-    stopBackgroundAudio: true,
-    getBackgroundAudioManager: true,
-    createAudioContext: true,
-    createInnerAudioContext: true,
-    createVideoContext: true,
-    createCameraContext: true,
-    wxpayGetType: true,
-    navigateBack: true,
-    createMapContext: true,
-    canIUse: true,
-    startAccelerometer: true,
-    stopAccelerometer: true,
-    startCompass: true,
-    stopCompass: true,
-    hideToast: true,
-    hideLoading: true,
-    showNavigationBarLoading: true,
-    hideNavigationBarLoading: true,
-    createAnimation: true,
-    pageScrollTo: true,
-    createSelectorQuery: true,
-    createCanvasContext: true,
-    createContext: true,
-    drawCanvas: true,
-    hideKeyboard: true,
-    stopPullDownRefresh: true,
-    arrayBufferToBase64: true,
-    base64ToArrayBuffer: true,
-    getUpdateManager: true,
-    createWorker: true
+  stopRecord: true,
+  getRecorderManager: true,
+  pauseVoice: true,
+  stopVoice: true,
+  pauseBackgroundAudio: true,
+  stopBackgroundAudio: true,
+  getBackgroundAudioManager: true,
+  createAudioContext: true,
+  createInnerAudioContext: true,
+  createVideoContext: true,
+  createCameraContext: true,
+  wxpayGetType: true,
+  navigateBack: true,
+  createMapContext: true,
+  canIUse: true,
+  startAccelerometer: true,
+  stopAccelerometer: true,
+  startCompass: true,
+  stopCompass: true,
+  hideToast: true,
+  hideLoading: true,
+  showNavigationBarLoading: true,
+  hideNavigationBarLoading: true,
+  createAnimation: true,
+  pageScrollTo: true,
+  createSelectorQuery: true,
+  createCanvasContext: true,
+  createContext: true,
+  drawCanvas: true,
+  hideKeyboard: true,
+  stopPullDownRefresh: true,
+  arrayBufferToBase64: true,
+  base64ToArrayBuffer: true,
+  getUpdateManager: true,
+  createWorker: true,
+  getPushProvider: true,
+  getProvider: true
 };
 var otherApis = {
-    uploadFile: true,
-    downloadFile: true,
-    connectSocket: true,
-    sendSocketMessage: true,
-    closeSocket: true,
-    chooseImage: true,
-    previewImage: true,
-    getImageInfo: true,
-    saveImageToPhotosAlbum: true,
-    startRecord: true,
-    playVoice: true,
-    getBackgroundAudioPlayerState: true,
-    playBackgroundAudio: true,
-    seekBackgroundAudio: true,
-    chooseVideo: true,
-    saveVideoToPhotosAlbum: true,
-    loadFontFace: true,
-    saveFile: true,
-    getFileInfo: true,
-    getSavedFileList: true,
-    getSavedFileInfo: true,
-    removeSavedFile: true,
-    openDocument: true,
-    setStorage: true,
-    getStorage: true,
-    getStorageInfo: true,
-    removeStorage: true,
-    clearStorage: true,
-    navigateTo: true,
-    redirectTo: true,
-    switchTab: true,
-    reLaunch: true,
-    getLocation: true,
-    chooseLocation: true,
-    openLocation: true,
-    getSystemInfo: true,
-    getNetworkType: true,
-    makePhoneCall: true,
-    scanCode: true,
-    setClipboardData: true,
-    getClipboardData: true,
-    openBluetoothAdapter: true,
-    closeBluetoothAdapter: true,
-    getBluetoothAdapterState: true,
-    startBluetoothDevicesDiscovery: true,
-    stopBluetoothDevicesDiscovery: true,
-    getBluetoothDevices: true,
-    getConnectedBluetoothDevices: true,
-    createBLEConnection: true,
-    closeBLEConnection: true,
-    getBLEDeviceServices: true,
-    getBLEDeviceCharacteristics: true,
-    readBLECharacteristicValue: true,
-    writeBLECharacteristicValue: true,
-    notifyBLECharacteristicValueChange: true,
-    startBeaconDiscovery: true,
-    stopBeaconDiscovery: true,
-    getBeacons: true,
-    setScreenBrightness: true,
-    getScreenBrightness: true,
-    setKeepScreenOn: true,
-    vibrateLong: true,
-    vibrateShort: true,
-    addPhoneContact: true,
-    getHCEState: true,
-    startHCE: true,
-    stopHCE: true,
-    sendHCEMessage: true,
-    startWifi: true,
-    stopWifi: true,
-    connectWifi: true,
-    getWifiList: true,
-    setWifiList: true,
-    getConnectedWifi: true,
-    showToast: true,
-    showLoading: true,
-    showModal: true,
-    showActionSheet: true,
-    setNavigationBarTitle: true,
-    setNavigationBarColor: true,
-    setTabBarBadge: true,
-    removeTabBarBadge: true,
-    showTabBarRedDot: true,
-    hideTabBarRedDot: true,
-    setTabBarStyle: true,
-    setTabBarItem: true,
-    showTabBar: true,
-    hideTabBar: true,
-    setTopBarText: true,
-    startPullDownRefresh: true,
-    canvasToTempFilePath: true,
-    canvasGetImageData: true,
-    canvasPutImageData: true,
-    getExtConfig: true,
-    request: true,
-    login: true,
-    checkSession: true,
-    authorize: true,
-    getUserInfo: true,
-    requestPayment: true,
-    showShareMenu: true,
-    hideShareMenu: true,
-    updateShareMenu: true,
-    getShareInfo: true,
-    chooseAddress: true,
-    addCard: true,
-    openCard: true,
-    openSetting: true,
-    getSetting: true,
-    getWeRunData: true,
-    navigateToMiniProgram: true,
-    navigateBackMiniProgram: true,
-    chooseInvoiceTitle: true,
-    checkIsSupportSoterAuthentication: true,
-    startSoterAuthentication: true,
-    checkIsSoterEnrolledInDevice: true
+  uploadFile: true,
+  downloadFile: true,
+  connectSocket: true,
+  sendSocketMessage: true,
+  closeSocket: true,
+  chooseImage: true,
+  previewImage: true,
+  getImageInfo: true,
+  saveImageToPhotosAlbum: true,
+  startRecord: true,
+  playVoice: true,
+  getBackgroundAudioPlayerState: true,
+  playBackgroundAudio: true,
+  seekBackgroundAudio: true,
+  chooseVideo: true,
+  saveVideoToPhotosAlbum: true,
+  loadFontFace: true,
+  saveFile: true,
+  getFileInfo: true,
+  getSavedFileList: true,
+  getSavedFileInfo: true,
+  removeSavedFile: true,
+  openDocument: true,
+  setStorage: true,
+  getStorage: true,
+  getStorageInfo: true,
+  removeStorage: true,
+  clearStorage: true,
+  navigateTo: true,
+  redirectTo: true,
+  switchTab: true,
+  reLaunch: true,
+  getLocation: true,
+  chooseLocation: true,
+  openLocation: true,
+  getSystemInfo: true,
+  getNetworkType: true,
+  makePhoneCall: true,
+  scanCode: true,
+  setClipboardData: true,
+  getClipboardData: true,
+  openBluetoothAdapter: true,
+  closeBluetoothAdapter: true,
+  getBluetoothAdapterState: true,
+  startBluetoothDevicesDiscovery: true,
+  stopBluetoothDevicesDiscovery: true,
+  getBluetoothDevices: true,
+  getConnectedBluetoothDevices: true,
+  createBLEConnection: true,
+  closeBLEConnection: true,
+  getBLEDeviceServices: true,
+  getBLEDeviceCharacteristics: true,
+  readBLECharacteristicValue: true,
+  writeBLECharacteristicValue: true,
+  notifyBLECharacteristicValueChange: true,
+  startBeaconDiscovery: true,
+  stopBeaconDiscovery: true,
+  getBeacons: true,
+  setScreenBrightness: true,
+  getScreenBrightness: true,
+  setKeepScreenOn: true,
+  vibrateLong: true,
+  vibrateShort: true,
+  addPhoneContact: true,
+  getHCEState: true,
+  startHCE: true,
+  stopHCE: true,
+  sendHCEMessage: true,
+  startWifi: true,
+  stopWifi: true,
+  connectWifi: true,
+  getWifiList: true,
+  setWifiList: true,
+  getConnectedWifi: true,
+  showToast: true,
+  showLoading: true,
+  showModal: true,
+  showActionSheet: true,
+  setNavigationBarTitle: true,
+  setNavigationBarColor: true,
+  setTabBarBadge: true,
+  removeTabBarBadge: true,
+  showTabBarRedDot: true,
+  hideTabBarRedDot: true,
+  setTabBarStyle: true,
+  setTabBarItem: true,
+  showTabBar: true,
+  hideTabBar: true,
+  setTopBarText: true,
+  startPullDownRefresh: true,
+  canvasToTempFilePath: true,
+  canvasGetImageData: true,
+  canvasPutImageData: true,
+  getExtConfig: true,
+  request: true,
+  login: true,
+  checkSession: true,
+  authorize: true,
+  getUserInfo: true,
+  requestPayment: true,
+  showShareMenu: true,
+  hideShareMenu: true,
+  updateShareMenu: true,
+  getShareInfo: true,
+  chooseAddress: true,
+  addCard: true,
+  openCard: true,
+  openSetting: true,
+  getSetting: true,
+  getWeRunData: true,
+  navigateToMiniProgram: true,
+  navigateBackMiniProgram: true,
+  chooseInvoiceTitle: true,
+  checkIsSupportSoterAuthentication: true,
+  startSoterAuthentication: true,
+  checkIsSoterEnrolledInDevice: true
 };
 
 function promisefyApis(ReactWX, facade, more) {
@@ -1860,14 +1863,14 @@ function createInstance(fiber, context) {
         isStateless = tag === 1,
         lastOwn = Renderer.currentOwner,
         instance = {
-            refs: {},
-            props: props,
-            key: key,
-            context: context,
-            ref: ref,
-            _reactInternalFiber: fiber,
-            __proto__: type.prototype
-        };
+        refs: {},
+        props: props,
+        key: key,
+        context: context,
+        ref: ref,
+        _reactInternalFiber: fiber,
+        __proto__: type.prototype
+    };
     fiber.updateQueue = UpdateQueue();
     fiber.errorHook = 'constructor';
     try {
@@ -1928,7 +1931,7 @@ function createInstance(fiber, context) {
 
 function Fiber(vnode) {
     extend(this, vnode);
-    var type = vnode.type || 'ProxyComponent(react-hot-loader)';
+    var type = vnode.type || "ProxyComponent(react-hot-loader)";
     this.name = type.displayName || type.name || type;
     this.effectTag = 1;
 }
@@ -1993,7 +1996,7 @@ function applyCallback(host, hook, args) {
     var fiber = host._reactInternalFiber;
     fiber.errorHook = hook;
     var fn = host[hook];
-    if (hook == 'componentWillUnmount') {
+    if (hook == "componentWillUnmount") {
         host[hook] = noop;
     }
     if (fn) {
@@ -2002,13 +2005,13 @@ function applyCallback(host, hook, args) {
     return true;
 }
 function describeError(names, hook) {
-    var segments = ['**' + hook + '** method occur error '];
+    var segments = ["**" + hook + "** method occur error "];
     names.forEach(function (name, i) {
         if (names[i + 1]) {
-            segments.push('in ' + name + ' (created By ' + names[i + 1] + ')');
+            segments.push("in " + name + " (created By " + names[i + 1] + ")");
         }
     });
-    return segments.join('\n\r').trim();
+    return segments.join("\n\r").trim();
 }
 function findCatchComponent(fiber, names, hook) {
     var instance = void 0,
@@ -2046,7 +2049,7 @@ function findCatchComponent(fiber, names, hook) {
                     boundary = f;
                 }
                 if (!boundary.catchError) {
-                    if (hook == 'componentWillUnmount' || hook == 'componentDidUpdate') {
+                    if (hook == "componentWillUnmount" || hook == "componentDidUpdate") {
                         boundary.effectTag = CAPTURE;
                     } else {
                         boundary.effectTag = effectTag * CAPTURE;
@@ -3247,11 +3250,11 @@ function onLoad(PageClass, path, query) {
         appendChild: noop
     };
     var pageInstance = render(
-        createElement(PageClass, {
-            path: path,
-            query: query,
-            isPageComponent: true
-        }), container);
+    createElement(PageClass, {
+        path: path,
+        query: query,
+        isPageComponent: true
+    }), container);
     callGlobalHook('onGlobalLoad');
     this.reactContainer = container;
     this.reactInstance = pageInstance;
@@ -3295,64 +3298,64 @@ function onUnload() {
 }
 
 var globalHooks = {
-    onShareAppMessage: 'onGlobalShare',
-    onShow: 'onGlobalShow',
-    onHide: 'onGlobalHide'
+  onShareAppMessage: 'onGlobalShare',
+  onShow: 'onGlobalShow',
+  onHide: 'onGlobalHide'
 };
 function getQuery(page) {
-    if (page.query) {
-        return page.query;
-    }
-    var query = {};
-    if (page.uri) {
-        getQueryFromUri(page.uri, query);
-    }
-    for (var param in query) {
-        return query;
-    }
-    return Object((_getApp().globalData || {}).__quickQuery)[page.path] || {};
+  if (page.query) {
+    return page.query;
+  }
+  var query = {};
+  if (page.uri) {
+    getQueryFromUri(page.uri, query);
+  }
+  for (var param in query) {
+    return query;
+  }
+  return Object((_getApp().globalData || {}).__quickQuery)[page.path] || {};
 }
 function registerPage(PageClass, path) {
-    PageClass.reactInstances = [];
-    var config = {
-        private: {
-            props: Object,
-            context: Object,
-            state: Object
-        },
-        dispatchEvent: dispatchEvent,
-        onInit: function onInit() {
-            var app = this.$app;
-            var instance = onLoad.call(this, PageClass, path, getQuery(this.$page));
-            var pageConfig = PageClass.config || instance.config || emptyObject;
-            app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
-        },
-        onReady: onReady,
-        onDestroy: onUnload
+  PageClass.reactInstances = [];
+  var config = {
+    private: {
+      props: Object,
+      context: Object,
+      state: Object
+    },
+    dispatchEvent: dispatchEvent,
+    onInit: function onInit() {
+      var app = this.$app;
+      var instance = onLoad.call(this, PageClass, path, getQuery(this.$page));
+      var pageConfig = PageClass.config || instance.config || emptyObject;
+      app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
+    },
+    onReady: onReady,
+    onDestroy: onUnload
+  };
+  Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
+    config[hook] = function (e) {
+      var instance = this.reactInstance,
+          fn = instance[hook],
+          app = _getApp(),
+          param = e;
+      if (hook === 'onShow') {
+        param = instance.props.query = getQuery(this.$page);
+        app.$$page = instance.wx;
+        app.$$pagePath = instance.props.path;
+      }
+      if (hook === 'onMenuPress') {
+        app.onShowMenu && app.onShowMenu(instance, this.$app);
+      } else if (isFn(fn)) {
+        fn.call(instance, param);
+      }
+      var globalHook = globalHooks[hook];
+      if (globalHook) {
+        callGlobalHook(globalHook, param);
+      }
     };
-    Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
-        config[hook] = function (e) {
-            var instance = this.reactInstance,
-                fn = instance[hook],
-                app = _getApp(),
-                param = e;
-            if (hook === 'onShow') {
-                param = instance.props.query = getQuery(this.$page);
-                app.$$page = instance.wx;
-                app.$$pagePath = instance.props.path;
-            }
-            if (hook === 'onMenuPress') {
-                app.onShowMenu && app.onShowMenu(instance, this.$app);
-            } else if (isFn(fn)) {
-                fn.call(instance, param);
-            }
-            var globalHook = globalHooks[hook];
-            if (globalHook) {
-                callGlobalHook(globalHook, param);
-            }
-        };
-    });
-    return config;
+  });
+  return config;
 }
 
 var appMethods = {
@@ -3365,7 +3368,7 @@ var React = getWindow().React = {
         dispatchEvent: dispatchEvent
     },
     findDOMNode: function findDOMNode() {
-        console.log('小程序不支持findDOMNode');
+        console.log("小程序不支持findDOMNode");
     },
     version: '1.5.0',
     render: render$1,
