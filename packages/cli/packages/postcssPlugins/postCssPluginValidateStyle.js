@@ -1,6 +1,6 @@
 const postCss = require('postcss');
 const chalk = require('chalk');
-const config = require('../config');
+const config = require('../../config/config');
 const parser = require('postcss-selector-parser');
 const ignoreCss = require('../quickHelpers/ignoreCss');
 

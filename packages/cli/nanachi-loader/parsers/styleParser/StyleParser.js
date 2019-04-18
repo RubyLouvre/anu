@@ -2,6 +2,7 @@ const path = require('path');
 const postcss = require('postcss');
 const utils = require('../../../packages/utils/index');
 const fs = require('fs');
+const quickFiles = require('../../../packages/quickHelpers/quickFiles');
 
 class StyleParser {
     constructor({
@@ -18,15 +19,18 @@ class StyleParser {
         this.filepath = filepath;
         this.type = type;
         this.platform = platform;
-        if (/node_modules\/schnee-ui/.test(filepath)) {
-            this.relativePath = path.join('npm', path.relative(path.resolve(process.cwd(), 'node_modules'), filepath));
-        } else {
-            this.relativePath = path.relative(path.resolve(process.cwd(), 'source'), filepath);
-        }
+        this.relativePath = this.getRelativePath(filepath);
         this._postcssPlugins = [];
         this._postcssOptions = {};
         this.parsedCode = '';
         this.extraModules = [];
+    }
+    getRelativePath(filepath) {
+        if (/node_modules\/schnee-ui/.test(filepath)) {
+            return path.join('npm', path.relative(path.resolve(process.cwd(), 'node_modules'), filepath));
+        } else {
+            return path.relative(path.resolve(process.cwd(), 'source'), filepath);
+        }
     }
     
     async parse() {
@@ -45,6 +49,16 @@ class StyleParser {
         return res;
     }
     getExtraFiles() {
+        if (this.platform === 'quick') {
+            const find = Object.keys(quickFiles).find(file => quickFiles[file].cssPath === this.filepath);
+            if (find) {
+                return [{
+                    type: 'ux',
+                    path: this.getRelativePath(find),
+                    code: this.getUxCode(find)
+                }];
+            }
+        }
         return [{
             type: 'css',
             path: this.relativePath,
@@ -57,6 +71,11 @@ class StyleParser {
             res = `import '${module}';\n` + res;
         });
         return res;
+    }
+    getUxCode(path) {
+        const obj = quickFiles[path];
+        obj.cssCode = this.parsedCode ? `<style>\n${this.parsedCode}\n</style>` : '';
+        return obj.header + '\n' + obj.jsCode + '\n' + obj.cssCode;
     }
 }
 

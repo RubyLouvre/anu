@@ -4,14 +4,14 @@ const template = require('@babel/template').default;
 const path = require('path');
 const utils = require('../utils');
 const fs = require('fs-extra');
-const config = require('../config');
+const config = require('../../config/config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
 const ignoreAttri = require('../quickHelpers/ignoreAttri');
 const cwd = process.cwd();
 
 const transformConfig = require('./transformConfig');
-const quickFiles = require('../quickFiles');
+const quickFiles = require('../quickHelpers/quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
 const helpers = require(`../${config[buildType].helpers}/index`);
@@ -268,13 +268,8 @@ module.exports = {
                 json = require('../utils/mergeConfigJson')(modules, json);
                 
                 
-                module.queue.push({
-                    path: utils.updatePath(
-                        modules.sourcePath,
-                        config.sourceDir,
-                        'dist',
-                        'json'
-                    ),
+                modules.queue.push({
+                    path: path.relative(path.resolve(cwd, 'source'), modules.sourcePath),
                     code: JSON.stringify(json, null, 4),
                     type: 'json'
                 });

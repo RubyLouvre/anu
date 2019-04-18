@@ -1,4 +1,4 @@
-let config = require('../config');
+let config = require('../../config/config');
 let t = require('@babel/types');
 let hackList = ['wx', 'bu', 'tt', 'quick','qq'];//这些都不支持async/await
 

@@ -3,7 +3,7 @@
 const t = require('@babel/types');
 const generate = require('@babel/generator').default;
 const getStyleValue = require('../utils/getStyleValue');
-const buildType = require('../config').buildType;
+const buildType = require('../../config/config').buildType;
 
 module.exports = function (astPath) {
     let expr = astPath.node.expression;

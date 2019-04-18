@@ -1,4 +1,4 @@
-let config = require('../config');
+let config = require('../../config/config');
 let path = require('path');
 let g = require('@babel/generator').default;
 let cwd = process.cwd();

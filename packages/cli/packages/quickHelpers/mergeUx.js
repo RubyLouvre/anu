@@ -1,8 +1,8 @@
 
 let path = require('path');
 let beautify = require('js-beautify');
-let config = require('../config');
-let quickFiles = require('../quickFiles');
+let config = require('../../config/config');
+let quickFiles = require('./quickFiles');
 let utils = require('../utils');
 let cwd = process.cwd();
 let fs = require('fs');
@@ -87,11 +87,6 @@ let map = {
         code = beautify.js(code);
         return `<script>\n${code}\n</script>`;
     },
-    getCssCode:  function(uxFile){
-        let { cssRes } = uxFile;
-        if (!cssRes) return '';
-        return `<style>\n${cssRes.css}\n</style>`;
-    },
     resolveComponents: function(data, queue){
         let { result, sourcePath, relativePath } = data;
         let isComponentReg = utils.isWin() ? /\\components\\/ : /\/components\// ;
@@ -109,7 +104,7 @@ let map = {
 
 };
 
-module.exports = async (data, queue)=>{
+module.exports = (data, queue)=>{
     let { sourcePath, result, relativePath } = data;
     var uxFile = quickFiles[sourcePath];
     //如果没有模板, 并且不是app，则认为这是个纯js模块。
@@ -123,11 +118,10 @@ module.exports = async (data, queue)=>{
     //假设假设存在<template>
     var ux = `${uxFile.template || ''}`;
     map.resolveComponents(data, queue);
-    ux = beautifyUx(map.getImportTag(uxFile, sourcePath) + ux) + '\n'; 
-    ux = ux + map.getJsCode(result.code) + '\n'; 
-    ux = ux + await map.getCssCode(uxFile);
+    uxFile.header = beautifyUx(map.getImportTag(uxFile, sourcePath) + ux);
+    uxFile.jsCode = map.getJsCode(result.code);
+    uxFile.cssCode = uxFile.cssCode || '';
     return {
         type: 'ux',
-        code: ux
     };
 };

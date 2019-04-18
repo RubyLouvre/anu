@@ -4,8 +4,8 @@ const wxmlHelper = require('./wxml');
 const babel = require('@babel/core');
 const path = require('path');
 const generate = require('@babel/generator').default;
-const quickFiles = require('../quickFiles');
-const config = require('../config');
+const quickFiles = require('./quickFiles');
+const config = require('../../config/config');
 const utils = require('../utils');
 
 const deps = [];

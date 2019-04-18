@@ -1,7 +1,7 @@
 const postCss = require('postcss');
 const path = require('path');
 const utils = require('../utils');
-const config = require('../config');
+const config = require('../../config/config');
 
 const postcssPluginAddImport = postCss.plugin('postcss-plugin-add-import', function({ extName, type } = {}) {
     return function(root, res) {
