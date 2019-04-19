@@ -118,5 +118,35 @@ compress压缩模式就是使用后处理loader实现的，链接：https://www.
 }
 ```
 
+## nanachi config
+
+自定义loader应用到项目中，有两种方式供选择：
+
+1. 在项目目录下编写nanachi配置文件，nanachi.config.js
+```javascript
+// nanachi.config.js
+module.exports = {
+    postLoaders: ['nanachi-compress-loader']
+}
+```
+正常运行nanachi命令，即可将自定义配置应用到项目中
+```sh
+nanachi build
+```
+
+2. 使用nanachi api，自定义编译脚本
+```javascript
+// build.js
+const nanachi = require('nanachi-cli');
+
+nanachi({
+    platform: 'ali',
+    postLoaders: ['nanachi-compress-loader']
+});
+```
+```sh
+node build.js
+```
+
 ## 开发者交流群
 ![411547729622_ pic](https://user-images.githubusercontent.com/16398401/52927213-5cf08400-3374-11e9-9f54-ccbad8b61ea7.jpeg)

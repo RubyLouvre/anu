@@ -80,6 +80,23 @@ async function nanachi({
     plugins = [],
     complete = () => {}
 } = {}) {
+    function callback(err, stats) {
+        if (err) {
+            // eslint-disable-next-line
+            console.log(err);
+            return;
+        }
+    
+        const info = stats.toJson();
+        if (stats.hasErrors()) {
+            info.errors.forEach(e => {
+                // eslint-disable-next-line
+                console.error(e);
+                process.exit();
+            });
+        }
+        complete(err, stats);
+    }
     try {
         if (!platforms.some((p) => {
             return p.buildType === platform;
@@ -90,23 +107,7 @@ async function nanachi({
             require(`mini-html5/runkit/${watch ? 'run' : 'build'}`);
             return;
         }
-        function callback(err, stats) {
-            if (err) {
-                // eslint-disable-next-line
-                console.log(err);
-                return;
-            }
         
-            const info = stats.toJson();
-            if (stats.hasErrors()) {
-                info.errors.forEach(e => {
-                    // eslint-disable-next-line
-                    console.error(e);
-                    process.exit();
-                });
-            }
-            complete(err, stats);
-        }
         injectBuildEnv({
             buildType: platform,
             compress,

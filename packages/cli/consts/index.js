@@ -1,3 +1,6 @@
+const path = require('path');
+const cwd = process.cwd();
+
 const REACT_LIB_MAP = {
     wx: 'ReactWX.js',
     ali: 'ReactAli.js',
@@ -77,8 +80,11 @@ const BUILD_OPTIONS = {
     }
 };
 
+const NANACHI_CONFIG_PATH = path.resolve(cwd, 'nanachi.config.js');
+
 module.exports = {
     REACT_LIB_MAP,
     BUILD_OPTIONS,
-    MAP
+    MAP,
+    NANACHI_CONFIG_PATH
 };
