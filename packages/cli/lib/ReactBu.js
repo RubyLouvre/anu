@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-18
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-19
  */
 
 var arrayPush = Array.prototype.push;
