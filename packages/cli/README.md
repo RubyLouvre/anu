@@ -29,6 +29,10 @@ yarn global add nanachi-cli
 3. npm run server <br />
 详情请见快应用文档
 
+详见 https://rubylouvre.github.io/nanachi/index.html 或  https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
+
+![image](https://user-images.githubusercontent.com/190846/45038189-53f44a80-b093-11e8-9ecb-a4080f21b262.png)
+
 ## nanachi api
 ```javascript
 const nanachi = require('nanachi-cli');
@@ -94,10 +98,56 @@ nanachi({
 });
 ```
 
-详见 https://rubylouvre.github.io/nanachi/index.html 或  https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
+## 自定义loader
 
+用户可以使用nanachi api编译nanachi应用，同时支持自定义预处理loader和后处理loader。
 
-![image](https://user-images.githubusercontent.com/190846/45038189-53f44a80-b093-11e8-9ecb-a4080f21b262.png)
+compress压缩模式就是使用后处理loader实现的，链接：https://www.npmjs.com/package/nanachi-compress-loader
+
+我们规定了loader的输入和输出格式
+
+```javascript
+{
+    queues: // 需要生成的文件数组，如nanachi中的js文件在微信转义中会同时生成wxml和js文件还有可能生成json文件
+        [{
+            code, // 生成文件内容
+            type, // 生成文件类型
+            path // 生成文件相对路径
+        }],
+    exportCode // 标准js代码，包含了文件的依赖信息，用于webpack解析文件依赖
+}
+```
+
+## nanachi config
+
+自定义loader应用到项目中，有两种方式供选择：
+
+1. 在项目根目录下创建nanachi配置文件，nanachi.config.js
+```javascript
+// nanachi.config.js
+module.exports = {
+    postLoaders: ['nanachi-compress-loader']
+}
+```
+正常运行nanachi命令，即可将自定义配置应用到项目中
+```sh
+npm install nanachi-compress-loader --save-dev
+nanachi build
+```
+
+2. 使用nanachi api，自定义编译脚本
+```javascript
+// build.js
+const nanachi = require('nanachi-cli');
+
+nanachi({
+    platform: 'ali',
+    postLoaders: ['nanachi-compress-loader']
+});
+```
+```sh
+node build.js
+```
 
 ## 开发者交流群
 ![411547729622_ pic](https://user-images.githubusercontent.com/16398401/52927213-5cf08400-3374-11e9-9f54-ccbad8b61ea7.jpeg)

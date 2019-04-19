@@ -3,6 +3,7 @@ const path = require('path');
 const cwd = process.cwd();
 const globalConfig = require('./config/config.js');
 const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
+const platforms = require('./consts/platforms');
 
 const babel = require('@babel/core');
 const spawn = require('child_process').spawnSync;
@@ -94,43 +95,57 @@ async function nanachi({
                 process.exit();
             });
         }
-        complete(stats);
+        complete(err, stats);
     }
-    injectBuildEnv({
-        buildType: platform,
-        compress,
-        huawei
-    });
-
-    getWebViewRules();
-
-    // 添加解码中文字符loader
-    postLoaders.unshift(require.resolve('./nanachi-loader/loaders/decodeChineseLoader'));
-    if (compress) {
-        // 添加代码压缩loader
-        postLoaders.unshift(require.resolve('nanachi-compress-loader'));
-    }
-
-    const webpackConfig = require('./config/webpackConfig')({
-        entry: './source/app',
-        platform,
-        compress,
-        beta,
-        betaUi,
-        plugins,
-        preLoaders,
-        postLoaders,
-        rules
-    });
-    await runBeforeParseTasks({ buildType: platform, beta, betaUi });
+    try {
+        if (!platforms.some((p) => {
+            return p.buildType === platform;
+        })) {
+            throw new Error(`不支持的platform：${platform}`);
+        }
+        if (platform === 'h5') {
+            require(`mini-html5/runkit/${watch ? 'run' : 'build'}`);
+            return;
+        }
+        
+        injectBuildEnv({
+            buildType: platform,
+            compress,
+            huawei
+        });
     
-    const compiler = webpack(webpackConfig);
+        getWebViewRules();
     
-    if (watch) {
-        compiler.watch({}, callback);
-    } else {
-        compiler.run(callback);
+        // 添加解码中文字符loader
+        postLoaders.unshift(require.resolve('./nanachi-loader/loaders/decodeChineseLoader'));
+        if (compress) {
+            // 添加代码压缩loader
+            postLoaders.unshift(require.resolve('nanachi-compress-loader'));
+        }
+    
+        const webpackConfig = require('./config/webpackConfig')({
+            platform,
+            compress,
+            beta,
+            betaUi,
+            plugins,
+            preLoaders,
+            postLoaders,
+            rules
+        });
+        await runBeforeParseTasks({ buildType: platform, beta, betaUi });
+        
+        const compiler = webpack(webpackConfig);
+        
+        if (watch) {
+            compiler.watch({}, callback);
+        } else {
+            compiler.run(callback);
+        }
+    } catch (err) {
+        complete(err);
     }
+    
 }
 
 module.exports = nanachi;

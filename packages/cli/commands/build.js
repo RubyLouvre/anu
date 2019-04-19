@@ -1,17 +1,26 @@
 const nanachi = require('../index');
+const { NANACHI_CONFIG_PATH } = require('../consts/index');
+const fs = require('fs-extra');
 
 module.exports = async function(args){
     try {
         const { buildType, beta, betaUi, watch, compress, huawei } = args;
-        nanachi({
-            entry: './source/app.js',
+        const nanachiConfig = {};
+        const baseConfig = {
             platform: buildType,
             beta,
             betaUi,
             compress,
             watch,
             huawei
-        });
+        };
+        if (fs.existsSync(NANACHI_CONFIG_PATH)) {
+            const userConfig = require(NANACHI_CONFIG_PATH);
+            Object.assign(nanachiConfig, userConfig);
+        }
+        Object.assign(nanachiConfig, baseConfig);
+        
+        nanachi(nanachiConfig);
 
     } catch (e) {
         // eslint-disable-next-line
