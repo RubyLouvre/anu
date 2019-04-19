@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-15T13
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-18T08
  * IE9+
  */
 
@@ -692,7 +692,9 @@ var noPromiseApis = {
   arrayBufferToBase64: true,
   base64ToArrayBuffer: true,
   getUpdateManager: true,
-  createWorker: true
+  createWorker: true,
+  getPushProvider: true,
+  getProvider: true
 };
 var otherApis = {
   uploadFile: true,
