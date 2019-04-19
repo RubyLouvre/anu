@@ -1,4 +1,5 @@
 const chalk = require('chalk');
+const ora = require('ora');
 
 let successNum = 0;
 
@@ -9,12 +10,12 @@ const getSize = (code)=>{
 
 const successLog = (path, code) => {
     // eslint-disable-next-line
-    console.log(chalk`{green [${++successNum}] 编译完成} ${path} {green [${getSize(code)}]}`);
+    console.log(chalk`{gray [${++successNum}]} {green 编译完成} ${path} {gray [${getSize(code)}]}`);
 };
 
 const timerLog = (timer) => {
     // eslint-disable-next-line
-    console.log(`编译完成，耗时：${timer.getProcessTime()}s`);
+    ora(chalk`{green 项目构建完成，耗时：{inverse.bold ${timer.getProcessTime()}s}}`).succeed();
 };
 
 const warningLog = ( {id, msg} ) => {

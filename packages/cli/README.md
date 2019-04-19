@@ -34,11 +34,6 @@ yarn global add nanachi-cli
 const nanachi = require('nanachi-cli');
 nanachi({
     /**
-     * @String
-     * 项目入口，默认值：./source/app
-     */ 
-    entry,
-    /**
      * @Boolean
      * 是否使用watch模式，默认值：false
      */
