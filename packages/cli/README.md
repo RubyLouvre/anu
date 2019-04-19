@@ -122,7 +122,7 @@ compress压缩模式就是使用后处理loader实现的，链接：https://www.
 
 自定义loader应用到项目中，有两种方式供选择：
 
-1. 在项目目录下编写nanachi配置文件，nanachi.config.js
+1. 在项目根目录下创建nanachi配置文件，nanachi.config.js
 ```javascript
 // nanachi.config.js
 module.exports = {
@@ -131,6 +131,7 @@ module.exports = {
 ```
 正常运行nanachi命令，即可将自定义配置应用到项目中
 ```sh
+npm install nanachi-compress-loader --save-dev
 nanachi build
 ```
 
