@@ -19,12 +19,14 @@ const timerLog = (timer) => {
 };
 
 const warningLog = ( {id, msg} ) => {
-    console.log(chalk.yellow(`Warning: ${msg}`));
-}
+    // eslint-disable-next-line
+    console.log(chalk`{white {yellow.inverse Warning:} ${id}\n{yellow ${msg}}}`);
+};
 
-const errorLog = ( {msg} ) => {
-    console.log(chalk.red(`Error: ${msg}`));
-}
+const errorLog = ( {id, msg} ) => {
+    // eslint-disable-next-line
+    console.log(chalk`{white {red.inverse Error:} ${id}\n{red ${msg}}}`);
+};
 
 const resetNum = () => {
     successNum = 0;

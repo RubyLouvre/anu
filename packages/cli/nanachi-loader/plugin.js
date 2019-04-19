@@ -62,15 +62,10 @@ class NanachiWebpackPlugin {
             resetNum();
             callback();
         });
-
-      
         
         compiler.hooks.done.tap(id, () => {
 
-
-
             this.timer.end();
-
             
             showLog();
 
