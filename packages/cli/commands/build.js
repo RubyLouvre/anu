@@ -4,7 +4,6 @@ module.exports = async function(args){
     try {
         const { buildType, beta, betaUi, watch, compress, huawei } = args;
         nanachi({
-            entry: './source/app.js',
             platform: buildType,
             beta,
             betaUi,

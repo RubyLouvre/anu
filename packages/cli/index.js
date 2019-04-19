@@ -112,7 +112,6 @@ async function nanachi({
     }
 
     const webpackConfig = require('./config/webpackConfig')({
-        entry: './source/app',
         platform,
         compress,
         beta,

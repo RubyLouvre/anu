@@ -3,7 +3,6 @@ const path = require('path');
 const cwd = process.cwd();
 
 module.exports = function({
-    entry,
     platform,
     compress,
     plugins,
@@ -18,7 +17,7 @@ module.exports = function({
     });
     const distPath = path.resolve(cwd, platform === 'quick' ? './src' : './dist');
     return {
-        entry,
+        entry: './source/app',
         mode: 'development',
         output: {
             path: distPath,
