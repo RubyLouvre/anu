@@ -1,6 +1,25 @@
 # Changelog
 
 
+# 1.2.1 (2019-04-19)
+
+## 核心库
+#### Feature
+- 增加快应用 push API。
+
+
+## CLI
+#### Feature
+- 强制校验组件所在目录名，引用组件名的规范。
+
+
+#### Bug fix
+- 修复快应用 tabBar 点击无 active 状态 bug。
+- 修复微信小程序 Request 请求两次 bug。
+
+
+
+
 # 1.2.0 (2019-04-12)
 
 ## 核心库
