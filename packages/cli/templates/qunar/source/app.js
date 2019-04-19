@@ -186,11 +186,11 @@ class Global extends React.Component {
 	    //针对快应用的全局getApp补丁
 	    if (process.env.ANU_ENV === 'quick') {
 	        var ref = Object.getPrototypeOf(global) || global;
-	        var _this = this;
+			var _this = this;
+			this.globalData = this.$def.globalData;
 	        ref.getApp = function() {
 	            return _this;
 	        };
-	        this.globalData = this.$def.globalData;
 	    }
 		console.log('App launched'); //eslint-disable-line
 	}

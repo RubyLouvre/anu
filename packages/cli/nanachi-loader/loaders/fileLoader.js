@@ -2,9 +2,6 @@ const { MAP } = require('../../consts/index');
 const { successLog } = require('../logger/index');
 const utils = require('../../packages/utils/index');
 const errorStack = require('../logger/queue');
-const compress = utils.compress();
-
-
 
 
 const isBrokenFile = function(fildId){
@@ -12,8 +9,6 @@ const isBrokenFile = function(fildId){
         return error.id === fildId;
     });
 };
-
-
 
 /**
  * queues 存放需要输出的文件
@@ -26,7 +21,6 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
         queues = [];
         exportCode = '';
     }
-   
 
     this._compiler.NANACHI = this._compiler.NANACHI || {};
     this._compiler.NANACHI.webviews = this._compiler.NANACHI.webviews || [];
@@ -40,11 +34,8 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
     }
 
     const callback = this.async();
-    queues.forEach(({ code, path: filePath, type }) => {
-        const relativePath = filePath.replace(/\.\w+$/, `.${MAP[this.nanachiOptions.platform]['EXT_NAME'][type] || type}`);
-        if (this.nanachiOptions.compress) {
-            code = typeof compress[type] === 'function' && compress[type](code) || code;
-        }
+    queues.forEach(({ code = '', path: filePath, type }) => {
+        const relativePath = type ? filePath.replace(/\.\w+$/, `.${MAP[this.nanachiOptions.platform]['EXT_NAME'][type] || type}`) : filePath;
         
         if (type === 'ux') {
             // ux文件情况特殊，需要同时监听js和css的变化，对同一个文件调用两次this.emitFile会有缓存问题

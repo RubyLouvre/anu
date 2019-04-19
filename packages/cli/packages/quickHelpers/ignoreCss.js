@@ -31,10 +31,10 @@ module.exports = {
         return !(value === 'flex' || value === 'none');
     },
     width: function(value){
-         return /calc/.test(value)
+        return /calc/.test(value);
     },
     margin: function(value){
-        return value === '0 1%'
+        return value === '0 1%';
     },
     'font-weight': function(value) {
         return !(value === 'normal' || value === 'bold');

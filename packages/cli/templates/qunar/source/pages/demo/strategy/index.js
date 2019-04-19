@@ -17,7 +17,7 @@ class P extends React.Component {
         // });
 
         React.api.request({
-            url: 'http://yapi.demo.qunar.com/mock/18752/qunar/strategy',
+            url: 'http://yapi.demo.qunar.com/mock/11595/qunar/strategy',
             success: function(data) {
                 that.setState({ data: data.data });
             }

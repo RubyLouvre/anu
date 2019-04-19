@@ -73,7 +73,11 @@ export var noPromiseApis = {
     base64ToArrayBuffer: true,
   
     getUpdateManager: true,
-    createWorker: true
+    createWorker: true,
+
+    // 快应用部分接口
+    getPushProvider: true,
+    getProvider: true
 };
 export var otherApis = {
     // 网络

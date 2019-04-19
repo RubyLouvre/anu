@@ -74,7 +74,7 @@ class NanachiWebpackPlugin {
             
             showLog();
 
-            setWebView(compiler.NANACHI.webviews);
+            setWebView(compiler.NANACHI && compiler.NANACHI.webviews);
 
             timerLog(this.timer);
         });

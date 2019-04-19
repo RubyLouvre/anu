@@ -63,8 +63,10 @@ function injectBuildEnv({ buildType, compress, huawei } = {}){
     }
 }
 
+
+
 async function nanachi({
-    entry = './source/app',
+    // entry = './source/app', // TODO: 入口文件配置暂时不支持
     watch = false,
     platform = 'wx',
     beta = false,
@@ -77,6 +79,23 @@ async function nanachi({
     plugins = [],
     complete = () => {}
 } = {}) {
+    function callback(err, stats) {
+        if (err) {
+            // eslint-disable-next-line
+            console.log(err);
+            return;
+        }
+    
+        const info = stats.toJson();
+        if (stats.hasErrors()) {
+            info.errors.forEach(e => {
+                // eslint-disable-next-line
+                console.error(e);
+                process.exit();
+            });
+        }
+        complete(stats);
+    }
     injectBuildEnv({
         buildType: platform,
         compress,
@@ -85,8 +104,15 @@ async function nanachi({
 
     getWebViewRules();
 
+    // 添加解码中文字符loader
+    postLoaders.unshift(require.resolve('./nanachi-loader/loaders/decodeChineseLoader'));
+    if (compress) {
+        // 添加代码压缩loader
+        postLoaders.unshift(require.resolve('nanachi-compress-loader'));
+    }
+
     const webpackConfig = require('./config/webpackConfig')({
-        entry,
+        entry: './source/app',
         platform,
         compress,
         beta,
@@ -101,9 +127,9 @@ async function nanachi({
     const compiler = webpack(webpackConfig);
     
     if (watch) {
-        compiler.watch({}, complete);
+        compiler.watch({}, callback);
     } else {
-        compiler.run(complete);
+        compiler.run(callback);
     }
 }
 
