@@ -2,6 +2,7 @@ const chalk = require('chalk');
 const ora = require('ora');
 const { build: buildLog } = require('./queue');
 
+
 let successNum = 0;
 
 const getSize = (code)=>{
@@ -9,8 +10,9 @@ const getSize = (code)=>{
     return Bytes < 1024 ? `${Bytes} Bytes` : `${(Bytes/1024).toFixed(1)} Kb`;
 };
 
-const successLog = (path, code) => {
-    const log = chalk`{gray [${++successNum}]} {green 编译完成} ${path} {gray [${getSize(code)}]}`;
+const successLog = (filepath, code) => {
+    // filepath = path.join(filepath);
+    const log = chalk`{gray [${++successNum}]} {green 编译完成} ${filepath} {gray [${getSize(code)}]}`;
     buildLog.push(log);
     if (process.env.NODE_ENV !== 'production') {
         // eslint-disable-next-line
