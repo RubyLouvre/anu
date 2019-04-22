@@ -61,7 +61,7 @@ class QuickParser extends JavascriptParser {
         if (cssPath) {
             cssPath = path.resolve(path.dirname(this.filepath), cssPath);
            
-            Object.assign(quickFiles[this.filepath], {
+            Object.assign(quickFiles[this.filepath.replace(/\\/g, '/')], { // \ => / windows补丁
                 cssPath
             });
         }
