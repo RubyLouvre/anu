@@ -80,5 +80,8 @@
     "thread-loader": "^2.1.2",
     "validate-npm-package-name": "^3.0.0",
     "webpack": "^4.29.6"
+  },
+  "devDependencies": {
+    "jest": "^24.7.1"
   }
 }
