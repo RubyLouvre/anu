@@ -13,7 +13,11 @@ async function run(relativePath, platform, ext) {
     await parser.parse();
     const expectCode = fs.readFileSync(expectPath, 'utf-8');
     const result = parser.getExtraFiles().find(file => {
-        if (file.type === 'html') {
+        let type = 'html';
+        if (platform === 'quick') {
+            type = 'ux';
+        }
+        if (file.type === type) {
             return true;
         }
         return false;

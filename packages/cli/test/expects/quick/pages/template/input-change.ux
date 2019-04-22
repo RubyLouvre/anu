@@ -1,0 +1,26 @@
+<import name="anu-page-wrapper" src="../../../../source/components/PageWrapper/index.ux">
+    </import>
+    <template>
+      <anu-page-wrapper>
+        <input type="idcard" onchange="dispatchEvent" data-change-uid="e3_36" data-beacon-uid="default">
+        </input>
+      </anu-page-wrapper>
+    </template>
+    <script>
+      function P() {}
+
+      P = React.toClass(P, React.Components, {
+      render: function() {
+      var h = React.createElement;
+      return h("input", {
+      type: "idcard",
+      onChange: this.change.bind(this),
+      "data-change-uid": "e3_36",
+      "data-beacon-uid": "default"
+      });;
+      },
+      classUid: "c131"
+      }, {});
+      P = React.registerPage(P, "pages/template/input-change");
+      export default P;
+    </script>
