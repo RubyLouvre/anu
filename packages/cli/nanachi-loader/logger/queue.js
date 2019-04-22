@@ -9,6 +9,7 @@
  */
 
 module.exports = {
+    build: [],
     error: [],
     warning: []
-}
+};

@@ -2,9 +2,13 @@ const Timer = require('../packages/utils/timer');
 const { resetNum, timerLog, errorLog, warningLog } = require('./logger/index');
 const setWebView = require('../packages/utils/setWebVeiw');
 const id = 'NanachiWebpackPlugin';
-
+const { build: buildLog } = require('./logger/queue');
 
 function showLog() {
+    if (process.env.NODE_ENV === 'production') {
+        // eslint-disable-next-line
+        console.log(buildLog.join('\n'));
+    }
     const errorStack = require('./logger/queue');
     errorStack.warning.forEach(function(warning){
         warningLog(warning);
@@ -16,12 +20,7 @@ function showLog() {
         });
         process.exit(1);
     }
-};
-
-
-
-
-
+}
 
 class NanachiWebpackPlugin {
     constructor({

@@ -8,7 +8,6 @@ const platforms = require('./consts/platforms');
 const babel = require('@babel/core');
 const spawn = require('child_process').spawnSync;
 
-
 //获取 WEBVIEW 配置
 function getWebViewRules(){
     if (globalConfig.buildType != 'quick') return;
@@ -81,6 +80,7 @@ async function nanachi({
     complete = () => {}
 } = {}) {
     function callback(err, stats) {
+        
         if (err) {
             // eslint-disable-next-line
             console.log(err);
