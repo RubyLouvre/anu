@@ -2,7 +2,7 @@ const { MAP } = require('../../consts/index');
 const { successLog } = require('../logger/index');
 const utils = require('../../packages/utils/index');
 const errorStack = require('../logger/queue');
-
+const path = require('path');
 
 const isBrokenFile = function(fildId){
     return errorStack.error.some(function(error){
@@ -50,8 +50,9 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
         } else {
             this.emitFile(relativePath, code, map);
         }
+        const outputPathName = this.nanachiOptions.platform === 'quick' ? './src' : './dist';
         
-        successLog(relativePath, code);
+        successLog(path.join(outputPathName, relativePath), code);
     });
     
     callback(null, exportCode, map, meta);

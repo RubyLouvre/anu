@@ -16,7 +16,7 @@ function checkCodeLine( {filePath, code, number = 500} ){
     logQueue.warning.push({
         id: filePath,
         level: 'warning',
-        msg: `${filePath} 文件代码不能超过${number}行, 请优化.`
+        msg: `文件代码不能超过${number}行, 请优化.`
     });
 }
 
@@ -32,8 +32,8 @@ function checkoutFilePath(filePath) {
 
     if (componentsPos === -1 || pagesPos === -1) return;
     componentsPos > pagesPos
-        ? msg = `${filePath} pages 目录下不能包含 components 目录, 请修复.`
-        : msg = `${filePath} components 目录下不能包含 pages 目录, 请修复.`;
+        ? msg = 'pages 目录下不能包含 components 目录, 请修复.'
+        : msg = 'components 目录下不能包含 pages 目录, 请修复.';
 
     logQueue.error.push({
         id: filePath,
@@ -55,8 +55,7 @@ function checkImportComponent( filePath ){
             logQueue.error.push({
                 id: filePath,
                 level: 'error',
-                msg: filePath
-                    + '\n组件名必须首字母大写\nimport [组件名] from \'@components/[组件名]/[此处必须index]\''
+                msg: '组件名必须首字母大写\nimport [组件名] from \'@components/[组件名]/[此处必须index]\''
                     + '\neg. import Loading from \'@components/Loading/index\'\n'
             });
         }

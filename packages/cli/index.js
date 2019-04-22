@@ -8,7 +8,6 @@ const platforms = require('./consts/platforms');
 const babel = require('@babel/core');
 const spawn = require('child_process').spawnSync;
 
-
 //获取 WEBVIEW 配置
 function getWebViewRules(){
     if (globalConfig.buildType != 'quick') return;
@@ -64,7 +63,11 @@ function injectBuildEnv({ buildType, compress, huawei } = {}){
     }
 }
 
-
+function validatePlatform(platform) {
+    return platforms.some((p) => {
+        return p.buildType === platform;
+    });
+}
 
 async function nanachi({
     // entry = './source/app', // TODO: 入口文件配置暂时不支持
@@ -81,6 +84,7 @@ async function nanachi({
     complete = () => {}
 } = {}) {
     function callback(err, stats) {
+        
         if (err) {
             // eslint-disable-next-line
             console.log(err);
@@ -98,9 +102,7 @@ async function nanachi({
         complete(err, stats);
     }
     try {
-        if (!platforms.some((p) => {
-            return p.buildType === platform;
-        })) {
+        if (!validatePlatform(platform)) {
             throw new Error(`不支持的platform：${platform}`);
         }
         if (platform === 'h5') {
