@@ -5,7 +5,7 @@ const prettifyXml = require('prettify-xml');
 
 async function run(relativePath, platform, ext) {
     const basePath = path.resolve(__dirname, '../cases', `${relativePath}.js`);
-    const expectPath = path.resolve(__dirname, '../expects', `${relativePath}.${ext}`);
+    const expectPath = path.resolve(__dirname, `../expects/${platform}`, `${relativePath}.${ext}`);
     const parser = JavascriptParserFactory.create({
         platform,
         filepath: basePath

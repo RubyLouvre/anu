@@ -1,0 +1,13 @@
+<view>
+        <block wx:if="{{state.show}}">
+          <block wx:if="{{state.isOk}}">
+            <view>hello word</view>
+          </block>
+          <block wx:elif="true">
+            <view>hello</view>
+          </block>
+        </block>
+        <block wx:elif="true">
+          <view>nanachi</view>
+        </block>
+      </view>

@@ -1,8 +1,8 @@
 const { run } = require('./utils/index.js');
 const config = require('../config/config');
 
-const platform = 'ali';
-const ext = 'axml';
+const platform = 'bu';
+const ext = 'swan';
 
 config.buildType = platform;
 
