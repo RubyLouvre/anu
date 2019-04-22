@@ -50,6 +50,8 @@ class JavascriptParser {
     getExportCode() {
         let res = this.parsedCode;
         this.extraModules.forEach(module => {
+            // windows 补丁
+            module = module.replace(/\\/g, '\\\\');
             res = `import '${module}';\n` + res;
         });
         return res;
