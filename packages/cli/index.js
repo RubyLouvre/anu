@@ -12,9 +12,8 @@ const spawn = require('child_process').spawnSync;
 function getWebViewRules(){
     if (globalConfig.buildType != 'quick') return;
     let bin = 'grep';
-    let opts = ['-r', "pages:\\s*true", path.join(cwd, 'source', 'pages' )];
-    let result = spawn(bin, opts);
-    let ret = result.stdout.toString();
+    let opts = ['-r', '-E', "pages:\\s*(\\btrue\\b|\\[.+\\])", path.join(cwd, 'source', 'pages' )];
+    let ret = spawn(bin, opts).stdout.toString().trim();
 
     let webViewRoutes = ret.split(/\s/)
     .filter(function(el){
