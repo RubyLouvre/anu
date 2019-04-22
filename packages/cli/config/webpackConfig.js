@@ -33,10 +33,10 @@ module.exports = function({
                         require.resolve('../nanachi-loader/loaders/nanachiLoader'),
                         ...preLoaders
                     ],
-                    exclude: /node_modules\/(?!schnee-ui\/)|React/,
+                    exclude: /node_modules[\\\/](?!schnee-ui[\\\/])|React/,
                 },
                 {
-                    test: /node_modules\/(?!schnee-ui\/)/,
+                    test: /node_modules[\\\/](?!schnee-ui[\\\/])/,
                     use: [
                         require.resolve('../nanachi-loader/loaders/fileLoader'),
                         ...postLoaders,

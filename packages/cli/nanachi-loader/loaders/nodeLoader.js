@@ -30,7 +30,7 @@ module.exports = async function(code, map, meta) {
         return;
     }
     
-    relativePath = path.join('npm', this.resourcePath.replace(/^.+?\/node_modules\//, ''));
+    relativePath = path.join('npm', this.resourcePath.replace(/^.+?[\\\/]node_modules[\\\/]/, ''));
     queues = [{
         code,
         path: relativePath
