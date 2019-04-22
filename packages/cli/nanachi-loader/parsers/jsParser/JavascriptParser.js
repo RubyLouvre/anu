@@ -50,6 +50,8 @@ class JavascriptParser {
     getExportCode() {
         let res = this.parsedCode;
         this.extraModules.forEach(module => {
+            // windows 补丁
+            module = module.replace(/\\/g, '\\\\');
             res = `import '${module}';\n` + res;
         });
         return res;
@@ -83,6 +85,7 @@ class JavascriptParser {
                                     });
                                     moduleName = path.resolve(cwd, 'source/npm', path.relative(path.resolve(cwd, 'node_modules'), nodePath));
                                 } catch (e) {
+                                    // eslint-disable-next-line
                                     console.log(e);
                                     return;
                                 }

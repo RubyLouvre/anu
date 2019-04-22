@@ -17,7 +17,7 @@ function needInstall( pkgName ){
     try {
         nodeResolve.sync(pkgName, { 
             basedir: process.cwd(),
-            moduleDirectory: path.resolve(cwd, 'node_modules')
+            moduleDirectory: ''
         });
         return false;
     } catch (err) {
