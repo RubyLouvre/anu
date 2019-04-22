@@ -1,6 +1,7 @@
 let config = require('../../config/config');
 let path = require('path');
 let g = require('@babel/generator').default;
+let fs = require('fs-extra');
 let cwd = process.cwd();
 let logQueue = require('../../nanachi-loader/logger/queue');
 
@@ -22,7 +23,7 @@ function checkCodeLine( {filePath, code, number = 500} ){
 
 
 //校验目录规范, pages中不能含有components目录, 反之亦然。
-function checkoutFilePath(filePath) {
+function checkFilePath(filePath) {
     //把目录分割成数组
     let pathAray = path.relative( cwd,  filePath).replace(/\\/, '/').split('/');  //把目录分割成数组
    
@@ -46,20 +47,48 @@ function checkoutFilePath(filePath) {
 
 //校验组件目录规范
 function checkImportComponent( filePath ){
-    if ( !/\/components\//.test(filePath.replace(/\\/, '/')) ) return;
-    let componentsDir = path.join(cwd, 'source', 'components');
-    // 如果是 components 中的组件需要校验
-    if (filePath.indexOf(componentsDir) === 0) {
-        let restComponentsPath = filePath.replace(componentsDir, '');
-        if (!/^(\/|\\)[A-Z][a-zA-Z0-9]*(\/|\\)index\.js/.test(restComponentsPath)) {
-            logQueue.error.push({
-                id: filePath,
-                level: 'error',
-                msg: '组件名必须首字母大写\nimport [组件名] from \'@components/[组件名]/[此处必须index]\''
-                    + '\neg. import Loading from \'@components/Loading/index\'\n'
-            });
-        }
+    let code = '';
+    try {
+        code = fs.readFileSync(filePath).toString();
+    } catch (err) {
+        console.log(err);
+        process.exit(1);
     }
+    if (code === '') return;
+    let item = {
+        id : filePath,
+        code: code
+    }
+    let importList = item.code.match(/^(?:import)\s+([^;]+)/igm) || [];
+      
+    importList = importList.filter((importer)=>{
+        return /[/|@]components\//.test(importer);
+    });
+
+    importList.forEach((importer)=>{
+         // import Welcome from '@components/Welcome/index' => ['Welcome', '@components/Welcome/index']
+         let [importName, importValue] = importer.replace(/(import|from|\'|\")/g, '').trim().split(/\s+/);
+        
+         // @components/Welcome/index ==》Welcome
+         let componentsFolderName = path.dirname(importValue).replace(/\\/, '/').split('/').pop();
+         let fileName = path.parse(importValue).name;
+
+         let msg = '';
+         if ( fileName!='index' ) {
+             msg = '组件文件名必须是index';
+             msg += `\nerror at: ${importValue}`
+         } else if ( importName != componentsFolderName){
+             msg = '引用的组件名必须和组件所在的文件夹名保持一致'
+                  + `\n例如: import ${componentsFolderName} from \'@components/${componentsFolderName}/index\'`;
+             msg += `\nerror at: ${importer}`
+         }
+         if (!msg) return;
+         logQueue.error.push({
+             id: item.id,
+             level: 'error',
+             msg: msg
+         });
+    });
 }
 
 
@@ -73,7 +102,6 @@ function validateJsx(astPath, state){
 
     if (type === 'StringLiteral') return;
     if (typeof astPath.node.loc === 'undefined') return;
-
     
     let fileId = path.relative(cwd, state.filename);
     let { line, column } = astPath.node.loc.start;
@@ -134,7 +162,7 @@ module.exports = function(){
                 code: data.code
             });
 
-            checkoutFilePath(filePath);
+            checkFilePath(filePath);
             checkImportComponent(filePath);
             
         },
