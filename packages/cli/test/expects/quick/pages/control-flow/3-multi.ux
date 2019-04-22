@@ -1,0 +1,38 @@
+<import name="anu-page-wrapper" src="../../../../source/components/PageWrapper/index.ux">
+    </import>
+    <template>
+      <anu-page-wrapper>
+        <div>
+          <block if="{{state.show}}">
+            <block if="{{state.isOk}}">
+              <div>
+                <text>hello word</text>
+              </div>
+            </block>
+            <block elif="true">
+              <div>
+                <text>hello</text>
+              </div>
+            </block>
+          </block>
+          <block elif="true">
+            <div>
+              <text>nanachi</text>
+            </div>
+          </block>
+        </div>
+      </anu-page-wrapper>
+    </template>
+    <script>
+      function P() {}
+
+      P = React.toClass(P, React.Components, {
+      render: function() {
+      var h = React.createElement;
+      return h("div", null, this.state.show ? this.state.isOk ? h("div", null, "hello word") : h("div", null, "hello") : h("div", null, "nanachi"));;
+      },
+      classUid: "c382"
+      }, {});
+      P = React.registerPage(P, "pages/control-flow/3-multi");
+      export default P;
+    </script>
