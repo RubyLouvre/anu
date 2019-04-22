@@ -6,14 +6,18 @@ const { build: buildLog } = require('./logger/queue');
 
 function showLog() {
     if (process.env.NODE_ENV === 'production') {
+        let log = '';
+        while (buildLog.length) {
+            log += buildLog.shift() + (buildLog.length !== 0 ? '\n' : '');
+        }
         // eslint-disable-next-line
-        console.log(buildLog.join('\n'));
+        console.log(log);
     }
     const errorStack = require('./logger/queue');
-    errorStack.warning.forEach(function(warning){
-        warningLog(warning);
-    });
-
+    while (errorStack.warning.length) {
+        warningLog(errorStack.warning.shift())
+    }
+    
     if (errorStack.error.length) {
         errorStack.error.forEach(function(error){
             errorLog(error);
