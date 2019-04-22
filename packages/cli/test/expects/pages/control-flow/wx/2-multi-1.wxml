@@ -1,5 +1,0 @@
-<view>
-        <block wx:if="{{state.show && state.isOk}}">
-          <view>hello word</view>
-        </block>
-      </view>

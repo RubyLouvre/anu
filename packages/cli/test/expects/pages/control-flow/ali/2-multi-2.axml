@@ -1,5 +1,0 @@
-<view>
-      <block a:if="{{state.show || state.isOk}}">
-        <view>hello word</view>
-      </block>
-    </view>
