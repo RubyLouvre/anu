@@ -9,6 +9,7 @@ const glob = require('glob');
 const { REACT_LIB_MAP } = require('../consts/index');
 
 const cliRoot = path.resolve(__dirname, '..');
+const isWin = process.platform === 'win32';
 
 //删除dist目录, 以及快应的各配置文件
 function getRubbishFiles(buildType){
@@ -129,14 +130,14 @@ function getReactLibFile(ReactLibName) {
 function getAssetsFile( buildType ) {
     const assetsDir = path.join(cwd, 'source', 'assets');
     let files = glob.sync( assetsDir+'/**', {nodir: true});
-
     files = files
     .filter(function(id){
         //过滤js, css, sass, scss, less, json文件
         return !/\.(js|scss|sass|less|css|json)$/.test(id)
     })
     .map(function(id){
-        let dist = id.replace('source', buildType === 'quick' ? 'src' : 'dist');
+        let sourceReg = isWin ? /\\source\\/ : /\/source\//;
+        let dist = id.replace(sourceReg, buildType === 'quick' ? `${path.sep}src${path.sep}` : `${path.sep}dist${path.sep}`);
         return {
             id: id,
             dist: dist ,
