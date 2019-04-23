@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-17
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-19
  */
 
 var arrayPush = Array.prototype.push;
@@ -1657,7 +1657,9 @@ var noPromiseApis = {
   arrayBufferToBase64: true,
   base64ToArrayBuffer: true,
   getUpdateManager: true,
-  createWorker: true
+  createWorker: true,
+  getPushProvider: true,
+  getProvider: true
 };
 var otherApis = {
   uploadFile: true,

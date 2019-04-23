@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-15T13
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-19T07
  * IE9+
  */
 
@@ -693,7 +693,9 @@ var noPromiseApis = {
   arrayBufferToBase64: true,
   base64ToArrayBuffer: true,
   getUpdateManager: true,
-  createWorker: true
+  createWorker: true,
+  getPushProvider: true,
+  getProvider: true
 };
 var otherApis = {
   uploadFile: true,
@@ -930,7 +932,6 @@ var more = function more(api) {
     return {
         request: function request(_a) {
             RequestQueue.facade = api;
-            RequestQueue.request(_a);
             return RequestQueue.request(_a);
         },
         getStorage: function getStorage(_ref) {
@@ -943,7 +944,7 @@ var more = function more(api) {
                 complete: complete,
                 success: success,
                 fail: function fail(e) {
-                    if (e.errMsg === "getStorage:fail data not found") {
+                    if (e.errMsg === 'getStorage:fail data not found') {
                         success && success({});
                     } else {
                         _fail && _fail(e);
