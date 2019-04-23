@@ -26,7 +26,7 @@ class StyleParser {
         this.extraModules = [];
     }
     getRelativePath(filepath) {
-        if (/node_modules\/schnee-ui/.test(filepath)) {
+        if (/node_modules[\\\/]schnee-ui/.test(filepath)) {
             return path.join('npm', path.relative(path.resolve(process.cwd(), 'node_modules'), filepath));
         } else {
             return path.relative(path.resolve(process.cwd(), 'source'), filepath);
