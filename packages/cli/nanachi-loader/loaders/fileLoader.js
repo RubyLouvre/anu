@@ -36,6 +36,12 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
     const callback = this.async();
     queues.forEach(({ code = '', path: filePath, type }) => {
         const relativePath = type ? filePath.replace(/\.\w+$/, `.${MAP[this.nanachiOptions.platform]['EXT_NAME'][type] || type}`) : filePath;
+        //qq轻应用，页面必须有样式，否则页面无法渲染，这是qq轻应用bug
+        if ( this.nanachiOptions.platform === 'qq' && /[\/\\](pages|components)[\/\\]/.test(this.resourcePath) && path.parse(this.resourcePath).base === 'index.js' ) {
+            if (!this._compilation.assets[filePath]) {
+                this.emitFile(path.join(path.dirname(relativePath), 'index.qss'), '', map);
+            }
+        }
         
         if (type === 'ux') {
             // ux文件情况特殊，需要同时监听js和css的变化，对同一个文件调用两次this.emitFile会有缓存问题
