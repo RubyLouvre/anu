@@ -28,6 +28,7 @@ module.exports = {
                 X: t.identifier(modules.className),
                 B: modules.thisProperties
             });
+           
         }
         astPath.insertBefore(modules.ctorFn);
         //用于绑定事件
@@ -52,7 +53,12 @@ module.exports = {
                 t.objectExpression(modules.staticMethods)
             ])
         );
-         
+        if(modules.componentType === 'App'){
+            if(!/this.globalData/.test(generate(modules.ctorFn).code)){
+                 throw 'app.js没有设置globalData对象'
+            }
+        }
+        
         // const classDeclarationAst = t.variableDeclaration(
         //     'var',
         //     [
