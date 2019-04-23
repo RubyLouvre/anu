@@ -3,7 +3,7 @@
  *  // if process.env.ANU_ENV === [wx|ali|bu|quick]
  *  import ...
  */
-let config = require('../config');
+let config = require('../../config/config');
 let visitor = {
     ImportDeclaration: {
         exit(astPath) {

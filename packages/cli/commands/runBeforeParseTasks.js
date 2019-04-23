@@ -7,6 +7,8 @@ const axios = require('axios');
 const ora = require('ora');
 const glob = require('glob');
 const { REACT_LIB_MAP } = require('../consts/index');
+const utils = require('../packages/utils/index');
+
 
 const cliRoot = path.resolve(__dirname, '..');
 const isWin = process.platform === 'win32';
@@ -15,25 +17,26 @@ const isWin = process.platform === 'win32';
 function getRubbishFiles(buildType){
     let fileList = ['package-lock.json', 'yarn.lock'];
     buildType !== 'quick'
-    ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
-    : fileList = fileList.concat(['dist']);
-    
+        ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
+        : fileList = fileList.concat(['dist']);
+
     //构建应用时，要删除source目录下其他的 React lib 文件。
     let libList = Object.keys(REACT_LIB_MAP)
-    .map(function(key){
-        return `source/${REACT_LIB_MAP[key]}`;
-    })
-    .filter(function(libName){
-        return libName.split('/')[1] != REACT_LIB_MAP[buildType];
-    });
+        .map(function(key){
+            return `source/${REACT_LIB_MAP[key]}`;
+        })
+        .filter(function(libName){
+            return libName.split('/')[1] != REACT_LIB_MAP[buildType];
+        });
     fileList = fileList.concat(libList);
+
     return fileList.map(function(file){
         return {
             id: path.join(cwd, file),
             ACTION_TYPE: 'REMOVE'
-        }
+        };
     });
-};
+}
 
 
 //合并快应用构建json
@@ -54,8 +57,7 @@ function getQuickPkgFile() {
             ACTION_TYPE: 'WRITE'
         }
     ];
-};
-
+}
 
 //copy 快应用构建的基础依赖
 function getQuickBuildConfigFile(){
@@ -73,7 +75,7 @@ function getQuickBuildConfigFile(){
             ACTION_TYPE: 'COPY'
         }
     ];
-};
+}
 
 //从 github 同步UI
 function downloadSchneeUI(){
@@ -121,9 +123,6 @@ function getReactLibFile(ReactLibName) {
             }
         ];
     }
-
-   
-   
 }
 
 
@@ -168,12 +167,10 @@ function getProjectConfigFile(buildType) {
     }
 }
 
-
-
 //fs-extra 各文件I/O操作返回Promise
 const helpers = {
     COPY: function( { id, dist } ) {
-        return fs.copy(id, dist)
+        return fs.copy(id, dist);
     },
     WRITE: function( {id, content} ) {
         fs.ensureFileSync(id);
@@ -182,13 +179,26 @@ const helpers = {
     REMOVE: function( {id} ) {
         return fs.remove(id);
     }
+};
+
+function needInstallHapToolkit(){
+    //检查本地是否安装快应用的hap-toolkit工具
+    try {
+        //hap-toolkit中package.json没有main或者module字段, 无法用 nodeResolve 来判断是否存在。
+        //nodeResolve.sync('hap-toolkit', { basedir: process.cwd() });
+        let hapToolKitPath = path.join(cwd, 'node_modules', 'hap-toolkit');
+        fs.accessSync(hapToolKitPath);
+        return false;
+    } catch (err) {
+        return true;
+    }
 }
 
-async function runTask(args){
-    const { buildType, beta,  betaUi } = args;
+async function runTask({ buildType, beta, betaUi }){
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
     let tasks  = [];
+    
 
     if (betaUi) {
         downloadSchneeUI();
@@ -205,7 +215,17 @@ async function runTask(args){
     
     //快应用下需要copy babel.config.js, 合并package.json等
     if (isQuick) {
-        tasks = tasks.concat(getQuickBuildConfigFile(), getQuickPkgFile())
+        tasks = tasks.concat(getQuickBuildConfigFile(), getQuickPkgFile());
+        if (needInstallHapToolkit()) {
+            //获取package.json中hap-toolkit版本，并安装
+            let toolName = 'hap-toolkit';
+            // eslint-disable-next-line
+            console.log(chalk.green(`缺少快应用构建工具${toolName}, 正在安装, 请稍候...`));
+            utils.installer(
+                `${toolName}@${require( path.join(cwd, 'package.json'))['devDependencies'][toolName] }`,
+                '--save-dev'
+            );
+        }
     }
     
     //copy project.config.json
@@ -228,11 +248,11 @@ async function runTask(args){
             }
         }));
     } catch (err) {
+        // eslint-disable-next-line
         console.log(err);
         process.exit(1);
     }
-};
-
+}
 
 module.exports = async function(args){
     await runTask(args);

@@ -1,3 +1,6 @@
+const path = require('path');
+const cwd = process.cwd();
+
 const REACT_LIB_MAP = {
     wx: 'ReactWX.js',
     ali: 'ReactAli.js',
@@ -7,6 +10,60 @@ const REACT_LIB_MAP = {
     qq: 'ReactWX.js',
     tt: 'ReactWX.js'
 };
+
+const MAP = {
+    'wx': {
+        EXT_NAME: {
+            'css': 'wxss',
+            'scss': 'wxss',
+            'sass': 'wxss',
+            'less': 'wxss',
+            'html': 'wxml',
+            'jsx': 'js',
+        },
+        patchComponents: []
+    },
+    'ali': {
+        EXT_NAME: {
+            'css': 'acss',
+            'scss': 'acss',
+            'sass': 'acss',
+            'less': 'acss',
+            'html': 'axml',
+            'jsx': 'js',
+        },
+        patchComponents: [
+            'rich-text' //年前还不支持这标签 https://docs.alipay.com/mini/component/rich-text
+        ]
+    },
+    'bu': {
+        EXT_NAME: {
+            'css': 'css',
+            'scss': 'css',
+            'sass': 'css',
+            'less': 'css',
+            'html': 'swan',
+            'jsx': 'js',
+        },
+        patchComponents: []
+    },
+    'tt': {
+        EXT_NAME: {
+            'css': 'ttss',
+            'scss': 'ttss',
+            'sass': 'ttss',
+            'less': 'ttss',
+            'html': 'ttml',
+            'jsx': 'js',
+        },
+        patchComponents: []
+    },
+    'quick': {
+        EXT_NAME: {},
+        patchComponents: ['radio', 'radio-group', 'checkbox', 'checkbox-group', 'label', 'navigator', 'picker']
+    }
+};
+
 const BUILD_OPTIONS = {
     'compress': {
         alias: 'c',
@@ -23,7 +80,11 @@ const BUILD_OPTIONS = {
     }
 };
 
+const NANACHI_CONFIG_PATH = path.resolve(cwd, 'nanachi.config.js');
+
 module.exports = {
     REACT_LIB_MAP,
-    BUILD_OPTIONS
+    BUILD_OPTIONS,
+    MAP,
+    NANACHI_CONFIG_PATH
 };

@@ -2,15 +2,16 @@ const t = require('@babel/types');
 const generate = require('@babel/generator').default;
 const template = require('@babel/template').default;
 const path = require('path');
-const queue = require('../queue');
 const utils = require('../utils');
 const fs = require('fs-extra');
-const config = require('../config');
+const config = require('../../config/config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
 const ignoreAttri = require('../quickHelpers/ignoreAttri');
+const cwd = process.cwd();
+
 const transformConfig = require('./transformConfig');
-const quickFiles = require('../quickFiles');
+const quickFiles = require('../quickHelpers/quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
 const helpers = require(`../${config[buildType].helpers}/index`);
@@ -82,23 +83,12 @@ module.exports = {
                         methodName = 'onDestroy';
                     }
                     let dist = path.join(
-                        process.cwd(),
-                        'dist',
                         'components',
                         'PageWrapper',
                         'index.ux'
                     );
                     if (!cache[dist]) {
-                        // // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
-                        // const placeholder = {
-                        //     code: '',
-                        //     path: dist,
-                        //     type: 'ux'
-                        // };
-                        // queue.push(placeholder);
-                        // // 补丁 END
-
-                        queue.push({
+                        modules.queue.push({
                             code: fs.readFileSync(
                                 path.resolve(
                                     __dirname,
@@ -196,17 +186,23 @@ module.exports = {
         let modules = utils.getAnu(state);
         let source = node.source.value;
         let specifiers = node.specifiers;
+        var extraModules = modules.extraModules;
 
         if (modules.componentType === 'App') {
             //收集页面上的依赖，构成app.json的pages数组或manifest.json中routes数组
             if (/\/pages\//.test(source)) {
                 var pages = modules.pages || (modules.pages = []);
                 pages.push(source.replace(/^\.\//, ''));
+                // 存下删除的依赖路径
+                extraModules.push(source);
+
                 astPath.remove(); //移除分析依赖用的引用
             }
         }
 
         if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
+            // 存下删除的依赖路径
+            extraModules.push(source);
             astPath.remove();
         }
 
@@ -254,7 +250,7 @@ module.exports = {
             if (buildType == 'quick') {
                 var obj = quickFiles[modules.sourcePath];
                 if (obj) {
-                    quickConfig(json, modules, queue, utils);
+                    quickConfig(json, modules, modules.queue, utils);
                     obj.config = Object.assign({}, json);
                 }
                 // delete json.usingComponents;
@@ -274,13 +270,8 @@ module.exports = {
                 json = require('../utils/mergeConfigJson')(modules, json);
                 
                 
-                queue.push({
-                    path: utils.updatePath(
-                        modules.sourcePath,
-                        config.sourceDir,
-                        'dist',
-                        'json'
-                    ),
+                modules.queue.push({
+                    path: path.relative(path.resolve(cwd, 'source'), modules.sourcePath),
                     code: JSON.stringify(json, null, 4),
                     type: 'json'
                 });
@@ -531,6 +522,8 @@ module.exports = {
                 // astPath.componentName = nodeName;
 
                 try {
+                    // 存下删除的依赖路径
+                    if (bag.source !== 'schnee-ui') modules.extraModules.push(bag.source);
                     bag.astPath.remove();
                     bag.astPath = null;
                 } catch (err) {
@@ -538,7 +531,6 @@ module.exports = {
                 }
 
                 let useComponentsPath = utils.getUsedComponentsPath(bag, nodeName, modules);
-
                 modules.usedComponents['anu-' + nodeName.toLowerCase()] = useComponentsPath;
                 astPath.node.name.name = 'React.useComponent';
 

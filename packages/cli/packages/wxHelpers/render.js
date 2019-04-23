@@ -4,11 +4,12 @@ const generate = require('@babel/generator').default;
 const t = require('@babel/types');
 const wxmlHelper = require('./wxml');
 const babel = require('@babel/core');
-const queue = require('../queue');
 const utils = require('../utils');
-const config = require('../config');
+const config = require('../../config/config');
 //const minifier = require('html-minifier').minify;
 const xmlExt = config[config.buildType].xmlExt;
+const path = require('path');
+const cwd = process.cwd();
 
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -109,13 +110,9 @@ exports.exit = function(astPath, type, componentName, modules) {
                 '/components/' + parentClass + '/index';
         }
 
-        queue.push({
-            path: utils.updatePath(
-                modules.sourcePath,
-                config.sourceDir,
-                'dist',
-                xmlExt
-            ),
+        modules.queue.push({
+            type: 'html',
+            path: path.relative(path.resolve(cwd, 'source'), modules.sourcePath),
             code: wxml
         });
     }

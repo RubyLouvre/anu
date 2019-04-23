@@ -1,0 +1,1 @@
+<view bindtap="dispatchEvent" data-tap-uid="e3_20" data-beacon-uid="default">hello world</view>

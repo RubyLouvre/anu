@@ -4,10 +4,9 @@ const wxmlHelper = require('./wxml');
 const babel = require('@babel/core');
 const path = require('path');
 const generate = require('@babel/generator').default;
-const quickFiles = require('../quickFiles');
-const config = require('../config');
+const quickFiles = require('./quickFiles');
+const config = require('../../config/config');
 const utils = require('../utils');
-const queue = require('../queue');
 
 const deps = [];
 
@@ -66,7 +65,7 @@ exports.exit = function (astPath, type, componentName, modules) {
                     wxml = `<import src="${ modules.importComponents[i]}.ux" />\n${wxml}`;
                 }
             }
-            var quickFile = quickFiles[modules.sourcePath];
+            var quickFile = quickFiles[utils.fixWinPath(modules.sourcePath)];
             if (quickFile) {
                 if (modules.componentType === 'Page') {
                     let pageWraperPath = path.relative(path.dirname(modules.sourcePath), wrapperPath);

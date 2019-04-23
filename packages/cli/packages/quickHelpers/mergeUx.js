@@ -1,10 +1,9 @@
 
 let path = require('path');
 let beautify = require('js-beautify');
-let config = require('../config');
-let quickFiles = require('../quickFiles');
+let config = require('../../config/config');
+let quickFiles = require('./quickFiles');
 let utils = require('../utils');
-let queue = require('../queue');
 let cwd = process.cwd();
 let fs = require('fs');
 
@@ -31,24 +30,12 @@ let getDist = (filePath) =>{
     return distPath;
 };
 
-const compileSassByPostCss = require('../stylesTransformer/postcssTransformSass');
-const compileLessByPostCss = require('../stylesTransformer/postcssTransformLess');
-
-const styleCompilerMap = {
-    'less': compileLessByPostCss,
-    'css':  compileLessByPostCss,
-    'sass': compileSassByPostCss,
-    'scss': compileSassByPostCss
-};
-
-
 function beautifyUx(code){
     return beautify.html(code, {
         indent: 4,
         //'wrap-line-length': 100
     });
 }
-
 
 function isNodeModulePath(fileId){
     let isWin = utils.isWin();
@@ -64,16 +51,31 @@ function fixPath(fileId, dep){
     return path.join(cwd, retPath); 
 }
 
+function nodeModules2Npm(p) {
+    const relativePath = path.relative(path.resolve(cwd, 'node_modules'), p);
+    return path.join(cwd, 'source/npm', relativePath);
+}
 
+// TODO: 合并到QuickParser中
 let map = {
     getImportTag: function(uxFile, sourcePath){
         //假设存在<import>
         let importTag = '';
         let using = uxFile.config && uxFile.config.usingComponents || {};
         Object.keys(using).forEach((i)=>{
+            const isWin = utils.isWin();
+            const reg = isWin ? /^(\\)/ : /^(\/)/;
+            const relativePath = using[i].replace(reg, '.$1');
+            let targetPath = path.join(cwd, 'source', relativePath);
+            if (/(node_modules|npm)[\\\/]schnee-ui/.test(sourcePath)) {
+                if (/node_modules/.test(sourcePath)) {
+                    sourcePath = nodeModules2Npm(sourcePath);
+                }
+                targetPath = path.join(cwd, 'source/npm/schnee-ui', relativePath);
+            }
             let importSrc = path.relative(
                 path.dirname(sourcePath),
-                fixPath(sourcePath, using[i])
+                targetPath
             );
             importSrc = utils.isWin() ? importSrc.replace(/\\/g, '/'): importSrc;
             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
@@ -85,49 +87,14 @@ let map = {
         code = beautify.js(code);
         return `<script>\n${code}\n</script>`;
     },
-    getCssCode:  function(uxFile){
-        if (!uxFile.cssType) return '';
-        let {cssType, cssPath} = uxFile;
-       
-        return styleCompilerMap[cssType](cssPath)
-            .then(async (res)=>{
-                // // 递归编译@import依赖文件
-                // res.deps.forEach(dep => {
-                //     const code = fs.readFileSync(dep.file, 'utf-8');
-                //     needUpdate(dep.file, code,  ()=>{
-                //         let exitName = path.extname(dep.file).replace(/\./, '');
-                //         styleCompilerMap[exitName](dep.file, code).then(res => {
-                //             queue.push({
-                //                 code: res.code,
-                //                 path: getDist(dep.file),
-                //                 type: 'css'
-                //             });
-                //         });
-                //     });
-                // });
-                // 递归编译@import依赖文件
-                for (let i = 0; i < res.deps.length; i++) {
-                    const dep = res.deps[i];
-                    const code = fs.readFileSync(dep.file, 'utf-8');
-                    if (needUpdate(dep.file, code)) {
-                        const res = await styleCompilerMap[cssType](dep.file, code);
-                        queue.push({
-                            code: res.code,
-                            path: getDist(dep.file),
-                            type: 'css'
-                        });
-                    }
-                }
-                return `<style>\n${res.code}\n</style>`;
-            });
-    },
-    resolveComponents: function(data){
-        let {result, sourcePath} = data;
+    resolveComponents: function(data, queue){
+        let { result, sourcePath, relativePath } = data;
         let isComponentReg = utils.isWin() ? /\\components\\/ : /\/components\// ;
         if (!isComponentReg.test(sourcePath)) return;
         queue.push({
             code: beautify.js(result.code.replace('console.log(nanachi)', 'export {React}')),
-            path:  utils.updatePath(sourcePath, config.sourceDir, 'dist') 
+            path: relativePath,
+            type: 'js'
         });
         let reg = utils.isWin() ? /components\\(\w+)/ :  /components\/(\w+)/;
         var componentName =  sourcePath.match(reg)[1];
@@ -137,27 +104,24 @@ let map = {
 
 };
 
-module.exports = async (data)=>{
-    let {sourcePath, result} = data;
-    var uxFile = quickFiles[sourcePath];
-
+module.exports = (data, queue)=>{
+    let { sourcePath, result, relativePath } = data;
+    var uxFile = quickFiles[utils.fixWinPath(sourcePath)];
     //如果没有模板, 并且不是app，则认为这是个纯js模块。
-    if (!uxFile.template && uxFile.type != 'App') {
+    if (!uxFile || (!uxFile.template && uxFile.type != 'App')) {
         return {
             type: 'js',
             code: result.code
         };
     }
 
-    if (!uxFile) return;
     //假设假设存在<template>
     var ux = `${uxFile.template || ''}`;
-    map.resolveComponents(data);
-    ux = beautifyUx(map.getImportTag(uxFile, sourcePath) + ux) + '\n'; 
-    ux = ux + map.getJsCode(result.code) + '\n'; 
-    ux = ux + await map.getCssCode(uxFile);
+    map.resolveComponents(data, queue);
+    uxFile.header = beautifyUx(map.getImportTag(uxFile, sourcePath) + ux);
+    uxFile.jsCode = map.getJsCode(result.code);
+    uxFile.cssCode = uxFile.cssCode || '';
     return {
         type: 'ux',
-        code: ux
     };
 };

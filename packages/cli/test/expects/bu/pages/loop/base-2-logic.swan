@@ -1,0 +1,14 @@
+<view>
+          <block s-for="{{state.multiArr}}" s-for-item="item" s-for-index="i90">
+            <view>
+              <block s-for="{{item.list}}" s-for-item="item2" s-for-index="i189">
+                <block s-if="{{state.isOk}}">
+                  <text>{{item2}}</text>
+                </block>
+                <block s-elif="true">
+                  <view>noOk</view>
+                </block>
+              </block>
+            </view>
+          </block>
+        </view>
