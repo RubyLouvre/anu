@@ -92,7 +92,7 @@ class QuickParser extends JavascriptParser {
 
     }
     getUxCode() {
-        const obj = quickFiles[this.filepath];
+        const obj = quickFiles[this.filepath.replace(/\\/g, '/')];
         return obj.header + '\n' + obj.jsCode + '\n' + obj.cssCode;
     }
     

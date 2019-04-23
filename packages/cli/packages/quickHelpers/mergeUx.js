@@ -66,8 +66,8 @@ let map = {
             const isWin = utils.isWin();
             const reg = isWin ? /^(\\)/ : /^(\/)/;
             const relativePath = using[i].replace(reg, '.$1');
-            let targetPath = path.resolve(cwd, 'source', relativePath);
-            if (/(node_modules|npm)\/schnee-ui/.test(sourcePath)) {
+            let targetPath = path.join(cwd, 'source', relativePath);
+            if (/(node_modules|npm)[\\\/]schnee-ui/.test(sourcePath)) {
                 if (/node_modules/.test(sourcePath)) {
                     sourcePath = nodeModules2Npm(sourcePath);
                 }
@@ -106,7 +106,7 @@ let map = {
 
 module.exports = (data, queue)=>{
     let { sourcePath, result, relativePath } = data;
-    var uxFile = quickFiles[sourcePath];
+    var uxFile = quickFiles[sourcePath.replace(/\\/g, '/')];
     //如果没有模板, 并且不是app，则认为这是个纯js模块。
     if (!uxFile || (!uxFile.template && uxFile.type != 'App')) {
         return {
