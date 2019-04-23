@@ -31,7 +31,7 @@ function needInstall( pkgName ){
  */
 
 function getPatchComponentPath(name) {
-    return path.resolve(cwd, `./node_modules/schnee-ui/components/${name}/index.js`);
+    return path.join(cwd, `./node_modules/schnee-ui/components/${name}/index.js`);
 }
 
 module.exports = ()=>{
@@ -39,7 +39,8 @@ module.exports = ()=>{
         visitor: {
             JSXOpeningElement: function(astPath, state){
                 // [babel 6 to 7] 通过 state 来获取文件的绝对路径 fileId =  state.filename
-                let fileId =  state.filename;
+                let fileId =  utils.fixWinPath(state.filename);
+                                  
                 let nodeName = astPath.node.name.name;
                 let platConfig = config[config.buildType];
                 let patchComponents = platConfig.patchComponents || [];

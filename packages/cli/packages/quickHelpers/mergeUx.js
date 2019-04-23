@@ -53,7 +53,7 @@ function fixPath(fileId, dep){
 
 function nodeModules2Npm(p) {
     const relativePath = path.relative(path.resolve(cwd, 'node_modules'), p);
-    return path.resolve(cwd, 'source/npm', relativePath);
+    return path.join(cwd, 'source/npm', relativePath);
 }
 
 // TODO: 合并到QuickParser中
