@@ -65,7 +65,7 @@ exports.exit = function (astPath, type, componentName, modules) {
                     wxml = `<import src="${ modules.importComponents[i]}.ux" />\n${wxml}`;
                 }
             }
-            var quickFile = quickFiles[modules.sourcePath.replace(/\\/g, '/')];
+            var quickFile = quickFiles[utils.fixWinPath(modules.sourcePath)];
             if (quickFile) {
                 if (modules.componentType === 'Page') {
                     let pageWraperPath = path.relative(path.dirname(modules.sourcePath), wrapperPath);

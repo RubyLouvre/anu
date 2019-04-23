@@ -50,7 +50,7 @@ class StyleParser {
     }
     getExtraFiles() {
         if (this.platform === 'quick') {
-            const find = Object.keys(quickFiles).find(file => quickFiles[file].cssPath === this.filepath);
+            const find = Object.keys(quickFiles).find(file => quickFiles[utils.fixWinPath(file)].cssPath === this.filepath);
             if (find) {
                 return [{
                     type: 'ux',
@@ -75,7 +75,7 @@ class StyleParser {
         return res;
     }
     getUxCode(path) {
-        const obj = quickFiles[path];
+        const obj = quickFiles[utils.fixWinPath(path)];
         obj.cssCode = this.parsedCode ? `<style>\n${this.parsedCode}\n</style>` : '';
         return obj.header + '\n' + obj.jsCode + '\n' + obj.cssCode;
     }

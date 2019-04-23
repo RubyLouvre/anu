@@ -106,7 +106,7 @@ let map = {
 
 module.exports = (data, queue)=>{
     let { sourcePath, result, relativePath } = data;
-    var uxFile = quickFiles[sourcePath.replace(/\\/g, '/')];
+    var uxFile = quickFiles[utils.fixWinPath(sourcePath)];
     //如果没有模板, 并且不是app，则认为这是个纯js模块。
     if (!uxFile || (!uxFile.template && uxFile.type != 'App')) {
         return {

@@ -1,7 +1,6 @@
 const JavascriptParser = require('./JavascriptParser');
 const mergeUx = require('../../../packages/quickHelpers/mergeUx');
 const quickFiles = require('../../../packages/quickHelpers/quickFiles');
-const StyleParserFactory = require('../styleParser/StyleParserFactory');
 const path = require('path');
 const utils = require('../../../packages/utils/index');
 
@@ -61,7 +60,7 @@ class QuickParser extends JavascriptParser {
         if (cssPath) {
             cssPath = path.resolve(path.dirname(this.filepath), cssPath);
            
-            Object.assign(quickFiles[this.filepath.replace(/\\/g, '/')], { // \ => / windows补丁
+            Object.assign(quickFiles[utils.fixWinPath(this.filepath)], { // \ => / windows补丁
                 cssPath
             });
         }
@@ -92,7 +91,7 @@ class QuickParser extends JavascriptParser {
 
     }
     getUxCode() {
-        const obj = quickFiles[this.filepath.replace(/\\/g, '/')];
+        const obj = quickFiles[utils.fixWinPath(this.filepath)];
         return obj.header + '\n' + obj.jsCode + '\n' + obj.cssCode;
     }
     

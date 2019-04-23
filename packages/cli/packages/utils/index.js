@@ -462,7 +462,10 @@ let utils = {
             return false;
         });
     },
-    sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
+    sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep,
+    fixWinPath(p) {
+        return p.replace(/\\/g, '/');
+    }
 };
 
 exports = module.exports = utils;
