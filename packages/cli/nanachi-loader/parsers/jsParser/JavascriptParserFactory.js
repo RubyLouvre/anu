@@ -1,4 +1,5 @@
 const WxParser = require('./WxParser');
+const QqParser = require('./QqParser');
 const AliParser = require('./AliParser');
 const BuParser = require('./BuParser');
 const TtParser = require('./TtParser');
@@ -15,6 +16,14 @@ class JavascriptParserFactory {
         switch (platform) {
             case 'wx':
                 return new WxParser({
+                    platform,
+                    code,
+                    map,
+                    meta,
+                    filepath
+                });
+            case 'qq':
+                return new QqParser({
                     platform,
                     code,
                     map,

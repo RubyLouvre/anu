@@ -23,6 +23,17 @@ const MAP = {
         },
         patchComponents: []
     },
+    'qq': {
+        EXT_NAME: {
+            'css': 'qss',
+            'scss': 'qss',
+            'sass': 'qss',
+            'less': 'qss',
+            'html': 'qml',
+            'jsx': 'js',
+        },
+        patchComponents: []
+    },
     'ali': {
         EXT_NAME: {
             'css': 'acss',
