@@ -78,6 +78,8 @@ module.exports = {
                 if (buildType == 'quick' && modules.componentType === 'App') {
                     if (methodName === 'onLaunch') {
                         methodName = 'onCreate';
+                    }else if (methodName === 'onHide') {
+                        methodName = 'onDestroy';
                     }
                     let dist = path.join(
                         process.cwd(),
