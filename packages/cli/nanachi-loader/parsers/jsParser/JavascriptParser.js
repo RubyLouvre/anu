@@ -92,7 +92,9 @@ class JavascriptParser {
                             } else {
                                 moduleName = path.resolve(cwd, moduleName);
                             }
-                            return getRelativePath(path.dirname(from), moduleName);
+
+                         
+                            return getRelativePath(path.dirname(from), moduleName).replace(/\\/g, '/');
                         }
                     }
                 ]
