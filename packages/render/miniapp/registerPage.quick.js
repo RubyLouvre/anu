@@ -37,6 +37,7 @@ export function registerPage (PageClass, path) {
       context: Object,
       state: Object
     },
+    protected: PageClass.protected || {},
     dispatchEvent,
     onInit() {
       let app = this.$app; 
