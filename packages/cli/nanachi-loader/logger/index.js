@@ -14,7 +14,7 @@ const successLog = (filepath, code) => {
     // filepath = path.join(filepath);
     const log = chalk`{gray [${++successNum}]} {green 编译完成} ${filepath} {gray [${getSize(code)}]}`;
     buildLog.push(log);
-    if (process.env.NODE_ENV !== 'production') {
+    if ( !['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase())) ) {
         // eslint-disable-next-line
         console.log(log);
     }
