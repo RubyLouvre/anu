@@ -15,6 +15,8 @@ module.exports = function(modules, json) {
     if (!supportPlat.includes(buildType)) {
         return json;
     }
+
+    if (!json.pages) return json;
     
     json[keys[buildType]] = json[keys[buildType]] || [];
     let subPackages = [];

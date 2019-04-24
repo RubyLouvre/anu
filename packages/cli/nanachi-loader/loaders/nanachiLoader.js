@@ -11,8 +11,17 @@ module.exports = async function(code, map, meta) {
             meta
         });
 
-        await parser.parse();
-
+        try{
+            await parser.parse();
+        } catch (err) {
+            //生产环境中构建时候如果构建错误，立马退出，抛错。
+            if ( ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase())) ) {
+                process.exit(1);
+                console.log(err);
+            }
+            console.log(err);
+        }
+       
         let result = {
             queues: parser.getExtraFiles(),
             exportCode: parser.getExportCode()
@@ -21,7 +30,6 @@ module.exports = async function(code, map, meta) {
         callback(null, result, map, meta);
         return;
     } catch (e) {
-       
         callback(e, { queues: [], exportCode: '' }, map, meta);
         return;
     }

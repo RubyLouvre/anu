@@ -113,9 +113,9 @@ function validateJsx(astPath, state){
         && callee.object.type === 'CallExpression'
     ) {
         logQueue.error.push({
-            id: fileId,
+            id: state.filename,
             level: 'error',
-            msg: `jsx中无法调用非map函数\nat ${fileId}:${line}:${column}\n ${g(astPath.node).code}\n`,
+            msg: `jsx中无法调用非map函数\nat ${state.filename}:${line}:${column}\n ${g(astPath.node).code}\n`,
         });
         return;
     }
@@ -128,9 +128,9 @@ function validateJsx(astPath, state){
         && callee.property && callee.property.name != 'bind'   //属性值是非bind函数调用
     ) {
         logQueue.error.push({
-            id: fileId,
+            id: state.filename,
             level: 'error',
-            msg: `jsx属性中无法调用函数.\nat ${fileId}:${line}:${column}\n ${g(astPath.node).code}\n`,
+            msg: `jsx属性中无法调用函数.\nat ${state.filename}:${line}:${column}\n ${g(astPath.node).code}\n`,
         });
         return;
     }
@@ -140,9 +140,9 @@ function validateJsx(astPath, state){
         astPath.traverse({
             CallExpression: function(){
                 logQueue.error.push({
-                    id: fileId,
+                    id: state.filename,
                     level: 'error',
-                    msg: `jsx属性中三元表式无法调用非map函数.\nat ${fileId}:${line}:${column}\n${g(astPath.node).code}\n`,
+                    msg: `jsx属性中三元表式无法调用非map函数.\nat ${state.filename}:${line}:${column}\n${g(astPath.node).code}\n`,
                 });
             }
         });
