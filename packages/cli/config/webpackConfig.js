@@ -72,7 +72,8 @@ module.exports = function({
             ...plugins
         ],
         resolve: {
-            alias: aliasMap
+            alias: aliasMap,
+            mainFields: ['main']
         }
     };
 };

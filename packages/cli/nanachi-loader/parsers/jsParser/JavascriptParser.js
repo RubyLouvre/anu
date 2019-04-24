@@ -3,7 +3,6 @@ const fs = require('fs');
 const babel = require('@babel/core');
 const cwd = process.cwd();
 const nodeResolve = require('resolve');
-const utils = require('../../../packages/utils/index');
 
 const getRelativePath = (from, to) => {
     return path.relative(from, to).replace(/^(?=[^.])/, './'); // ReactQuick -> ./ReactQuick
