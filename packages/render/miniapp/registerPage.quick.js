@@ -37,6 +37,7 @@ export function registerPage (PageClass, path) {
       context: Object,
       state: Object
     },
+    //华为快应用拿不到上一个页面传过来的参数，在$page.uri拿不到，manifest.json加了filter也不行
     protected: PageClass.protected || {},
     dispatchEvent,
     onInit() {
