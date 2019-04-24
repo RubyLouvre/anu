@@ -5,7 +5,7 @@ const id = 'NanachiWebpackPlugin';
 const { build: buildLog } = require('./logger/queue');
 
 function showLog() {
-    if (process.env.NODE_ENV === 'production') {
+    if ( ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase())) ) {
         let log = '';
         while (buildLog.length) {
             log += buildLog.shift() + (buildLog.length !== 0 ? '\n' : '');
@@ -76,7 +76,9 @@ class NanachiWebpackPlugin {
 
             timerLog(this.timer);
         });
-        
+    
+
+     
     }
 }
 
