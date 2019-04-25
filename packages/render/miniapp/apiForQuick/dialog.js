@@ -42,7 +42,7 @@ export function showModal(obj) {
 }
 export function showToast(obj) {  
     obj.message = obj.title;
-    obj.duration = obj.duration / 1000;
+    obj.duration = obj.duration / 1000 >= 1 ? 1: 0;
     let success = obj.success || noop,
         fail = obj.fail || noop,
         complete = obj.complete || noop;

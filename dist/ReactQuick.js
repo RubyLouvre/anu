@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-24
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-25
  */
 
 var arrayPush = Array.prototype.push;
@@ -1292,7 +1292,7 @@ function showModal(obj) {
 }
 function showToast(obj) {
     obj.message = obj.title;
-    obj.duration = obj.duration / 1000;
+    obj.duration = obj.duration / 1000 >= 1 ? 1 : 0;
     var success = obj.success || noop,
         fail = obj.fail || noop,
         complete = obj.complete || noop;
