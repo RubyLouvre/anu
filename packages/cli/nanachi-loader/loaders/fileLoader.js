@@ -38,6 +38,7 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
     queues.forEach(({ code = '', path: relativePath, type }) => {
         //qq轻应用，页面必须有样式，否则页面无法渲染，这是qq轻应用bug
         if ( this.nanachiOptions.platform === 'qq' && /[\/\\](pages|components)[\/\\]/.test(this.resourcePath) && path.parse(this.resourcePath).base === 'index.js' ) {
+            //to do .css 有问题
             if (!this._compilation.assets[relativePath]) {
                 this.emitFile(path.join(path.dirname(relativePath), 'index.qss'), '', map);
             }
