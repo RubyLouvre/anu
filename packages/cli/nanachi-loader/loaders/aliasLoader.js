@@ -1,0 +1,76 @@
+const { MAP } = require('../../consts/index');
+const babel = require('@babel/core');
+const path = require('path');
+const cwd = process.cwd();
+const nodeResolve = require('resolve');
+
+const getRelativePath = (from, to) => {
+    return path.relative(from, to).replace(/^(?=[^.])/, './').replace(/\\/g, '/'); // ReactQuick -> ./ReactQuick
+};
+
+function resolveAlias(code, aliasMap, relativePath) {
+    const result = babel.transformSync(code, {
+        configFile: false,
+        babelrc: false,
+        comments: false,
+        ast: true,
+        plugins: [
+            [
+                require('babel-plugin-module-resolver'),        //计算别名配置以及处理npm路径计算
+                {
+                    resolvePath(moduleName) {
+                        if (/^\./.test(moduleName)) {
+                            return moduleName;
+                        }
+                        // 替换别名
+                        moduleName = moduleName.replace(/^[@-\w]+/, function(alias) {
+                            return aliasMap[alias] || alias;
+                        });
+                        // 如果是 import babel from '@babel' 这种node_modules引入，处理路径 node_modules -> npm
+                        if (/^(?=[^./\\])/.test(moduleName)) {
+                            try {
+                                const nodePath = nodeResolve.sync(moduleName, {
+                                    basedir: cwd
+                                });
+                                moduleName = path.resolve(cwd, 'source/npm', path.relative(path.resolve(cwd, 'node_modules'), nodePath));
+                            } catch (e) {
+                                // eslint-disable-next-line
+                                console.log(e);
+                                return;
+                            }
+                        } else {
+                            moduleName = path.resolve(cwd, moduleName);
+                        }
+                        const from = path.join(cwd, 'source', relativePath);
+                        return getRelativePath(path.dirname(from), moduleName);
+                    }
+                }
+            ]
+        ]
+    });
+    return result.code;
+}
+
+/**
+ * queues 存放需要输出的文件
+ * exportCode fileLoader的输出结果，提供给 webpack，用来解析下个依赖文件
+ */
+
+module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
+    const aliasMap = require('../../consts/alias')(this.nanachiOptions.platform);
+
+    const callback = this.async();
+    queues = queues.map(({ code = '', path: filePath, type }) => {
+        const relativePath = type ? filePath.replace(/\.\w+$/, `.${MAP[this.nanachiOptions.platform]['EXT_NAME'][type] || type}`) : filePath;
+        if (type === 'js') {
+            code = resolveAlias(code, aliasMap, relativePath);
+        }
+        return {
+            code,
+            path: relativePath,
+            type
+        }
+    });
+    
+    callback(null, { queues, exportCode }, map, meta);
+};

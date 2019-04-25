@@ -65,8 +65,6 @@ class QuickParser extends JavascriptParser {
             });
         }
         this.queues = result.options.anu && result.options.anu.queue || this.queues;
-        // 解析别名
-        result.code = this.resolveAlias();
 
         // 合并ux文件
         const uxRes = await mergeUx({
