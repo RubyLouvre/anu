@@ -34,11 +34,10 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
     }
 
     const callback = this.async();
-    queues.forEach(({ code = '', path: filePath, type }) => {
-        const relativePath = type ? filePath.replace(/\.\w+$/, `.${MAP[this.nanachiOptions.platform]['EXT_NAME'][type] || type}`) : filePath;
+    queues.forEach(({ code = '', path: relativePath, type }) => {
         //qq轻应用，页面必须有样式，否则页面无法渲染，这是qq轻应用bug
         if ( this.nanachiOptions.platform === 'qq' && /[\/\\](pages|components)[\/\\]/.test(this.resourcePath) && path.parse(this.resourcePath).base === 'index.js' ) {
-            if (!this._compilation.assets[filePath]) {
+            if (!this._compilation.assets[relativePath]) {
                 this.emitFile(path.join(path.dirname(relativePath), 'index.qss'), '', map);
             }
         }
