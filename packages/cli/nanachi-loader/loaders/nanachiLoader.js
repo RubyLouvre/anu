@@ -11,7 +11,7 @@ module.exports = async function(code, map, meta) {
             meta
         });
 
-        try{
+        try {
             await parser.parse();
         } catch (err) {
             //生产环境中构建时候如果构建错误，立马退出，抛错。
