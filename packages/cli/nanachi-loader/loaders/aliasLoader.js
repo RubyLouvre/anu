@@ -8,8 +8,8 @@ const getRelativePath = (from, to) => {
     return path.relative(from, to).replace(/^(?=[^.])/, './').replace(/\\/g, '/'); // ReactQuick -> ./ReactQuick
 };
 
-function resolveAlias(code, aliasMap, relativePath) {
-    const result = babel.transformSync(code, {
+function resolveAlias(code, aliasMap, relativePath, ast) {
+    const babelConfig = {
         configFile: false,
         babelrc: false,
         plugins: [
@@ -45,7 +45,13 @@ function resolveAlias(code, aliasMap, relativePath) {
                 }
             ]
         ]
-    });
+    };
+    let result;
+    if (ast) {
+        result = babel.transformFromAstSync(ast, null, babelConfig);
+    } else {
+        result = babel.transformSync(code, babelConfig);
+    }
     return result.code;
 }
 
@@ -58,15 +64,16 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
     const aliasMap = require('../../consts/alias')(this.nanachiOptions.platform);
 
     const callback = this.async();
-    queues = queues.map(({ code = '', path: filePath, type }) => {
+    queues = queues.map(({ code = '', path: filePath, type, ast }) => {
         const relativePath = type ? filePath.replace(/\.\w+$/, `.${MAP[this.nanachiOptions.platform]['EXT_NAME'][type] || type}`) : filePath;
         if (type === 'js') {
-            code = resolveAlias(code, aliasMap, relativePath);
+            code = resolveAlias(code, aliasMap, relativePath, ast);
         }
         return {
             code,
             path: relativePath,
-            type
+            type,
+            ast
         };
     });
     

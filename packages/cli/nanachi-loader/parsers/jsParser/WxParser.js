@@ -50,6 +50,7 @@ class WxParser extends JavascriptParser{
             type: 'js',
             path: this.relativePath,
             code: res.code,
+            ast: this.ast,
             extraModules: this.extraModules
         });
     }

@@ -83,6 +83,7 @@ class QuickParser extends JavascriptParser {
                 type: uxRes.type,
                 path: this.relativePath,
                 code: uxRes.code,
+                ast: this.ast,
             });
         }
         
