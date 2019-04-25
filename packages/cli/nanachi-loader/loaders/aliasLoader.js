@@ -56,8 +56,7 @@ function resolveAlias(code, aliasMap, relativePath, ast) {
 }
 
 /**
- * queues 存放需要输出的文件
- * exportCode fileLoader的输出结果，提供给 webpack，用来解析下个依赖文件
+ * 别名解析loader，将queue中代码的别名解析成相对路径
  */
 
 module.exports = async function({ queues = [], exportCode = '' }, map, meta) {

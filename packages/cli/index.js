@@ -144,7 +144,7 @@ async function nanachi({
             compiler.run(callback);
         }
     } catch (err) {
-        complete(err);
+        callback(err);
     }
     
 }
