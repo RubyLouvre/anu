@@ -13,6 +13,9 @@ const nodeLoader = require.resolve('../nanachi-loader/loaders/nodeLoader');
  //处理华为快应用
 const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 
+//处理 style
+const nanachiStyleLoader  = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
+
 module.exports = function({
     platform,
     compress,
@@ -27,6 +30,49 @@ module.exports = function({
         aliasMap[alias] = path.resolve(cwd, aliasMap[alias]);
     });
     const distPath = path.resolve(cwd, platform === 'quick' ? './src' : './dist');
+
+    var mergeRule = [].concat(
+        {
+            test: /\.jsx?$/,
+            //loader是从后往前处理
+            use: [].concat(
+                fileLoader, 
+                postLoaders, 
+                aliasLoader, 
+                nanachiLoader, 
+                prevLoaders ) ,
+            exclude: /node_modules[\\\/](?!schnee-ui[\\\/])|React/,
+        },
+        {
+            test: /node_modules[\\\/](?!schnee-ui[\\\/])/,
+            use: [].concat(
+                fileLoader, 
+                postLoaders, 
+                aliasLoader, 
+                nodeLoader) 
+        },
+        {
+            test: /React/,
+            use: [].concat(
+                fileLoader, 
+                postLoaders,
+                nodeLoader, 
+                reactLoader),
+        },
+        {
+            test: /\.(s[ca]ss|less|css)$/,
+            use: [].concat(
+                fileLoader, 
+                postLoaders, 
+                aliasLoader, 
+                nanachiStyleLoader, 
+                prevLoaders)
+        },
+        rules);
+
+
+    
+
     return {
         entry: './source/app',
         mode: 'development',
@@ -35,44 +81,7 @@ module.exports = function({
             filename: 'index.bundle.js'
         },
         module: {
-            rules: [].concat(
-                {
-                    test: /\.jsx?$/,
-                    //loader是从后往前处理
-                    use: [].concat(
-                        fileLoader, 
-                        postLoaders, 
-                        aliasLoader, 
-                        nanachiLoader, 
-                        prevLoaders ) ,
-                    exclude: /node_modules[\\\/](?!schnee-ui[\\\/])|React/,
-                },
-                {
-                    test: /node_modules[\\\/](?!schnee-ui[\\\/])/,
-                    use: [].concat(
-                        fileLoader, 
-                        postLoaders, 
-                        aliasLoader, 
-                        nodeLoaders) 
-                },
-                {
-                    test: /React/,
-                    use: [].concat(
-                        fileLoader, 
-                        postLoaders,
-                        nodeLoader, 
-                        reactLoader),
-                },
-                {
-                    test: /\.(s[ca]ss|less|css)$/,
-                    use: [].concat(
-                        fileLoader, 
-                        postLoaders, 
-                        aliasLoader, 
-                        nanachiStyleLoader, 
-                        prevLoaders)
-                },
-                rules)
+            rules: mergeRule
         },
         plugins: [].concat( 
             new NanachiWebpackPlugin({

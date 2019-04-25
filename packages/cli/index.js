@@ -77,7 +77,7 @@ async function nanachi({
     compress = false,
     huawei = false,
     rules = [],
-    preLoaders = [], // 自定义预处理loaders
+    prevLoaders = [], // 自定义预处理loaders
     postLoaders = [], // 自定义后处理loaders
     plugins = [],
     complete = () => {}
@@ -101,13 +101,16 @@ async function nanachi({
         complete(err, stats);
     }
     try {
+       
         if (!validatePlatform(platform)) {
             throw new Error(`不支持的platform：${platform}`);
         }
+       
         if (platform === 'h5') {
             require(`mini-html5/runkit/${watch ? 'run' : 'build'}`);
             return;
         }
+        
         
         injectBuildEnv({
             buildType: platform,
@@ -123,17 +126,21 @@ async function nanachi({
             // 添加代码压缩loader
             postLoaders.unshift(require.resolve('nanachi-compress-loader'));
         }
-    
+        
         const webpackConfig = require('./config/webpackConfig')({
             platform,
             compress,
             beta,
             betaUi,
             plugins,
-            preLoaders,
+            prevLoaders,
             postLoaders,
             rules
         });
+
+
+        
+
         await runBeforeParseTasks({ buildType: platform, beta, betaUi });
         
         const compiler = webpack(webpackConfig);
@@ -144,6 +151,7 @@ async function nanachi({
             compiler.run(callback);
         }
     } catch (err) {
+        console.log(err, '2');
         complete(err);
     }
     
