@@ -28,6 +28,7 @@ const compileSassByPostCss = (filePath, originalCode)=>{
             }), // 添加@import规则，小程序可以解析原有依赖
             require('../postcssPlugins/postCssPluginFixNumber'), // 数字精度插件
             require('../postcssPlugins/postCssPluginValidateStyle'),
+            require('../postcssPlugins/postcssPluginTransformKeyFrames'),
             require('../postcssPlugins/postcssPluginRemoveComments')
         ]).process(originalCode || fs.readFileSync(filePath).toString(), {
             from: filePath,
