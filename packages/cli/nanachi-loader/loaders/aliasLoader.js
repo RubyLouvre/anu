@@ -7,7 +7,7 @@ const nodeResolve = require('resolve');
 const getRelativePath = (from, to) => {
     return path.relative(from, to).replace(/^(?=[^.])/, './').replace(/\\/g, '/'); // ReactQuick -> ./ReactQuick
 };
-
+//提取package.json中的别名配置
 function resolveAlias(code, aliasMap, relativePath, ast) {
     const babelConfig = {
         configFile: false,

@@ -118,7 +118,7 @@ async function nanachi({
         getWebViewRules();
     
         // 添加解码中文字符loader
-        postLoaders.unshift(require.resolve('./nanachi-loader/loaders/decodeChineseLoader'));
+       // postLoaders.unshift(require.resolve('./nanachi-loader/loaders/decodeChineseLoader'));
         if (compress) {
             // 添加代码压缩loader
             postLoaders.unshift(require.resolve('nanachi-compress-loader'));

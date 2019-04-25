@@ -15,7 +15,7 @@ const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const userConfig = pkg.nanachi || pkg.mpreact || {};
 const { REACT_LIB_MAP } = require('../../consts/index');
-const fs = require('fs-extra');
+//const fs = require('fs-extra');
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
     on() {
@@ -411,11 +411,6 @@ let utils = {
             // eslint-disable-next-line
         }
         return flag;
-    },
-    decodeChinese(code) {
-        return code.replace(/\\?(?:\\u)([\da-f]{4})/gi, function (a, b) {
-            return unescape(`%u${b}`);
-        });
     },
     isWebView(fileId) {
         

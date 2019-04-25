@@ -13,6 +13,7 @@ const isBrokenFile = function(fildId){
 /**
  * queues 存放需要输出的文件
  * exportCode fileLoader的输出结果，提供给 webpack，用来解析下个依赖文件
+ * 处理快应用的多个文件合并成一个文件，QQ小程序添加空的样式文件的各种情况
  */
 
 module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
