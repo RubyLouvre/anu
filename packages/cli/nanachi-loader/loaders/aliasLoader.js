@@ -12,8 +12,6 @@ function resolveAlias(code, aliasMap, relativePath) {
     const result = babel.transformSync(code, {
         configFile: false,
         babelrc: false,
-        comments: false,
-        ast: true,
         plugins: [
             [
                 require('babel-plugin-module-resolver'),        //计算别名配置以及处理npm路径计算
@@ -69,7 +67,7 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
             code,
             path: relativePath,
             type
-        }
+        };
     });
     
     callback(null, { queues, exportCode }, map, meta);
