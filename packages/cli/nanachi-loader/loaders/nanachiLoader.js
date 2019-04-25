@@ -16,8 +16,8 @@ module.exports = async function(code, map, meta) {
         } catch (err) {
             //生产环境中构建时候如果构建错误，立马退出，抛错。
             if ( ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase())) ) {
-                process.exit(1);
                 console.log(err);
+                process.exit(1);
             }
             console.log(err);
         }
