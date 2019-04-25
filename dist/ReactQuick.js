@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-19
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-24
  */
 
 var arrayPush = Array.prototype.push;
@@ -3322,6 +3322,7 @@ function registerPage(PageClass, path) {
       context: Object,
       state: Object
     },
+    protected: PageClass.protected || {},
     dispatchEvent: dispatchEvent,
     onInit: function onInit() {
       var app = this.$app;
