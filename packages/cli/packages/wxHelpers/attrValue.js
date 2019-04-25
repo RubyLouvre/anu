@@ -28,6 +28,7 @@ module.exports = function (astPath) {
     });
     var attrValue = generate(expr).code;//没有this.
     switch (expr.type) {
+        case 'ArrayExpression': []
         case 'NumericLiteral': //11
         case 'StringLiteral': // "string"
         case 'Identifier': // kkk undefined
