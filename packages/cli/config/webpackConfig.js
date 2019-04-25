@@ -50,7 +50,6 @@ module.exports = function({
                     use: [
                         require.resolve('../nanachi-loader/loaders/fileLoader'),
                         ...postLoaders,
-                        require.resolve('../nanachi-loader/loaders/aliasLoader'),
                         require.resolve('../nanachi-loader/loaders/nodeLoader'),
                         require.resolve('../nanachi-loader/loaders/reactLoader'),
                     ]
