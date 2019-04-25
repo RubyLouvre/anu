@@ -71,7 +71,7 @@ nanachi({
      * @Array
      * 自定义预处理loaders，默认值：[]
      */
-    preLoaders,
+    prevLoaders,
     /**
      * @Array
      * 自定义后处理loaders，默认值：[]
