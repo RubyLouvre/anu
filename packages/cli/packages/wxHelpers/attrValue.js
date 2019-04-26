@@ -70,7 +70,7 @@ module.exports = function (astPath) {
             if (['wx', 'qq', 'tt'].includes(buildType)) {
                 if (
                     expr.properties.every(function(prop){
-                        return prop.type === 'SpreadElement'
+                        return prop.type === 'SpreadElement' || prop.type === 'ObjectProperty'
                     })
                 ) {
                     // {...a} => '{{...a}}'
