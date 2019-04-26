@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-25
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-26
  */
 
 var arrayPush = Array.prototype.push;
@@ -626,35 +626,6 @@ function createContext(defaultValue, calculateChangedBits) {
     return getContext;
 }
 
-var device = require('@system.device');
-var mapNames = {
-    osVersionName: "version",
-    osVersionCode: "system",
-    platformVersionName: "platform",
-    platformVersionCode: "SDKVersion"
-};
-function getSystemInfo(_ref) {
-    var _success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    device.getInfo({
-        success: function success(rawObject) {
-            var result = {
-                fontSizeSetting: 14
-            };
-            for (var name in rawObject) {
-                result[mapNames[name] || name] = rawObject[name];
-            }
-            _success && _success(result);
-        },
-        fail: fail,
-        complete: complete
-    });
-}
-function getDeviceId(options) {
-    return device.getDeviceId(options);
-}
-
 function getDataSetFromAttr(obj) {
     var ret = {};
     for (var name in obj) {
@@ -1227,6 +1198,35 @@ function setNavigationBarTitle(_ref) {
     }, success, fail, complete);
 }
 
+var device = require('@system.device');
+var mapNames = {
+    osVersionName: "version",
+    osVersionCode: "system",
+    platformVersionName: "platform",
+    platformVersionCode: "SDKVersion"
+};
+function getSystemInfo(_ref) {
+    var _success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
+    device.getInfo({
+        success: function success(rawObject) {
+            var result = {
+                fontSizeSetting: 14
+            };
+            for (var name in rawObject) {
+                result[mapNames[name] || name] = rawObject[name];
+            }
+            _success && _success(result);
+        },
+        fail: fail,
+        complete: complete
+    });
+}
+function getDeviceId(options) {
+    return device.getDeviceId(options);
+}
+
 function chooseImage(_ref) {
     var _ref$count = _ref.count,
         count = _ref$count === undefined ? 1 : _ref$count,
@@ -1293,17 +1293,9 @@ function showModal(obj) {
 function showToast(obj) {
     obj.message = obj.title;
     obj.duration = obj.duration / 1000 >= 1 ? 1 : 0;
-    var success = obj.success || noop,
-        fail = obj.fail || noop,
-        complete = obj.complete || noop;
-    try {
+    runCallbacks(function () {
         prompt.showToast(obj);
-        success();
-    } catch (err) {
-        fail(err);
-    } finally {
-        complete();
-    }
+    }, obj.success, obj.fail, obj.complete);
 }
 function showActionSheet(obj) {
     prompt.showContextMenu(obj);
@@ -1519,7 +1511,7 @@ function stopPullDownRefresh() {
         success = _ref.success,
         fail = _ref.fail,
         complete = _ref.complete;
-    runCallbacks(function () {}, success, fail, complete);
+    runCallbacks(Number, success, fail, complete);
 }
 var facade = {
     showModal: showModal,

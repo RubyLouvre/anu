@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-19
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-26
  */
 
 var arrayPush = Array.prototype.push;
@@ -2436,12 +2436,12 @@ function registerAPIsQuick(ReactWX, facade, override) {
 var more = function more(api) {
     return {
         showActionSheet: function _(a) {
-            var success = a['success'],
-                complete = a['complete'];
-            a['success'] = function (res) {
+            var success = a.success,
+                complete = a.complete;
+            a.success = function (res) {
                 success && success({ index: res.tapIndex });
             };
-            a['complete'] = function (res) {
+            a.complete = function (res) {
                 complete && complete({ index: res.tapIndex });
             };
             return api.showActionSheet.apply(api, arguments);
@@ -2456,23 +2456,21 @@ var more = function more(api) {
             return api.showLoading(a);
         },
         setMetaDescription: function _(a) {
-            var empty = function empty(res) {};
             var defailt = {
                 content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
+                success: noop,
+                fail: noop,
+                complete: noop
             };
             var options = Object.assign(defailt, a);
             return api.setMetaDescription && api.setMetaDescription(options);
         },
         setMetaKeywords: function _(a) {
-            var empty = function empty(res) {};
             var defailt = {
                 content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
+                success: noop,
+                fail: noop,
+                complete: noop
             };
             var options = Object.assign(defailt, a);
             return api.setMetaKeywords && api.setMetaKeywords(options);

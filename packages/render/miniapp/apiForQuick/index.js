@@ -52,7 +52,7 @@ import { createCanvasContext } from './canvas.js';
 import { pay, getProvider, wxpayGetType, wxpay, alipay} from './pay.js';
 function stopPullDownRefresh({success, fail, complete } = {}) {
     // 停止刷新没有作用
-    runCallbacks(function(){}, success, fail, complete );
+    runCallbacks(Number, success, fail, complete );
 }
 export var facade = {
     // 交互

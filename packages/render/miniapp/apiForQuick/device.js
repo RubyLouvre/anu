@@ -27,15 +27,8 @@ function getSystemInfo({success, fail, complete}) {
 function getDeviceId(options) {
    return device.getDeviceId(options);
 }
-var cacheBrand
-function getBrandSync(){
-    if(!cacheBrand && device.getInfoSync){
-       return cacheBrand = device.getInfoSync().brand
-    }else{
-       return cacheBrand
-    }
-}
-export { getSystemInfo ,getDeviceId, getBrandSync};
+
+export { getSystemInfo ,getDeviceId, };
 
 // https://doc.quickapp.cn/features/system/device.html
 /* 快应用
