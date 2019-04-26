@@ -1,6 +1,21 @@
 # Changelog
 
 
+
+# 1.2.2 (2019-04-26)
+
+## CLI
+#### Feature
+- 对 app.js 中 是否有 globalData 对象做强制校验。
+- 支持 QQ 小程序分包。
+
+#### Bug fix
+- 兼容快应用中 css 动画规则 keyframes。
+- 修复快应用下 showToast bug。
+- 修复静态资源 copy 路径 bug。
+
+
+
 # 1.2.1 (2019-04-19)
 
 ## 核心库
