@@ -20,6 +20,12 @@ module.exports = async function(code, map, meta) {
         }, map, meta);
         return;
     }
+    // 处理第三方模块中的环境变量，如process.env.NODE_ENV
+    code = babel.transformSync(code, {
+        plugins: [
+            ...require('../../packages/babelPlugins/transformEnv')
+        ]
+    }).code;
     if (isReact(this.resourcePath)) {
         relativePath = this.resourcePath.match(/React\w+\.js$/)[0];
         queues = [{
