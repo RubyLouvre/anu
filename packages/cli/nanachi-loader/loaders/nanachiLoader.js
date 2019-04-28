@@ -19,7 +19,7 @@ module.exports = async function(code, map, meta) {
                 console.log(err);
                 process.exit(1);
             }
-            console.log(err);
+            console.log(this.resourcePath, '\n', err);
         }
        
         let result = {
