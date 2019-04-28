@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-26
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-28
  */
 
 var arrayPush = Array.prototype.push;
@@ -2701,10 +2701,6 @@ var globalHooks = {
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
-var showHideHooks = {
-    onShow: 'componentDidShow',
-    onHide: 'componentDidHide'
-};
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     var config = {
@@ -2720,7 +2716,6 @@ function registerPage(PageClass, path, testObject) {
         config[hook] = function (e) {
             var instance = this.reactInstance,
                 fn = instance[hook],
-                fired = false,
                 param = e;
             if (hook === 'onShareAppMessage') {
                 hook = 'onShare';
@@ -2746,11 +2741,6 @@ function registerPage(PageClass, path, testObject) {
                 if (hook === 'onShare') {
                     return ret;
                 }
-            }
-            var discarded = showHideHooks[hook];
-            if (!fired && instance[discarded]) {
-                console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
-                instance[discarded](param);
             }
         };
     });

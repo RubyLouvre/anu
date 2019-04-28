@@ -11,22 +11,29 @@ var globalHooks = {
 }
 
 
-function getQuery (page) {
+function getQuery (wx, huaweiHack) {
+  var page = wx.$page;
   if(page.query){//小米快应用新规范，this.$page.query 返回页面启动时的参数数据；
     return page.query;
   }
   var query = {};
-  //如果在manifest.json的router.pages[view]设置filter, 就可以从page.uri中抽取参数
-  //https://doc.quickapp.cn/framework/manifest.html
+  //小米快应用直接从page.uri中抽取参数
   if(page.uri){
-     getQueryFromUri(page.uri, query )
-  }
-  //如果能拿到就立即返回
-  for(var param in query){
-     return query;
-  }
+    getQueryFromUri(page.uri, query )
+    for(let i in query){
+       return query;
+    }
+ }  
+ //华为快应用从protected中抽取
+ if(Object.keys(huaweiHack).length){
+    for(let i in huaweiHack){
+       query[i] = wx[i];
+    }
+    return query;
+ }
   //否则返回navigateTo/redirectTo/navigateBack中储存起来的参数
-  return Object((_getApp().globalData || {}).__quickQuery)[page.path] || {};
+  var data = _getApp().globalData;
+  return data && data.__quickQuery && data.__quickQuery[page.path] || query;
 }
 
 export function registerPage (PageClass, path) {
@@ -42,7 +49,7 @@ export function registerPage (PageClass, path) {
     dispatchEvent,
     onInit() {
       let app = this.$app; 
-      let instance = onLoad.call(this, PageClass, path, getQuery(this.$page));
+      let instance = onLoad.call(this, PageClass, path, getQuery(this, PageClass.protected));
       let pageConfig = PageClass.config || instance.config || emptyObject;
       app.$$pageConfig = Object.keys(pageConfig).length
           ? pageConfig
@@ -58,7 +65,7 @@ export function registerPage (PageClass, path) {
        app = _getApp(),
        param = e
       if (hook === 'onShow') {
-        param = instance.props.query = getQuery(this.$page);
+        param = instance.props.query = getQuery(this, PageClass.protected);
         app.$$page = instance.wx;
         app.$$pagePath = instance.props.path;
       }

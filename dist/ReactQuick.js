@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-26
+ * 运行于快应用的React by 司徒正美 Copyright 2019-04-28
  */
 
 var arrayPush = Array.prototype.push;
@@ -3293,18 +3293,26 @@ var globalHooks = {
   onShow: 'onGlobalShow',
   onHide: 'onGlobalHide'
 };
-function getQuery(page) {
+function getQuery(wx, huaweiHack) {
+  var page = wx.$page;
   if (page.query) {
     return page.query;
   }
   var query = {};
   if (page.uri) {
     getQueryFromUri(page.uri, query);
+    for (var i in query) {
+      return query;
+    }
   }
-  for (var param in query) {
+  if (Object.keys(huaweiHack).length) {
+    for (var _i in huaweiHack) {
+      query[_i] = wx[_i];
+    }
     return query;
   }
-  return Object((_getApp().globalData || {}).__quickQuery)[page.path] || {};
+  var data = _getApp().globalData;
+  return data && data.__quickQuery && data.__quickQuery[page.path] || query;
 }
 function registerPage(PageClass, path) {
   PageClass.reactInstances = [];
@@ -3318,7 +3326,7 @@ function registerPage(PageClass, path) {
     dispatchEvent: dispatchEvent,
     onInit: function onInit() {
       var app = this.$app;
-      var instance = onLoad.call(this, PageClass, path, getQuery(this.$page));
+      var instance = onLoad.call(this, PageClass, path, getQuery(this, PageClass.protected));
       var pageConfig = PageClass.config || instance.config || emptyObject;
       app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
     },
@@ -3332,7 +3340,7 @@ function registerPage(PageClass, path) {
           app = _getApp(),
           param = e;
       if (hook === 'onShow') {
-        param = instance.props.query = getQuery(this.$page);
+        param = instance.props.query = getQuery(this, PageClass.protected);
         app.$$page = instance.wx;
         app.$$pagePath = instance.props.path;
       }
