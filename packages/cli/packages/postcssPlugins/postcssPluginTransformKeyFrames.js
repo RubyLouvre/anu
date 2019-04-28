@@ -1,7 +1,6 @@
 const postCss = require('postcss');
 const config = require('../../config/config');
 
-// TODO: webpack分支补充样式测试用例
 const postcssPluginTransformKeyFrames = postCss.plugin('postcss-plugin-transform-keyframes', function() {
     return function(root) {
         if (config.buildType !== 'quick') {
