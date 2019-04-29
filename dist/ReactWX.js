@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-28T11
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-29T07
  * IE9+
  */
 
@@ -2580,7 +2580,6 @@ function registerPage(PageClass, path, testObject) {
                 _getApp().$$pagePath = instance.props.path;
             }
             if (isFn(fn)) {
-                fired = true;
                 var ret = fn.call(instance, param);
                 if (hook === 'onShare') {
                     return ret;

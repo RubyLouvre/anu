@@ -47,7 +47,6 @@ export function registerPage(PageClass, path, testObject) {
                 _getApp().$$pagePath = instance.props.path;
             }
             if (isFn(fn)) {//页面级别
-                fired = true;
                 var ret =  fn.call(instance, param);
                 if (hook === 'onShare'){
                     return ret;
