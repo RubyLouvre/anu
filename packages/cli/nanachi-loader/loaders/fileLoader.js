@@ -44,19 +44,21 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
             }
         }
         
-        if (type === 'ux') {
-            // ux文件情况特殊，需要同时监听js和css的变化，对同一个文件调用两次this.emitFile会有缓存问题
-            this._compilation.assets[relativePath] = {
-                source: function() {
-                    return code;
-                },
-                size: function() {
-                    return code.length;
-                }
-            };
-        } else {
-            this.emitFile(relativePath, code, map);
-        }
+        // if (type === 'ux') {
+        //     // ux文件情况特殊，需要同时监听js和css的变化，对同一个文件调用两次this.emitFile会有缓存问题
+        //     this._compilation.assets[relativePath] = {
+        //         source: function() {
+        //             return code;
+        //         },
+        //         size: function() {
+        //             return code.length;
+        //         }
+        //     };
+        // } else {
+        //     this.emitFile(relativePath, code, map);
+        // }
+
+        this.emitFile(relativePath, code, map);
         const outputPathName = this.nanachiOptions.platform === 'quick' ? './src' : './dist';
         
         successLog(path.join(outputPathName, relativePath), code);

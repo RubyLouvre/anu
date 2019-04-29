@@ -1,9 +1,8 @@
+const path = require('path');
 const JavascriptParser = require('./JavascriptParser');
 const mergeUx = require('../../../packages/quickHelpers/mergeUx');
 const quickFiles = require('../../../packages/quickHelpers/quickFiles');
-const path = require('path');
 const utils = require('../../../packages/utils/index');
-
 const isStyle = path => {
     return /\.(?:less|scss|sass|css)$/.test(path);
 };
@@ -18,11 +17,6 @@ class QuickParser extends JavascriptParser {
             ast: true,
             plugins: [
                 [require('@babel/plugin-proposal-decorators'), { legacy: true }],
-                /**
-                 * [babel 6 to 7] 
-                 * v6 default config: ["plugin", { "loose": true }]
-                 * v7 default config: ["plugin"]
-                 */
                 [
                     require('@babel/plugin-proposal-class-properties'),
                     { loose: true }
@@ -41,7 +35,6 @@ class QuickParser extends JavascriptParser {
                 require('../../../packages/babelPlugins/syntaxValidate'),
                 require('../../../packages/babelPlugins/collectDependencies'),
                 require('../../../packages/babelPlugins/collectTitleBarConfig'),
-                //require('../../../packages/babelPlugins/collectWebViewPage'),
                 require('../../../packages/babelPlugins/patchComponents'),
                 ...require('../../../packages/babelPlugins/transformEnv'),
                 [ require('@babel/plugin-transform-template-literals'), { loose: true }],
@@ -59,7 +52,6 @@ class QuickParser extends JavascriptParser {
         })[0];
         if (cssPath) {
             cssPath = path.resolve(path.dirname(this.filepath), cssPath);
-           
             Object.assign(quickFiles[utils.fixWinPath(this.filepath)], { // \ => / windows补丁
                 cssPath
             });
@@ -86,12 +78,19 @@ class QuickParser extends JavascriptParser {
                 ast: this.ast,
             });
         }
-        
-
     }
     getUxCode() {
         const obj = quickFiles[utils.fixWinPath(this.filepath)];
-        return obj.header + '\n' + obj.jsCode + '\n' + obj.cssCode;
+        let code = obj.header + '\n' + obj.jsCode;
+        if (obj.cssPath) {
+            let relativePath = path.relative( path.dirname(this.filepath),  obj.cssPath);
+            relativePath = /^\w/.test(relativePath) ? './' + relativePath: relativePath;
+            relativePath = relativePath
+            .replace(/\\/g, '/')
+            .replace(/\.(scss|sass|less)$/, '.css');
+            code += `\n<style>\n@import '${relativePath}';\n</style>`
+        }
+        return code
     }
     
 }
