@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-28
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-29
  */
 
 var arrayPush = Array.prototype.push;
@@ -2598,7 +2598,6 @@ function registerPage(PageClass, path, testObject) {
                 _getApp().$$pagePath = instance.props.path;
             }
             if (isFn(fn)) {
-                fired = true;
                 var ret = fn.call(instance, param);
                 if (hook === 'onShare') {
                     return ret;
