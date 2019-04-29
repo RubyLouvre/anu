@@ -1,7 +1,5 @@
 const path = require('path');
-const nodeResolve = require('resolve');
 const babel = require('@babel/core');
-const cwd = process.cwd();
 
 const isReact = function(sourcePath){
     return /React\w+\.js$/.test(path.basename(sourcePath));

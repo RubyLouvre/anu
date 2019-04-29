@@ -1,0 +1,77 @@
+@keyframes logoShake1 {
+    10% {
+    transform: rotate(-8deg)
+    }
+    14% {
+    transform: rotate(-8deg)
+    }
+    18% {
+    transform: rotate(-8deg)
+    }
+    22% {
+    transform: rotate(-8deg)
+    }
+    26% {
+    transform: rotate(-8deg)
+    }
+    80% {
+    transform: rotate(-8deg)
+    }
+    84% {
+    transform: rotate(-8deg)
+    }
+    88% {
+    transform: rotate(-8deg)
+    }
+    92% {
+    transform: rotate(-8deg)
+    }
+    96% {
+    transform: rotate(-8deg)
+    }
+    12% {
+    transform: rotate(8deg)
+    }
+    16% {
+    transform: rotate(8deg)
+    }
+    20% {
+    transform: rotate(8deg)
+    }
+    24% {
+    transform: rotate(8deg)
+    }
+    28% {
+    transform: rotate(8deg)
+    }
+    82% {
+    transform: rotate(8deg)
+    }
+    86% {
+    transform: rotate(8deg)
+    }
+    90% {
+    transform: rotate(8deg)
+    }
+    94% {
+    transform: rotate(8deg)
+    }
+    98% {
+    transform: rotate(8deg)
+    }
+    0% {
+    transform: rotate(0deg)
+    }
+    9% {
+    transform: rotate(0deg)
+    }
+    29% {
+    transform: rotate(0deg)
+    }
+    79% {
+    transform: rotate(0deg)
+    }
+    100% {
+    transform: rotate(0deg)
+    }
+}

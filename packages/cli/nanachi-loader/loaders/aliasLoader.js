@@ -68,6 +68,12 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
         if (type === 'js') {
             code = resolveAlias(code, aliasMap, relativePath, ast);
         }
+        if (type === 'ux') {
+            code = code.toString().replace(/<script>([\s\S]*?)<\/script>/mg, function(match, jsCode) {
+                jsCode = resolveAlias(jsCode, aliasMap, relativePath, ast);
+                return `<script>${jsCode}</script>`;
+            });
+        }
         return {
             code,
             path: relativePath,
