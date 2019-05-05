@@ -359,11 +359,11 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 decl.value = rpxToPx(decl.value);
                 // 快应用不支持!important
                 if (decl.important) { 
-                    logQueue.warning.push({
-                        id: from,
-                        level: 'warning',
-                        msg: '快应用不支持!important'
-                    });
+                    // logQueue.warning.push({
+                    //     id: from,
+                    //     level: 'warning',
+                    //     msg: '快应用不支持!important'
+                    // });
                     decl.important = false;
                 }
             });
