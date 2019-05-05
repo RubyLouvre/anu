@@ -1,4 +1,5 @@
 const JavascriptParserFactory = require('../parsers/jsParser/JavascriptParserFactory');
+const utils = require('../../packages/utils/index');
 
 module.exports = async function(code, map, meta) {
     const callback = this.async();
@@ -15,7 +16,7 @@ module.exports = async function(code, map, meta) {
             await parser.parse();
         } catch (err) {
             //生产环境中构建时候如果构建错误，立马退出，抛错。
-            if ( ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase())) ) {
+            if ( utils.isMportalEnv() ) {
                 console.log(err);
                 process.exit(1);
             }

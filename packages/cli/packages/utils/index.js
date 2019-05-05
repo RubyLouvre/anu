@@ -460,6 +460,9 @@ let utils = {
     sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep,
     fixWinPath(p) {
         return p.replace(/\\/g, '/');
+    },
+    isMportalEnv() {
+        return ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase()))
     }
 };
 

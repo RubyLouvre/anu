@@ -39,7 +39,13 @@ module.exports = function({
                 fileLoader, 
                 postLoaders, 
                 aliasLoader, 
-                nanachiLoader, 
+                nanachiLoader,
+                {
+                    loader: require.resolve('eslint-loader'),
+                    options: {
+                        configFile: require.resolve(`./eslint/.eslintrc-${platform}.js`)
+                    }
+                },
                 prevLoaders ) ,
             exclude: /node_modules[\\\/](?!schnee-ui[\\\/])|React/,
         },

@@ -53,6 +53,8 @@
     "css-node-extract": "^3.0.2",
     "cssmin": "^0.4.3",
     "eslint": "^4.12.1",
+    "eslint-loader": "^2.1.2",
+    "eslint-plugin-nanachi": "^0.0.2",
     "file-loader": "^3.0.1",
     "fs-extra": "^4.0.3",
     "glob": "^7.1.3",
