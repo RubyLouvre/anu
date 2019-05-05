@@ -1,7 +1,7 @@
 const chalk = require('chalk');
 const ora = require('ora');
 const { build: buildLog } = require('./queue');
-
+const utils = require('../../packages/utils/index');
 
 let successNum = 0;
 
@@ -14,7 +14,7 @@ const successLog = (filepath, code) => {
     // filepath = path.join(filepath);
     const log = chalk`{gray [${++successNum}]} {green 编译完成} ${filepath} {gray [${getSize(code)}]}`;
     buildLog.push(log);
-    if ( !['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase())) ) {
+    if ( !utils.isMportalEnv() ) {
         // eslint-disable-next-line
         console.log(log);
     }

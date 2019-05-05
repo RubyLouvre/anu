@@ -3,9 +3,10 @@ const { resetNum, timerLog, errorLog, warningLog } = require('./logger/index');
 const setWebView = require('../packages/utils/setWebVeiw');
 const id = 'NanachiWebpackPlugin';
 const { build: buildLog } = require('./logger/queue');
+const utils = require('../packages/utils/index');
 
 function showLog() {
-    if ( ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase())) ) {
+    if ( utils.isMportalEnv() ) {
         let log = '';
         while (buildLog.length) {
             log += buildLog.shift() + (buildLog.length !== 0 ? '\n' : '');
@@ -22,7 +23,7 @@ function showLog() {
         errorStack.error.forEach(function(error){
             errorLog(error);
         });
-        if ( ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase())) ) {
+        if ( utils.isMportalEnv() ) {
             process.exit(1);
         }
     }

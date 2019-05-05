@@ -1,4 +1,5 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
+const StylelintWebpackPlugin = require('stylelint-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
 //各种loader
@@ -39,7 +40,13 @@ module.exports = function({
                 fileLoader, 
                 postLoaders, 
                 aliasLoader, 
-                nanachiLoader, 
+                nanachiLoader,
+                {
+                    loader: require.resolve('eslint-loader'),
+                    options: {
+                        configFile: require.resolve(`./eslint/.eslintrc-${platform}.js`)
+                    }
+                },
                 prevLoaders ) ,
             exclude: /node_modules[\\\/](?!schnee-ui[\\\/])|React/,
         },
@@ -87,6 +94,10 @@ module.exports = function({
             new NanachiWebpackPlugin({
                 platform,
                 compress
+            }),
+            // 样式检查插件，应用stylelint配置
+            new StylelintWebpackPlugin({
+                configFile: require.resolve(`./stylelint/.stylelint-${platform}.config.js`)
             }),
             plugins),
         resolve: {
