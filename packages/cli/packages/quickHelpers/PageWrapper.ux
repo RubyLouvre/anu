@@ -209,8 +209,12 @@
           tabBar.color = tabBar.color || "#000";
           tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
           instance.tabBar = tabBar;
-          tabBar.list.forEach(function(el){
-             el.selected = handlePageUri(el.pagePath) === handlePageUri(instance.pagePath);
+          tabBar.list.forEach(function(el, i){
+            if(!el.pagePath){
+               console.warn(`tabBar.list[${i}] miss pagePath`, el);//eslint-disable-line
+               return
+            }
+            el.selected = handlePageUri(el.pagePath) === handlePageUri(instance.pagePath);
           })
       }   
   }
