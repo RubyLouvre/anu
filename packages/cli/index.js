@@ -92,6 +92,11 @@ function showLog() {
     }
 }
 
+function cleanLog(log) {
+    // 清理eslint stylelint错误日志内容
+    return log.replace(/^\s*@.*$/gm, '').replace(/[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm, '');
+}
+
 async function nanachi({
     // entry = './source/app', // TODO: 入口文件配置暂时不支持
     watch = false,
@@ -119,7 +124,7 @@ async function nanachi({
         if (stats.hasErrors()) {
             info.errors.forEach(e => {
                 // eslint-disable-next-line
-                console.error(e);
+                console.error(cleanLog(e));
                 if (utils.isMportalEnv()) {
                     process.exit();
                 }
@@ -128,7 +133,7 @@ async function nanachi({
         if (stats.hasWarnings()) {
             info.warnings.forEach(warning => {
                 // eslint-disable-next-line
-                console.warn(warning);
+                console.warn(cleanLog(warning));
             });
         }
         complete(err, stats);
