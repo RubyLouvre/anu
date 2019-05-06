@@ -13,8 +13,8 @@
     },
     "devDependencies": {
         "eslint": "^5.16.0",
-        "eslint-plugin-nanachi": "~0.0.3",
+        "eslint-plugin-nanachi": "latest",
         "stylelint": "^10.0.1",
-        "stylelint-plugin-nanachi": "~0.0.2"
+        "stylelint-plugin-nanachi": "latest"
     }
 }
