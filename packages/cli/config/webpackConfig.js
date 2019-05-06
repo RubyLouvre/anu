@@ -43,7 +43,8 @@ module.exports = function({
                 {
                     loader: require.resolve('eslint-loader'),
                     options: {
-                        configFile: require.resolve(`./eslint/.eslintrc-${platform}.js`)
+                        configFile: require.resolve(`./eslint/.eslintrc-${platform}.js`),
+                        allowInlineConfig: false // 不允许使用注释配置eslint规则
                     }
                 },
                 prevLoaders ) ,
