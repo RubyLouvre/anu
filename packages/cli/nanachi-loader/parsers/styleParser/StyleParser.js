@@ -10,7 +10,8 @@ class StyleParser {
         meta,
         filepath,
         platform,
-        type
+        type,
+        loaderContext
     }) {
         this.code = code || fs.readFileSync(filepath, 'utf-8');
         this.map = map;
@@ -23,6 +24,7 @@ class StyleParser {
         this._postcssOptions = {};
         this.parsedCode = '';
         this.extraModules = [];
+        this.loaderContext = loaderContext || {}; // loader中的this
     }
     getRelativePath(filepath) {
         if (/node_modules[\\\/]schnee-ui/.test(filepath)) {

@@ -1,5 +1,4 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
-const StylelintWebpackPlugin = require('stylelint-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
 //各种loader
@@ -72,7 +71,7 @@ module.exports = function({
                 fileLoader, 
                 postLoaders, 
                 aliasLoader, 
-                nanachiStyleLoader, 
+                nanachiStyleLoader,
                 prevLoaders)
         },
         rules);
@@ -94,10 +93,6 @@ module.exports = function({
             new NanachiWebpackPlugin({
                 platform,
                 compress
-            }),
-            // 样式检查插件，应用stylelint配置
-            new StylelintWebpackPlugin({
-                configFile: require.resolve(`./stylelint/.stylelint-${platform}.config.js`)
             }),
             plugins),
         resolve: {
