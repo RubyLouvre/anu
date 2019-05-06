@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-29
+ * 运行于快应用的React by 司徒正美 Copyright 2019-05-06
  */
 
 var arrayPush = Array.prototype.push;
@@ -3289,73 +3289,76 @@ function onUnload() {
 }
 
 var globalHooks = {
-  onShareAppMessage: 'onGlobalShare',
-  onShow: 'onGlobalShow',
-  onHide: 'onGlobalHide'
+    onShareAppMessage: 'onGlobalShare',
+    onShow: 'onGlobalShow',
+    onHide: 'onGlobalHide'
 };
 function getQuery(wx, huaweiHack) {
-  var page = wx.$page;
-  if (page.query) {
-    return page.query;
-  }
-  var query = {};
-  if (page.uri) {
-    getQueryFromUri(page.uri, query);
-    for (var i in query) {
-      return query;
+    var page = wx.$page;
+    if (page.query) {
+        return page.query;
     }
-  }
-  if (Object.keys(huaweiHack).length) {
-    for (var _i in huaweiHack) {
-      query[_i] = wx[_i];
+    var query = {};
+    if (page.uri) {
+        getQueryFromUri(page.uri, query);
+        for (var i in query) {
+            return query;
+        }
     }
-    return query;
-  }
-  var data = _getApp().globalData;
-  return data && data.__quickQuery && data.__quickQuery[page.path] || query;
+    if (Object.keys(huaweiHack).length) {
+        for (var _i in huaweiHack) {
+            query[_i] = wx[_i];
+        }
+        return query;
+    }
+    var data = _getApp().globalData;
+    return data && data.__quickQuery && data.__quickQuery[page.path] || query;
 }
 function registerPage(PageClass, path) {
-  PageClass.reactInstances = [];
-  var config = {
-    private: {
-      props: Object,
-      context: Object,
-      state: Object
-    },
-    protected: PageClass.protected || {},
-    dispatchEvent: dispatchEvent,
-    onInit: function onInit() {
-      var app = this.$app;
-      var instance = onLoad.call(this, PageClass, path, getQuery(this, PageClass.protected));
-      var pageConfig = PageClass.config || instance.config || emptyObject;
-      app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
-    },
-    onReady: onReady,
-    onDestroy: onUnload
-  };
-  Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
-    config[hook] = function (e) {
-      var instance = this.reactInstance,
-          fn = instance[hook],
-          app = _getApp(),
-          param = e;
-      if (hook === 'onShow') {
-        param = instance.props.query = getQuery(this, PageClass.protected);
-        app.$$page = instance.wx;
-        app.$$pagePath = instance.props.path;
-      }
-      if (hook === 'onMenuPress') {
-        app.onShowMenu && app.onShowMenu(instance, this.$app);
-      } else if (isFn(fn)) {
-        fn.call(instance, param);
-      }
-      var globalHook = globalHooks[hook];
-      if (globalHook) {
-        callGlobalHook(globalHook, param);
-      }
+    PageClass.reactInstances = [];
+    var config = {
+        private: {
+            props: Object,
+            context: Object,
+            state: Object
+        },
+        protected: PageClass.protected || {},
+        dispatchEvent: dispatchEvent,
+        onInit: function onInit() {
+            var app = this.$app;
+            var instance = onLoad.call(this, PageClass, path, getQuery(this, PageClass.protected));
+            var pageConfig = PageClass.config || instance.config || emptyObject;
+            app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
+        },
+        onReady: onReady,
+        onDestroy: onUnload
     };
-  });
-  return config;
+    Array('onShow', 'onHide', 'onMenuPress', "onBackPress").forEach(function (hook) {
+        config[hook] = function (e) {
+            var instance = this.reactInstance,
+                fn = instance[hook],
+                app = _getApp(),
+                param = e;
+            if (hook === 'onShow') {
+                param = instance.props.query = getQuery(this, PageClass.protected);
+                app.$$page = instance.wx;
+                app.$$pagePath = instance.props.path;
+            }
+            if (hook === 'onMenuPress') {
+                app.onShowMenu && app.onShowMenu(instance, this.$app);
+            } else if (isFn(fn)) {
+                var ret = fn.call(instance, param);
+                if (ret !== void 0) {
+                    return ret;
+                }
+            }
+            var globalHook = globalHooks[hook];
+            if (globalHook) {
+                callGlobalHook(globalHook, param);
+            }
+        };
+    });
+    return config;
 }
 
 var appMethods = {
