@@ -5,6 +5,8 @@ const globalConfig = require('./config/config.js');
 const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
 const platforms = require('./consts/platforms');
 const utils = require('./packages/utils/index');
+const { errorLog, warningLog } = require('./nanachi-loader/logger/index');
+const { build: buildLog } = require('./nanachi-loader/logger/queue');
 
 const babel = require('@babel/core');
 const spawn = require('child_process').spawnSync;
@@ -66,6 +68,30 @@ function validatePlatform(platform) {
     });
 }
 
+function showLog() {
+    if ( utils.isMportalEnv() ) {
+        let log = '';
+        while (buildLog.length) {
+            log += buildLog.shift() + (buildLog.length !== 0 ? '\n' : '');
+        }
+        // eslint-disable-next-line
+        console.log(log);
+    }
+    const errorStack = require('./nanachi-loader/logger/queue');
+    while (errorStack.warning.length) {
+        warningLog(errorStack.warning.shift());
+    }
+    
+    if (errorStack.error.length) {
+        errorStack.error.forEach(function(error){
+            errorLog(error);
+        });
+        if ( utils.isMportalEnv() ) {
+            process.exit(1);
+        }
+    }
+}
+
 async function nanachi({
     // entry = './source/app', // TODO: 入口文件配置暂时不支持
     watch = false,
@@ -88,6 +114,7 @@ async function nanachi({
             return;
         }
 
+        showLog();
         const info = stats.toJson();
         if (stats.hasErrors()) {
             info.errors.forEach(e => {

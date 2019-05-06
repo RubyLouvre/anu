@@ -9,7 +9,8 @@ module.exports = async function(code, map, meta) {
         code,
         map,
         meta,
-        filepath: this.resourcePath
+        filepath: this.resourcePath,
+        loaderContext: this
     });
     try {
         await parser.parse();

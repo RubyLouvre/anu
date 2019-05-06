@@ -16,8 +16,9 @@ const pkgName = 'regenerator-runtime';
 function needInstall( pkgName ){
     try {
         nodeResolve.sync(pkgName, { 
+            // TODO: 逻辑有问题
             basedir: process.cwd(),
-            moduleDirectory: ''
+            // moduleDirectory: cwd
         });
         return false;
     } catch (err) {

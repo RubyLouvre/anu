@@ -6,6 +6,10 @@ class SassParser extends StyleParser {
     constructor(props) {
         super(props);
         this._postcssPlugins = [
+            require('stylelint')({
+                configFile: require.resolve(`../../../config/stylelint/.stylelint-${this.platform}.config.js`)
+            }),
+            require('../../../packages/postcssPlugins/postcssPluginReport'),
             require('postcss-import')({
                 resolve: function(importer, baseDir){
                     //如果@import的值没有文件后缀

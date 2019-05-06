@@ -1,33 +1,7 @@
 const Timer = require('../packages/utils/timer');
-const { resetNum, timerLog, errorLog, warningLog } = require('./logger/index');
+const { resetNum, timerLog } = require('./logger/index');
 const setWebView = require('../packages/utils/setWebVeiw');
 const id = 'NanachiWebpackPlugin';
-const { build: buildLog } = require('./logger/queue');
-const utils = require('../packages/utils/index');
-
-function showLog() {
-    if ( utils.isMportalEnv() ) {
-        let log = '';
-        while (buildLog.length) {
-            log += buildLog.shift() + (buildLog.length !== 0 ? '\n' : '');
-        }
-        // eslint-disable-next-line
-        console.log(log);
-    }
-    const errorStack = require('./logger/queue');
-    while (errorStack.warning.length) {
-        warningLog(errorStack.warning.shift())
-    }
-    
-    if (errorStack.error.length) {
-        errorStack.error.forEach(function(error){
-            errorLog(error);
-        });
-        if ( utils.isMportalEnv() ) {
-            process.exit(1);
-        }
-    }
-}
 
 class NanachiWebpackPlugin {
     constructor({
@@ -73,14 +47,10 @@ class NanachiWebpackPlugin {
 
             this.timer.end();
             
-            showLog();
-
             setWebView(compiler.NANACHI && compiler.NANACHI.webviews);
 
             timerLog(this.timer);
         });
-    
-
      
     }
 }
