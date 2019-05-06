@@ -20,6 +20,8 @@ module.exports = async function(code, map, meta) {
     }
     // 处理第三方模块中的环境变量，如process.env.NODE_ENV
     code = babel.transformSync(code, {
+        configFile: false,
+        babelrc: false,
         plugins: [
             ...require('../../packages/babelPlugins/transformEnv')
         ]
