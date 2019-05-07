@@ -94,7 +94,10 @@ function showLog() {
 
 function cleanLog(log) {
     // 清理eslint stylelint错误日志内容
-    return log.replace(/^\s*@.*$/gm, '').replace(/[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm, '');
+    if (/[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm.test(log)) {
+        return log.replace(/^\s*@[\s\S]*$/gm, '').replace(/[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm, '');
+    }
+    return log;
 }
 
 async function nanachi({
