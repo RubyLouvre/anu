@@ -112,13 +112,7 @@ module.exports = function({
                 }
             ], {
                 ignore: [
-                    '**/*.js',
-                    '**/*.jsx',
-                    '**/*.json',
-                    '**/*.sass',
-                    '**/*.scss',
-                    '**/*.less',
-                    '**/*.css'
+                    '**/*.@(js|jsx|json|sass|scss|less|css)'
                 ]
             }),
             plugins),
