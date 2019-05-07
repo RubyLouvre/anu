@@ -231,8 +231,8 @@ async function runTask({ buildType, beta, betaUi }){
     //copy project.config.json
     //tasks = tasks.concat(getProjectConfigFile(buildType));
 
-    //copy assets目录下静态资源
-    tasks = tasks.concat(getAssetsFile(buildType));
+    //copy assets目录下静态资源 (改用copyWebpackPlugin拷贝静态资源，处理压缩)
+    // tasks = tasks.concat(getAssetsFile(buildType));
 
     try {
         //每次build时候, 必须先删除'dist', 'build', 'sign', 'src', 'babel.config.js'等等冗余文件或者目录

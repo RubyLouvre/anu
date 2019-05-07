@@ -15,6 +15,11 @@ const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const userConfig = pkg.nanachi || pkg.mpreact || {};
 const { REACT_LIB_MAP } = require('../../consts/index');
+const imageminOptipng = require('imagemin-optipng');
+const imageminSvgo = require('imagemin-svgo');
+const imageminMozjpeg = require('imagemin-mozjpeg');
+const imageminGifsicle = require('imagemin-gifsicle');
+
 //const fs = require('fs-extra');
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
@@ -463,6 +468,33 @@ let utils = {
     },
     isMportalEnv() {
         return ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase()))
+    },
+    compressImage(content, type, { png, jpg, gif, svg }) {
+        switch(type) {
+            case 'png':
+                return this.compressPNG(content, png);
+            case 'jpg':
+            case 'jpeg':
+                return this.compressJPG(content, jpg);
+            case 'gif':
+                return this.compressGIF(content, gif);
+            case 'svg':
+                return this.compressSVG(content, svg);
+            default:
+                return content;
+        }
+    },
+    compressPNG(content, option = {}) {
+        return imageminOptipng(option)(content);
+    },
+    compressSVG(content, option = {}) {
+        return imageminSvgo(option)(content);
+    },
+    compressJPG(content, option = {}) {
+        return imageminMozjpeg(option)(content);
+    },
+    compressGIF(content, option = {}) {
+        return imageminGifsicle(option)(content);
     }
 };
 

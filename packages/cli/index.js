@@ -92,6 +92,15 @@ function showLog() {
     }
 }
 
+function cleanLog(log) {
+    // 清理eslint stylelint错误日志内容
+    const reg = /[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm;
+    if (reg.test(log)) {
+        return log.replace(/^\s*@[\s\S]*$/gm, '').replace(reg, '');
+    }
+    return log;
+}
+
 async function nanachi({
     // entry = './source/app', // TODO: 入口文件配置暂时不支持
     watch = false,
@@ -99,6 +108,7 @@ async function nanachi({
     beta = false,
     betaUi = false,
     compress = false,
+    compressOption = {},
     huawei = false,
     rules = [],
     prevLoaders = [], // 自定义预处理loaders
@@ -119,7 +129,7 @@ async function nanachi({
         if (stats.hasErrors()) {
             info.errors.forEach(e => {
                 // eslint-disable-next-line
-                console.error(e);
+                console.error(cleanLog(e));
                 if (utils.isMportalEnv()) {
                     process.exit();
                 }
@@ -128,7 +138,7 @@ async function nanachi({
         if (stats.hasWarnings()) {
             info.warnings.forEach(warning => {
                 // eslint-disable-next-line
-                console.warn(warning);
+                console.warn(cleanLog(warning));
             });
         }
         complete(err, stats);
@@ -163,6 +173,7 @@ async function nanachi({
         const webpackConfig = require('./config/webpackConfig')({
             platform,
             compress,
+            compressOption,
             beta,
             betaUi,
             plugins,
