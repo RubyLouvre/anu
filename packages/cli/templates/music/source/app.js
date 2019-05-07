@@ -127,3 +127,4 @@ class Demo extends React.Component {
 
 // eslint-disable-next-line
 export default App(new Demo());
+
