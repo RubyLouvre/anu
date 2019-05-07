@@ -94,8 +94,9 @@ function showLog() {
 
 function cleanLog(log) {
     // 清理eslint stylelint错误日志内容
-    if (/[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm.test(log)) {
-        return log.replace(/^\s*@[\s\S]*$/gm, '').replace(/[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm, '');
+    const reg = /[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm;
+    if (reg.test(log)) {
+        return log.replace(/^\s*@[\s\S]*$/gm, '').replace(reg, '');
     }
     return log;
 }
@@ -107,6 +108,7 @@ async function nanachi({
     beta = false,
     betaUi = false,
     compress = false,
+    compressOption = {},
     huawei = false,
     rules = [],
     prevLoaders = [], // 自定义预处理loaders
@@ -171,6 +173,7 @@ async function nanachi({
         const webpackConfig = require('./config/webpackConfig')({
             platform,
             compress,
+            compressOption,
             beta,
             betaUi,
             plugins,
