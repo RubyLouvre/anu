@@ -55,7 +55,8 @@ module.exports = function({
                     loader: require.resolve('eslint-loader'),
                     options: {
                         configFile: require.resolve(`./eslint/.eslintrc-${platform}.js`),
-                        allowInlineConfig: false // 不允许使用注释配置eslint规则
+                        allowInlineConfig: false, // 不允许使用注释配置eslint规则
+                        useEslintrc: false // 不使用用户自定义eslintrc配置
                     }
                 },
                 prevLoaders ) ,
