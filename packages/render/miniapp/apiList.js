@@ -77,7 +77,10 @@ export var noPromiseApis = {
 
     // 快应用部分接口
     getPushProvider: true,
-    getProvider: true
+    getProvider: true,
+
+    // 特殊功能API
+    canvasToTempFilePath: true
 };
 export var otherApis = {
     // 网络
@@ -185,7 +188,7 @@ export var otherApis = {
     hideTabBar: true,
     setTopBarText: true,
     startPullDownRefresh: true,
-    canvasToTempFilePath: true,
+    
     canvasGetImageData: true,
     canvasPutImageData: true,
   

@@ -44,7 +44,7 @@ const attributes = {
         rules: ['animation']
     },
     div: {
-        rules: ['animation','hover-class','formtype','type','open-type','src','action','submit','onchange','ongetuserinfo','onscale'],
+        rules: ['animation','hover-class','formtype','type','open-type','src','action','submit','onchange','ongetuserinfo','onscale', 'getphonenumber'],
         ruleFunc: function(props, node) {
             if (config.huawei) {
                 const invalidProps = ['onend', 'onerror', 'onpause', 'onplay'];
