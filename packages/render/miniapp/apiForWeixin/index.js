@@ -40,7 +40,9 @@ export var more = function(api) {
                 complete,
                 success,
                 fail: function(e){//QQ小程序如果找不到数据会报错，而不是返回一个空对象
-                    if (e.errMsg ===  'getStorage:fail data not found'){
+                    //QQ的错误描述：getStorage:fail data not found
+                    //微信的错误描述：getStorage:fail:data not found
+                    if (/fail(:|\s)data\snot\sfound/.test(e.errMsg)){
                         success && success({});
                     } else {
                         fail && fail(e);

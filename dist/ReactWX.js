@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-08T06
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-08T10
  * IE9+
  */
 
@@ -944,7 +944,7 @@ var more = function more(api) {
                 complete: complete,
                 success: success,
                 fail: function fail(e) {
-                    if (e.errMsg === 'getStorage:fail data not found') {
+                    if (/fail(:|\s)data\snot\sfound/.test(e.errMsg)) {
                         success && success({});
                     } else {
                         _fail && _fail(e);
