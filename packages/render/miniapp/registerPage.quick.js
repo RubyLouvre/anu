@@ -25,7 +25,7 @@ function getQuery(wx, huaweiHack) {
         }
     }
     //华为快应用从protected中抽取
-    if (Object.keys(huaweiHack).length) {
+    if ( huaweiHack && Object.keys(huaweiHack).length) {
         for (let i in huaweiHack) {
             query[i] = wx[i];
         }
