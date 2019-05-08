@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-07T11
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-08T06
  * IE9+
  */
 
@@ -694,7 +694,8 @@ var noPromiseApis = {
   getUpdateManager: true,
   createWorker: true,
   getPushProvider: true,
-  getProvider: true
+  getProvider: true,
+  canvasToTempFilePath: true
 };
 var otherApis = {
   uploadFile: true,
@@ -787,7 +788,6 @@ var otherApis = {
   hideTabBar: true,
   setTopBarText: true,
   startPullDownRefresh: true,
-  canvasToTempFilePath: true,
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,

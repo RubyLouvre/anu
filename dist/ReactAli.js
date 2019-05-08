@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-05-07
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-05-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -2226,7 +2226,8 @@ var noPromiseApis = {
   getUpdateManager: true,
   createWorker: true,
   getPushProvider: true,
-  getProvider: true
+  getProvider: true,
+  canvasToTempFilePath: true
 };
 var otherApis = {
   uploadFile: true,
@@ -2319,7 +2320,6 @@ var otherApis = {
   hideTabBar: true,
   setTopBarText: true,
   startPullDownRefresh: true,
-  canvasToTempFilePath: true,
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,

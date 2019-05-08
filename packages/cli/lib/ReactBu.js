@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-04-26
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-05-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -2227,7 +2227,8 @@ var noPromiseApis = {
   getUpdateManager: true,
   createWorker: true,
   getPushProvider: true,
-  getProvider: true
+  getProvider: true,
+  canvasToTempFilePath: true
 };
 var otherApis = {
   uploadFile: true,
@@ -2320,7 +2321,6 @@ var otherApis = {
   hideTabBar: true,
   setTopBarText: true,
   startPullDownRefresh: true,
-  canvasToTempFilePath: true,
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,
@@ -2354,12 +2354,13 @@ function promisefyApis(ReactWX, facade, more) {
         var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
             ReactWX.api[key] = function (options) {
-                options = options || {};
-                if (options + '' === options) {
-                    return needWrapper(options);
+                var args = [].slice.call(arguments);
+                if (!options || Object(options) !== options) {
+                    return needWrapper.apply(facade, args);
                 }
                 var task = null;
                 var obj = Object.assign({}, options);
+                args[0] = obj;
                 var p = new Promise(function (resolve, reject) {
                     ['fail', 'success', 'complete'].forEach(function (k) {
                         obj[k] = function (res) {
@@ -2378,7 +2379,7 @@ function promisefyApis(ReactWX, facade, more) {
                     if (needWrapper === noop) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
-                        task = needWrapper(obj);
+                        task = needWrapper.apply(facade, args);
                     }
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
@@ -2437,12 +2438,12 @@ function registerAPIsQuick(ReactWX, facade, override) {
 var more = function more(api) {
     return {
         showActionSheet: function _(a) {
-            var success = a['success'],
-                complete = a['complete'];
-            a['success'] = function (res) {
+            var success = a.success,
+                complete = a.complete;
+            a.success = function (res) {
                 success && success({ index: res.tapIndex });
             };
-            a['complete'] = function (res) {
+            a.complete = function (res) {
                 complete && complete({ index: res.tapIndex });
             };
             return api.showActionSheet.apply(api, arguments);
@@ -2457,23 +2458,21 @@ var more = function more(api) {
             return api.showLoading(a);
         },
         setMetaDescription: function _(a) {
-            var empty = function empty(res) {};
             var defailt = {
                 content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
+                success: noop,
+                fail: noop,
+                complete: noop
             };
             var options = Object.assign(defailt, a);
             return api.setMetaDescription && api.setMetaDescription(options);
         },
         setMetaKeywords: function _(a) {
-            var empty = function empty(res) {};
             var defailt = {
                 content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
+                success: noop,
+                fail: noop,
+                complete: noop
             };
             var options = Object.assign(defailt, a);
             return api.setMetaKeywords && api.setMetaKeywords(options);
@@ -2573,10 +2572,6 @@ var globalHooks = {
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
-var showHideHooks = {
-    onShow: 'componentDidShow',
-    onHide: 'componentDidHide'
-};
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     var config = {
@@ -2592,7 +2587,6 @@ function registerPage(PageClass, path, testObject) {
         config[hook] = function (e) {
             var instance = this.reactInstance,
                 fn = instance[hook],
-                fired = false,
                 param = e;
             if (hook === 'onShareAppMessage') {
                 hook = 'onShare';
@@ -2606,7 +2600,6 @@ function registerPage(PageClass, path, testObject) {
                 _getApp().$$pagePath = instance.props.path;
             }
             if (isFn(fn)) {
-                fired = true;
                 var ret = fn.call(instance, param);
                 if (hook === 'onShare') {
                     return ret;
@@ -2618,11 +2611,6 @@ function registerPage(PageClass, path, testObject) {
                 if (hook === 'onShare') {
                     return ret;
                 }
-            }
-            var discarded = showHideHooks[hook];
-            if (!fired && instance[discarded]) {
-                console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
-                instance[discarded](param);
             }
         };
     });
