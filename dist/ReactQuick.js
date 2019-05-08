@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-05-07
+ * 运行于快应用的React by 司徒正美 Copyright 2019-05-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -3306,7 +3306,7 @@ function getQuery(wx, huaweiHack) {
             return query;
         }
     }
-    if (Object.keys(huaweiHack).length) {
+    if (huaweiHack && Object.keys(huaweiHack).length) {
         for (var _i in huaweiHack) {
             query[_i] = wx[_i];
         }
