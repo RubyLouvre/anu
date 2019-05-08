@@ -3317,17 +3317,18 @@ function getQuery(wx, huaweiHack) {
 }
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
+    var queryObject = PageClass.protected || emptyObject;
     var config = {
         private: {
             props: Object,
             context: Object,
             state: Object
         },
-        protected: PageClass.protected || {},
+        protected: queryObject,
         dispatchEvent: dispatchEvent,
         onInit: function onInit() {
             var app = this.$app;
-            var instance = onLoad.call(this, PageClass, path, getQuery(this, PageClass.protected));
+            var instance = onLoad.call(this, PageClass, path, getQuery(this, queryObject));
             var pageConfig = PageClass.config || instance.config || emptyObject;
             app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
         },
@@ -3341,7 +3342,7 @@ function registerPage(PageClass, path) {
                 app = _getApp(),
                 param = e;
             if (hook === 'onShow') {
-                param = instance.props.query = getQuery(this, PageClass.protected);
+                param = instance.props.query = getQuery(this, queryObject);
                 app.$$page = instance.wx;
                 app.$$pagePath = instance.props.path;
             }

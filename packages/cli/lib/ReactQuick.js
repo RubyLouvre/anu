@@ -1,6 +1,5 @@
-/* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-04-26
+ * 运行于快应用的React by 司徒正美 Copyright 2019-05-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -627,35 +626,6 @@ function createContext(defaultValue, calculateChangedBits) {
     return getContext;
 }
 
-var device = require('@system.device');
-var mapNames = {
-    osVersionName: "version",
-    osVersionCode: "system",
-    platformVersionName: "platform",
-    platformVersionCode: "SDKVersion"
-};
-function getSystemInfo(_ref) {
-    var _success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    device.getInfo({
-        success: function success(rawObject) {
-            var result = {
-                fontSizeSetting: 14
-            };
-            for (var name in rawObject) {
-                result[mapNames[name] || name] = rawObject[name];
-            }
-            _success && _success(result);
-        },
-        fail: fail,
-        complete: complete
-    });
-}
-function getDeviceId(options) {
-    return device.getDeviceId(options);
-}
-
 function getDataSetFromAttr(obj) {
     var ret = {};
     for (var name in obj) {
@@ -1228,6 +1198,35 @@ function setNavigationBarTitle(_ref) {
     }, success, fail, complete);
 }
 
+var device = require('@system.device');
+var mapNames = {
+    osVersionName: "version",
+    osVersionCode: "system",
+    platformVersionName: "platform",
+    platformVersionCode: "SDKVersion"
+};
+function getSystemInfo(_ref) {
+    var _success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
+    device.getInfo({
+        success: function success(rawObject) {
+            var result = {
+                fontSizeSetting: 14
+            };
+            for (var name in rawObject) {
+                result[mapNames[name] || name] = rawObject[name];
+            }
+            _success && _success(result);
+        },
+        fail: fail,
+        complete: complete
+    });
+}
+function getDeviceId(options) {
+    return device.getDeviceId(options);
+}
+
 function chooseImage(_ref) {
     var _ref$count = _ref.count,
         count = _ref$count === undefined ? 1 : _ref$count,
@@ -1294,17 +1293,9 @@ function showModal(obj) {
 function showToast(obj) {
     obj.message = obj.title;
     obj.duration = obj.duration / 1000 >= 1 ? 1 : 0;
-    var success = obj.success || noop,
-        fail = obj.fail || noop,
-        complete = obj.complete || noop;
-    try {
+    runCallbacks(function () {
         prompt.showToast(obj);
-        success();
-    } catch (err) {
-        fail(err);
-    } finally {
-        complete();
-    }
+    }, obj.success, obj.fail, obj.complete);
 }
 function showActionSheet(obj) {
     prompt.showContextMenu(obj);
@@ -1520,7 +1511,7 @@ function stopPullDownRefresh() {
         success = _ref.success,
         fail = _ref.fail,
         complete = _ref.complete;
-    runCallbacks(function () {}, success, fail, complete);
+    runCallbacks(Number, success, fail, complete);
 }
 var facade = {
     showModal: showModal,
@@ -1787,12 +1778,13 @@ function promisefyApis(ReactWX, facade, more) {
         var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
             ReactWX.api[key] = function (options) {
-                options = options || {};
-                if (options + '' === options) {
-                    return needWrapper(options);
+                var args = [].slice.call(arguments);
+                if (!options || Object(options) !== options) {
+                    return needWrapper.apply(facade, args);
                 }
                 var task = null;
                 var obj = Object.assign({}, options);
+                args[0] = obj;
                 var p = new Promise(function (resolve, reject) {
                     ['fail', 'success', 'complete'].forEach(function (k) {
                         obj[k] = function (res) {
@@ -1811,7 +1803,7 @@ function promisefyApis(ReactWX, facade, more) {
                     if (needWrapper === noop) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
-                        task = needWrapper(obj);
+                        task = needWrapper.apply(facade, args);
                     }
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
@@ -3298,65 +3290,77 @@ function onUnload() {
 }
 
 var globalHooks = {
-  onShareAppMessage: 'onGlobalShare',
-  onShow: 'onGlobalShow',
-  onHide: 'onGlobalHide'
+    onShareAppMessage: 'onGlobalShare',
+    onShow: 'onGlobalShow',
+    onHide: 'onGlobalHide'
 };
-function getQuery(page) {
-  if (page.query) {
-    return page.query;
-  }
-  var query = {};
-  if (page.uri) {
-    getQueryFromUri(page.uri, query);
-  }
-  for (var param in query) {
-    return query;
-  }
-  return Object((_getApp().globalData || {}).__quickQuery)[page.path] || {};
+function getQuery(wx, huaweiHack) {
+    var page = wx.$page;
+    if (page.query) {
+        return page.query;
+    }
+    var query = {};
+    if (page.uri) {
+        getQueryFromUri(page.uri, query);
+        for (var i in query) {
+            return query;
+        }
+    }
+    if (huaweiHack && Object.keys(huaweiHack).length) {
+        for (var _i in huaweiHack) {
+            query[_i] = wx[_i];
+        }
+        return query;
+    }
+    var data = _getApp().globalData;
+    return data && data.__quickQuery && data.__quickQuery[page.path] || query;
 }
 function registerPage(PageClass, path) {
-  PageClass.reactInstances = [];
-  var config = {
-    private: {
-      props: Object,
-      context: Object,
-      state: Object
-    },
-    protected: PageClass.protected || {},
-    dispatchEvent: dispatchEvent,
-    onInit: function onInit() {
-      var app = this.$app;
-      var instance = onLoad.call(this, PageClass, path, getQuery(this.$page));
-      var pageConfig = PageClass.config || instance.config || emptyObject;
-      app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
-    },
-    onReady: onReady,
-    onDestroy: onUnload
-  };
-  Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
-    config[hook] = function (e) {
-      var instance = this.reactInstance,
-          fn = instance[hook],
-          app = _getApp(),
-          param = e;
-      if (hook === 'onShow') {
-        param = instance.props.query = getQuery(this.$page);
-        app.$$page = instance.wx;
-        app.$$pagePath = instance.props.path;
-      }
-      if (hook === 'onMenuPress') {
-        app.onShowMenu && app.onShowMenu(instance, this.$app);
-      } else if (isFn(fn)) {
-        fn.call(instance, param);
-      }
-      var globalHook = globalHooks[hook];
-      if (globalHook) {
-        callGlobalHook(globalHook, param);
-      }
+    PageClass.reactInstances = [];
+    var config = {
+        private: {
+            props: Object,
+            context: Object,
+            state: Object
+        },
+        protected: PageClass.protected || {},
+        dispatchEvent: dispatchEvent,
+        onInit: function onInit() {
+            var app = this.$app;
+            console.log(this, '-----');
+            var instance = onLoad.call(this, PageClass, path, getQuery(this, PageClass.protected));
+            var pageConfig = PageClass.config || instance.config || emptyObject;
+            app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
+        },
+        onReady: onReady,
+        onDestroy: onUnload
     };
-  });
-  return config;
+    Array('onShow', 'onHide', 'onMenuPress', "onBackPress").forEach(function (hook) {
+        config[hook] = function (e) {
+            var instance = this.reactInstance,
+                fn = instance[hook],
+                app = _getApp(),
+                param = e;
+            if (hook === 'onShow') {
+                param = instance.props.query = getQuery(this, PageClass.protected);
+                app.$$page = instance.wx;
+                app.$$pagePath = instance.props.path;
+            }
+            if (hook === 'onMenuPress') {
+                app.onShowMenu && app.onShowMenu(instance, this.$app);
+            } else if (isFn(fn)) {
+                var ret = fn.call(instance, param);
+                if (ret !== void 0) {
+                    return ret;
+                }
+            }
+            var globalHook = globalHooks[hook];
+            if (globalHook) {
+                callGlobalHook(globalHook, param);
+            }
+        };
+    });
+    return config;
 }
 
 var appMethods = {

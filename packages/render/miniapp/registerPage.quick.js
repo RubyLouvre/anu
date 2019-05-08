@@ -38,6 +38,8 @@ function getQuery(wx, huaweiHack) {
 
 export function registerPage(PageClass, path) {
     PageClass.reactInstances = []
+    var queryObject = PageClass.protected || emptyObject
+
     let config = {
         private: {
             props: Object,
@@ -45,11 +47,11 @@ export function registerPage(PageClass, path) {
             state: Object
         },
         //华为快应用拿不到上一个页面传过来的参数，在$page.uri拿不到，manifest.json加了filter也不行
-        protected: PageClass.protected || {},
+        protected: queryObject,
         dispatchEvent,
         onInit() {
             let app = this.$app;
-            let instance = onLoad.call(this, PageClass, path, getQuery(this, PageClass.protected));
+            let instance = onLoad.call(this, PageClass, path, getQuery(this, queryObject));
             let pageConfig = PageClass.config || instance.config || emptyObject;
             app.$$pageConfig = Object.keys(pageConfig).length ?
                 pageConfig :
@@ -65,7 +67,7 @@ export function registerPage(PageClass, path) {
                 app = _getApp(),
                 param = e
             if (hook === 'onShow') {
-                param = instance.props.query = getQuery(this, PageClass.protected);
+                param = instance.props.query = getQuery(this, queryObject);
                 app.$$page = instance.wx;
                 app.$$pagePath = instance.props.path;
             }

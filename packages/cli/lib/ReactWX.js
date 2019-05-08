@@ -1,6 +1,5 @@
-/* eslint-disable */
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-04-26T06
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-07T09
  * IE9+
  */
 
@@ -816,18 +815,20 @@ var otherApis = {
   checkIsSoterEnrolledInDevice: true
 };
 
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 function promisefyApis(ReactWX, facade, more) {
+    var _arguments = arguments;
     var weApis = Object.assign({}, onAndSyncApis, noPromiseApis, otherApis, more);
     Object.keys(weApis).forEach(function (key) {
         var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
             ReactWX.api[key] = function (options) {
-                options = options || {};
-                if (options + '' === options) {
-                    return needWrapper(options);
+                if ((typeof options === 'undefined' ? 'undefined' : _typeof$1(options)) !== "object") {
+                    return needWrapper.apply(facade, _arguments);
                 }
                 var task = null;
                 var obj = Object.assign({}, options);
+                _arguments[0] = obj;
                 var p = new Promise(function (resolve, reject) {
                     ['fail', 'success', 'complete'].forEach(function (k) {
                         obj[k] = function (res) {
@@ -846,7 +847,7 @@ function promisefyApis(ReactWX, facade, more) {
                     if (needWrapper === noop) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
-                        task = needWrapper(obj);
+                        task = needWrapper.apply(facade, _arguments);
                     }
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
@@ -2553,10 +2554,6 @@ var globalHooks = {
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
-var showHideHooks = {
-    onShow: 'componentDidShow',
-    onHide: 'componentDidHide'
-};
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     var config = {
@@ -2572,7 +2569,6 @@ function registerPage(PageClass, path, testObject) {
         config[hook] = function (e) {
             var instance = this.reactInstance,
                 fn = instance[hook],
-                fired = false,
                 param = e;
             if (hook === 'onShareAppMessage') {
                 hook = 'onShare';
@@ -2586,7 +2582,6 @@ function registerPage(PageClass, path, testObject) {
                 _getApp().$$pagePath = instance.props.path;
             }
             if (isFn(fn)) {
-                fired = true;
                 var ret = fn.call(instance, param);
                 if (hook === 'onShare') {
                     return ret;
@@ -2598,11 +2593,6 @@ function registerPage(PageClass, path, testObject) {
                 if (hook === 'onShare') {
                     return ret;
                 }
-            }
-            var discarded = showHideHooks[hook];
-            if (!fired && instance[discarded]) {
-                console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
-                instance[discarded](param);
             }
         };
     });
