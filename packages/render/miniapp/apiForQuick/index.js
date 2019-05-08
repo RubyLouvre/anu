@@ -31,7 +31,8 @@ import {
 import { setNavigationBarTitle } from './title';
 import { 
     getSystemInfo, 
-    getDeviceId 
+    getDeviceId,
+    getUserId
 } from './device.js';
 import { chooseImage } from './media.js';
 import { createShortcut, hasInstalled, shortcutInstall } from './shortcut.js';
@@ -139,5 +140,6 @@ export function more(){
         wxpay, 
         alipay,
         getDeviceId,
+        getUserId
     };
 } 
