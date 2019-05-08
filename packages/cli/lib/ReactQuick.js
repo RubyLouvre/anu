@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * 运行于快应用的React by 司徒正美 Copyright 2019-05-08
  */
@@ -1200,10 +1201,10 @@ function setNavigationBarTitle(_ref) {
 
 var device = require('@system.device');
 var mapNames = {
-    osVersionName: "version",
-    osVersionCode: "system",
-    platformVersionName: "platform",
-    platformVersionCode: "SDKVersion"
+    osVersionName: 'version',
+    osVersionCode: 'system',
+    platformVersionName: 'platform',
+    platformVersionCode: 'SDKVersion'
 };
 function getSystemInfo(_ref) {
     var _success = _ref.success,
@@ -1225,6 +1226,9 @@ function getSystemInfo(_ref) {
 }
 function getDeviceId(options) {
     return device.getDeviceId(options);
+}
+function getUserId(options) {
+    return device.getUserId(options);
 }
 
 function chooseImage(_ref) {
@@ -1580,7 +1584,8 @@ function more() {
         wxpayGetType: wxpayGetType,
         wxpay: wxpay,
         alipay: alipay,
-        getDeviceId: getDeviceId
+        getDeviceId: getDeviceId,
+        getUserId: getUserId
     };
 }
 
@@ -1651,7 +1656,8 @@ var noPromiseApis = {
   getUpdateManager: true,
   createWorker: true,
   getPushProvider: true,
-  getProvider: true
+  getProvider: true,
+  canvasToTempFilePath: true
 };
 var otherApis = {
   uploadFile: true,
@@ -1744,7 +1750,6 @@ var otherApis = {
   hideTabBar: true,
   setTopBarText: true,
   startPullDownRefresh: true,
-  canvasToTempFilePath: true,
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,
@@ -3317,18 +3322,18 @@ function getQuery(wx, huaweiHack) {
 }
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
+    var queryObject = PageClass.protected || emptyObject;
     var config = {
         private: {
             props: Object,
             context: Object,
             state: Object
         },
-        protected: PageClass.protected || {},
+        protected: queryObject,
         dispatchEvent: dispatchEvent,
         onInit: function onInit() {
             var app = this.$app;
-            console.log(this, '-----');
-            var instance = onLoad.call(this, PageClass, path, getQuery(this, PageClass.protected));
+            var instance = onLoad.call(this, PageClass, path, getQuery(this, queryObject));
             var pageConfig = PageClass.config || instance.config || emptyObject;
             app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
         },
@@ -3342,7 +3347,7 @@ function registerPage(PageClass, path) {
                 app = _getApp(),
                 param = e;
             if (hook === 'onShow') {
-                param = instance.props.query = getQuery(this, PageClass.protected);
+                param = instance.props.query = getQuery(this, queryObject);
                 app.$$page = instance.wx;
                 app.$$pagePath = instance.props.path;
             }

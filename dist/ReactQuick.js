@@ -1200,10 +1200,10 @@ function setNavigationBarTitle(_ref) {
 
 var device = require('@system.device');
 var mapNames = {
-    osVersionName: "version",
-    osVersionCode: "system",
-    platformVersionName: "platform",
-    platformVersionCode: "SDKVersion"
+    osVersionName: 'version',
+    osVersionCode: 'system',
+    platformVersionName: 'platform',
+    platformVersionCode: 'SDKVersion'
 };
 function getSystemInfo(_ref) {
     var _success = _ref.success,
@@ -1225,6 +1225,9 @@ function getSystemInfo(_ref) {
 }
 function getDeviceId(options) {
     return device.getDeviceId(options);
+}
+function getUserId(options) {
+    return device.getUserId(options);
 }
 
 function chooseImage(_ref) {
@@ -1580,7 +1583,8 @@ function more() {
         wxpayGetType: wxpayGetType,
         wxpay: wxpay,
         alipay: alipay,
-        getDeviceId: getDeviceId
+        getDeviceId: getDeviceId,
+        getUserId: getUserId
     };
 }
 
@@ -1651,7 +1655,8 @@ var noPromiseApis = {
   getUpdateManager: true,
   createWorker: true,
   getPushProvider: true,
-  getProvider: true
+  getProvider: true,
+  canvasToTempFilePath: true
 };
 var otherApis = {
   uploadFile: true,
@@ -1744,7 +1749,6 @@ var otherApis = {
   hideTabBar: true,
   setTopBarText: true,
   startPullDownRefresh: true,
-  canvasToTempFilePath: true,
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,
