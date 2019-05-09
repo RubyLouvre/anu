@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-09T08
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-09T09
  * IE9+
  */
 
@@ -520,10 +520,6 @@ var PureComponent = miniCreateClass(function PureComponent() {
         return !a || !b;
     }
 });
-
-function AnuPortal(props) {
-    return props.children;
-}
 
 var MAX_NUMBER = 1073741823;
 function createContext(defaultValue, calculateChangedBits) {
@@ -1096,6 +1092,10 @@ function createEvent(e, target) {
         event.pageY = touch.pageY;
     }
     return event;
+}
+
+function AnuPortal(props) {
+    return props.children;
 }
 
 function UpdateQueue() {
@@ -2689,8 +2689,17 @@ function registerComponent(type, name) {
 function useState(initValue) {
     return useReducerImpl(null, initValue);
 }
+function useReducer(reducer, initValue, initAction) {
+    return useReducerImpl(reducer, initValue, initAction);
+}
 function useEffect(create, deps) {
     return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
+}
+function useCallback(create, deps) {
+    return useCallbackImpl(create, deps);
+}
+function useMemo(create, deps) {
+    return useCallbackImpl(create, deps, true);
 }
 
 var render$1 = Renderer$1.render;
@@ -2712,17 +2721,20 @@ var React = getWindow().React = {
     PureComponent: PureComponent,
     isValidElement: isValidElement,
     createContext: createContext,
-    useState: useState,
-    useEffect: useEffect,
-    useContext: useContext,
     toClass: miniCreateClass,
-    useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
     registerPage: registerPage,
     toStyle: toStyle,
+    useState: useState,
+    useReducer: useReducer,
+    useCallback: useCallback,
+    useMemo: useMemo,
+    useEffect: useEffect,
+    useContext: useContext,
+    useComponent: useComponent,
     appType: 'wx'
 };
 var apiContainer = {};

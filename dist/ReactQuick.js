@@ -520,10 +520,6 @@ var PureComponent = miniCreateClass(function PureComponent() {
     }
 });
 
-function AnuPortal(props) {
-    return props.children;
-}
-
 var MAX_NUMBER = 1073741823;
 function createContext(defaultValue, calculateChangedBits) {
     if (calculateChangedBits == void 0) {
@@ -1811,6 +1807,10 @@ function registerAPIsQuick(ReactWX, facade, override) {
     promisefyApis(ReactWX, facade, override(facade));
 }
 
+function AnuPortal(props) {
+    return props.children;
+}
+
 function UpdateQueue() {
     return {
         pendingStates: [],
@@ -2049,6 +2049,89 @@ function detachFiber(fiber, effects$$1) {
     for (var child = fiber.child; child; child = child.sibling) {
         detachFiber(child, effects$$1);
     }
+}
+
+function setter(compute, cursor, value) {
+    this.updateQueue[cursor] = compute(cursor, value);
+    Renderer.updateComponent(this, true);
+}
+var hookCursor = 0;
+function resetCursor() {
+    hookCursor = 0;
+}
+function getCurrentKey() {
+    var key = hookCursor + 'Hook';
+    hookCursor++;
+    return key;
+}
+function useContext(getContext) {
+    if (isFn(getContext)) {
+        var fiber = getCurrentFiber();
+        var context = getContext(fiber);
+        var list = getContext.subscribers;
+        if (list.indexOf(fiber) === -1) {
+            list.push(fiber);
+        }
+        return context;
+    }
+    return null;
+}
+function useReducerImpl(reducer, initValue, initAction) {
+    var fiber = getCurrentFiber();
+    var key = getCurrentKey();
+    var updateQueue = fiber.updateQueue;
+    var compute = reducer ? function (cursor, action) {
+        return reducer(updateQueue[cursor], action || { type: Math.random() });
+    } : function (cursor, value) {
+        var novel = updateQueue[cursor];
+        return typeof value == 'function' ? value(novel) : value;
+    };
+    var dispatch = setter.bind(fiber, compute, key);
+    if (key in updateQueue) {
+        delete updateQueue.isForced;
+        return [updateQueue[key], dispatch];
+    }
+    var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
+    return [value, dispatch];
+}
+function useCallbackImpl(create, deps, isMemo) {
+    var fiber = getCurrentFiber();
+    var key = getCurrentKey();
+    var updateQueue = fiber.updateQueue;
+    var nextInputs = Array.isArray(deps) ? deps : [create];
+    var prevState = updateQueue[key];
+    if (prevState) {
+        var prevInputs = prevState[1];
+        if (areHookInputsEqual(nextInputs, prevInputs)) {
+            return prevState[0];
+        }
+    }
+    var value = isMemo ? create() : create;
+    updateQueue[key] = [value, nextInputs];
+    return value;
+}
+function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
+    var fiber = getCurrentFiber();
+    var cb = useCallbackImpl(create, deps);
+    if (fiber.effectTag % EffectTag) {
+        fiber.effectTag *= EffectTag;
+    }
+    var updateQueue = fiber.updateQueue;
+    var list = updateQueue[createList] || (updateQueue[createList] = []);
+    updateQueue[destroyList] || (updateQueue[destroyList] = []);
+    list.push(cb);
+}
+function getCurrentFiber() {
+    return get(Renderer.currentOwner);
+}
+function areHookInputsEqual(arr1, arr2) {
+    for (var i = 0; i < arr1.length; i++) {
+        if (Object.is(arr1[i], arr2[i])) {
+            continue;
+        }
+        return false;
+    }
+    return true;
 }
 
 function getInsertPoint(fiber) {
@@ -2312,6 +2395,7 @@ function updateClassComponent(fiber, info) {
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     var rendered = applyCallback(instance, 'render', []);
+    resetCursor();
     diffChildren(fiber, rendered);
     Renderer.onAfterRender(fiber);
 }
@@ -3336,6 +3420,22 @@ function registerPage(PageClass, path) {
     return config;
 }
 
+function useState(initValue) {
+    return useReducerImpl(null, initValue);
+}
+function useReducer(reducer, initValue, initAction) {
+    return useReducerImpl(reducer, initValue, initAction);
+}
+function useEffect(create, deps) {
+    return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
+}
+function useCallback(create, deps) {
+    return useCallbackImpl(create, deps);
+}
+function useMemo(create, deps) {
+    return useCallbackImpl(create, deps, true);
+}
+
 var appMethods = {
     onLaunch: 'onCreate',
     onHide: 'onDestroy'
@@ -3360,13 +3460,19 @@ var React = getWindow().React = {
     isValidElement: isValidElement,
     createContext: createContext,
     toClass: miniCreateClass,
-    useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
     registerPage: registerPage,
     toStyle: toStyle,
+    useState: useState,
+    useReducer: useReducer,
+    useCallback: useCallback,
+    useMemo: useMemo,
+    useEffect: useEffect,
+    useContext: useContext,
+    useComponent: useComponent,
     appType: 'quick',
     registerApp: function registerApp(demo) {
         var app = {};
