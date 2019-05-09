@@ -27,10 +27,7 @@ module.exports = {
         libName: 'ReactAli',
         styleExt: 'acss',
         xmlExt: 'axml',
-        helpers: 'aliHelpers',
-        patchComponents: [
-            'rich-text' //年前还不支持这标签 https://docs.alipay.com/mini/component/rich-text
-        ]
+        helpers: 'aliHelpers'
     },
     bu: {
         libName: 'ReactBu',

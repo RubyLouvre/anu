@@ -110,9 +110,14 @@ exports.exit = function(astPath, type, componentName, modules) {
                 '/components/' + parentClass + '/index';
         }
 
+        if (/\/node_modules\//.test(modules.sourcePath.replace(/\\/g, '/'))) {
+            relPath = 'npm/' + path.relative( path.join(cwd, 'node_modules'), modules.sourcePath);
+        } else {
+            relPath =  path.relative(path.resolve(cwd, 'source'), modules.sourcePath);
+        }
         modules.queue.push({
             type: 'html',
-            path: path.relative(path.resolve(cwd, 'source'), modules.sourcePath),
+            path: relPath,
             code: wxml
         });
     }
