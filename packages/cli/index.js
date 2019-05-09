@@ -114,6 +114,7 @@ async function nanachi({
     prevLoaders = [], // 自定义预处理loaders
     postLoaders = [], // 自定义后处理loaders
     plugins = [],
+    // maxAssetSize = 20480, // 最大资源限制，超出报warning
     complete = () => { }
 } = {}) {
     function callback(err, stats) {
@@ -179,7 +180,8 @@ async function nanachi({
             plugins,
             prevLoaders,
             postLoaders,
-            rules
+            rules,
+            // maxAssetSize
         });
 
         await runBeforeParseTasks({ buildType: platform, beta, betaUi });

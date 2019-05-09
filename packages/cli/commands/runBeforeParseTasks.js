@@ -18,7 +18,7 @@ function getRubbishFiles(buildType){
     let fileList = ['package-lock.json', 'yarn.lock'];
     buildType !== 'quick'
         ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
-        : fileList = fileList.concat(['dist']);
+        : fileList = fileList.concat([utils.getDistName(buildType)]);
 
     //构建应用时，要删除source目录下其他的 React lib 文件。
     let libList = Object.keys(REACT_LIB_MAP)
