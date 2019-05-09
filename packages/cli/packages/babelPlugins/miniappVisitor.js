@@ -268,10 +268,17 @@ module.exports = {
                 
                 //merge ${buildType}Config.json
                 json = require('../utils/mergeConfigJson')(modules, json);
-                
-                
+
+
+               
+                if (/\/node_modules\//.test(modules.sourcePath.replace(/\\/g, '/'))) {
+                    relPath = 'npm/' + path.relative( path.join(cwd, 'node_modules'), modules.sourcePath);
+                } else {
+                    relPath =  path.relative(path.resolve(cwd, 'source'), modules.sourcePath);
+                }
+             
                 modules.queue.push({
-                    path: path.relative(path.resolve(cwd, 'source'), modules.sourcePath),
+                    path: relPath,
                     code: JSON.stringify(json, null, 4),
                     type: 'json'
                 });
