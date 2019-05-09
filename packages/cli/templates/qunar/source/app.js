@@ -34,6 +34,7 @@ import './pages/demo/native/camera/index';
 
 import './pages/demo/syntax/index/index';
 import './pages/demo/syntax/stateless/index';
+import './pages/demo/syntax/hooks/index';
 import './pages/demo/syntax/loop/index';
 import './pages/demo/syntax/loop2/index';
 import './pages/demo/syntax/loop3/index';
@@ -41,7 +42,7 @@ import './pages/demo/syntax/loop4/index';
 import './pages/demo/syntax/loop5/index';
 import './pages/demo/syntax/webview/index';
 
-import './pages/demo/syntax/extend/index';
+import './pages/demo/syntax/hooks/index';
 import './pages/demo/syntax/inlineStyle/index';
 import './pages/demo/syntax/if/index';
 import './pages/demo/syntax/ifcom/index';

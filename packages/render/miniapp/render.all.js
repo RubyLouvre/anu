@@ -17,9 +17,9 @@ export let Renderer = createRenderer({
         let { props, lastProps } = fiber;
         let beaconId = props['data-beacon-uid'];
         let instance = fiber._owner; //clazz[instanceId];
-        if (instance && !instance.renderImpl && !instance.classUid) {
-            instance = get(instance)._owner;
-        }
+       // if (instance && !instance.classUid) {
+       //     instance = get(instance)._owner;
+       // }
         if (instance && beaconId) {
             var cached =
                 instance.$$eventCached || (instance.$$eventCached = {});

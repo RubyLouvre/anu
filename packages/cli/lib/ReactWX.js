@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-09T04
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-09T07
  * IE9+
  */
 
@@ -909,18 +909,13 @@ var more = function more(api) {
         getStorage: function getStorage(_ref) {
             var key = _ref.key,
                 success = _ref.success,
-                _fail = _ref.fail,
                 complete = _ref.complete;
             return api.getStorage({
                 key: key,
                 complete: complete,
                 success: success,
                 fail: function fail(e) {
-                    if (/fail(:|\s)data\snot\sfound/.test(e.errMsg)) {
-                        success && success({});
-                    } else {
-                        _fail && _fail(e);
-                    }
+                    success && success({});
                 }
             });
         }
@@ -1356,94 +1351,63 @@ function getCurrentKey() {
     hookCursor++;
     return key;
 }
-var dispatcher = {
-    useContext: function useContext(getContext) {
-        if (isFn(getContext)) {
-            var fiber = getCurrentFiber();
-            var context = getContext(fiber);
-            var list = getContext.subscribers;
-            if (list.indexOf(fiber) === -1) {
-                list.push(fiber);
-            }
-            return context;
-        }
-        return null;
-    },
-    useReducer: function useReducer(reducer, initValue, initAction) {
+function useContext(getContext) {
+    if (isFn(getContext)) {
         var fiber = getCurrentFiber();
-        var key = getCurrentKey();
-        var updateQueue = fiber.updateQueue;
-        var compute = reducer ? function (cursor, action) {
-            return reducer(updateQueue[cursor], action || { type: Math.random() });
-        } : function (cursor, value) {
-            var novel = updateQueue[cursor];
-            return typeof value == 'function' ? value(novel) : value;
-        };
-        var dispatch = setter.bind(fiber, compute, key);
-        if (key in updateQueue) {
-            delete updateQueue.isForced;
-            return [updateQueue[key], dispatch];
+        var context = getContext(fiber);
+        var list = getContext.subscribers;
+        if (list.indexOf(fiber) === -1) {
+            list.push(fiber);
         }
-        var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
-        return [value, dispatch];
-    },
-    useCallbackOrMemo: function useCallbackOrMemo(create, deps, isMemo) {
-        var fiber = getCurrentFiber();
-        var key = getCurrentKey();
-        var updateQueue = fiber.updateQueue;
-        var nextInputs = Array.isArray(deps) ? deps : [create];
-        var prevState = updateQueue[key];
-        if (prevState) {
-            var prevInputs = prevState[1];
-            if (areHookInputsEqual(nextInputs, prevInputs)) {
-                return prevState[0];
-            }
-        }
-        var value = isMemo ? create() : create;
-        updateQueue[key] = [value, nextInputs];
-        return value;
-    },
-    useRef: function useRef(initValue) {
-        var fiber = getCurrentFiber();
-        var key = getCurrentKey();
-        var updateQueue = fiber.updateQueue;
-        if (key in updateQueue) {
-            return updateQueue[key];
-        }
-        return updateQueue[key] = { current: initValue };
-    },
-    useEffect: function useEffect(create, deps, EffectTag, createList, destroyList) {
-        var fiber = getCurrentFiber();
-        var cb = dispatcher.useCallbackOrMemo(create, deps);
-        if (fiber.effectTag % EffectTag) {
-            fiber.effectTag *= EffectTag;
-        }
-        var updateQueue = fiber.updateQueue;
-        var list = updateQueue[createList] || (updateQueue[createList] = []);
-        updateQueue[destroyList] || (updateQueue[destroyList] = []);
-        list.push(cb);
-    },
-    useImperativeHandle: function useImperativeHandle(ref, create, deps) {
-        var nextInputs = Array.isArray(deps) ? deps.concat([ref]) : [ref, create];
-        dispatcher.useEffect(function () {
-            if (typeof ref === 'function') {
-                var refCallback = ref;
-                var inst = create();
-                refCallback(inst);
-                return function () {
-                    return refCallback(null);
-                };
-            } else if (ref !== null && ref !== undefined) {
-                var refObject = ref;
-                var _inst = create();
-                refObject.current = _inst;
-                return function () {
-                    refObject.current = null;
-                };
-            }
-        }, nextInputs);
+        return context;
     }
-};
+    return null;
+}
+function useReducerImpl(reducer, initValue, initAction) {
+    var fiber = getCurrentFiber();
+    var key = getCurrentKey();
+    var updateQueue = fiber.updateQueue;
+    var compute = reducer ? function (cursor, action) {
+        return reducer(updateQueue[cursor], action || { type: Math.random() });
+    } : function (cursor, value) {
+        var novel = updateQueue[cursor];
+        return typeof value == 'function' ? value(novel) : value;
+    };
+    var dispatch = setter.bind(fiber, compute, key);
+    if (key in updateQueue) {
+        delete updateQueue.isForced;
+        return [updateQueue[key], dispatch];
+    }
+    var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
+    return [value, dispatch];
+}
+function useCallbackImpl(create, deps, isMemo) {
+    var fiber = getCurrentFiber();
+    var key = getCurrentKey();
+    var updateQueue = fiber.updateQueue;
+    var nextInputs = Array.isArray(deps) ? deps : [create];
+    var prevState = updateQueue[key];
+    if (prevState) {
+        var prevInputs = prevState[1];
+        if (areHookInputsEqual(nextInputs, prevInputs)) {
+            return prevState[0];
+        }
+    }
+    var value = isMemo ? create() : create;
+    updateQueue[key] = [value, nextInputs];
+    return value;
+}
+function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
+    var fiber = getCurrentFiber();
+    var cb = useCallbackImpl(create, deps);
+    if (fiber.effectTag % EffectTag) {
+        fiber.effectTag *= EffectTag;
+    }
+    var updateQueue = fiber.updateQueue;
+    var list = updateQueue[createList] || (updateQueue[createList] = []);
+    updateQueue[destroyList] || (updateQueue[destroyList] = []);
+    list.push(cb);
+}
 function getCurrentFiber() {
     return get(Renderer.currentOwner);
 }
@@ -2436,9 +2400,6 @@ var Renderer$1 = createRenderer({
             lastProps = fiber.lastProps;
         var beaconId = props['data-beacon-uid'];
         var instance = fiber._owner;
-        if (instance && !instance.renderImpl && !instance.classUid) {
-            instance = get(instance)._owner;
-        }
         if (instance && beaconId) {
             var cached = instance.$$eventCached || (instance.$$eventCached = {});
             for (var name in props) {
@@ -2726,13 +2687,10 @@ function registerComponent(type, name) {
 }
 
 function useState(initValue) {
-    return dispatcher.useReducer(null, initValue);
+    return useReducerImpl(null, initValue);
 }
 function useEffect(create, deps) {
-    return dispatcher.useEffect(create, deps, PASSIVE, 'passive', 'unpassive');
-}
-function useContext(initValue) {
-    return dispatcher.useContext(initValue);
+    return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
 }
 
 var render$1 = Renderer$1.render;
