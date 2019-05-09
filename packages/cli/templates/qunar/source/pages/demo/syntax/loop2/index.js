@@ -40,7 +40,9 @@ class P extends React.Component {
                                     return (
                                         <div class="loop2-cell" 
                                             key={el.title}
-                                            onClick={this.getData.bind(this, el)}>
+                                            onClick={ (e) => {
+                                                this.getData(el, e);
+                                              } }>
                                             <Fish content={el.title} />
                                         </div>
                                     );

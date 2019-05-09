@@ -1992,9 +1992,6 @@ var Renderer$1 = createRenderer({
             lastProps = fiber.lastProps;
         var beaconId = props['data-beacon-uid'];
         var instance = fiber._owner;
-        if (instance && !instance.renderImpl && !instance.classUid) {
-            instance = get(instance)._owner;
-        }
         if (instance && beaconId) {
             var cached = instance.$$eventCached || (instance.$$eventCached = {});
             for (var name in props) {
@@ -2614,6 +2611,7 @@ var React = getWindow().React = {
     createElement: createElement,
     createFactory: createFactory,
     PureComponent: PureComponent,
+    isValidElement: isValidElement,
     toClass: miniCreateClass,
     useComponent: useComponent,
     registerComponent: registerComponent,

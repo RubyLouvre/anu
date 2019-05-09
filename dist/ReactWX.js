@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-09T05
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-09T08
  * IE9+
  */
 
@@ -909,18 +909,13 @@ var more = function more(api) {
         getStorage: function getStorage(_ref) {
             var key = _ref.key,
                 success = _ref.success,
-                _fail = _ref.fail,
                 complete = _ref.complete;
             return api.getStorage({
                 key: key,
                 complete: complete,
                 success: success,
                 fail: function fail(e) {
-                    if (/fail(:|\s)data\snot\sfound/.test(e.errMsg)) {
-                        success && success({});
-                    } else {
-                        _fail && _fail(e);
-                    }
+                    success && success({});
                 }
             });
         }
@@ -2405,9 +2400,6 @@ var Renderer$1 = createRenderer({
             lastProps = fiber.lastProps;
         var beaconId = props['data-beacon-uid'];
         var instance = fiber._owner;
-        if (instance && !instance.renderImpl && !instance.classUid) {
-            instance = get(instance)._owner;
-        }
         if (instance && beaconId) {
             var cached = instance.$$eventCached || (instance.$$eventCached = {});
             for (var name in props) {
@@ -2718,6 +2710,7 @@ var React = getWindow().React = {
     createElement: createElement,
     createFactory: createFactory,
     PureComponent: PureComponent,
+    isValidElement: isValidElement,
     createContext: createContext,
     useState: useState,
     useEffect: useEffect,

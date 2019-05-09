@@ -55,7 +55,7 @@ let React = getWindow().React =  {
     createFactory,
    // cloneElement,
     PureComponent,
-   // isValidElement,
+    isValidElement,
     createContext,
     useState, 
     useEffect, 

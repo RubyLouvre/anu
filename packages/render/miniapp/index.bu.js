@@ -48,7 +48,7 @@ let React = (getWindow().React = {
     webview,
     Fragment,
     PropTypes,
-   // Children,
+    // Children,
     Component,
    // createPortal,
     createContext,
@@ -56,7 +56,7 @@ let React = (getWindow().React = {
     createFactory,
    // cloneElement,
     PureComponent,
-   // isValidElement,
+    isValidElement,
 
     toClass: miniCreateClass,
     useComponent,
