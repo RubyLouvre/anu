@@ -2,10 +2,8 @@ import { Children } from 'react-core/Children';
 import { PropTypes } from 'react-core/PropTypes';
 import { Component } from 'react-core/Component';
 import { PureComponent } from 'react-core/PureComponent';
-import { createPortal } from 'react-core/createPortal';
 import {
     createElement,
-    cloneElement,
     isValidElement,
     createFactory
 } from 'react-core/createElement';
@@ -19,7 +17,6 @@ import { Renderer } from './render.all';
 
 import { toStyle } from './toStyle';
 import { 
-    toRenderProps, 
     _getApp , 
     getCurrentPage, 
     _getCurrentPages, 
@@ -30,6 +27,13 @@ import { more } from './apiForBaidu/index';
 
 import { registerComponent } from './registerComponent.bu';
 import { registerPage } from './registerPage.wx';
+import { 
+    useState,
+    useReducer, 
+    useCallback,
+    useMemo,
+    useEffect, 
+    useContext } from 'react-core/hooks';
 
 let { render } = Renderer;
 
@@ -49,25 +53,31 @@ let React = (getWindow().React = {
     webview,
     Fragment,
     PropTypes,
-    Children,
+    // Children,
     Component,
-    createPortal,
+   // createPortal,
     createContext,
     createElement,
     createFactory,
-    cloneElement,
+   // cloneElement,
     PureComponent,
     isValidElement,
 
     toClass: miniCreateClass,
-    toRenderProps,
-    useComponent,
+    
     registerComponent,
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
     registerPage,
     toStyle,
+    useState,
+    useReducer, 
+    useCallback,
+    useMemo,
+    useEffect, 
+    useContext,
+    useComponent,
     appType: 'bu'
 });
 let apiContainer = {};

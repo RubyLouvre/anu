@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-03-24
+ * 运行于快应用的React by 司徒正美 Copyright 2019-05-09
  */
 
 var arrayPush = Array.prototype.push;
@@ -245,29 +245,6 @@ function createElement(type, config) {
     }
     props = makeProps(type, config || {}, props, children, argsLen);
     return ReactElement(type, tag, props, key, ref, Renderer.currentOwner);
-}
-function cloneElement(element, config) {
-    var props = Object.assign({}, element.props);
-    var type = element.type;
-    var key = element.key;
-    var ref = element.ref;
-    var tag = element.tag;
-    var owner = element._owner;
-    for (var _len2 = arguments.length, children = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
-        children[_key2 - 2] = arguments[_key2];
-    }
-    var argsLen = children.length;
-    if (config != null) {
-        if (hasValidRef(config)) {
-            ref = config.ref;
-            owner = Renderer.currentOwner;
-        }
-        if (hasValidKey(config)) {
-            key = '' + config.key;
-        }
-    }
-    props = makeProps(type, config || {}, props, children, argsLen);
-    return ReactElement(type, tag, props, key, ref, owner);
 }
 function createFactory(type) {
     var factory = createElement.bind(null, type);
@@ -543,15 +520,6 @@ var PureComponent = miniCreateClass(function PureComponent() {
     }
 });
 
-function AnuPortal(props) {
-    return props.children;
-}
-function createPortal(children, parent) {
-    var child = createElement(AnuPortal, { children: children, parent: parent });
-    child.isPortal = true;
-    return child;
-}
-
 var MAX_NUMBER = 1073741823;
 function createContext(defaultValue, calculateChangedBits) {
     if (calculateChangedBits == void 0) {
@@ -613,7 +581,7 @@ function createContext(defaultValue, calculateChangedBits) {
     });
     function getContext(fiber) {
         while (fiber.return) {
-            if (fiber.name == 'Provider') {
+            if (fiber.type == Provider) {
                 return instance.value;
             }
             fiber = fiber.return;
@@ -643,8 +611,8 @@ function dispatchEvent(e) {
         return;
     }
     var eventType = toLowerCase(e._type || e.type);
-    var target = e.target;
-    var dataset = target.dataset || getDataSetFromAttr(target._attr || target.attr);
+    var target = e.currentTarget || e.target;
+    var dataset = target.dataset || getDataSetFromAttr(target.attr || target._attr);
     var app = this.$app.$def;
     var eventUid = dataset[eventType + 'Uid'];
     var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
@@ -661,7 +629,7 @@ function dispatchEvent(e) {
     }
     var safeTarget = {
         dataset: dataset,
-        nodeName: target._nodeName || target.nodeName,
+        nodeName: target._nodeName || target.nodeName || target.type,
         value: e.value
     };
     Renderer.batchedUpdates(function () {
@@ -792,7 +760,7 @@ function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    delete props.is;
+    clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
     }
@@ -818,9 +786,6 @@ function safeClone(originVal) {
         }
     }
     return temp;
-}
-function toRenderProps() {
-    return null;
 }
 
 var HTTP_OK_CODE = 200;
@@ -920,9 +885,7 @@ function request(_ref6) {
         if (dataType === JSON_TYPE_STRING) {
             try {
                 data = JSON.parse(data);
-            } catch (error) {
-                return fail(error);
-            }
+            } catch (error) {}
         }
         success({
             statusCode: statusCode,
@@ -969,15 +932,14 @@ function setStorage(_ref) {
 }
 function getStorage(_ref2) {
     var key = _ref2.key,
-        success = _ref2.success,
+        _success = _ref2.success,
         fail = _ref2.fail,
         complete = _ref2.complete;
-    function dataObj(data) {
-        success({
-            data: saveParse(data)
-        });
-    }
-    storage.get({ key: key, success: dataObj, fail: fail, complete: complete });
+    storage.get({ key: key, success: function success(data) {
+            _success({
+                data: saveParse(data)
+            });
+        }, fail: fail, complete: complete });
 }
 function removeStorage(obj) {
     storage.delete(obj);
@@ -1173,19 +1135,17 @@ function getNetworkType(_ref) {
     var success = _ref.success,
         fail = _ref.fail,
         complete = _ref.complete;
-    function networkTypeGot(_ref2) {
-        var networkType = _ref2.type;
-        success({ networkType: networkType });
-    }
     network.getType({
-        success: networkTypeGot,
+        success: function networkTypeGot(res) {
+            success({ networkType: res.type });
+        },
         fail: fail,
         complete: complete
     });
 }
 function onNetworkStatusChange(callback) {
-    function networkChanged(_ref3) {
-        var networkType = _ref3.type;
+    function networkChanged(_ref2) {
+        var networkType = _ref2.type;
         var connectedTypes = ['wifi', '4g', '3g', '2g'];
         callback({
             isConnected: connectedTypes.includes(networkType),
@@ -1207,57 +1167,35 @@ function setNavigationBarTitle(_ref) {
 }
 
 var device = require('@system.device');
-var DEFAULT_FONT_SIZE = 14;
-function getSystemInfo(options) {
-    if (!options) {
-        console.error('参数格式错误');
-        return;
-    }
-    var success = options.success,
-        fail = options.fail,
-        complete = options.complete;
-    function gotSuccessInfo(_ref) {
-        var brand = _ref.brand,
-            manufacturer = _ref.manufacturer,
-            model = _ref.model,
-            product = _ref.product,
-            osType = _ref.osType,
-            osVersionName = _ref.osVersionName,
-            osVersionCode = _ref.osVersionCode,
-            platformVersionName = _ref.platformVersionName,
-            platformVersionCode = _ref.platformVersionCode,
-            language = _ref.language,
-            region = _ref.region,
-            screenWidth = _ref.screenWidth,
-            screenHeight = _ref.screenHeight,
-            windowWidth = _ref.windowWidth,
-            windowHeight = _ref.windowHeight,
-            screenDensity = _ref.screenDensity;
-        success && success({
-            pixelRatio: screenDensity,
-            brand: brand,
-            model: model,
-            screenWidth: screenWidth,
-            screenHeight: screenHeight,
-            windowWidth: windowWidth,
-            windowHeight: windowHeight,
-            statusBarHeight: 0,
-            language: language,
-            version: platformVersionCode,
-            system: osVersionCode,
-            platform: platformVersionName,
-            fontSizeSetting: DEFAULT_FONT_SIZE,
-            SDKVersion: platformVersionCode
-        });
-    }
+var mapNames = {
+    osVersionName: 'version',
+    osVersionCode: 'system',
+    platformVersionName: 'platform',
+    platformVersionCode: 'SDKVersion'
+};
+function getSystemInfo(_ref) {
+    var _success = _ref.success,
+        fail = _ref.fail,
+        complete = _ref.complete;
     device.getInfo({
-        success: gotSuccessInfo,
+        success: function success(rawObject) {
+            var result = {
+                fontSizeSetting: 14
+            };
+            for (var name in rawObject) {
+                result[mapNames[name] || name] = rawObject[name];
+            }
+            _success && _success(result);
+        },
         fail: fail,
         complete: complete
     });
 }
 function getDeviceId(options) {
-    device.getDeviceId(options);
+    return device.getDeviceId(options);
+}
+function getUserId(options) {
+    return device.getUserId(options);
 }
 
 function chooseImage(_ref) {
@@ -1325,18 +1263,10 @@ function showModal(obj) {
 }
 function showToast(obj) {
     obj.message = obj.title;
-    obj.duration = obj.duration / 1000;
-    var success = obj.success || noop,
-        fail = obj.fail || noop,
-        complete = obj.complete || noop;
-    try {
+    obj.duration = obj.duration / 1000 >= 1 ? 1 : 0;
+    runCallbacks(function () {
         prompt.showToast(obj);
-        success();
-    } catch (err) {
-        fail(err);
-    } finally {
-        complete();
-    }
+    }, obj.success, obj.fail, obj.complete);
 }
 function showActionSheet(obj) {
     prompt.showContextMenu(obj);
@@ -1347,8 +1277,8 @@ function showLoading(obj) {
     prompt.showToast(obj);
 }
 
+var shortcut = require('@system.shortcut');
 function createShortcut() {
-    var shortcut = require('@system.shortcut');
     shortcut.hasInstalled({
         success: function success(ok) {
             if (ok) {
@@ -1359,49 +1289,93 @@ function createShortcut() {
                         showToast({ title: '成功创建桌面图标' });
                     },
                     fail: function fail(errmsg, errcode) {
-                        showToast({ title: 'error: ' + errcode + '---' + errmsg });
+                        if (errcode === 200) {
+                            showToast({ title: '请打开系统授权后再试' });
+                            return;
+                        }
+                        console.log(errcode, errmsg);
                     }
                 });
             }
         }
     });
 }
+function shortcutInstall(obj) {
+    return shortcut.install(obj);
+}
+function hasInstalled(obj) {
+    return shortcut.hasInstalled(obj);
+}
+
+var push = require('@service.push');
+function getPushProvider() {
+    return push.getProvider();
+}
+function subscribe(obj) {
+    return push.subscribe(obj);
+}
+function unsubscribe(obj) {
+    return push.unsubscribe(obj);
+}
+function pushOn(obj) {
+    return push.on(obj);
+}
+function pushOff() {
+    return push.off();
+}
 
 var router = require('@system.router');
+var rQuery = /\?(.*)/;
+function getQueryFromUri(uri, query) {
+    return uri.replace(rQuery, function (a, b) {
+        b.split('&').forEach(function (param) {
+            param = param.split('=');
+            query[param[0]] = param[1];
+        });
+        return '';
+    });
+}
 function createRouter(name) {
     return function (obj) {
         var href = obj ? obj.url || obj.uri || '' : '';
         var uri = href.slice(href.indexOf('/pages') + 1);
-        var webViewUrls = {};
-        var webViewRoute = '';
+        var params = {};
         var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
         if (urlReg.test(href)) {
-            webViewRoute = href;
-        } else {
-            try {
-                webViewUrls = require('./webviewConfig.js');
-                webViewRoute = webViewUrls[uri];
-            } catch (err) {
-            }
-        }
-        if (webViewRoute) {
             var webview = require('@system.webview');
             webview.loadUrl({
-                url: webViewRoute,
+                url: href,
                 allowthirdpartycookies: true
             });
             return;
         }
-        var params = {};
-        uri = uri.replace(/\?(.*)/, function (a, b) {
-            b.split('&').forEach(function (param) {
-                param = param.split('=');
-                params[param[0]] = param[1];
-            });
-            return '';
-        }).replace(/\/index$/, '');
+        if (process.env.ANU_WEBVIEW) {
+            var webViewRoutes = {};
+            try {
+                webViewRoutes = require('./webviewConfig.js');
+                var effectPath = uri.split('?')[0];
+                if (webViewRoutes[effectPath]) {
+                    var config = webViewRoutes[effectPath];
+                    params = {
+                        src: config.src || '',
+                        allowthirdpartycookies: config.allowthirdpartycookies || false,
+                        trustedurl: config.trustedurl || []
+                    };
+                }
+            } catch (err) {
+            }
+            if (webViewRoutes[uri.split('?')[0]]) {
+                uri = '/pages/__web__view__';
+            }
+        }
+        uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
         if (uri.charAt(0) !== '/') {
             uri = '/' + uri;
+        }
+        if (typeof getApp !== 'undefined') {
+            var globalData = getApp().globalData;
+            var queryObject = globalData.__quickQuery || (globalData.__quickQuery = {});
+            queryObject[uri] = params;
         }
         router[name]({
             uri: uri,
@@ -1508,7 +1482,7 @@ function stopPullDownRefresh() {
         success = _ref.success,
         fail = _ref.fail,
         complete = _ref.complete;
-    runCallbacks(function () {}, success, fail, complete);
+    runCallbacks(Number, success, fail, complete);
 }
 var facade = {
     showModal: showModal,
@@ -1569,12 +1543,16 @@ function more() {
         initStorageSync: initStorageSync,
         createShortcut: createShortcut,
         share: share,
+        hasInstalled: hasInstalled,
+        shortcutInstall: shortcutInstall,
+        getPushProvider: getPushProvider, subscribe: subscribe, unsubscribe: unsubscribe, pushOn: pushOn, pushOff: pushOff,
         pay: pay,
         getProvider: getProvider,
         wxpayGetType: wxpayGetType,
         wxpay: wxpay,
         alipay: alipay,
-        getDeviceId: getDeviceId
+        getDeviceId: getDeviceId,
+        getUserId: getUserId
     };
 }
 
@@ -1643,7 +1621,10 @@ var noPromiseApis = {
   arrayBufferToBase64: true,
   base64ToArrayBuffer: true,
   getUpdateManager: true,
-  createWorker: true
+  createWorker: true,
+  getPushProvider: true,
+  getProvider: true,
+  canvasToTempFilePath: true
 };
 var otherApis = {
   uploadFile: true,
@@ -1736,7 +1717,6 @@ var otherApis = {
   hideTabBar: true,
   setTopBarText: true,
   startPullDownRefresh: true,
-  canvasToTempFilePath: true,
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,
@@ -1770,12 +1750,13 @@ function promisefyApis(ReactWX, facade, more) {
         var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
             ReactWX.api[key] = function (options) {
-                options = options || {};
-                if (options + '' === options) {
-                    return needWrapper(options);
+                var args = [].slice.call(arguments);
+                if (!options || Object(options) !== options) {
+                    return needWrapper.apply(facade, args);
                 }
                 var task = null;
                 var obj = Object.assign({}, options);
+                args[0] = obj;
                 var p = new Promise(function (resolve, reject) {
                     ['fail', 'success', 'complete'].forEach(function (k) {
                         obj[k] = function (res) {
@@ -1794,7 +1775,7 @@ function promisefyApis(ReactWX, facade, more) {
                     if (needWrapper === noop) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
-                        task = needWrapper(obj);
+                        task = needWrapper.apply(facade, args);
                     }
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
@@ -1824,6 +1805,10 @@ function promisefyApis(ReactWX, facade, more) {
 function registerAPIsQuick(ReactWX, facade, override) {
     ReactWX.api = {};
     promisefyApis(ReactWX, facade, override(facade));
+}
+
+function AnuPortal(props) {
+    return props.children;
 }
 
 function UpdateQueue() {
@@ -2064,6 +2049,89 @@ function detachFiber(fiber, effects$$1) {
     for (var child = fiber.child; child; child = child.sibling) {
         detachFiber(child, effects$$1);
     }
+}
+
+function setter(compute, cursor, value) {
+    this.updateQueue[cursor] = compute(cursor, value);
+    Renderer.updateComponent(this, true);
+}
+var hookCursor = 0;
+function resetCursor() {
+    hookCursor = 0;
+}
+function getCurrentKey() {
+    var key = hookCursor + 'Hook';
+    hookCursor++;
+    return key;
+}
+function useContext(getContext) {
+    if (isFn(getContext)) {
+        var fiber = getCurrentFiber();
+        var context = getContext(fiber);
+        var list = getContext.subscribers;
+        if (list.indexOf(fiber) === -1) {
+            list.push(fiber);
+        }
+        return context;
+    }
+    return null;
+}
+function useReducerImpl(reducer, initValue, initAction) {
+    var fiber = getCurrentFiber();
+    var key = getCurrentKey();
+    var updateQueue = fiber.updateQueue;
+    var compute = reducer ? function (cursor, action) {
+        return reducer(updateQueue[cursor], action || { type: Math.random() });
+    } : function (cursor, value) {
+        var novel = updateQueue[cursor];
+        return typeof value == 'function' ? value(novel) : value;
+    };
+    var dispatch = setter.bind(fiber, compute, key);
+    if (key in updateQueue) {
+        delete updateQueue.isForced;
+        return [updateQueue[key], dispatch];
+    }
+    var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
+    return [value, dispatch];
+}
+function useCallbackImpl(create, deps, isMemo) {
+    var fiber = getCurrentFiber();
+    var key = getCurrentKey();
+    var updateQueue = fiber.updateQueue;
+    var nextInputs = Array.isArray(deps) ? deps : [create];
+    var prevState = updateQueue[key];
+    if (prevState) {
+        var prevInputs = prevState[1];
+        if (areHookInputsEqual(nextInputs, prevInputs)) {
+            return prevState[0];
+        }
+    }
+    var value = isMemo ? create() : create;
+    updateQueue[key] = [value, nextInputs];
+    return value;
+}
+function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
+    var fiber = getCurrentFiber();
+    var cb = useCallbackImpl(create, deps);
+    if (fiber.effectTag % EffectTag) {
+        fiber.effectTag *= EffectTag;
+    }
+    var updateQueue = fiber.updateQueue;
+    var list = updateQueue[createList] || (updateQueue[createList] = []);
+    updateQueue[destroyList] || (updateQueue[destroyList] = []);
+    list.push(cb);
+}
+function getCurrentFiber() {
+    return get(Renderer.currentOwner);
+}
+function areHookInputsEqual(arr1, arr2) {
+    for (var i = 0; i < arr1.length; i++) {
+        if (Object.is(arr1[i], arr2[i])) {
+            continue;
+        }
+        return false;
+    }
+    return true;
 }
 
 function getInsertPoint(fiber) {
@@ -2327,6 +2395,7 @@ function updateClassComponent(fiber, info) {
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     var rendered = applyCallback(instance, 'render', []);
+    resetCursor();
     diffChildren(fiber, rendered);
     Renderer.onAfterRender(fiber);
 }
@@ -3044,9 +3113,6 @@ var Renderer$1 = createRenderer({
             lastProps = fiber.lastProps;
         var beaconId = props['data-beacon-uid'];
         var instance = fiber._owner;
-        if (instance && !instance.classUid) {
-            instance = get(instance)._owner;
-        }
         if (instance && beaconId) {
             var cached = instance.$$eventCached || (instance.$$eventCached = {});
             for (var name in props) {
@@ -3079,8 +3145,7 @@ var Renderer$1 = createRenderer({
             if (!instance.instanceUid) {
                 instance.instanceUid = uuid;
             }
-            var wxInstances = type.wxInstances;
-            if (wxInstances) {
+            if (type.isMPComponent) {
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
@@ -3092,7 +3157,7 @@ var Renderer$1 = createRenderer({
                 instance: instance,
                 fn: instance.componentDidMount
             });
-            instance.componentDidMount = Date;
+            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -3200,7 +3265,7 @@ function toStyle(obj, props, key) {
 }
 
 function registerComponent(type, name) {
-    type.wxInstances = {};
+    type.isMPComponent = true;
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
     return {
@@ -3261,7 +3326,6 @@ function onUnload() {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }
@@ -3283,67 +3347,98 @@ function onUnload() {
 }
 
 var globalHooks = {
-  onShareAppMessage: 'onGlobalShare',
-  onShow: 'onGlobalShow',
-  onHide: 'onGlobalHide'
+    onShareAppMessage: 'onGlobalShare',
+    onShow: 'onGlobalShow',
+    onHide: 'onGlobalHide'
 };
-function getUrlAndQuery(page) {
-  var path = page.path;
-  var query = {};
-  String(page.uri).replace(/\?(.*)/, function (a, b) {
-    b.split('&').forEach(function (param) {
-      param = param.split('=');
-      query[param[0]] = param[1];
-    });
-    return '';
-  });
-  return [path, query];
+function getQuery(wx, huaweiHack) {
+    var page = wx.$page;
+    if (page.query) {
+        return page.query;
+    }
+    var query = {};
+    if (page.uri) {
+        getQueryFromUri(page.uri, query);
+        for (var i in query) {
+            return query;
+        }
+    }
+    if (huaweiHack && Object.keys(huaweiHack).length) {
+        for (var _i in huaweiHack) {
+            query[_i] = wx[_i];
+        }
+        return query;
+    }
+    var data = _getApp().globalData;
+    return data && data.__quickQuery && data.__quickQuery[page.path] || query;
 }
-function registerPage(PageClass) {
-  PageClass.reactInstances = [];
-  var config = {
-    private: {
-      props: Object,
-      context: Object,
-      state: Object
-    },
-    dispatchEvent: dispatchEvent,
-    onInit: function onInit() {
-      var $app = this.$app;
-      var array = getUrlAndQuery(this.$page);
-      var instance = onLoad.call(this, PageClass, array[0], array[1]);
-      var pageConfig = instance.config || PageClass.config;
-      $app.$$pageConfig = pageConfig && Object.keys(pageConfig).length ? pageConfig : null;
-    },
-    onReady: onReady,
-    onDestroy: onUnload
-  };
-  Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
-    config[hook] = function (e) {
-      var instance = this.reactInstance;
-      var fn = instance[hook];
-      var app = _getApp();
-      if (hook === 'onShow') {
-        app.$$page = instance.wx;
-        app.$$pagePath = instance.props.path;
-      }
-      if (hook === 'onMenuPress') {
-        app.onShowMenu && app.onShowMenu(instance, this.$app);
-      } else if (isFn(fn)) {
-        fn.call(instance, e);
-      }
-      var globalHook = globalHooks[hook];
-      if (globalHook) {
-        callGlobalHook(globalHook, e);
-      }
+function registerPage(PageClass, path) {
+    PageClass.reactInstances = [];
+    var queryObject = PageClass.protected || emptyObject;
+    var config = {
+        private: {
+            props: Object,
+            context: Object,
+            state: Object
+        },
+        protected: queryObject,
+        dispatchEvent: dispatchEvent,
+        onInit: function onInit() {
+            var app = this.$app;
+            var instance = onLoad.call(this, PageClass, path, getQuery(this, queryObject));
+            var pageConfig = PageClass.config || instance.config || emptyObject;
+            app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
+        },
+        onReady: onReady,
+        onDestroy: onUnload
     };
-  });
-  return config;
+    Array('onShow', 'onHide', 'onMenuPress', "onBackPress").forEach(function (hook) {
+        config[hook] = function (e) {
+            var instance = this.reactInstance,
+                fn = instance[hook],
+                app = _getApp(),
+                param = e;
+            if (hook === 'onShow') {
+                param = instance.props.query = getQuery(this, queryObject);
+                app.$$page = instance.wx;
+                app.$$pagePath = instance.props.path;
+            }
+            if (hook === 'onMenuPress') {
+                app.onShowMenu && app.onShowMenu(instance, this.$app);
+            } else if (isFn(fn)) {
+                var ret = fn.call(instance, param);
+                if (ret !== void 0) {
+                    return ret;
+                }
+            }
+            var globalHook = globalHooks[hook];
+            if (globalHook) {
+                callGlobalHook(globalHook, param);
+            }
+        };
+    });
+    return config;
+}
+
+function useState(initValue) {
+    return useReducerImpl(null, initValue);
+}
+function useReducer(reducer, initValue, initAction) {
+    return useReducerImpl(reducer, initValue, initAction);
+}
+function useEffect(create, deps) {
+    return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
+}
+function useCallback(create, deps) {
+    return useCallbackImpl(create, deps);
+}
+function useMemo(create, deps) {
+    return useCallbackImpl(create, deps, true);
 }
 
 var appMethods = {
     onLaunch: 'onCreate',
-    onHide: 'onDestory'
+    onHide: 'onDestroy'
 };
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
@@ -3358,24 +3453,26 @@ var React = getWindow().React = {
     hydrate: render$1,
     Fragment: Fragment,
     PropTypes: PropTypes,
-    Children: Children,
     Component: Component,
-    createPortal: createPortal,
     createElement: createElement,
     createFactory: createFactory,
-    cloneElement: cloneElement,
     PureComponent: PureComponent,
     isValidElement: isValidElement,
     createContext: createContext,
     toClass: miniCreateClass,
-    toRenderProps: toRenderProps,
-    useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
     registerPage: registerPage,
     toStyle: toStyle,
+    useState: useState,
+    useReducer: useReducer,
+    useCallback: useCallback,
+    useMemo: useMemo,
+    useEffect: useEffect,
+    useContext: useContext,
+    useComponent: useComponent,
     appType: 'quick',
     registerApp: function registerApp(demo) {
         var app = {};

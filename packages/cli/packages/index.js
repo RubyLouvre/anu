@@ -81,8 +81,8 @@ class Parser {
         this.entry = entry;
         this.jsFiles = [];
         this.styleFiles = [];
-        this.webViewFiles = [];
         this.npmFiles = [];
+        this.webViewRoutes = [];
         this.depTree = {};
         this.collectError = {
             //样式@import引用错误, 如page中引用component样式
@@ -168,10 +168,9 @@ class Parser {
             onwarn: warning => {
                 //warning.importer 缺失依赖文件路径
                 //warning.source   依赖的模块名
+                
                 if (warning.code === 'UNRESOLVED_IMPORT') {
-                    let key = warning.source.split(path.sep)[0];
-                    if (this.customAliasConfig[key]) return;
-                    console.log(chalk.red(`缺少运行依赖模块: ${key}, 请安装.`));
+                    console.log(warning);
                     process.exit(1);
                 }
             }
@@ -199,6 +198,8 @@ class Parser {
             console.log(chalk.green('缺少补丁组件, 正在安装, 请稍候...'));
             utils.installer('schnee-ui');
         }
+
+       
 
         //校验是否需要安装快应用hap-toolkit工具
         if (this.needInstallHapToolkit()) {
@@ -229,6 +230,7 @@ class Parser {
         });
 
         this.check();
+        this.updateWebViewRoutes(this.webViewRoutes);
         await this.transform();
         generate();
         timer.end();
@@ -292,7 +294,7 @@ class Parser {
                 this.checkImportComponent(data);
 
                 if (utils.isWebView(data.id)) {
-                    this.webViewFiles.push({
+                    this.webViewRoutes.push({
                         id: data.id
                     });
                 } else {
@@ -306,27 +308,48 @@ class Parser {
     }
 
     checkImportComponent(item){
-        // const path = item.id;
-        const componentsDir = path.join(cwd, config.sourceDir, 'components');
-        // 如果是 components 中的组件需要校验
-        if (item.id.indexOf(componentsDir) === 0) {
-            const restComponentsPath = item.id.replace(componentsDir, '');
-            if (!/^(\/|\\)[A-Z][a-zA-Z0-9]*(\/|\\)index\.js/.test(restComponentsPath)) {
-                this.collectError.componentsStandardError.push({
-                    id: item.id,
-                    level: 'error',
-                    msg: item.id.replace(`${cwd}${path.sep}`, '')
-                        + '\n组件名必须首字母大写\nimport [组件名] from \'@components/[组件名]/[此处必须index]\''
-                        + '\neg. import Loading from \'@components/Loading/index\'\n'
-                });
-            }
-        }
+        let importList = item.code.match(/^(?:import)\s+([^;]+)/igm) || [];
+      
+        importList = importList.filter((importer)=>{
+            return /[\/|@]components\//.test(importer);
+        });
+
+        importList.forEach((importer)=>{
+             // import Welcome from '@components/Welcome/index' => ['Welcome', '@components/Welcome/index']
+             // import Welcome, {xxx, yyy } from '@components/Welcome/index' => ['Welcome', '@components/Welcome/index']
+             // import Layout, { GlobalTheme } from '@components/Layout/index'
+             let arr = importer.split(/\s+|,|\{|\}/).filter(function(el){
+                  return !(el == '' || el === 'from' || el === 'import')
+             })
+            
+             let importName = arr.shift();
+             let segments = arr.pop().match(/\w+/g);
+             let fileName = segments.pop();
+              // @components/Welcome/index ==》Welcome
+             let folderName = segments.pop();
+             let msg = '';
+             if ( fileName!='index' ) {
+                 msg = '组件文件名必须是index';
+                 msg += `\nerror at: ${importer}`
+             } else if ( importName != folderName){
+                 msg = '引用的组件名必须和组件所在的文件夹名保持一致'
+                      + `\n例如: import ${folderName} from \'@components/${folderName}/index\'`;
+                 msg += `\nerror at: ${item.id}`
+             }
+
+             if (!msg) return;
+             
+             this.collectError.componentsStandardError.push({
+                 id: item.id,
+                 level: 'error',
+                 msg: msg
+             });
+        });
     }
     async transform() {
+       
         await this.updateJsQueue(this.jsFiles);
-        this.updateWebViewRoutes(this.webViewFiles);
         await this.updateStyleQueue(this.styleFiles);
-        
     }
     check() {
         let errorMsg = '';
@@ -480,7 +503,7 @@ class Parser {
     watching() {
         let watchDir = path.dirname(this.entry);
         let watchConfig = {
-            ignored: /\.DS_Store|\.gitignore|\.git/,
+            ignored: /(\.DS_Store|\.gitignore|\.git|\.json$)/,
             awaitWriteFinish: {
                 stabilityThreshold: 700,
                 pollInterval: 100

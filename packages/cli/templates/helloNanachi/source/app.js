@@ -1,12 +1,13 @@
 import React from '@react';
 import './pages/index/index';
 class Global extends React.Component {
+    globalData = {}
     config = {
         window: {
             navigationBarBackgroundColor: '#00afc7',
             backgroundTextStyle: 'light',
             navigationBarTitleText: 'nanachi',
-            navigationBarTextStyle: '#00afc7'
+            navigationBarTextStyle: 'white'
         }
     };
     onLaunch() {
@@ -14,6 +15,7 @@ class Global extends React.Component {
         if (this.$data && typeof global === 'object') {
             var ref = Object.getPrototypeOf(global) || global;
             var _this = this;
+            this.globalData = this.$def.globalData;
             ref.getApp = function() {
                 return _this;
             };

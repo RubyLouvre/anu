@@ -61,14 +61,16 @@ export var aliApis = function(api) {
             a.apFilePath = a.filePath;
             return api.getSavedFileInfo(a);
         },
+
         removeSavedFile: function _(a) {
             a.apFilePath = a.filePath;
             return api.removeSavedFile(a);
         },
+
         saveFile: function _(a) {
             a.apFilePath = a.tempFilePath;
-            let fn = a['success'];
-            a['success'] = res => {
+            let fn = a.success;
+            a.success = res => {
                 res.savedFilePath = res.apFilePath;
                 fn && fn(res);
             };
@@ -101,8 +103,8 @@ export var aliApis = function(api) {
         },
         // 下载
         downloadFile: function _(a) {
-            let fn = a['success'];
-            a['success'] = res => {
+            let fn = a.success;
+            a.success = res => {
                 res.tempFilePath = res.apFilePath;
                 fn && fn(res);
             };
@@ -110,8 +112,8 @@ export var aliApis = function(api) {
         },
         // 图片
         chooseImage: function _(a) {
-            let fn = a['success'];
-            a['success'] = res => {
+            let fn = a.success;
+            a.success = res => {
                 res.tempFilePaths = res.apFilePaths;
                 fn && fn(res);
             };
@@ -119,8 +121,8 @@ export var aliApis = function(api) {
         },
         // 剪切板
         getClipboardData: function _(a) {
-            let fn = a['success'];
-            a['success'] = res => {
+            let fn = a.success;
+            a.success = res => {
                 res.data = res.text;
                 fn && fn(res);
             };
@@ -140,8 +142,8 @@ export var aliApis = function(api) {
         scanCode: function _(a) {
             a.hideAlbum = a.onlyFromCamera;
             a.type = (a.scanType && a.scanType[0].slice(0, -4)) || 'qr';
-            let fn = a['success'];
-            a['success'] = res => {
+            let fn = a.success;
+            a.success = res => {
                 res.result = res.code;
                 fn && fn(res);
             };

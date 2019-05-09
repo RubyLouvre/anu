@@ -131,7 +131,17 @@ function setRouter(config) {
             manifest.router.entry = routePath;
         } 
     });
+  
+    //webview路由跳转
+    var globalConfig = require('../config');
+    if (globalConfig.webview && globalConfig.webview.pages.length) {
+        let routePath = 'pages/__web__view__';
+        manifest.router.pages[routePath] = {
+            component: 'index'
+        }
+    }
 }
+
 
 //配置titlebar
 function setTitleBar(config) {
@@ -141,6 +151,17 @@ function setTitleBar(config) {
         userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
     } catch (err) {
         // eslint-disable-next-line
+    }
+
+    //webview配置titlebar
+    var globalConfig = require('../config');
+
+    if ( globalConfig.webview && Object.prototype.toString.call(globalConfig.webview.showTitleBar) === '[object Boolean]' && !globalConfig.webview.showTitleBar ) {
+        let routePath = 'pages/__web__view__';
+        display['pages'] = display['pages'] || {};
+        display['pages'][routePath] = {
+            titleBar: false
+        }
     }
     
     if (
@@ -165,6 +186,9 @@ function setTitleBar(config) {
     display.titleBarText = win.navigationBarTitleText || 'nanachi';
     display.titleBarTextColor = win.navigationBarTextStyle || 'black';
     display.backgroundColor = win.navigationBarBackgroundColor || '#000000';
+
+    
+
 }
 
 //配置name, permissions, config, subpackages, 各支付签名
@@ -221,10 +245,12 @@ module.exports = function quickConfig(config, modules, queue){
 
     //配置titlebar
     setTitleBar(config);
-
+    if(platConfig.huawei){
+        manifest.minPlatformVersion = 1040;
+     }
     //配置name, permissions, config, subpackages, 各支付签名
     setOtherConfig();
-    
+    //manifest要序列化的对象
     queue.push({
         path: path.join(process.cwd(), 'src', 'manifest.json'),
         code: JSON.stringify(manifest, null, 4),

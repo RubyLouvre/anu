@@ -55,7 +55,7 @@ class P extends React.Component {
     exChangeCity() {
         this.setState({ exchangeStatus: !this.state.exchangeStatus });
     }
-    fun_tip() {
+    showTip() {
         React.api.showModal({
             title: '提示',
             content: '该部分仅展示，无具体功能!',
@@ -73,13 +73,13 @@ class P extends React.Component {
 
   render() {
       return (
-          <div className="ticket-page" style="{background-color: #feb64e}">
+          <div className="ticket-page" style="background-color: #feb64e">
               <image
                   className="sreach_bg"
                   mode="scaleToFill"
                   src="http://picbed.qunarzz.com/image/b96f82f01ef5850d50e93ea511f618fa.png"
               />
-              <div style="{top: -15px}" className="search-container  anu-block">
+              <div style="top: -15px" className="search-container anu-block">
                   <div className="citySelector">
                       <div onTap={this.toCitySelect.bind(this,true)} className="cityTap">
                           <text  className='depCityContent'>{this.state.depCity}</text>
@@ -126,16 +126,16 @@ class P extends React.Component {
                       />
                   </div>
 
-                  <text onTap={this.fun_tip} className="search-button">
+                  <text onTap={this.showTip} className="search-button">
             搜 索
                   </text>
 
                   <div className="actions-container">
-                      <div onTap={this.fun_tip} className="order-action">
+                      <div onTap={this.showTip} className="order-action">
                           <text className="action-text">我的订单</text>
                       </div>
                       <div className="seprator" />
-                      <div onTap={this.fun_tip} className="feedback-action">
+                      <div onTap={this.showTip} className="feedback-action">
                           <text className="action-text">咨询反馈</text>
                       </div>
                   </div>
@@ -143,7 +143,7 @@ class P extends React.Component {
 
               <div className="welfare-entrance">
                   <div className="welfare-content">
-                      <div onTap={this.fun_tip} className="welfare-action">
+                      <div onTap={this.showTip} className="welfare-action">
                           <image 
                               className="welfare-icon"
                               src="http://s.qunarzz.com/open_m_train/miniprogram/home_redpack.png"
@@ -151,7 +151,7 @@ class P extends React.Component {
                           <text className="action-text">优惠拼团</text>
                       </div>
                       <div className="seprator"></div>
-                      <div onTap={this.fun_tip} className="welfare-action">
+                      <div onTap={this.showTip} className="welfare-action">
                           <image 
                               className="welfare-icon"
                               src="http://s.qunarzz.com/open_m_train/miniprogram/home_welfare.png"

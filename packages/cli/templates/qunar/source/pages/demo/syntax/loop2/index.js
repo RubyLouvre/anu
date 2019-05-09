@@ -35,11 +35,14 @@ class P extends React.Component {
                 <div class="anu-block">
                     {this.state.trs.map(function(item) {
                         return (
-                            <div class="anu-line" >
+                            <div class="anu-line" > 
                                 {item.map(function(el) {
                                     return (
                                         <div class="loop2-cell" 
-                                            onClick={this.getData.bind(this, el)}>
+                                            key={el.title}
+                                            onClick={ (e) => {
+                                                this.getData(el, e);
+                                              } }>
                                             <Fish content={el.title} />
                                         </div>
                                     );

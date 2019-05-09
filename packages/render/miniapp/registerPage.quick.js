@@ -1,70 +1,90 @@
-import { isFn } from 'react-core/util'
+import { isFn, emptyObject } from 'react-core/util'
 import { dispatchEvent } from './eventSystem.quick'
 import { onLoad, onUnload, onReady } from './registerPage.all'
 import { callGlobalHook, _getApp } from './utils'
-// import { showMenu } from './apiForQuick/showMenu'
+import { getQueryFromUri } from './apiForQuick/router'
+
 var globalHooks = {
-  onShareAppMessage: 'onGlobalShare',
-  onShow: 'onGlobalShow',
-  onHide: 'onGlobalHide'
-}
-function getUrlAndQuery (page) {
-  var path = page.path
-  var query = {}
-  String(page.uri).replace(/\?(.*)/, function (a, b) {
-    b.split('&').forEach(function (param) {
-      param = param.split('=')
-      query[param[0]] = param[1]
-    })
-    return ''
-  })
-
-  return [path, query]
+    onShareAppMessage: 'onGlobalShare',
+    onShow: 'onGlobalShow',
+    onHide: 'onGlobalHide'
 }
 
-export function registerPage (PageClass) {
-  PageClass.reactInstances = []
-  let config = {
-    private: {
-      props: Object,
-      context: Object,
-      state: Object
-    },
-    dispatchEvent,
-    onInit() {
-      var $app = this.$app; // .$def || this.$app._def)
-      var array = getUrlAndQuery(this.$page)
-      var instance = onLoad.call(this, PageClass, array[0], array[1])
-      var pageConfig = instance.config || PageClass.config
-      $app.$$pageConfig =
-        pageConfig && Object.keys(pageConfig).length
-          ? pageConfig
-          : null
-    // $app.$$pagePath = array[0]
-    },
-    onReady: onReady,
-    onDestroy: onUnload
-  }
-  Array('onShow', 'onHide', 'onMenuPress').forEach(function (hook) {
-    config[hook] = function (e) {
-      let instance = this.reactInstance
-      let fn = instance[hook]
-      let app = _getApp()
-      if (hook === 'onShow') {
-        app.$$page = instance.wx
-        app.$$pagePath = instance.props.path
-      }
-      if (hook === 'onMenuPress') {
-        app.onShowMenu && app.onShowMenu(instance, this.$app)
-      } else if (isFn(fn)) {
-        fn.call(instance, e)
-      }
 
-      let globalHook = globalHooks[hook]
-      if (globalHook) {
-        callGlobalHook(globalHook, e)
-      }
+function getQuery(wx, huaweiHack) {
+    var page = wx.$page;
+    if (page.query) { //小米快应用新规范，this.$page.query 返回页面启动时的参数数据；
+        return page.query;
     }
-  })
-  return config
+    var query = {};
+    //小米快应用直接从page.uri中抽取参数
+    if (page.uri) {
+        getQueryFromUri(page.uri, query)
+        for (let i in query) {
+            return query;
+        }
+    }
+    //华为快应用从protected中抽取
+    if ( huaweiHack && Object.keys(huaweiHack).length) {
+        for (let i in huaweiHack) {
+            query[i] = wx[i];
+        }
+        return query;
+    }
+    //否则返回navigateTo/redirectTo/navigateBack中储存起来的参数
+    var data = _getApp().globalData;
+    return data && data.__quickQuery && data.__quickQuery[page.path] || query;
+}
+
+export function registerPage(PageClass, path) {
+    PageClass.reactInstances = []
+    var queryObject = PageClass.protected || emptyObject
+
+    let config = {
+        private: {
+            props: Object,
+            context: Object,
+            state: Object
+        },
+        //华为快应用拿不到上一个页面传过来的参数，在$page.uri拿不到，manifest.json加了filter也不行
+        protected: queryObject,
+        dispatchEvent,
+        onInit() {
+            let app = this.$app;
+            let instance = onLoad.call(this, PageClass, path, getQuery(this, queryObject));
+            let pageConfig = PageClass.config || instance.config || emptyObject;
+            app.$$pageConfig = Object.keys(pageConfig).length ?
+                pageConfig :
+                null;
+        },
+        onReady: onReady,
+        onDestroy: onUnload
+    }
+    Array('onShow', 'onHide', 'onMenuPress', "onBackPress").forEach(function(hook) {
+        config[hook] = function(e) {
+            let instance = this.reactInstance,
+                fn = instance[hook],
+                app = _getApp(),
+                param = e
+            if (hook === 'onShow') {
+                param = instance.props.query = getQuery(this, queryObject);
+                app.$$page = instance.wx;
+                app.$$pagePath = instance.props.path;
+            }
+            if (hook === 'onMenuPress') {
+                app.onShowMenu && app.onShowMenu(instance, this.$app);
+            } else if (isFn(fn)) {
+                var ret = fn.call(instance, param);
+                if (ret !== void 0) {
+                    return ret;
+                }
+            }
+
+            let globalHook = globalHooks[hook];
+            if (globalHook) {
+                callGlobalHook(globalHook, param);
+            }
+        }
+    })
+    return config
 }

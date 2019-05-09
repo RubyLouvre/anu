@@ -34,6 +34,7 @@ import './pages/demo/native/camera/index';
 
 import './pages/demo/syntax/index/index';
 import './pages/demo/syntax/stateless/index';
+import './pages/demo/syntax/hooks/index';
 import './pages/demo/syntax/loop/index';
 import './pages/demo/syntax/loop2/index';
 import './pages/demo/syntax/loop3/index';
@@ -41,7 +42,7 @@ import './pages/demo/syntax/loop4/index';
 import './pages/demo/syntax/loop5/index';
 import './pages/demo/syntax/webview/index';
 
-import './pages/demo/syntax/extend/index';
+import './pages/demo/syntax/hooks/index';
 import './pages/demo/syntax/inlineStyle/index';
 import './pages/demo/syntax/if/index';
 import './pages/demo/syntax/ifcom/index';
@@ -70,7 +71,7 @@ class Global extends React.Component {
 	        backgroundTextStyle: 'light',
 	        // navigationBarBackgroundColor: '#0088a4',
 	        navigationBarTitleText: 'mpreact',
-	        navigationBarTextStyle: '#fff'
+			navigationBarTextStyle: 'white'
 	    },
 	    tabBar: {
 	        color: '#929292',
@@ -80,25 +81,21 @@ class Global extends React.Component {
 	        list: [
 	            {
 	                pagePath: 'pages/index/index',
-	                iconPath: 'assets/image/homepage_normal.png',
-	                selectedIconPath: 'assets/image/homepage_select.png',
-	                text: '首页',
-	                name: 'Home',
-	                selected: true
+	                iconPath: '/assets/image/homepage_normal.png',
+	                selectedIconPath: '/assets/image/homepage_select.png',
+	                text: '首页'
 	            },
 	            {
 	                pagePath: 'pages/demo/question/index/index',
-	                iconPath: 'assets/image/question_normal.png',
-	                selectedIconPath: 'assets/image/question_select.png',
-	                text: '问答社区',
-	                name: 'questionAndAnswer'
+	                iconPath: '/assets/image/question_normal.png',
+	                selectedIconPath: '/assets/image/question_select.png',
+	                text: '问答社区'
 	            },
 	            {
 	                pagePath: 'pages/demo/userCenter/index',
-	                iconPath: 'assets/image/uc_normal.png',
-	                selectedIconPath: 'assets/image/uc_select.png',
-	                text: '我的',
-	                name: 'My'
+	                iconPath: '/assets/image/uc_normal.png',
+	                selectedIconPath: '/assets/image/uc_select.png',
+	                text: '我的'
 	            }
 	        ]
 	    }
@@ -187,11 +184,11 @@ class Global extends React.Component {
 	    //针对快应用的全局getApp补丁
 	    if (process.env.ANU_ENV === 'quick') {
 	        var ref = Object.getPrototypeOf(global) || global;
-	        var _this = this;
+			var _this = this;
+			this.globalData = this.$def.globalData;
 	        ref.getApp = function() {
 	            return _this;
 	        };
-	        this.globalData = this.$def.globalData;
 	    }
 		console.log('App launched'); //eslint-disable-line
 	}

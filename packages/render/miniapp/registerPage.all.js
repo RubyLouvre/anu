@@ -50,7 +50,6 @@ export function onUnload() {
         let a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances.length = 0;//不能为null
         }
         delete usingComponents[i];
     }   

@@ -2,12 +2,22 @@
 const babel = require('@babel/core');
 const t = require('@babel/types');
 const generate = require('@babel/generator').default;
+const beautify = require('js-beautify');
+//const he = require('he');//转义库
 const utils = require('../utils');
 const config = require('../config');
 const buildType = config.buildType;
-const attrNameHelper = require(`../${buildType}Helpers/attrName`);
-const attrValueHelper = require(`../${buildType}Helpers/attrValue`);
-const logicHelper = require(`../${buildType}Helpers/logic`);
+const helper = config[buildType].helpers
+const attrNameHelper = require(`../${helper}/attrName`);
+const attrValueHelper = require(`../${helper}/attrValue`);
+const logicHelper = require(`../${helper}/logic`);
+const chalk = require('chalk');
+
+function beautifyXml(code){
+    return beautify.html(code, {
+        indent: 4
+    });
+}
 
 const quickTextContainer = {
     text: 1,
@@ -37,17 +47,18 @@ function wxml(code, modules) {
             }
         ]
     });
-    return result.code.replace(/\\?(?:\\u)([\da-f]{4})/gi, function(a, b) {
-        return unescape(`%u${b}`);
+    var text = result.code.replace(/\\?(?:\\u)([\da-f]{4})/gi, function(a, b) {
+       return unescape(`%u${b}`);
     });
+    return beautifyXml(text).trim();
 }
 
 let visitor = {
     JSXOpeningElement: {
         exit: function(astPath) {
             let openTag = astPath.node.name;
-            if (openTag.type === 'JSXMemberExpression' && openTag.object.name === 'React') {
-                if (openTag.property.name === 'useComponent') {
+            if (openTag.type === 'JSXMemberExpression' ) {
+                if (openTag.object.name === 'React' && openTag.property.name === 'useComponent') {
                     let is, instanceUid;
                     let attributes = [];
                     astPath.node.attributes.forEach(function(el) {
@@ -79,27 +90,34 @@ let visitor = {
                     let template = utils.createElement(is, attributes, astPath.parentPath.node.children);
                     //将组件变成template标签
                     astPath.parentPath.replaceWith(template);
+                }else{
+                    let provider = utils.createElement('block', [], astPath.parentPath.node.children);
+                    //将组件变成template标签
+                     astPath.parentPath.replaceWith(provider);
                 }
             } 
         }
     },
     JSXAttribute(astPath, state) {
         let attrName = astPath.node.name.name;
-
+        let attrValue = astPath.node.value;
         if (attrName === 'key') {
-            let node = astPath.node.value;
             let value;
             let modules = utils.getAnu(state);
-            if (t.isStringLiteral(node)) {
-                value = node.value;
+            if (t.isStringLiteral(attrValue)) {
+                value = attrValue.value;
             } else {
-                value = generate(node.expression).code;
+                value = generate(attrValue.expression).code;
+                if((buildType === 'qq' || buildType === 'wx') && value.indexOf('+') > 0){
+                    var fixKey = value.replace(/\+.+/, '').trim();
+                    console.log(chalk.cyan(`微信/QQ小程序的key不支持加号表达式${value}-->${fixKey}`));
+                    value = fixKey;
+                }
             }
             modules.key = value;
             astPath.remove();
             return;
         }
-
         attrNameHelper(astPath, attrName, astPath.parentPath.node.name.name);
     },
     JSXText: {

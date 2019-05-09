@@ -10,7 +10,7 @@ let bsurl = url.bsurl;
 class Demo extends React.Component {
   config = {
       window: {
-          navigationBarTextStyle: '#fff',
+          navigationBarTextStyle: 'white',
           navigationBarTitleText: 'Music',
           backgroundColor: '#fbfcfd',
           navigationBarBackgroundColor: '#BB2C08'
@@ -41,6 +41,7 @@ class Demo extends React.Component {
       if (this.$data && typeof global === 'object') {
           var ref = Object.getPrototypeOf(global) || global;
           var _this = this;
+          this.globalData = this.$def.globalData;
           ref.getApp = function() {
               return _this;
           };
@@ -126,3 +127,4 @@ class Demo extends React.Component {
 
 // eslint-disable-next-line
 export default App(new Demo());
+

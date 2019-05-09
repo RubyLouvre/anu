@@ -3,7 +3,7 @@ import { dispatchEvent } from './eventSystem';
 const defer = Promise.resolve().then.bind(Promise.resolve());
 
 export function registerComponent (type, name) {
-    type.wxInstances = {};
+    type.isMPComponent = true;
     registeredComponents[name] = type;
     let reactInstances = type.reactInstances = [];
     let config = {
@@ -24,7 +24,10 @@ export function registerComponent (type, name) {
                     refreshComponent(reactInstances, wx, uuid);
                 });
             },
-            detached: detachComponent
+            detached: detachComponent,
+            error: function(e){
+                console.log(e, name)
+            }
         },
         methods: {
             dispatchEvent: dispatchEvent

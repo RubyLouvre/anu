@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-03-22
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-05-08
  */
 
 var arrayPush = Array.prototype.push;
@@ -709,7 +709,6 @@ function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    delete props.is;
     clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
@@ -736,9 +735,6 @@ function safeClone(originVal) {
         }
     }
     return temp;
-}
-function toRenderProps() {
-    return null;
 }
 
 var webview = {};
@@ -2060,8 +2056,7 @@ var Renderer$1 = createRenderer({
             if (!instance.instanceUid) {
                 instance.instanceUid = uuid;
             }
-            var wxInstances = type.wxInstances;
-            if (wxInstances) {
+            if (type.isMPComponent) {
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
@@ -2073,7 +2068,7 @@ var Renderer$1 = createRenderer({
                 instance: instance,
                 fn: instance.componentDidMount
             });
-            instance.componentDidMount = Date;
+            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -2230,7 +2225,10 @@ var noPromiseApis = {
   arrayBufferToBase64: true,
   base64ToArrayBuffer: true,
   getUpdateManager: true,
-  createWorker: true
+  createWorker: true,
+  getPushProvider: true,
+  getProvider: true,
+  canvasToTempFilePath: true
 };
 var otherApis = {
   uploadFile: true,
@@ -2323,7 +2321,6 @@ var otherApis = {
   hideTabBar: true,
   setTopBarText: true,
   startPullDownRefresh: true,
-  canvasToTempFilePath: true,
   canvasGetImageData: true,
   canvasPutImageData: true,
   getExtConfig: true,
@@ -2357,12 +2354,13 @@ function promisefyApis(ReactWX, facade, more) {
         var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
             ReactWX.api[key] = function (options) {
-                options = options || {};
-                if (options + '' === options) {
-                    return needWrapper(options);
+                var args = [].slice.call(arguments);
+                if (!options || Object(options) !== options) {
+                    return needWrapper.apply(facade, args);
                 }
                 var task = null;
                 var obj = Object.assign({}, options);
+                args[0] = obj;
                 var p = new Promise(function (resolve, reject) {
                     ['fail', 'success', 'complete'].forEach(function (k) {
                         obj[k] = function (res) {
@@ -2381,7 +2379,7 @@ function promisefyApis(ReactWX, facade, more) {
                     if (needWrapper === noop) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
-                        task = needWrapper(obj);
+                        task = needWrapper.apply(facade, args);
                     }
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
@@ -2440,12 +2438,12 @@ function registerAPIsQuick(ReactWX, facade, override) {
 var more = function more(api) {
     return {
         showActionSheet: function _(a) {
-            var success = a['success'],
-                complete = a['complete'];
-            a['success'] = function (res) {
+            var success = a.success,
+                complete = a.complete;
+            a.success = function (res) {
                 success && success({ index: res.tapIndex });
             };
-            a['complete'] = function (res) {
+            a.complete = function (res) {
                 complete && complete({ index: res.tapIndex });
             };
             return api.showActionSheet.apply(api, arguments);
@@ -2460,23 +2458,21 @@ var more = function more(api) {
             return api.showLoading(a);
         },
         setMetaDescription: function _(a) {
-            var empty = function empty(res) {};
             var defailt = {
                 content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
+                success: noop,
+                fail: noop,
+                complete: noop
             };
             var options = Object.assign(defailt, a);
             return api.setMetaDescription && api.setMetaDescription(options);
         },
         setMetaKeywords: function _(a) {
-            var empty = function empty(res) {};
             var defailt = {
                 content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
+                success: noop,
+                fail: noop,
+                complete: noop
             };
             var options = Object.assign(defailt, a);
             return api.setMetaKeywords && api.setMetaKeywords(options);
@@ -2492,9 +2488,9 @@ var more = function more(api) {
 };
 
 function registerComponent(type, name) {
+    type.isMPComponent = true;
     registeredComponents[name] = type;
     var reactInstances = type.reactInstances = [];
-    type.wxInstances = {};
     return {
         data: {
             props: {},
@@ -2551,7 +2547,6 @@ function onUnload() {
         var a = usingComponents[i];
         if (a.reactInstances.length) {
             a.reactInstances.length = 0;
-            a.wxInstances.length = 0;
         }
         delete usingComponents[i];
     }
@@ -2577,10 +2572,6 @@ var globalHooks = {
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
-var showHideHooks = {
-    onShow: 'componentDidShow',
-    onHide: 'componentDidHide'
-};
 function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     var config = {
@@ -2594,34 +2585,32 @@ function registerPage(PageClass, path, testObject) {
     };
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
         config[hook] = function (e) {
-            var instance = this.reactInstance;
-            var fn = instance[hook],
-                fired = false;
+            var instance = this.reactInstance,
+                fn = instance[hook],
+                param = e;
             if (hook === 'onShareAppMessage') {
                 hook = 'onShare';
                 fn = fn || instance[hook];
             } else if (hook === 'onShow') {
+                if (this.options) {
+                    instance.props.query = this.options;
+                }
+                param = instance.props.query;
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }
             if (isFn(fn)) {
-                fired = true;
-                var ret = fn.call(instance, e);
+                var ret = fn.call(instance, param);
                 if (hook === 'onShare') {
                     return ret;
                 }
             }
             var globalHook = globalHooks[hook];
             if (globalHook) {
-                ret = callGlobalHook(globalHook, e);
+                ret = callGlobalHook(globalHook, param);
                 if (hook === 'onShare') {
                     return ret;
                 }
-            }
-            var discarded = showHideHooks[hook];
-            if (!fired && instance[discarded]) {
-                console.warn(discarded + ' \u5DF2\u7ECF\u88AB\u5E9F\u5F03\uFF0C\u8BF7\u4F7F\u7528' + hook);
-                instance[discarded](e);
             }
         };
     });
@@ -2659,7 +2648,6 @@ var React = getWindow().React = {
     PureComponent: PureComponent,
     isValidElement: isValidElement,
     toClass: miniCreateClass,
-    toRenderProps: toRenderProps,
     useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,

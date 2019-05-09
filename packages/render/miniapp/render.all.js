@@ -1,7 +1,7 @@
 import { isFn, toLowerCase, get } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
-import { updateMiniApp, _getApp, delayMounts } from './utils';
+import { updateMiniApp, _getApp, delayMounts, registeredComponents } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 
@@ -17,9 +17,9 @@ export let Renderer = createRenderer({
         let { props, lastProps } = fiber;
         let beaconId = props['data-beacon-uid'];
         let instance = fiber._owner; //clazz[instanceId];
-        if (instance && !instance.classUid) {
-            instance = get(instance)._owner;
-        }
+       // if (instance && !instance.classUid) {
+       //     instance = get(instance)._owner;
+       // }
         if (instance && beaconId) {
             var cached =
                 instance.$$eventCached || (instance.$$eventCached = {});
@@ -56,8 +56,8 @@ export let Renderer = createRenderer({
                 instance.instanceUid = uuid;
             }
             //只处理component目录下的组件
-            let wxInstances = type.wxInstances;
-            if (wxInstances) {
+           // let wxInstances = type.wxInstances;
+            if (type.isMPComponent) {
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
@@ -69,7 +69,7 @@ export let Renderer = createRenderer({
                 instance: instance,
                 fn: instance.componentDidMount
             });
-            instance.componentDidMount = Date;
+            instance.componentDidMount = Boolean;
         }
     },
 

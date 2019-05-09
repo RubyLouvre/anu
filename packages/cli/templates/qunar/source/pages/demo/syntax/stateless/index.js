@@ -29,21 +29,21 @@ class P extends React.Component {
             <div class='anu-block'>
                 <div class='anu-page-header' style={this.state.styles.a}>无狀态组件</div>
                 <p class='anu-block'>
-                    <p>输入a(绑定onInput事件)</p>
+                    <p>输入a(绑定onInput事件,箭头函数)</p>
                     <input
                         type="number"
                         style="border: 1px solid gray;width:50%"
                         value={this.state.a}
-                        onChange={this.changeA.bind(this)}
+                        onChange={ (e)=> this.changeA(e) }
                     />
                 </p>
                 <p class='anu-block'>
-                    <p>输入b(绑定onChange事件)</p>
+                    <p>输入b(绑定onChange事件,箭头函数)</p>
                     <input
                         type="number"
                         style="border: 1px solid gray;width:50%"
                         value={this.state.b}
-                        onChange={this.changeB.bind(this)}
+                        onChange={ (e)=> this.changeB(e) }
                     />
                 </p>
                 <div>

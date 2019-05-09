@@ -9,31 +9,31 @@ const glob = require('glob');
 const { REACT_LIB_MAP } = require('../consts/index');
 
 const cliRoot = path.resolve(__dirname, '..');
+const isWin = process.platform === 'win32';
 
 //删除dist目录, 以及快应的各配置文件
 function getRubbishFiles(buildType){
     let fileList = ['package-lock.json', 'yarn.lock'];
     buildType !== 'quick'
-        ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
-        : fileList = fileList.concat(['dist']);
+    ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
+    : fileList = fileList.concat(['dist']);
     
     //构建应用时，要删除source目录下其他的 React lib 文件。
     let libList = Object.keys(REACT_LIB_MAP)
-        .map(function(key){
-            return `source/${REACT_LIB_MAP[key]}`;
-        })
-        .filter(function(libName){
-            return libName.split('/')[1] != REACT_LIB_MAP[buildType];
-        });
+    .map(function(key){
+        return `source/${REACT_LIB_MAP[key]}`;
+    })
+    .filter(function(libName){
+        return libName.split('/')[1] != REACT_LIB_MAP[buildType];
+    });
     fileList = fileList.concat(libList);
-    
     return fileList.map(function(file){
         return {
             id: path.join(cwd, file),
             ACTION_TYPE: 'REMOVE'
-        };
+        }
     });
-}
+};
 
 
 //合并快应用构建json
@@ -54,7 +54,7 @@ function getQuickPkgFile() {
             ACTION_TYPE: 'WRITE'
         }
     ];
-}
+};
 
 
 //copy 快应用构建的基础依赖
@@ -73,11 +73,11 @@ function getQuickBuildConfigFile(){
             ACTION_TYPE: 'COPY'
         }
     ];
-}
+};
 
 //从 github 同步UI
 function downloadSchneeUI(){
-    let spinner = ora(chalk.green.bold('正在同步最新版schnee-ui, 请稍候...\n')).start();
+    let spinner = ora(chalk.green.bold(`正在同步最新版schnee-ui, 请稍候...\n`)).start();
     let cwd = process.cwd(), npmDir = path.join(cwd, 'node_modules');
     process.chdir(npmDir);
     fs.removeSync(path.join(npmDir, 'schnee-ui'));
@@ -88,7 +88,7 @@ function downloadSchneeUI(){
         process.exit(1);
     }
     process.chdir(cwd);
-    spinner.succeed(chalk.green.bold('同步 schnee-ui 成功!'));
+    spinner.succeed(chalk.green.bold(`同步 schnee-ui 成功!`));
 }
 
 
@@ -107,33 +107,43 @@ async function getRemoteReactFile(ReactLibName) {
 function getReactLibFile(ReactLibName) {
     let src = path.join(cliRoot, 'lib', ReactLibName);
     let dist = path.join(cwd, 'source', ReactLibName);
-    return [
-        {
-            id: src,
-            dist: dist,
-            ACTION_TYPE: 'COPY'
-        }
-    ];
+
+    try {
+        //文件有就不COPY
+        fs.accessSync(dist);
+        return [];
+    } catch (err) {
+        return [
+            {
+                id: src,
+                dist: dist,
+                ACTION_TYPE: 'COPY'
+            }
+        ];
+    }
+
+   
+   
 }
 
 
 function getAssetsFile( buildType ) {
     const assetsDir = path.join(cwd, 'source', 'assets');
     let files = glob.sync( assetsDir+'/**', {nodir: true});
-
     files = files
-        .filter(function(id){
+    .filter(function(id){
         //过滤js, css, sass, scss, less, json文件
-            return !/\.(js|scss|sass|less|css|json)$/.test(id);
-        })
-        .map(function(id){
-            let dist = id.replace('source', buildType === 'quick' ? 'src' : 'dist');
-            return {
-                id: id,
-                dist: dist ,
-                ACTION_TYPE: 'COPY'
-            };
-        });
+        return !/\.(js|scss|sass|less|css|json)$/.test(id)
+    })
+    .map(function(id){
+        let sourceReg = isWin ? /\\source\\/ : /\/source\//;
+        let dist = id.replace(sourceReg, buildType === 'quick' ? `${path.sep}src${path.sep}` : `${path.sep}dist${path.sep}`);
+        return {
+            id: id,
+            dist: dist ,
+            ACTION_TYPE: 'COPY'
+        }
+    });
     
     return files;
 
@@ -143,8 +153,8 @@ function getAssetsFile( buildType ) {
 function getProjectConfigFile(buildType) {
     if (buildType === 'quick') return [];
     let fileName = 'project.config.json';
-    let dist = path.join(cwd, 'source', fileName);
     let src = path.join(cwd, fileName);
+    let dist = path.join(cwd, 'dist', fileName);
     if (fs.existsSync(src)) {
         return [
             {
@@ -163,17 +173,16 @@ function getProjectConfigFile(buildType) {
 //fs-extra 各文件I/O操作返回Promise
 const helpers = {
     COPY: function( { id, dist } ) {
-        return fs.copy(id, dist);
+        return fs.copy(id, dist)
     },
     WRITE: function( {id, content} ) {
         fs.ensureFileSync(id);
-        
         return fs.writeFile(id, content);
     },
     REMOVE: function( {id} ) {
         return fs.remove(id);
     }
-};
+}
 
 async function runTask(args){
     const { buildType, beta,  betaUi } = args;
@@ -196,28 +205,33 @@ async function runTask(args){
     
     //快应用下需要copy babel.config.js, 合并package.json等
     if (isQuick) {
-        tasks = tasks.concat(getQuickBuildConfigFile(), getQuickPkgFile());
+        tasks = tasks.concat(getQuickBuildConfigFile(), getQuickPkgFile())
     }
     
     //copy project.config.json
-    tasks = tasks.concat(getProjectConfigFile(buildType));
+    //tasks = tasks.concat(getProjectConfigFile(buildType));
 
     //copy assets目录下静态资源
     tasks = tasks.concat(getAssetsFile(buildType));
 
     try {
         //每次build时候, 必须先删除'dist', 'build', 'sign', 'src', 'babel.config.js'等等冗余文件或者目录
-        await Promise.all(getRubbishFiles().map(function(task){
-            return helpers[task.ACTION_TYPE](task);
+        await Promise.all(getRubbishFiles(buildType).map(function(task){
+            if (helpers[task.ACTION_TYPE]) {
+                return helpers[task.ACTION_TYPE](task);
+            }
         }));
 
         await Promise.all(tasks.map(function(task){
-            return helpers[task.ACTION_TYPE](task);
+            if (helpers[task.ACTION_TYPE]) {
+                return helpers[task.ACTION_TYPE](task);
+            }
         }));
     } catch (err) {
-        
+        console.log(err);
+        process.exit(1);
     }
-}
+};
 
 
 module.exports = async function(args){

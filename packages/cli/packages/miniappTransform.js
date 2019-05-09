@@ -19,12 +19,27 @@ async function transform(sourcePath, resolvedIds, originalCode) {
 
     //跳过 React 编译
     if ( isReact(sourcePath) ) {
-        queue.push({
-            code: originalCode,
-            type: 'js',
-            path: utils.updatePath(sourcePath, config.sourceDir, 'dist') 
-        });
-       
+        try {
+            var result = babel.transformSync(
+                originalCode, 
+                {
+                    configFile: false,
+                    babelrc: false,
+                    plugins: [
+                        ...require('./babelPlugins/transformEnv'),
+                    ]
+                }
+            );
+    
+            queue.push({
+                code: result.code,
+                type: 'js',
+                path: utils.updatePath(sourcePath, config.sourceDir, 'dist') 
+            });
+        } catch (err) {
+            //eslint-disable-next-line
+            console.log(err);
+        }
         return;
     }
 

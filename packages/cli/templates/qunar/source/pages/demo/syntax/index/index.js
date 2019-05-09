@@ -16,6 +16,10 @@ class Express extends React.Component {
                     url: '/pages/demo/syntax/stateless/index'
                 },
                 {
+                    title: 'React Hooks',
+                    url: '/pages/demo/syntax/hooks/index'
+                },
+                {
                     title: '条件语句',
                     url: '/pages/demo/syntax/if/index'
                 },
@@ -67,7 +71,7 @@ class Express extends React.Component {
         };
     }
     config = {
-        'navigationBarTextStyle': '#fff',
+        'navigationBarTextStyle': 'white',
         'navigationBarBackgroundColor': '#0088a4',
         'navigationBarTitleText': 'Demo',
         'backgroundColor': '#ffffff',
@@ -91,7 +95,7 @@ class Express extends React.Component {
 
                 {
                     this.state.pages.map(function (page) {
-                        return (<div class='anu-item'>
+                        return (<div class='anu-item' key={page.title}>
                             <Navigator open-type="navigate" hover-class="navigator-hover" url={page.url}>{page.title}</Navigator>
                         </div>);
                     })

@@ -28,6 +28,7 @@ module.exports = function (astPath) {
     });
     var attrValue = generate(expr).code;//没有this.
     switch (expr.type) {
+        case 'ArrayExpression': //[]
         case 'NumericLiteral': //11
         case 'StringLiteral': // "string"
         case 'Identifier': // kkk undefined
@@ -89,15 +90,19 @@ function replaceWithExpr(astPath, value, noBracket) {
 }
 
 function bindEvent(astPath, attrName, expr) {
-    let eventHandle = generate(expr).code;
-    if (!/^\s*\w+\./.test(eventHandle)) {
-        throwEventValue(attrName, eventHandle);
+    if(expr.type === 'ArrowFunctionExpression'){
+        replaceWithExpr(astPath, 'dispatchEvent', true);
+    }else{
+        let eventHandle = generate(expr).code;
+        if (!/^\s*\w+\./.test(eventHandle)) {
+            throwEventValue(attrName, eventHandle);
+        }
+        if (buildType == 'quick') {
+            let n = attrName.charAt(0) === 'o' ? 2 : 5;
+            astPath.parent.name.name = 'on' + attrName.slice(n).toLowerCase();
+        }
+        replaceWithExpr(astPath, 'dispatchEvent', true);
     }
-    if (buildType == 'quick') {
-        let n = attrName.charAt(0) === 'o' ? 2 : 5;
-        astPath.parent.name.name = 'on' + attrName.slice(n).toLowerCase();
-    }
-    replaceWithExpr(astPath, 'dispatchEvent', true);
 }
 function toString(node) {
     if (t.isStringLiteral(node)) return node.value;

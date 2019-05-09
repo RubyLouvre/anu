@@ -24,12 +24,11 @@ function setStorage ({ key, data, success, fail = noop, complete }) {
 }
 
 function getStorage ({ key, success, fail, complete }) {
-    function dataObj (data) {
+    storage.get({ key, success: function(data){
         success({
             data: saveParse(data)
         });
-    }
-    storage.get({ key, success: dataObj, fail, complete});
+    }, fail, complete});
 }
 
 function removeStorage (obj) {
@@ -89,7 +88,7 @@ export function initStorageSync (storageCache) {
 }
 function warnToInitStorage () {
     if (!initStorage) {
-    console.log('还没有初始化storageSync'); // eslint-disable-line
+       console.log('还没有初始化storageSync'); // eslint-disable-line
     }
 }
 export var setStorageSync = warnToInitStorage;

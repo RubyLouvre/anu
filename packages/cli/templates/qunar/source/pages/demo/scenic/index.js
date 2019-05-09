@@ -16,7 +16,7 @@ class P extends React.Component {
         //     mask: true
         // });
         React.api.request({
-            url: 'http://yapi.demo.qunar.com/mock/18752/qunar/scenic',
+            url: 'http://yapi.demo.qunar.com/mock/11595/qunar/scenic',
             success: function(data) {
                 // React.api.hideLoading();
                 // console.log('data', data.data);
@@ -32,10 +32,10 @@ class P extends React.Component {
         });
     }
   config = {
-      backgroundColor: '#FFF',
+      backgroundColor: '#000000',
       navigationBarBackgroundColor: '#1890ff',
       navigationBarTitleText: '景点门票',
-      navigationBarTextStyle: '#d5d6d6'
+      navigationBarTextStyle: 'white'
   };
 
   render() {

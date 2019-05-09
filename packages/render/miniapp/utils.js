@@ -1,4 +1,4 @@
-import { hasOwnProperty, noop, typeNumber, isFn, get } from 'react-core/util';
+import { hasOwnProperty, typeNumber, isFn, get } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 import { Renderer } from 'react-core/createRenderer';
 
@@ -126,7 +126,8 @@ export function useComponent(props) {
     var is = props.is;
     var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key :  (props['data-instance-uid'] || new Date() - 0);
-    delete props.is;
+    //delete props.is;
+    clazz.displayName = is;
     if (this.ref !== null) {
         props.ref = this.ref;
     }
@@ -153,8 +154,4 @@ function safeClone (originVal) {
         }
     }
     return temp;
-}
-
-export function toRenderProps () {
-    return null;
 }

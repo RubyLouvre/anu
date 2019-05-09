@@ -19,10 +19,10 @@ class Express extends React.Component {
     };
   }
   config = {
-    navigationBarTextStyle: '#fff',
+    navigationBarTextStyle: 'white',
     navigationBarBackgroundColor: '#0088a4',
     navigationBarTitleText: 'API',
-    'background-color': '#eeeeee',
+    backgroundColor: '#eeeeee',
     backgroundTextStyle: 'light'
   };
 
@@ -109,7 +109,7 @@ class Express extends React.Component {
   }
   request() {
     React.api.request({
-      url: 'http://yapi.demo.qunar.com/mock/13807/unauth/account/register',
+      url: 'http://yapi.demo.qunar.com/mock/5774/unauth/account/register',
       method: 'post',
       success: function(res) {
         alert(`the status code of the response: ${JSON.stringify(res.data)}`);

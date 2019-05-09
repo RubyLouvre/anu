@@ -2,7 +2,6 @@ import { Children } from 'react-core/Children';
 import { PropTypes } from 'react-core/PropTypes';
 import { Component } from 'react-core/Component';
 import { PureComponent } from 'react-core/PureComponent';
-import { createPortal } from 'react-core/createPortal';
 import {
     createElement,
     cloneElement,
@@ -20,9 +19,20 @@ import { dispatchEvent, webview } from './eventSystem';
 import { Renderer } from './render.all';
 
 import { toStyle } from './toStyle';
-import { toRenderProps, _getApp, getCurrentPage, _getCurrentPages, useComponent } from './utils';
+import { 
+    _getApp , 
+    getCurrentPage, 
+    _getCurrentPages, 
+    useComponent } from './utils';
 import { registerPage } from './registerPage.wx';
 import { registerComponent } from './registerComponent.wx';
+import { 
+    useState,
+    useReducer, 
+    useCallback,
+    useMemo,
+    useEffect, 
+    useContext } from 'react-core/hooks';
 
 
 
@@ -43,29 +53,37 @@ let React = getWindow().React =  {
     webview,
     Fragment,
     PropTypes,
-    Children,
+   // Children,
     Component,
-    createPortal,
+  //  createPortal,
     createElement,
     createFactory,
-    cloneElement,
+   // cloneElement,
     PureComponent,
     isValidElement,
     createContext,
     toClass: miniCreateClass,
-    toRenderProps,
-    useComponent,
     registerComponent,
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
     registerPage,
     toStyle,
+    useState,
+    useReducer, 
+    useCallback,
+    useMemo,
+    useEffect, 
+    useContext,
+    useComponent,
     appType: 'wx'
 };
 let apiContainer = {};
 if (typeof wx != 'undefined'){
     apiContainer = wx;//eslint-disable-line
+} else if (typeof qq != 'undefined'){
+    apiContainer = qq;//eslint-disable-line
+    React.appType = 'qq';
 } else if (typeof tt != 'undefined'){
     apiContainer = tt;//eslint-disable-line
     React.appType = 'tt';

@@ -16,14 +16,18 @@ module.exports = {
         helpers: 'wxHelpers',
         patchComponents: []
     },
+    qq: {
+        libName: 'ReactWX',
+        styleExt: 'qss',
+        xmlExt: 'qml',
+        helpers: 'qqHelpers',
+        patchComponents: []
+    },
     ali: {
         libName: 'ReactAli',
         styleExt: 'acss',
         xmlExt: 'axml',
-        helpers: 'aliHelpers',
-        patchComponents: [
-            'rich-text' //年前还不支持这标签 https://docs.alipay.com/mini/component/rich-text
-        ]
+        helpers: 'aliHelpers'
     },
     bu: {
         libName: 'ReactBu',

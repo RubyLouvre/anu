@@ -29,7 +29,7 @@ class Classify extends React.Component {
         var that = this;
         React.api.request({
             url:
-                'http://yapi.demo.qunar.com/mock/17668/wemall/goodstype/typebrandList',
+                'http://yapi.demo.qunar.com/mock/11550/wemall/goodstype/typebrandList',
             method: 'GET',
             data: {},
             header: {

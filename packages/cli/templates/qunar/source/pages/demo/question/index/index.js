@@ -37,7 +37,7 @@ class P extends React.Component {
         //     mask: true
         // });
         React.api.request({
-            url: 'http://yapi.demo.qunar.com/mock/18752/qunar/question',
+            url: 'http://yapi.demo.qunar.com/mock/11595/qunar/question',
             success: function(data) {
                 // React.api.hideLoading();
                 that.setState({ data: data.data });

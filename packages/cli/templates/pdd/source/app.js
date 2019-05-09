@@ -17,7 +17,7 @@ class Demo extends React.Component {
             backgroundTextStyle: 'light',
             navigationBarBackgroundColor: '#0088a4',
             navigationBarTitleText: 'mpreact',
-            navigationBarTextStyle: '#fff',
+            navigationBarTextStyle: 'white',
             backgroundColor: '#F2F2F2'
         },
         tabBar: {
@@ -61,6 +61,7 @@ class Demo extends React.Component {
         if (this.$data && typeof global === 'object') {
             var ref = Object.getPrototypeOf(global) || global;
             var _this = this;
+            this.globalData = this.$def.globalData;
             ref.getApp = function() {
                 return _this;
             };

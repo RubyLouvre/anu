@@ -17,7 +17,7 @@ class P extends React.Component {
             mask: true
         });
         React.api.request({
-            url: 'http://yapi.demo.qunar.com/mock/18752/qunar/city',
+            url: '/18752/qunar/city',
             success: function(data) {
                 React.api.hideLoading();
                 let curData = that.cleanData(data.data);

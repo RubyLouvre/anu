@@ -62,7 +62,7 @@ let utils = {
                 return 'Tap';
             }
         }
-        if (buildType === 'quick') {
+        if (buildType === 'quick' && nodeName === 'list') {
             if (eventName === 'ScrollToLower') {
                 return 'ScrollBottom' //快应用的list标签的事件
             } else if (eventName === 'ScrollToUpper') {
@@ -362,7 +362,7 @@ let utils = {
             js: function (code) {
                 let result = uglifyJS.minify(code);
                 if (result.error) {
-                    throw result.error;
+                   return code;
                 }
                 return result.code;
             },
@@ -372,7 +372,7 @@ let utils = {
             css: function (code) {
                 let result = new cleanCSS().minify(code);
                 if (result.errors.length) {
-                    throw result.errors;
+                    return code;
                 }
                 return result.styles;
             },
@@ -435,11 +435,17 @@ let utils = {
         });
     },
     isWebView(fileId) {
-        if (config['buildType'] != 'quick' && !config['webview']) return;
-        if (!config['webview']) return;
+        if (config.buildType != 'quick') {
+            return false;
+        }
+
+        if ( !(config.webview && config.webview.pages.length) ) {
+            return false;
+        }
+       
         let isWebView =
-            config['webview'].includes(fileId) ||
-            config['webview'].some((reg) => {
+            config.webview.pages.includes(fileId) ||
+            config.webview.pages.some((reg) => {
                 //如果是webview设置成true, 则用增则匹配
                 return Object.prototype.toString.call(reg) === '[object RegExp]' &&
                     reg.test(fileId)

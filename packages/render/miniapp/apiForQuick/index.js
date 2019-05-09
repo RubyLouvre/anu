@@ -31,11 +31,12 @@ import {
 import { setNavigationBarTitle } from './title';
 import { 
     getSystemInfo, 
-    getDeviceId 
+    getDeviceId,
+    getUserId
 } from './device.js';
 import { chooseImage } from './media.js';
-import { createShortcut } from './shortcut.js';
-
+import { createShortcut, hasInstalled, shortcutInstall } from './shortcut.js';
+import {getPushProvider, subscribe, unsubscribe, pushOn, pushOff} from './push.js';
 import { 
     showModal,
     showActionSheet,
@@ -52,7 +53,7 @@ import { createCanvasContext } from './canvas.js';
 import { pay, getProvider, wxpayGetType, wxpay, alipay} from './pay.js';
 function stopPullDownRefresh({success, fail, complete } = {}) {
     // 停止刷新没有作用
-    runCallbacks(function(){}, success, fail, complete );
+    runCallbacks(Number, success, fail, complete );
 }
 export var facade = {
     // 交互
@@ -130,11 +131,15 @@ export function more(){
         initStorageSync,
         createShortcut,//快应用专用
         share, //快应用专用
+        hasInstalled, //快应用专用
+        shortcutInstall,//快应用专用
+        getPushProvider, subscribe, unsubscribe, pushOn, pushOff,
         pay, 
         getProvider, 
         wxpayGetType, 
         wxpay, 
         alipay,
         getDeviceId,
+        getUserId
     };
 } 
