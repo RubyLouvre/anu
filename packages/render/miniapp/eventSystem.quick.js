@@ -19,7 +19,7 @@ export function dispatchEvent(e) {
         return;
     }
     const eventType = toLowerCase(e._type || e.type);
-    const target =  e.currentTarget || e.target;
+    const target = e.currentTarget || e.target;
     // 小米1040 || 小米1040之前 || 华为在1050前
     var dataset = target.dataset || getDataSetFromAttr(target.attr || target._attr);
     const app = this.$app.$def;
@@ -47,7 +47,7 @@ export function dispatchEvent(e) {
             var fn = instance.$$eventCached[eventUid];
             fn && fn.call(instance, createEvent(e, safeTarget, eventType));
         } catch (err) {
-			console.log(err.stack); // eslint-disable-line
+            console.log(err.stack); // eslint-disable-line
         }
     }, e);
 }
