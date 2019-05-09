@@ -809,26 +809,9 @@ function createInstance(fiber, context) {
             Renderer.currentOwner = instance;
             extend(instance, {
                 __isStateless: true,
-                __init: true,
                 renderImpl: type,
                 render: function f() {
-                    var a = this.__keep;
-                    if (a) {
-                        delete this.__keep;
-                        return a.value;
-                    }
-                    a = this.renderImpl(this.props, this.context);
-                    if (a && a.render) {
-                        delete this.__isStateless;
-                        for (var i in a) {
-                            instance[i == 'render' ? 'renderImpl' : i] = a[i];
-                        }
-                    } else if (this.__init) {
-                        this.__keep = {
-                            value: a
-                        };
-                    }
-                    return a;
+                    return this.renderImpl(this.props, this.context);
                 }
             });
             Renderer.currentOwner = instance;
@@ -836,9 +819,6 @@ function createInstance(fiber, context) {
                 instance.render = function () {
                     return type.render(this.props, this.ref);
                 };
-            } else {
-                instance.render();
-                delete instance.__init;
             }
         } else {
             instance = new type(props, context);

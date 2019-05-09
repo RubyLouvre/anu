@@ -33,40 +33,17 @@ export function createInstance(fiber, context) {
             Renderer.currentOwner = instance;
             extend(instance, {
                 __isStateless: true,
-                __init: true,
                 renderImpl: type,
                 render: function f() {
-                    let a = this.__keep;
-                    if (a) {
-                        delete this.__keep;
-                        return a.value;
-                    }
-                    a = this.renderImpl(this.props, this.context);
-                    if (a && a.render) {
-                        delete this.__isStateless;
-                        // 返回一带render方法的纯对象，说明这是带lifycycle hook的无狀态组件
-                        // 需要对象里的hook复制到instance中
-                        for (let i in a) {
-                            instance[i == 'render' ? 'renderImpl' : i] = a[i];
-                        }
-                    } else if (this.__init) {
-                        this.__keep = {
-                            //可能返回一个对象
-                            value: a
-                        };
-                    }
-                    return a;
+                    return this.renderImpl(this.props, this.context);
                 }
             });
             Renderer.currentOwner = instance;
             if (type.render) {
                 //forwardRef函数形式只会执行一次，对象形式执行多次
-                instance.render = function () {
+                instance.render = function() {
                     return type.render(this.props, this.ref);
                 };
-            } else {
-                instance.render();
-                delete instance.__init;
             }
         } else {
             // 有狀态组件
