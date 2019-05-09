@@ -22,14 +22,6 @@ let needUpdate = (id, originalCode) => {
     return false;
 };
 
-//获取dist路径
-let getDist = (filePath) =>{
-    let dist = utils.updatePath(filePath, config.sourceDir, 'dist');
-    let { name, dir} =  path.parse(dist);
-    let distPath = path.join(dir, `${name}.css`);
-    return distPath;
-};
-
 function beautifyUx(code){
     return beautify.html(code, {
         indent: 4,
@@ -41,14 +33,6 @@ function isNodeModulePath(fileId){
     let isWin = utils.isWin();
     let reg = isWin ? /\\node_modules\\/ : /\/node_modules\//;
     return reg.test(fileId);
-}
-
-function fixPath(fileId, dep){
-    if (!isNodeModulePath(fileId)) {
-        return path.join(cwd, config.sourceDir, dep);
-    }
-    let retPath = utils.updatePath(dep, 'npm', 'node_modules');
-    return path.join(cwd, retPath); 
 }
 
 function nodeModules2Npm(p) {

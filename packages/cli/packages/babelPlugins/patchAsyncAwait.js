@@ -62,7 +62,7 @@ module.exports  = [
                         utils.installer(pkgName);
                     }
 
-                    let dist = path.join( cwd, 'dist', 'npm', `${pkgName}/runtime.js`);
+                    let dist = path.join( cwd, utils.getDistName(config.buildType), 'npm', `${pkgName}/runtime.js`);
                     let src =  path.join( cwd, 'node_modules', `${pkgName}/runtime.js`);
                     fs.ensureFileSync(dist);
                     fs.copyFileSync(src, dist);
