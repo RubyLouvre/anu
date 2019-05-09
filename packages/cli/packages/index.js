@@ -311,7 +311,7 @@ class Parser {
         let importList = item.code.match(/^(?:import)\s+([^;]+)/igm) || [];
       
         importList = importList.filter((importer)=>{
-            return /[/|@]components\//.test(importer);
+            return /[\/|@]components\//.test(importer);
         });
 
         importList.forEach((importer)=>{

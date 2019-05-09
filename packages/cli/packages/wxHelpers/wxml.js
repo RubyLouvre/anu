@@ -57,8 +57,8 @@ let visitor = {
     JSXOpeningElement: {
         exit: function(astPath) {
             let openTag = astPath.node.name;
-            if (openTag.type === 'JSXMemberExpression' && openTag.object.name === 'React') {
-                if (openTag.property.name === 'useComponent') {
+            if (openTag.type === 'JSXMemberExpression' ) {
+                if (openTag.object.name === 'React' && openTag.property.name === 'useComponent') {
                     let is, instanceUid;
                     let attributes = [];
                     astPath.node.attributes.forEach(function(el) {
@@ -90,6 +90,10 @@ let visitor = {
                     let template = utils.createElement(is, attributes, astPath.parentPath.node.children);
                     //将组件变成template标签
                     astPath.parentPath.replaceWith(template);
+                }else{
+                    let provider = utils.createElement('block', [], astPath.parentPath.node.children);
+                    //将组件变成template标签
+                     astPath.parentPath.replaceWith(provider);
                 }
             } 
         }
