@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-05-08
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-05-09
  */
 
 var arrayPush = Array.prototype.push;
@@ -2020,7 +2020,7 @@ var Renderer$1 = createRenderer({
             lastProps = fiber.lastProps;
         var beaconId = props['data-beacon-uid'];
         var instance = fiber._owner;
-        if (instance && !instance.classUid) {
+        if (instance && !instance.renderImpl && !instance.classUid) {
             instance = get(instance)._owner;
         }
         if (instance && beaconId) {

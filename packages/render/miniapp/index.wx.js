@@ -27,6 +27,7 @@ import {
     useComponent } from './utils';
 import { registerPage } from './registerPage.wx';
 import { registerComponent } from './registerComponent.wx';
+import { useState, useEffect, useContext } from 'react-core/hooks';
 
 
 
@@ -47,15 +48,18 @@ let React = getWindow().React =  {
     webview,
     Fragment,
     PropTypes,
-    Children,
+   // Children,
     Component,
-    createPortal,
+  //  createPortal,
     createElement,
     createFactory,
-    cloneElement,
+   // cloneElement,
     PureComponent,
-    isValidElement,
+   // isValidElement,
     createContext,
+    useState, 
+    useEffect, 
+    useContext,
     toClass: miniCreateClass,
     useComponent,
     registerComponent,

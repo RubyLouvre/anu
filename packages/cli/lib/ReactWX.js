@@ -1,6 +1,5 @@
-/* eslint-disable */
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-08T06
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-09T04
  * IE9+
  */
 
@@ -247,29 +246,6 @@ function createElement(type, config) {
     }
     props = makeProps(type, config || {}, props, children, argsLen);
     return ReactElement(type, tag, props, key, ref, Renderer.currentOwner);
-}
-function cloneElement(element, config) {
-    var props = Object.assign({}, element.props);
-    var type = element.type;
-    var key = element.key;
-    var ref = element.ref;
-    var tag = element.tag;
-    var owner = element._owner;
-    for (var _len2 = arguments.length, children = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
-        children[_key2 - 2] = arguments[_key2];
-    }
-    var argsLen = children.length;
-    if (config != null) {
-        if (hasValidRef(config)) {
-            ref = config.ref;
-            owner = Renderer.currentOwner;
-        }
-        if (hasValidKey(config)) {
-            key = '' + config.key;
-        }
-    }
-    props = makeProps(type, config || {}, props, children, argsLen);
-    return ReactElement(type, tag, props, key, ref, owner);
 }
 function createFactory(type) {
     var factory = createElement.bind(null, type);
@@ -547,11 +523,6 @@ var PureComponent = miniCreateClass(function PureComponent() {
 
 function AnuPortal(props) {
     return props.children;
-}
-function createPortal(children, parent) {
-    var child = createElement(AnuPortal, { children: children, parent: parent });
-    child.isPortal = true;
-    return child;
 }
 
 var MAX_NUMBER = 1073741823;
@@ -945,7 +916,7 @@ var more = function more(api) {
                 complete: complete,
                 success: success,
                 fail: function fail(e) {
-                    if (e.errMsg === 'getStorage:fail data not found') {
+                    if (/fail(:|\s)data\snot\sfound/.test(e.errMsg)) {
                         success && success({});
                     } else {
                         _fail && _fail(e);
@@ -1372,6 +1343,120 @@ function detachFiber(fiber, effects$$1) {
     }
 }
 
+function setter(compute, cursor, value) {
+    this.updateQueue[cursor] = compute(cursor, value);
+    Renderer.updateComponent(this, true);
+}
+var hookCursor = 0;
+function resetCursor() {
+    hookCursor = 0;
+}
+function getCurrentKey() {
+    var key = hookCursor + 'Hook';
+    hookCursor++;
+    return key;
+}
+var dispatcher = {
+    useContext: function useContext(getContext) {
+        if (isFn(getContext)) {
+            var fiber = getCurrentFiber();
+            var context = getContext(fiber);
+            var list = getContext.subscribers;
+            if (list.indexOf(fiber) === -1) {
+                list.push(fiber);
+            }
+            return context;
+        }
+        return null;
+    },
+    useReducer: function useReducer(reducer, initValue, initAction) {
+        var fiber = getCurrentFiber();
+        var key = getCurrentKey();
+        var updateQueue = fiber.updateQueue;
+        var compute = reducer ? function (cursor, action) {
+            return reducer(updateQueue[cursor], action || { type: Math.random() });
+        } : function (cursor, value) {
+            var novel = updateQueue[cursor];
+            return typeof value == 'function' ? value(novel) : value;
+        };
+        var dispatch = setter.bind(fiber, compute, key);
+        if (key in updateQueue) {
+            delete updateQueue.isForced;
+            return [updateQueue[key], dispatch];
+        }
+        var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
+        return [value, dispatch];
+    },
+    useCallbackOrMemo: function useCallbackOrMemo(create, deps, isMemo) {
+        var fiber = getCurrentFiber();
+        var key = getCurrentKey();
+        var updateQueue = fiber.updateQueue;
+        var nextInputs = Array.isArray(deps) ? deps : [create];
+        var prevState = updateQueue[key];
+        if (prevState) {
+            var prevInputs = prevState[1];
+            if (areHookInputsEqual(nextInputs, prevInputs)) {
+                return prevState[0];
+            }
+        }
+        var value = isMemo ? create() : create;
+        updateQueue[key] = [value, nextInputs];
+        return value;
+    },
+    useRef: function useRef(initValue) {
+        var fiber = getCurrentFiber();
+        var key = getCurrentKey();
+        var updateQueue = fiber.updateQueue;
+        if (key in updateQueue) {
+            return updateQueue[key];
+        }
+        return updateQueue[key] = { current: initValue };
+    },
+    useEffect: function useEffect(create, deps, EffectTag, createList, destroyList) {
+        var fiber = getCurrentFiber();
+        var cb = dispatcher.useCallbackOrMemo(create, deps);
+        if (fiber.effectTag % EffectTag) {
+            fiber.effectTag *= EffectTag;
+        }
+        var updateQueue = fiber.updateQueue;
+        var list = updateQueue[createList] || (updateQueue[createList] = []);
+        updateQueue[destroyList] || (updateQueue[destroyList] = []);
+        list.push(cb);
+    },
+    useImperativeHandle: function useImperativeHandle(ref, create, deps) {
+        var nextInputs = Array.isArray(deps) ? deps.concat([ref]) : [ref, create];
+        dispatcher.useEffect(function () {
+            if (typeof ref === 'function') {
+                var refCallback = ref;
+                var inst = create();
+                refCallback(inst);
+                return function () {
+                    return refCallback(null);
+                };
+            } else if (ref !== null && ref !== undefined) {
+                var refObject = ref;
+                var _inst = create();
+                refObject.current = _inst;
+                return function () {
+                    refObject.current = null;
+                };
+            }
+        }, nextInputs);
+    }
+};
+function getCurrentFiber() {
+    return get(Renderer.currentOwner);
+}
+function areHookInputsEqual(arr1, arr2) {
+    for (var i = 0; i < arr1.length; i++) {
+        if (Object.is(arr1[i], arr2[i])) {
+            continue;
+        }
+        return false;
+    }
+    return true;
+}
+
 function getInsertPoint(fiber) {
     var parent = fiber.parent;
     while (fiber) {
@@ -1633,6 +1718,7 @@ function updateClassComponent(fiber, info) {
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
     var rendered = applyCallback(instance, 'render', []);
+    resetCursor();
     diffChildren(fiber, rendered);
     Renderer.onAfterRender(fiber);
 }
@@ -2350,7 +2436,7 @@ var Renderer$1 = createRenderer({
             lastProps = fiber.lastProps;
         var beaconId = props['data-beacon-uid'];
         var instance = fiber._owner;
-        if (instance && !instance.classUid) {
+        if (instance && !instance.renderImpl && !instance.classUid) {
             instance = get(instance)._owner;
         }
         if (instance && beaconId) {
@@ -2639,6 +2725,16 @@ function registerComponent(type, name) {
     return config;
 }
 
+function useState(initValue) {
+    return dispatcher.useReducer(null, initValue);
+}
+function useEffect(create, deps) {
+    return dispatcher.useEffect(create, deps, PASSIVE, 'passive', 'unpassive');
+}
+function useContext(initValue) {
+    return dispatcher.useContext(initValue);
+}
+
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {
@@ -2652,15 +2748,14 @@ var React = getWindow().React = {
     webview: webview,
     Fragment: Fragment,
     PropTypes: PropTypes,
-    Children: Children,
     Component: Component,
-    createPortal: createPortal,
     createElement: createElement,
     createFactory: createFactory,
-    cloneElement: cloneElement,
     PureComponent: PureComponent,
-    isValidElement: isValidElement,
     createContext: createContext,
+    useState: useState,
+    useEffect: useEffect,
+    useContext: useContext,
     toClass: miniCreateClass,
     useComponent: useComponent,
     registerComponent: registerComponent,
