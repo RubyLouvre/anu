@@ -316,20 +316,24 @@ class Parser {
 
         importList.forEach((importer)=>{
              // import Welcome from '@components/Welcome/index' => ['Welcome', '@components/Welcome/index']
-             let [importName, importValue] = importer.replace(/(import|from|\'|\")/g, '').trim().split(/\s+/);
+             // import Welcome, {xxx, yyy } from '@components/Welcome/index' => ['Welcome', '@components/Welcome/index']
+             // import Layout, { GlobalTheme } from '@components/Layout/index'
+             let arr = importer.split(/\s+|,|\{|\}/).filter(function(el){
+                  return !(el == '' || el === 'from' || el === 'import')
+             })
             
-             // @components/Welcome/index ==》Welcome
-             let componentsFolderName = path.dirname(importValue).replace(/\\/, '/').split('/').pop();
-             let fileName = path.parse(importValue).name;
- 
+             let importName = arr.shift();
+             let segments = arr.pop().match(/\w+/g);
+             let fileName = segments.pop();
+              // @components/Welcome/index ==》Welcome
+             let folderName = segments.pop();
              let msg = '';
              if ( fileName!='index' ) {
                  msg = '组件文件名必须是index';
-
-                 msg += `\nerror at: ${importValue}`
-             } else if ( importName != componentsFolderName){
+                 msg += `\nerror at: ${importer}`
+             } else if ( importName != folderName){
                  msg = '引用的组件名必须和组件所在的文件夹名保持一致'
-                      + `\n例如: import ${componentsFolderName} from \'@components/${componentsFolderName}/index\'`;
+                      + `\n例如: import ${folderName} from \'@components/${folderName}/index\'`;
                  msg += `\nerror at: ${item.id}`
              }
 
