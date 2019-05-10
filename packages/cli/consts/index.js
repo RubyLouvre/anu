@@ -88,6 +88,10 @@ const BUILD_OPTIONS = {
     },
     'huawei': {
         desc: '补丁华为快应用'
+    },
+    'analysis': {
+        alias: 'a',
+        desc: '打包产物分析'
     }
 };
 
