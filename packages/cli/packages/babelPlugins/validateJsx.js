@@ -38,22 +38,9 @@ const visitor = {
                 collectError.jsxError.push({
                     id: fileId,
                     level: 'error',
-                    msg: `jsx属性中无法调用非map函数.\nat ${fileId}:${line}:${column}\n ${g(astPath.node).code}\n`,
+                    msg: `jsx属性中无法调用非事件绑定函数.\nat ${fileId}:${line}:${column}\n ${g(astPath.node).code}\n`,
                 });
                 return;
-            }
-
-            //三元表达式中不能调用函数
-            if (astPath.parentPath.type === 'JSXAttribute' && type === 'ConditionalExpression') {
-                astPath.traverse({
-                    CallExpression: function(){
-                        collectError.jsxError.push({
-                            id: fileId,
-                            level: 'error',
-                            msg: `jsx属性中三元表式无法调用非map函数.\nat ${fileId}:${line}:${column}\n${g(astPath.node).code}\n`,
-                        });
-                    }
-                });
             }
 
         }
