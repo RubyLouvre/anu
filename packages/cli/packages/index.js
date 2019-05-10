@@ -1,5 +1,15 @@
 /* eslint no-console: 0 */
-
+/**
+ * 这个不是真正的入口文件， 真的在bin/index.js
+ * 当执行nanachi init xxx时会调用 commands/init.js
+ * 当执行nanachi watch xxx时会调用 commands/build.js
+ * 当执行nanachi build xxx时会调用 commands/build.js
+ * 当执行nanachi createPage xxx时会调用 commands/createPage.js
+ * 
+ * 工作量最大的方法在commands/build.js, 然后转入packages/index.js
+ * 
+ * 
+ */
 const chalk = require('chalk');
 const path = require('path');
 const rollup = require('rollup');

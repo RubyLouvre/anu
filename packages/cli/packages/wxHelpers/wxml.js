@@ -18,7 +18,7 @@ function beautifyXml(code){
         indent: 4
     });
 }
-
+const rcomponentName = /^[A-Z].+/ //必须大写开头
 const quickTextContainer = {
     text: 1,
     a: 1,
@@ -56,11 +56,13 @@ function wxml(code, modules) {
 let visitor = {
     JSXOpeningElement: {
         exit: function(astPath) {
-            let openTag = astPath.node.name;
+            let openTag = astPath.node.name, 
+                newTagName = false, 
+                attributes = [],
+                childNodes = astPath.parentPath.node.children;
             if (openTag.type === 'JSXMemberExpression' ) {
                 if (openTag.object.name === 'React' && openTag.property.name === 'useComponent') {
-                    let is, instanceUid;
-                    let attributes = [];
+                    let instanceUid;
                     astPath.node.attributes.forEach(function(el) {
                         let attrName = el.name.name;
                         if (!el.value) {
@@ -79,23 +81,27 @@ let visitor = {
                         }
 
                         if (attrName === 'is') {
-                            is = 'anu-' + attrValue.slice(1, -1).toLowerCase();
+                            newTagName = 'anu-' + attrValue.slice(1, -1).toLowerCase();
                         }
                         if (attrName === 'data-instance-uid') {
                             instanceUid = attrValue;
                             attributes.push(utils.createAttribute('data-instance-uid', `{{${instanceUid}}}`));
                         }
                     });
-
-                    let template = utils.createElement(is, attributes, astPath.parentPath.node.children);
                     //将组件变成template标签
-                    astPath.parentPath.replaceWith(template);
                 }else{
-                    let provider = utils.createElement('block', [], astPath.parentPath.node.children);
+                    //将<GlobalTheme.Provider />, <React.Fragment /> 变成<block/>
+                    newTagName = 'block';
                     //将组件变成template标签
-                     astPath.parentPath.replaceWith(provider);
                 }
-            } 
+            } else if(openTag.type === 'JSXIdentifier' && rcomponentName.test(openTag.name) ){
+                 //将<Login /> 变成<block/>
+                newTagName = 'block';
+            }
+            if(newTagName){
+                let container = utils.createElement(newTagName, attributes, childNodes);
+                astPath.parentPath.replaceWith(container);
+            }
         }
     },
     JSXAttribute(astPath, state) {
