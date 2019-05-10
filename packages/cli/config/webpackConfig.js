@@ -1,4 +1,5 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
+const SizePlugin = require('../nanachi-loader/sizePlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
@@ -24,6 +25,7 @@ module.exports = function({
     compressOption,
     plugins,
     rules,
+    analysis,
     prevLoaders, // 自定义预处理loaders
     postLoaders // 自定义后处理loaders
 }) {
@@ -101,6 +103,7 @@ module.exports = function({
             rules: mergeRule
         },
         plugins: [].concat( 
+            analysis ? new SizePlugin() : [],
             new NanachiWebpackPlugin({
                 platform,
                 compress

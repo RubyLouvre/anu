@@ -114,6 +114,7 @@ async function nanachi({
     prevLoaders = [], // 自定义预处理loaders
     postLoaders = [], // 自定义后处理loaders
     plugins = [],
+    analysis = false,
     complete = () => { }
 } = {}) {
     function callback(err, stats) {
@@ -124,6 +125,7 @@ async function nanachi({
             return;
         }
 
+       
         showLog();
         const info = stats.toJson();
         if (stats.hasErrors()) {
@@ -177,6 +179,7 @@ async function nanachi({
             beta,
             betaUi,
             plugins,
+            analysis,
             prevLoaders,
             postLoaders,
             rules
