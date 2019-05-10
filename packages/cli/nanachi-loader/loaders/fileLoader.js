@@ -33,7 +33,7 @@ module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
         }
 
         this.emitFile(relativePath, code, map);
-        const outputPathName = this.nanachiOptions.platform === 'quick' ? './src' : './dist';
+        const outputPathName = utils.getDistName(this.nanachiOptions.platform);
         
         successLog(path.join(outputPathName, relativePath), code);
     });

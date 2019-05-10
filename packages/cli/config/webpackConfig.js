@@ -27,14 +27,15 @@ module.exports = function({
     rules,
     analysis,
     prevLoaders, // 自定义预处理loaders
-    postLoaders // 自定义后处理loaders
+    postLoaders, // 自定义后处理loaders
+    // maxAssetSize // 资源大小限制，超出后报warning
 }) {
     let aliasMap = require('../consts/alias')(platform);
     // aliasMap 解析成绝对路径
     Object.keys(aliasMap).forEach(alias => {
         aliasMap[alias] = path.resolve(cwd, aliasMap[alias]);
     });
-    const distPath = path.resolve(cwd, platform === 'quick' ? './src' : './dist');
+    const distPath = path.resolve(cwd, utils.getDistName(platform));
 
     const copyPluginOption = compress ? {
         transform(content, path) {
@@ -124,6 +125,13 @@ module.exports = function({
         resolve: {
             alias: aliasMap,
             mainFields: ['main']
-        }
+        },
+        // performance: {
+        //     hints: 'warning',
+        //     assetFilter(filename) {
+        //         return !/React\w+\.js/.test(filename);
+        //     },
+        //     maxAssetSize
+        // }
     };
 };

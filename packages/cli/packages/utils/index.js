@@ -236,35 +236,6 @@ let utils = {
             ASTPATH: t.stringLiteral(path)
         });
     },
-    /**
-     *
-     * @param {String} 要修改的路径（存在平台差异性）
-     * @param {String} segement
-     * @param {String} newSegement
-     * @param {String?} ext 新的后缀名
-     */
-    updatePath(spath, segement, newSegement, newExt, ext) {
-        var lastSegement = '',
-            replaced = false;
-        var arr = spath.split(path.sep).map(function (el) {
-            lastSegement = el;
-            if (segement === el && !replaced) {
-                replaced = true;
-                return newSegement;
-            }
-            return el;
-        });
-        if (newExt) {
-            ext = ext || 'js';
-            arr[arr.length - 1] = lastSegement.replace('.' + ext, '.' + newExt);
-        }
-        let resolvedPath = path.join.apply(path, arr);
-        if (!this.isWin()) {
-            // Users/x/y => /Users/x/y;
-            resolvedPath = '/' + resolvedPath;
-        }
-        return resolvedPath;
-    },
     installer(npmName, dev, needModuleEntryPath) {
         needModuleEntryPath = needModuleEntryPath || false;
         return new Promise(resolve => {
@@ -326,24 +297,8 @@ let utils = {
         }
         return defaultAlias;
     },
-    resolveDistPath(filePath) {
-        let dist = config.buildType === 'quick' ? 'src' : (config.buildDir || 'dist');
-        let sep = path.sep;
-        let reg = this.isWin() ? /\\node_modules\\/g : /\/node_modules\//g;
-        filePath = utils.updatePath(filePath, 'dist', dist); //待优化
-        return reg.test(filePath) ?
-            utils.updatePath(filePath, 'node_modules', `${dist}${sep}npm`) :
-            utils.updatePath(filePath, config.sourceDir, dist);
-    },
-    resolveAliasPath(id, deps) {
-        let ret = {};
-        Object.keys(deps).forEach((depKey) => {
-            ret[depKey] = path.relative(
-                path.dirname(this.resolveDistPath(id)),
-                this.resolveDistPath(deps[depKey])
-            )
-        });
-        return ret;
+    getDistName(buildType) {
+        return buildType === 'quick' ? 'src' : (userConfig && userConfig.buildDir || 'dist');
     },
     getRegeneratorRuntimePath: function (sourcePath) {
         //小程序async/await语法依赖regenerator-runtime/runtime
