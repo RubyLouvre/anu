@@ -4,7 +4,7 @@
     "nanachi_project": true,
     "name": "music",
     "dependencies": {
-        "regenerator-runtime": "^0.12.1"
+        "regenerator-runtime": "0.12.1"
     },
     "devDependencies": {
         "eslint": "^5.16.0",
