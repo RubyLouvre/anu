@@ -114,6 +114,7 @@ async function nanachi({
     prevLoaders = [], // 自定义预处理loaders
     postLoaders = [], // 自定义后处理loaders
     plugins = [],
+    analysis = false,
     // maxAssetSize = 20480, // 最大资源限制，超出报warning
     complete = () => { }
 } = {}) {
@@ -125,6 +126,7 @@ async function nanachi({
             return;
         }
 
+       
         showLog();
         const info = stats.toJson();
         if (stats.hasErrors()) {
@@ -178,6 +180,7 @@ async function nanachi({
             beta,
             betaUi,
             plugins,
+            analysis,
             prevLoaders,
             postLoaders,
             rules,
