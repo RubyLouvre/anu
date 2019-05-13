@@ -21,7 +21,8 @@ source： https://bundlephobia.com/
 
 ### advantage：
 
-1. Support various new features of **React16**, Fragment, componentDidCatch, creactContext, createRef, forwardRef...
+1. Support various new features of **React16**, Fragment, componentDidCatch, creactContext, createRef, forwardRef, React Hooks(useRef, useContext, useState, useEffect, useReducer, useCallback,
+useMemo, useEffect, useLayoutEffect, useImperativeHandle)...
 2. The size is very small (only 3000 lines, gzip only 13kb, one third of React+ReactDOM)
 3. Pass more than 700 official unit tests  (other mini libraries can not run the official test)
 4. Share the huge ecology of React（React-router-dom, react-router-redux, react-lazy-load, react-hot-loader...）
