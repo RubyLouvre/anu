@@ -4,6 +4,6 @@
     "nanachi_project": true,
     "name": "pdd",
     "dependencies": {
-        "regenerator-runtime": "^0.12.1"
+        "regenerator-runtime": "0.12.1"
     }
 }
