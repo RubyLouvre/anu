@@ -300,37 +300,6 @@ let utils = {
     getDistName(buildType) {
         return buildType === 'quick' ? 'src' : (userConfig && userConfig.buildDir || 'dist');
     },
-    getRegeneratorRuntimePath: function (sourcePath) {
-        //小程序async/await语法依赖regenerator-runtime/runtime
-        try {
-            return nodeResolve.sync('regenerator-runtime/runtime', {
-                basedir: path.resolve(process.cwd(), 'source')
-            });
-            // const distPath = path.resolve(cwd, config.buildType === 'quick' ? './src' : './dist');
-            // console.log(path.resolve(distPath, './regenerator-runtime/runtime.js'));
-            // if (fs.ensureFileSync(path.resolve(distPath, 'regenerator-runtime/runtime.js'))) {
-            //     return path.resolve(distPath, 'regenerator-runtime/runtime');
-            // } else {
-            //     // eslint-disable-next-line
-            //     console.log(
-            //         'Error: ' +
-            //         sourcePath +
-            //         '\n' +
-            //         'Msg: ' +
-            //         chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
-            //     );
-            // }
-        } catch (err) {
-            // eslint-disable-next-line
-            console.log(
-                'Error: ' +
-                sourcePath +
-                '\n' +
-                'Msg: ' +
-                chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
-            );
-        }
-    },
     resolveStyleAlias(importer, basedir) {
         //解析样式中的alias别名配置
         let aliasMap = (userConfig && userConfig.alias) || {};

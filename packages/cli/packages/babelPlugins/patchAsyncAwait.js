@@ -10,8 +10,8 @@ let config = require('../../config/config');
 
 let copyFlag = false;
 let patchAsync = false;
-const pkgName = 'regenerator-runtime';
 
+const pkgName = 'regenerator-runtime';
 
 function needInstall( pkgName ){
     try {
@@ -59,9 +59,9 @@ module.exports  = [
             post: function(){
                 if ( patchAsync &&  !copyFlag ) {
                     if ( needInstall(pkgName) ) {
-                        utils.installer(pkgName);
+                        // 锁版本
+                        utils.installer(pkgName + '@0.12.1');
                     }
-
                     let dist = path.join( cwd, utils.getDistName(config.buildType), 'npm', `${pkgName}/runtime.js`);
                     let src =  path.join( cwd, 'node_modules', `${pkgName}/runtime.js`);
                     fs.ensureFileSync(dist);
