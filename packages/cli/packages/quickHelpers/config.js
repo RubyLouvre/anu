@@ -140,6 +140,23 @@ function setRouter(config) {
             component: 'index'
         }
     }
+
+    let userConfig = {};
+    try {
+        userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+        
+    } catch (err) {
+        // eslint-disable-next-line
+    }
+
+    if (
+        userConfig.router 
+        && Object.prototype.toString.call(userConfig.router) === '[object Object]'
+    ) 
+    {
+        Object.assign(manifest.router, userConfig.router);
+    }
+
 }
 
 
@@ -173,6 +190,9 @@ function setTitleBar(config) {
         display.titleBar = false;
         return;
     }
+
+    
+
     var win = config.window || {};
     var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages || [];
     disabledTitleBarPages.forEach(function(el){
