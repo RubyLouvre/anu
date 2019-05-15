@@ -11,7 +11,6 @@ const utils = require('../packages/utils/index');
 
 
 const cliRoot = path.resolve(__dirname, '..');
-const isWin = process.platform === 'win32';
 
 //删除dist目录, 以及快应的各配置文件
 function getRubbishFiles(buildType){
@@ -135,7 +134,7 @@ function getAssetsFile( buildType ) {
         return !/\.(js|scss|sass|less|css|json)$/.test(id)
     })
     .map(function(id){
-        let sourceReg = isWin ? /\\source\\/ : /\/source\//;
+        let sourceReg = /[\\/]source[\\/]/;
         let dist = id.replace(sourceReg, buildType === 'quick' ? `${path.sep}src${path.sep}` : `${path.sep}dist${path.sep}`);
         return {
             id: id,

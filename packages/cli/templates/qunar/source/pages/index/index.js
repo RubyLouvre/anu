@@ -184,6 +184,7 @@ class P extends React.Component {
                       return (
                           <div
                               class='item-wrapper'
+                              key={item.bizTitle}
                               onTap={this.gotoSome.bind(this, item.url)}
                           >
                               <image src={item.logoSrc} class={`itemBgc ${item.class}`} />
@@ -200,7 +201,7 @@ class P extends React.Component {
               <div class="tool-wrapper">
                   {this.state.toolData.map(function(item, index) {
                       return (
-                          <div onTap={this.showTip} class="tool-item" >
+                          <div onTap={this.showTip} class="tool-item" key={item.title} >
                               <image class="image" src={item.url} />
                               <text class="text">{item.title}</text>
                           </div>
@@ -217,7 +218,7 @@ class P extends React.Component {
                   >
                       {this.state.specialOfferData.map(function(item) {
                           return (
-                                  <swiper-item onTap={this.showTip}  class="special-offer-item anu-block">
+                                  <swiper-item onTap={this.showTip} key={item.title}  class="special-offer-item anu-block">
                                       <image class="special-offer-image" src={item.url} />
                                       <text class="special-offer-text">{item.title}</text>
                                   </swiper-item>

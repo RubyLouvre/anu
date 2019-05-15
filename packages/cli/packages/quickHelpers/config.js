@@ -4,7 +4,6 @@
 
 */
 const path = require('path');
-const utils = require('../utils');
 const platConfig = require('../../config/config');
 
 //默认manifest.json
@@ -130,6 +129,32 @@ function setRouter(config) {
             manifest.router.entry = routePath;
         } 
     });
+  
+    //webview路由跳转
+    var globalConfig = require('../../config/config');
+    if (globalConfig.webview && globalConfig.webview.pages.length) {
+        let routePath = 'pages/__web__view__';
+        manifest.router.pages[routePath] = {
+            component: 'index'
+        }
+    }
+
+    let userConfig = {};
+    try {
+        userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+        
+    } catch (err) {
+        // eslint-disable-next-line
+    }
+
+    if (
+        userConfig.router 
+        && Object.prototype.toString.call(userConfig.router) === '[object Object]'
+    ) 
+    {
+        Object.assign(manifest.router, userConfig.router);
+    }
+
 }
 
 
@@ -152,6 +177,9 @@ function setTitleBar(config) {
         display.titleBar = false;
         return;
     }
+
+    
+
     var win = config.window || {};
     var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages || [];
     disabledTitleBarPages.forEach(function(el){

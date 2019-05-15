@@ -88,7 +88,7 @@ export function initStorageSync (storageCache) {
 }
 function warnToInitStorage () {
     if (!initStorage) {
-    console.log('还没有初始化storageSync'); // eslint-disable-line
+       console.log('还没有初始化storageSync'); // eslint-disable-line
     }
 }
 export var setStorageSync = warnToInitStorage;

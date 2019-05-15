@@ -14,7 +14,6 @@ function getSavedFileInfo({
             errMsg: SUCCESS_MESSAGE,
             size: length,
             createTime: lastModifiedTime
-      
         });
     }
 

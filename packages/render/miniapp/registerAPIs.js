@@ -6,14 +6,14 @@ export function promisefyApis(ReactWX, facade, more) {
     Object.keys(weApis).forEach(key => {
         var needWrapper = more[key] || facade[key] || noop;
         if (!onAndSyncApis[key] && !noPromiseApis[key]) {
-            ReactWX.api[key] = options => {
-                options = options || {};
-              
-                if ( options +'' === options ) {
-                    return needWrapper(options);
+            ReactWX.api[key] = function(options) { 
+                var args = [].slice.call(arguments)
+                if ( ! options || Object(options) !== options ) {
+                    return needWrapper.apply(facade, args);
                 }
                 let task = null;
-                let obj = Object.assign({}, options);
+                let obj = Object.assign({}, options)
+                args[0] = obj;
                 const p = new Promise((resolve, reject) => {
                     ['fail', 'success', 'complete'].forEach(k => {
                         obj[k] = res => {
@@ -32,9 +32,8 @@ export function promisefyApis(ReactWX, facade, more) {
                     if (needWrapper === noop){
                         console.warn('平台未不支持',key, '方法');//eslint-disable-line
                     } else {
-                        task = needWrapper(obj);
+                        task = needWrapper.apply(facade, args);
                     }
-                   
                 });
                 if (key === 'uploadFile' || key === 'downloadFile') {
                     p.progress = cb => {

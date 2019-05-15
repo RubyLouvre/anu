@@ -31,7 +31,8 @@ import {
 import { setNavigationBarTitle } from './title';
 import { 
     getSystemInfo, 
-    getDeviceId 
+    getDeviceId,
+    getUserId
 } from './device.js';
 import { chooseImage } from './media.js';
 import { createShortcut, hasInstalled, shortcutInstall } from './shortcut.js';
@@ -52,7 +53,7 @@ import { createCanvasContext } from './canvas.js';
 import { pay, getProvider, wxpayGetType, wxpay, alipay} from './pay.js';
 function stopPullDownRefresh({success, fail, complete } = {}) {
     // 停止刷新没有作用
-    runCallbacks(function(){}, success, fail, complete );
+    runCallbacks(Number, success, fail, complete );
 }
 export var facade = {
     // 交互
@@ -139,5 +140,6 @@ export function more(){
         wxpay, 
         alipay,
         getDeviceId,
+        getUserId
     };
 } 

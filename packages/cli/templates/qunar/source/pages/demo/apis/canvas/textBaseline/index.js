@@ -13,7 +13,7 @@ class Data extends React.Component {
     this.drawCanvas2();
   }
   drawCanvas2() {
-    const ctx = React.api.createCanvasContext('myCanvas2', this);
+    const ctx = React.api.createCanvasContext('myCanvas2', this.wx);
     ctx.setStrokeStyle('red');
     ctx.moveTo(5, 375);
     ctx.lineTo(295, 375);
@@ -31,7 +31,21 @@ class Data extends React.Component {
     ctx.fillText('bottom', 120, 375);
     ctx.setTextBaseline('normal');
     ctx.fillText('normal', 200, 375);
-    ctx.draw();
+    var that = this;
+    ctx.draw(false, function(){
+      React.api.canvasToTempFilePath({
+        x: 100,
+        y: 200,
+        width: 500,
+        height: 500,
+        destWidth: 500,
+        destHeight: 500,
+        canvasId: 'myCanvas2',
+        success: function(res) {
+          console.log(res.tempFilePath, that.wx, React.api.canvasToTempFilePath+"")
+        } 
+      }, that.wx)
+    });
   }
 
   componentDidMount() {
@@ -40,6 +54,7 @@ class Data extends React.Component {
   render() {
     return (
       <div class="anu-block">
+        <div>测试setTextBaseline与canvasToTempFilePath</div>
         <canvas class="content" id="myCanvas2" />
       </div>
     );

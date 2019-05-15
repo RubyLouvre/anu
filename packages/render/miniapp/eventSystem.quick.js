@@ -1,6 +1,5 @@
 import { toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
-import { getBrandSync } from './apiForQuick/device';
 
 function getDataSetFromAttr(obj) {
     let ret = {};
