@@ -30,8 +30,7 @@ function beautifyUx(code){
 }
 
 function isNodeModulePath(fileId){
-    let isWin = utils.isWin();
-    let reg = isWin ? /\\node_modules\\/ : /\/node_modules\//;
+    let reg = /[\\/]node_modules[\\/]/;
     return reg.test(fileId);
 }
 
@@ -61,7 +60,7 @@ let map = {
                 path.dirname(sourcePath),
                 targetPath
             );
-            importSrc = utils.isWin() ? importSrc.replace(/\\/g, '/'): importSrc;
+            importSrc = importSrc.replace(/\\/g, '/');
             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
         });
         return importTag;
@@ -72,15 +71,15 @@ let map = {
         return `<script>\n${code}\n</script>`;
     },
     resolveComponents: function(data, queue){
-        let { result, sourcePath, relativePath } = data;
-        let isComponentReg = utils.isWin() ? /\\components\\/ : /\/components\// ;
+        let {result, sourcePath, relativePath} = data;
+        let isComponentReg = /[\\/]components[\\/]/;
         if (!isComponentReg.test(sourcePath)) return;
         queue.push({
             code: beautify.js(result.code.replace('console.log(nanachi)', 'export {React}')),
             path: relativePath,
             type: 'js'
         });
-        let reg = utils.isWin() ? /components\\(\w+)/ :  /components\/(\w+)/;
+        let reg = /components[\\/](\w+)/;
         var componentName =  sourcePath.match(reg)[1];
         result.code = `import ${componentName}, { React } from './index.js';
         export default  React.registerComponent(${componentName}, '${componentName}');`;
@@ -88,9 +87,11 @@ let map = {
 
 };
 
-module.exports = (data, queue)=>{
-    let { sourcePath, result, relativePath } = data;
-    var uxFile = quickFiles[utils.fixWinPath(sourcePath)];
+module.exports = async (data, queue)=>{
+    let {sourcePath, result} = data;
+    sourcePath = utils.fixWinPath(sourcePath);
+    var uxFile = quickFiles[sourcePath];
+
     //如果没有模板, 并且不是app，则认为这是个纯js模块。
     if (!uxFile || (!uxFile.template && uxFile.type != 'App')) {
         return {

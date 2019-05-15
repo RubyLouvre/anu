@@ -1,5 +1,4 @@
 import { runCallbacks } from '../utils.js';
-//import { getBrandSync } from './device';
 var router = require('@system.router');
 
 var rQuery = /\?(.*)/

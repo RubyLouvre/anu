@@ -14,8 +14,7 @@ function getCurrentKey(){
     return key;
 }
 
-export var dispatcher = {
-    useContext(getContext) {//这个实现并不正确
+export function useContext(getContext) {//这个实现并不正确
         if (isFn(getContext)){
             let fiber = getCurrentFiber();
             let context = getContext(fiber);
@@ -26,8 +25,8 @@ export var dispatcher = {
             return context;
         }
         return null;
-    },
-    useReducer(reducer, initValue, initAction) {//ok
+    }
+export function useReducerImpl(reducer, initValue, initAction) {//ok
         let fiber = getCurrentFiber();
         let key = getCurrentKey();
         let updateQueue = fiber.updateQueue;
@@ -47,8 +46,9 @@ export var dispatcher = {
 
         let value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
-    },
-    useCallbackOrMemo(create, deps, isMemo) {//ok
+    }
+    //useCallbackOrMemo
+export function useCallbackImpl(create, deps, isMemo) {//ok
         let fiber = getCurrentFiber();
         let key = getCurrentKey();
         let updateQueue = fiber.updateQueue;
@@ -65,8 +65,8 @@ export var dispatcher = {
         let value = isMemo ? create() : create;
         updateQueue[key] = [value, nextInputs];
         return value;
-    },
-    useRef(initValue) {//ok
+    }
+export function useRef(initValue) {//ok
         let fiber = getCurrentFiber();
         let key = getCurrentKey();
         let updateQueue = fiber.updateQueue;
@@ -74,10 +74,10 @@ export var dispatcher = {
             return updateQueue[key];
         }
         return updateQueue[key] = { current: initValue };
-    },
-    useEffect(create, deps, EffectTag, createList, destroyList) {//ok
+    }
+export function useEffectImpl(create, deps, EffectTag, createList, destroyList) {//ok
         let fiber = getCurrentFiber();
-        let cb = dispatcher.useCallbackOrMemo(create, deps);
+        let cb = useCallbackImpl(create, deps);
         if (fiber.effectTag % EffectTag) {
             fiber.effectTag *= EffectTag;
         }
@@ -85,11 +85,11 @@ export var dispatcher = {
         let list = updateQueue[createList] ||  (updateQueue[createList] = []);
         updateQueue[destroyList] ||  (updateQueue[destroyList] = []);
         list.push(cb);
-    },
-    useImperativeHandle(ref, create, deps) {
+    }
+export function useImperativeHandle(ref, create, deps) {
         const nextInputs = Array.isArray(deps) ? deps.concat([ref])
             : [ref, create];
-        dispatcher.useEffect(() => {
+        useEffectImpl(() => {
             if (typeof ref === 'function') {
                 const refCallback = ref;
                 const inst = create();
@@ -105,7 +105,6 @@ export var dispatcher = {
             }
         }, nextInputs);
     }
-};
 
 function getCurrentFiber() {
     return get(Renderer.currentOwner);

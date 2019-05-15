@@ -7,10 +7,7 @@ var globalHooks = {
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
-var showHideHooks = {
-    onShow: 'componentDidShow',
-    onHide: 'componentDidHide'
-};
+
 export function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
     let config = {
@@ -34,14 +31,13 @@ export function registerPage(PageClass, path, testObject) {
         config[hook] = function(e) {
             let instance = this.reactInstance,
              fn = instance[hook], 
-             fired = false,
              param = e 
             if (hook === 'onShareAppMessage'){
                 hook = 'onShare';
                 fn = fn || instance[hook];
             } else if (hook === 'onShow'){
-                if(this.options){ //支付宝小程序不存在
-                   instance.props.query =  this.options ;
+                if(this.options){ //支付宝小程序不存在this.options
+                   instance.props.query = this.options ;
                 }
                 param = instance.props.query
                 //在百度小程序，从A页面跳转到B页面，模拟器下是先触发A的onHide再触发B的onShow
@@ -51,7 +47,6 @@ export function registerPage(PageClass, path, testObject) {
                 _getApp().$$pagePath = instance.props.path;
             }
             if (isFn(fn)) {//页面级别
-                fired = true;
                 var ret =  fn.call(instance, param);
                 if (hook === 'onShare'){
                     return ret;
@@ -63,12 +58,6 @@ export function registerPage(PageClass, path, testObject) {
                 if (hook === 'onShare'){
                     return ret;
                 }
-            }
-
-            let discarded = showHideHooks[hook];
-            if (!fired && instance[discarded]){
-                console.warn(`${discarded} 已经被废弃，请使用${hook}`); //eslint-disable-line
-                instance[discarded](param);
             }
         };
     });

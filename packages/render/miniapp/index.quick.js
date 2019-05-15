@@ -2,10 +2,8 @@ import { Children } from 'react-core/Children';
 import { PropTypes } from 'react-core/PropTypes';
 import { Component } from 'react-core/Component';
 import { PureComponent } from 'react-core/PureComponent';
-import { createPortal } from 'react-core/createPortal';
 import {
     createElement,
-    cloneElement,
     isValidElement,
     createFactory
 } from 'react-core/createElement';
@@ -28,6 +26,14 @@ import {
     useComponent } from './utils';
 import { registerComponent } from './registerComponent.quick';
 import { registerPage } from './registerPage.quick';
+import { 
+    useState,
+    useReducer, 
+    useCallback,
+    useMemo,
+    useEffect, 
+    useContext } from 'react-core/hooks';
+
 let appMethods = {
     onLaunch: 'onCreate',
     onHide: 'onDestroy'
@@ -48,23 +54,29 @@ let React = getWindow().React = {
 
     Fragment,
     PropTypes,
-    Children,
+   // Children,
     Component,
-    createPortal,
+   // createPortal,
     createElement,
     createFactory,
-    cloneElement,
+   // cloneElement,
     PureComponent,
     isValidElement,
     createContext,
     toClass: miniCreateClass,
-    useComponent,
     registerComponent,
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
     registerPage,
     toStyle,
+    useState,
+    useReducer, 
+    useCallback,
+    useMemo,
+    useEffect, 
+    useContext,
+    useComponent,
     appType: 'quick',
     registerApp(demo){
         var app = {};
