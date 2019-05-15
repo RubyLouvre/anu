@@ -393,8 +393,8 @@ class Parser {
             })[0];
             if (cssPath) {
                 let extname = path.extname(cssPath).replace(/^\./, '');
-                quickFiles[data.id] = {
-                    cssPath: cssPath,
+                quickFiles[utils.fixWinPath(data.id)] = {
+                    cssPath: utils.fixWinPath(cssPath),
                     cssType: extname == 'scss' ? 'sass' : extname
                 };
             }

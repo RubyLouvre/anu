@@ -51,8 +51,7 @@ function beautifyUx(code){
 
 
 function isNodeModulePath(fileId){
-    let isWin = utils.isWin();
-    let reg = isWin ? /\\node_modules\\/ : /\/node_modules\//;
+    let reg = /[\\/]node_modules[\\/]/;
     return reg.test(fileId);
 }
 
@@ -75,7 +74,7 @@ let map = {
                 path.dirname(sourcePath),
                 fixPath(sourcePath, using[i])
             );
-            importSrc = utils.isWin() ? importSrc.replace(/\\/g, '/'): importSrc;
+            importSrc = importSrc.replace(/\\/g, '/');
             importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
         });
         return importTag;
@@ -123,13 +122,13 @@ let map = {
     },
     resolveComponents: function(data){
         let {result, sourcePath} = data;
-        let isComponentReg = utils.isWin() ? /\\components\\/ : /\/components\// ;
+        let isComponentReg = /[\\/]components[\\/]/;
         if (!isComponentReg.test(sourcePath)) return;
         queue.push({
             code: beautify.js(result.code.replace('console.log(nanachi)', 'export {React}')),
             path:  utils.updatePath(sourcePath, config.sourceDir, 'dist') 
         });
-        let reg = utils.isWin() ? /components\\(\w+)/ :  /components\/(\w+)/;
+        let reg = /components[\\/](\w+)/;
         var componentName =  sourcePath.match(reg)[1];
         result.code = `import ${componentName}, { React } from './index.js';
         export default  React.registerComponent(${componentName}, '${componentName}');`;
@@ -139,6 +138,7 @@ let map = {
 
 module.exports = async (data)=>{
     let {sourcePath, result} = data;
+    sourcePath = utils.fixWinPath(sourcePath);
     var uxFile = quickFiles[sourcePath];
 
     //如果没有模板, 并且不是app，则认为这是个纯js模块。
