@@ -93,7 +93,7 @@ async function transform(sourcePath, resolvedIds, originalCode) {
             path: utils.updatePath(sourcePath, config.sourceDir, 'dist'),
             type: 'js'
         };
-    
+        sourcePath = utils.fixWinPath(sourcePath);
         if (config.buildType == 'quick' && quickFiles[sourcePath] ) {
     
             // // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
