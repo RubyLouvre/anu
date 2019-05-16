@@ -142,17 +142,13 @@ let utils = {
         if (isNpm) {
             return '/npm/' + bag.source + '/components/' + nodeName + '/index';
         }
-        let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
         //如果XPicker中存在 import XOverlay from '../XOverlay/index';
         if ( isNodeModulePathReg.test(sourcePath) && /^\./.test(bag.source) ) {
             //获取用组件的绝对路径
+            let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
             return '/npm/' + importerAbPath.split(`${path.sep}npm${path.sep}`)[1]
         }
-        // 支持Components目录下定义子目录
-        const matchPath = importerAbPath.match(/components\/(.*)$/);
-        if (matchPath) {
-            return `/components/${matchPath[1]}`;
-        }
+        
         return `/components/${nodeName}/index`;
     },
     createAttribute(name, value) {
