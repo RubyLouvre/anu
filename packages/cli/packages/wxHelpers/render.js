@@ -105,23 +105,12 @@ exports.exit = function(astPath, type, componentName, modules) {
             parentClass.indexOf('.') == -1 &&
             config.buildType === 'ali'
         ) {
-            let nodeName = parentClass;
-            let bag = modules.importComponents[nodeName];
+            
             const config = modules.config;
             const using =
                 config.usingComponents || (config.usingComponents = {});
-            if (bag) {
-                let importerAbPath = path.resolve(path.dirname(modules.sourcePath), bag.source);
-                // 支持Components目录下定义子目录
-                const matchPath = importerAbPath.match(/components\/(.*)$/);
-                if (matchPath) {
-                    using['anu-' + parentClass.toLowerCase()] = `/components/${matchPath[1]}`;
-                } else {
-                    using['anu-' + parentClass.toLowerCase()] = '/components/' + parentClass + '/index';
-                }
-            } else {
-                using['anu-' + parentClass.toLowerCase()] = '/components/' + parentClass + '/index';
-            }
+            using['anu-' + parentClass.toLowerCase()] =
+                '/components/' + parentClass + '/index';
             
         }
 
