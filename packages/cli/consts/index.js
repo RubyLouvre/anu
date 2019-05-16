@@ -92,6 +92,10 @@ const BUILD_OPTIONS = {
     'analysis': {
         alias: 'a',
         desc: '打包产物分析'
+    },
+    'silent': {
+        alias: 's',
+        desc: '关闭eslint warning'
     }
 };
 
