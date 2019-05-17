@@ -71,6 +71,7 @@ exports.exit = function(astPath, type, componentName, modules) {
          */
         let jsxAst = babel.transform(jsx, {
             configFile: false,
+            comments: false,
             babelrc: false,
             plugins: [
                 [require('@babel/plugin-transform-react-jsx'), { pragma: 'h' }]
@@ -79,6 +80,7 @@ exports.exit = function(astPath, type, componentName, modules) {
         });
         expr.argument = jsxAst.ast.program.body[0];
         let wxml = wxmlHelper(`<block>{${jsx}}</block>`, modules).slice(7, -9); //去掉<block> </block>;
+        console.log(wxml)
 
         //添加import语句产生的显式依赖
         for (let i in modules.importComponents) {

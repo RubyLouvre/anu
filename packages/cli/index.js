@@ -167,11 +167,13 @@ async function nanachi({
 
         getWebViewRules();
 
+        await runBeforeParseTasks({ buildType: platform, beta, betaUi, compress });
+
         // 添加解码中文字符loader
         // postLoaders.unshift(require.resolve('./nanachi-loader/loaders/decodeChineseLoader'));
         if (compress) {
             // 添加代码压缩loader
-            postLoaders.unshift(require.resolve('nanachi-compress-loader'));
+            postLoaders.unshift('nanachi-compress-loader');
         }
 
         const webpackConfig = require('./config/webpackConfig')({
@@ -187,8 +189,6 @@ async function nanachi({
             rules,
             // maxAssetSize
         });
-
-        await runBeforeParseTasks({ buildType: platform, beta, betaUi });
 
         const compiler = webpack(webpackConfig);
 

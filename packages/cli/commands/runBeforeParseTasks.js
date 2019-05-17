@@ -8,7 +8,7 @@ const ora = require('ora');
 const glob = require('glob');
 const { REACT_LIB_MAP } = require('../consts/index');
 const utils = require('../packages/utils/index');
-
+const nodeResolve = require('resolve');
 
 const cliRoot = path.resolve(__dirname, '..');
 
@@ -193,11 +193,25 @@ function needInstallHapToolkit(){
     }
 }
 
-async function runTask({ buildType, beta, betaUi }){
+async function runTask({ buildType, beta, betaUi, compress }){
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
     let tasks  = [];
     
+    // 安装nanachi-compress-loader包
+    if (compress) {
+        const compressLoaderName = 'nanachi-compress-loader';
+        try {
+            nodeResolve.sync(compressLoaderName, { basedir: process.cwd() });
+        } catch (e) {
+            let spinner = ora(chalk.green.bold(`正在安装${compressLoaderName}`)).start();
+            utils.installer(
+                compressLoaderName,
+                '--save-dev'
+            );
+            spinner.succeed(chalk.green.bold(`${compressLoaderName}安装成功`));
+        }
+    }
 
     if (betaUi) {
         downloadSchneeUI();
