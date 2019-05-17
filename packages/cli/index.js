@@ -115,6 +115,7 @@ async function nanachi({
     postLoaders = [], // 自定义后处理loaders
     plugins = [],
     analysis = false,
+    silent = false, // 是否显示warning
     // maxAssetSize = 20480, // 最大资源限制，超出报warning
     complete = () => { }
 } = {}) {
@@ -138,7 +139,7 @@ async function nanachi({
                 }
             });
         }
-        if (stats.hasWarnings()) {
+        if (stats.hasWarnings() && !silent) {
             info.warnings.forEach(warning => {
                 // eslint-disable-next-line
                 console.warn(cleanLog(warning));

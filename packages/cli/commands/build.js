@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 
 module.exports = async function(args){
     try {
-        const { buildType, beta, betaUi, watch, compress, huawei,  analysis} = args;
+        const { buildType, beta, betaUi, watch, compress, huawei,  analysis, silent} = args;
         const nanachiConfig = {};
         const baseConfig = {
             platform: buildType,
@@ -14,7 +14,8 @@ module.exports = async function(args){
             compress,
             watch,
             huawei,
-            analysis
+            analysis,
+            silent
         };
         // 合并nanachi.config.js中的用户自定义配置
         if (fs.existsSync(NANACHI_CONFIG_PATH)) {
