@@ -1,6 +1,23 @@
 # Changelog
 
+# 1.2.4 (2019-05-17)
 
+## 核心库
+#### Feature
+- 添加React Hooks的支持，添加箭头函数的支持。
+- ReactWX添加结useState, useContext, useEffect的支持，并去掉Children, createPortal, cloneElement, isValidElement。
+- 抹平微信和qq小程序中getStorage api差异。
+
+#### Bug fix
+- 事件里可以条件绑定函数。
+
+## CLI
+#### Feature
+- regenerator-runtime锁定版本号。
+- 支持快应用自定义合并router。
+
+#### Bug fix
+- windows快应用产物后缀名bug。 [#984](https://github.com/RubyLouvre/anu/issues/984)
 
 # 1.2.2 (2019-04-26)
 
