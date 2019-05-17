@@ -19,6 +19,7 @@ const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 //处理 style
 const nanachiStyleLoader  = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
 
+
 module.exports = function({
     platform,
     compress,
@@ -37,13 +38,17 @@ module.exports = function({
     });
     const distPath = path.resolve(cwd, utils.getDistName(platform));
 
-    const copyPluginOption = compress ? {
-        transform(content, path) {
-            const type = path.replace(/.*\.(.*)$/, '$1');
-            return utils.compressImage(content, type, compressOption);
-        },
-        // cache: true,
-    } : null;
+    let copyPluginOption = null;
+    if (compress) {
+        const compressImage = require(path.resolve(process.cwd(), 'node_modules', 'nanachi-compress-loader/utils/compressImage.js'));
+        copyPluginOption = {
+            transform(content, path) {
+                const type = path.replace(/.*\.(.*)$/, '$1');
+                return compressImage(content, type, compressOption);
+            },
+            cache: true,
+        };
+    }
 
     var mergeRule = [].concat(
         {
