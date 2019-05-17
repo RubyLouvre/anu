@@ -50,7 +50,24 @@ module.exports = function({
         };
     }
 
-    var mergeRule = [].concat(
+    const nodeRules = [{
+        test: /node_modules[\\/](?!schnee-ui[\\/])/,
+        use: [].concat(
+            fileLoader, 
+            postLoaders, 
+            aliasLoader, 
+            nodeLoader) 
+    },
+    {
+        test: /React\w+/,
+        use: [].concat(
+            fileLoader, 
+            postLoaders,
+            nodeLoader, 
+            reactLoader),
+    }];
+
+    const mergeRule = [].concat(
         {
             test: /\.jsx?$/,
             //loader是从后往前处理
@@ -71,22 +88,7 @@ module.exports = function({
                 prevLoaders ) ,
             exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,
         },
-        {
-            test: /node_modules[\\/](?!schnee-ui[\\/])/,
-            use: [].concat(
-                fileLoader, 
-                postLoaders, 
-                aliasLoader, 
-                nodeLoader) 
-        },
-        {
-            test: /React/,
-            use: [].concat(
-                fileLoader, 
-                postLoaders,
-                nodeLoader, 
-                reactLoader),
-        },
+        platform !== 'h5' ? nodeRules : [],
         {
             test: /\.(s[ca]ss|less|css)$/,
             use: [].concat(
@@ -97,6 +99,7 @@ module.exports = function({
                 prevLoaders)
         },
         rules);
+
 
     return {
         entry: './source/app',

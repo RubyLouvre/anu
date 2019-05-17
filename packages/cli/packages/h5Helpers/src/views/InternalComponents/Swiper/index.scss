@@ -1,0 +1,43 @@
+.h5-swiper {
+  overflow: hidden;
+  width: 7.5rem; // 默认与屏幕同宽，7.5rem 这个值依赖项目的 rpx 转换
+  height: 150px; // 默认 150px
+  position: relative;
+}
+
+.h5-swiper-wrapper {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
+
+.h5-swiper-wrapper-vertical {
+  flex-direction: column;
+}
+
+.indicators {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+}
+
+.indicators-vertical {
+  flex-direction: column;
+  width: 20px;
+  height: 100%;
+  bottom: 'auto';
+  right: 0;
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin: 5px;
+}

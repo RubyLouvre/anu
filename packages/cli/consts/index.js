@@ -6,7 +6,7 @@ const REACT_LIB_MAP = {
     ali: 'ReactAli.js',
     bu: 'ReactBu.js',
     quick: 'ReactQuick.js',
-    h5: 'ReactH5.js',
+    h5: 'ReactIE.js',
     qq: 'ReactWX.js',
     tt: 'ReactWX.js'
 };
@@ -72,6 +72,10 @@ const MAP = {
     'quick': {
         EXT_NAME: {},
         patchComponents: ['radio', 'radio-group', 'checkbox', 'checkbox-group', 'label', 'navigator', 'picker']
+    },
+    'h5': {
+        EXT_NAME: {},
+        patchComponents: []
     }
 };
 

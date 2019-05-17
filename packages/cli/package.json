@@ -53,7 +53,7 @@
     "cssmin": "^0.4.3",
     "eslint": "^4.12.1",
     "eslint-loader": "^2.1.2",
-    "eslint-plugin-nanachi": "latest",
+    "eslint-plugin-nanachi": "file:../../../eslint-plugin-nanachi",
     "fs-extra": "^4.0.3",
     "glob": "^7.1.3",
     "html-minifier": "^3.5.21",
@@ -75,7 +75,7 @@
     "resolve": "^1.8.1",
     "sass": "^1.16.1",
     "stylelint": "^10.0.1",
-    "stylelint-plugin-nanachi": "latest",
+    "stylelint-plugin-nanachi": "file:../../../stylelint-plugin-nanachi",
     "table": "^5.2.3",
     "validate-npm-package-name": "^3.0.0",
     "webpack": "^4.29.6"
