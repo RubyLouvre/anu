@@ -11,7 +11,7 @@ const json = require('../../package.json');
 export default {
 
 
-    input: './packages/index.js',
+    input: './packages/react-reconciler/index.js',
     output: {
         strict: false,
         format: 'umd',
@@ -35,8 +35,15 @@ export default {
             patterns: [
                 {
                     test: 'VERSION',
+
                     // string or function to replaced with
                     replace: json.version
+                },
+                {
+                    test: '__DEV__',
+
+                    // string or function to replaced with
+                    replace: 'false'
                 }
             ]
         }),
