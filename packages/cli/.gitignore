@@ -38,3 +38,6 @@ Thumbs.db
 
 # pods ignore
 Pods/
+
+# local scripts
+.publish_scripts
