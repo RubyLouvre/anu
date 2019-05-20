@@ -9,8 +9,8 @@
 
 // Intentionally not named imports because Rollup would use dynamic dispatch for
 // CommonJS interop named imports.
-import * as Scheduler from 'scheduler';
-import {__interactionsRef} from 'scheduler/tracing';
+import * as Scheduler from 'scheduler/Scheduler';
+import { __interactionsRef } from 'scheduler/Tracing';
 import {
   disableYielding,
   enableSchedulerTracing,
@@ -38,10 +38,10 @@ if (enableSchedulerTracing) {
   invariant(
     __interactionsRef != null && __interactionsRef.current != null,
     'It is not supported to run the profiling version of a renderer (for ' +
-      'example, `react-dom/profiling`) without also replacing the ' +
-      '`scheduler/tracing` module with `scheduler/tracing-profiling`. Your ' +
-      'bundler might have a setting for aliasing both modules. Learn more at ' +
-      'http://fb.me/react-profiling',
+    'example, `react-dom/profiling`) without also replacing the ' +
+    '`scheduler/tracing` module with `scheduler/tracing-profiling`. Your ' +
+    'bundler might have a setting for aliasing both modules. Learn more at ' +
+    'http://fb.me/react-profiling',
   );
 }
 

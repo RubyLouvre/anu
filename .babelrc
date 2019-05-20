@@ -32,9 +32,9 @@
         "alias": {
           "react-core": "./packages/core",
           "react-fiber": "./packages/fiber",
-          "prop-types": "./lib/ReactPropTypes",
+          "prop-types": "./packages/prop-types",
           "shared": "./packages/shared",
-          "scheduler": "./packages/scheduler/src",
+          "scheduler": "./packages/scheduler/",
         }
       }
     ]

@@ -81,11 +81,5 @@
   },
   "dependencies": {
     "semver": "^5.5.1"
-  },
-  "nanachi": {
-    "alias": {
-      "@react": "../../../../dist/ReactWXTest.js",
-      "@components": "src/components"
-    }
   }
 }

@@ -7,19 +7,19 @@
  * @flow
  */
 
-import type {Fiber} from './ReactFiber';
-import type {ExpirationTime} from './ReactFiberExpirationTime';
-import type {FiberRoot} from './ReactFiberRoot';
+import type { Fiber } from './ReactFiber';
+import type { ExpirationTime } from './ReactFiberExpirationTime';
+import type { FiberRoot } from './ReactFiberRoot';
 import type {
   Instance,
-  Type,
-  Props,
-  Container,
-  ChildSet,
+    Type,
+    Props,
+    Container,
+    ChildSet,
 } from './ReactFiberHostConfig';
-import type {ReactEventComponentInstance} from 'shared/ReactTypes';
-import type {SuspenseState} from './ReactFiberSuspenseComponent';
-import type {SuspenseContext} from './ReactFiberSuspenseContext';
+import type { ReactEventComponentInstance } from 'shared/ReactTypes';
+import type { SuspenseState } from './ReactFiberSuspenseComponent';
+import type { SuspenseContext } from './ReactFiberSuspenseContext';
 
 import {
   IndeterminateComponent,
@@ -44,7 +44,7 @@ import {
   EventComponent,
   EventTarget,
 } from 'shared/ReactWorkTags';
-import {NoMode, BatchedMode} from './ReactTypeOfMode';
+import { NoMode, BatchedMode } from './ReactTypeOfMode';
 import {
   Placement,
   Ref,
@@ -89,7 +89,7 @@ import {
   popContext as popLegacyContext,
   popTopLevelContextObject as popTopLevelLegacyContextObject,
 } from './ReactFiberContext';
-import {popProvider} from './ReactFiberNewContext';
+import { popProvider } from './ReactFiberNewContext';
 import {
   prepareToHydrateHostInstance,
   prepareToHydrateHostTextInstance,
@@ -105,7 +105,7 @@ import {
   renderDidSuspend,
   renderDidSuspendDelayIfPossible,
 } from './ReactFiberScheduler';
-import {getEventComponentHostChildrenCount} from './ReactFiberEvents';
+import { getEventComponentHostChildrenCount } from './ReactFiberEvents';
 import getComponentName from 'shared/getComponentName';
 import warning from 'shared/warning';
 
@@ -126,7 +126,7 @@ let updateHostText;
 if (supportsMutation) {
   // Mutation mode
 
-  appendAllChildren = function(
+  appendAllChildren = function (
     parent: Instance,
     workInProgress: Fiber,
     needsVisibilityToggle: boolean,
@@ -161,10 +161,10 @@ if (supportsMutation) {
     }
   };
 
-  updateHostContainer = function(workInProgress: Fiber) {
+  updateHostContainer = function (workInProgress: Fiber) {
     // Noop
   };
-  updateHostComponent = function(
+  updateHostComponent = function (
     current: Fiber,
     workInProgress: Fiber,
     type: Type,
@@ -205,7 +205,7 @@ if (supportsMutation) {
       markUpdate(workInProgress);
     }
   };
-  updateHostText = function(
+  updateHostText = function (
     current: Fiber,
     workInProgress: Fiber,
     oldText: string,
@@ -219,7 +219,7 @@ if (supportsMutation) {
 } else if (supportsPersistence) {
   // Persistent host tree mode
 
-  appendAllChildren = function(
+  appendAllChildren = function (
     parent: Instance,
     workInProgress: Fiber,
     needsVisibilityToggle: boolean,
@@ -304,7 +304,7 @@ if (supportsMutation) {
   };
 
   // An unfortunate fork of appendAllChildren because we have two different parent types.
-  const appendAllChildrenToContainer = function(
+  const appendAllChildrenToContainer = function (
     containerChildSet: ChildSet,
     workInProgress: Fiber,
     needsVisibilityToggle: boolean,
@@ -387,7 +387,7 @@ if (supportsMutation) {
       node = node.sibling;
     }
   };
-  updateHostContainer = function(workInProgress: Fiber) {
+  updateHostContainer = function (workInProgress: Fiber) {
     const portalOrRoot: {
       containerInfo: Container,
       pendingChildren: ChildSet,
@@ -407,7 +407,7 @@ if (supportsMutation) {
       finalizeContainerChildren(container, newChildSet);
     }
   };
-  updateHostComponent = function(
+  updateHostComponent = function (
     current: Fiber,
     workInProgress: Fiber,
     type: Type,
@@ -476,7 +476,7 @@ if (supportsMutation) {
       appendAllChildren(newInstance, workInProgress, false, false);
     }
   };
-  updateHostText = function(
+  updateHostText = function (
     current: Fiber,
     workInProgress: Fiber,
     oldText: string,
@@ -499,10 +499,10 @@ if (supportsMutation) {
   };
 } else {
   // No host operations
-  updateHostContainer = function(workInProgress: Fiber) {
+  updateHostContainer = function (workInProgress: Fiber) {
     // Noop
   };
-  updateHostComponent = function(
+  updateHostComponent = function (
     current: Fiber,
     workInProgress: Fiber,
     type: Type,
@@ -511,7 +511,7 @@ if (supportsMutation) {
   ) {
     // Noop
   };
-  updateHostText = function(
+  updateHostText = function (
     current: Fiber,
     workInProgress: Fiber,
     oldText: string,
@@ -583,7 +583,7 @@ function completeWork(
           invariant(
             workInProgress.stateNode !== null,
             'We must have new props for new mounts. This error is likely ' +
-              'caused by a bug in React. Please file an issue.',
+            'caused by a bug in React. Please file an issue.',
           );
           // This can happen when we abort work.
           break;
@@ -656,7 +656,7 @@ function completeWork(
           invariant(
             workInProgress.stateNode !== null,
             'We must have new props for new mounts. This error is likely ' +
-              'caused by a bug in React. Please file an issue.',
+            'caused by a bug in React. Please file an issue.',
           );
           // This can happen when we abort work.
         }
@@ -815,7 +815,7 @@ function completeWork(
           invariant(
             wasHydrated,
             'A dehydrated suspense component was completed without a hydrated node. ' +
-              'This is probably a bug in React.',
+            'This is probably a bug in React.',
           );
           skipPastDehydratedSuspenseInstance(workInProgress);
         } else if ((workInProgress.effectTag & DidCapture) === NoEffect) {
@@ -899,11 +899,11 @@ function completeWork(
       invariant(
         false,
         'Unknown unit of work tag. This error is likely caused by a bug in ' +
-          'React. Please file an issue.',
+        'React. Please file an issue.',
       );
   }
 
   return null;
 }
 
-export {completeWork};
+export { completeWork };

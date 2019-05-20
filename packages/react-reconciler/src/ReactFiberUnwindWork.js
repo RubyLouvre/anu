@@ -7,15 +7,15 @@
  * @flow
  */
 
-import type {Fiber} from './ReactFiber';
-import type {FiberRoot} from './ReactFiberRoot';
-import type {ExpirationTime} from './ReactFiberExpirationTime';
-import type {CapturedValue} from './ReactCapturedValue';
-import type {Update} from './ReactUpdateQueue';
-import type {Thenable} from './ReactFiberScheduler';
-import type {SuspenseContext} from './ReactFiberSuspenseContext';
+import type { Fiber } from './ReactFiber';
+import type { FiberRoot } from './ReactFiberRoot';
+import type { ExpirationTime } from './ReactFiberExpirationTime';
+import type { CapturedValue } from './ReactCapturedValue';
+import type { Update } from './ReactUpdateQueue';
+import type { Thenable } from './ReactFiberScheduler';
+import type { SuspenseContext } from './ReactFiberSuspenseContext';
 
-import {unstable_wrap as Schedule_tracing_wrap} from 'scheduler/tracing';
+import { unstable_wrap as Schedule_tracing_wrap } from 'scheduler/Tracing';
 import getComponentName from 'shared/getComponentName';
 import warningWithoutStack from 'shared/warningWithoutStack';
 import {
@@ -42,10 +42,10 @@ import {
   enableSuspenseServerRenderer,
   enableEventAPI,
 } from 'shared/ReactFeatureFlags';
-import {NoMode, BatchedMode} from './ReactTypeOfMode';
-import {shouldCaptureSuspense} from './ReactFiberSuspenseComponent';
+import { NoMode, BatchedMode } from './ReactTypeOfMode';
+import { shouldCaptureSuspense } from './ReactFiberSuspenseComponent';
 
-import {createCapturedValue} from './ReactCapturedValue';
+import { createCapturedValue } from './ReactCapturedValue';
 import {
   enqueueCapturedUpdate,
   createUpdate,
@@ -53,10 +53,10 @@ import {
   ForceUpdate,
   enqueueUpdate,
 } from './ReactUpdateQueue';
-import {logError} from './ReactFiberCommitWork';
-import {getStackByFiberInDevAndProd} from './ReactCurrentFiber';
-import {popHostContainer, popHostContext} from './ReactFiberHostContext';
-import {markFailedErrorBoundaryForHotReloading} from './ReactFiberHotReloading';
+import { logError } from './ReactFiberCommitWork';
+import { getStackByFiberInDevAndProd } from './ReactCurrentFiber';
+import { popHostContainer, popHostContext } from './ReactFiberHostContext';
+import { markFailedErrorBoundaryForHotReloading } from './ReactFiberHotReloading';
 import {
   suspenseStackCursor,
   InvisibleParentSuspenseContext,
@@ -68,7 +68,7 @@ import {
   popContext as popLegacyContext,
   popTopLevelContextObject as popTopLevelLegacyContextObject,
 } from './ReactFiberContext';
-import {popProvider} from './ReactFiberNewContext';
+import { popProvider } from './ReactFiberNewContext';
 import {
   renderDidError,
   onUncaughtError,
@@ -81,7 +81,7 @@ import {
 
 import invariant from 'shared/invariant';
 
-import {Sync} from './ReactFiberExpirationTime';
+import { Sync } from './ReactFiberExpirationTime';
 
 const PossiblyWeakSet = typeof WeakSet === 'function' ? WeakSet : Set;
 const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
@@ -96,7 +96,7 @@ function createRootErrorUpdate(
   update.tag = CaptureUpdate;
   // Caution: React DevTools currently depends on this property
   // being called "element".
-  update.payload = {element: null};
+  update.payload = { element: null };
   const error = errorInfo.value;
   update.callback = () => {
     onUncaughtError(error);
@@ -148,7 +148,7 @@ function createClassErrorUpdate(
           warningWithoutStack(
             fiber.expirationTime === Sync,
             '%s: Error boundaries should implement getDerivedStateFromError(). ' +
-              'In that method, return a state update to display an error message or fallback UI.',
+            'In that method, return a state update to display an error message or fallback UI.',
             getComponentName(fiber.type) || 'Unknown',
           );
         }
@@ -310,7 +310,7 @@ function throwException(
           invariant(
             current,
             'A dehydrated suspense boundary must commit before trying to render. ' +
-              'This is probably a bug in React.',
+            'This is probably a bug in React.',
           );
           current.memoizedState = retryCache;
         }
@@ -335,11 +335,11 @@ function throwException(
     // TODO: Use invariant so the message is stripped in prod?
     value = new Error(
       (getComponentName(sourceFiber.type) || 'A React component') +
-        ' suspended while rendering, but no fallback UI was specified.\n' +
-        '\n' +
-        'Add a <Suspense fallback=...> component higher in the tree to ' +
-        'provide a loading indicator or placeholder to display.' +
-        getStackByFiberInDevAndProd(sourceFiber),
+      ' suspended while rendering, but no fallback UI was specified.\n' +
+      '\n' +
+      'Add a <Suspense fallback=...> component higher in the tree to ' +
+      'provide a loading indicator or placeholder to display.' +
+      getStackByFiberInDevAndProd(sourceFiber),
     );
   }
 
@@ -418,7 +418,7 @@ function unwindWork(
       invariant(
         (effectTag & DidCapture) === NoEffect,
         'The root failed to unmount after an error. This is likely a bug in ' +
-          'React. Please file an issue.',
+        'React. Please file an issue.',
       );
       workInProgress.effectTag = (effectTag & ~ShouldCapture) | DidCapture;
       return workInProgress;

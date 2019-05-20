@@ -12,13 +12,13 @@ import type { ExpirationTime } from './ReactFiberExpirationTime';
 import type { RootTag } from 'shared/ReactRootTags';
 import type { TimeoutHandle, NoTimeout } from './ReactFiberHostConfig';
 import type { Thenable } from './ReactFiberScheduler';
-import type { Interaction } from 'scheduler/tracing';
+import type { Interaction } from 'scheduler/Tracing';
 
 import { noTimeout } from './ReactFiberHostConfig';
 import { createHostRootFiber } from './ReactFiber';
 import { NoWork } from './ReactFiberExpirationTime';
 import { enableSchedulerTracing } from 'shared/ReactFeatureFlags';
-import { unstable_getThreadID } from 'scheduler/tracing';
+import { unstable_getThreadID } from 'scheduler/Tracing';
 
 // TODO: This should be lifted into the renderer.
 export type Batch = {

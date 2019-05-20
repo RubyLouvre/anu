@@ -7,10 +7,10 @@
  * @flow
  */
 
-import type {Interaction, Subscriber} from './Tracing';
+import type { Interaction, Subscriber } from './Tracing';
 
-import {enableSchedulerTracing} from 'shared/ReactFeatureFlags';
-import {__subscriberRef} from './Tracing';
+import { enableSchedulerTracing } from 'shared/ReactFeatureFlags';
+import { __subscriberRef } from './Tracing';
 
 let subscribers: Set<Subscriber> = (null: any);
 if (enableSchedulerTracing) {
