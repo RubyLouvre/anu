@@ -69,6 +69,9 @@ let React = (getWindow().React = {
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
     registerPage,
+    registerApp:function(){
+        this.api.__app = app;
+    },
     toStyle,
     useState,
     useReducer, 
@@ -77,7 +80,7 @@ let React = (getWindow().React = {
     useEffect, 
     useContext,
     useComponent,
-    appType: 'bu'
+    appType: 'h5'
 });
 let apiContainer = {
     __app: {},
