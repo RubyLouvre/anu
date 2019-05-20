@@ -22,7 +22,7 @@ module.exports = function(modules, json) {
     json[keys[buildType]] = json[keys[buildType]] || [];
     let subPackages = [];
     try {
-        appRootConfig = require( path.join(process.cwd(), `${buildType}Config.json`) );
+        appRootConfig = require( path.join(process.cwd(), 'source', `${buildType}Config.json`) );
         subPackages = appRootConfig.subpackages || appRootConfig.subPackages || [];
     } catch (err) {
        
