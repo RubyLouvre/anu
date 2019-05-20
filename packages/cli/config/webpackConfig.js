@@ -4,6 +4,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
 const utils = require('../packages/utils/index');
+const { intermediateDirectoryName } = require('./h5/configurations');
 //各种loader
 //生成文件
 const fileLoader = require.resolve('../nanachi-loader/loaders/fileLoader');
@@ -18,7 +19,6 @@ const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 
 //处理 style
 const nanachiStyleLoader  = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
-
 
 module.exports = function({
     platform,
@@ -36,7 +36,10 @@ module.exports = function({
     Object.keys(aliasMap).forEach(alias => {
         aliasMap[alias] = path.resolve(cwd, aliasMap[alias]);
     });
-    const distPath = path.resolve(cwd, utils.getDistName(platform));
+    let distPath = path.resolve(cwd, utils.getDistName(platform));
+    if (platform === 'h5') {
+        distPath = path.resolve(__dirname, '../packages/h5Helpers/pageWrapper', intermediateDirectoryName);
+    }
 
     let copyPluginOption = null;
     if (compress) {
@@ -57,14 +60,6 @@ module.exports = function({
             postLoaders, 
             aliasLoader, 
             nodeLoader) 
-    },
-    {
-        test: /React\w+/,
-        use: [].concat(
-            fileLoader, 
-            postLoaders,
-            nodeLoader, 
-            reactLoader),
     }];
 
     const mergeRule = [].concat(
@@ -74,7 +69,7 @@ module.exports = function({
             use: [].concat(
                 fileLoader, 
                 postLoaders, 
-                aliasLoader, 
+                platform !== 'h5' ? aliasLoader: [], 
                 nanachiLoader,
                 {
                     loader: require.resolve('eslint-loader'),
@@ -90,11 +85,19 @@ module.exports = function({
         },
         platform !== 'h5' ? nodeRules : [],
         {
+            test: /React\w+/,
+            use: [].concat(
+                fileLoader, 
+                postLoaders,
+                nodeLoader, 
+                reactLoader),
+        },
+        {
             test: /\.(s[ca]ss|less|css)$/,
             use: [].concat(
                 fileLoader, 
                 postLoaders, 
-                aliasLoader, 
+                platform !== 'h5' ? aliasLoader : [], 
                 nanachiStyleLoader,
                 prevLoaders)
         },
@@ -134,6 +137,10 @@ module.exports = function({
             alias: aliasMap,
             mainFields: ['main']
         },
+        externals: {
+            'react-loadable': 'Loadable',
+            '@qunar-default-loading': 'QunarDefaultLoading'
+        }
         // performance: {
         //     hints: 'warning',
         //     assetFilter(filename) {

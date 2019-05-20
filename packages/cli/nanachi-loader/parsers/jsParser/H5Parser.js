@@ -9,17 +9,11 @@ class H5Parser extends JavascriptParser{
             comments: false,
             ast: true,
             plugins: [
-                [require('@babel/plugin-proposal-decorators'), { legacy: true }],
-                /**
-                 * [babel 6 to 7] 
-                 * v6 default config: ["plugin", { "loose": true }]
-                 * v7 default config: ["plugin"]
-                 */
                 [
                     require('@babel/plugin-proposal-class-properties'),
                     { loose: true }
                 ],
-                //require('@babel/plugin-proposal-object-rest-spread'),
+                require('@babel/plugin-proposal-object-rest-spread'),
                 [
                     //重要,import { Xbutton } from 'schnee-ui' //按需引入
                     require('babel-plugin-import').default,
@@ -29,10 +23,12 @@ class H5Parser extends JavascriptParser{
                         camel2DashComponentName: false
                     }
                 ],
-                require('@babel/plugin-syntax-jsx'),
-                require('../../../packages/babelPlugins/transformH5App')
+                require('@babel/plugin-syntax-jsx')
             ]
         };
+        if (this.componentType === 'App') {
+            this._babelPlugin.plugins.push(require('../../../packages/babelPlugins/transformH5App'));
+        }
     }
     async parse() {
         const res = await super.parse();

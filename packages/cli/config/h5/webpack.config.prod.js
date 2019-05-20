@@ -7,5 +7,5 @@ const developmentConfig = require('./webpack.config');
 const merge = require('webpack-merge');
 
 module.exports = merge(developmentConfig, {
-  mode: 'development'
+    mode: 'development'
 });

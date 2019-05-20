@@ -3,6 +3,7 @@ const path = require('path');
 const cwd = process.cwd();
 const globalConfig = require('./config/config.js');
 const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
+const createH5Server = require('./commands/createH5Server');
 const platforms = require('./consts/platforms');
 const utils = require('./packages/utils/index');
 const { errorLog, warningLog } = require('./nanachi-loader/logger/index');
@@ -120,13 +121,11 @@ async function nanachi({
     complete = () => { }
 } = {}) {
     function callback(err, stats) {
-
         if (err) {
             // eslint-disable-next-line
             console.log(err);
             return;
         }
-
        
         showLog();
         const info = stats.toJson();
@@ -145,6 +144,11 @@ async function nanachi({
                 console.warn(cleanLog(warning));
             });
         }
+
+        if (platform === 'h5') {
+            createH5Server();
+        }
+
         complete(err, stats);
     }
     try {

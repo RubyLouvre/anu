@@ -26,6 +26,19 @@ class JavascriptParser {
         this.extraModules = [];
         this.parsedCode = '';
         this.ast = null;
+        this.componentType = null;
+        this.setComponentType();
+    }
+    setComponentType() {
+        if (
+            /\/components\//.test(this.filepath)                
+        ) {
+            this.componentType = 'Component';
+        } else if (/\/pages\//.test(this.filepath)) {
+            this.componentType = 'Page';
+        } else if (/app\.js$/.test(this.filepath)) {
+            this.componentType = 'App';
+        }
     }
     
     async parse() {
