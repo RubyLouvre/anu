@@ -44,7 +44,16 @@ export default {
 
                     // string or function to replaced with
                     replace: 'false'
+                },
+                {
+                    test: '__PROFILE__',
+
+                    // string or function to replaced with
+                    replace: 'false'
                 }
+
+
+                
             ]
         }),
 

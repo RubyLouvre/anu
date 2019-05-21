@@ -78,8 +78,5 @@
     "rollup-plugin-license": "^0.6.0",
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-re": "^1.0.6"
-  },
-  "dependencies": {
-    "semver": "^5.5.1"
   }
 }
