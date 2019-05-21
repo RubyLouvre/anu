@@ -63,12 +63,6 @@ function injectBuildEnv({ buildType, compress, huawei } = {}) {
     }
 }
 
-function validatePlatform(platform) {
-    return platforms.some((p) => {
-        return p.buildType === platform;
-    });
-}
-
 function showLog() {
     if ( utils.isMportalEnv() ) {
         let log = '';
@@ -91,15 +85,6 @@ function showLog() {
             process.exit(1);
         }
     }
-}
-
-function cleanLog(log) {
-    // 清理eslint stylelint错误日志内容
-    const reg = /[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm;
-    if (reg.test(log)) {
-        return log.replace(/^\s*@[\s\S]*$/gm, '').replace(reg, '');
-    }
-    return log;
 }
 
 async function nanachi({
@@ -132,7 +117,7 @@ async function nanachi({
         if (stats.hasErrors()) {
             info.errors.forEach(e => {
                 // eslint-disable-next-line
-                console.error(cleanLog(e));
+                console.error(utils.cleanLog(e));
                 if (utils.isMportalEnv()) {
                     process.exit();
                 }
@@ -141,27 +126,27 @@ async function nanachi({
         if (stats.hasWarnings() && !silent) {
             info.warnings.forEach(warning => {
                 // eslint-disable-next-line
-                console.warn(cleanLog(warning));
+                console.warn(utils.cleanLog(warning));
             });
         }
 
         if (platform === 'h5') {
-            createH5Server();
+            const webpackH5Config = require('./config/h5/webpack.config.js');
+            const compilerH5 = webpack(webpackH5Config);
+            if (watch) {
+                createH5Server(compilerH5);
+            } else {
+                compilerH5.run();
+            }
         }
 
         complete(err, stats);
     }
     try {
 
-        if (!validatePlatform(platform)) {
+        if (!utils.validatePlatform(platform, platforms)) {
             throw new Error(`不支持的platform：${platform}`);
         }
-
-        // if (platform === 'h5') {
-        //     require(`mini-html5/runkit/${watch ? 'run' : 'build'}`);
-        //     return;
-        // }
-
 
         injectBuildEnv({
             buildType: platform,

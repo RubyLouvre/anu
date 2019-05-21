@@ -11,9 +11,8 @@ module.exports = merge(developmentConfig, {
                 loader: 'babel-loader',
                 options: {
                     exclude: [/node_modules/],
-                    // include: ['h5Helpers/pageWrapper/src/*'],
                     cacheDirectory: true,
-                    root: path.resolve(__dirname, './packages/h5Helpers/pageWrapper'),
+                    root: path.resolve(__dirname, '../../packages/h5Helpers/pageWrapper'),
                     plugins: [
                         require.resolve('styled-jsx/babel'),
                         require.resolve('@babel/plugin-transform-runtime'),

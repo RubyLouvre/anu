@@ -10,7 +10,7 @@ class H5Parser extends JavascriptParser{
             ast: true,
             plugins: [
                 [
-                    require('@babel/plugin-proposal-class-properties'),
+                    require('@babel/plugin-syntax-class-properties'),
                     { loose: true }
                 ],
                 require('@babel/plugin-proposal-object-rest-spread'),
@@ -23,11 +23,14 @@ class H5Parser extends JavascriptParser{
                         camel2DashComponentName: false
                     }
                 ],
-                require('@babel/plugin-syntax-jsx')
+                require('@babel/plugin-syntax-jsx'),
+                require('../../../packages/babelPlugins/transformH5')
             ]
         };
         if (this.componentType === 'App') {
             this._babelPlugin.plugins.push(require('../../../packages/babelPlugins/transformH5App'));
+        } else if (this.componentType === 'Page') {
+            this._babelPlugin.plugins.push(require('../../../packages/babelPlugins/transformH5Page'));
         }
     }
     async parse() {

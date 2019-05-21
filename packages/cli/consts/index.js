@@ -70,11 +70,21 @@ const MAP = {
         patchComponents: []
     },
     'quick': {
-        EXT_NAME: {},
+        EXT_NAME: {
+            'css': 'css',
+            'scss': 'css',
+            'sass': 'css',
+            'less': 'css'
+        },
         patchComponents: ['radio', 'radio-group', 'checkbox', 'checkbox-group', 'label', 'navigator', 'picker']
     },
     'h5': {
-        EXT_NAME: {},
+        EXT_NAME: {
+            'css': 'css',
+            'scss': 'css',
+            'sass': 'css',
+            'less': 'css'
+        },
         patchComponents: []
     }
 };

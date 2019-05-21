@@ -1,6 +1,7 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
 const SizePlugin = require('../nanachi-loader/sizePlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
 const utils = require('../packages/utils/index');
@@ -132,6 +133,7 @@ module.exports = function({
                     '**/*.@(js|jsx|json|sass|scss|less|css)'
                 ]
             }),
+            new CleanWebpackPlugin(),
             plugins),
         resolve: {
             alias: aliasMap,
@@ -139,7 +141,8 @@ module.exports = function({
         },
         externals: {
             'react-loadable': 'Loadable',
-            '@qunar-default-loading': 'QunarDefaultLoading'
+            '@qunar-default-loading': 'QunarDefaultLoading',
+            '@dynamic-page-loader': 'DynamicPageLoader'
         }
         // performance: {
         //     hints: 'warning',

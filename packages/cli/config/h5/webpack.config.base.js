@@ -1,5 +1,6 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 const R = require('ramda');
@@ -18,18 +19,18 @@ module.exports = {
     mode: 'development',
     context,
     target: 'web',
-    entry: ['webpack-dev-server/client?http://localhost:9091', resolveFromContext('src/index.js')],
+    entry: resolveFromContext('src/index.js'),
     output: {
-        path: resolveFromContext(outputDirectory),
+        path: resolveFromDirCwd(outputDirectory),
         filename: 'bundle.[hash:10].js',
         publicPath: '/'
     },
     resolve: {
         alias: {
             ...retrieveNanachiConfig(),
-            react: resolveFromDirCwd('src/library/React.js'),
-            '@react': resolveFromContext('src/library/React.js'),
-            'react-dom': resolveFromContext('src/library/React.js'),
+            react: resolveFromContext(`${intermediateDirectoryName}/ReactIE.js`),
+            '@react': resolveFromContext(`${intermediateDirectoryName}/ReactIE.js`),
+            'react-dom': resolveFromContext(`${intermediateDirectoryName}/ReactIE.js`),
             'schnee-ui': resolveFromContext(`${intermediateDirectoryName}/schnee-ui`),
             '@shared': resolveFromContext('./src/shared'),
             '@internalComponents': resolveFromContext('src/views/InternalComponents'),
@@ -47,21 +48,11 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.s?[ac]ss$/,
+                test: /\.(sa|s?c|le)ss$/,
                 use: [
                     'style-loader',
                     MiniCssExtractPlugin.loader,
-                    'css-loader',
-                    'postcss-sass-loader'
-                ]
-            },
-            {
-                test: /\.less$/,
-                use: [
-                    'style-loader',
-                    MiniCssExtractPlugin.loader,
-                    'css-loader',
-                    'postcss-less-loader'
+                    'css-loader'
                 ]
             },
             {
@@ -85,7 +76,8 @@ module.exports = {
         }),
         new webpack.EnvironmentPlugin({
             ANU_ENV: 'web'
-        })
+        }),
+        new CleanWebpackPlugin()
     ],
     stats: 'errors-only',
     devServer: {

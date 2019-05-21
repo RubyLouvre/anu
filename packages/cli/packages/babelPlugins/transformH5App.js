@@ -20,9 +20,7 @@ const buildAsyncImport = template(
 
 
 module.exports = function({types: t}){
-    let pageIndex = 0;
     const exportedPages = t.arrayExpression();
-
     return {
         visitor: {
             Program: {
@@ -45,7 +43,7 @@ module.exports = function({types: t}){
                     return;
                 }
                 const modules = utils.getAnu(state);
-                const pageName = `Page_${pageIndex++}`;
+                const pageName = `Page_${utils.getAnu(state).pageIndex++}`;
                 const pageItem = t.objectExpression([
                     t.objectProperty(
                         t.identifier('url'),
@@ -64,14 +62,14 @@ module.exports = function({types: t}){
             ClassDeclaration(astPath) {
                 // 移除app父类
                 astPath.get('superClass').remove();
+            },
+            ClassProperty(astPath) {
+                // console.log('ClassProperty')
+            },
+            ExportDefaultDeclaration(astPath) {
+                const newAppNode = astPath.get('declaration').get('arguments')[0].node;
+                astPath.get('declaration').replaceWith(newAppNode);
             }
-        },
-        manipulateOptions(opts) {
-            //解析每个文件前执行一次
-            opts.anu = {
-                extraModules: [], // 用于webpack分析依赖，将babel中删除的依赖关系暂存
-                queue: []
-            };
         }
     };
 };

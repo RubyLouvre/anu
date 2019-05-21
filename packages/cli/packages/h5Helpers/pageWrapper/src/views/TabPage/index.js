@@ -9,6 +9,7 @@ class TabPage extends Component {
     const {
       tabPage: { pages, tabBarItems, ...tabBarProps }
     } = this.props;
+    console.log(tabBarItems.length)
 
     return (
       <div>

@@ -389,6 +389,19 @@ let utils = {
     },
     isMportalEnv() {
         return ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase()))
+    },
+    cleanLog(log) {
+        // 清理eslint stylelint错误日志内容
+        const reg = /[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm;
+        if (reg.test(log)) {
+            return log.replace(/^\s*@[\s\S]*$/gm, '').replace(reg, '');
+        }
+        return log;
+    },
+    validatePlatform(platform, platforms) {
+        return platforms.some((p) => {
+            return p.buildType === platform;
+        });
     }
 };
 
