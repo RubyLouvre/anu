@@ -8,7 +8,7 @@ const sourceDirectoryName = 'source';
 const assetsDirectoryName = 'assets';
 const outputDirectory = 'dist';
 const production = process.env.NODE_ENV === 'production';
-const rootDirectory = path.resolve(process.cwd(), 'dist');
+const rootDirectory = path.resolve(__dirname, '../../packages/h5Helpers/pageWrapper');
 
 const resolveFromContext = R.curryN(2, path.resolve)(rootDirectory);
 
@@ -41,7 +41,6 @@ function retrieveNanachiConfig() {
       new Error(`cannot find package.json in ${cwd}`);
     const { nanachi = {} } = packageJson;
     const { alias = {} } = nanachi;
-
     return resolveNanachiAlias(alias);
 }
 

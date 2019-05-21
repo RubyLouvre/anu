@@ -104,7 +104,6 @@ module.exports = function({
         },
         rules);
 
-
     return {
         entry: './source/app',
         mode: 'development',
@@ -139,11 +138,7 @@ module.exports = function({
             alias: aliasMap,
             mainFields: ['main']
         },
-        externals: {
-            'react-loadable': 'Loadable',
-            '@qunar-default-loading': 'QunarDefaultLoading',
-            '@dynamic-page-loader': 'DynamicPageLoader'
-        }
+        externals: ['react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/]
         // performance: {
         //     hints: 'warning',
         //     assetFilter(filename) {

@@ -14,7 +14,6 @@ const {
 const context = path.resolve(__dirname, '../../packages/h5Helpers/pageWrapper');
 const resolveFromContext = R.curryN(2, path.resolve)(context);
 const resolveFromDirCwd = R.curryN(2, path.resolve)(process.cwd());
-
 module.exports = {
     mode: 'development',
     context,
@@ -48,11 +47,31 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.(sa|s?c|le)ss$/,
+                test: /\.s?[ac]ss$/,
                 use: [
                     'style-loader',
                     MiniCssExtractPlugin.loader,
-                    'css-loader'
+                    'css-loader',
+                    {
+                        loader: 'postcss-sass-loader',
+                        options: {
+                            plugin: []
+                        }
+                    }
+                ]
+            },
+            {
+                test: /\.less$/,
+                use: [
+                    'style-loader',
+                    MiniCssExtractPlugin.loader,
+                    'css-loader',
+                    {
+                        loader: 'postcss-less-loader',
+                        options: {
+                            plugin: []
+                        }
+                    }
                 ]
             },
             {
@@ -79,16 +98,5 @@ module.exports = {
         }),
         new CleanWebpackPlugin()
     ],
-    stats: 'errors-only',
-    devServer: {
-        host: '0.0.0.0',
-        port: 9090,
-        historyApiFallback: true,
-        noInfo: true,
-        stats: 'errors-only',
-        overlay: true,
-        watchOptions: {
-            poll: 500
-        }
-    }
+    stats: 'errors-only'
 };

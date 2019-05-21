@@ -1,5 +1,5 @@
 const template = require('@babel/template').default;
-const utils = require('../utils/index');
+const utils = require('../../utils/index');
 
 const importedPagesTemplatePrefixCode = template(`
 import Loadable from 'react-loadable';
@@ -19,7 +19,7 @@ const buildAsyncImport = template(
 );
 
 
-module.exports = function({types: t}){
+module.exports = function ({ types: t }) {
     const exportedPages = t.arrayExpression();
     return {
         visitor: {
@@ -63,8 +63,36 @@ module.exports = function({types: t}){
                 // 移除app父类
                 astPath.get('superClass').remove();
             },
-            ClassProperty(astPath) {
-                // console.log('ClassProperty')
+            ClassProperty: path => {
+                if (
+                    path.get('key').isIdentifier({
+                        name: 'config'
+                    })
+                ) {
+                    path.traverse({
+                        ObjectProperty: property => {
+                            const { key, value } = property.node;
+                            let name;
+
+                            if (t.isIdentifier(key)) name = key.name;
+                            if (t.isStringLiteral(key)) name = key.value;
+
+                            if (name === 'iconPath' || name === 'selectedIconPath') {
+                                if (t.isStringLiteral(value)) {
+                                    property
+                                        .get('value')
+                                        .replaceWith(
+                                            t.callExpression(t.identifier('require'), [
+                                                t.stringLiteral(
+                                                    `@${value.value.replace(/^(\.?\/)/, '')}`
+                                                )
+                                            ])
+                                        );
+                                }
+                            }
+                        }
+                    });
+                }
             },
             ExportDefaultDeclaration(astPath) {
                 const newAppNode = astPath.get('declaration').get('arguments')[0].node;
@@ -73,4 +101,3 @@ module.exports = function({types: t}){
         }
     };
 };
-    
