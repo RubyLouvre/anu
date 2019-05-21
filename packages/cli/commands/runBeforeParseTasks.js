@@ -123,7 +123,12 @@ function getReactLibFile(ReactLibName) {
 }
 
 function getAssetsFile( buildType ) {
-    const quickConfig = require(path.resolve(cwd, 'quickConfig.json'));
+    let quickConfig;
+    try {
+        quickConfig = require(path.resolve(cwd, 'quickConfig.json'));
+    } catch (err) {
+        // quickConfig可能不存在
+    }
     const assetsDir = path.join(cwd, 'source', 'assets');
     let files = glob.sync( assetsDir+'/**', {nodir: true});
     
