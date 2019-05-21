@@ -4,8 +4,16 @@
  */
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('react'), require('react-dom/src/client/ReactDOMHostConfig'), require('react-reconciler/reflection'), require('react-reconciler/src/ReactUpdateQueue')) :
-  typeof define === 'function' && define.amd ? define(['react', 'react-dom/src/client/ReactDOMHostConfig', 'react-reconciler/reflection', 'react-reconciler/src/ReactUpdateQueue'], factory) :
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(
+    require('react'), 
+    require('react-dom/src/client/ReactDOMHostConfig'), 
+    require('react-reconciler/reflection'), 
+    require('react-reconciler/src/ReactUpdateQueue')) :
+  typeof define === 'function' && define.amd ? define([
+    'react', 
+    'react-dom/src/client/ReactDOMHostConfig', 
+    'react-reconciler/reflection', 
+    'react-reconciler/src/ReactUpdateQueue'], factory) :
   (global.React = factory(global.React,global.ReactDOMHostConfig,global.reflection,global.ReactUpdateQueue));
 }(this, (function (React,ReactDOMHostConfig,reflection,ReactUpdateQueue) {
   React = React && React.hasOwnProperty('default') ? React['default'] : React;
@@ -3310,45 +3318,7 @@
     mountClassInstance(workInProgress, Component, nextProps, renderExpirationTime);
     return finishClassComponent(null, workInProgress, Component, true, hasContext, renderExpirationTime);
   }
-  function mountIndeterminateComponent(_current, workInProgress, Component, renderExpirationTime) {
-    if (_current !== null) {
-      _current.alternate = null;
-      workInProgress.alternate = null;
-      workInProgress.effectTag |= Placement;
-    }
-    var props = workInProgress.pendingProps;
-    var unmaskedContext = getUnmaskedContext(workInProgress, Component, false);
-    var context = getMaskedContext(workInProgress, unmaskedContext);
-    prepareToReadContext(workInProgress, renderExpirationTime);
-    var value = void 0;
-    {
-      value = renderWithHooks(null, workInProgress, Component, props, context, renderExpirationTime);
-    }
-    workInProgress.effectTag |= PerformedWork;
-    if ((typeof value === 'undefined' ? 'undefined' : _typeof$9(value)) === 'object' && value !== null && typeof value.render === 'function' && value.$$typeof === undefined) {
-      workInProgress.tag = ClassComponent;
-      resetHooks();
-      var hasContext = false;
-      if (isContextProvider(Component)) {
-        hasContext = true;
-        pushContextProvider(workInProgress);
-      } else {
-        hasContext = false;
-      }
-      workInProgress.memoizedState = value.state !== null && value.state !== undefined ? value.state : null;
-      var getDerivedStateFromProps = Component.getDerivedStateFromProps;
-      if (typeof getDerivedStateFromProps === 'function') {
-        applyDerivedStateFromProps(workInProgress, Component, getDerivedStateFromProps, props);
-      }
-      adoptClassInstance(workInProgress, value);
-      mountClassInstance(workInProgress, Component, props, renderExpirationTime);
-      return finishClassComponent(null, workInProgress, Component, true, hasContext, renderExpirationTime);
-    } else {
-      workInProgress.tag = FunctionComponent;
-      reconcileChildren(null, workInProgress, value, renderExpirationTime);
-      return workInProgress.child;
-    }
-  }
+
   function updateSuspenseComponent(current$$1, workInProgress, renderExpirationTime) {
     var mode = workInProgress.mode;
     var nextProps = workInProgress.pendingProps;
@@ -3590,10 +3560,7 @@
     }
     workInProgress.expirationTime = NoWork;
     switch (workInProgress.tag) {
-      case IndeterminateComponent:
-        {
-          return mountIndeterminateComponent(current$$1, workInProgress, workInProgress.type, renderExpirationTime);
-        }
+   
       case LazyComponent:
         {
           var elementType = workInProgress.elementType;
