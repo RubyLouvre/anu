@@ -35,8 +35,6 @@ class H5Parser extends JavascriptParser{
     }
     async parse() {
         const res = await super.parse();
-        // this.queues = res.options.anu && res.options.anu.queue || this.queues;
-        // this.extraModules = res.options.anu && res.options.anu.extraModules || this.extraModules;
         this.queues.push({
             type: 'js',
             path: this.relativePath,

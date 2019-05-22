@@ -3,7 +3,6 @@ const utils = require('../../packages/utils/index');
 
 module.exports = async function(code, map, meta) {
     const callback = this.async();
-    
     try {
         const parser = JavascriptParserFactory.create({
             platform: this.nanachiOptions.platform,

@@ -6,23 +6,24 @@
 let config = require('../../config/config');
 let visitor = {
     ImportDeclaration: {
-        exit(astPath) {
+        enter(astPath) {
             let node  = astPath.node;
             if (node.leadingComments) {
-                let targetEnvReg = new RegExp(`\\s*if\\s+(process\\.env\\.ANU_ENV\\s*={2,3}\\s*\\'(${config.buildType})\\';?)`, 'mg');
-                let envReg = /\s*if\s+(process\.env\.ANU_ENV\s*={2,3}\s*'(wx|ali|bu|quick)';?)/mg;
+                let envReg = /\s*if\s+process\.env\.ANU_ENV\s*={2,3}\s*'([\w|]*)';?/;
                 let leadingComments = node.leadingComments;
                 for (let i = 0; i < leadingComments.length; i++){
                     let commentValue = leadingComments[i].value;
-                    
+                    const match = commentValue.match(envReg);
                     if (
                         leadingComments[i].type === 'CommentLine' //单行注释
-                        && envReg.test(commentValue)              //满足if语句
-                        && !targetEnvReg.test(commentValue)       //匹配非ANU_ENV值的import语句
+                        && match            //满足if语句
                     ) { 
+                        const targetEnvs = match[1] && match[1].split('|');
                         //移除无法匹配ANU_ENV的import语句
-                        astPath.remove();
-                        break;
+                        if (targetEnvs && !targetEnvs.includes(config.buildType)) {
+                            astPath.remove();
+                            break;
+                        }
                     }
                 }
             }

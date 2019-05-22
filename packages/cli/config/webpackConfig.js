@@ -1,7 +1,6 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
 const SizePlugin = require('../nanachi-loader/sizePlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
 const utils = require('../packages/utils/index');
@@ -102,7 +101,37 @@ module.exports = function({
                 prevLoaders)
         },
         rules);
-
+    const copyAssetsRules = [{
+        from: '**',
+        to: 'assets',
+        context: 'source/assets',
+        ignore: [
+            '**/*.@(js|jsx|json|sass|scss|less|css)'
+        ],
+        ...copyPluginOption // 压缩图片配置
+    }];
+    if (platform === 'quick') {
+        try {
+            // quickConfig可能不存在 需要try catch
+            const quickConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+            if (quickConfig && quickConfig.router && quickConfig.router.widgets) {
+                Object.keys(quickConfig.router.widgets).forEach(key => {
+                    const widgetPath = quickConfig.router.widgets[key].path;
+                    if (widgetPath) {
+                        const rule = {
+                            from: '**',
+                            to: widgetPath.replace(/^[\\/]/, ''),
+                            context: path.join('source', widgetPath),
+                            ...copyPluginOption
+                        };
+                        copyAssetsRules.push(rule);
+                    }
+                });
+            }
+        } catch (err) {
+            // eslint-disable-next-line
+        }
+    }
     return {
         entry: './source/app',
         mode: 'development',
@@ -119,19 +148,7 @@ module.exports = function({
                 platform,
                 compress
             }),
-            new CopyWebpackPlugin([
-                {
-                    from: '**',
-                    to: 'assets',
-                    context: 'source/assets',
-                    ...copyPluginOption // 压缩图片配置
-                }
-            ], {
-                ignore: [
-                    '**/*.@(js|jsx|json|sass|scss|less|css)'
-                ]
-            }),
-            // new CleanWebpackPlugin(),
+            new CopyWebpackPlugin(copyAssetsRules),
             plugins),
         resolve: {
             alias: aliasMap,
