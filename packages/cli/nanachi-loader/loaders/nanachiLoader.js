@@ -3,6 +3,7 @@ const utils = require('../../packages/utils/index');
 
 module.exports = async function(code, map, meta) {
     const callback = this.async();
+    
     try {
         const parser = JavascriptParserFactory.create({
             platform: this.nanachiOptions.platform,
@@ -27,7 +28,6 @@ module.exports = async function(code, map, meta) {
             queues: parser.getExtraFiles(),
             exportCode: parser.getExportCode()
         };
-        
         callback(null, result, map, meta);
         return;
     } catch (e) {

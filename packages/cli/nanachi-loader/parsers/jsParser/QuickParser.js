@@ -32,6 +32,7 @@ class QuickParser extends JavascriptParser {
                     }
                 ],
                 require('@babel/plugin-syntax-jsx'),
+                require('@babel/plugin-syntax-dynamic-import'),
                 require('../../../packages/babelPlugins/collectDependencies'),
                 require('../../../packages/babelPlugins/collectTitleBarConfig'),
                 require('../../../packages/babelPlugins/patchComponents'),

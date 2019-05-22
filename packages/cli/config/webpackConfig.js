@@ -41,7 +41,6 @@ module.exports = function({
     if (platform === 'h5') {
         distPath = path.resolve(__dirname, '../packages/h5Helpers/pageWrapper', intermediateDirectoryName);
     }
-
     let copyPluginOption = null;
     if (compress) {
         const compressImage = require(path.resolve(process.cwd(), 'node_modules', 'nanachi-compress-loader/utils/compressImage.js'));
@@ -132,7 +131,7 @@ module.exports = function({
                     '**/*.@(js|jsx|json|sass|scss|less|css)'
                 ]
             }),
-            new CleanWebpackPlugin(),
+            // new CleanWebpackPlugin(),
             plugins),
         resolve: {
             alias: aliasMap,

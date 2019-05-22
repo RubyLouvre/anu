@@ -54,6 +54,17 @@ module.exports = function ({ types: t }) {
                             );
                         }
                     }
+                    if (state.externalComponents) {
+                        for (let variableName of state.externalComponents) {
+                            const externalComponentName = `schnee-ui/components/X${variableName}`;
+                            astPath.node.body.unshift(
+                                t.importDeclaration(
+                                    [t.importDefaultSpecifier(t.identifier(variableName))],
+                                    t.stringLiteral(externalComponentName)
+                                )
+                            );
+                        }
+                    }
                 }
             },
             ClassMethod(path) {
@@ -156,11 +167,16 @@ module.exports = function ({ types: t }) {
                             closingElement.name.name = replaceName;
                         }
                         // 插入内部组件import语句
-                        const variableName = internalComponentsMap[componentName];
-                        if (variableName) {
-                            const internalComponentName = variableName;
+                        const internalComponentName = internalComponentsMap[componentName];
+                        if (internalComponentName) {
                             state.internalComponents = state.internalComponents || new Set();
                             state.internalComponents.add(internalComponentName);
+                        }
+                        // 插入补丁组件import语句
+                        const externalComponentName = nativeComponentsMap[componentName];
+                        if (externalComponentName) {
+                            state.externalComponents = state.externalComponents || new Set();
+                            state.externalComponents.add(externalComponentName);
                         }
                     }
                 }

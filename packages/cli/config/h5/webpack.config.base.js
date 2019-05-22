@@ -14,6 +14,7 @@ const {
 const context = path.resolve(__dirname, '../../packages/h5Helpers/pageWrapper');
 const resolveFromContext = R.curryN(2, path.resolve)(context);
 const resolveFromDirCwd = R.curryN(2, path.resolve)(process.cwd());
+
 module.exports = {
     mode: 'development',
     context,
@@ -30,7 +31,7 @@ module.exports = {
             react: resolveFromContext(`${intermediateDirectoryName}/ReactIE.js`),
             '@react': resolveFromContext(`${intermediateDirectoryName}/ReactIE.js`),
             'react-dom': resolveFromContext(`${intermediateDirectoryName}/ReactIE.js`),
-            'schnee-ui': resolveFromContext(`${intermediateDirectoryName}/schnee-ui`),
+            'schnee-ui': resolveFromContext(`${intermediateDirectoryName}/npm/schnee-ui`),
             '@shared': resolveFromContext('./src/shared'),
             '@internalComponents': resolveFromContext('src/views/InternalComponents'),
             '@components': resolveFromContext(
