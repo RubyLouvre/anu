@@ -14,7 +14,7 @@ const quickFiles = require('../quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
 const helpers = require(`../${config[buildType].helpers}/index`);
-const deps = [];
+//const deps = [];
 //微信的文本节点，需要处理换行符
 const inlineElement = {
     text: 1,
@@ -54,8 +54,8 @@ if (buildType == 'quick') {
 }
 
 function registerPageOrComponent(name, path, modules) {
-    if (name == modules.className) {
-        path.insertBefore(modules.registerStatement);
+   if (name == modules.className) {
+      path.insertBefore(modules.registerStatement);
     }
 }
 /**
@@ -89,15 +89,6 @@ module.exports = {
                         'index.ux'
                     );
                     if (!cache[dist]) {
-                        // // 补丁 queue的占位符, 防止同步代码执行时间过长产生的多次构建结束的问题
-                        // const placeholder = {
-                        //     code: '',
-                        //     path: dist,
-                        //     type: 'ux'
-                        // };
-                        // queue.push(placeholder);
-                        // // 补丁 END
-
                         queue.push({
                             code: fs.readFileSync(
                                 path.resolve(
@@ -197,20 +188,6 @@ module.exports = {
         let modules = utils.getAnu(state);
         let source = node.source.value;
         let specifiers = node.specifiers;
-
-        if (modules.componentType === 'App') {
-            //收集页面上的依赖，构成app.json的pages数组或manifest.json中routes数组
-            if (/\/pages\//.test(source)) {
-                var pages = modules.pages || (modules.pages = []);
-                pages.push(source.replace(/^\.\//, ''));
-                astPath.remove(); //移除分析依赖用的引用
-            }
-        }
-        if(modules.componentType === 'Component'){
-            //这时还没有解析到函数体或类结构，不知道当前组件叫什么名字
-            var segments = modules.current.match(/[\w\.]+/g)
-            modules.className = segments[segments.length-2]
-        }
         if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
             if(modules.componentType === 'Component'){
                 if (/\/pages\//.test(source)) {
@@ -219,12 +196,31 @@ module.exports = {
             }
             astPath.remove();
         }
-
-        specifiers.forEach(item => {
-            //重点，保持所有引入的组件名及它们的路径，用于<import />
+        if (modules.componentType === 'App') {
+            //收集页面上的依赖，构成app.json的pages数组或manifest.json中routes数组
+            if (/\/pages\//.test(source)) {
+                var pages = modules.pages || (modules.pages = []);
+                pages.push(source.replace(/^\.\//, ''));
+                astPath.remove(); //移除分析依赖用的引用
+            }
+        }else{
+            // 如果当前页面依赖于某些JS文件，将它的.js后缀去掉
             if (/\.js$/.test(source)) {
                 source = source.replace(/\.js$/, '');
             }
+           // 如果当前页面就是一个组件，它必须在components目录中
+          /*  if( /\/components\//.test(modules.current)){
+                //这时还没有解析到函数体或类结构，不知道当前组件叫什么名字
+                if(!modules.className ){
+
+                    var segments = modules.current.match(/[\w\.]+/g)
+                    modules.className = segments[segments.length-2]
+                }
+            }
+            */
+        }
+        specifiers.forEach(item => {
+            //重点，保持所有引入的组件名及它们的路径，用于<import />
             modules.importComponents[item.local.name] = {
                 astPath: astPath,
                 source: source
@@ -299,15 +295,18 @@ module.exports = {
     ExportDefaultDeclaration: {
         exit(astPath, state) {
             var modules = utils.getAnu(state);
+          
             if (/Page|Component/.test(modules.componentType)) {
                 let declaration = astPath.node.declaration;
+                let name =  declaration.name
                 if (declaration.type == 'FunctionDeclaration') {
                     //将export default function AAA(){}的方法提到前面
                     astPath.insertBefore(declaration);
                     astPath.node.declaration = declaration.id;
+                    name = declaration.id.name
                 }
                 //延后插入createPage语句在其同名的export语句前
-                registerPageOrComponent(declaration.name, astPath, modules);
+                registerPageOrComponent(name , astPath, modules);
             }
         }
     },
@@ -532,13 +531,6 @@ module.exports = {
 
 
             if (bag) {
-                //好像不支持render props后，它就没有用了
-                // deps[nodeName] ||
-                //     (deps[nodeName] = {
-                //         set: new Set()
-                //     });
-                // astPath.componentName = nodeName;
-
                 try {
                     bag.astPath.remove();
                     bag.astPath = null;
@@ -547,7 +539,6 @@ module.exports = {
                 }
 
                 let useComponentsPath = utils.getUsedComponentsPath(bag, nodeName, modules);
-
                 modules.usedComponents['anu-' + nodeName.toLowerCase()] = useComponentsPath;
                 astPath.node.name.name = 'React.useComponent';
 

@@ -298,8 +298,7 @@ class Parser {
             js: (data)=>{
                 //校验文件代码行数是否超过500, 抛出警告。
                 this.checkCodeLine(data.id, data.originalCode, 500);
-                //校验pages目录中是否包含components目录
-                this.checkComponentsInPages(data.id);
+      
                 //校验组件组件名以及文件夹是否符合规范
                 this.checkImportComponent(data);
 
@@ -399,25 +398,6 @@ class Parser {
                 };
             }
         }
-    }
-    checkComponentsInPages(id) {
-        /*
-        id = path.relative( cwd,  id);
-        let pathAray = utils.isWin() ? id.split('\\') :  id.split('/'); //分割目录
-        let componentsPos = pathAray.indexOf('components');
-        let pagesPos = pathAray.indexOf('pages');
-        let msg = '';
-        if ( !( componentsPos != -1 && pagesPos != -1 ) ) return;
-
-        componentsPos > pagesPos
-            ? msg = `${id} 文件中路径中不能包含components目录, 请修复.`
-            : msg = `${id} 文件中路径中不能包含pages目录, 请修复.`;
-        this.collectError.componentInPageError.push({
-            id: id,
-            level: 'error',
-            msg: msg
-        });
-        */
     }
     checkCodeLine(filePath, code, number){
         if ( /^(React)/.test(path.basename(filePath)) ) return; //React runtime不校验代码行数

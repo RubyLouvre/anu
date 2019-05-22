@@ -17,6 +17,8 @@ const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const userConfig = pkg.nanachi || pkg.mpreact || {};
 const { REACT_LIB_MAP } = require('../../consts/index');
+const rsegments = /[\w\.]+/g;
+const cachedUsingComponents = {}
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
     on() {
@@ -129,6 +131,12 @@ let utils = {
         }
     },
     getUsedComponentsPath(bag, nodeName, modules) {
+        if(cachedUsingComponents[nodeName]){
+            return cachedUsingComponents[nodeName]
+        }
+        return cachedUsingComponents[nodeName] = utils.getUsedComponentsPathImpl(bag, nodeName, modules)
+    },
+    getUsedComponentsPathImpl(bag, nodeName, modules){
         let isNpm = this.isNpm(bag.source);
         let sourcePath = modules.sourcePath;
         let isNodeModulePathReg = this.isWin() ? /\\node_modules\\/ : /\/node_modules\//;
@@ -143,7 +151,23 @@ let utils = {
             let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
             return '/npm/' + importerAbPath.split(`${path.sep}node_modules${path.sep}`)[1]
         }
-        return `/components/${nodeName}/index`;
+        var parent = modules.current.match(rsegments);
+        var son = bag.source.match(rsegments);
+        var canPop = true
+        while(son[0] === '..'){
+            son.shift();
+            if(canPop){
+                parent.pop();
+                canPop = false;
+            }
+            parent.pop()
+        }
+        var arr = parent.concat(son);
+        if(arr[0] == 'source'){
+            arr.shift()
+        }
+        return "/"+arr.join('/')   // `/components/${nodeName}/index`;
+
     },
     createAttribute(name, value) {
         return t.JSXAttribute(
@@ -334,12 +358,14 @@ let utils = {
     },
     resolveAliasPath(id, deps) {
         let ret = {};
+       // console.log(deps,'resolveAliasPath' )
         Object.keys(deps).forEach((depKey) => {
             ret[depKey] = path.relative(
                 path.dirname(this.resolveDistPath(id)),
                 this.resolveDistPath(deps[depKey])
             )
         });
+       // console.log(ret, "结果")
         return ret;
     },
     getRegeneratorRuntimePath: function (sourcePath) {
