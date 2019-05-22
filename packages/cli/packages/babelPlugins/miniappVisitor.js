@@ -164,6 +164,7 @@ module.exports = {
                 !modules.registerStatement //防止重复进入
             ) {
                 //需要想办法处理无状态组件
+                modules.className = name;
                 helpers.render.exit(astPath, '无状态组件', name, modules);
                 modules.registerStatement = utils.createRegisterStatement(
                     name,
@@ -199,9 +200,18 @@ module.exports = {
                 astPath.remove(); //移除分析依赖用的引用
             }
         }
-
+        if (modules.componentType === 'Component'){
+            //这时还没有解析到函数体或类结构，不知道当前组件叫什么名字
+            var segments = modules.current.match(/[\w\.]+/g)
+            modules.className = segments[segments.length-2]
+        }
         if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
             // 存下删除的依赖路径
+            if (modules.componentType === 'Component'){
+                if (/\/pages\//.test(source)) {
+                    throw '"'+modules.className+'"组件越级不能引用pages下面的样式\n\t' + source;
+                }
+            }
             extraModules.push(source);
             astPath.remove();
         }
@@ -211,7 +221,6 @@ module.exports = {
             if (/\.js$/.test(source)) {
                 source = source.replace(/\.js$/, '');
             }
-
             modules.importComponents[item.local.name] = {
                 astPath: astPath,
                 source: source
