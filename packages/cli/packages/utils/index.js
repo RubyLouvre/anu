@@ -317,6 +317,8 @@ let utils = {
             'react': path.join(cwd, `${config.sourceDir}/${React}`),
             '@react': path.join(cwd, `${config.sourceDir}/${React}`),
             '@components': path.join(cwd, `${config.sourceDir}/components`),
+            '@common': path.join(cwd, `${config.sourceDir}/common`),
+            '@assets': path.join(cwd, `${config.sourceDir}/assets`),
             ...ret
         }
         return defaultAlias;
