@@ -17,7 +17,6 @@ const xmlExt = config[config.buildType].xmlExt;
  * @param {String} type 有状态组件｜无状态组件
  * @param {String} componentName 组件名
  */
-const deps = [];
 exports.enter = function(astPath) {
     if (astPath.node.key.name === 'render') {
         astPath.traverse({
@@ -87,11 +86,7 @@ exports.exit = function(astPath, type, componentName, modules) {
                 }.wxml" />\n${wxml}`;
             }
         }
-        if (modules.componentType === 'Component') {
-            deps[componentName] = deps[componentName] || {
-                set: new Set()
-            };
-        }
+
         //支付宝的自定义组件机制实现有问题，必须要在json.usingComponents引入了这个类
         //这个类所在的JS 文件才会加入Component全局函数，否则会报Component不存在的BUG
         //一般来说，我们在页面引入了某个组件，它肯定在json.usingComponents中，只有少数间接引入的父类没有引入
@@ -102,6 +97,7 @@ exports.exit = function(astPath, type, componentName, modules) {
             parentClass.indexOf('.') == -1 &&
             config.buildType === 'ali'
         ) {
+            console.warn("支付宝存在继承关系的组件需要处理一下usingComponents", parentClass)
             const config = modules.config;
             const using =
                 config.usingComponents || (config.usingComponents = {});

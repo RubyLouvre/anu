@@ -33,6 +33,7 @@ import './pages/demo/native/video/index';
 import './pages/demo/native/camera/index';
 
 import './pages/demo/syntax/index/index';
+import './pages/demo/syntax/extend/index';
 import './pages/demo/syntax/stateless/index';
 import './pages/demo/syntax/hooks/index';
 import './pages/demo/syntax/loop/index';

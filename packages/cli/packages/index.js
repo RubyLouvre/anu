@@ -401,12 +401,14 @@ class Parser {
         }
     }
     checkComponentsInPages(id) {
+        /*
         id = path.relative( cwd,  id);
         let pathAray = utils.isWin() ? id.split('\\') :  id.split('/'); //分割目录
         let componentsPos = pathAray.indexOf('components');
         let pagesPos = pathAray.indexOf('pages');
         let msg = '';
         if ( !( componentsPos != -1 && pagesPos != -1 ) ) return;
+
         componentsPos > pagesPos
             ? msg = `${id} 文件中路径中不能包含components目录, 请修复.`
             : msg = `${id} 文件中路径中不能包含pages目录, 请修复.`;
@@ -415,7 +417,7 @@ class Parser {
             level: 'error',
             msg: msg
         });
-        
+        */
     }
     checkCodeLine(filePath, code, number){
         if ( /^(React)/.test(path.basename(filePath)) ) return; //React runtime不校验代码行数
