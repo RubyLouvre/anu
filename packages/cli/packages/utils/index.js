@@ -17,7 +17,8 @@ const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const userConfig = pkg.nanachi || pkg.mpreact || {};
 const { REACT_LIB_MAP } = require('../../consts/index');
-const rsegments = /[\w\.]+/g;
+const calculateComponentsPath = require('./calculateComponentsPath');
+
 const cachedUsingComponents = {}
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
@@ -134,40 +135,12 @@ let utils = {
         if(cachedUsingComponents[nodeName]){
             return cachedUsingComponents[nodeName]
         }
-        return cachedUsingComponents[nodeName] = utils.getUsedComponentsPathImpl(bag, nodeName, modules)
-    },
-    getUsedComponentsPathImpl(bag, nodeName, modules){
         let isNpm = this.isNpm(bag.source);
-        let sourcePath = modules.sourcePath;
-        let isNodeModulePathReg = this.isWin() ? /\\node_modules\\/ : /\/node_modules\//;
-
         //import { xxx } from 'schnee-ui';
         if (isNpm) {
             return '/npm/' + bag.source + '/components/' + nodeName + '/index';
         }
-        //如果XPicker中存在 import XOverlay from '../XOverlay/index';
-        if ( isNodeModulePathReg.test(sourcePath) && /^\./.test(bag.source) ) {
-            //获取用组件的绝对路径
-            let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
-            return '/npm/' + importerAbPath.split(`${path.sep}node_modules${path.sep}`)[1]
-        }
-        var parent = modules.current.match(rsegments);
-        var son = bag.source.match(rsegments);
-        var canPop = true
-        while(son[0] === '..'){
-            son.shift();
-            if(canPop){
-                parent.pop();
-                canPop = false;
-            }
-            parent.pop()
-        }
-        var arr = parent.concat(son);
-        if(arr[0] == 'source'){
-            arr.shift()
-        }
-        return "/"+arr.join('/')   // `/components/${nodeName}/index`;
-
+        return cachedUsingComponents[nodeName] = calculateComponentsPath(bag, nodeName, modules)
     },
     createAttribute(name, value) {
         return t.JSXAttribute(
@@ -508,4 +481,4 @@ let utils = {
     },
 };
 
-exports = module.exports = utils;
+module.exports = utils;
