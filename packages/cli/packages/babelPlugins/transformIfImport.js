@@ -19,7 +19,6 @@ let visitor = {
                         && match            //满足if语句
                     ) { 
                         const targetEnvs = match[1] && match[1].split('|');
-                        console.log(targetEnvs);
                         //移除无法匹配ANU_ENV的import语句
                         if (targetEnvs && !targetEnvs.includes(config.buildType)) {
                             astPath.remove();
