@@ -13,6 +13,7 @@ const attrValueHelper = require(`../${helper}/attrValue`);
 const logicHelper = require(`../${helper}/logic`);
 const chalk = require('chalk');
 
+
 function beautifyXml(code){
     return beautify.html(code, {
         indent: 4
@@ -121,8 +122,18 @@ let visitor = {
                     value = fixKey;
                 }
             }
-            modules.key = value;
-            astPath.remove();
+
+            
+            //冒泡找到最近的一个map调用函数，找到其中的callee(如：xxx.map)作为键值对储存jsx key属性的值。
+            var CallExpression = astPath.findParent(t.isCallExpression);
+            if (CallExpression) {
+                var callee = CallExpression.node.callee;
+                modules.key = modules.key || {};
+                //this.state.xxx.map
+                let calleeCode = generate(callee).code;
+                modules.key[calleeCode] = value;
+                astPath.remove();
+            }
             return;
         }
         attrNameHelper(astPath, attrName, astPath.parentPath.node.name.name);
@@ -177,6 +188,8 @@ let visitor = {
     JSXExpressionContainer: {
         exit(astPath, state) {
             let expr = astPath.node.expression;
+
+        
             //如果是位于属性中
             if (t.isJSXAttribute(astPath.parent)) {
                 attrValueHelper(astPath);
@@ -184,11 +197,14 @@ let visitor = {
                 expr.type === 'MemberExpression' &&
         /props\.children\s*$/.test(generate(expr).code)
             ) {
+                
                 let attributes = [];
                 let template = utils.createElement('slot', attributes, []);
                 astPath.replaceWith(template);
             } else {
+               
                 let modules = utils.getAnu(state);
+                
                 //返回block元素或template元素
                 let isWrapText = false;
                 if (astPath.parentPath.type === 'JSXElement'){
@@ -203,7 +219,10 @@ let visitor = {
                         } 
                     }
                 }
+                
+               
                 let block = logicHelper(expr, modules, isWrapText);
+
                 try {
                     astPath.replaceWithMultiple(block);
                 } catch (e) {
