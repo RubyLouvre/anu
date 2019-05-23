@@ -60,7 +60,6 @@
     "json5": "^2.1.0",
     "less": "^3.8.1",
     "less-import-aliases": "^1.0.2",
-    "mathjs": "^5.2.3",
     "mini-html5": "latest",
     "ora": "^3.0.0",
     "postcss": "^7.0.6",
