@@ -279,8 +279,6 @@ let utils = {
   //      return REACT_LIB_MAP[buildType];
   //  },
     getAliasConfig() {
-        console.log("calculateAliasConfig", cwd)
-        console.log("")
         return calculateAliasConfig(config, userConfig, cwd );
     },
     resolveDistPath(filePath) {

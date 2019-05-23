@@ -87,25 +87,6 @@ exports.exit = function(astPath, type, componentName, modules) {
             }
         }
 
-        //支付宝的自定义组件机制实现有问题，必须要在json.usingComponents引入了这个类
-        //这个类所在的JS 文件才会加入Component全局函数，否则会报Component不存在的BUG
-        //一般来说，我们在页面引入了某个组件，它肯定在json.usingComponents中，只有少数间接引入的父类没有引入
-        //因此在子类的json.usingComponents添加父类名
-        // 好像支付宝小程序(0.25.1-beta.0)已经不需要添加父类了
-     /*   const parentClass = modules.parentName;
-        if (
-            parentClass &&
-            parentClass.indexOf('.') == -1 &&
-            config.buildType === 'ali'
-        ) {
-            const config = modules.config;
-            const using =
-                config.usingComponents || (config.usingComponents = {});
-            using['anu-' + parentClass.toLowerCase()] =
-             utils.getUsedComponentsPath({source:""},  parentClass, modules)
-             // using['anu-' + parentClass.toLowerCase()] =   '/components/' + parentClass + '/index';
-        }
-*/
         queue.push({
             path: utils.updatePath(
                 modules.sourcePath,
