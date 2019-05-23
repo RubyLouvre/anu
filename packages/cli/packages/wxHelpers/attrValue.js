@@ -2,7 +2,7 @@
 
 const t = require('@babel/types');
 const generate = require('@babel/generator').default;
-const getStyleValue = require('../utils/getStyleValue');
+const calculateStyleString = require('../utils/calculateStyleString');
 const buildType = require('../config').buildType;
 
 module.exports = function (astPath) {
@@ -59,7 +59,7 @@ module.exports = function (astPath) {
             //通过style={{a:1,b:1}}
             //变成style="{{props.style4338}}"
             if (attrName === 'style') {
-                replaceWithExpr(astPath, getStyleValue(expr), true);
+                replaceWithExpr(astPath, calculateStyleString(expr), true);
             }
             break;
         case 'BinaryExpression': { // a + b

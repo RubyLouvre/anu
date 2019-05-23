@@ -2,29 +2,25 @@
 // 转换成 <view style="border-color: {{state.custom_field1_rule ? '#f5222d' : ''}};border-width: 1rpx;border-style: solid">
 
 const generate = require('@babel/generator').default;
-
+const isVar =  /Expression|Identifier/
 const rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
     //转换为连字符风格
     return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
 
-function getStyleString(expr) {
-    var styleValue = expr.properties
+module.exports = function calculateStyleString(expr) {
+    return expr.properties
         .map(function(node) {
-            const isVar = /Expression|Identifier/.test(node.value.type);
 
             return (
                 hyphen(node.key.name) +
                 ': ' +
-                (isVar
+                (isVar.test(node.value.type)
                     ? `{{${generate(node.value).code.replace(/this\./, '')}}}`
                     : node.value.value)
             );
         })
         .join(';');
-
-    return styleValue;
 }
 
-module.exports = getStyleString;
