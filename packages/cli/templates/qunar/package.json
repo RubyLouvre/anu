@@ -6,6 +6,7 @@
     "nanachi": {
         "alias": {
             "@assets": "source/assets",
+            "@syntaxComponents": "source/pages/syntax/components",
             "@common": "source/common"
         }
     },
