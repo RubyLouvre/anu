@@ -42,6 +42,10 @@ class JavascriptParser {
 
     getExportCode() {
         let res = this.parsedCode;
+        // modules去重
+        this.extraModules = this.extraModules.filter((m, i, self) => {
+            return self.indexOf(m) === i;
+        });
         this.extraModules.forEach(module => {
             // windows 补丁
             module = module.replace(/\\/g, '\\\\');
