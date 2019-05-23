@@ -20,10 +20,11 @@ export function registerPage(PageClass, path, testObject) {
         onUnload: onUnload
     };
     Array(
-        'onPageScroll',
         'onShareAppMessage',
+        'onPageScroll',
         'onReachBottom',
         'onPullDownRefresh',
+        'onTabItemTap',
         'onResize',
         'onShow',
         'onHide'
