@@ -12,6 +12,7 @@ export function registerComponent (type, name) {
             state: {},
             context: {}
         },
+        options: type.options,
         lifetimes: {
             // 微信需要lifetimes, methods
             attached: function attached () {

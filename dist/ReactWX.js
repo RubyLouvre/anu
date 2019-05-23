@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-23T11
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-23T12
  * IE9+
  */
 
@@ -2643,6 +2643,7 @@ function registerComponent(type, name) {
             state: {},
             context: {}
         },
+        options: type.options,
         lifetimes: {
             attached: function attached() {
                 var wx = this;

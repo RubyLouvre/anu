@@ -2529,6 +2529,7 @@ function registerComponent(type, name) {
             state: {},
             context: {}
         },
+        options: type.options,
         attached: function attached() {
             usingComponents[name] = type;
             var uuid = this.dataset.instanceUid || null;
