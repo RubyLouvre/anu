@@ -15,8 +15,9 @@ const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const userConfig = pkg.nanachi || pkg.mpreact || {};
 const { REACT_LIB_MAP } = require('../../consts/index');
+const calculateComponentsPath = require('./calculateComponentsPath');
 
-//const fs = require('fs-extra');
+const cachedUsingComponents = {}
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
     on() {
@@ -130,9 +131,12 @@ let utils = {
         }
     },
     getUsedComponentsPath(bag, nodeName, modules) {
+        if(cachedUsingComponents[nodeName]){
+            return cachedUsingComponents[nodeName]
+        }
         let isNpm = this.isNpm(bag.source);
         let sourcePath = modules.sourcePath;
-        let isNodeModulePathReg = this.isWin() ? /\\npm\\/ : /\/npm\//;
+        let isNodeModulePathReg = /[\\/]npm[\\/]/;
 
         //import { xxx } from 'schnee-ui';
         if (isNpm) {
@@ -145,7 +149,8 @@ let utils = {
             return '/npm/' + importerAbPath.split(`${path.sep}npm${path.sep}`)[1]
         }
         
-        return `/components/${nodeName}/index`;
+        // return `/components/${nodeName}/index`;
+        return cachedUsingComponents[nodeName] = calculateComponentsPath(bag, nodeName, modules)
     },
     createAttribute(name, value) {
         return t.JSXAttribute(
@@ -290,6 +295,8 @@ let utils = {
             'react': path.join(cwd, `${config.sourceDir}/${React}`),
             '@react': path.join(cwd, `${config.sourceDir}/${React}`),
             '@components': path.join(cwd, `${config.sourceDir}/components`),
+            '@common': path.join(cwd, `${config.sourceDir}/common`),
+            '@assets': path.join(cwd, `${config.sourceDir}/assets`),
             ...ret
         }
         return defaultAlias;
@@ -392,4 +399,4 @@ let utils = {
     }
 };
 
-exports = module.exports = utils;
+module.exports = utils;
