@@ -28,9 +28,9 @@ module.exports = {
     resolve: {
         alias: {
             ...retrieveNanachiConfig(),
-            react: resolveFromContext(`${intermediateDirectoryName}/ReactIE.js`),
-            '@react': resolveFromContext(`${intermediateDirectoryName}/ReactIE.js`),
-            'react-dom': resolveFromContext(`${intermediateDirectoryName}/ReactIE.js`),
+            react: resolveFromContext(`${intermediateDirectoryName}/ReactH5.js`),
+            '@react': resolveFromContext(`${intermediateDirectoryName}/ReactH5.js`),
+            'react-dom': resolveFromContext(`${intermediateDirectoryName}/ReactH5.js`),
             'schnee-ui': resolveFromContext(`${intermediateDirectoryName}/npm/schnee-ui`),
             '@shared': resolveFromContext('./src/shared'),
             '@internalComponents': resolveFromContext('src/views/InternalComponents'),
