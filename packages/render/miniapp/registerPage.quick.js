@@ -1,11 +1,10 @@
 import { isFn, emptyObject } from 'react-core/util'
 import { dispatchEvent } from './eventSystem.quick'
 import { onLoad, onUnload, onReady } from './registerPage.all'
-import { callGlobalHook, _getApp } from './utils'
+import {  _getApp } from './utils'
 import { getQueryFromUri } from './apiForQuick/router'
 
-var globalHooks = {
-    onShareAppMessage: 'onGlobalShare',
+var appHooks = {
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 }
@@ -60,29 +59,28 @@ export function registerPage(PageClass, path) {
         onReady: onReady,
         onDestroy: onUnload
     }
-    Array('onShow', 'onHide', 'onMenuPress', "onBackPress").forEach(function(hook) {
-        config[hook] = function(e) {
+    Array('onShow', 'onHide', 'onMenuPress', "onBackPress").forEach(function(pageHook) {
+        config[pageHook] = function(e) {
             let instance = this.reactInstance,
-                fn = instance[hook],
                 app = _getApp(),
                 param = e
-            if (hook === 'onShow') {
+            if (pageHook === 'onShow') {
                 param = instance.props.query = getQuery(this, queryObject);
                 app.$$page = instance.wx;
                 app.$$pagePath = instance.props.path;
-            }
-            if (hook === 'onMenuPress') {
+            }else if (pageHook === 'onMenuPress') {
                 app.onShowMenu && app.onShowMenu(instance, this.$app);
-            } else if (isFn(fn)) {
-                var ret = fn.call(instance, param);
-                if (ret !== void 0) {
-                    return ret;
+                return
+            } 
+            for(let i = 0; i < 2; i ++){
+                let method = i ? appHooks[pageHook]: pageHook;
+                let host = i ?  _getApp(): instance;
+                if( method && host && isFn(host[method]) ){
+                   let ret = host[method](param);
+                   if(ret !== void 0){
+                       return ret;
+                   }
                 }
-            }
-
-            let globalHook = globalHooks[hook];
-            if (globalHook) {
-                callGlobalHook(globalHook, param);
             }
         }
     })

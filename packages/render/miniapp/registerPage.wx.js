@@ -1,8 +1,8 @@
 import { isFn} from 'react-core/util';
 import { dispatchEvent } from './eventSystem';
 import { onLoad, onUnload, onReady } from './registerPage.all';
-import { callGlobalHook,_getApp } from './utils';
-var globalHooks = {
+import { _getApp } from './utils';
+var appHooks = {
     onShare: 'onGlobalShare',
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
@@ -30,12 +30,14 @@ export function registerPage(PageClass, path, testObject) {
     ).forEach(function(hook) {
         config[hook] = function(e) {
             let instance = this.reactInstance,
-             fn = instance[hook], 
+             pageHook = hook,
              param = e 
-            if (hook === 'onShareAppMessage'){
-                hook = 'onShare';
-                fn = fn || instance[hook];
-            } else if (hook === 'onShow'){
+            if (pageHook === 'onShareAppMessage'){
+                if( !instance.onShare){
+                    instance.onShare = instance.onShareAppMessage
+                }
+                pageHook = 'onShare';
+            } else if (pageHook === 'onShow'){
                 if(this.options){ //支付宝小程序不存在this.options
                    instance.props.query = this.options ;
                 }
@@ -46,17 +48,14 @@ export function registerPage(PageClass, path, testObject) {
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }
-            if (isFn(fn)) {//页面级别
-                var ret =  fn.call(instance, param);
-                if (hook === 'onShare'){
-                    return ret;
-                }
-            }
-            var globalHook = globalHooks[hook];
-            if (globalHook){//应用级别
-                ret = callGlobalHook(globalHook, param);
-                if (hook === 'onShare'){
-                    return ret;
+            for(let i = 0; i < 2; i ++){
+                let method = i ? appHooks[pageHook]: pageHook;
+                let host = i ?  _getApp(): instance;
+                if( method && host && isFn(host[method]) ){
+                   let ret = host[method](param);
+                   if(ret !== void 0){
+                       return ret;
+                   }
                 }
             }
         };
