@@ -124,27 +124,40 @@ function getReactLibFile(ReactLibName) {
     }
 }
 
-
 function getAssetsFile( buildType ) {
+    let quickConfig;
+    try {
+        quickConfig = require(path.resolve(cwd, 'quickConfig.json'));
+    } catch (err) {
+        // quickConfig可能不存在
+    }
     const assetsDir = path.join(cwd, 'source', 'assets');
     let files = glob.sync( assetsDir+'/**', {nodir: true});
-    files = files
-    .filter(function(id){
+    
+    files = files.filter(function(id){
         //过滤js, css, sass, scss, less, json文件
-        return !/\.(js|scss|sass|less|css|json)$/.test(id)
-    })
-    .map(function(id){
+        return !/\.(js|scss|sass|less|css|json)$/.test(id);
+    });
+    if (quickConfig && quickConfig.router && quickConfig.router.widgets) {
+        Object.keys(quickConfig.router.widgets).forEach(key => {
+            let widgetPath = quickConfig.router.widgets[key].path;
+            if (widgetPath) {
+                widgetPath = path.join(cwd, 'source', widgetPath);
+                const widgetFiles = glob.sync( widgetPath + '/**', {nodir: true});
+                files = files.concat(widgetFiles);
+            }
+        });
+    }
+    files = files.map(function(id){
         let sourceReg = /[\\/]source[\\/]/;
         let dist = id.replace(sourceReg, buildType === 'quick' ? `${path.sep}src${path.sep}` : `${path.sep}dist${path.sep}`);
         return {
             id: id,
             dist: dist ,
             ACTION_TYPE: 'COPY'
-        }
+        };
     });
-    
     return files;
-
 }
 
 //copy project.config.json
