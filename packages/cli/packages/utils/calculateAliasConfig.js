@@ -15,7 +15,6 @@ module.exports = function calculateAliasConfig(config, userConfig, cwd){
             ret[key] = path.join(cwd, userAlias[key]);
         });
     }
-    console.log(cwd, '====')
     return Object.assign( {
         'react': path.join(cwd, `${sourceDir}/${React}`),
         '@react': path.join(cwd, `${sourceDir}/${React}`),

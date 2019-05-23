@@ -14,7 +14,7 @@ const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
 const config = require('../config');
 const isWindow = require('./isWindow');
-const isNpm = require('./isNpm');
+const isNpm = require('./isNpmModule');
 const toUpperCamel = require('./toUpperCamel');
 const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
@@ -125,10 +125,7 @@ let utils = {
         if(cachedUsingComponents[nodeName]){
             return cachedUsingComponents[nodeName]
         }
-        //import { xxx } from 'schnee-ui';
-        if (isNpm(bag.source)) {
-            return '/npm/' + bag.source + '/components/' + nodeName + '/index';
-        }
+      
         return cachedUsingComponents[nodeName] = calculateComponentsPath(bag, nodeName, modules)
     },
     createAttribute(name, value) {
@@ -189,6 +186,7 @@ let utils = {
             return template(`module.exports["${name}"] = ${name};`)();
         }
     },
+
     isNpm: isNpm,
     createRegisterStatement(className, path, isPage) {
         /**
@@ -395,11 +393,7 @@ let utils = {
         }
         return flag;
     },
-    decodeChinise(code) {
-        return code.replace(/\\?(?:\\u)([\da-f]{4})/gi, function (a, b) {
-            return unescape(`%u${b}`);
-        });
-    },
+    decodeChinise: require('./decodeChinese'),
     isWebView(fileId) {
         if (config.buildType != 'quick') {
             return false;

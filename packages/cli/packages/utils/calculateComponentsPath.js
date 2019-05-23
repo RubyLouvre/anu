@@ -4,9 +4,14 @@
 const rsegments = /[\w\.]+/g;
 const path = require('path');
 const isWindow = require('./isWindow');
+const isNpm = require('./isNpmModule');
 
 module.exports = function calculateComponentsPath(bag, nodeName, modules){
     let sourcePath = modules.sourcePath;
+      //import { xxx } from 'schnee-ui';
+      if (isNpm(bag.source)) {
+        return '/npm/' + bag.source + '/components/' + nodeName + '/index';
+    }
     let isNodeModulePathReg = isWindow ? /\\node_modules\\/ : /\/node_modules\//;
 
     //如果XPicker中存在 import XOverlay from '../XOverlay/index';
