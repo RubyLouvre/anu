@@ -93,23 +93,8 @@ exports.exit = function(astPath, type, componentName, modules) {
         //这个类所在的JS 文件才会加入Component全局函数，否则会报Component不存在的BUG
         //一般来说，我们在页面引入了某个组件，它肯定在json.usingComponents中，只有少数间接引入的父类没有引入
         //因此在子类的json.usingComponents添加父类名
-        const parentClass = modules.parentName;
-        
-        
-        if (
-            parentClass &&
-            parentClass.indexOf('.') == -1 &&
-            config.buildType === 'ali'
-        ) {
-            console.warn("支付宝存在继承关系的组件需要处理一下usingComponents", parentClass)
-            const config = modules.config;
-            const using =
-                config.usingComponents || (config.usingComponents = {});
-            using['anu-' + parentClass.toLowerCase()] =
-                '/components/' + parentClass + '/index';
-            
-        }
-
+        // 好像支付宝小程序(0.25.1-beta.0)已经不需要添加父类了
+        let relPath;
         if (/\/node_modules\//.test(modules.sourcePath.replace(/\\/g, '/'))) {
             relPath = 'npm/' + path.relative( path.join(cwd, 'node_modules'), modules.sourcePath);
         } else {

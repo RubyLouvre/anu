@@ -44,8 +44,7 @@ class H5Parser extends JavascriptParser{
         });
     }
     getExportCode() {
-        // 只取出import语句，避免webpack解析jsx报错
-        return super.getExportCode().replace(/^(?!\s*import\b).*\n?/gm, '');
+        return super.getExportCode();
     }
 }
 

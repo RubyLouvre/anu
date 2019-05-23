@@ -15,7 +15,7 @@ const quickFiles = require('../quickHelpers/quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
 const helpers = require(`../${config[buildType].helpers}/index`);
-const deps = [];
+//const deps = [];
 //微信的文本节点，需要处理换行符
 const inlineElement = {
     text: 1,
@@ -55,8 +55,8 @@ if (buildType == 'quick') {
 }
 
 function registerPageOrComponent(name, path, modules) {
-    if (name == modules.className) {
-        path.insertBefore(modules.registerStatement);
+   if (name == modules.className) {
+      path.insertBefore(modules.registerStatement);
     }
 }
 /**
@@ -189,6 +189,15 @@ module.exports = {
         let specifiers = node.specifiers;
         var extraModules = modules.extraModules;
 
+        if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
+            if(modules.componentType === 'Component'){
+                if (/\/pages\//.test(source)) {
+                    throw '"'+modules.className+'"组件越级不能引用pages下面的样式\n\t'+source
+                }
+            }
+            extraModules.push(source);
+            astPath.remove();
+        }
         if (modules.componentType === 'App') {
             //收集页面上的依赖，构成app.json的pages数组或manifest.json中routes数组
             if (/\/pages\//.test(source)) {
@@ -199,28 +208,24 @@ module.exports = {
 
                 astPath.remove(); //移除分析依赖用的引用
             }
-        }
-        if (modules.componentType === 'Component'){
-            //这时还没有解析到函数体或类结构，不知道当前组件叫什么名字
-            var segments = modules.current.match(/[\w\.]+/g)
-            modules.className = segments[segments.length-2]
-        }
-        if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
-            // 存下删除的依赖路径
-            if (modules.componentType === 'Component'){
-                if (/\/pages\//.test(source)) {
-                    throw '"'+modules.className+'"组件越级不能引用pages下面的样式\n\t' + source;
-                }
-            }
-            extraModules.push(source);
-            astPath.remove();
-        }
-
-        specifiers.forEach(item => {
-            //重点，保持所有引入的组件名及它们的路径，用于<import />
+        } else {
+            // 如果当前页面依赖于某些JS文件，将它的.js后缀去掉
             if (/\.js$/.test(source)) {
                 source = source.replace(/\.js$/, '');
             }
+            // 如果当前页面就是一个组件，它必须在components目录中
+            /*  if( /\/components\//.test(modules.current)){
+                //这时还没有解析到函数体或类结构，不知道当前组件叫什么名字
+                if(!modules.className ){
+
+                    var segments = modules.current.match(/[\w\.]+/g)
+                    modules.className = segments[segments.length-2]
+                }
+            }
+            */
+        }
+        specifiers.forEach(item => {
+            //重点，保持所有引入的组件名及它们的路径，用于<import />
             modules.importComponents[item.local.name] = {
                 astPath: astPath,
                 source: source
@@ -297,15 +302,18 @@ module.exports = {
     ExportDefaultDeclaration: {
         exit(astPath, state) {
             var modules = utils.getAnu(state);
+          
             if (/Page|Component/.test(modules.componentType)) {
                 let declaration = astPath.node.declaration;
+                let name =  declaration.name
                 if (declaration.type == 'FunctionDeclaration') {
                     //将export default function AAA(){}的方法提到前面
                     astPath.insertBefore(declaration);
                     astPath.node.declaration = declaration.id;
+                    name = declaration.id.name
                 }
                 //延后插入createPage语句在其同名的export语句前
-                registerPageOrComponent(declaration.name, astPath, modules);
+                registerPageOrComponent(name , astPath, modules);
             }
         }
     },
@@ -530,13 +538,6 @@ module.exports = {
 
 
             if (bag) {
-                //好像不支持render props后，它就没有用了
-                // deps[nodeName] ||
-                //     (deps[nodeName] = {
-                //         set: new Set()
-                //     });
-                // astPath.componentName = nodeName;
-
                 try {
                     // 存下删除的依赖路径
                     if (bag.source !== 'schnee-ui') modules.extraModules.push(bag.source);

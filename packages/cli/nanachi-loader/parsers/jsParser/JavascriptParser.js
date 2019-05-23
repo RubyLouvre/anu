@@ -48,13 +48,34 @@ class JavascriptParser {
         this.ast = res.ast;
         return res;
     }
+    getCodeForWebpack() {
+        const res = babel.transformFromAstSync(this.ast, null, {
+            plugins: [
+                function() {
+                    return {
+                        visitor: {
+                            // 移除所有class声明，里面包含jsx，对webpack解析无用
+                            ClassDeclaration: (astPath) => {
+                                astPath.remove();
+                            }
+                        }
+                    };
+                }
+            ]
+        });
+        return res.code;
+    }
 
     getExtraFiles() {
         return this.queues;
     }
 
     getExportCode() {
-        let res = this.parsedCode;
+        let res = this.getCodeForWebpack();
+        // modules去重
+        this.extraModules = this.extraModules.filter((m, i, self) => {
+            return self.indexOf(m) === i;
+        });
         this.extraModules.forEach(module => {
             // windows 补丁
             module = module.replace(/\\/g, '\\\\');
