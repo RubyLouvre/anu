@@ -1,0 +1,20 @@
+{
+    "subpackages":[
+        {
+            "name": "platform",
+            "resource": "pages/platform"
+        },
+        {
+            "name": "native",
+            "resource": "pages/native"
+        },
+        {
+            "name": "syntax",
+            "resource": "pages/syntax"
+        },
+        {
+            "name": "apis",
+            "resource": "pages/apis"
+        }
+    ]
+}
