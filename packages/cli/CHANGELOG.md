@@ -14,7 +14,7 @@
 ## CLI
 #### Feature
 - 请允许components出现在pages下面，以实现更好的分包功能。https://rubylouvre.github.io/nanachi/documents/subpackages.html
-- 重构去哪儿模块，以演示分包功能。
+- 重构qunar样板工程，以演示分包功能。
 
 
 # 1.2.4 (2019-05-17)
