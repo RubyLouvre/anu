@@ -1,5 +1,22 @@
 # Changelog
 
+
+# 1.2.5 (2019-05-24)
+
+## 核心库
+#### Feature
+- 抹平小程序与快应用在页面组件的onTabItemTap差异。
+- 组件支持静态的options对象， 以支持微信小程序的自定义组件的options.styleIsolation功能。 https://developers.weixin.qq.com/miniprogram/dev/framework/custom-component/wxml-wxss.html
+
+#### Bug fix
+- 修正onShare在页面只触发一次的BUG https://github.com/RubyLouvre/anu/issues/1000
+
+## CLI
+#### Feature
+- 请允许components出现在pages下面，以实现更好的分包功能。https://rubylouvre.github.io/nanachi/documents/subpackages.html
+- 重构去哪儿模块，以演示分包功能。
+
+
 # 1.2.4 (2019-05-17)
 
 ## 核心库
