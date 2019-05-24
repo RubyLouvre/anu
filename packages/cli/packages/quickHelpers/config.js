@@ -215,7 +215,7 @@ function setTitleBar(config) {
 function setOtherConfig() {
     let userConfig = {};
     try {
-        userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+        userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
     } catch (err) {
         // eslint-disable-next-line
     }
@@ -239,7 +239,6 @@ function setOtherConfig() {
     });
     
     manifest.features = features;
-
     [
         'name', 
         'versionName',
