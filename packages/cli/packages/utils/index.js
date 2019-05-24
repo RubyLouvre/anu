@@ -174,7 +174,15 @@ let utils = {
     },
     genKey(key) {
         key = key + '';
-        return key.indexOf('.') > 0 ? key.split('.').pop() : '*this';
+        let keyPathAry = key.split('.')
+        if( keyPathAry.length > 2) {
+            // item.a.b =>  "{{a.b}}"
+            key = '{{' + keyPathAry.slice(1).join('.') + '}}';
+        } else {
+            // item.a => "a"
+            key = keyPathAry.slice(1).join('')
+        }
+        return keyPathAry.length > 1 ? key : '*this';
     },
     getAnu(state) {
         return state.file.opts.anu;
