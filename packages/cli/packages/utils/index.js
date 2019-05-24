@@ -177,7 +177,7 @@ let utils = {
             // item.a => "a"
             key = keyPathAry.slice(1).join('')
         }
-        return keyPathAry.length > 0 ? key : '*this';
+        return keyPathAry.length > 1 ? key : '*this';
     },
     getAnu(state) {
         return state.file.opts.anu;
