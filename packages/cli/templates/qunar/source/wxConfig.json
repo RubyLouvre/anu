@@ -1,10 +1,6 @@
 {
     "subpackages":[
         {
-            "name": "platform",
-            "resource": "pages/platform"
-        },
-        {
             "name": "native",
             "resource": "pages/native"
         },
