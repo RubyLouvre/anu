@@ -360,12 +360,11 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
         root.walkRules(rule => {
             const selectors = parseSelector(rule.selector);
             const patchComponents = config[config.buildType].patchComponents || [];
-            patchComponents.forEach(comp => {
-                if (selectors.indexOf(comp) !== -1) {
-                    warningLog(`补丁组件{red ${comp}}不支持标签选择器`);
+            for(let schneeUIComponent in patchComponents ){
+                if (selectors.indexOf(schneeUIComponent) !== -1) {
+                    warningLog(`补丁组件{red ${schneeUIComponent}}不支持标签选择器`);
                 }
-            });
-
+            }
         });
     };
 });

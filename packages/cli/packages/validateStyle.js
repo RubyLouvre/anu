@@ -128,19 +128,16 @@ module.exports = function validateStyle(code) {
     });
 
     rules && rules.forEach(rule => {
-        const patchComponents = config[config.buildType].patchComponents || [];
+        const patchComponents = config[config.buildType].patchComponents || {};
         let selectors = [];
         rule.selectors && rule.selectors.forEach(selector => {
             selectors = selectors.concat(selector.split(/\s+/));
         });
-        patchComponents.forEach(comp => {
-            if (selectors.indexOf(comp) !== -1) {
-                // eslint-disable-next-line
-                console.warn(
-                    chalk`补丁组件{red ${comp}}不支持标签选择器`
-                );
+        for(let schneeUIComponent in patchComponents ){
+            if (selectors.indexOf(schneeUIComponent) !== -1) {
+                console.warn(chalk`补丁组件{red ${schneeUIComponent}}不支持标签选择器`);
             }
-        });
+        }
     });
 
     return css.stringify(ast);

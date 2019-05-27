@@ -24,9 +24,12 @@ module.exports = ()=>{
                 let fileId =  state.filename;
                 let nodeName = astPath.node.name.name;
                 let platConfig = config[config.buildType];
-                let patchComponents = platConfig.patchComponents || [];
+                let patchComponents = platConfig.patchComponents 
+
                 
-                if ( !patchComponents.includes(nodeName) ) return;
+                if ( !patchComponents[nodeName] ){
+                    return;
+                } 
                 // 添加依赖的补丁组件, 比如快应用navigator --> x-navigator -> XNavigator
                 const patchComponentPath = getPatchComponentPath(  utils.parseCamel('x-'+nodeName)); 
                 config.patchComponents[nodeName] = config.patchComponents[nodeName] || patchComponentPath;
