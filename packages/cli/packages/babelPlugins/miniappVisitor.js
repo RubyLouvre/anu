@@ -598,6 +598,7 @@ module.exports = {
                 if (attrName === 'src' && /^(@assets)/.test(srcValue)) {
                     let realAssetsPath = path.join(
                         process.cwd(),
+                        'source',
                         srcValue.replace(/@/, '')
                     );
                     let relativePath = path.relative(
