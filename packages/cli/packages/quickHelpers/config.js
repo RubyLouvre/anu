@@ -141,7 +141,7 @@ function setRouter(config) {
 
     let userConfig = {};
     try {
-        userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+        userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
         
     } catch (err) {
         // eslint-disable-next-line
@@ -163,7 +163,7 @@ function setTitleBar(config) {
     var display = manifest.display;
     let userConfig = {};
     try {
-        userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+        userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
     } catch (err) {
         // eslint-disable-next-line
     }
@@ -202,7 +202,7 @@ function setTitleBar(config) {
 function setOtherConfig() {
     let userConfig = {};
     try {
-        userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+        userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
     } catch (err) {
         // eslint-disable-next-line
     }

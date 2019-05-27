@@ -113,7 +113,7 @@ module.exports = function({
     if (platform === 'quick') {
         try {
             // quickConfig可能不存在 需要try catch
-            const quickConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+            const quickConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
             if (quickConfig && quickConfig.router && quickConfig.router.widgets) {
                 Object.keys(quickConfig.router.widgets).forEach(key => {
                     const widgetPath = quickConfig.router.widgets[key].path;
