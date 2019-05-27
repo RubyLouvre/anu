@@ -108,13 +108,11 @@ let utils = {
             }
             var pagePath = modules.sourcePath;
             var currentPage = pagesNeedPatchComponents[pagePath];
-           // console.log(currentPage, "!!!",pagePath)
             //schnee-ui补丁
             if (currentPage && currentPage[orig]) {
                 //'rich-text' ==> RichText;
                 // button ==> XButton
                 var patchName = toUpperCamel( 'x-' + orig )
-                console.log(patchName, UIName)
                 modules.importComponents[patchName] = {
                     source: UIName
                 };
@@ -294,14 +292,12 @@ let utils = {
     },
     resolveAliasPath(id, deps) {
         let ret = {};
-       // console.log(deps,'resolveAliasPath' )
         Object.keys(deps).forEach((depKey) => {
             ret[depKey] = path.relative(
                 path.dirname(this.resolveDistPath(id)),
                 this.resolveDistPath(deps[depKey])
             )
         });
-       // console.log(ret, "结果")
         return ret;
     },
     getRegeneratorRuntimePath: function (sourcePath) {
