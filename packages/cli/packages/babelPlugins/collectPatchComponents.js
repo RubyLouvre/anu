@@ -27,8 +27,8 @@ module.exports = ()=>{
                 let patchComponents = platConfig.patchComponents || [];
                 
                 if ( !patchComponents.includes(nodeName) ) return;
-                // 添加依赖的补丁组件
-                const patchComponentPath = getPatchComponentPath( utils.parseCamel(nodeName)); //这里的前缀有问题？
+                // 添加依赖的补丁组件, 比如快应用navigator --> x-navigator -> XNavigator
+                const patchComponentPath = getPatchComponentPath(  utils.parseCamel('x-'+nodeName)); 
                 config.patchComponents[nodeName] = config.patchComponents[nodeName] || patchComponentPath;
                 //做一些初始化工作
                 platConfig.jsxPatchNode = platConfig.jsxPatchNode || {};
