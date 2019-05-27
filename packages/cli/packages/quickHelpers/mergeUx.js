@@ -54,7 +54,7 @@ let map = {
                 if (/node_modules/.test(sourcePath)) {
                     sourcePath = nodeModules2Npm(sourcePath);
                 }
-                targetPath = path.join(cwd, 'source/npm/schnee-ui', relativePath);
+                targetPath = path.join(cwd, 'source', relativePath);
             }
             let importSrc = path.relative(
                 path.dirname(sourcePath),

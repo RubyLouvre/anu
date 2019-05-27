@@ -54,11 +54,8 @@ class JavascriptParser {
                 function() {
                     return {
                         visitor: {
-                            // 移除所有class声明，里面包含jsx，对webpack解析无用
-                            ClassDeclaration: (astPath) => {
-                                astPath.remove();
-                            },
-                            FunctionDeclaration: (astPath) => {
+                            // 移除所有jsx，对webpack解析无用
+                            JSXElement: (astPath) => {
                                 astPath.remove();
                             }
                         }
