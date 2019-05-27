@@ -136,8 +136,7 @@ let utils = {
         }
         let isNpm = this.isNpm(bag.source);
         let sourcePath = modules.sourcePath;
-        let isNodeModulePathReg = /[\\/]npm[\\/]/;
-
+        let isNodeModulePathReg = /[\\/](npm|node_modules)[\\/]/;
         //import { xxx } from 'schnee-ui';
         if (isNpm) {
             return '/npm/' + bag.source + '/components/' + nodeName + '/index';
@@ -146,7 +145,7 @@ let utils = {
         if ( isNodeModulePathReg.test(sourcePath) && /^\./.test(bag.source) ) {
             //获取用组件的绝对路径
             let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
-            return '/npm/' + importerAbPath.split(`${path.sep}npm${path.sep}`)[1]
+            return '/npm/' + importerAbPath.split(/[\\/]npm|node_modules[\\/]/)[1]
         }
         
         // return `/components/${nodeName}/index`;
