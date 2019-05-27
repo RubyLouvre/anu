@@ -252,7 +252,9 @@ class Parser {
 
     }
     needInstallUiLib() {
-        if ( !config[config.buildType].jsxPatchNode ) return false; //没有需要patch的组件
+        if ( !config[config.buildType].patchPages ){
+            return  //当前平台不需要引入任何补丁组件
+        } 
         try {
             nodeResolve.sync('schnee-ui', { basedir: process.cwd() });
             return false;

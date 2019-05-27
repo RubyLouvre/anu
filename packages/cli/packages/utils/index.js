@@ -97,7 +97,7 @@ let utils = {
         );
     },
     createNodeName(map, backup) {
-        const patchNode = config[config.buildType].jsxPatchNode || {};
+        const pagesNeedPatchComponents = config[config.buildType].patchPages || {};
         const UIName = 'schnee-ui';
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return (astPath, modules) => {
@@ -106,13 +106,15 @@ let utils = {
             if (/^[A-Z]/.test(orig)) {
                 return orig;
             }
-            var fileId = modules.sourcePath;
-            var isPatchNode = patchNode[fileId] && patchNode[fileId].includes(orig);
+            var pagePath = modules.sourcePath;
+            var currentPage = pagesNeedPatchComponents[pagePath];
+           // console.log(currentPage, "!!!",pagePath)
             //schnee-ui补丁
-            if (isPatchNode) {
+            if (currentPage && currentPage[orig]) {
                 //'rich-text' ==> RichText;
                 // button ==> XButton
                 var patchName = toUpperCamel( 'x-' + orig )
+                console.log(patchName, UIName)
                 modules.importComponents[patchName] = {
                     source: UIName
                 };
