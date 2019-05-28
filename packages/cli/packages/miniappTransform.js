@@ -9,7 +9,7 @@ let quickFiles = require('./quickFiles');
 let queue = require('./queue');
 let mergeUx = require('./quickHelpers/mergeUx');
 let utils = require('./utils');
-
+let thePathHasCommon = /\bcommon\b/
 
 let isReact = function(sourcePath){
     return /^(React)/.test( path.basename(sourcePath) );
@@ -42,6 +42,8 @@ async function transform(sourcePath, resolvedIds, originalCode) {
         }
         return;
     }
+    var filterCommonFile = thePathHasCommon.test(sourcePath) ? []: require('./babelPlugins/transformMiniApp')(sourcePath)
+   
 
     try {
         const result = babel.transformFileSync(
@@ -78,7 +80,7 @@ async function transform(sourcePath, resolvedIds, originalCode) {
                     require('@babel/plugin-syntax-jsx'),
                     require('@babel/plugin-proposal-object-rest-spread'),
                     [require('@babel/plugin-transform-template-literals'), { loose: true }],
-                    ...require('./babelPlugins/transformMiniApp')(sourcePath),
+                    ...filterCommonFile,
                     ...require('./babelPlugins/transformEnv'),
                     ...require('./babelPlugins/injectRegeneratorRuntime'),
                     require('./babelPlugins/transformIfImport'),
