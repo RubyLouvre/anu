@@ -74,7 +74,6 @@
 
     var disableYielding = false;
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function(obj) { return typeof obj; } : function(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
     function getWrappedName(outerType, innerType, wrapperName) {
         var functionName = innerType.displayName || innerType.name || '';
@@ -200,13 +199,33 @@
 
     var valueStack = [];
     var index = -1;
-
+//使用一个valueStack来维护所有stack
     function createCursor(defaultValue) {
-        return {
+        var cursor = {
+           
             current: defaultValue
+   
         };
+        cursor.pop = function(){
+            pop(this)
+        }
+        cursor.push = function(value){
+            push(this,value)
+        }
+        return cursor
     }
+/*
+    var contextStackCursor = createCursor(NO_CONTEXT);
+    var contextFiberStackCursor = createCursor(NO_CONTEXT);
+    var rootInstanceStackCursor = createCursor(NO_CONTEXT);
 
+    var contextStackCursor = createCursor(emptyContextObject);
+    var didPerformWorkStackCursor = createCursor(false);
+
+    var valueCursor = createCursor(null);
+    var suspenseStackCursor = createCursor(DefaultSuspenseContext);
+
+*/
     function pop(cursor, fiber) {
         if (index < 0) {
             return;
@@ -270,20 +289,20 @@
         return childContextTypes !== null && childContextTypes !== undefined;
     }
 
-    function popContext(fiber) {
-        pop(didPerformWorkStackCursor, fiber);
-        pop(contextStackCursor, fiber);
+    function popContext() {
+        didPerformWorkStackCursor.pop()
+        contextStackCursor.pop()
     }
 
-    function popTopLevelContextObject(fiber) {
-        pop(didPerformWorkStackCursor, fiber);
-        pop(contextStackCursor, fiber);
+    function popTopLevelContextObject() {
+        didPerformWorkStackCursor.pop()
+        contextStackCursor.pop()
     }
 
     function pushTopLevelContextObject(fiber, context, didChange) {
         invariant(contextStackCursor.current === emptyContextObject, 'Unexpected context found on stack. ' + 'This error is likely caused by a bug in React. Please file an issue.');
-        push(contextStackCursor, context, fiber);
-        push(didPerformWorkStackCursor, didChange, fiber);
+        contextStackCursor.push(context);
+        didPerformWorkStackCursor.push(didChange);
     }
     // 旧的context机制，生成子级的context
     function processChildContext(fiber, type, parentContext) {
@@ -304,8 +323,8 @@
         var instance = workInProgress.stateNode;
         var memoizedMergedChildContext = instance && instance.__reactInternalMemoizedMergedChildContext || emptyContextObject;
         previousContext = contextStackCursor.current;
-        push(contextStackCursor, memoizedMergedChildContext, workInProgress);
-        push(didPerformWorkStackCursor, didPerformWorkStackCursor.current, workInProgress);
+        contextStackCursor.push(memoizedMergedChildContext);
+        didPerformWorkStackCursor.push(didPerformWorkStackCursor.current);
         return true;
     }
 
@@ -315,13 +334,13 @@
         if (didChange) {
             var mergedContext = processChildContext(workInProgress, type, previousContext);
             instance.__reactInternalMemoizedMergedChildContext = mergedContext;
-            pop(didPerformWorkStackCursor, workInProgress);
-            pop(contextStackCursor, workInProgress);
-            push(contextStackCursor, mergedContext, workInProgress);
-            push(didPerformWorkStackCursor, didChange, workInProgress);
+            didPerformWorkStackCursor.pop();
+            contextStackCursor.pop();
+            contextStackCursor.push(mergedContext);
+            didPerformWorkStackCursor.push(didChange);
         } else {
-            pop(didPerformWorkStackCursor, workInProgress);
-            push(didPerformWorkStackCursor, didChange, workInProgress);
+            didPerformWorkStackCursor.pop()
+            didPerformWorkStackCursor.push(didChange);
         }
     }
 
@@ -520,7 +539,6 @@
         };
     }
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function(obj) { return typeof obj; } : function(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     var ImmediatePriority = 1;
     var UserBlockingPriority = 2;
     var NormalPriority = 3;
@@ -1059,17 +1077,17 @@
     function pushProvider(providerFiber, nextValue) {
         var context = providerFiber.type._context;
         if (ReactDOMHostConfig.isPrimaryRenderer) {
-            push(valueCursor, context._currentValue, providerFiber);
+            valueCursor.push( context._currentValue);
             context._currentValue = nextValue;
         } else {
-            push(valueCursor, context._currentValue2, providerFiber);
+            valueCursor. push( context._currentValue2);
             context._currentValue2 = nextValue;
         }
     }
 
     function popProvider(providerFiber) {
         var currentValue = valueCursor.current;
-        pop(valueCursor, providerFiber);
+        valueCursor.pop()
         var context = providerFiber.type._context;
         if (ReactDOMHostConfig.isPrimaryRenderer) {
             context._currentValue = currentValue;
@@ -1492,7 +1510,6 @@
         return ReactCurrentBatchConfig.suspense;
     }
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function(obj) { return typeof obj; } : function(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     var emptyRefsObject = new React.Component().refs;
 
     function applyDerivedStateFromProps(workInProgress, ctor, getDerivedStateFromProps, nextProps) {
@@ -2268,7 +2285,8 @@
     }
 
     var NO_CONTEXT = {};
-    var contextStackCursor$1 = createCursor(NO_CONTEXT);
+    //contextStackCursor用来放 context的并集
+    var contextStackCursor = createCursor(NO_CONTEXT);
     var contextFiberStackCursor = createCursor(NO_CONTEXT);
     var rootInstanceStackCursor = createCursor(NO_CONTEXT);
 
@@ -2283,42 +2301,42 @@
     }
 
     function pushHostContainer(fiber, nextRootInstance) {
-        push(rootInstanceStackCursor, nextRootInstance, fiber);
-        push(contextFiberStackCursor, fiber, fiber);
-        push(contextStackCursor$1, NO_CONTEXT, fiber);
+        //用于设置nextRootInstance，nextRootContext
+        rootInstanceStackCursor.push(nextRootInstance);
+        contextStackCursor.push(NO_CONTEXT);
         var nextRootContext = ReactDOMHostConfig.getRootHostContext(nextRootInstance);
-        pop(contextStackCursor$1, fiber);
-        push(contextStackCursor$1, nextRootContext, fiber);
+        contextStackCursor.pop();
+        contextStackCursor.push(nextRootContext);
     }
 
     function popHostContainer(fiber) {
-        pop(contextStackCursor$1, fiber);
-        pop(contextFiberStackCursor, fiber);
-        pop(rootInstanceStackCursor, fiber);
+        contextStackCursor.pop();
+        contextFiberStackCursor.pop();
+        rootInstanceStackCursor.pop();
     }
 
     function getHostContext() {
-        var context = requiredContext(contextStackCursor$1.current);
+        var context = requiredContext(contextStackCursor.current);
         return context;
     }
 
     function pushHostContext(fiber) {
         var rootInstance = requiredContext(rootInstanceStackCursor.current);
-        var context = requiredContext(contextStackCursor$1.current);
+        var context = requiredContext(contextStackCursor.current);
         var nextContext = ReactDOMHostConfig.getChildHostContext(context, fiber.type, rootInstance);
         if (context === nextContext) {
             return;
         }
-        push(contextFiberStackCursor, fiber, fiber);
-        push(contextStackCursor$1, nextContext, fiber);
+        contextFiberStackCursor.push( fiber);
+        contextStackCursor.push(nextContext);
     }
 
     function popHostContext(fiber) {
         if (contextFiberStackCursor.current !== fiber) {
             return;
         }
-        pop(contextStackCursor$1, fiber);
-        pop(contextFiberStackCursor, fiber);
+        contextStackCursor.pop();
+        contextFiberStackCursor.pop();
     }
 
     var DefaultSuspenseContext = 0;
@@ -2340,11 +2358,11 @@
     }
 
     function pushSuspenseContext(fiber, newContext) {
-        push(suspenseStackCursor, newContext, fiber);
+        suspenseStackCursor.push(newContext);
     }
 
     function popSuspenseContext(fiber) {
-        pop(suspenseStackCursor, fiber);
+        suspenseStackCursor.pop();
     }
 
     var NoEffect$1 = 0;
@@ -3018,7 +3036,9 @@
 
     function popToNextHostParent(fiber) {
         var parent = fiber.return;
-        while (parent !== null && parent.tag !== HostComponent && parent.tag !== HostRoot && parent.tag !== DehydratedSuspenseComponent) {
+        while (parent !== null && parent.tag !== HostComponent 
+            && parent.tag !== HostRoot 
+            && parent.tag !== DehydratedSuspenseComponent) {
             parent = parent.return;
         }
         hydrationParentFiber = parent;
@@ -3058,7 +3078,6 @@
         isHydrating = false;
     }
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function(obj) { return typeof obj; } : function(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     var ReactCurrentOwner = ReactSharedInternals.ReactCurrentOwner;
     var didReceiveUpdate = false;
 
@@ -6248,7 +6267,6 @@
         }
     }
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function(obj) { return typeof obj; } : function(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
     function FiberNode(tag, pendingProps, key, mode) {
         this.tag = tag;
