@@ -4,6 +4,7 @@ const chalk = require('chalk');
 const semver = require('semver');
 const program = require('commander');
 const platforms = require('../consts/platforms');
+const spawn = require('cross-spawn');
 const { BUILD_OPTIONS } = require('../consts/index');
 let config = require('../packages/config');
 function checkNodeVersion(version){
@@ -83,11 +84,32 @@ registeCommand('init <app-name>', 'description: 初始化项目', {}, (appName)=
         });
 });
 
+
 function buildAction(buildType, compileType) {
     return function(cmd) {
         const args = getArgValue(cmd);
         args['buildType'] = buildType;
         if (compileType === 'watch') { args['watch'] = true; }
+        if (
+            args.buildType === 'qq'  //不是qq
+            && require('../package.json').version != '1.2.3-beta.8' //不是某个webpack版本
+            && !/\/anu\//.test(__dirname.replace(/\\/g, '/'))        //不是在anu目录下做cli开发，这种策略只针对全局安装的cli
+        ) {
+            try {
+                // eslint-disable-next-line
+                console.log(chalk.green('Start to update nanachi-cli@1.2.3-beta.8, please wait for a moment.'));
+                spawn.sync('npm', ['i', 'nanachi-cli@1.2.3-beta.8', '-g'], {
+                    stdio: 'inherit'
+                });
+            } catch (err) {
+                process.exit(1);
+                // eslint-disable-next-line
+                console.log('update webpack cli version fail');
+                // eslint-disable-next-line
+                console.log(err);
+            }
+            return;
+        }
         injectBuildEnv(args);
         buildType === 'h5'
             ? require(`mini-html5/runkit/${compileType === 'watch' ? 'run' : 'build'}`)
