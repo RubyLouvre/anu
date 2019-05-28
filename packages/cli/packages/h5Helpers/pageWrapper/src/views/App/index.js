@@ -75,7 +75,7 @@ class App extends React.Component {
     ];
 
     injectApi(this.props.App, dest, apis);
-    injectApi(api, dest, Object.keys(api));
+    // injectApi(api, dest, Object.keys(api));
   }
 
   injectGlobalData() {

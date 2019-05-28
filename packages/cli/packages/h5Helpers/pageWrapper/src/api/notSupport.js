@@ -14,5 +14,7 @@ export default {
   saveFile: notSupport('saveFile'),
   getClipboardData: notSupport('getClipboardData'),
   getNetworkType: notSupport('getNetworkType'),
-  createShortcut: notSupport('createShortcut')
+  createShortcut: notSupport('createShortcut'),
+  setClipboardData: notSupport('setClipboardData'),
+  downloadFile: notSupport('downloadFile')
 };

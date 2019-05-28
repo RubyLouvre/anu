@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import NativeShare from 'nativeshare';
-import { handleSuccess, handleFail } from '../../shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../../utils';
 
 const shareTypes = [
   {

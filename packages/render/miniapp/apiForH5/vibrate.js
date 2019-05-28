@@ -1,4 +1,4 @@
-import { handleSuccess, handleFail } from '../shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../utils';
 /**
  * 长振动 400 iOS不支持
  */

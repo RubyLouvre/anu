@@ -1,4 +1,4 @@
-import { handleSuccess, handleFail } from '../shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../utils';
 
 /**
  * 电话

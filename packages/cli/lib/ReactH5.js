@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-05-23T08
+ * 运行于webview的React by 司徒正美 Copyright 2019-05-28T12
  * IE9+
  */
 
@@ -196,7 +196,7 @@ Component.prototype = {
         toWarnDev("replaceState", true);
     },
     isReactComponent: returnTrue,
-    isMounted: function isMounted() {
+    isMounted: function isMounted$$1() {
         toWarnDev("isMounted", true);
         return this.updater.isMounted(this);
     },
@@ -443,7 +443,7 @@ var Children = {
     forEach: function forEach(children, func, context) {
         return proxyIt(children, func, null, context);
     },
-    toArray: function toArray(children) {
+    toArray: function toArray$$1(children) {
         return proxyIt(children, K, []);
     }
 };
@@ -1801,12 +1801,12 @@ function removeFormBoundaries(fiber) {
         arr.splice(index, 1);
     }
 }
-function detachFiber(fiber, effects) {
+function detachFiber(fiber, effects$$1) {
     fiber.effectTag = DETACH;
-    effects.push(fiber);
+    effects$$1.push(fiber);
     fiber.disposed = true;
     for (var child = fiber.child; child; child = child.sibling) {
-        detachFiber(child, effects);
+        detachFiber(child, effects$$1);
     }
 }
 
@@ -2275,7 +2275,7 @@ function diffChildren(parentFiber, children) {
         oldFibers = {};
     }
     var newFibers = fiberizeChildren(children, parentFiber);
-    var effects = parentFiber.effects || (parentFiber.effects = []);
+    var effects$$1 = parentFiber.effects || (parentFiber.effects = []);
     var matchFibers = new Object();
     delete parentFiber.child;
     for (var i in oldFibers) {
@@ -2288,7 +2288,7 @@ function diffChildren(parentFiber, children) {
             }
             continue;
         }
-        detachFiber(oldFiber, effects);
+        detachFiber(oldFiber, effects$$1);
     }
     var prevFiber = void 0,
         index = 0;
@@ -2308,13 +2308,13 @@ function diffChildren(parentFiber, children) {
                     delete _newFiber.deleteRef;
                 }
                 if (oldRef && oldRef !== _newFiber.ref) {
-                    effects.push(alternate);
+                    effects$$1.push(alternate);
                 }
                 if (_newFiber.tag === 5) {
                     _newFiber.lastProps = alternate.props;
                 }
             } else {
-                detachFiber(_oldFiber, effects);
+                detachFiber(_oldFiber, effects$$1);
             }
         } else {
             _newFiber = new Fiber(_newFiber);
@@ -2430,10 +2430,10 @@ function commitDFSImpl(fiber) {
         }
     }
 }
-function commitDFS(effects) {
+function commitDFS(effects$$1) {
     Renderer.batchedUpdates(function () {
         var el;
-        while (el = effects.shift()) {
+        while (el = effects$$1.shift()) {
             if (el.effectTag === DETACH && el.caughtError) {
                 disposeFiber(el);
             } else {
@@ -2541,7 +2541,7 @@ function disposeFibers(fiber) {
 }
 function safeInvokeHooks(upateQueue, create, destory) {
     var uneffects = upateQueue[destory],
-        effects = upateQueue[create],
+        effects$$1 = upateQueue[create],
         fn;
     if (!uneffects) {
         return;
@@ -2551,7 +2551,7 @@ function safeInvokeHooks(upateQueue, create, destory) {
             fn();
         } catch (e) {      }
     }
-    while (fn = effects.shift()) {
+    while (fn = effects$$1.shift()) {
         try {
             var f = fn();
             if (typeof f === 'function') {
@@ -3415,12 +3415,36 @@ function registerAPIsQuick(ReactWX, facade, override) {
     promisefyApis(ReactWX, facade, override(facade));
 }
 
-var more = function more(api) {
-    return {
-        request: function request() {
-            return api.request;
-        }
+var interfaceNameSpaces = {
+  call: call,
+  canIUse: canIUse,
+  canvas: canvas,
+  clipboard: clipboard,
+  file: file,
+  images: images,
+  interaction: interaction,
+  location: location,
+  previewImage: previewImage,
+  request: request,
+  scroll: scroll,
+  selectorQuery: selectorQuery,
+  storage: storage,
+  systemInfo: systemInfo,
+  vibrate: vibrate,
+  ws: ws,
+  share: share,
+  notSupport: notSupport
+};
+function extractApis(interfaceNameSpaces) {
+  return Object.keys(interfaceNameSpaces).reduce(function (apis, interfaceNameSpaceName) {
+    return function () {
+      return Object.assign({}, apis, interfaceNameSpaces[interfaceNameSpaceName]);
     };
+  }, {});
+}
+var more = function more() {
+  return {};
+  return extractApis(interfaceNameSpaces);
 };
 
 var rbeaconType = /click|tap|change|blur|input/i;
@@ -3495,6 +3519,7 @@ function registerComponent(type, name) {
             state: {},
             context: {}
         },
+        options: type.options,
         attached: function attached() {
             usingComponents[name] = type;
             var uuid = this.dataset.instanceUid || null;
@@ -3565,7 +3590,7 @@ function onUnload() {
     callGlobalHook('onGlobalUnload');
 }
 
-var globalHooks = {
+var appHooks = {
     onShare: 'onGlobalShare',
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
@@ -3575,21 +3600,23 @@ function registerPage(PageClass, path, testObject) {
     var config = {
         data: {},
         dispatchEvent: dispatchEvent$1,
-        onLoad: function onLoad$1(query) {
+        onLoad: function onLoad$$1(query) {
             onLoad.call(this, PageClass, path, query);
         },
         onReady: onReady,
         onUnload: onUnload
     };
-    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
+    Array('onShareAppMessage', 'onPageScroll', 'onReachBottom', 'onPullDownRefresh', 'onTabItemTap', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
         config[hook] = function (e) {
             var instance = this.reactInstance,
-                fn = instance[hook],
+                pageHook = hook,
                 param = e;
-            if (hook === 'onShareAppMessage') {
-                hook = 'onShare';
-                fn = fn || instance[hook];
-            } else if (hook === 'onShow') {
+            if (pageHook === 'onShareAppMessage') {
+                if (!instance.onShare) {
+                    instance.onShare = instance.onShareAppMessage;
+                }
+                pageHook = 'onShare';
+            } else if (pageHook === 'onShow') {
                 if (this.options) {
                     instance.props.query = this.options;
                 }
@@ -3597,17 +3624,14 @@ function registerPage(PageClass, path, testObject) {
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }
-            if (isFn(fn)) {
-                var ret = fn.call(instance, param);
-                if (hook === 'onShare') {
-                    return ret;
-                }
-            }
-            var globalHook = globalHooks[hook];
-            if (globalHook) {
-                ret = callGlobalHook(globalHook, param);
-                if (hook === 'onShare') {
-                    return ret;
+            for (var i = 0; i < 2; i++) {
+                var method = i ? appHooks[pageHook] : pageHook;
+                var host = i ? _getApp() : instance;
+                if (method && host && isFn(host[method])) {
+                    var ret = host[method](param);
+                    if (ret !== void 0) {
+                        return ret;
+                    }
                 }
             }
         };
@@ -3681,4 +3705,4 @@ var apiContainer = {
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, Component, createElement };
+export { Children, createElement, Component };
