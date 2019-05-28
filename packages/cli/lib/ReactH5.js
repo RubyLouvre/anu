@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * 运行于webview的React by 司徒正美 Copyright 2019-05-23T08
  * IE9+
