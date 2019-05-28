@@ -1,7 +1,7 @@
 
 
 
-const rsegments = /[\w\.]+/g;
+const rsegments = /[\w\.-]+/g;
 const path = require('path');
 const isWindow = require('./isWindow');
 const isNpm = require('./isNpmModule');
