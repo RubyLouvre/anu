@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-05-23
+ * 运行于快应用的React by 司徒正美 Copyright 2019-05-28
  */
 
 var arrayPush = Array.prototype.push;
@@ -3304,7 +3304,7 @@ function onReady() {
 function onUnload() {
     for (var i in usingComponents) {
         var a = usingComponents[i];
-        if (a.reactInstances.length) {
+        if (a.reactInstances) {
             a.reactInstances.length = 0;
         }
         delete usingComponents[i];

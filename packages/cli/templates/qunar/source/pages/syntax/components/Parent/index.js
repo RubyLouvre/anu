@@ -10,6 +10,10 @@ class Parent extends React.Component {
         /* eslint-disable */
 		console.log('Parent did mount!');
 	}
+	componentWillUnmount() {
+        /* eslint-disable */
+		console.log('Parent will unmount!');
+	}
 	render() {
 		return (
 			<div class="parent">
