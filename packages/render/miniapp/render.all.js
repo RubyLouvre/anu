@@ -1,7 +1,7 @@
 import { isFn, toLowerCase, get } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
-import { updateMiniApp, _getApp, delayMounts, registeredComponents } from './utils';
+import { updateMiniApp, _getApp, delayMounts } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 

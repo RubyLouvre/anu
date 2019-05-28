@@ -23,9 +23,11 @@ function needInstall( pkgName ){
 /**
  * patchComponents用于搜集文件中的patch components
  * {
- *     patchComponents: ['button', 'radio'],
- *     jsxPatchNode: {
- *       [fileId]: ['button']
+ *     patchComponents: {'button':1, 'radio':1},
+ *     patchPages?: {
+ *       [pagePath]: {
+ *          button: true
+ *      }
  *     }
  * }
  */
@@ -45,7 +47,7 @@ module.exports = ()=>{
                 let platConfig = config[config.buildType];
                 let patchComponents = platConfig.patchComponents || [];
                 const modules = utils.getAnu(state);
-                if ( !patchComponents.includes(nodeName) ) return;
+                if ( !patchComponents[nodeName] ) return;
                 // 添加依赖的补丁组件
                 const patchComponentPath = getPatchComponentPath('X' + utils.parseCamel(nodeName));
                 
@@ -59,6 +61,11 @@ module.exports = ()=>{
                 modules.extraModules.push(patchComponentPath);
 
                 patchSchneeUi = true;
+                // 需要引入补丁组件的页面
+                var pagesNeedPatchComponents =  platConfig.patchPages || (platConfig.patchPages = {});
+                // 引入补丁组件的当前页面
+                var currentPage = pagesNeedPatchComponents[fileId] || (pagesNeedPatchComponents[fileId] = {});
+                currentPage[nodeName] = true;
             }
         },
         post: function(){

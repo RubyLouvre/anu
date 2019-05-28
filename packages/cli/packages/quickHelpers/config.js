@@ -226,7 +226,6 @@ function setOtherConfig() {
     });
     
     manifest.features = features;
-
     [
         'name', 
         'versionName',

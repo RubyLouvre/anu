@@ -91,7 +91,6 @@ module.exports = async (data, queue)=>{
     let {sourcePath, result} = data;
     sourcePath = utils.fixWinPath(sourcePath);
     var uxFile = quickFiles[sourcePath];
-
     //如果没有模板, 并且不是app，则认为这是个纯js模块。
     if (!uxFile || (!uxFile.template && uxFile.type != 'App')) {
         return {

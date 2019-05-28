@@ -14,33 +14,42 @@ module.exports = {
         styleExt: 'wxss',
         xmlExt: 'wxml',
         helpers: 'wxHelpers',
-        patchComponents: []
+        patchComponents: {}
     },
     qq: {
         libName: 'ReactWX',
         styleExt: 'qss',
         xmlExt: 'qml',
         helpers: 'qqHelpers',
-        patchComponents: []
+        patchComponents: {}
     },
     ali: {
         libName: 'ReactAli',
         styleExt: 'acss',
         xmlExt: 'axml',
-        helpers: 'aliHelpers'
+        helpers: 'aliHelpers',
+        patchComponents: {}
     },
     bu: {
         libName: 'ReactBu',
         styleExt: 'css',
         xmlExt: 'swan',
         helpers: 'buHelpers',
-        patchComponents: []
+        patchComponents: {}
     },
     quick: {
         libName: 'ReactWX',
         jsExt: 'ux',
         helpers: 'quickHelpers',
-        patchComponents: ['radio', 'radio-group', 'checkbox', 'checkbox-group', 'label', 'navigator', 'picker']
+        patchComponents: {
+            radio: 1,
+            'radio-group': 1,
+            checkbox: 1,
+            'checkbox-group':1,
+            label: 1,
+            navigator: 1,
+            picker: 1
+        }
     },
     tt: {
         libName: 'ReactWX',
@@ -48,7 +57,7 @@ module.exports = {
         styleExt: 'ttss',
         xmlExt: 'ttml',
         helpers: 'ttHelpers',
-        patchComponents: []
+        patchComponents: {}
     },
     buildType: 'wx',      //构建类型默认微信小程序
     buildDir: buildDir,   //非快应用项目默认构建目录为dist

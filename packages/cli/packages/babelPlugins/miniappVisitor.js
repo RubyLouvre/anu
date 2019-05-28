@@ -213,16 +213,15 @@ module.exports = {
             if (/\.js$/.test(source)) {
                 source = source.replace(/\.js$/, '');
             }
-            // 如果当前页面就是一个组件，它必须在components目录中
-            /*  if( /\/components\//.test(modules.current)){
+           // 如果当前页面就是一个组件，它必须在components目录中
+            if( /\/components\//.test(modules.current)){
                 //这时还没有解析到函数体或类结构，不知道当前组件叫什么名字
                 if(!modules.className ){
-
                     var segments = modules.current.match(/[\w\.]+/g)
                     modules.className = segments[segments.length-2]
                 }
             }
-            */
+            
         }
         specifiers.forEach(item => {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
@@ -236,6 +235,27 @@ module.exports = {
     Program: {
         exit(astPath, state){
             var modules = utils.getAnu(state);
+        //支付宝的自定义组件机制实现有问题，必须要在json.usingComponents引入了这个类
+        //这个类所在的JS 文件才会加入Component全局函数，否则会报Component不存在的BUG
+        //一般来说，我们在页面引入了某个组件，它肯定在json.usingComponents中，只有少数间接引入的父类没有引入
+        //因此在子类的json.usingComponents添加父类名
+        //好像支付宝小程序(0.25.1-beta.0)已经不需要添加父类了
+        // 下面代码是从wxHelper/render中挪过来的
+            const parentClass = modules.parentName;
+            if (
+                config.buildType === 'ali' && 
+                modules.componentType === 'Component' &&
+                parentClass !== 'Object'                
+            ){
+                for(var i in modules.importComponents){  
+                    var value = modules.importComponents[i];
+                    if(value.astPath && i === parentClass){
+                        modules.usedComponents['anu-' +i.toLowerCase()] = 
+                            utils.getUsedComponentsPath(value, i, modules)
+                        value.astPath = null;     
+                    }
+                }
+            }
             /**
              * 将生成 JSON 文件的逻辑从 ExportDefaultDeclaration 移除
              * 放入 Program，确保在 babel 的 ast 树解析的最后才执行生成 JSON 文件的逻辑
@@ -244,7 +264,7 @@ module.exports = {
                 return;
             }
             var json = modules.config;
-
+        
             //将app.js中的import语句变成pages数组
             if (modules.componentType === 'App') {
                 json.pages = modules.pages;
