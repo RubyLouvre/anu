@@ -2,6 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const babel = require('@babel/core');
 
+const removeAst = (ast) => { ast.remove(); }
+
 class JavascriptParser {
     constructor({
         code,
@@ -55,9 +57,8 @@ class JavascriptParser {
                     return {
                         visitor: {
                             // 移除所有jsx，对webpack解析无用
-                            JSXElement: (astPath) => {
-                                astPath.remove();
-                            }
+                            JSXElement: removeAst,
+                            ClassProperty: removeAst
                         }
                     };
                 }

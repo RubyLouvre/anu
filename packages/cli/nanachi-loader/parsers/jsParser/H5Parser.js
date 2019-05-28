@@ -43,9 +43,6 @@ class H5Parser extends JavascriptParser{
             extraModules: this.extraModules
         });
     }
-    getExportCode() {
-        return super.getExportCode();
-    }
 }
 
 module.exports = H5Parser;
