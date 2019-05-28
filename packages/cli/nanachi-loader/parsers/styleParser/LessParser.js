@@ -19,15 +19,17 @@ class LessParser extends StyleParser {
                     //处理alias路径
                     return utils.resolveStyleAlias(importer, baseDir);
                 },
-                plugins: [
+                plugins: this.platform !== 'h5' ? [
                     require('../../../packages/postcssPlugins/postCssPluginRemoveRules') // 删除import文件的所有rules，保留@mixins、$variables、@functions等
-                ]
+                ] : []
             }),
             require('../../../packages/postcssPlugins/postcssPluginLessParser'),
-            require('../../../packages/postcssPlugins/postcssPluginAddImport')({
+            ...this.platform !== 'h5' ? [require('../../../packages/postcssPlugins/postcssPluginAddImport')({
                 extName: MAP[this.platform]['EXT_NAME'][this.type],
                 type: this.type,
-            }),
+            })] : [
+                require('../../../packages/postcssPlugins/postCssPluginRpxToRem')
+            ],
             require('../../../packages/postcssPlugins/postCssPluginFixNumber'),
             require('../../../packages/postcssPlugins/postCssPluginValidateStyle'),
             require('../../../packages/postcssPlugins/postcssPluginTransformKeyFrames'),

@@ -127,7 +127,7 @@ function getReactLibFile(ReactLibName) {
 function getAssetsFile( buildType ) {
     let quickConfig;
     try {
-        quickConfig = require(path.resolve(cwd, 'quickConfig.json'));
+        quickConfig = require(path.resolve(cwd, 'source', 'quickConfig.json'));
     } catch (err) {
         // quickConfig可能不存在
     }

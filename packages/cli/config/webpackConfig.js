@@ -1,10 +1,10 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
 const SizePlugin = require('../nanachi-loader/sizePlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const glob = require('glob');
 const path = require('path');
 const cwd = process.cwd();
 const utils = require('../packages/utils/index');
+const { intermediateDirectoryName } = require('./h5/configurations');
 //各种loader
 //生成文件
 const fileLoader = require.resolve('../nanachi-loader/loaders/fileLoader');
@@ -19,7 +19,6 @@ const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 
 //处理 style
 const nanachiStyleLoader  = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
-
 
 module.exports = function({
     platform,
@@ -37,8 +36,10 @@ module.exports = function({
     Object.keys(aliasMap).forEach(alias => {
         aliasMap[alias] = path.resolve(cwd, aliasMap[alias]);
     });
-    const distPath = path.resolve(cwd, utils.getDistName(platform));
-
+    let distPath = path.resolve(cwd, utils.getDistName(platform));
+    if (platform === 'h5') {
+        distPath = path.resolve(__dirname, '../packages/h5Helpers/pageWrapper', intermediateDirectoryName);
+    }
     let copyPluginOption = null;
     if (compress) {
         const compressImage = require(path.resolve(process.cwd(), 'node_modules', 'nanachi-compress-loader/utils/compressImage.js'));
@@ -51,14 +52,23 @@ module.exports = function({
         };
     }
 
-    var mergeRule = [].concat(
+    const nodeRules = [{
+        test: /node_modules[\\/](?!schnee-ui[\\/])/,
+        use: [].concat(
+            fileLoader, 
+            postLoaders, 
+            aliasLoader, 
+            nodeLoader) 
+    }];
+
+    const mergeRule = [].concat(
         {
             test: /\.jsx?$/,
             //loader是从后往前处理
             use: [].concat(
                 fileLoader, 
                 postLoaders, 
-                aliasLoader, 
+                platform !== 'h5' ? aliasLoader: [], 
                 nanachiLoader,
                 {
                     loader: require.resolve('eslint-loader'),
@@ -72,16 +82,9 @@ module.exports = function({
                 prevLoaders ) ,
             exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,
         },
+        platform !== 'h5' ? nodeRules : [],
         {
-            test: /node_modules[\\/](?!schnee-ui[\\/])/,
-            use: [].concat(
-                fileLoader, 
-                postLoaders, 
-                aliasLoader, 
-                nodeLoader) 
-        },
-        {
-            test: /React/,
+            test: /React\w+/,
             use: [].concat(
                 fileLoader, 
                 postLoaders,
@@ -93,7 +96,7 @@ module.exports = function({
             use: [].concat(
                 fileLoader, 
                 postLoaders, 
-                aliasLoader, 
+                platform !== 'h5' ? aliasLoader : [], 
                 nanachiStyleLoader,
                 prevLoaders)
         },
@@ -110,7 +113,7 @@ module.exports = function({
     if (platform === 'quick') {
         try {
             // quickConfig可能不存在 需要try catch
-            const quickConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+            const quickConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
             if (quickConfig && quickConfig.router && quickConfig.router.widgets) {
                 Object.keys(quickConfig.router.widgets).forEach(key => {
                     const widgetPath = quickConfig.router.widgets[key].path;
@@ -151,6 +154,7 @@ module.exports = function({
             alias: aliasMap,
             mainFields: ['main']
         },
+        externals: ['react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/]
         // performance: {
         //     hints: 'warning',
         //     assetFilter(filename) {

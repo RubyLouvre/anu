@@ -11,12 +11,15 @@ const template = require('@babel/template').default;
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
 const config = require('../../config/config');
+const isWindow = require('./isWindow');
+const isNpm = require('./isNpmModule');
+const toUpperCamel = require('./toUpperCamel');
 const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const userConfig = pkg.nanachi || pkg.mpreact || {};
-const { REACT_LIB_MAP } = require('../../consts/index');
+// const { REACT_LIB_MAP } = require('../../consts/index');
 const calculateComponentsPath = require('./calculateComponentsPath');
-
+const calculateAliasConfig = require('./calculateAliasConfig');
 const cachedUsingComponents = {}
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
@@ -26,13 +29,10 @@ let utils = {
     emit() {
         Event.emit.apply(global, arguments);
     },
-    spinner(text) {
+    spinner(text) { //在控制台显示进度条
         return ora(text);
     },
-    getStyleValue: require('./getStyleValue'),
-    isWin() {
-        return process.platform === 'win32';
-    },
+    getStyleValue: require('./calculateStyleString'),
     useYarn() {
         if (config['useYarn'] != undefined) {
             return config['useYarn'];
@@ -57,6 +57,7 @@ let utils = {
     },
     getEventName(eventName, nodeName, buildType) {
         if (eventName == 'Click' || eventName == 'Tap') {
+            //如果是点击事件，PC端与快应用 使用quick
             if (buildType === 'quick' || buildType === 'h5') {
                 return 'Click';
             } else {
@@ -97,31 +98,20 @@ let utils = {
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return (astPath, modules) => {
             // 在回调函数中取patchNode，在外层取会比babel插件逻辑先执行，导致一直为{}
-            const patchNode = config[config.buildType].jsxPatchNode || {}; 
+            const pagesNeedPatchComponents = config[config.buildType].patchPages || {};
             const UIName = 'schnee-ui';
             var orig = astPath.node.name.name;
-            var fileId = modules.sourcePath;
-            var isPatchNode = patchNode[fileId] && patchNode[fileId].includes(orig);
-            var prefix = 'X';
-            var patchName = '';
             //组件名肯定大写开头
             if (/^[A-Z]/.test(orig)) {
                 return orig;
             }
+            var pagePath = modules.sourcePath;
+            var currentPage = pagesNeedPatchComponents[pagePath];
             //schnee-ui补丁
-            if (isPatchNode) {
-                if (/\-/.test(orig)) {
-                    //'rich-text' ==> RichText;
-                    patchName = orig.split('-').map((el) => {
-                        return el.replace(/^[a-z]/, (match) => {
-                            return match.toUpperCase()
-                        })
-                    }).join('');
-                    patchName = prefix + patchName;
-                } else {
-                    //button ==> XButton
-                    patchName = prefix + orig.charAt(0).toUpperCase() + orig.substring(1);
-                }
+            if (currentPage && currentPage[orig]) {
+                //'rich-text' ==> RichText;
+                // button ==> XButton
+                var patchName = toUpperCamel( 'x-' + orig )
                 modules.importComponents[patchName] = {
                     source: UIName
                 };
@@ -136,8 +126,7 @@ let utils = {
         }
         let isNpm = this.isNpm(bag.source);
         let sourcePath = modules.sourcePath;
-        let isNodeModulePathReg = /[\\/]npm[\\/]/;
-
+        let isNodeModulePathReg = /[\\/](npm|node_modules)[\\/]/;
         //import { xxx } from 'schnee-ui';
         if (isNpm) {
             return '/npm/' + bag.source + '/components/' + nodeName + '/index';
@@ -146,7 +135,7 @@ let utils = {
         if ( isNodeModulePathReg.test(sourcePath) && /^\./.test(bag.source) ) {
             //获取用组件的绝对路径
             let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
-            return '/npm/' + importerAbPath.split(`${path.sep}npm${path.sep}`)[1]
+            return '/npm/' + importerAbPath.split(/[\\/]npm|node_modules[\\/]/)[1]
         }
         
         // return `/components/${nodeName}/index`;
@@ -218,17 +207,8 @@ let utils = {
             return template(`module.exports["${name}"] = ${name};`)();
         }
     },
-    isNpm(name) {
-        if (/^\/|\./.test(name)) {
-            return false;
-        }
-        //非自定义alias, @components ...
-        let aliasKeys = Object.keys(this.getAliasConfig());
-        if (aliasKeys.includes(name.split('/')[0])) {
-            return false;
-        }
-        return true;
-    },
+
+    isNpm: isNpm,
     createRegisterStatement(className, path, isPage) {
         /**
          * placeholderPattern
@@ -286,28 +266,12 @@ let utils = {
             resolve(npmPath);
         });
     },
-    getReactLibName(buildType) {
-        return REACT_LIB_MAP[buildType];
-    },
+  // 没有人用
+  //  getReactLibName(buildType) {
+  //      return REACT_LIB_MAP[buildType];
+  //  },
     getAliasConfig() {
-        let React = this.getReactLibName(config.buildType);
-        let userAlias = userConfig.alias ? userConfig.alias : {};
-        let ret = {}
-
-        //用户自定义的alias配置设置成绝对路径
-        Object.keys(userAlias).forEach((key) => {
-            ret[key] = path.join(cwd, userAlias[key])
-        });
-
-        let defaultAlias = {
-            'react': path.join(cwd, `${config.sourceDir}/${React}`),
-            '@react': path.join(cwd, `${config.sourceDir}/${React}`),
-            '@components': path.join(cwd, `${config.sourceDir}/components`),
-            '@common': path.join(cwd, `${config.sourceDir}/common`),
-            '@assets': path.join(cwd, `${config.sourceDir}/assets`),
-            ...ret
-        }
-        return defaultAlias;
+        return calculateAliasConfig(config, userConfig, cwd );
     },
     getDistName(buildType) {
         return buildType === 'quick' ? 'src' : (userConfig && userConfig.buildDir || 'dist');
@@ -353,6 +317,7 @@ let utils = {
         }
         return flag;
     },
+    decodeChinise: require('./decodeChinese'),
     isWebView(fileId) {
         
         if (config.buildType != 'quick') {
@@ -376,15 +341,7 @@ let utils = {
         return isWebView;
 
     },
-    parseCamel(str) {
-        return str
-            .replace(/-([a-z])/g, function(match, first) {
-                return first.toUpperCase();
-            })
-            .replace(/^[a-z]/, function(match) {
-                return match.toUpperCase();
-            });
-    },
+    parseCamel: toUpperCamel,//转换为大驼峰风格
     uniquefilter(arr, key = '') {
         const map = {};
         return arr.filter(item => {
@@ -398,12 +355,28 @@ let utils = {
             return false;
         });
     },
-    sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep,
+    isWin: function(){
+        return isWindow
+    },
+    sepForRegex: isWindow ? `\\${path.win32.sep}` : path.sep,
     fixWinPath(p) {
         return p.replace(/\\/g, '/');
     },
     isMportalEnv() {
         return ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase()))
+    },
+    cleanLog(log) {
+        // 清理eslint stylelint错误日志内容
+        const reg = /[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm;
+        if (reg.test(log)) {
+            return log.replace(/^\s*@[\s\S]*$/gm, '').replace(reg, '');
+        }
+        return log;
+    },
+    validatePlatform(platform, platforms) {
+        return platforms.some((p) => {
+            return p.buildType === platform;
+        });
     }
 };
 

@@ -2,8 +2,8 @@
 
 const t = require('@babel/types');
 const generate = require('@babel/generator').default;
-const getStyleValue = require('../utils/getStyleValue');
 const buildType = require('../../config/config').buildType;
+const calculateStyleString = require('../utils/calculateStyleString');
 
 module.exports = function (astPath) {
   
@@ -63,7 +63,7 @@ module.exports = function (astPath) {
             //通过style={{a:1,b:1}}
             //变成style="{{props.style4338}}"
             if (attrName === 'style') {
-                replaceWithExpr(astPath, getStyleValue(expr), true);
+                replaceWithExpr(astPath, calculateStyleString(expr), true);
             }
 
             //不转译 Spread 运算。{{...a}} 

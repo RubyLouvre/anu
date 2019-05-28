@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-09T16
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-23T12
  * IE9+
  */
 
@@ -2576,7 +2576,7 @@ function onUnload() {
     callGlobalHook('onGlobalUnload');
 }
 
-var globalHooks = {
+var appHooks = {
     onShare: 'onGlobalShare',
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
@@ -2595,12 +2595,14 @@ function registerPage(PageClass, path, testObject) {
     Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
         config[hook] = function (e) {
             var instance = this.reactInstance,
-                fn = instance[hook],
+                pageHook = hook,
                 param = e;
-            if (hook === 'onShareAppMessage') {
-                hook = 'onShare';
-                fn = fn || instance[hook];
-            } else if (hook === 'onShow') {
+            if (pageHook === 'onShareAppMessage') {
+                if (!instance.onShare) {
+                    instance.onShare = instance.onShareAppMessage;
+                }
+                pageHook = 'onShare';
+            } else if (pageHook === 'onShow') {
                 if (this.options) {
                     instance.props.query = this.options;
                 }
@@ -2608,17 +2610,14 @@ function registerPage(PageClass, path, testObject) {
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }
-            if (isFn(fn)) {
-                var ret = fn.call(instance, param);
-                if (hook === 'onShare') {
-                    return ret;
-                }
-            }
-            var globalHook = globalHooks[hook];
-            if (globalHook) {
-                ret = callGlobalHook(globalHook, param);
-                if (hook === 'onShare') {
-                    return ret;
+            for (var i = 0; i < 2; i++) {
+                var method = i ? appHooks[pageHook] : pageHook;
+                var host = i ? _getApp() : instance;
+                if (method && host && isFn(host[method])) {
+                    var ret = host[method](param);
+                    if (ret !== void 0) {
+                        return ret;
+                    }
                 }
             }
         };
@@ -2644,6 +2643,7 @@ function registerComponent(type, name) {
             state: {},
             context: {}
         },
+        options: type.options,
         lifetimes: {
             attached: function attached() {
                 var wx = this;
