@@ -3,7 +3,6 @@
  *  // if process.env.ANU_ENV === [wx|ali|bu|quick]
  *  import ...
  */
-var g = require('@babel/generator').default;
 let config = require('../config');
 let visitor = {
     ImportDeclaration: {
