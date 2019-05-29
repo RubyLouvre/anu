@@ -3,6 +3,7 @@ const fs = require('fs');
 const babel = require('@babel/core');
 
 const removeAst = (ast) => { ast.remove(); }
+const thePathHasCommon = /\bcommon\b/;
 
 class JavascriptParser {
     constructor({
@@ -30,6 +31,7 @@ class JavascriptParser {
         this.ast = null;
         this.componentType = null;
         this.setComponentType();
+        this.filterCommonFile = thePathHasCommon.test(this.filepath) ? []: require('../../../packages/babelPlugins/transformMiniApp')(this.filepath)
     }
     setComponentType() {
         if (

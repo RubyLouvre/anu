@@ -169,7 +169,7 @@ function setTitleBar(config) {
     }
 
     //webview配置titlebar
-    var globalConfig = require('../config');
+    var globalConfig = require('../../config/config');
 
     if ( globalConfig.webview 
         && /true|false/.test(globalConfig.webview.showTitleBar)
