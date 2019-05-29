@@ -160,7 +160,7 @@ function setRouter(config) {
 }
 
 
-//配置titlebar
+//为app.js的config对象配置titlebar
 function setTitleBar(config) {
     var display = manifest.display;
     let userConfig = {};
@@ -194,9 +194,10 @@ function setTitleBar(config) {
     }
 
     
-    //这里取得 app.js 类的config.widdow 得值，但是 pageWrapper又是取得config的值。造成必须两者都要写
+    //这里取得 app.js 类的config.window 得值，但是 pageWrapper又是取得config的值。造成必须两者都要写
     var win = config.window || {};
-    var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages || [];
+    //从config
+    var disabledTitleBarPages = globalConfig.quick.disabledTitleBarPages || []
     disabledTitleBarPages.forEach(function(el){
         // userPath/titledemo/source/pages/index/index.js => pages/index/index
         let route = path.relative( path.join(process.cwd(), platConfig.sourceDir),  path.dirname(el) );
@@ -262,7 +263,9 @@ function setOtherConfig() {
 
 
 module.exports = function quickConfig(config, modules, queue){
-    if (modules.componentType !== 'App') return;
+    if (modules.componentType !== 'App'){
+        return;
+    }
     //配置页面路由
     setRouter(config);
 
