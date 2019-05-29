@@ -61,6 +61,7 @@
     "less": "^3.8.1",
     "less-import-aliases": "^1.0.2",
     "mini-html5": "latest",
+    "nanachi-webpack": "latest",
     "ora": "^3.0.0",
     "postcss": "^7.0.6",
     "postcss-automath-latest": "^1.0.0",

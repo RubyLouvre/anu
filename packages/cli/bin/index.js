@@ -90,6 +90,15 @@ function buildAction(buildType, compileType) {
         args['buildType'] = buildType;
         if (compileType === 'watch') { args['watch'] = true; }
         injectBuildEnv(args);
+        if (buildType === 'qq' || buildType === 'wx') {
+            const nanachi = require('nanachi-webpack');
+            nanachi({
+                ...args,
+                platform: buildType,
+                watch: compileType === 'watch'
+            });
+            return;
+        }
         buildType === 'h5'
             ? require(`mini-html5/runkit/${compileType === 'watch' ? 'run' : 'build'}`)
             : require('../commands/build')(args);
