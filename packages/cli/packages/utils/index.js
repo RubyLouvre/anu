@@ -139,7 +139,7 @@ let utils = {
         }
         
         // return `/components/${nodeName}/index`;
-        return cachedUsingComponents[nodeName] = calculateComponentsPath(bag, nodeName, modules)
+        return cachedUsingComponents[nodeName] = utils.fixWinPath(calculateComponentsPath(bag, nodeName, modules));
     },
     createAttribute(name, value) {
         return t.JSXAttribute(
