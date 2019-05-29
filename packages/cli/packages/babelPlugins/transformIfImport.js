@@ -3,30 +3,34 @@
  *  // if process.env.ANU_ENV === [wx|ali|bu|quick]
  *  import ...
  */
-let buildType = process.env.ANU_ENV;
+const envReg = /\s*if\s+process\.env\.ANU_ENV\s*={2,3}\s*'([\w|]*)';?/;
+let config = require('../config');
 let visitor = {
-    ImportDeclaration: {
+    Program: {
+        // 必须enter时删除，在其他插件解析前就将无用的import语句删除
         enter(astPath) {
-            let node = astPath.node;
-            if (node.leadingComments && node.leadingComments.length) {
-                let envReg = /\s*if\s+process\.env\.ANU_ENV\s*={2,3}\s*'([\w|]*)';?/;
-                if (node.leadingComments.length > 1) {
-                    node.leadingComments = [ node.leadingComments.pop()];
-                }
-                let lastCom = node.leadingComments[0];
-                let commentValue = lastCom.value;
-                const match = commentValue.match(envReg);
-                if (
-                    lastCom.type === 'CommentLine' //单行注释
-                    && match            //满足if语句
-                ) { 
-                    const targetEnvs = match[1] && match[1].split('|');
-                    //移除无法匹配ANU_ENV的import语句
-                    if (targetEnvs && !targetEnvs.includes(buildType)) {
-                        astPath.remove();
+            const nodes = astPath.node.body;
+            // 此处不能使用visitor访问import节点，因为删除节点后可能会改变下一个import语句的leadingComments，必须使用遍历节点的方式实现按需打包
+            astPath.node.body = nodes.filter((node) => {
+                const leadingComments = node.leadingComments;
+                if (node.type === 'ImportDeclaration' && leadingComments) {
+                    for (let i = 0; i < leadingComments.length; i++){
+                        let commentValue = leadingComments[i].value;
+                        const match = commentValue.match(envReg);
+                        if (
+                            leadingComments[i].type === 'CommentLine' //单行注释
+                            && match            //满足if语句
+                        ) { 
+                            const targetEnvs = match[1] && match[1].split('|');
+                            //移除无法匹配ANU_ENV的import语句
+                            if (targetEnvs && !targetEnvs.includes(config.buildType)) {
+                                return false;
+                            }
+                        }
                     }
                 }
-            }
+                return true;
+            });
         }
     }
 };
