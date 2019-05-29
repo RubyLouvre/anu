@@ -78,10 +78,10 @@ async function transform(sourcePath, resolvedIds, originalCode) {
                     require('@babel/plugin-syntax-jsx'),
                     require('@babel/plugin-proposal-object-rest-spread'),
                     [require('@babel/plugin-transform-template-literals'), { loose: true }],
+                    require('./babelPlugins/transformIfImport'),
                     ...require('./babelPlugins/transformMiniApp')(sourcePath),
                     ...require('./babelPlugins/transformEnv'),
                     ...require('./babelPlugins/injectRegeneratorRuntime'),
-                    require('./babelPlugins/transformIfImport'),
                     require('./babelPlugins/trasnformAlias')( {sourcePath,resolvedIds} )
                 ]
             }

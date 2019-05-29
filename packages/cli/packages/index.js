@@ -171,6 +171,7 @@ class Parser {
                         require('./babelPlugins/collectTitleBarConfig'),
                         require('./babelPlugins/collectWebViewPage'),
                         require('./babelPlugins/collectPatchComponents'),
+                        require('./babelPlugins/transformIfImport'),
                         ...require('./babelPlugins/validateJsx')(this.collectError)
                     ]
                 })
