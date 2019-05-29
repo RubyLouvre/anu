@@ -1,5 +1,6 @@
+/* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-05-09
+ * 运行于快应用的React by 司徒正美 Copyright 2019-05-28
  */
 
 var arrayPush = Array.prototype.push;
@@ -3326,8 +3327,7 @@ function onUnload() {
     callGlobalHook('onGlobalUnload');
 }
 
-var globalHooks = {
-    onShareAppMessage: 'onGlobalShare',
+var appHooks = {
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
@@ -3372,28 +3372,28 @@ function registerPage(PageClass, path) {
         onReady: onReady,
         onDestroy: onUnload
     };
-    Array('onShow', 'onHide', 'onMenuPress', "onBackPress").forEach(function (hook) {
-        config[hook] = function (e) {
+    Array('onShow', 'onHide', 'onMenuPress', "onBackPress").forEach(function (pageHook) {
+        config[pageHook] = function (e) {
             var instance = this.reactInstance,
-                fn = instance[hook],
                 app = _getApp(),
                 param = e;
-            if (hook === 'onShow') {
+            if (pageHook === 'onShow') {
                 param = instance.props.query = getQuery(this, queryObject);
                 app.$$page = instance.wx;
                 app.$$pagePath = instance.props.path;
-            }
-            if (hook === 'onMenuPress') {
+            } else if (pageHook === 'onMenuPress') {
                 app.onShowMenu && app.onShowMenu(instance, this.$app);
-            } else if (isFn(fn)) {
-                var ret = fn.call(instance, param);
-                if (ret !== void 0) {
-                    return ret;
-                }
+                return;
             }
-            var globalHook = globalHooks[hook];
-            if (globalHook) {
-                callGlobalHook(globalHook, param);
+            for (var i = 0; i < 2; i++) {
+                var method = i ? appHooks[pageHook] : pageHook;
+                var host = i ? _getApp() : instance;
+                if (method && host && isFn(host[method])) {
+                    var ret = host[method](param);
+                    if (ret !== void 0) {
+                        return ret;
+                    }
+                }
             }
         };
     });
