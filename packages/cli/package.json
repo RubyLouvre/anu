@@ -1,10 +1,7 @@
 {
-  "name": "nanachi-cli",
-  "version": "1.2.3-beta.6",
+  "name": "nanachi-webpack",
+  "version": "0.1.0-alpha.0",
   "description": "cli tool for nanachi",
-  "bin": {
-    "nanachi": "./bin/index.js"
-  },
   "main": "./index.js",
   "scripts": {
     "test": "jest --config ./test/config/index.js"
