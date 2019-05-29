@@ -9,7 +9,7 @@ let quickFiles = require('./quickFiles');
 let queue = require('./queue');
 let mergeUx = require('./quickHelpers/mergeUx');
 let utils = require('./utils');
-
+let thePathHasCommon = /\bcommon\b/
 
 let isReact = function(sourcePath){
     return /^(React)/.test( path.basename(sourcePath) );
@@ -42,6 +42,8 @@ async function transform(sourcePath, resolvedIds, originalCode) {
         }
         return;
     }
+    var filterCommonFile = thePathHasCommon.test(sourcePath) ? []: require('./babelPlugins/transformMiniApp')(sourcePath)
+   
 
     try {
         const result = babel.transformFileSync(
@@ -52,34 +54,13 @@ async function transform(sourcePath, resolvedIds, originalCode) {
                 comments: false,
                 ast: true,
                 plugins: [
-                    /**
-                     * If you are including your plugins manually and using
-                     * @babel/plugin-proposal-class-properties, make sure that
-                     * @babel/plugin-proposal-decorators comes before
-                     * @babel/plugin-proposal-class-properties.
-                     * 
-                     * When using the legacy: true mode,
-                     * @babel/plugin-proposal-class-properties must be used in loose mode
-                     * to support the @babel/plugin-proposal-decorators.
-                     * 
-                     * [babel 6 to 7] 
-                     * In anticipation of the new decorators proposal implementation,
-                     * we've decided to make it the new default behavior.
-                     * This means that to continue using the current decorators syntax/behavior,
-                     * you must set the legacy option as true.
-                     */
                     [require('@babel/plugin-proposal-decorators'), { legacy: true }],
-                    /**
-                     * [babel 6 to 7] 
-                     * v6 default config: ["plugin", { "loose": true }]
-                     * v7 default config: ["plugin"]
-                     */
                     [require('@babel/plugin-proposal-class-properties'), { loose: true }],
                     require('@babel/plugin-syntax-jsx'),
                     require('@babel/plugin-proposal-object-rest-spread'),
                     [require('@babel/plugin-transform-template-literals'), { loose: true }],
                     require('./babelPlugins/transformIfImport'),
-                    ...require('./babelPlugins/transformMiniApp')(sourcePath),
+                    ...filterCommonFile,
                     ...require('./babelPlugins/transformEnv'),
                     ...require('./babelPlugins/injectRegeneratorRuntime'),
                     require('./babelPlugins/trasnformAlias')( {sourcePath,resolvedIds} )

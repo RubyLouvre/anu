@@ -173,7 +173,9 @@ function setTitleBar(config) {
     //webview配置titlebar
     var globalConfig = require('../config');
 
-    if ( globalConfig.webview && Object.prototype.toString.call(globalConfig.webview.showTitleBar) === '[object Boolean]' && !globalConfig.webview.showTitleBar ) {
+    if ( globalConfig.webview 
+        && /true|false/.test(globalConfig.webview.showTitleBar)
+        && !globalConfig.webview.showTitleBar ) {
         let routePath = 'pages/__web__view__';
         display['pages'] = display['pages'] || {};
         display['pages'][routePath] = {
@@ -183,7 +185,7 @@ function setTitleBar(config) {
     
     if (
         userConfig.display 
-        && Object.prototype.toString.call(userConfig.display.titleBar) === '[object Boolean]'
+        && /true|false/.test(userConfig.display.titleBar)
         && !userConfig.display.titleBar
     ) 
     {
@@ -192,7 +194,7 @@ function setTitleBar(config) {
     }
 
     
-
+    //这里取得 app.js 类的config.widdow 得值，但是 pageWrapper又是取得config的值。造成必须两者都要写
     var win = config.window || {};
     var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages || [];
     disabledTitleBarPages.forEach(function(el){
@@ -205,9 +207,11 @@ function setTitleBar(config) {
     
     display.titleBarText = win.navigationBarTitleText || 'nanachi';
     display.titleBarTextColor = win.navigationBarTextStyle || 'black';
-    display.backgroundColor = win.navigationBarBackgroundColor || '#000000';
-
-    
+    //快应用的display.backgroundColor 颜色又是取得win.navigationBarBackgroundColor导航栏背景的颜色，
+    //应该取win.backgroundColor窗口背景的颜色
+    //如果少了个display.titleBarBackgroundColor 会导致页面切换出现黑色闪屏
+    display.titleBarBackground = win.navigationBarBackgroundColor || '#ffffff';
+    display.backgroundColor = win.backgroundColor || '#ffffff';
 
 }
 
@@ -222,7 +226,7 @@ function setOtherConfig() {
 
     if (
         userConfig.display 
-        && Object.prototype.toString.call(userConfig.display.menu) === '[object Boolean]'
+        && /true|false/.test(userConfig.display.menu)
         && !userConfig.display.menu
     ) 
     {
