@@ -3,27 +3,28 @@
  *  // if process.env.ANU_ENV === [wx|ali|bu|quick]
  *  import ...
  */
-let config = require('../config');
+let buildType = process.env.ANU_ENV;
 let visitor = {
     ImportDeclaration: {
-        exit(astPath) {
-            let node  = astPath.node;
-            if (node.leadingComments) {
-                let targetEnvReg = new RegExp(`\\s*if\\s+(process\\.env\\.ANU_ENV\\s*={2,3}\\s*\\'(${config.buildType})\\';?)`, 'g');
-                let envReg = /\s*if\s+(process\.env\.ANU_ENV\s*={2,3}\s*'(wx|ali|bu|quick)';?)/g;
-                let leadingComments = node.leadingComments.pop();
-
-                if (!leadingComments) return;
-
-                let commentValue = leadingComments.value;
-                
+        enter(astPath) {
+            let node = astPath.node;
+            if (node.leadingComments && node.leadingComments.length) {
+                let envReg = /\s*if\s+process\.env\.ANU_ENV\s*={2,3}\s*'([\w|]*)';?/;
+                if (node.leadingComments.length > 1) {
+                    node.leadingComments = [ node.leadingComments.pop()];
+                }
+                let lastCom = node.leadingComments[0];
+                let commentValue = lastCom.value;
+                const match = commentValue.match(envReg);
                 if (
-                  leadingComments.type === 'CommentLine' //单行注释
-                   && envReg.test(commentValue)              //满足if语句
-                   && !targetEnvReg.test(commentValue)       //匹配非ANU_ENV值的import语句
+                    lastCom.type === 'CommentLine' //单行注释
+                    && match            //满足if语句
                 ) { 
-                   //移除无法匹配ANU_ENV的import语句
-                   astPath.remove();
+                    const targetEnvs = match[1] && match[1].split('|');
+                    //移除无法匹配ANU_ENV的import语句
+                    if (targetEnvs && !targetEnvs.includes(buildType)) {
+                        astPath.remove();
+                    }
                 }
             }
         }
