@@ -3,26 +3,27 @@
  *  // if process.env.ANU_ENV === [wx|ali|bu|quick]
  *  import ...
  */
-let config = require('../config');
+let buildType = process.env.ANU_ENV;
 let visitor = {
     ImportDeclaration: {
-        exit(astPath) {
-            let node  = astPath.node;
-            if (node.leadingComments) {
-                let targetEnvReg = new RegExp(`\\s*if\\s+(process\\.env\\.ANU_ENV\\s*={2,3}\\s*\\'(${config.buildType})\\';?)`, 'mg');
-                let envReg = /\s*if\s+(process\.env\.ANU_ENV\s*={2,3}\s*'(wx|ali|bu|quick)';?)/mg;
-                let leadingComments = node.leadingComments;
-                for (let i = 0; i < leadingComments.length; i++){
-                    let commentValue = leadingComments[i].value;
-                    
-                    if (
-                        leadingComments[i].type === 'CommentLine' //单行注释
-                        && envReg.test(commentValue)              //满足if语句
-                        && !targetEnvReg.test(commentValue)       //匹配非ANU_ENV值的import语句
-                    ) { 
-                        //移除无法匹配ANU_ENV的import语句
+        enter(astPath) {
+            let node = astPath.node;
+            if (node.leadingComments && node.leadingComments.length) {
+                let envReg = /\s*if\s+process\.env\.ANU_ENV\s*={2,3}\s*'([\w|]*)';?/;
+                if (node.leadingComments.length > 1) {
+                    node.leadingComments = [ node.leadingComments.pop()];
+                }
+                let lastCom = node.leadingComments[0];
+                let commentValue = lastCom.value;
+                const match = commentValue.match(envReg);
+                if (
+                    lastCom.type === 'CommentLine' //单行注释
+                    && match            //满足if语句
+                ) { 
+                    const targetEnvs = match[1] && match[1].split('|');
+                    //移除无法匹配ANU_ENV的import语句
+                    if (targetEnvs && !targetEnvs.includes(buildType)) {
                         astPath.remove();
-                        break;
                     }
                 }
             }
@@ -34,5 +35,3 @@ module.exports = function(){
         visitor: visitor
     };
 };
-
-    
