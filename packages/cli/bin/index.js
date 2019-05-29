@@ -91,7 +91,7 @@ function buildAction(buildType, compileType) {
         args['buildType'] = buildType;
         if (compileType === 'watch') { args['watch'] = true; }
         if (
-            args.buildType === 'qq'  //不是qq
+            args.buildType === 'qq'
             && require('../package.json').version != '1.2.3-beta.8' //不是某个webpack版本
             && !/\/anu\//.test(__dirname.replace(/\\/g, '/'))        //不是在anu目录下做cli开发，这种策略只针对全局安装的cli
         ) {
@@ -102,11 +102,11 @@ function buildAction(buildType, compileType) {
                     stdio: 'inherit'
                 });
             } catch (err) {
-                process.exit(1);
                 // eslint-disable-next-line
                 console.log('update webpack cli version fail');
                 // eslint-disable-next-line
                 console.log(err);
+                process.exit(1);
             }
             return;
         }
