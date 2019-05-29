@@ -72,6 +72,7 @@ registeCommand('init <app-name>', 'description: 初始化项目', {}, (appName)=
         });
 });
 
+
 function buildAction(buildType, compileType) {
     return function(cmd) {
         const args = getArgValue(cmd);

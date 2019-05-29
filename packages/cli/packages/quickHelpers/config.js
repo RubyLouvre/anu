@@ -158,7 +158,7 @@ function setRouter(config) {
 }
 
 
-//配置titlebar
+//为app.js的config对象配置titlebar
 function setTitleBar(config) {
     var display = manifest.display;
     let userConfig = {};
@@ -167,10 +167,23 @@ function setTitleBar(config) {
     } catch (err) {
         // eslint-disable-next-line
     }
+
+    //webview配置titlebar
+    var globalConfig = require('../config');
+
+    if ( globalConfig.webview 
+        && /true|false/.test(globalConfig.webview.showTitleBar)
+        && !globalConfig.webview.showTitleBar ) {
+        let routePath = 'pages/__web__view__';
+        display['pages'] = display['pages'] || {};
+        display['pages'][routePath] = {
+            titleBar: false
+        }
+    }
     
     if (
         userConfig.display 
-        && Object.prototype.toString.call(userConfig.display.titleBar) === '[object Boolean]'
+        && /true|false/.test(userConfig.display.titleBar)
         && !userConfig.display.titleBar
     ) 
     {
@@ -179,9 +192,10 @@ function setTitleBar(config) {
     }
 
     
-
+    //这里取得 app.js 类的config.window 得值，但是 pageWrapper又是取得config的值。造成必须两者都要写
     var win = config.window || {};
-    var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages || [];
+    //从config
+    var disabledTitleBarPages = globalConfig.quick.disabledTitleBarPages || []
     disabledTitleBarPages.forEach(function(el){
         // userPath/titledemo/source/pages/index/index.js => pages/index/index
         let route = path.relative( path.join(process.cwd(), platConfig.sourceDir),  path.dirname(el) );
@@ -192,9 +206,11 @@ function setTitleBar(config) {
     
     display.titleBarText = win.navigationBarTitleText || 'nanachi';
     display.titleBarTextColor = win.navigationBarTextStyle || 'black';
-    display.backgroundColor = win.navigationBarBackgroundColor || '#000000';
-
-    
+    //快应用的display.backgroundColor 颜色又是取得win.navigationBarBackgroundColor导航栏背景的颜色，
+    //应该取win.backgroundColor窗口背景的颜色
+    //如果少了个display.titleBarBackgroundColor 会导致页面切换出现黑色闪屏
+    display.titleBarBackground = win.navigationBarBackgroundColor || '#ffffff';
+    display.backgroundColor = win.backgroundColor || '#ffffff';
 
 }
 
@@ -209,7 +225,7 @@ function setOtherConfig() {
 
     if (
         userConfig.display 
-        && Object.prototype.toString.call(userConfig.display.menu) === '[object Boolean]'
+        && /true|false/.test(userConfig.display.menu)
         && !userConfig.display.menu
     ) 
     {

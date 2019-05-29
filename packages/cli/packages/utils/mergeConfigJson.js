@@ -20,6 +20,8 @@ module.exports = function(modules, json) {
         delete configJson.subPackages;
         delete configJson.subpackages;
     }
+    
+
     Object.assign(json, configJson);
     return json;
 }

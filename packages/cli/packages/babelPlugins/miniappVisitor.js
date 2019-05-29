@@ -217,7 +217,7 @@ module.exports = {
             if( /\/components\//.test(modules.current)){
                 //这时还没有解析到函数体或类结构，不知道当前组件叫什么名字
                 if(!modules.className ){
-                    var segments = modules.current.match(/[\w\.]+/g)
+                    var segments = modules.current.match(/[\w\.-]+/g)
                     modules.className = segments[segments.length-2]
                 }
             }
