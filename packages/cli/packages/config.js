@@ -14,33 +14,38 @@ module.exports = {
         styleExt: 'wxss',
         xmlExt: 'wxml',
         helpers: 'wxHelpers',
-        patchComponents: {}
+        patchComponents: {},
+        disabledTitleBarPages: new Set()
     },
     qq: {
         libName: 'ReactWX',
         styleExt: 'qss',
         xmlExt: 'qml',
         helpers: 'qqHelpers',
-        patchComponents: {}
+        patchComponents: {},
+        disabledTitleBarPages: new Set()
     },
     ali: {
         libName: 'ReactAli',
         styleExt: 'acss',
         xmlExt: 'axml',
         helpers: 'aliHelpers',
-        patchComponents: {}
+        patchComponents: {},
+        disabledTitleBarPages: new Set()
     },
     bu: {
         libName: 'ReactBu',
         styleExt: 'css',
         xmlExt: 'swan',
         helpers: 'buHelpers',
-        patchComponents: {}
+        patchComponents: {},
+        disabledTitleBarPages: new Set()
     },
     quick: {
         libName: 'ReactWX',
         jsExt: 'ux',
         helpers: 'quickHelpers',
+       
         patchComponents: {
             radio: 1,
             'radio-group': 1,
@@ -49,7 +54,8 @@ module.exports = {
             label: 1,
             navigator: 1,
             picker: 1
-        }
+        },
+        disabledTitleBarPages:new Set()
     },
     tt: {
         libName: 'ReactWX',
@@ -57,7 +63,8 @@ module.exports = {
         styleExt: 'ttss',
         xmlExt: 'ttml',
         helpers: 'ttHelpers',
-        patchComponents: {}
+        patchComponents: {},
+        disabledTitleBarPages: new Set()
     },
     buildType: 'wx',      //构建类型默认微信小程序
     buildDir: buildDir,   //非快应用项目默认构建目录为dist
