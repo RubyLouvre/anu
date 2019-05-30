@@ -154,7 +154,13 @@ function setRouter(config) {
         && Object.prototype.toString.call(userConfig.router) === '[object Object]'
     ) 
     {
+        let pages = {};
+        if (userConfig.router.pages && Object.prototype.toString.call(userConfig.router.pages) === '[object Object]') {
+            // 合并router.pages
+            pages = Object.assign({}, manifest.router && manifest.router.pages, userConfig.router.pages);
+        }
         Object.assign(manifest.router, userConfig.router);
+        Object.assign(manifest.router.pages, pages);
     }
 
 }
