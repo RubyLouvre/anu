@@ -13,7 +13,7 @@ const cliRoot = path.resolve(__dirname, '..');
 //删除dist目录, 以及快应的各配置文件
 function getRubbishFiles(buildType){
     let fileList = ['package-lock.json', 'yarn.lock'];
-    buildType !== 'quick'
+    buildType === 'quick'
     ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
     : fileList = fileList.concat(['dist']);
     
@@ -122,10 +122,10 @@ function getReactLibFile(ReactLibName) {
     }
 }
 
-function getAssetsFile( buildType ) {
+function getAssetsFile( buildType, huawei ) {
     let quickConfig;
     try {
-        quickConfig = require(path.resolve(cwd, 'quickConfig.json'));
+        quickConfig = require(path.resolve(cwd, 'source', 'quickConfig.json'));
     } catch (err) {
         // quickConfig可能不存在
     }
@@ -145,6 +145,16 @@ function getAssetsFile( buildType ) {
                 files = files.concat(widgetFiles);
             }
         });
+    }
+    if (huawei && quickConfig && quickConfig.widgets && Object.prototype.toString.call(quickConfig.widgets) === '[object Array]') {
+        quickConfig.widgets.forEach(widget => {
+            let widgetPath = widget.path;
+            if (widgetPath) {
+                widgetPath = path.join(cwd, 'source', widgetPath);
+                const widgetFiles = glob.sync( widgetPath + '/**', {nodir: true});
+                files = files.concat(widgetFiles);
+            }
+        })
     }
     files = files.map(function(id){
         let sourceReg = /[\\/]source[\\/]/;
@@ -194,7 +204,7 @@ const helpers = {
 };
 
 async function runTask(args){
-    const { buildType, beta,  betaUi } = args;
+    const { buildType, beta,  betaUi, huawei } = args;
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
     let tasks  = [];
@@ -221,7 +231,7 @@ async function runTask(args){
     //tasks = tasks.concat(getProjectConfigFile(buildType));
 
     //copy assets目录下静态资源
-    tasks = tasks.concat(getAssetsFile(buildType));
+    tasks = tasks.concat(getAssetsFile(buildType, huawei));
 
     try {
         //每次build时候, 必须先删除'dist', 'build', 'sign', 'src', 'babel.config.js'等等冗余文件或者目录

@@ -155,12 +155,24 @@ function setRouter(config) {
     ) 
     {
         let pages = {};
+        if (userConfig.router.entry) {
+            // 不允许用户配置router.entry
+            delete userConfig.router.entry;
+        }
         if (userConfig.router.pages && Object.prototype.toString.call(userConfig.router.pages) === '[object Object]') {
             // 合并router.pages
             pages = Object.assign({}, manifest.router && manifest.router.pages, userConfig.router.pages);
         }
         Object.assign(manifest.router, userConfig.router);
         Object.assign(manifest.router.pages, pages);
+    }
+    if (
+        platConfig.huawei
+        && userConfig.widgets 
+        && Object.prototype.toString.call(userConfig.widgets) === '[object Array]'
+    ) 
+    {
+        manifest.widgets = userConfig.widgets
     }
 
 }
