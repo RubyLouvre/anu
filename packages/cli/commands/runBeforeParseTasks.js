@@ -15,10 +15,10 @@ const cliRoot = path.resolve(__dirname, '..');
 //删除dist目录, 以及快应的各配置文件
 function getRubbishFiles(buildType){
     let fileList = ['package-lock.json', 'yarn.lock'];
-    buildType !== 'quick'
-        ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
-        : fileList = fileList.concat([utils.getDistName(buildType)]);
-
+    buildType === 'quick'
+    ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
+    : fileList = fileList.concat(['dist']);
+    
     //构建应用时，要删除source目录下其他的 React lib 文件。
     let libList = Object.keys(REACT_LIB_MAP)
         .map(function(key){
@@ -124,7 +124,7 @@ function getReactLibFile(ReactLibName) {
     }
 }
 
-function getAssetsFile( buildType ) {
+function getAssetsFile( buildType, huawei ) {
     let quickConfig;
     try {
         quickConfig = require(path.resolve(cwd, 'source', 'quickConfig.json'));
@@ -147,6 +147,16 @@ function getAssetsFile( buildType ) {
                 files = files.concat(widgetFiles);
             }
         });
+    }
+    if (huawei && quickConfig && quickConfig.widgets && Object.prototype.toString.call(quickConfig.widgets) === '[object Array]') {
+        quickConfig.widgets.forEach(widget => {
+            let widgetPath = widget.path;
+            if (widgetPath) {
+                widgetPath = path.join(cwd, 'source', widgetPath);
+                const widgetFiles = glob.sync( widgetPath + '/**', {nodir: true});
+                files = files.concat(widgetFiles);
+            }
+        })
     }
     files = files.map(function(id){
         let sourceReg = /[\\/]source[\\/]/;
