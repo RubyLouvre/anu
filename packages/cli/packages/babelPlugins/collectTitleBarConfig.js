@@ -17,8 +17,8 @@ module.exports = function(){
                             let node = astPath.node;
                             if (node.key.name !== 'navigationBarTitleText') return;
                             if (node.value.value === '') {
-                                config[config['buildType']]['disabledTitleBarPages'] = config[config['buildType']]['disabledTitleBarPages'] || [];
-                                config[config['buildType']]['disabledTitleBarPages'].push(fileId);
+                                //config.quick.disabledTitleBarPages.push(fileId)
+                                config[config['buildType']]['disabledTitleBarPages'].add(fileId);
                             }
                         },
                     },

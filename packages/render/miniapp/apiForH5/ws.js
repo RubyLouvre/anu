@@ -1,6 +1,6 @@
 
 import io from 'socket.io-client';
-import { handleSuccess, handleFail } from '../shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../utils';
 const Err = 'ws不存在';
 let socket = null;
 /**

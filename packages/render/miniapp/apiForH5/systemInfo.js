@@ -1,5 +1,5 @@
 import MobileDetect from 'mobile-detect';
-import { handleSuccess, handleFail } from '../shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../utils';
 
 function getSystemInfo({ 
   success = () => {},

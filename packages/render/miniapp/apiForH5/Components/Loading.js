@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { handleSuccess, handleFail } from '../../shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../../utils';
 
 export default class Loading extends React.Component {
   componentDidMount() {

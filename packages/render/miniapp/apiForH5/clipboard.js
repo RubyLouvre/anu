@@ -1,5 +1,5 @@
 import Clipboard from 'clipboard';
-import { handleSuccess, handleFail } from '../shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../utils';
 
 /**
  * 获取系统剪贴板的内容

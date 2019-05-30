@@ -6,10 +6,12 @@ const utils = require('../../../packages/utils/index');
 const isStyle = path => {
     return /\.(?:less|scss|sass|css)$/.test(path);
 };
+const thePathHasCommon = /\bcommon\b/;
 
 class QuickParser extends JavascriptParser {
     constructor(props) {
         super(props);
+        this.filterCommonFile = thePathHasCommon.test(this.filepath) ? []: require('../../../packages/babelPlugins/transformMiniApp')(this.filepath)
         this._babelPlugin = {
             configFile: false,
             babelrc: false,
@@ -38,7 +40,7 @@ class QuickParser extends JavascriptParser {
                 ...require('../../../packages/babelPlugins/transformEnv'),
                 [ require('@babel/plugin-transform-template-literals'), { loose: true }],
                 require('../../../packages/babelPlugins/transformIfImport'),
-                ...require('../../../packages/babelPlugins/transformMiniApp')(this.filepath),
+                ...this.filterCommonFile,
                 ...require('../../../packages/babelPlugins/patchAsyncAwait'),
             ]
         };

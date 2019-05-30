@@ -3,7 +3,7 @@
  * @param {string} type wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
  * @param {String} altitude 传入 true 会返回高度信息，由于获取高度需要较高精确度，会减慢接口返回速度
  */
-import { handleSuccess, handleFail } from '../shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../utils';
 
 function getLocation(options = {}) {
   return new Promise(function (resolve, reject) {

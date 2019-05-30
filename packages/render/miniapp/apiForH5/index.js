@@ -52,3 +52,6 @@ function extractApis(interfaceNameSpaces) {
 }
 
 export default extractApis(interfaceNameSpaces);
+export var more = function() {
+  return extractApis(interfaceNameSpaces)
+}

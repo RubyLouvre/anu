@@ -3,7 +3,7 @@
  * @param {Array} urls 要预览的图片链接列表
  * @param {String} current 当前显示图片的链接, urls 的第一张
  */
-import { handleSuccess, handleFail } from '../shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../utils';
 
 // TODO 需要确定要不要传给服务器
 function chooseImage({

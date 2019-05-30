@@ -1,5 +1,5 @@
 const ERROR_MESSAGE = '不支持 localStorage !';
-import { handleSuccess, handleFail } from '../shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../utils';
 
 function isSupportStorage() {
   if (!window.localStorage) {
