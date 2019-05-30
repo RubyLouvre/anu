@@ -3,7 +3,7 @@ const utils = require('../utils/index');
 let rword = /[^, ]+/g;
 
 let builtInStr =
-    'view,text,button,block,scroll-view,swiper,swiper-item,movable-area,movable-view,cover-image,icon,rich-text,' +
+    'share-button,view,text,button,block,scroll-view,swiper,swiper-item,movable-area,movable-view,cover-image,icon,rich-text,' +
     'progress,checkbox,form,input,input,label,picker,picker-view,radio,slider,switch,textarea,template,' +
     'navigator,audio,image,camera,video,live-player,live-pusher,map,canvas,open-data,web-view,radio-group,' +
     'slot,wxs,checkbox-group,loading';

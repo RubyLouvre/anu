@@ -536,6 +536,11 @@ module.exports = {
 
             let modules = utils.getAnu(state);
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
+            // https://mp.weixin.qq.com/wxopen/plugindevdoc?appid=wx56c8f077de74b07c&token=1011820682&lang=zh_CN#-
+            if('share-button' === nodeName){
+                modules.usedComponents[nodeName] = 'plugin://goodsSharePlugin/share-button';
+                return
+            }
             let bag = modules.importComponents[nodeName];
             if (!bag) {
                 var oldName = nodeName;
