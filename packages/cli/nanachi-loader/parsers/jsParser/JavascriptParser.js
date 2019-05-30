@@ -3,7 +3,6 @@ const fs = require('fs');
 const babel = require('@babel/core');
 
 const removeAst = (ast) => { ast.remove(); }
-const thePathHasCommon = /\bcommon\b/;
 
 class JavascriptParser {
     constructor({

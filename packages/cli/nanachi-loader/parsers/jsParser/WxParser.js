@@ -1,4 +1,5 @@
 const JavascriptParser = require('./JavascriptParser');
+const thePathHasCommon = /\bcommon\b/;
 
 class WxParser extends JavascriptParser{
     constructor(props) {

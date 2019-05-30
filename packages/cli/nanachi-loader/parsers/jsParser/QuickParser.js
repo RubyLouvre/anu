@@ -6,6 +6,7 @@ const utils = require('../../../packages/utils/index');
 const isStyle = path => {
     return /\.(?:less|scss|sass|css)$/.test(path);
 };
+const thePathHasCommon = /\bcommon\b/;
 
 class QuickParser extends JavascriptParser {
     constructor(props) {
