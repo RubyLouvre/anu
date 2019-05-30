@@ -1,7 +1,7 @@
 const webpackDevServer = require('webpack-dev-server');
 const webpackH5Config = require('../config/h5/webpack.config.js');
 let app;
-const PORT = 9090;
+const PORT = 8080;
 
 module.exports = function(compiler) {
     if (!app) {

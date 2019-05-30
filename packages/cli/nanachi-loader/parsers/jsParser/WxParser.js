@@ -3,6 +3,7 @@ const JavascriptParser = require('./JavascriptParser');
 class WxParser extends JavascriptParser{
     constructor(props) {
         super(props);
+        this.filterCommonFile = thePathHasCommon.test(this.filepath) ? []: require('../../../packages/babelPlugins/transformMiniApp')(this.filepath)
         this._babelPlugin = {
             configFile: false,
             babelrc: false,

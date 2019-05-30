@@ -11,14 +11,14 @@ export default {
     input: './packages/render/miniapp/index.h5.js',
     output: [{
         strict: false,
-        format: 'es',
-        // exports: 'default',
+        format: 'umd',
+        exports: 'default',
         file: './dist/ReactH5.js',
         name: 'React'
     }, {
         strict: false,
-        format: 'es',
-        // exports: 'default',
+        format: 'umd',
+        exports: 'default',
         file: './packages/cli/lib/ReactH5.js',
         name: 'React'
     }],

@@ -31,7 +31,6 @@ class JavascriptParser {
         this.ast = null;
         this.componentType = null;
         this.setComponentType();
-        this.filterCommonFile = thePathHasCommon.test(this.filepath) ? []: require('../../../packages/babelPlugins/transformMiniApp')(this.filepath)
     }
     setComponentType() {
         if (
