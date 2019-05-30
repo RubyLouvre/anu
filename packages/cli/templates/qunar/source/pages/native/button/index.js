@@ -11,7 +11,62 @@ class P extends React.Component {
 			disabled: false,
 			plain: false,
 			loading: false,
-			ANU_ENV: process.env.ANU_ENV
+			ANU_ENV: process.env.ANU_ENV,
+			product: {
+				"item_code":"00003563372839_00000010154601",
+				"title":"皇袍",
+				"desc":"product_description",
+				"category_list":[
+				  "服装",
+				  "上衣",
+				  "短袖衬衫"
+				],
+				"image_list":[
+				  "https://res.wx.qq.com/mpres/htmledition/images/xxxx.jpeg"
+				],
+				"src_mini_program_path":"/detail?item_code=00003563372839_00000010154601",
+				"sku_list":[
+				  {
+					"sku_id":"SKU_ID",
+					"price":12345,
+					"original_price":67890,
+					"status":1,
+					"poi_list":[
+					  {
+						"longitude":116.32676,
+						"latitude":40.003305,
+						"radius":5,
+						"business_name":"XXX",
+						"branch_name":"珠江新城店",
+						"address":"新港中路123号"
+					  },
+					  {
+						"longitude":117.32676,
+						"latitude":41.003305,
+						"radius":5,
+						"business_name":"CCC",
+						"branch_name":"客村店",
+						"address":"新港中路123号"
+					  }
+					],
+					"sku_attr_list":[
+					  {
+						"name":"颜色",
+						"value":"白色"
+					  },
+					  {
+						"name":"尺码",
+						"value":"XXL"
+					  }
+					]
+				  }
+				],
+				"brand_info":{
+				  "name":"品牌名、小程序名",
+				  "logo":"http://xxxxx"
+				}
+			  }
+			  
 		};
 
 	}
@@ -117,6 +172,7 @@ class P extends React.Component {
 					</div>
 
 				}
+				{ this.state.ANU_ENV == 'wx'  && <div style="margin: 4px 0px"><share-button product={this.state.product} /></div> }
 
 
 			</div>
