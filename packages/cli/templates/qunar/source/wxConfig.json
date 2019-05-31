@@ -12,5 +12,23 @@
             "name": "apis",
             "resource": "pages/apis"
         }
-    ]
+    ],
+    "preloadRule": {
+        "pages/platform/index": {
+          "network": "all",
+          "packages": ["api", "native"]
+        },
+        "native/index": {
+          "packages": ["syntax"]
+        },
+        "apis/index": {
+            "packages": ["syntax"]
+        }
+    },
+    "plugins": {
+        "goodsSharePlugin": {
+          "version": "2.1.4",
+          "provider": "wx56c8f077de74b07c"
+        }
+     }
 }

@@ -6,7 +6,7 @@
 }
 
 /* 应用图标 */
-#icon {
+.icon {
     margin-top: 90rpx;
     width: 134rpx;
     height: 134rpx;
@@ -22,7 +22,7 @@
 }
 
 /* 应用标签 */
-#tags {
+.tags {
     margin-top: 22rpx;
     align-items: center;
 }
@@ -40,7 +40,7 @@
 }
 
 /* 应用描述 */
-#desc {
+.desc {
     width: 650rpx;
     margin-top: 40rpx;
     line-height: 35rpx;
@@ -80,7 +80,7 @@
 }
 
 /* 底部版权信息 */
-#footer {
+.footer {
     width: 750rpx;
     position: fixed;
     bottom: 55rpx;

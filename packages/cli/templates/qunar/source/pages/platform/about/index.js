@@ -16,13 +16,13 @@ class About extends React.Component {
     render() {
         return (
             <div className="demo-page">
-                <image id="icon" src="@assets/logo.png"></image>
+                <image className="icon" src="@assets/logo.png"></image>
 
                 <div className="name">{this.state.name}</div>
                 <div className="name">手机品牌：{this.props.query.brand}</div>
                 <div className="name">快应用版本号：{this.props.query.version}</div>
 
-                <div id="tags">
+                <div className="tags">
                     <div className="tag">无安装</div>
                     <div className="gap">|</div>
                     <div className="tag">体积小</div>
@@ -30,7 +30,7 @@ class About extends React.Component {
                     <div className="tag">一步直达</div>
                 </div>
 
-                <div id="desc">{this.state.desc}</div>
+                <div className="desc">{this.state.desc}</div>
 
                 <div className="detail detail-first">
                     <div className="detail-title">服务类型</div>
@@ -50,7 +50,7 @@ class About extends React.Component {
                     <button type="primary" size="default" onTap={React.api.createShortcut}>创建快捷方式</button>
                 </div>
 
-                <div id="footer">{this.state.copyright}</div>
+                <div className="footer">{this.state.copyright}</div>
             </div>
         );
     }
