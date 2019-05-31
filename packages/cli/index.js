@@ -147,6 +147,10 @@ async function nanachi({
         if (!utils.validatePlatform(platform, platforms)) {
             throw new Error(`不支持的platform：${platform}`);
         }
+        if (platform === 'h5') {
+            require(`mini-html5/runkit/${watch ? 'run' : 'build'}`);
+            return;
+        }
 
         injectBuildEnv({
             buildType: platform,
