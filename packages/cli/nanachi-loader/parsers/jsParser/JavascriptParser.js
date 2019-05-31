@@ -72,7 +72,7 @@ class JavascriptParser {
     }
 
     getExportCode() {
-        let res = this.getCodeForWebpack();
+        let res = this.parsedCode;
         // modules去重
         this.extraModules = this.extraModules.filter((m, i, self) => {
             return self.indexOf(m) === i;
