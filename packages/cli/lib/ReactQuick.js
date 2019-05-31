@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-05-09
+ * 运行于快应用的React by 司徒正美 Copyright 2019-05-31
  */
 
 var arrayPush = Array.prototype.push;
@@ -624,14 +624,14 @@ function dispatchEvent(e) {
             return;
         }
     }
-    if (app && app.onCollectLogs && beaconType.test(eventType)) {
-        app.onCollectLogs(dataset, eventType, fiber.stateNode);
-    }
     var safeTarget = {
         dataset: dataset,
         nodeName: target._nodeName || target.nodeName || target.type,
         value: e.value
     };
+    if (app && app.onCollectLogs && beaconType.test(eventType)) {
+        app.onCollectLogs(dataset, eventType, fiber.stateNode);
+    }
     Renderer.batchedUpdates(function () {
         try {
             var fn = instance.$$eventCached[eventUid];
@@ -3154,52 +3154,12 @@ var Renderer$1 = createRenderer({
         };
     },
     insertElement: function insertElement(fiber) {
-        var dom = fiber.stateNode,
-            parentNode = fiber.parent,
-            forwardFiber = fiber.forwardFiber,
-            before = forwardFiber ? forwardFiber.stateNode : null,
-            children = parentNode.children;
-        try {
-            if (before == null) {
-                if (dom !== children[0]) {
-                    remove(children, dom);
-                    dom.parentNode = parentNode;
-                    children.unshift(dom);
-                }
-            } else {
-                if (dom !== children[children.length - 1]) {
-                    remove(children, dom);
-                    dom.parentNode = parentNode;
-                    var i = children.indexOf(before);
-                    children.splice(i + 1, 0, dom);
-                }
-            }
-        } catch (e) {
-            throw e;
-        }
     },
     emptyElement: function emptyElement(fiber) {
-        var dom = fiber.stateNode;
-        var children = dom && dom.children;
-        if (dom && Array.isArray(children)) {
-            children.forEach(Renderer$1.removeElement);
-        }
     },
     removeElement: function removeElement(fiber) {
-        if (fiber.parent) {
-            var parent = fiber.parent;
-            var node = fiber.stateNode;
-            node.parentNode = null;
-            remove(parent.children, node);
-        }
     }
 });
-function remove(children, node) {
-    var index = children.indexOf(node);
-    if (index !== -1) {
-        children.splice(index, 1);
-    }
-}
 
 var rcamel = /-(\w)/g;
 var rpx = /(\d[\d\.]*)(r?px)/gi;
@@ -3304,7 +3264,7 @@ function onReady() {
 function onUnload() {
     for (var i in usingComponents) {
         var a = usingComponents[i];
-        if (a.reactInstances.length) {
+        if (a.reactInstances) {
             a.reactInstances.length = 0;
         }
         delete usingComponents[i];
@@ -3326,8 +3286,7 @@ function onUnload() {
     callGlobalHook('onGlobalUnload');
 }
 
-var globalHooks = {
-    onShareAppMessage: 'onGlobalShare',
+var appHooks = {
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
@@ -3372,28 +3331,28 @@ function registerPage(PageClass, path) {
         onReady: onReady,
         onDestroy: onUnload
     };
-    Array('onShow', 'onHide', 'onMenuPress', "onBackPress").forEach(function (hook) {
-        config[hook] = function (e) {
+    Array('onShow', 'onHide', 'onMenuPress', "onBackPress").forEach(function (pageHook) {
+        config[pageHook] = function (e) {
             var instance = this.reactInstance,
-                fn = instance[hook],
                 app = _getApp(),
                 param = e;
-            if (hook === 'onShow') {
+            if (pageHook === 'onShow') {
                 param = instance.props.query = getQuery(this, queryObject);
                 app.$$page = instance.wx;
                 app.$$pagePath = instance.props.path;
-            }
-            if (hook === 'onMenuPress') {
+            } else if (pageHook === 'onMenuPress') {
                 app.onShowMenu && app.onShowMenu(instance, this.$app);
-            } else if (isFn(fn)) {
-                var ret = fn.call(instance, param);
-                if (ret !== void 0) {
-                    return ret;
-                }
+                return;
             }
-            var globalHook = globalHooks[hook];
-            if (globalHook) {
-                callGlobalHook(globalHook, param);
+            for (var i = 0; i < 2; i++) {
+                var method = i ? appHooks[pageHook] : pageHook;
+                var host = i ? _getApp() : instance;
+                if (method && host && isFn(host[method])) {
+                    var ret = host[method](param);
+                    if (ret !== void 0) {
+                        return ret;
+                    }
+                }
             }
         };
     });

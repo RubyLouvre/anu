@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-09T07
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-31T15
  * IE9+
  */
 
@@ -521,10 +521,6 @@ var PureComponent = miniCreateClass(function PureComponent() {
     }
 });
 
-function AnuPortal(props) {
-    return props.children;
-}
-
 var MAX_NUMBER = 1073741823;
 function createContext(defaultValue, calculateChangedBits) {
     if (calculateChangedBits == void 0) {
@@ -586,7 +582,7 @@ function createContext(defaultValue, calculateChangedBits) {
     });
     function getContext(fiber) {
         while (fiber.return) {
-            if (fiber.name == 'Provider') {
+            if (fiber.type == Provider) {
                 return instance.value;
             }
             fiber = fiber.return;
@@ -1098,6 +1094,10 @@ function createEvent(e, target) {
     return event;
 }
 
+function AnuPortal(props) {
+    return props.children;
+}
+
 function UpdateQueue() {
     return {
         pendingStates: [],
@@ -1133,26 +1133,9 @@ function createInstance(fiber, context) {
             Renderer.currentOwner = instance;
             extend(instance, {
                 __isStateless: true,
-                __init: true,
                 renderImpl: type,
                 render: function f() {
-                    var a = this.__keep;
-                    if (a) {
-                        delete this.__keep;
-                        return a.value;
-                    }
-                    a = this.renderImpl(this.props, this.context);
-                    if (a && a.render) {
-                        delete this.__isStateless;
-                        for (var i in a) {
-                            instance[i == 'render' ? 'renderImpl' : i] = a[i];
-                        }
-                    } else if (this.__init) {
-                        this.__keep = {
-                            value: a
-                        };
-                    }
-                    return a;
+                    return this.renderImpl(this.props, this.context);
                 }
             });
             Renderer.currentOwner = instance;
@@ -1160,9 +1143,6 @@ function createInstance(fiber, context) {
                 instance.render = function () {
                     return type.render(this.props, this.ref);
                 };
-            } else {
-                instance.render();
-                delete instance.__init;
             }
         } else {
             instance = new type(props, context);
@@ -2461,52 +2441,12 @@ var Renderer$1 = createRenderer({
         };
     },
     insertElement: function insertElement(fiber) {
-        var dom = fiber.stateNode,
-            parentNode = fiber.parent,
-            forwardFiber = fiber.forwardFiber,
-            before = forwardFiber ? forwardFiber.stateNode : null,
-            children = parentNode.children;
-        try {
-            if (before == null) {
-                if (dom !== children[0]) {
-                    remove(children, dom);
-                    dom.parentNode = parentNode;
-                    children.unshift(dom);
-                }
-            } else {
-                if (dom !== children[children.length - 1]) {
-                    remove(children, dom);
-                    dom.parentNode = parentNode;
-                    var i = children.indexOf(before);
-                    children.splice(i + 1, 0, dom);
-                }
-            }
-        } catch (e) {
-            throw e;
-        }
     },
     emptyElement: function emptyElement(fiber) {
-        var dom = fiber.stateNode;
-        var children = dom && dom.children;
-        if (dom && Array.isArray(children)) {
-            children.forEach(Renderer$1.removeElement);
-        }
     },
     removeElement: function removeElement(fiber) {
-        if (fiber.parent) {
-            var parent = fiber.parent;
-            var node = fiber.stateNode;
-            node.parentNode = null;
-            remove(parent.children, node);
-        }
     }
 });
-function remove(children, node) {
-    var index = children.indexOf(node);
-    if (index !== -1) {
-        children.splice(index, 1);
-    }
-}
 
 var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
@@ -2574,7 +2514,7 @@ function onReady() {
 function onUnload() {
     for (var i in usingComponents) {
         var a = usingComponents[i];
-        if (a.reactInstances.length) {
+        if (a.reactInstances) {
             a.reactInstances.length = 0;
         }
         delete usingComponents[i];
@@ -2596,7 +2536,7 @@ function onUnload() {
     callGlobalHook('onGlobalUnload');
 }
 
-var globalHooks = {
+var appHooks = {
     onShare: 'onGlobalShare',
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
@@ -2612,15 +2552,17 @@ function registerPage(PageClass, path, testObject) {
         onReady: onReady,
         onUnload: onUnload
     };
-    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
+    Array('onShareAppMessage', 'onPageScroll', 'onReachBottom', 'onPullDownRefresh', 'onTabItemTap', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
         config[hook] = function (e) {
             var instance = this.reactInstance,
-                fn = instance[hook],
+                pageHook = hook,
                 param = e;
-            if (hook === 'onShareAppMessage') {
-                hook = 'onShare';
-                fn = fn || instance[hook];
-            } else if (hook === 'onShow') {
+            if (pageHook === 'onShareAppMessage') {
+                if (!instance.onShare) {
+                    instance.onShare = instance.onShareAppMessage;
+                }
+                pageHook = 'onShare';
+            } else if (pageHook === 'onShow') {
                 if (this.options) {
                     instance.props.query = this.options;
                 }
@@ -2628,17 +2570,14 @@ function registerPage(PageClass, path, testObject) {
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }
-            if (isFn(fn)) {
-                var ret = fn.call(instance, param);
-                if (hook === 'onShare') {
-                    return ret;
-                }
-            }
-            var globalHook = globalHooks[hook];
-            if (globalHook) {
-                ret = callGlobalHook(globalHook, param);
-                if (hook === 'onShare') {
-                    return ret;
+            for (var i = 0; i < 2; i++) {
+                var method = i ? appHooks[pageHook] : pageHook;
+                var host = i ? _getApp() : instance;
+                if (method && host && isFn(host[method])) {
+                    var ret = host[method](param);
+                    if (ret !== void 0) {
+                        return ret;
+                    }
                 }
             }
         };
@@ -2664,6 +2603,7 @@ function registerComponent(type, name) {
             state: {},
             context: {}
         },
+        options: type.options,
         lifetimes: {
             attached: function attached() {
                 var wx = this;
@@ -2689,8 +2629,17 @@ function registerComponent(type, name) {
 function useState(initValue) {
     return useReducerImpl(null, initValue);
 }
+function useReducer(reducer, initValue, initAction) {
+    return useReducerImpl(reducer, initValue, initAction);
+}
 function useEffect(create, deps) {
     return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
+}
+function useCallback(create, deps) {
+    return useCallbackImpl(create, deps);
+}
+function useMemo(create, deps) {
+    return useCallbackImpl(create, deps, true);
 }
 
 var render$1 = Renderer$1.render;
@@ -2710,18 +2659,22 @@ var React = getWindow().React = {
     createElement: createElement,
     createFactory: createFactory,
     PureComponent: PureComponent,
+    isValidElement: isValidElement,
     createContext: createContext,
-    useState: useState,
-    useEffect: useEffect,
-    useContext: useContext,
     toClass: miniCreateClass,
-    useComponent: useComponent,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
     registerPage: registerPage,
     toStyle: toStyle,
+    useState: useState,
+    useReducer: useReducer,
+    useCallback: useCallback,
+    useMemo: useMemo,
+    useEffect: useEffect,
+    useContext: useContext,
+    useComponent: useComponent,
     appType: 'wx'
 };
 var apiContainer = {};
