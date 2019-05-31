@@ -14,14 +14,14 @@
         }
     ],
     "preloadRule": {
-        "pages/platform/index": {
-          "network": "all",
-          "packages": ["api", "native"]
+        "pages/platform/index/index": {
+            "network": "all",
+            "packages": ["apis", "native"]
         },
-        "native/index": {
-          "packages": ["syntax"]
+        "native/index/index": {
+            "packages": ["syntax"]
         },
-        "apis/index": {
+        "apis/index/index": {
             "packages": ["syntax"]
         }
     },
