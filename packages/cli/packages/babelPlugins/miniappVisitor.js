@@ -27,7 +27,7 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-const wxPlugins = require('../../consts/wxPlugins');
+const plugins = require('../../consts/plugins')(buildType);
 
 let cache = {};
 if (buildType == 'quick') {
@@ -303,7 +303,7 @@ module.exports = {
                 
                 //merge ${buildType}Config.json
                 json = require('../utils/mergeConfigJson')(modules, json);
-
+                
 
                
                 if (/\/node_modules\//.test(modules.sourcePath.replace(/\\/g, '/'))) {
@@ -545,11 +545,11 @@ module.exports = {
             let modules = utils.getAnu(state);
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
             // https://mp.weixin.qq.com/wxopen/plugindevdoc?appid=wx56c8f077de74b07c&token=1011820682&lang=zh_CN#-
-            if (wxPlugins) {
-                const keys = Object.keys(wxPlugins);
+            if (buildType === 'wx' && plugins) { // 暂时只有wx支持
+                const keys = Object.keys(plugins);
                 for (let i = 0, length = keys.length; i < length; i++) {
                     const key = keys[i];
-                    if (nodeName === wxPlugins[key].name) {
+                    if (nodeName === plugins[key].name) {
                         modules.usedComponents[nodeName] = `plugin://${key}/${nodeName}`;
                         return;
                     }

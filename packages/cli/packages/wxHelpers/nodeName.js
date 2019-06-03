@@ -1,5 +1,5 @@
 const utils = require('../utils/index');
-const wxPlugins = require('../../consts/wxPlugins');
+const wxPlugins = require('../../consts/plugins')('wx');
 let rword = /[^, ]+/g;
 const plugins = Object.keys(wxPlugins).map(key => wxPlugins[key].name).join(','); // share-button, ...
 let builtInStr = plugins + ',' +
