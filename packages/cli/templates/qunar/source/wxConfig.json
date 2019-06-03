@@ -28,7 +28,8 @@
     "plugins": {
         "goodsSharePlugin": {
           "version": "2.1.4",
-          "provider": "wx56c8f077de74b07c"
+          "provider": "wx56c8f077de74b07c",
+          "name": "share-button"
         }
      }
 }
