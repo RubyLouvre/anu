@@ -11,6 +11,7 @@ const utils = require('../packages/utils/index');
 const nodeResolve = require('resolve');
 
 const cliRoot = path.resolve(__dirname, '..');
+const config = require('../config/config');
 
 //删除dist目录, 以及快应的各配置文件
 function getRubbishFiles(buildType){
@@ -216,6 +217,27 @@ function needInstallHapToolkit(){
     }
 }
 
+function injectPluginsConfig() {
+    let userConfig;
+    try {
+        userConfig = require(path.join(process.cwd(), 'source', `${config.buildType}Config.json`));
+    } catch (e) {
+    
+    }
+    if (userConfig && userConfig.plugins && Object.prototype.toString.call(userConfig.plugins) === '[object Object]') {
+        Object.keys(userConfig.plugins).forEach(key => {
+            const name = userConfig.plugins[key].name;
+            if (!name) {
+                delete userConfig[key];
+                throw `${key}配置项必须包含name字段`;
+            }
+            config.pluginTags[name] = `plugin://${key}/${name}`;
+            delete userConfig.plugins[key].name;
+        });
+        config.plugins = userConfig.plugins;
+    }
+}
+
 async function runTask({ buildType, beta, betaUi, compress }){
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
@@ -263,7 +285,7 @@ async function runTask({ buildType, beta, betaUi, compress }){
             );
         }
     }
-    
+    injectPluginsConfig();
     //copy project.config.json
     //tasks = tasks.concat(getProjectConfigFile(buildType));
 

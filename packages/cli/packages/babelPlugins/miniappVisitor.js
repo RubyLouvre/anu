@@ -27,7 +27,6 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
-const plugins = require('../../consts/plugins')(buildType);
 
 let cache = {};
 if (buildType == 'quick') {
@@ -545,15 +544,9 @@ module.exports = {
             let modules = utils.getAnu(state);
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
             // https://mp.weixin.qq.com/wxopen/plugindevdoc?appid=wx56c8f077de74b07c&token=1011820682&lang=zh_CN#-
-            if (buildType === 'wx' && plugins) { // 暂时只有wx支持
-                const keys = Object.keys(plugins);
-                for (let i = 0, length = keys.length; i < length; i++) {
-                    const key = keys[i];
-                    if (nodeName === plugins[key].name) {
-                        modules.usedComponents[nodeName] = `plugin://${key}/${nodeName}`;
-                        return;
-                    }
-                }
+            if (buildType === 'wx' && config.pluginTags && config.pluginTags[nodeName]) { // 暂时只有wx支持
+                modules.usedComponents[nodeName] =  config.pluginTags[nodeName];
+                return;
             }
             let bag = modules.importComponents[nodeName];
             if (!bag) {
