@@ -41,7 +41,7 @@ module.exports = ()=>{
         visitor: {
             JSXOpeningElement: function(astPath, state){
                
-                let pagePath =  state.filename;
+                let pagePath =   utils.fixWinPath(state.filename);
                 let nodeName = astPath.node.name.name;
                 let platConfig = config[config.buildType];
                 let patchComponents = platConfig.patchComponents;
