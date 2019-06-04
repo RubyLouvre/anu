@@ -1,10 +1,12 @@
 const StyleParser = require('./StyleParser');
-const utils = require('../../../packages/utils/index');
 const { MAP } = require('../../../consts/index');
+const calculateAlias = require('../../../packages/utils/calculateAlias');
+
 
 class SassParser extends StyleParser {
     constructor(props) {
         super(props);
+        
         this._postcssPlugins = [
             require('stylelint')({
                 configFile: require.resolve(`../../../config/stylelint/.stylelint-${this.platform}.config.js`)
@@ -17,7 +19,7 @@ class SassParser extends StyleParser {
                         importer = importer + '.scss';
                     }
                     //处理alias路径
-                    return utils.resolveStyleAlias(importer, baseDir);
+                    return calculateAlias(props.filepath, importer);
                 },
                 plugins: this.platform !== 'h5' ? [
                     require('../../../packages/postcssPlugins/postCssPluginRemoveRules') // 删除import文件的所有rules，保留@mixins、$variables、@functions等

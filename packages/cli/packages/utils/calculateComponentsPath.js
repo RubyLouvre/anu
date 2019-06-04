@@ -1,40 +1,34 @@
-
-
-
-const rsegments = /[\w\.-]+/g;
 const path = require('path');
-const config = require('../../config/config');
+const cwd = process.cwd();
+const getDistPath = require('./getDistPath');
+const utils = require('./index');
+const calculateAlias = require('./calculateAlias');
+let cachedUsingComponents = {};
 
-module.exports = function calculateComponentsPath(bag, nodeName, modules){
-    // 如果包含别名，直接解析别名返回路径
-    const aliasMap = require('../../consts/alias')(config.buildType);
-    let [alias, ...rests] = bag.source.split(/[\\/]/);
-    alias = aliasMap[alias];
-    if (alias) {
-        return path.join(alias, ...rests).replace(/^source/, '');
+/**
+ * case1: userPath/source/components/Calendar/index => /components/Calendar/index
+ * case2: userPath/demo/source/pages/syntax/components/Label/index => /pages/syntax/components/Label/index
+ * case3: userPath/demo/node_modules/schnee-ui/components/XButton/index.js => /npm/schnee-ui/components/XButton/index
+ */
+module.exports = function calculateComponentsPath( bag, nodeName ) {
+
+    if (cachedUsingComponents[nodeName]) {
+        return cachedUsingComponents[nodeName];
     }
-    
-    var parent = modules.current.match(rsegments);
-    var son = bag.source.match(rsegments);
-    var canPop = true;
-    var noParentFlag = true;
-    while (son[0] === '..'){
-        noParentFlag = false;
-        son.shift();
-        if (canPop){
-            parent.pop();
-            canPop = false;
-        }
-        parent.pop();
-    }
-    var arr;
-    if (noParentFlag) {
-        arr = path.resolve(path.dirname(modules.current), bag.source).match(rsegments);
-    } else {
-        arr = parent.concat(son);
-    }
-    if (arr[0] == 'source'){
-        arr.shift();
-    }
-    return "/"+arr.join('/')   // `/components/${nodeName}/index`;
-}
+
+    //求出引用模块的真实绝对路径 如：userPath/source/components/Calendar/index
+    let realPath = path.join(
+        path.dirname(bag.sourcePath),
+        calculateAlias(bag.sourcePath, bag.source) //引用模块的相对路径
+    );
+
+    realPath = utils.fixWinPath(realPath).replace(/\.js$/, '');
+    let usingPath = getDistPath(realPath)
+        .replace(
+            utils.fixWinPath( path.join(cwd, 'dist') ),
+            ''
+        );
+        
+    cachedUsingComponents[nodeName] = usingPath;
+    return usingPath;
+};

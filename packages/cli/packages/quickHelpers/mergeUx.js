@@ -1,42 +1,15 @@
 
-let path = require('path');
 let beautify = require('js-beautify');
-let config = require('../../config/config');
 let quickFiles = require('./quickFiles');
 let utils = require('../utils');
-let cwd = process.cwd();
-let fs = require('fs');
+let calculateAlias = require('../utils/calculateAlias');
 
-const crypto = require('crypto');
-let cache = {};
-//缓存层，避免重复编译
-let needUpdate = (id, originalCode) => {
-    let sha1 = crypto
-        .createHash('sha1')
-        .update(originalCode)
-        .digest('hex');
-    if (!cache[id] || cache[id] != sha1) {
-        cache[id] = sha1;
-        return true;
-    }
-    return false;
-};
 
 function beautifyUx(code){
     return beautify.html(code, {
         indent: 4,
-        //'wrap-line-length': 100
+        //'wrap-line-length': 100 //慎重
     });
-}
-
-function isNodeModulePath(fileId){
-    let reg = /[\\/]node_modules[\\/]/;
-    return reg.test(fileId);
-}
-
-function nodeModules2Npm(p) {
-    const relativePath = path.relative(path.resolve(cwd, 'node_modules'), p);
-    return path.join(cwd, 'source/npm', relativePath);
 }
 
 // TODO: 合并到QuickParser中
@@ -46,22 +19,8 @@ let map = {
         let importTag = '';
         let using = uxFile.config && uxFile.config.usingComponents || {};
         Object.keys(using).forEach((i)=>{
-            const isWin = utils.isWin();
-            const reg = isWin ? /^(\\)/ : /^(\/)/;
-            const relativePath = using[i].replace(reg, '.$1');
-            let targetPath = path.join(cwd, 'source', relativePath);
-            if (/(node_modules|npm)[\\\/]schnee-ui/.test(sourcePath)) {
-                if (/node_modules/.test(sourcePath)) {
-                    sourcePath = nodeModules2Npm(sourcePath);
-                }
-                targetPath = path.join(cwd, 'source', relativePath);
-            }
-            let importSrc = path.relative(
-                path.dirname(sourcePath),
-                targetPath
-            );
-            importSrc = importSrc.replace(/\\/g, '/');
-            importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
+            let importerReletivePath = calculateAlias(sourcePath, using[i]);
+            importTag += `<import name="${i}" src="${importerReletivePath}.ux"></import>`;
         });
         return importTag;
     },

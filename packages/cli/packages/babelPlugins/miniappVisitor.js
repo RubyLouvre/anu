@@ -8,6 +8,8 @@ const config = require('../../config/config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
 const ignoreAttri = require('../quickHelpers/ignoreAttri');
+const calculateComponentsPath = require('../utils/calculateComponentsPath');
+const calculateAlias = require('../utils/calculateAlias');
 const cwd = process.cwd();
 
 const transformConfig = require('./transformConfig');
@@ -226,9 +228,11 @@ module.exports = {
         }
         specifiers.forEach(item => {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
+
             modules.importComponents[item.local.name] = {
                 astPath: astPath,
-                source: source
+                source: source,
+                sourcePath: modules.sourcePath
             };
         });
     },
@@ -252,7 +256,7 @@ module.exports = {
                     var value = modules.importComponents[i];
                     if(value.astPath && i === parentClass){
                         modules.usedComponents['anu-' +i.toLowerCase()] = 
-                            utils.getUsedComponentsPath(value, i, modules)
+                            calculateComponentsPath(value, i);
                         value.astPath = null;     
                     }
                 }
@@ -273,7 +277,8 @@ module.exports = {
             }
             //支付宝在这里会做属性名转换
             helpers.configName(json, modules.componentType);
-       
+            
+            
             var keys = Object.keys(modules.usedComponents),
                 usings;
             if (keys.length) {
@@ -579,7 +584,7 @@ module.exports = {
                     // eslint-disable-next-line
                 }
 
-                let useComponentsPath = utils.getUsedComponentsPath(bag, nodeName, modules);
+                let useComponentsPath = calculateComponentsPath(bag, nodeName);
                 modules.usedComponents['anu-' + nodeName.toLowerCase()] = useComponentsPath;
                 astPath.node.name.name = 'React.useComponent';
 
