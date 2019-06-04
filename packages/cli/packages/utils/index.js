@@ -97,6 +97,7 @@ let utils = {
         return (astPath, modules) => {
             // 在回调函数中取patchNode，在外层取会比babel插件逻辑先执行，导致一直为{}
             const pagesNeedPatchComponents = config[config.buildType].patchPages || {};
+           
             var orig = astPath.node.name.name;
             //组件名肯定大写开头
             if (/^[A-Z]/.test(orig)) {
@@ -107,9 +108,7 @@ let utils = {
             
             //schnee-ui补丁
             if (currentPage && currentPage[orig]) {
-                //'rich-text' ==> RichText;
-                // button ==> XButton
-                var patchName = toUpperCamel( 'x-' + orig )
+                var patchName = toUpperCamel( 'x-' + orig );
                 return patchName;
             }
             return (astPath.node.name.name = map[orig] || backup);
@@ -249,7 +248,7 @@ let utils = {
         });
     },
     getComponentOrAppOrPageReg() {
-        return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
+        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
     },
     hasNpm(npmName) {
         let flag = false;
