@@ -16,7 +16,7 @@ class App extends React.Component {
     super(props);
 
     this.app = React.createRef();
-    this.injectReactApis();
+    // this.injectReactApis();
     this.initAppConfig();
     this.injectGlobalData();
     this.injectGetApp();

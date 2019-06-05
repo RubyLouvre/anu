@@ -2,11 +2,14 @@ import { Children } from 'react-core/Children';
 import { PropTypes } from 'react-core/PropTypes';
 import { Component } from 'react-core/Component';
 import { PureComponent } from 'react-core/PureComponent';
+import { createRef, forwardRef } from 'react-core/createRef';
 import {
     createElement,
+    cloneElement,
     isValidElement,
     createFactory
 } from 'react-core/createElement';
+
 import { createContext } from 'react-core/createContext';
 
 import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
@@ -27,7 +30,7 @@ import { registerAPIs } from './registerAPIs';
 import { more } from './apiForH5/index';
 
 import { registerComponent } from './registerComponent.bu';
-import { registerPage } from './registerPage.wx';
+// import { registerPage } from './registerPage.wx';
 import { 
     useState,
     useReducer, 
@@ -52,7 +55,7 @@ let React = (getWindow().React = {
   //  webview,
     Fragment,
     PropTypes,
-    // Children,
+    Children,
     Component,
     // createPortal,
     createContext,
@@ -68,10 +71,14 @@ let React = (getWindow().React = {
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
-    registerPage,
-    // registerApp:function(){
-    //     this.api.__app = app;
-    // },
+    // registerPage,
+    registerApp: function(app){
+        this.__app = app;
+    },
+    registerPage: function(PageClass, path) {
+        this.__pages[path] = PageClass;
+        return PageClass;
+    },
     // toStyle,
     useState,
     useReducer, 
@@ -80,12 +87,33 @@ let React = (getWindow().React = {
     useEffect, 
     useContext,
     useComponent,
-    appType: 'h5'
-});
-let apiContainer = {
+    createRef,
+    cloneElement,
+    appType: 'h5',
     __app: {},
     __pages: {},
+});
+let apiContainer = {
+    redirectTo: function({url, success, fail, complete}) {
+        var [path, query] = getQuery(url);
+        var appInstance = React.__app;
+        var appConfig = appInstance.constructor.config;
+        if (appConfig.pages.indexOf(path) === -1){
+            throw "没有注册该页面: "+ path;
+        }
+        appInstance.setState({
+            path,
+            query, 
+            success, 
+            fail, 
+            complete
+        });
+    },
+    
 };
+function getQuery(url) {
+    return url.split('?');
+}
 
 registerAPIs(React, apiContainer, more);
 
