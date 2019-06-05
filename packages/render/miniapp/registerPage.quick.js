@@ -3,6 +3,7 @@ import { dispatchEvent } from './eventSystem.quick'
 import { onLoad, onUnload, onReady } from './registerPage.all'
 import {  _getApp } from './utils'
 import { getQueryFromUri } from './apiForQuick/router'
+import { getCurrentPages } from './getCurrentPages.quick'
 
 var appHooks = {
     onShow: 'onGlobalShow',
@@ -68,10 +69,15 @@ export function registerPage(PageClass, path) {
                 param = instance.props.query = getQuery(this, queryObject);
                 app.$$page = instance.wx;
                 app.$$pagePath = instance.props.path;
-            }else if (pageHook === 'onMenuPress') {
+            } else if (pageHook === 'onMenuPress') {
                 app.onShowMenu && app.onShowMenu(instance, this.$app);
                 return
-            } 
+            } else if (pageHook == 'onBackPress') {
+                if (instance[pageHook] && instance[pageHook]() === true) {
+                    return
+                }
+                getCurrentPages().pop();
+            }
             for(let i = 0; i < 2; i ++){
                 let method = i ? appHooks[pageHook]: pageHook;
                 let host = i ?  _getApp(): instance;
