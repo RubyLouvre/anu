@@ -72,7 +72,7 @@ describe('calculate alias', () => {
 
     //npm 相对路径测试
     //import getName from '../getName';
-    test('import getName from \'getName\';', ()=>{
+    test('import getName from \'../getName\';', ()=>{
         expect(
             calculateAlias(sourcePath, '../getName')
         ).toBe('../getName');
