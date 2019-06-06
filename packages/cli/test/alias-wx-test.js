@@ -56,7 +56,7 @@ describe('calculate alias', () => {
         });
         
         expect(
-            calculateAlias(sourcePath, '@syntaxComponents/Dog/index')
+            calculateAlias(sourcePath, '@utils/getLocalion/index')
         ).toBe('../../../utils/getLocalion/index');
         
     });
