@@ -1,9 +1,13 @@
 const template = require('@babel/template').default;
 const utils = require('../../utils/index');
 
+// const importedPagesTemplatePrefixCode = template(`
+// import Loadable from 'react-loadable';
+// import QunarDefaultLoading from '@qunar-default-loading';
+// `)();
 const importedPagesTemplatePrefixCode = template(`
-import Loadable from 'react-loadable';
-import QunarDefaultLoading from '@qunar-default-loading';
+import ReactDOM from 'react-dom';
+import PageWrapper from '@internalComponents/PageWrapper';
 `)();
 
 const buildAsyncImport = template(
@@ -18,22 +22,35 @@ const buildAsyncImport = template(
     }
 );
 
+const domRender = template(`
+window.onload = function (){
+    ReactDOM.render( <CLASS_NAME />, document.querySelector("#app" ))
+};`,
+{
+    plugins: ['jsx']
+});
+
+const pageWrapper = template('return <PageWrapper app={this} path={this.state.path}  query={this.state.query} />', {
+    plugins: ['jsx']
+});
+
+const registerApp = template(`
+React.registerApp(this);
+this.onLaunch();
+React.api.redirectTo(CLASS_NAME.config.pages[0]);`);
+
+const CLASS_NAME = 'Global';
 
 module.exports = function ({ types: t }) {
-    const exportedPages = t.arrayExpression();
+    const importedPages = t.arrayExpression();
     return {
         visitor: {
             Program: {
                 exit(astPath) {
                     astPath.node.body.unshift(...importedPagesTemplatePrefixCode);
-                    astPath.node.body.push(
-                        t.exportNamedDeclaration(
-                            t.variableDeclaration('const', [
-                                t.variableDeclarator(t.identifier('Pages'), exportedPages)
-                            ]),
-                            []
-                        )
-                    );
+                    astPath.node.body.push(domRender({
+                        CLASS_NAME: t.jsxIdentifier(CLASS_NAME)
+                    }));
                 }
             },
             ImportDeclaration(astPath, state) {
@@ -42,61 +59,53 @@ module.exports = function ({ types: t }) {
                 if (!/pages/.test(importPath)) {
                     return;
                 }
-                const modules = utils.getAnu(state);
-                const pageName = `Page_${utils.getAnu(state).pageIndex++}`;
-                const pageItem = t.objectExpression([
-                    t.objectProperty(
-                        t.identifier('url'),
-                        t.stringLiteral(importPath.slice(1))
-                    ),
-                    t.objectProperty(t.identifier('Comp'), t.identifier(pageName))
-                ]);
-                astPath.insertBefore(buildAsyncImport({
-                    IMPORT_PATH: importPath,
-                    PAGE_NAME: pageName
-                }));
-                modules.extraModules.push(importPath);
-                exportedPages.elements.push(pageItem);
-                astPath.remove();
+                
+                const pageItem = t.stringLiteral(importPath);
+                
+                importedPages.elements.push(pageItem);
             },
-            ClassDeclaration(astPath) {
-                // 移除app父类
-                astPath.get('superClass').remove();
-            },
-            ClassProperty: path => {
-                if (
-                    path.get('key').isIdentifier({
-                        name: 'config'
-                    })
-                ) {
-                    path.traverse({
-                        ObjectProperty: property => {
-                            const { key, value } = property.node;
-                            let name;
-
-                            if (t.isIdentifier(key)) name = key.name;
-                            if (t.isStringLiteral(key)) name = key.value;
-
-                            if (name === 'iconPath' || name === 'selectedIconPath') {
-                                if (t.isStringLiteral(value)) {
-                                    property
-                                        .get('value')
-                                        .replaceWith(
-                                            t.callExpression(t.identifier('require'), [
-                                                t.stringLiteral(
-                                                    `@${value.value.replace(/^(\.?\/)/, '')}`
-                                                )
-                                            ])
-                                        );
-                                }
-                            }
-                        }
-                    });
+            ClassProperty(astPath) {
+                if (astPath.get('key').isIdentifier({
+                    name: 'config'
+                }) && astPath.get('value').isObjectExpression()) {
+                    astPath.get('value').node.properties.push(t.objectProperty(t.identifier('pages'), importedPages));
                 }
             },
+            ClassBody(astPath) {
+                let find = false;
+                astPath.get('body').forEach(p => {
+                    if (p.type === 'ClassMethod' && p.node.key.name === 'componentWillMount') {
+                        find = true;
+                        p.node.body.body.push(...registerApp({
+                            CLASS_NAME
+                        }));
+                    }
+                });
+                if (!find) {
+                    astPath.node.body.push(
+                        t.classMethod('method', t.identifier('componentWillMount'),
+                            [], 
+                            t.blockStatement(
+                                registerApp({
+                                    CLASS_NAME
+                                })
+                            )
+                        )
+                    );
+                }
+                astPath.node.body.push(
+                    t.classMethod('method', t.identifier('render'),
+                        [], 
+                        t.blockStatement(
+                            [
+                                pageWrapper()
+                            ]
+                        )
+                    )
+                );
+            },
             ExportDefaultDeclaration(astPath) {
-                const newAppNode = astPath.get('declaration').get('arguments')[0].node;
-                astPath.get('declaration').replaceWith(newAppNode);
+                astPath.remove();
             }
         }
     };

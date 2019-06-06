@@ -154,7 +154,7 @@ module.exports = function({
             alias: aliasMap,
             mainFields: ['main']
         },
-        externals: ['react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/]
+        externals: platform === 'h5' ? ['react','@react','react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/] : []
         // performance: {
         //     hints: 'warning',
         //     assetFilter(filename) {

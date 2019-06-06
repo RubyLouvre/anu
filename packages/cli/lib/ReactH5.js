@@ -3070,12 +3070,12 @@
         }
     };
     function _getApp() {
-        if (isFn(getApp)) {
+        if (getWindow().getApp && isFn(getApp)) {
             return getApp();
         }
         return fakeApp;
     }
-    if (typeof getApp === 'function') {
+    if (getWindow().getApp && typeof getApp === 'function') {
         _getApp = getApp;
     }
     var usingComponents = [];

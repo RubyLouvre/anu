@@ -33,7 +33,7 @@ module.exports = {
             'react-dom': path.resolve(__dirname, '../../lib/ReactH5.js'),
             'schnee-ui': resolveFromContext(`${intermediateDirectoryName}/npm/schnee-ui`),
             '@shared': resolveFromContext('./src/shared'),
-            '@internalComponents': resolveFromContext('src/views/InternalComponents'),
+            '@internalComponents': resolveFromContext('../components'),
             '@components': resolveFromContext(
                 `${intermediateDirectoryName}/components`
             ),
