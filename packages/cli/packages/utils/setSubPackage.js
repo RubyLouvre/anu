@@ -9,24 +9,24 @@ const keys = {
     wx: 'subpackages',
     qq: 'subpackages'
 };
-module.exports = function(modules, json) {
+module.exports = function (modules, json) {
     if (modules.componentType !== 'App') {
         return json;
     }
     if (!supportPlat.includes(buildType)) {
         return json;
     }
-    
+
 
     if (!json.pages) return json;
 
     json[keys[buildType]] = json[keys[buildType]] || [];
     let subPackages = [];
     try {
-        appRootConfig = require( path.join(process.cwd(), 'source', `${buildType}Config.json`) );
+        appRootConfig = require(path.join(process.cwd(), 'source', `${buildType}Config.json`));
         subPackages = appRootConfig.subpackages || appRootConfig.subPackages || [];
     } catch (err) {
-       
+
     }
 
     let routes = json.pages.slice();
@@ -38,8 +38,8 @@ module.exports = function(modules, json) {
      *      }
      * ]
      */
-    subPackages.forEach(function(el){
-        let {name, resource} = el;
+    subPackages.forEach(function (el) {
+        let { name, resource } = el;
         /**
          * subPackagesItem: [
          *     root: "pages/demo/native",
@@ -50,7 +50,7 @@ module.exports = function(modules, json) {
         let subPackagesItem = {
             root: resource,
             name: name,
-            pages:[]
+            pages: []
         };
 
         if (buildType === 'ali') {
@@ -60,7 +60,7 @@ module.exports = function(modules, json) {
         //核心是根据配置中的 resource 创建正则，去遍历出 pages 中的的匹配这个正则的路由。
         let reg = new RegExp('^' + resource);
         json[keys[buildType]].push(subPackagesItem);
-        json.pages.forEach(function(pageRoute){
+        json.pages.forEach(function (pageRoute) {
             if (reg.test(pageRoute)) {
                 let _index = routes.indexOf(pageRoute);
 
@@ -68,15 +68,15 @@ module.exports = function(modules, json) {
                 let subPage = routes.splice(_index, 1)[0];
 
                 // pages/demo/syntax/multiple/index => multiple/index
-                subPackagesItem.pages.push(  subPage.replace(resource + '/', '') );
+                subPackagesItem.pages.push(subPage.replace(resource + '/', ''));
             }
         });
-        
+
     });
     if (!json[keys[buildType]].length) {
         delete json[keys[buildType]];
     }
-   
+
     json.pages = routes;
     return json;
 }
