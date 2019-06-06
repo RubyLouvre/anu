@@ -1,7 +1,7 @@
 const path = require('path');
 const cwd = process.cwd();
 const nodeResolve = require('resolve');
-const aliasMap = require('./calculateAliasConfig')();
+
 const getDistPath = require('./getDistPath');
 const utils = require('./index');
 function fixPath (p) {
@@ -22,6 +22,11 @@ function fixPath (p) {
 // import md5 from 'md5';
 // @import url('@globalStyle/reset.css');
 function calculateAlias(srcPath, importerSource) {
+    const aliasMap = require('./calculateAliasConfig')();
+    if (!path.isAbsolute(srcPath)) {
+        console.error(`计算alias中的 ${srcPath} 必须为绝对路径.`);
+        process.exit(1);
+    }
 
     if (path.isAbsolute(importerSource)) {
         let from = path.dirname(srcPath);
@@ -48,7 +53,8 @@ function calculateAlias(srcPath, importerSource) {
             aliasMap[ rsegments[0] ]
         );
         to = getDistPath(to);
-      
+    
+       
         return fixPath(path.relative(from, to));
     }
 
