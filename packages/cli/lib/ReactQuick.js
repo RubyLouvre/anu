@@ -1,6 +1,6 @@
 /* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-05-28
+ * 运行于快应用的React by 司徒正美 Copyright 2019-05-31
  */
 
 var arrayPush = Array.prototype.push;
@@ -625,14 +625,14 @@ function dispatchEvent(e) {
             return;
         }
     }
-    if (app && app.onCollectLogs && beaconType.test(eventType)) {
-        app.onCollectLogs(dataset, eventType, fiber.stateNode);
-    }
     var safeTarget = {
         dataset: dataset,
         nodeName: target._nodeName || target.nodeName || target.type,
         value: e.value
     };
+    if (app && app.onCollectLogs && beaconType.test(eventType)) {
+        app.onCollectLogs(dataset, eventType, fiber.stateNode);
+    }
     Renderer.batchedUpdates(function () {
         try {
             var fn = instance.$$eventCached[eventUid];
@@ -3155,52 +3155,12 @@ var Renderer$1 = createRenderer({
         };
     },
     insertElement: function insertElement(fiber) {
-        var dom = fiber.stateNode,
-            parentNode = fiber.parent,
-            forwardFiber = fiber.forwardFiber,
-            before = forwardFiber ? forwardFiber.stateNode : null,
-            children = parentNode.children;
-        try {
-            if (before == null) {
-                if (dom !== children[0]) {
-                    remove(children, dom);
-                    dom.parentNode = parentNode;
-                    children.unshift(dom);
-                }
-            } else {
-                if (dom !== children[children.length - 1]) {
-                    remove(children, dom);
-                    dom.parentNode = parentNode;
-                    var i = children.indexOf(before);
-                    children.splice(i + 1, 0, dom);
-                }
-            }
-        } catch (e) {
-            throw e;
-        }
     },
     emptyElement: function emptyElement(fiber) {
-        var dom = fiber.stateNode;
-        var children = dom && dom.children;
-        if (dom && Array.isArray(children)) {
-            children.forEach(Renderer$1.removeElement);
-        }
     },
     removeElement: function removeElement(fiber) {
-        if (fiber.parent) {
-            var parent = fiber.parent;
-            var node = fiber.stateNode;
-            node.parentNode = null;
-            remove(parent.children, node);
-        }
     }
 });
-function remove(children, node) {
-    var index = children.indexOf(node);
-    if (index !== -1) {
-        children.splice(index, 1);
-    }
-}
 
 var rcamel = /-(\w)/g;
 var rpx = /(\d[\d\.]*)(r?px)/gi;
@@ -3305,7 +3265,7 @@ function onReady() {
 function onUnload() {
     for (var i in usingComponents) {
         var a = usingComponents[i];
-        if (a.reactInstances.length) {
+        if (a.reactInstances) {
             a.reactInstances.length = 0;
         }
         delete usingComponents[i];

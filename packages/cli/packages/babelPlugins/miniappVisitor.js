@@ -55,8 +55,8 @@ if (buildType == 'quick') {
 }
 
 function registerPageOrComponent(name, path, modules) {
-   if (name == modules.className) {
-      path.insertBefore(modules.registerStatement);
+    if (name == modules.className) {
+        path.insertBefore(modules.registerStatement);
     }
 }
 /**
@@ -68,7 +68,7 @@ module.exports = {
     ClassExpression: helpers.classDeclaration,
     ClassMethod: {
         enter(astPath, state) {
-            if (!astPath.node){
+            if (!astPath.node) {
                 return;
             }
             let modules = utils.getAnu(state);
@@ -79,7 +79,7 @@ module.exports = {
                 if (buildType == 'quick' && modules.componentType === 'App') {
                     if (methodName === 'onLaunch') {
                         methodName = 'onCreate';
-                    }else if (methodName === 'onHide') {
+                    } else if (methodName === 'onHide') {
                         methodName = 'onDestroy';
                     }
                     let dist = path.join(
@@ -129,7 +129,7 @@ module.exports = {
                     false
                 );
             }
-           
+
         },
         exit(astPath, state) {
             let methodName = astPath.node.key.name;
@@ -190,9 +190,9 @@ module.exports = {
         var extraModules = modules.extraModules;
 
         if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
-            if(modules.componentType === 'Component'){
+            if (modules.componentType === 'Component') {
                 if (/\/pages\//.test(source)) {
-                    throw '"'+modules.className+'"组件越级不能引用pages下面的样式\n\t'+source
+                    throw '"' + modules.className + '"组件越级不能引用pages下面的样式\n\t' + source
                 }
             }
             extraModules.push(source);
@@ -213,15 +213,15 @@ module.exports = {
             if (/\.js$/.test(source)) {
                 source = source.replace(/\.js$/, '');
             }
-           // 如果当前页面就是一个组件，它必须在components目录中
-            if( /\/components\//.test(modules.current)){
+            // 如果当前页面就是一个组件，它必须在components目录中
+            if (/\/components\//.test(modules.current)) {
                 //这时还没有解析到函数体或类结构，不知道当前组件叫什么名字
-                if(!modules.className ){
+                if (!modules.className) {
                     var segments = modules.current.match(/[\w\.-]+/g)
-                    modules.className = segments[segments.length-2]
+                    modules.className = segments[segments.length - 2]
                 }
             }
-            
+
         }
         specifiers.forEach(item => {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
@@ -233,26 +233,26 @@ module.exports = {
     },
 
     Program: {
-        exit(astPath, state){
+        exit(astPath, state) {
             var modules = utils.getAnu(state);
-        //支付宝的自定义组件机制实现有问题，必须要在json.usingComponents引入了这个类
-        //这个类所在的JS 文件才会加入Component全局函数，否则会报Component不存在的BUG
-        //一般来说，我们在页面引入了某个组件，它肯定在json.usingComponents中，只有少数间接引入的父类没有引入
-        //因此在子类的json.usingComponents添加父类名
-        //好像支付宝小程序(0.25.1-beta.0)已经不需要添加父类了
-        // 下面代码是从wxHelper/render中挪过来的
+            //支付宝的自定义组件机制实现有问题，必须要在json.usingComponents引入了这个类
+            //这个类所在的JS 文件才会加入Component全局函数，否则会报Component不存在的BUG
+            //一般来说，我们在页面引入了某个组件，它肯定在json.usingComponents中，只有少数间接引入的父类没有引入
+            //因此在子类的json.usingComponents添加父类名
+            //好像支付宝小程序(0.25.1-beta.0)已经不需要添加父类了
+            // 下面代码是从wxHelper/render中挪过来的
             const parentClass = modules.parentName;
             if (
-                config.buildType === 'ali' && 
+                config.buildType === 'ali' &&
                 modules.componentType === 'Component' &&
-                parentClass !== 'Object'                
-            ){
-                for(var i in modules.importComponents){  
+                parentClass !== 'Object'
+            ) {
+                for (var i in modules.importComponents) {
                     var value = modules.importComponents[i];
-                    if(value.astPath && i === parentClass){
-                        modules.usedComponents['anu-' +i.toLowerCase()] = 
+                    if (value.astPath && i === parentClass) {
+                        modules.usedComponents['anu-' + i.toLowerCase()] =
                             utils.getUsedComponentsPath(value, i, modules)
-                        value.astPath = null;     
+                        value.astPath = null;
                     }
                 }
             }
@@ -272,7 +272,7 @@ module.exports = {
             }
             //支付宝在这里会做属性名转换
             helpers.configName(json, modules.componentType);
-       
+
             var keys = Object.keys(modules.usedComponents),
                 usings;
             if (keys.length) {
@@ -299,7 +299,7 @@ module.exports = {
             if (Object.keys(json).length) {
                 //配置分包
                 json = require('../utils/setSubPackage')(modules, json);
-                
+
                 //merge ${buildType}Config.json
                 json = require('../utils/mergeConfigJson')(modules, json);
                 
@@ -322,10 +322,10 @@ module.exports = {
     ExportDefaultDeclaration: {
         exit(astPath, state) {
             var modules = utils.getAnu(state);
-          
+
             if (/Page|Component/.test(modules.componentType)) {
                 let declaration = astPath.node.declaration;
-                let name =  declaration.name
+                let name = declaration.name
                 if (declaration.type == 'FunctionDeclaration') {
                     //将export default function AAA(){}的方法提到前面
                     astPath.insertBefore(declaration);
@@ -333,7 +333,7 @@ module.exports = {
                     name = declaration.id.name
                 }
                 //延后插入createPage语句在其同名的export语句前
-                registerPageOrComponent(name , astPath, modules);
+                registerPageOrComponent(name, astPath, modules);
             }
         }
     },
@@ -372,46 +372,46 @@ module.exports = {
             }
         }
     },
-    ThisExpression:{
-        exit(astPath,state){
+    ThisExpression: {
+        exit(astPath, state) {
             let modules = utils.getAnu(state);
-            if ( modules.walkingMethod == 'constructor' ){
+            if (modules.walkingMethod == 'constructor') {
                 var expression = astPath.parentPath.parentPath;
-                if (expression.type === 'AssignmentExpression'){
+                if (expression.type === 'AssignmentExpression') {
                     var right = expression.node.right;
-                    if (!t.isObjectExpression(right)){
+                    if (!t.isObjectExpression(right)) {
                         return;
                     }
                     //将  this.config 变成 static config
                     var propertyName = astPath.container.property.name;
-                    if ( propertyName === 'config' && !modules.configIsReady ){     
+                    if (propertyName === 'config' && !modules.configIsReady) {
                         //对配置项进行映射                 
-                        transformConfig(modules, expression, buildType);                      
-                        var staticConfig = template(`${modules.className}.config = %%CONFIGS%%;`,{
+                        transformConfig(modules, expression, buildType);
+                        var staticConfig = template(`${modules.className}.config = %%CONFIGS%%;`, {
                             syntacticPlaceholders: true
                         })({
                             CONFIGS: right
-                        }) ;
-                        var classAstPath =  expression.findParent(function (parent) {
+                        });
+                        var classAstPath = expression.findParent(function (parent) {
                             return parent.type === 'ClassDeclaration';
                         });
                         classAstPath.insertAfter(staticConfig);
                         expression.remove();
                     }
                     // 为this.globalData添加buildType
-                    if ( propertyName === 'globalData'){
-                        if (modules.componentType === 'App'){
+                    if (propertyName === 'globalData') {
+                        if (modules.componentType === 'App') {
                             var properties = right.properties;
-                            var hasBuildType = properties.some(function(el){
+                            var hasBuildType = properties.some(function (el) {
                                 return el.key.name === 'buildType';
                             });
-                            if (!hasBuildType){
-                                properties.push( t.objectProperty(
+                            if (!hasBuildType) {
+                                properties.push(t.objectProperty(
                                     t.identifier('buildType'),
                                     t.stringLiteral(buildType)
                                 ));
-                                if(buildType === 'quick'){
-                                    properties.push( t.objectProperty(
+                                if (buildType === 'quick') {
+                                    properties.push(t.objectProperty(
                                         t.identifier('__quickQuery'),
                                         t.objectExpression([])
                                     ));
@@ -420,24 +420,24 @@ module.exports = {
                         }
                     }
                 }
-               
+
             }
-           
+
         }
     },
-    MemberExpression(astPath,state){
+    MemberExpression(astPath, state) {
         //处理 static config = {}
-        if (astPath.parentPath.type === 'AssignmentExpression'){
+        if (astPath.parentPath.type === 'AssignmentExpression') {
             let modules = utils.getAnu(state);
             if (!modules.configIsReady &&
                 astPath.node.object.name === modules.className &&
                 astPath.node.property.name === 'config'
-            ){ 
+            ) {
                 transformConfig(modules, astPath.parentPath, buildType);
             }
         }
     },
-    
+
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
@@ -528,11 +528,11 @@ module.exports = {
                     return;
                 }
             }
-            
+
             if (buildType !== 'quick' && nodeName === 'text') {
                 //  iconfont 各小程序匹配 去掉小程序下 <text>&#xf1f3;</text>
                 var children = astPath.parentPath.node.children;
-                if (children.length === 1){
+                if (children.length === 1) {
                     let iconValue = t.isJSXText(children[0]) ? children[0].extra.raw : '';
                     let iconReg = /\s*&#x/i;
                     if (iconReg.test(iconValue)) {
@@ -616,7 +616,7 @@ module.exports = {
             let parentPath = astPath.parentPath;
             let modules = utils.getAnu(state);
 
-          
+
             //处理静态资源@assets/xxx.png别名
             if (t.isStringLiteral(attrValue)) {
                 let srcValue = attrValue && attrValue.value;
@@ -727,7 +727,7 @@ module.exports = {
                             )
                         )
                     );
-                    //data-beacon-uid是用于实现日志自动上传
+                    //data-beacon-uid是用于实现日志自动上传, 并用于ReactWX的updateAttribute 
                     if (
                         !attrs.setClassCode &&
                         !attrs.some(function (el) {
