@@ -1,5 +1,30 @@
 # Changelog
 
+# 1.2.8 (2019-06-06)
+## 核心库
+#### Feature
+
+- 快应用支持与小程序一样的getCurrentPages, navigatorBack 方法。
+- 支持微信小程序插件
+- 空心化核心库的insertElement, removeElement, emptyElement方法，换言之，它们只是空方法，里面没有代码。因为我们也不需生成假的DOM节点，这些少生成许多对象，性能大大提升。
+
+#### Bug fix
+
+- 事件里可以条件绑定函数。
+
+## CLI
+#### Feature
+
+- 微信小程序，QQ小程序不会在循环中添加wx:key="*this"
+- 模板项目添加分包与分包预加载的演示
+- 微信小程序、QQ小程序编译改用全新的nanachi-webpack，那是基于webpack4的CLI，性能是原来2倍的。
+- huawei合并manifest问题
+- pages目录下面请允许添加每个频道自己的components, assets, common目录，有利于分包。如果不这样做，每个频道的组件都放到主包中，导致体积超出限制。
+- 更新disabledTitleBarPages的逻辑(快应用)
+
+#### Bug fix
+- windows快应用产物后缀名bug。 #984
+
 # 1.2.7 (2019-05-28)
 ## CLI
 #### Bug fix
