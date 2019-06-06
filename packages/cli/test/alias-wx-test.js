@@ -16,7 +16,7 @@ describe('calculate alias', () => {
     
     //react 测试
     //import react from '@react';
-    test('import react from \'@react\'', ()=>{
+    test('import react from \'@react\';', ()=>{
         //https://jestjs.io/docs/zh-Hans/mock-functions
         calculateAliasConfig.mockReturnValue({
             '@react': '/Users/qitmac000524/work/anu/packages/cli/packages/demo/source/ReactWX.js'
@@ -28,7 +28,7 @@ describe('calculate alias', () => {
 
     //components测试
     //import Cat from '@componenet/Cat/index';
-    test('import Cat from \'@components/Cat/index\'', ()=>{
+    test('import Cat from \'@components/Cat/index\';', ()=>{
         calculateAliasConfig.mockReturnValue({
             '@components': '/Users/qitmac000524/work/anu/packages/cli/packages/demo/source/components'
         });
@@ -39,7 +39,7 @@ describe('calculate alias', () => {
 
     //自定义alias测试
     //import Dog from '@syntaxComponents/Dog/index';
-    test('import Dog from \'@syntaxComponents/Dog/index\'', ()=>{
+    test('import Dog from \'@syntaxComponents/Dog/index\';', ()=>{
         calculateAliasConfig.mockReturnValue({
             '@syntaxComponents': '/Users/qitmac000524/work/anu/packages/cli/packages/demo/source/pages/syntax/components'
         });
@@ -63,11 +63,20 @@ describe('calculate alias', () => {
 
     //npm 测试
     //import cookie from 'cookie';
-    test('import cookie from \'cookie\'', ()=>{
+    test('import cookie from \'cookie\';', ()=>{
         nodeResolve.sync.mockReturnValue('/Users/qitmac000524/work/anu/packages/cli/packages/demo/node_modules/cookie/index.js');
         expect(
             calculateAlias(sourcePath, 'cookie')
         ).toBe('../../../npm/cookie/index.js');
     });
+
+    //npm 相对路径测试
+    //import getName from '../getName';
+    test('import getName from \'getName\';', ()=>{
+        expect(
+            calculateAlias(sourcePath, '../getName')
+        ).toBe('../getName');
+    });
+    
     
 });
