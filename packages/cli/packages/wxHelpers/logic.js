@@ -1,2 +1,2 @@
 const createLogicHelper = require('./createLogicHelper');
-module.exports = createLogicHelper('wx:', 'wx:key', true);
+module.exports = createLogicHelper('wx:', 'wx:key', false);
