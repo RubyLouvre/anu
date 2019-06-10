@@ -1,5 +1,5 @@
 const StyleParser = require('./StyleParser');
-const utils = require('../../../packages/utils/index');
+const calculateAlias = require('../../../packages/utils/calculateAlias');
 const { MAP } = require('../../../consts/index');
 
 class LessParser extends StyleParser {
@@ -17,7 +17,7 @@ class LessParser extends StyleParser {
                         importer = importer + '.less';
                     }
                     //处理alias路径
-                    return utils.resolveStyleAlias(importer, baseDir);
+                    return calculateAlias(props.filepath, importer);
                 },
                 plugins: this.platform !== 'h5' ? [
                     require('../../../packages/postcssPlugins/postCssPluginRemoveRules') // 删除import文件的所有rules，保留@mixins、$variables、@functions等

@@ -1,7 +1,7 @@
 <view>
-      <block wx:for="{{state.multiArr}}" wx:for-item="item" wx:for-index="i90" wx:key="*this">
+      <block wx:for="{{state.multiArr}}" wx:for-item="item" wx:for-index="i90">
         <view>
-          <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i189" wx:key="*this">
+          <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i189">
             <text>{{item2}}</text>
           </block>
         </view>

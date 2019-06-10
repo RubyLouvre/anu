@@ -31,11 +31,8 @@ module.exports = function({
     postLoaders, // 自定义后处理loaders
     // maxAssetSize // 资源大小限制，超出后报warning
 }) {
-    let aliasMap = require('../consts/alias')(platform);
-    // aliasMap 解析成绝对路径
-    Object.keys(aliasMap).forEach(alias => {
-        aliasMap[alias] = path.resolve(cwd, aliasMap[alias]);
-    });
+    let aliasMap = require('../packages/utils/calculateAliasConfig')();
+
     let distPath = path.resolve(cwd, utils.getDistName(platform));
     if (platform === 'h5') {
         distPath = path.join(distPath, intermediateDirectoryName);

@@ -17,9 +17,7 @@ const toUpperCamel = require('./toUpperCamel');
 const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const userConfig = pkg.nanachi || pkg.mpreact || {};
-// const { REACT_LIB_MAP } = require('../../consts/index');
-const calculateComponentsPath = require('./calculateComponentsPath');
-const calculateAliasConfig = require('./calculateAliasConfig');
+
 const cachedUsingComponents = {}
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
@@ -99,7 +97,7 @@ let utils = {
         return (astPath, modules) => {
             // 在回调函数中取patchNode，在外层取会比babel插件逻辑先执行，导致一直为{}
             const pagesNeedPatchComponents = config[config.buildType].patchPages || {};
-            const UIName = 'schnee-ui';
+           
             var orig = astPath.node.name.name;
             //组件名肯定大写开头
             if (/^[A-Z]/.test(orig)) {
@@ -107,39 +105,14 @@ let utils = {
             }
             var pagePath = modules.sourcePath;
             var currentPage = pagesNeedPatchComponents[pagePath];
+            
             //schnee-ui补丁
             if (currentPage && currentPage[orig]) {
-                //'rich-text' ==> RichText;
-                // button ==> XButton
-                var patchName = toUpperCamel( 'x-' + orig )
-                modules.importComponents[patchName] = {
-                    source: UIName
-                };
+                var patchName = toUpperCamel( 'x-' + orig );
                 return patchName;
             }
             return (astPath.node.name.name = map[orig] || backup);
         }
-    },
-    getUsedComponentsPath(bag, nodeName, modules) {
-        if(cachedUsingComponents[nodeName]){
-            return cachedUsingComponents[nodeName]
-        }
-        let isNpm = this.isNpm(bag.source);
-        let sourcePath = modules.sourcePath;
-        let isNodeModulePathReg = /[\\/](npm|node_modules)[\\/]/;
-        //import { xxx } from 'schnee-ui';
-        if (isNpm) {
-            return '/npm/' + bag.source + '/components/' + nodeName + '/index';
-        }
-        //如果XPicker中存在 import XOverlay from '../XOverlay/index';
-        if ( isNodeModulePathReg.test(sourcePath) && /^\./.test(bag.source) ) {
-            //获取用组件的绝对路径
-            let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
-            return '/npm/' + importerAbPath.split(/[\\/]npm|node_modules[\\/]/)[1]
-        }
-        
-        // return `/components/${nodeName}/index`;
-        return cachedUsingComponents[nodeName] = utils.fixWinPath(calculateComponentsPath(bag, nodeName, modules));
     },
     createAttribute(name, value) {
         return t.JSXAttribute(
@@ -266,34 +239,8 @@ let utils = {
             resolve(npmPath);
         });
     },
-  // 没有人用
-  //  getReactLibName(buildType) {
-  //      return REACT_LIB_MAP[buildType];
-  //  },
-    getAliasConfig() {
-        return calculateAliasConfig(config, userConfig, cwd );
-    },
     getDistName(buildType) {
         return buildType === 'quick' ? 'src' : (userConfig && userConfig.buildDir || 'dist');
-    },
-    resolveStyleAlias(importer, basedir) {
-        //解析样式中的alias别名配置
-        let aliasMap = (userConfig && userConfig.alias) || {};
-        let depLevel = importer.split('/'); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
-        let prefix = depLevel[0];
-
-        //将alias以及相对路径引用解析成绝对路径
-        if (aliasMap[prefix]) {
-            importer = path.join(
-                cwd,
-                aliasMap[prefix],
-                depLevel.slice(1).join('/') //['@path', 'x', 'y.scss'] => 'x/y.scss'
-            );
-            let val = path.relative(basedir, importer);
-            val = /^\w/.test(val) ? `./${val}` : val; //相对路径加./
-            return val;
-        }
-        return importer;
     },
     getDeps(messages = []) {
         return messages.filter((item) => {
@@ -301,7 +248,7 @@ let utils = {
         });
     },
     getComponentOrAppOrPageReg() {
-        return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
+        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
     },
     hasNpm(npmName) {
         let flag = false;

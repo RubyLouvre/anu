@@ -17,8 +17,8 @@ module.exports = async function(code, map, meta) {
             );
             code = result.code;
         } catch (err) {
-            process.exit(1);
             console.log(err);
+            process.exit(1);
         }        
     }
     
