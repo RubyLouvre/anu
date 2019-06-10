@@ -1,4 +1,3 @@
-const utils = require('./index');
 /**
  * 返回当前编译文件打包后的绝对路径
  * 
@@ -8,8 +7,11 @@ const utils = require('./index');
  *   source/components/Cat/index.js => dist/components/Cat/index.js
  *   source/common/login.js => dist/common/login.js
  */
+function fixWinPath(p) {
+    return p.replace(/\\/g, '/');
+}
 module.exports = function (sourcePath) {
-    sourcePath = utils.fixWinPath(sourcePath);
+    sourcePath = fixWinPath(sourcePath);
     let nodeModuleReg = /\/node_modules\//;
     let distPath = '';
 

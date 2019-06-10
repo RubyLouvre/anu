@@ -3,9 +3,8 @@ const cwd = process.cwd();
 const nodeResolve = require('resolve');
 
 const getDistPath = require('./getDistPath');
-const utils = require('./index');
 function fixPath (p) {
-    p = utils.fixWinPath(p);
+    p = p.replace(/\\/g, '/');
     return /^\w/.test(p) ? './' + p : p;
 }
 /**

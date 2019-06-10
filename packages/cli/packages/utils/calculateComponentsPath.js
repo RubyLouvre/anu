@@ -1,7 +1,6 @@
 const path = require('path');
 const cwd = process.cwd();
 const getDistPath = require('./getDistPath');
-const utils = require('./index');
 const calculateAlias = require('./calculateAlias');
 let cachedUsingComponents = {};
 
@@ -10,6 +9,9 @@ let cachedUsingComponents = {};
  * case2: userPath/demo/source/pages/syntax/components/Label/index => /pages/syntax/components/Label/index
  * case3: userPath/demo/node_modules/schnee-ui/components/XButton/index.js => /npm/schnee-ui/components/XButton/index
  */
+function fixWinPath(p) {
+    return p.replace(/\\/g, '/');
+}
 module.exports = function calculateComponentsPath( bag ) {
     
     if (!path.isAbsolute(bag.sourcePath)) {
@@ -28,10 +30,10 @@ module.exports = function calculateComponentsPath( bag ) {
     );
 
 
-    realPath = utils.fixWinPath(realPath).replace(/\.js$/, '');
+    realPath = fixWinPath(realPath).replace(/\.js$/, '');
     let usingPath = getDistPath(realPath)
         .replace(
-            utils.fixWinPath( path.join(cwd, 'dist') ),
+            fixWinPath( path.join(cwd, 'dist') ),
             ''
         );
 
