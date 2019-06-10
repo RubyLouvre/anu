@@ -4,7 +4,7 @@
  *  import ...
  */
 const envReg = /\s*if\s+process\.env\.ANU_ENV\s*={2,3}\s*'([\w|]*)';?/;
-let config = require('../config');
+let config = require('../../config/config');
 let visitor = {
     Program: {
         // 必须enter时删除，在其他插件解析前就将无用的import语句删除

@@ -1,0 +1,23 @@
+<import name="anu-page-wrapper" src="../../../../source/components/PageWrapper/index.ux">
+    </import>
+    <template>
+      <anu-page-wrapper>
+        <div>
+          <slot>
+          </slot>
+        </div>
+      </anu-page-wrapper>
+    </template>
+    <script>
+      function P() {}
+
+      P = React.toClass(P, React.Components, {
+      render: function() {
+      var h = React.createElement;
+      return h("div", null, this.props.children);;
+      },
+      classUid: "c160"
+      }, {});
+      P = React.registerPage(P, "pages/template/slot");
+      export default P;
+    </script>

@@ -1,0 +1,9 @@
+<view>
+      <block tt:for="{{state.multiArr}}" tt:for-item="item" tt:for-index="i90" tt:key="*this">
+        <view>
+          <block tt:for="{{item.list}}" tt:for-item="item2" tt:for-index="i189" tt:key="*this">
+            <text>{{item2}}</text>
+          </block>
+        </view>
+      </block>
+    </view>

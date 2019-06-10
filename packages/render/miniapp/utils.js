@@ -128,6 +128,19 @@ export function useComponent(props) {
     return createElement(clazz, props);
 }
 
+export function handleSuccess(options, success, complete, resolve) {
+    success(options);
+    complete(options);
+    resolve(options);
+}
+  
+export function handleFail(options, fail, complete, reject) {
+    fail(options);
+    complete(options);
+    reject(options);
+}
+  
+
 function safeClone (originVal) {
     let temp = originVal instanceof Array ? [] : {};
     for (let item in originVal) {
@@ -145,3 +158,4 @@ function safeClone (originVal) {
     }
     return temp;
 }
+

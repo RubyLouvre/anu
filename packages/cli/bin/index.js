@@ -5,7 +5,6 @@ const semver = require('semver');
 const program = require('commander');
 const platforms = require('../consts/platforms');
 const { BUILD_OPTIONS } = require('../consts/index');
-let config = require('../packages/config');
 function checkNodeVersion(version){
     if (semver.lt(process.version, version)) {
         // eslint-disable-next-line
@@ -54,16 +53,6 @@ function getArgValue(cmd){
     return args;
 }
 
-function injectBuildEnv(buildArgs){
-    const { buildType, compress, huawei } = buildArgs;
-    process.env.ANU_ENV = buildType;
-    config['buildType'] = buildType;
-    config['compress'] = compress;
-    if (buildType === 'quick') {
-        config['huawei'] = huawei || false;
-    }
-}
-
 program
     .version(require('../package.json').version)
     .usage('<command> [options]');
@@ -88,20 +77,8 @@ function buildAction(buildType, compileType) {
     return function(cmd) {
         const args = getArgValue(cmd);
         args['buildType'] = buildType;
-        if (compileType === 'watch') { args['watch'] = true; }
-        injectBuildEnv(args);
-        if (buildType === 'qq' || buildType === 'wx') {
-            const nanachi = require('nanachi-webpack');
-            nanachi({
-                ...args,
-                platform: buildType,
-                watch: compileType === 'watch'
-            });
-            return;
-        }
-        buildType === 'h5'
-            ? require(`mini-html5/runkit/${compileType === 'watch' ? 'run' : 'build'}`)
-            : require('../commands/build')(args);
+        args['watch'] = compileType === 'watch';
+        require('../commands/build')(args);
     };
 }
 

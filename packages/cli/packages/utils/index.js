@@ -6,22 +6,18 @@ const path = require('path');
 const cwd = process.cwd();
 const chalk = require('chalk');
 const spawn = require('cross-spawn');
-const uglifyJS = require('uglify-es');
-const cleanCSS = require('clean-css');
 const nodeResolve = require('resolve');
 const template = require('@babel/template').default;
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
-const config = require('../config');
+const config = require('../../config/config');
 const isWindow = require('./isWindow');
 const isNpm = require('./isNpmModule');
 const toUpperCamel = require('./toUpperCamel');
 const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const userConfig = pkg.nanachi || pkg.mpreact || {};
-// const { REACT_LIB_MAP } = require('../../consts/index');
-const calculateComponentsPath = require('./calculateComponentsPath');
-const calculateAliasConfig = require('./calculateAliasConfig');
+
 const cachedUsingComponents = {}
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
@@ -97,10 +93,11 @@ let utils = {
         );
     },
     createNodeName(map, backup) {
-        const pagesNeedPatchComponents = config[config.buildType].patchPages || {};
-        const UIName = 'schnee-ui';
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return (astPath, modules) => {
+            // 在回调函数中取patchNode，在外层取会比babel插件逻辑先执行，导致一直为{}
+            const pagesNeedPatchComponents = config[config.buildType].patchPages || {};
+           
             var orig = astPath.node.name.name;
             //组件名肯定大写开头
             if (/^[A-Z]/.test(orig)) {
@@ -108,25 +105,14 @@ let utils = {
             }
             var pagePath = modules.sourcePath;
             var currentPage = pagesNeedPatchComponents[pagePath];
+            
             //schnee-ui补丁
             if (currentPage && currentPage[orig]) {
-                //'rich-text' ==> RichText;
-                // button ==> XButton
-                var patchName = toUpperCamel( 'x-' + orig )
-                modules.importComponents[patchName] = {
-                    source: UIName
-                };
+                var patchName = toUpperCamel( 'x-' + orig );
                 return patchName;
             }
             return (astPath.node.name.name = map[orig] || backup);
         }
-    },
-    getUsedComponentsPath(bag, nodeName, modules) {
-        if(cachedUsingComponents[nodeName]){
-            return cachedUsingComponents[nodeName]
-        }
-      
-        return cachedUsingComponents[nodeName] = calculateComponentsPath(bag, nodeName, modules)
     },
     createAttribute(name, value) {
         return t.JSXAttribute(
@@ -150,7 +136,15 @@ let utils = {
     },
     genKey(key) {
         key = key + '';
-        return key.indexOf('.') > 0 ? key.split('.').pop() : '*this';
+        let keyPathAry = key.split('.')
+        if( keyPathAry.length > 2) {
+            // item.a.b =>  "{{a.b}}"
+            key = '{{' + keyPathAry.slice(1).join('.') + '}}';
+        } else {
+            // item.a => "a"
+            key = keyPathAry.slice(1).join('')
+        }
+        return keyPathAry.length > 1 ? key : '*this';
     },
     getAnu(state) {
         return state.file.opts.anu;
@@ -205,35 +199,6 @@ let utils = {
             ASTPATH: t.stringLiteral(path)
         });
     },
-    /**
-     *
-     * @param {String} 要修改的路径（存在平台差异性）
-     * @param {String} segement
-     * @param {String} newSegement
-     * @param {String?} ext 新的后缀名
-     */
-    updatePath(spath, segement, newSegement, newExt, ext) {
-        var lastSegement = '',
-            replaced = false;
-        var arr = spath.split(path.sep).map(function (el) {
-            lastSegement = el;
-            if (segement === el && !replaced) {
-                replaced = true;
-                return newSegement;
-            }
-            return el;
-        });
-        if (newExt) {
-            ext = ext || 'js';
-            arr[arr.length - 1] = lastSegement.replace('.' + ext, '.' + newExt);
-        }
-        let resolvedPath = path.join.apply(path, arr);
-        if (!isWindow) {
-            // Users/x/y => /Users/x/y;
-            resolvedPath = '/' + resolvedPath;
-        }
-        return resolvedPath;
-    },
     installer(npmName, dev, needModuleEntryPath) {
         needModuleEntryPath = needModuleEntryPath || false;
         return new Promise(resolve => {
@@ -274,98 +239,8 @@ let utils = {
             resolve(npmPath);
         });
     },
-  // 没有人用
-  //  getReactLibName(buildType) {
-  //      return REACT_LIB_MAP[buildType];
-  //  },
-    getAliasConfig() {
-        return calculateAliasConfig(config, userConfig, cwd );
-    },
-    resolveDistPath(filePath) {
-        let dist = config.buildType === 'quick' ? 'src' : (config.buildDir || 'dist');
-        let sep = path.sep;
-        let reg = isWindow ? /\\node_modules\\/g : /\/node_modules\//g;
-        filePath = utils.updatePath(filePath, 'dist', dist); //待优化
-        return reg.test(filePath) ?
-            utils.updatePath(filePath, 'node_modules', `${dist}${sep}npm`) :
-            utils.updatePath(filePath, config.sourceDir, dist);
-    },
-    resolveAliasPath(id, deps) {
-        let ret = {};
-        Object.keys(deps).forEach((depKey) => {
-            ret[depKey] = path.relative(
-                path.dirname(this.resolveDistPath(id)),
-                this.resolveDistPath(deps[depKey])
-            )
-        });
-        return ret;
-    },
-    getRegeneratorRuntimePath: function (sourcePath) {
-        //小程序async/await语法依赖regenerator-runtime/runtime
-        try {
-            return nodeResolve.sync('regenerator-runtime/runtime', {
-                basedir: process.cwd()
-            });
-        } catch (err) {
-            // eslint-disable-next-line
-            console.log(
-                'Error: ' +
-                sourcePath +
-                '\n' +
-                'Msg: ' +
-                chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
-            );
-        }
-    },
-    compress: function () {
-        return {
-            js: function (code) {
-                let result = uglifyJS.minify(code);
-                if (result.error) {
-                   return code;
-                }
-                return result.code;
-            },
-            npm: function (code) {
-                return this.js.call(this, code);
-            },
-            css: function (code) {
-                let result = new cleanCSS().minify(code);
-                if (result.errors.length) {
-                    return code;
-                }
-                return result.styles;
-            },
-            ux: function (code) {
-                return code;
-            },
-            wxml: function (code) {
-                //TODO: comporess xml file;
-                return code;
-            },
-            json: function (code) {
-                return JSON.stringify(JSON.parse(code));
-            }
-        };
-    },
-    resolveStyleAlias(importer, basedir) {
-        //解析样式中的alias别名配置
-        let aliasMap = (userConfig && userConfig.alias) || {};
-        let depLevel = importer.split('/'); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
-        let prefix = depLevel[0];
-
-        //将alias以及相对路径引用解析成绝对路径
-        if (aliasMap[prefix]) {
-            importer = path.join(
-                cwd,
-                aliasMap[prefix],
-                depLevel.slice(1).join('/') //['@path', 'x', 'y.scss'] => 'x/y.scss'
-            );
-            let val = path.relative(basedir, importer);
-            val = /^\w/.test(val) ? `./${val}` : val; //相对路径加./
-            return val;
-        }
-        return importer;
+    getDistName(buildType) {
+        return buildType === 'quick' ? 'src' : (userConfig && userConfig.buildDir || 'dist');
     },
     getDeps(messages = []) {
         return messages.filter((item) => {
@@ -373,7 +248,7 @@ let utils = {
         });
     },
     getComponentOrAppOrPageReg() {
-        return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
+        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
     },
     hasNpm(npmName) {
         let flag = false;
@@ -391,22 +266,27 @@ let utils = {
     },
     decodeChinise: require('./decodeChinese'),
     isWebView(fileId) {
+        
         if (config.buildType != 'quick') {
             return false;
         }
 
-        if ( !(config.webview && config.webview.pages.length) ) {
+        let rules = config.WebViewRules && config.WebViewRules.pages || [];
+        
+        if ( !rules.length ) {
             return false;
         }
        
+       
         let isWebView =
-            config.webview.pages.includes(fileId) ||
-            config.webview.pages.some((reg) => {
+        rules.includes(fileId) ||
+        rules.some((rule) => {
                 //如果是webview设置成true, 则用增则匹配
-                return Object.prototype.toString.call(reg) === '[object RegExp]' &&
-                    reg.test(fileId)
+                return Object.prototype.toString.call(rule) === '[object RegExp]' && rule.test(fileId);
             });
+       
         return isWebView;
+
     },
     parseCamel: toUpperCamel,//转换为大驼峰风格
     uniquefilter(arr, key = '') {
@@ -429,6 +309,22 @@ let utils = {
     fixWinPath(p) {
         return p.replace(/\\/g, '/');
     },
+    isMportalEnv() {
+        return ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase()))
+    },
+    cleanLog(log) {
+        // 清理eslint stylelint错误日志内容
+        const reg = /[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm;
+        if (reg.test(log)) {
+            return log.replace(/^\s*@[\s\S]*$/gm, '').replace(reg, '');
+        }
+        return log;
+    },
+    validatePlatform(platform, platforms) {
+        return platforms.some((p) => {
+            return p.buildType === platform;
+        });
+    }
 };
 
 module.exports = utils;

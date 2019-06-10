@@ -54,11 +54,11 @@ let React = (getWindow().React = {
     PropTypes,
     // Children,
     Component,
-    createPortal,
+    // createPortal,
     createContext,
     createElement,
     createFactory,
-    cloneElement,
+    // cloneElement,
     PureComponent,
     isValidElement,
 
@@ -69,10 +69,10 @@ let React = (getWindow().React = {
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
     registerPage,
-    registerApp:function(){
-        this.api.__app = app;
-    },
-    toStyle,
+    // registerApp:function(){
+    //     this.api.__app = app;
+    // },
+    // toStyle,
     useState,
     useReducer, 
     useCallback,
@@ -90,4 +90,3 @@ let apiContainer = {
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component };

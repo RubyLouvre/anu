@@ -1,0 +1,11 @@
+@keyframes logoShake1{
+    10%, 14%, 18%, 22%, 26%, 80%, 84%, 88%, 92%, 96%{
+        transform:  rotate(-8deg);
+    }
+    12%, 16%, 20%, 24%, 28%, 82%, 86%, 90%, 94%, 98%{
+        transform:  rotate(8deg);
+    }
+    0%, 9%, 29%, 79%, 100%{
+        transform:  rotate(0deg);
+    }
+}

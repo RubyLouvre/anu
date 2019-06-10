@@ -2,15 +2,17 @@ const t = require('@babel/types');
 const generate = require('@babel/generator').default;
 const template = require('@babel/template').default;
 const path = require('path');
-const queue = require('../queue');
 const utils = require('../utils');
 const fs = require('fs-extra');
-const config = require('../config');
+const config = require('../../config/config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
 const ignoreAttri = require('../quickHelpers/ignoreAttri');
+const calculateComponentsPath = require('../utils/calculateComponentsPath');
+const cwd = process.cwd();
+
 const transformConfig = require('./transformConfig');
-const quickFiles = require('../quickFiles');
+const quickFiles = require('../quickHelpers/quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
 const helpers = require(`../${config[buildType].helpers}/index`);
@@ -82,14 +84,12 @@ module.exports = {
                         methodName = 'onDestroy';
                     }
                     let dist = path.join(
-                        process.cwd(),
-                        'dist',
                         'components',
                         'PageWrapper',
                         'index.ux'
                     );
                     if (!cache[dist]) {
-                        queue.push({
+                        modules.queue.push({
                             code: fs.readFileSync(
                                 path.resolve(
                                     __dirname,
@@ -188,12 +188,15 @@ module.exports = {
         let modules = utils.getAnu(state);
         let source = node.source.value;
         let specifiers = node.specifiers;
+        var extraModules = modules.extraModules;
+
         if (/\.(less|scss|sass|css)$/.test(path.extname(source))) {
             if (modules.componentType === 'Component') {
                 if (/\/pages\//.test(source)) {
                     throw '"' + modules.className + '"组件越级不能引用pages下面的样式\n\t' + source
                 }
             }
+            extraModules.push(source);
             astPath.remove();
         }
         if (modules.componentType === 'App') {
@@ -201,6 +204,9 @@ module.exports = {
             if (/\/pages\//.test(source)) {
                 var pages = modules.pages || (modules.pages = []);
                 pages.push(source.replace(/^\.\//, ''));
+                // 存下删除的依赖路径
+                extraModules.push(source);
+
                 astPath.remove(); //移除分析依赖用的引用
             }
         } else {
@@ -220,9 +226,11 @@ module.exports = {
         }
         specifiers.forEach(item => {
             //重点，保持所有引入的组件名及它们的路径，用于<import />
+
             modules.importComponents[item.local.name] = {
                 astPath: astPath,
-                source: source
+                source: source,
+                sourcePath: modules.sourcePath
             };
         });
     },
@@ -244,10 +252,10 @@ module.exports = {
             ) {
                 for (var i in modules.importComponents) {
                     var value = modules.importComponents[i];
-                    if (value.astPath && i === parentClass) {
-                        modules.usedComponents['anu-' + i.toLowerCase()] =
-                            utils.getUsedComponentsPath(value, i, modules)
-                        value.astPath = null;
+                    if(value.astPath && i === parentClass){
+                        modules.usedComponents['anu-' +i.toLowerCase()] = 
+                            calculateComponentsPath(value, i);
+                        value.astPath = null;     
                     }
                 }
             }
@@ -259,7 +267,7 @@ module.exports = {
                 return;
             }
             var json = modules.config;
-
+        
             //将app.js中的import语句变成pages数组
             if (modules.componentType === 'App') {
                 json.pages = modules.pages;
@@ -267,7 +275,8 @@ module.exports = {
             }
             //支付宝在这里会做属性名转换
             helpers.configName(json, modules.componentType);
-
+            
+            
             var keys = Object.keys(modules.usedComponents),
                 usings;
             if (keys.length) {
@@ -279,7 +288,7 @@ module.exports = {
             if (buildType == 'quick') {
                 var obj = quickFiles[modules.sourcePath];
                 if (obj) {
-                    quickConfig(json, modules, queue, utils);
+                    quickConfig(json, modules, modules.queue, utils);
                     obj.config = Object.assign({}, json);
                 }
                 // delete json.usingComponents;
@@ -297,15 +306,17 @@ module.exports = {
 
                 //merge ${buildType}Config.json
                 json = require('../utils/mergeConfigJson')(modules, json);
+                
 
-
-                queue.push({
-                    path: utils.updatePath(
-                        modules.sourcePath,
-                        config.sourceDir,
-                        'dist',
-                        'json'
-                    ),
+               
+                if (/\/node_modules\//.test(modules.sourcePath.replace(/\\/g, '/'))) {
+                    relPath = 'npm/' + path.relative( path.join(cwd, 'node_modules'), modules.sourcePath);
+                } else {
+                    relPath =  path.relative(path.resolve(cwd, 'source'), modules.sourcePath);
+                }
+             
+                modules.queue.push({
+                    path: relPath,
                     code: JSON.stringify(json, null, 4),
                     type: 'json'
                 });
@@ -537,9 +548,9 @@ module.exports = {
             let modules = utils.getAnu(state);
             nodeName = helpers.nodeName(astPath, modules) || nodeName;
             // https://mp.weixin.qq.com/wxopen/plugindevdoc?appid=wx56c8f077de74b07c&token=1011820682&lang=zh_CN#-
-            if ('share-button' === nodeName) {
-                modules.usedComponents[nodeName] = 'plugin://goodsSharePlugin/share-button';
-                return
+            if (buildType === 'wx' && config.pluginTags && config.pluginTags[nodeName]) { // 暂时只有wx支持
+                modules.usedComponents[nodeName] =  config.pluginTags[nodeName];
+                return;
             }
             let bag = modules.importComponents[nodeName];
             if (!bag) {
@@ -557,13 +568,15 @@ module.exports = {
 
             if (bag) {
                 try {
+                    // 存下删除的依赖路径
+                    if (bag.source !== 'schnee-ui') modules.extraModules.push(bag.source);
                     bag.astPath.remove();
                     bag.astPath = null;
                 } catch (err) {
                     // eslint-disable-next-line
                 }
 
-                let useComponentsPath = utils.getUsedComponentsPath(bag, nodeName, modules);
+                let useComponentsPath = calculateComponentsPath(bag, nodeName);
                 modules.usedComponents['anu-' + nodeName.toLowerCase()] = useComponentsPath;
                 astPath.node.name.name = 'React.useComponent';
 

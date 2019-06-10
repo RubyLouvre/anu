@@ -1,13 +1,35 @@
-const runBeforeParseTasks = require('./runBeforeParseTasks');
-const path = require('path');
-const entry = path.join(process.cwd(), 'source', 'app.js');
-const parser = require('../packages/index')(entry);
+const nanachi = require('../index');
+const { NANACHI_CONFIG_PATH } = require('../consts/index');
+const fs = require('fs-extra');
+
 
 module.exports = async function(args){
-    await runBeforeParseTasks(args);
-    await parser.parse();
-    if (args['watch']) {
-        parser.watching();
+    try {
+        const { buildType, beta, betaUi, watch, compress, huawei,  analysis, silent} = args;
+        const nanachiConfig = {};
+        const baseConfig = {
+            platform: buildType,
+            beta,
+            betaUi,
+            compress,
+            watch,
+            huawei,
+            analysis,
+            silent
+        };
+        // 合并nanachi.config.js中的用户自定义配置
+        if (fs.existsSync(NANACHI_CONFIG_PATH)) {
+            const userConfig = require(NANACHI_CONFIG_PATH);
+            Object.assign(nanachiConfig, userConfig);
+        }
+        Object.assign(nanachiConfig, baseConfig);
+        
+        nanachi(nanachiConfig);
+
+    } catch (e) {
+        // eslint-disable-next-line
+        console.log(e);
+        process.exit(1);
     }
 };
 

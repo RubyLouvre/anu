@@ -1,0 +1,23 @@
+<import name="anu-page-wrapper" src="../../../../source/components/PageWrapper/index.ux">
+    </import>
+    <template>
+      <anu-page-wrapper>
+        <div class="aaa {{state.isOk && state.flag === 'checked' ? 'checked' : ''}}">
+        </div>
+      </anu-page-wrapper>
+    </template>
+    <script>
+      function P() {}
+
+      P = React.toClass(P, React.Components, {
+      render: function() {
+      var h = React.createElement;
+      return h("div", {
+      class: 'aaa ' + (this.state.isOk && this.state.flag === 'checked' ? 'checked' : '')
+      });;
+      },
+      classUid: "c170"
+      }, {});
+      P = React.registerPage(P, "pages/template/className2");
+      export default P;
+    </script>
