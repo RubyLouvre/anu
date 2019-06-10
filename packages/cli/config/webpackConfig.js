@@ -38,7 +38,7 @@ module.exports = function({
     });
     let distPath = path.resolve(cwd, utils.getDistName(platform));
     if (platform === 'h5') {
-        distPath = path.resolve(__dirname, '../packages/h5Helpers/pageWrapper', intermediateDirectoryName);
+        distPath = path.join(distPath, intermediateDirectoryName);
     }
     let copyPluginOption = null;
     if (compress) {

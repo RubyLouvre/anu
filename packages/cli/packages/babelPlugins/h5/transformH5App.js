@@ -33,13 +33,14 @@ window.onload = function (){
 const pageWrapper = template('return <PageWrapper app={this} path={this.state.path}  query={this.state.query} />', {
     plugins: ['jsx']
 });
-
-const registerApp = template(`
-React.registerApp(this);
-this.onLaunch();
-React.api.redirectTo(CLASS_NAME.config.pages[0]);`);
-
 const CLASS_NAME = 'Global';
+
+let registerTemplate = `
+React.registerApp(this);
+`;
+
+
+let pageIndex = 0;
 
 module.exports = function ({ types: t }) {
     const importedPages = t.arrayExpression();
@@ -53,16 +54,21 @@ module.exports = function ({ types: t }) {
                     }));
                 }
             },
-            ImportDeclaration(astPath, state) {
+            ImportDeclaration(astPath) {
+                if (astPath.get('specifiers').length !== 0) {
+                    return;
+                }
                 const node = astPath.node;
                 const importPath = node.source.value;
                 if (!/pages/.test(importPath)) {
                     return;
                 }
-                
+                const PAGE_NAME = `PAGE_${pageIndex++}`;
+                registerTemplate += `React.registerPage(${PAGE_NAME}, '${importPath}')\n`;
                 const pageItem = t.stringLiteral(importPath);
                 
                 importedPages.elements.push(pageItem);
+                astPath.replaceWith(t.ImportDeclaration([t.importDefaultSpecifier(t.identifier(PAGE_NAME))], t.stringLiteral(importPath)));
             },
             ClassProperty(astPath) {
                 if (astPath.get('key').isIdentifier({
@@ -72,13 +78,18 @@ module.exports = function ({ types: t }) {
                 }
             },
             ClassBody(astPath) {
+                registerTemplate += `this.onLaunch();
+                React.api.redirectTo({
+                    url: ${CLASS_NAME}.config.pages[0]
+                });`;
+                const registerApp = template(registerTemplate, {
+                    placeholderPattern: false
+                });
                 let find = false;
                 astPath.get('body').forEach(p => {
                     if (p.type === 'ClassMethod' && p.node.key.name === 'componentWillMount') {
                         find = true;
-                        p.node.body.body.push(...registerApp({
-                            CLASS_NAME
-                        }));
+                        p.node.body.body.push(...registerApp());
                     }
                 });
                 if (!find) {
@@ -86,9 +97,7 @@ module.exports = function ({ types: t }) {
                         t.classMethod('method', t.identifier('componentWillMount'),
                             [], 
                             t.blockStatement(
-                                registerApp({
-                                    CLASS_NAME
-                                })
+                                registerApp()
                             )
                         )
                     );

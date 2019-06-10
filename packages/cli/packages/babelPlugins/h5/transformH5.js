@@ -194,7 +194,15 @@ module.exports = function ({ types: t }) {
                     if (!astPath.node.static) astPath.node.static = true;
                 }
             },
-
+            CallExpression(astPath) {
+                let args = astPath.node.arguments;
+                if (utils.isLoopMap(astPath)) {
+                    //添加上第二参数
+                    if (!args[1] && args[0].type === 'FunctionExpression') {
+                        args.push(t.thisExpression());
+                    }
+                }
+            }
         },
         manipulateOptions(opts) {
             //解析每个文件前执行一次

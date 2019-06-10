@@ -11,7 +11,7 @@ const {
     retrieveNanachiConfig
 } = require('./configurations');
 
-const context = path.resolve(__dirname, '../../packages/h5Helpers/pageWrapper');
+const context = path.resolve(process.cwd(), 'dist', intermediateDirectoryName);
 const resolveFromContext = R.curryN(2, path.resolve)(context);
 const resolveFromDirCwd = R.curryN(2, path.resolve)(process.cwd());
 
@@ -19,7 +19,7 @@ module.exports = {
     mode: 'development',
     context,
     target: 'web',
-    entry: resolveFromContext('src/index.js'),
+    entry: resolveFromContext(`${intermediateDirectoryName}/app.js`),
     output: {
         path: resolveFromDirCwd(outputDirectory),
         filename: 'bundle.[hash:10].js',
@@ -97,7 +97,7 @@ module.exports = {
         new webpack.EnvironmentPlugin({
             ANU_ENV: 'web'
         }),
-        new CleanWebpackPlugin()
+        // new CleanWebpackPlugin()
     ],
     stats: 'errors-only'
 };
