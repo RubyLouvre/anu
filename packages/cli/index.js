@@ -8,6 +8,7 @@ const platforms = require('./consts/platforms');
 const utils = require('./packages/utils/index');
 const { errorLog, warningLog } = require('./nanachi-loader/logger/index');
 const { build: buildLog } = require('./nanachi-loader/logger/queue');
+const chalk = require('chalk');
 
 const babel = require('@babel/core');
 const spawn = require('child_process').spawnSync;
@@ -117,7 +118,7 @@ async function nanachi({
         if (stats.hasErrors()) {
             info.errors.forEach(e => {
                 // eslint-disable-next-line
-                console.error(utils.cleanLog(e));
+                console.error(chalk.red('Error:\n'), utils.cleanLog(e));
                 if (utils.isMportalEnv()) {
                     process.exit();
                 }
@@ -125,8 +126,11 @@ async function nanachi({
         }
         if (stats.hasWarnings() && !silent) {
             info.warnings.forEach(warning => {
-                // eslint-disable-next-line
-                console.warn(utils.cleanLog(warning));
+                // webpack require语句中包含变量会报warning: Critical dependency，此处过滤掉这个warning
+                if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
+                    // eslint-disable-next-line
+                    console.log(chalk.yellow('Warning:\n'), utils.cleanLog(warning));
+                }
             });
         }
 
