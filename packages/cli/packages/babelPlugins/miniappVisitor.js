@@ -202,6 +202,10 @@ module.exports = {
         if (modules.componentType === 'App') {
             //收集页面上的依赖，构成app.json的pages数组或manifest.json中routes数组
             if (/\/pages\//.test(source)) {
+                // 如果是工具函数或组件则不放到app.json数组中
+                if (/\/(common|components)\//.test(source)) {
+                    return;
+                }
                 var pages = modules.pages || (modules.pages = []);
                 pages.push(source.replace(/^\.\//, ''));
                 // 存下删除的依赖路径
