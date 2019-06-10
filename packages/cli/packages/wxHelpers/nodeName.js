@@ -1,8 +1,8 @@
 const utils = require('../utils/index');
-const wxPlugins = require('../../consts/plugins')('wx');
+const config = require('../../config/config');
 let rword = /[^, ]+/g;
-const plugins = Object.keys(wxPlugins).map(key => wxPlugins[key].name).join(','); // share-button, ...
-let builtInStr = plugins + ',' +
+const tags = Object.keys(config.pluginTags);
+let builtInStr = tags.join(',') + ',' +
     'view,text,button,block,scroll-view,swiper,swiper-item,movable-area,movable-view,cover-image,cover-view,icon,rich-text,' +
     'progress,checkbox,form,input,input,label,picker,picker-view,radio,slider,switch,textarea,template,' +
     'navigator,audio,image,camera,video,live-player,live-pusher,map,canvas,open-data,web-view,radio-group,' +

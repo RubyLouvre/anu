@@ -1,7 +1,6 @@
 const path = require('path');
 const buildType = process.env.ANU_ENV;
-
-const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
+const config = require('../../config/config');
 
 module.exports = function(modules, json) {
     
@@ -9,24 +8,21 @@ module.exports = function(modules, json) {
         return json;
     }
     let configJson = {};
+    let userConfig = {}
     try {
-        Object.assign(configJson, deepClone(require( path.join(process.cwd(), 'source', `${buildType}Config.json` ))));
+        userConfig = require( path.join(process.cwd(), 'source', `${buildType}Config.json` ))
     } catch (err) {
-       
+        
     }
+    Object.assign(configJson, userConfig);
 
     if (buildType != 'quick') {
         delete configJson.subPackages;
         delete configJson.subpackages;
     }
     if (configJson.plugins) {
-        Object.keys(configJson.plugins).forEach(key => {
-            // 删除plugins.goodsSharePlugin.name字段
-            if (configJson.plugins[key].name) delete configJson.plugins[key].name;
-        });
+        Object.assign(configJson.plugins, config.plugins);
     }
-    
-
     Object.assign(json, configJson);
     return json;
 }

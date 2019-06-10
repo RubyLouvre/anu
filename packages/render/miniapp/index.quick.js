@@ -22,8 +22,8 @@ import { toStyle } from './toStyle.quick';
 import { 
     _getApp , 
     getCurrentPage, 
-    _getCurrentPages, 
     useComponent } from './utils';
+import {getCurrentPages} from './getCurrentPages.quick';
 import { registerComponent } from './registerComponent.quick';
 import { registerPage } from './registerPage.quick';
 import { 
@@ -66,7 +66,7 @@ let React = getWindow().React = {
     toClass: miniCreateClass,
     registerComponent,
     getCurrentPage,
-    getCurrentPages: _getCurrentPages,
+    getCurrentPages: getCurrentPages,
     getApp: _getApp,
     registerPage,
     toStyle,
