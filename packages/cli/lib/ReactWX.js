@@ -1,10 +1,6 @@
 /* eslint-disable */
 /**
-<<<<<<< HEAD
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-28T12
-=======
  * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-31T15
->>>>>>> branch3
  * IE9+
  */
 
