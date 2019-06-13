@@ -1,7 +1,7 @@
 const postCss = require('postcss');
 const config = require('../../config/config');
 
-const postcssPluginTransformKeyFrames = postCss.plugin('postcss-plugin-transform-keyframes', function() {
+const postCssPluginTransformKeyFrames = postCss.plugin('postcss-plugin-transform-keyframes', function() {
     return function(root) {
         if (config.buildType !== 'quick') {
             return;
@@ -23,4 +23,4 @@ const postcssPluginTransformKeyFrames = postCss.plugin('postcss-plugin-transform
     };
 });
 
-module.exports = postcssPluginTransformKeyFrames;
+module.exports = postCssPluginTransformKeyFrames;

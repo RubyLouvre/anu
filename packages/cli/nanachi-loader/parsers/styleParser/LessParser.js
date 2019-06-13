@@ -9,7 +9,7 @@ class LessParser extends StyleParser {
             require('stylelint')({
                 configFile: require.resolve(`../../../config/stylelint/.stylelint-${this.platform}.config.js`)
             }),
-            require('../../../packages/postcssPlugins/postcssPluginReport'),
+            require('../../../packages/postcssPlugins/postCssPluginReport'),
             require('postcss-import')({
                 resolve: function(importer, baseDir){
                     //如果@import的值没有文件后缀
@@ -23,8 +23,8 @@ class LessParser extends StyleParser {
                     require('../../../packages/postcssPlugins/postCssPluginRemoveRules') // 删除import文件的所有rules，保留@mixins、$variables、@functions等
                 ] : []
             }),
-            require('../../../packages/postcssPlugins/postcssPluginLessParser'),
-            ...this.platform !== 'h5' ? [require('../../../packages/postcssPlugins/postcssPluginAddImport')({
+            require('../../../packages/postcssPlugins/postCssPluginLessParser'),
+            ...this.platform !== 'h5' ? [require('../../../packages/postcssPlugins/postCssPluginAddImport')({
                 extName: MAP[this.platform]['EXT_NAME'][this.type],
                 type: this.type,
             })] : [
@@ -32,8 +32,8 @@ class LessParser extends StyleParser {
             ],
             require('../../../packages/postcssPlugins/postCssPluginFixNumber'),
             require('../../../packages/postcssPlugins/postCssPluginValidateStyle'),
-            require('../../../packages/postcssPlugins/postcssPluginTransformKeyFrames'),
-            require('../../../packages/postcssPlugins/postcssPluginRemoveComments')
+            require('../../../packages/postcssPlugins/postCssPluginTransformKeyFrames'),
+            require('../../../packages/postcssPlugins/postCssPluginRemoveComments')
         ];
         this._postcssOptions = {
             from: this.filepath,

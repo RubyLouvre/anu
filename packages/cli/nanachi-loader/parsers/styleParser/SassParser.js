@@ -11,7 +11,7 @@ class SassParser extends StyleParser {
             require('stylelint')({
                 configFile: require.resolve(`../../../config/stylelint/.stylelint-${this.platform}.config.js`)
             }),
-            require('../../../packages/postcssPlugins/postcssPluginReport'),
+            require('../../../packages/postcssPlugins/postCssPluginReport'),
             require('postcss-import')({
                 resolve: function(importer, baseDir){
                     //如果@import的值没有文件后缀
@@ -27,7 +27,7 @@ class SassParser extends StyleParser {
             }),
             require('@csstools/postcss-sass'),
             ...this.platform !== 'h5' ? [
-                require('../../../packages/postcssPlugins/postcssPluginAddImport')({
+                require('../../../packages/postcssPlugins/postCssPluginAddImport')({
                     extName: MAP[this.platform]['EXT_NAME'][this.type],
                     type: this.type
                 }), // 添加@import规则，小程序可以解析原有依赖
@@ -36,8 +36,8 @@ class SassParser extends StyleParser {
             ],
             require('../../../packages/postcssPlugins/postCssPluginFixNumber'), // 数字精度插件
             require('../../../packages/postcssPlugins/postCssPluginValidateStyle'),
-            require('../../../packages/postcssPlugins/postcssPluginTransformKeyFrames'),
-            require('../../../packages/postcssPlugins/postcssPluginRemoveComments')
+            require('../../../packages/postcssPlugins/postCssPluginTransformKeyFrames'),
+            require('../../../packages/postcssPlugins/postCssPluginRemoveComments')
         ];
         this._postcssOptions = {
             from: this.filepath,
