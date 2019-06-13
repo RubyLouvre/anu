@@ -8,7 +8,7 @@ module.exports = function(modules, json) {
         return json;
     }
     let configJson = {};
-    let userConfig = {}
+    let userConfig = {};
     try {
         userConfig = require( path.join(process.cwd(), 'source', `${buildType}Config.json` ))
     } catch (err) {
