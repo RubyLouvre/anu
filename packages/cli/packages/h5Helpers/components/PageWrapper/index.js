@@ -12,7 +12,7 @@ class PageWrapper extends React.Component{
             showTitleBar: true,
             pagePath: "",
             backgroundColor: "#ffffff"
-        }
+        };
     }
     componentWillMount() {
         this.setTitleAndTabs(this.$app);
@@ -21,12 +21,12 @@ class PageWrapper extends React.Component{
         this.setTitleAndTabs(this.$app);
     }
     onSelected(item) {
-        if(item.selected){
+        if (item.selected){
             return false;
         }
         var page = React.api.getCurrentPage();
         if (page.onTabItemTap) {
-            page.onTabItemTap(item)
+            page.onTabItemTap(item);
         }
         React.api.navigateTo({
             url: item.pagePath
@@ -72,13 +72,15 @@ class PageWrapper extends React.Component{
     render(){
         const Page = React.__pages[this.props.path];
         return (<div style={{
+            display: "flex",
             width:"100%",
-            paddingBottom: this.state.tabBar.list.length? '110px': '0px',
+            height: "100%",
+            paddingBottom: this.state.tabBar.list.length? '110px': '110px',
             backgroundColor: this.state.backgroundColor}}>
             {
                 this.state.showTitleBar ? 
-                    <header className="__internal__Header-title" style={{display: this.state.showTitleBar ? 'block': 'none'}}>
-                        <div class="title" style={{ 
+                    <header className="__internal__Header" style={{display: this.state.showTitleBar ? 'block': 'none'}}>
+                        <div class="__internal__Header-title" style={{ 
                             color: this.state.titleBar.textColor,
                             backgroundColor: this.state.titleBar.backgroundColor
                         }} >
