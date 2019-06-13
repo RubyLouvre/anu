@@ -17,27 +17,27 @@ module.exports = function (modules, json) {
         return json;
     }
 
-
     if (!json.pages) return json;
 
     json[keys[buildType]] = json[keys[buildType]] || [];
     let subPackages = [];
     try {
-        appRootConfig = require(path.join(process.cwd(), 'source', `${buildType}Config.json`));
+        let appRootConfig = require(path.join(process.cwd(), 'source', `${buildType}Config.json`));
+        /**
+         * subPackages: [
+         *      {
+         *          "name": "native",
+         *          "resource": "pages/demo/native"
+         *      }
+         * ]
+         */
         subPackages = appRootConfig.subpackages || appRootConfig.subPackages || [];
     } catch (err) {
-
+        
     }
 
     let routes = json.pages.slice();
-    /**
-     * subPackages: [
-     *      {
-     *          "name": "native",
-     *          "resource": "pages/demo/native"
-     *      }
-     * ]
-     */
+    
     subPackages.forEach(function (el) {
         let { name, resource } = el;
         /**
@@ -73,6 +73,7 @@ module.exports = function (modules, json) {
         });
 
     });
+
     if (!json[keys[buildType]].length) {
         delete json[keys[buildType]];
     }
