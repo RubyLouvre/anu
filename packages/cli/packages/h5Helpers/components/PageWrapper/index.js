@@ -71,12 +71,7 @@ class PageWrapper extends React.Component{
     }
     render(){
         const Page = React.__pages[this.props.path];
-        return (<div style={{
-            display: "flex",
-            width:"100%",
-            height: "100%",
-            paddingBottom: this.state.tabBar.list.length? '110px': '110px',
-            backgroundColor: this.state.backgroundColor}}>
+        return (<div className='__internal__App__' >
             {
                 this.state.showTitleBar ? 
                     <header className="__internal__Header" style={{display: this.state.showTitleBar ? 'block': 'none'}}>
@@ -103,6 +98,18 @@ class PageWrapper extends React.Component{
                         </span>
                     </div>)
                     }</main> }
+
+            <style jsx>{`
+                    .__internal__App__ {
+                        width: 100%;
+                        height: 100%;
+                        min-width: 320px;
+                        max-width: 480px;
+                        margin: 0 auto;
+                        overflow: hidden;
+                        position: relative;
+                    }
+                    `}</style>
         </div>);
     }
 }
