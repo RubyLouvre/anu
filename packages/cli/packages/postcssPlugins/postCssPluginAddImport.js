@@ -3,7 +3,7 @@ const path = require('path');
 const utils = require('../utils');
 const config = require('../../config/config');
 
-const postcssPluginAddImport = postCss.plugin('postcss-plugin-add-import', function({ extName, type } = {}) {
+const postCssPluginAddImport = postCss.plugin('postcss-plugin-add-import', function({ extName, type } = {}) {
     return function(root, res) {
         const deps = utils.getDeps(res.messages);
         function getRelativeImportPath(dirname, filepath) {
@@ -33,4 +33,4 @@ const postcssPluginAddImport = postCss.plugin('postcss-plugin-add-import', funct
     };
 });
 
-module.exports = postcssPluginAddImport;
+module.exports = postCssPluginAddImport;

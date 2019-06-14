@@ -1,6 +1,6 @@
 const postCss = require('postcss');
 
-const postcssPluginRemoveRules = postCss.plugin('postcss-plugin-remove-rules', function() {
+const postCssPluginRemoveRules = postCss.plugin('postcss-plugin-remove-rules', function() {
     return function(root) {
         root.each(node => {
             // 删除最上层的所有rules
@@ -15,4 +15,4 @@ const postcssPluginRemoveRules = postCss.plugin('postcss-plugin-remove-rules', f
     };
 });
 
-module.exports = postcssPluginRemoveRules;
+module.exports = postCssPluginRemoveRules;

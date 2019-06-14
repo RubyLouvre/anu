@@ -2,7 +2,7 @@ const postCss = require('postcss');
 const { warning, error } = require('../../nanachi-loader/logger/queue');
 
 // 输出stylelint生成的warning
-const postCssPluginFixNumber = postCss.plugin('postcss-plugin-report', ()=> {
+const postCssPluginReport = postCss.plugin('postcss-plugin-report', ()=> {
     return (root, result) => {
         const from = result.opts.from;
         result.messages.filter(m => {
@@ -21,4 +21,4 @@ const postCssPluginFixNumber = postCss.plugin('postcss-plugin-report', ()=> {
     };
 });
 
-module.exports = postCssPluginFixNumber;
+module.exports = postCssPluginReport;
