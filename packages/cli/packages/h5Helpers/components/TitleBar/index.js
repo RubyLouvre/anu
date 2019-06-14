@@ -16,7 +16,7 @@ class TitleBar extends Component {
             navigationBarTitleText,
             navigationBarBackgroundColor,
             backButton = false,
-            animation: { duration, timingFunc }
+            // animation: { duration, timingFunc }
         } = this.props;
         return (
             <header className="__internal__Header">
@@ -45,7 +45,6 @@ class TitleBar extends Component {
                         left: 0;
                         text-align: center;
                         color: ${navigationBarTextStyle};
-                        transition: color, background-color ${duration}ms ${timingFunc};
                     }
                     .__internal__Header-title {
                         flex-grow: 1;

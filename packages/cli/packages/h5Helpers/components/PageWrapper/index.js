@@ -1,4 +1,5 @@
 import React from '@react';
+import TitleBar from '../TitleBar';
 import './index.scss';
 class PageWrapper extends React.Component{
     constructor(props){
@@ -8,10 +9,13 @@ class PageWrapper extends React.Component{
             tabBar: {
                 list: []
             },
-            titleBar: { },
+            titleBar: {
+                height: 48
+            },
             showTitleBar: true,
             pagePath: "",
-            backgroundColor: "#ffffff"
+            backgroundColor: "#ffffff",
+            isTabPage: true
         };
     }
     componentWillMount() {
@@ -35,13 +39,13 @@ class PageWrapper extends React.Component{
     setTitleAndTabs(app) {
         var path = app.state.path;
         var PageClass = React.__pages[path];
-        var appConfig =  app.constructor.config || {}
-        var pageConfig = PageClass.config || {}
+        var appConfig = app.constructor.config || {};
+        var pageConfig = PageClass.config || {};
         var mixin = Object.assign({
             navigationBarTitleText: "",
             navigationBarTextStyle: "white",
             navigationBarBackgroundColor: "#000000"
-        }, appConfig && appConfig.window, pageConfig && pageConfig.window);
+        }, appConfig && appConfig.window, pageConfig);
         this.setState({
             showTitleBar: mixin.navigationStyle !== "custom",
             backgroundColor: mixin.backgroundColor || "#ffffff",
@@ -71,20 +75,29 @@ class PageWrapper extends React.Component{
     }
     render(){
         const Page = React.__pages[this.props.path];
-        return (<div className='__internal__App__' >
+        return (<div className='__internal__Page__' >
             {
                 this.state.showTitleBar ? 
-                    <header className="__internal__Header" style={{display: this.state.showTitleBar ? 'block': 'none'}}>
-                        <div class="__internal__Header-title" style={{ 
-                            color: this.state.titleBar.textColor,
-                            backgroundColor: this.state.titleBar.backgroundColor
-                        }} >
-                            {this.state.titleBar.text}
-                        </div>
-                        <div class="menu"></div>
-                    </header> : null
+                    <TitleBar
+                        titleBarHeight={this.state.titleBar.height}
+                        navigationBarTextStyle={this.state.titleBar.textColor}
+                        navigationBarTitleText={this.state.titleBar.text}
+                        navigationBarBackgroundColor={this.state.titleBar.backgroundColor}
+                        backButton={false}
+                        // animation: { duration, timingFunc }
+                    ></TitleBar> : null
             }
-            <Page></Page>
+            <div
+                className="__internal__Page-container __internal__Page-release-animation"
+            //   ref={this.container}
+            //   onScroll={this.onScroll}
+            //   onTouchStart={this.onTouchStart}
+            //   onTouchMove={this.onTouchMove}
+            //   onTouchEnd={this.onTouchEnd}
+            //   onTouchCancel={this.resetContainer}
+            >
+                <Page></Page>
+            </div>
             { !this.state.tabBar.list.length ? 
                 null:
                 <main class="tabBar" style={{backgroundColor: this.state.tabBar.backgroundColor}}>
@@ -109,7 +122,22 @@ class PageWrapper extends React.Component{
                         overflow: hidden;
                         position: relative;
                     }
-                    `}</style>
+                    .__internal__Page {
+                        height: calc(100% - ${this.state.titleBar.height}px);
+                        overflow: hidden;
+                        position: relative;
+                      }
+                      .__internal__Page-container {
+                        width: 100%;
+                        height: ${this.state.isTabPage ? 'calc(100% - 60px)' : '100%'};
+                        overflow-x: hidden;
+                        overflow-y: auto;
+                        background-color: ${this.state.backgroundColor};
+                        -webkit-overflow-scrolling: touch;
+                        transform: translateY(0px);
+                      }
+                    `}
+            </style>
         </div>);
     }
 }
