@@ -66,12 +66,12 @@ export var facade = {
     // 导航
     navigateTo, 
     redirectTo , 
+    switchTab: redirectTo,
     reLaunch,
     navigateBack,
     // 震动
     vibrateLong, 
     vibrateShort,
-
 
     // 上传
     uploadFile,
