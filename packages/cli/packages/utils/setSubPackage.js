@@ -1,6 +1,5 @@
 
 //分包配置
-const path = require('path');
 const buildType = process.env.ANU_ENV;
 const supportPlat = ['wx', 'bu', 'qq', 'ali'];
 const keys = {
@@ -9,6 +8,7 @@ const keys = {
     wx: 'subpackages',
     qq: 'subpackages'
 };
+const getSubpackage = require('./getSubPackage');
 module.exports = function (modules, json) {
     if (modules.componentType !== 'App') {
         return json;
@@ -20,21 +20,7 @@ module.exports = function (modules, json) {
     if (!json.pages) return json;
 
     json[keys[buildType]] = json[keys[buildType]] || [];
-    let subPackages = [];
-    try {
-        let appRootConfig = require(path.join(process.cwd(), 'source', `${buildType}Config.json`));
-        /**
-         * subPackages: [
-         *      {
-         *          "name": "native",
-         *          "resource": "pages/demo/native"
-         *      }
-         * ]
-         */
-        subPackages = appRootConfig.subpackages || appRootConfig.subPackages || [];
-    } catch (err) {
-        
-    }
+    const subPackages = getSubpackage(buildType);
 
     let routes = json.pages.slice();
     
