@@ -14,7 +14,7 @@ module.exports = function(buildType) {
          */
         subPackages = appRootConfig.subpackages || appRootConfig.subPackages || [];
     } catch (err) {
-        console.warn(err);
+        
     }
     return subPackages;
 };
