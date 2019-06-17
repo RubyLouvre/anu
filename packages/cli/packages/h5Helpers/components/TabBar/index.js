@@ -14,7 +14,9 @@ class TabBar extends Component {
                 borderTop: `1px solid ${this.borderStyle}`
             }}>
                 { this.props.list.map(item => <div className="__internal__TabBarItem" onClick={ this.onSelected.bind(this,item)}>
-                    <img src={ item.selected ? item.selectedIconPath : item.iconPath } />
+                    <div>
+                        <img src={ item.selected ? item.selectedIconPath : item.iconPath } />
+                    </div>
                     <span className='__internal__TabBarItem-title' style={{
                         color: item.selected ? item.selectedColor: item.color,
                     }}>

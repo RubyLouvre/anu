@@ -62,12 +62,12 @@ class PageWrapper extends React.Component{
             tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
             tabBar.color = tabBar.color || "#000";
             tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
-            tabBar.list.forEach(function(el, i){
+            tabBar.list.forEach((el, i) => {
                 if (!el.pagePath){
                     console.warn(`tabBar.list[${i}] miss pagePath`, el);//eslint-disable-line
                     return;
                 }
-                // el.selected = trimPagePath(el.pagePath) === trimPagePath(this.pagePath);
+                el.selected = el.pagePath === path.replace(/^\.\//, '');
             });
             this.setState({
                 tabBar: tabBar
