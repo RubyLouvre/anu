@@ -49,11 +49,11 @@ class PageWrapper extends React.Component{
         this.setState({
             showTitleBar: mixin.navigationStyle !== "custom",
             backgroundColor: mixin.backgroundColor || "#ffffff",
-            titleBar: {
+            titleBar: Object.assign({}, this.state.titleBar, {
                 text: mixin.navigationBarTitleText,
                 textColor: mixin.navigationBarTextStyle,
                 backgroundColor: mixin.navigationBarBackgroundColor,
-            }
+            })
         });
     
         var tabBar = pageConfig.tabBar || appConfig.tabBar;
@@ -75,70 +75,68 @@ class PageWrapper extends React.Component{
     }
     render(){
         const Page = React.__pages[this.props.path];
-        return (<div className='__internal__Page__' >
-            {
-                this.state.showTitleBar ? 
-                    <TitleBar
-                        titleBarHeight={this.state.titleBar.height}
-                        navigationBarTextStyle={this.state.titleBar.textColor}
-                        navigationBarTitleText={this.state.titleBar.text}
-                        navigationBarBackgroundColor={this.state.titleBar.backgroundColor}
-                        backButton={false}
-                        // animation: { duration, timingFunc }
-                    ></TitleBar> : null
-            }
-            <div
-                className="__internal__Page-container __internal__Page-release-animation"
-            //   ref={this.container}
-            //   onScroll={this.onScroll}
-            //   onTouchStart={this.onTouchStart}
-            //   onTouchMove={this.onTouchMove}
-            //   onTouchEnd={this.onTouchEnd}
-            //   onTouchCancel={this.resetContainer}
-            >
-                <Page></Page>
-            </div>
-            { !this.state.tabBar.list.length ? 
-                null:
-                <main class="tabBar" style={{backgroundColor: this.state.tabBar.backgroundColor}}>
-                    { this.state.tabBar.list.map(item =>  <div class="tab" onClick={ this.onSelected.bind(this,item)}>
-                        <img src={ item.selected ? item.selectedIconPath : item.iconPath } />
-                        <span style={{
-                            color: item.selected ? item.selectedColor: item.color ,
-                            fontSize: "20px"
-                        }}>
-                            {item.text}
-                        </span>
-                    </div>)
-                    }</main> }
+        return (<div className=''>
+            <div className='__internal__Page__' >
+                {
+                    this.state.showTitleBar ? 
+                        <TitleBar
+                            titleBarHeight={this.state.titleBar.height}
+                            navigationBarTextStyle={this.state.titleBar.textColor}
+                            navigationBarTitleText={this.state.titleBar.text}
+                            navigationBarBackgroundColor={this.state.titleBar.backgroundColor}
+                            backButton={false}
+                            // animation: { duration, timingFunc }
+                        ></TitleBar> : null
+                }
+                <div
+                    className="__internal__Page-container __internal__Page-release-animation"
+                //   ref={this.container}
+                //   onScroll={this.onScroll}
+                //   onTouchStart={this.onTouchStart}
+                //   onTouchMove={this.onTouchMove}
+                //   onTouchEnd={this.onTouchEnd}
+                //   onTouchCancel={this.resetContainer}
+                >
+                    <Page></Page>
+                </div>
+                { !this.state.tabBar.list.length ? 
+                    null:
+                    <main class="tabBar" style={{backgroundColor: this.state.tabBar.backgroundColor}}>
+                        { this.state.tabBar.list.map(item =>  <div class="tab" onClick={ this.onSelected.bind(this,item)}>
+                            <img src={ item.selected ? item.selectedIconPath : item.iconPath } />
+                            <span style={{
+                                color: item.selected ? item.selectedColor: item.color ,
+                                fontSize: "20px"
+                            }}>
+                                {item.text}
+                            </span>
+                        </div>)
+                        }</main> }
 
-            <style jsx>{`
-                    .__internal__App__ {
-                        width: 100%;
-                        height: 100%;
-                        min-width: 320px;
-                        max-width: 480px;
-                        margin: 0 auto;
-                        overflow: hidden;
-                        position: relative;
-                    }
-                    .__internal__Page {
-                        height: calc(100% - ${this.state.titleBar.height}px);
-                        overflow: hidden;
-                        position: relative;
-                      }
-                      .__internal__Page-container {
-                        width: 100%;
-                        height: ${this.state.isTabPage ? 'calc(100% - 60px)' : '100%'};
-                        overflow-x: hidden;
-                        overflow-y: auto;
-                        background-color: ${this.state.backgroundColor};
-                        -webkit-overflow-scrolling: touch;
-                        transform: translateY(0px);
-                      }
+                <style jsx>{`
+                        .__internal__Page__ {
+                            width: 100%;
+                            height: 100%;
+                            min-width: 320px;
+                            max-width: 480px;
+                            margin: 0 auto;
+                            overflow: hidden;
+                            position: relative;
+                        }
+                        .__internal__Page-container {
+                            width: 100%;
+                            height: ${this.state.isTabPage ? 'calc(100% - 60px - 48px)' : 'calc(100% - 48px)'};
+                            overflow-x: hidden;
+                            overflow-y: auto;
+                            background-color: ${this.state.backgroundColor};
+                            -webkit-overflow-scrolling: touch;
+                            transform: translateY(48px);
+                        }
                     `}
-            </style>
-        </div>);
+                </style>
+            </div>
+        </div>
+        );
     }
 }
 

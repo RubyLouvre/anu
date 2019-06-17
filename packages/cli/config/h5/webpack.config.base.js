@@ -36,6 +36,7 @@ module.exports = {
             'schnee-ui': resolveFromContext(`${intermediateDirectoryName}/npm/schnee-ui`),
             '@shared': resolveFromContext('./src/shared'),
             '@internalComponents': resolveFromH5Helper('components'),
+            '@internalConsts': path.resolve(__dirname, '../../consts/'),
             '@components': resolveFromContext(
                 `${intermediateDirectoryName}/components`
             ),

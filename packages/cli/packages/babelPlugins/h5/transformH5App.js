@@ -8,6 +8,7 @@ const utils = require('../../utils/index');
 const importedPagesTemplatePrefixCode = template(`
 import ReactDOM from 'react-dom';
 import PageWrapper from '@internalComponents/PageWrapper';
+import calculateRem from '@internalComponents/HOC/calculateRem';
 `)();
 
 const buildAsyncImport = template(
@@ -30,7 +31,10 @@ window.onload = function (){
     plugins: ['jsx']
 });
 
-const pageWrapper = template('return <PageWrapper app={this} path={this.state.path}  query={this.state.query} />', {
+const calculateRem = template('const Wrapper = calculateRem(PageWrapper);');
+const pageWrapper = template(`
+    return <Wrapper app={this} path={this.state.path}  query={this.state.query} />
+`, {
     plugins: ['jsx']
 });
 const CLASS_NAME = 'Global';
@@ -107,6 +111,7 @@ module.exports = function ({ types: t }) {
                         [], 
                         t.blockStatement(
                             [
+                                calculateRem(),
                                 pageWrapper()
                             ]
                         )
