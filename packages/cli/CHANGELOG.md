@@ -1,5 +1,16 @@
 # Changelog
 
+# 1.3.0 (2019-06-14)
+
+## CLI
+#### Feature
+
+- 所有平台迁移至webpack4编译。
+- app.js中引入的工具函数(common)或组件(components)目录不会配置到app.json文件中
+
+#### Bug fix
+- 修复linux平台路径找不到bug。
+
 # 1.2.8 (2019-06-06)
 ## 核心库
 #### Feature

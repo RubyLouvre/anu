@@ -12,6 +12,7 @@ const nodeResolve = require('resolve');
 
 const cliRoot = path.resolve(__dirname, '..');
 const config = require('../config/config');
+const getSubpackage = require('../packages/utils/getSubPackage');
 
 //删除dist目录, 以及快应的各配置文件
 function getRubbishFiles(buildType){
@@ -217,6 +218,33 @@ function needInstallHapToolkit(){
     }
 }
 
+function checkPagePath(dirname) {
+    
+    fs.readdir(dirname, function(err, files) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        let jsFileNum = 0;
+        files.forEach(file => {
+            if (/[\\/]common[\\/]/.test(file)) return;
+            file = path.resolve(dirname, file);
+            const stat = fs.statSync(file);
+            if (stat.isFile()) {
+                if (/\.js$/.test(file)) {
+                    jsFileNum++;
+                }
+            } else {
+                checkPagePath(file);
+            }
+            if (jsFileNum > 1) {
+                console.error(chalk`{red Error: }{grey ${path.dirname(file)}} 目录不符合分包规范，该目录下不允许包含多个js文件`);
+                process.exit();
+            }
+        });
+    });
+}
+
 function injectPluginsConfig() {
     let userConfig;
     try {
@@ -239,6 +267,10 @@ function injectPluginsConfig() {
 }
 
 async function runTask({ buildType, beta, betaUi, compress }){
+    // 检查pages目录是否符合规范
+    if (getSubpackage(buildType).length > 0) {
+        checkPagePath(path.resolve(cwd, 'source/pages'));
+    }
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
     let tasks  = [];
