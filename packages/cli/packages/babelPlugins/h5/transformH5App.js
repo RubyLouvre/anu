@@ -68,8 +68,8 @@ module.exports = function ({ types: t }) {
                     return;
                 }
                 const PAGE_NAME = `PAGE_${pageIndex++}`;
-                registerTemplate += `React.registerPage(${PAGE_NAME}, '${importPath}')\n`;
-                const pageItem = t.stringLiteral(importPath);
+                registerTemplate += `React.registerPage(${PAGE_NAME}, '${importPath.replace(/^\./, '')}')\n`;
+                const pageItem = t.stringLiteral(importPath.replace(/^\./, ''));
                 
                 importedPages.elements.push(pageItem);
                 astPath.replaceWith(t.ImportDeclaration([t.importDefaultSpecifier(t.identifier(PAGE_NAME))], t.stringLiteral(importPath)));

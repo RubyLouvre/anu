@@ -13,7 +13,6 @@ export default function calculateRem(App) {
 
         calculateRem() {
             const { clientWidth = 320 } = this.rootElement;
-            console.log(R.clamp(320, MAX_VIEWPORT_WIDTH, clientWidth));
             const normalizeWidth =
             (R.clamp(320, MAX_VIEWPORT_WIDTH, clientWidth) * 100) / 750;
             this.rootElement.style.fontSize = normalizeWidth + 'px';

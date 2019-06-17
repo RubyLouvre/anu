@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-05T07
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-17T12
  * IE9+
  */
 
@@ -3086,9 +3086,10 @@
     }
     function _getCurrentPages() {
         console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-        if (isFn(getCurrentPages)) {
+        if (typeof getCurrentPages !== 'undefined') {
             return getCurrentPages();
         }
+        return [];
     }
     function updateMiniApp(instance) {
         if (!instance || !instance.wx) {
@@ -3566,7 +3567,9 @@
         registerComponent: registerComponent,
         getCurrentPage: getCurrentPage,
         getCurrentPages: _getCurrentPages,
-        getApp: _getApp,
+        getApp: function getApp() {
+            return this.__app;
+        },
         registerApp: function registerApp(app) {
             this.__app = app;
         },
@@ -3600,6 +3603,7 @@
             var appInstance = React.__app;
             var appConfig = appInstance.constructor.config;
             if (appConfig.pages.indexOf(path) === -1) {
+                console.log(appConfig.pages, path);
                 throw "没有注册该页面: " + path;
             }
             appInstance.setState({
@@ -3609,6 +3613,13 @@
                 fail: fail,
                 complete: complete
             });
+        },
+        navigateTo: function navigateTo() {
+            var _redirectTo;
+            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                args[_key] = arguments[_key];
+            }
+            (_redirectTo = this.redirectTo).call.apply(_redirectTo, [this].concat(args));
         }
     };
     function getQuery(url) {

@@ -76,7 +76,7 @@ class PageWrapper extends React.Component{
     }
     render(){
         const Page = React.__pages[this.props.path];
-        return (<div className=''>
+        return (
             <div className='__internal__Page__' >
                 {
                     this.state.showTitleBar ? 
@@ -131,7 +131,6 @@ class PageWrapper extends React.Component{
                     `}
                 </style>
             </div>
-        </div>
         );
     }
 }

@@ -70,7 +70,9 @@ let React = (getWindow().React = {
     registerComponent,
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
-    getApp: _getApp,
+    getApp: function() {
+        return this.__app;
+    },
     // registerPage,
     registerApp: function(app){
         this.__app = app;
@@ -99,6 +101,7 @@ let apiContainer = {
         var appInstance = React.__app;
         var appConfig = appInstance.constructor.config;
         if (appConfig.pages.indexOf(path) === -1){
+            console.log(appConfig.pages, path);
             throw "没有注册该页面: "+ path;
         }
         appInstance.setState({
@@ -109,7 +112,9 @@ let apiContainer = {
             complete
         });
     },
-    
+    navigateTo: function(...args) {
+        this.redirectTo.call(this, ...args);
+    }
 };
 function getQuery(url) {
     return url.split('?');
