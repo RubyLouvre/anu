@@ -8,6 +8,7 @@ const config = require('../../config/config');
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
 const ignoreAttri = require('../quickHelpers/ignoreAttri');
+const ignorePrevAttri = require('../quickHelpers/ignorePrevAttri');
 const calculateComponentsPath = require('../utils/calculateComponentsPath');
 const cwd = process.cwd();
 
@@ -525,6 +526,10 @@ module.exports = {
     JSXOpeningElement: {
         enter: function (astPath, state) {
             let nodeName = astPath.node.name.name;
+            if (buildType === 'quick') {
+                ignorePrevAttri(astPath, nodeName);
+            }
+            
             if (nodeName === 'span' && buildType === 'quick') {
                 //如果是快应用，<text><span></span></text>不变， <div><span></span></div>变<div><text></text></div>
                 let p = astPath.parentPath.findParent(function (parent) {
