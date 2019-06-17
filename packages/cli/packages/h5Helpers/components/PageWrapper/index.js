@@ -1,13 +1,14 @@
 import React from '@react';
 import TitleBar from '../TitleBar';
-import './index.scss';
+import TabBar from '../TabBar';
 class PageWrapper extends React.Component{
     constructor(props){
         super(props);
         this.$app = props.app;
         this.state = {
             tabBar: {
-                list: []
+                list: [],
+                borderStyle: 'black'
             },
             titleBar: {
                 height: 48
@@ -34,7 +35,7 @@ class PageWrapper extends React.Component{
         }
         React.api.navigateTo({
             url: item.pagePath
-        })
+        });
     }
     setTitleAndTabs(app) {
         var path = app.state.path;
@@ -99,20 +100,15 @@ class PageWrapper extends React.Component{
                 >
                     <Page></Page>
                 </div>
-                { !this.state.tabBar.list.length ? 
-                    null:
-                    <main class="tabBar" style={{backgroundColor: this.state.tabBar.backgroundColor}}>
-                        { this.state.tabBar.list.map(item =>  <div class="tab" onClick={ this.onSelected.bind(this,item)}>
-                            <img src={ item.selected ? item.selectedIconPath : item.iconPath } />
-                            <span style={{
-                                color: item.selected ? item.selectedColor: item.color ,
-                                fontSize: "20px"
-                            }}>
-                                {item.text}
-                            </span>
-                        </div>)
-                        }</main> }
-
+                { 
+                    this.state.tabBar.list.length ? 
+                        <TabBar
+                            list={this.state.tabBar.list}
+                            backgroundColor={this.state.tabBar.backgroundColor}
+                            borderStyle={this.state.tabBar.borderStyle}
+                        /> :
+                        null
+                }
                 <style jsx>{`
                         .__internal__Page__ {
                             width: 100%;

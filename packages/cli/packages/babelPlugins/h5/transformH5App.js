@@ -75,9 +75,37 @@ module.exports = function ({ types: t }) {
                 astPath.replaceWith(t.ImportDeclaration([t.importDefaultSpecifier(t.identifier(PAGE_NAME))], t.stringLiteral(importPath)));
             },
             ClassProperty(astPath) {
-                if (astPath.get('key').isIdentifier({
-                    name: 'config'
-                }) && astPath.get('value').isObjectExpression()) {
+                if (
+                    astPath.get('key').isIdentifier({
+                        name: 'config'
+                    })
+                    && astPath.get('value').isObjectExpression()
+                ) {
+                    astPath.traverse({
+                        ObjectProperty: property => {
+                            const { key, value } = property.node;
+                            let name;
+
+                            if (t.isIdentifier(key)) name = key.name;
+                            if (t.isStringLiteral(key)) name = key.value;
+
+                            if (name === 'iconPath' || name === 'selectedIconPath') {
+                                if (t.isStringLiteral(value)) {
+                                    property
+                                        .get('value')
+                                        .replaceWith(
+                                            t.callExpression(t.identifier('require'), [
+                                                t.stringLiteral(
+                                                    `@${value.value.replace(/^(\.?\/)/, '')}`
+                                                )
+                                            ])
+                                        );
+                                }
+                            }
+                        }
+                    });
+
+                    // 注入pages属性
                     astPath.get('value').node.properties.push(t.objectProperty(t.identifier('pages'), importedPages));
                 }
             },
