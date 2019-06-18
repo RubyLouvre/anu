@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-06-17T09
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-06-18T03
  * IE9+
  */
 
@@ -2593,7 +2593,7 @@ var defer = Promise.resolve().then.bind(Promise.resolve());
 function registerComponent(type, name) {
     type.isMPComponent = true;
     registeredComponents[name] = type;
-    var reactInstances = type.reactInstances = [];
+    type.reactInstances = [];
     var config = {
         data: {
             props: {},
@@ -2607,7 +2607,7 @@ function registerComponent(type, name) {
                 defer(function () {
                     usingComponents[name] = type;
                     var uuid = wx.dataset.instanceUid || null;
-                    refreshComponent(reactInstances, wx, uuid);
+                    refreshComponent(type.reactInstances, wx, uuid);
                 });
             },
             detached: detachComponent,
