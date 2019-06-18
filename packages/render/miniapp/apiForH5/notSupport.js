@@ -16,12 +16,12 @@ export default {
     getNetworkType: notSupport('getNetworkType'),
     createShortcut: notSupport('createShortcut'),
     // temp
-    showModal: notSupport('showModal'),
-    showToast: notSupport('showToast'),
-    hideToast: notSupport('hideToast'),
-    showLoading: notSupport('showLoading'),
-    hideLoading: notSupport('hideLoading'),
-    showActionSheet: notSupport('showActionSheet'),
-    previewImage: notSupport('previewImage'),
-    share: notSupport('share')
+    // showModal: notSupport('showModal'),
+    // showToast: notSupport('showToast'),
+    // hideToast: notSupport('hideToast'),
+    // showLoading: notSupport('showLoading'),
+    // hideLoading: notSupport('hideLoading'),
+    // // showActionSheet: notSupport('showActionSheet'),
+    // previewImage: notSupport('previewImage'),
+    // share: notSupport('share')
 };

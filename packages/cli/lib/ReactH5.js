@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-18T08
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-18T11
  * IE9+
  */
 
@@ -3867,7 +3867,413 @@
       getImageInfo: getImageInfo
     };
 
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+    function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+    function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+    var Modal = function (_Component) {
+      _inherits(Modal, _Component);
+      function Modal() {
+        _classCallCheck(this, Modal);
+        return _possibleConstructorReturn(this, _Component.apply(this, arguments));
+      }
+      Modal.prototype.handleConfirm = function handleConfirm() {
+        handleSuccess({
+          errMsg: 'showModal:ok',
+          cancel: false,
+          confirm: true
+        }, this.props.success, this.props.complete, this.props.resolve);
+        document.getElementById('h5-api-showModal').remove();
+      };
+      Modal.prototype.handleCancel = function handleCancel() {
+        handleSuccess({
+          errMsg: 'showModal:cancel',
+          cancel: true,
+          confirm: false
+        }, this.props.success, this.props.complete, this.props.resolve);
+        document.getElementById('h5-api-showModal').remove();
+      };
+      Modal.prototype.render = function render() {
+        return React.createElement(
+          Fragment,
+          null,
+          React.createElement(
+            'div',
+            { className: 'modal' },
+            React.createElement(
+              'div',
+              { className: 'top' },
+              this.props.title
+            ),
+            React.createElement(
+              'div',
+              { className: 'center' },
+              this.props.content
+            ),
+            React.createElement(
+              'div',
+              { className: 'bottom' },
+              this.props.showCancel ? React.createElement(
+                'div',
+                { className: 'cancel', style: { color: this.props.cancelColor }, onClick: this.handleCancel.bind(this) },
+                this.props.cancelText
+              ) : null,
+              React.createElement(
+                'div',
+                { className: 'confirm', style: { color: this.props.confirmColor }, onClick: this.handleConfirm.bind(this) },
+                this.props.confirmText
+              )
+            )
+          ),
+          React.createElement(
+            'style',
+            { jsx: true },
+            '\n          .modal { \n            display: flex;\n            flex-direction: column;\n            position: fixed;\n            width: 280px;\n            height: 150px;\n            background-color: #fff;\n            margin: auto;\n            left: 0;\n            top: 0;\n            bottom: 0;\n            right: 0;\n            border-radius: 5px;\n          }\n          .top {\n            height: 40px;\n            line-height: 40px;\n            text-align: center;\n          }\n          .center {\n            flex: 1;\n            font-size: 15px;\n            margin: 0 15px;\n            color: #888;\n            text-align: center;\n            word-break: break-all;\n            overflow: scroll;\n          }\n          .bottom {\n            height: 40px;\n            display: flex;\n            flex-direction: row;\n            border-top: solid 1px #f8f8f8;\n          }\n          .confirm {\n            flex: 1;\n            text-align: center;\n            height: 100%;\n            line-height: 40px;\n          }\n          .cancel {\n            flex: 1;\n            borderRight: solid 1px #f8f8f8;\n            text-align: center;\n            height: 100%;\n            line-height: 40px;\n          }\n        '
+          )
+        );
+      };
+      return Modal;
+    }(Component);
+
+    function _classCallCheck$1(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+    function _possibleConstructorReturn$1(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+    function _inherits$1(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+    var Toast = function (_Component) {
+      _inherits$1(Toast, _Component);
+      function Toast() {
+        _classCallCheck$1(this, Toast);
+        return _possibleConstructorReturn$1(this, _Component.apply(this, arguments));
+      }
+      Toast.prototype.componentDidMount = function componentDidMount() {
+        handleSuccess({
+          errMsg: 'showToast:ok'
+        }, this.props.success, this.props.complete, this.props.resolve);
+      };
+      Toast.prototype.render = function render() {
+        return React.createElement(
+          Fragment,
+          null,
+          React.createElement(
+            'div',
+            { className: 'toast' },
+            React.createElement(
+              'div',
+              { className: 'icon' },
+              this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
+            ),
+            React.createElement(
+              'div',
+              { className: 'title' },
+              this.props.title
+            )
+          ),
+          React.createElement(
+            'style',
+            { jsx: true },
+            '\n          .toast { \n            display: flex;\n            flex-direction: column;\n            position: fixed;\n            width: 120px;\n            height: 120px; \n            background-color: rgba(0, 0, 0, 0.4);\n            margin: auto;\n            left: 0;\n            top: 0;\n            bottom: 0;\n            right: 0;\n            border-radius: 5px;\n          }\n          .icon {\n            width: 90px;\n            height: 90px;\n            margin: 0 auto;\n            fill: #fff;\n            color: #fff;\n            text-align: center;\n            font-size: 30px;\n            line-height: 90px;\n          }\n          .title {\n            height: 30px;\n            text-align: center;\n            line-height: 30px;\n            color: #fff;\n            overflow: hidden;\n          }\n        '
+          )
+        );
+      };
+      return Toast;
+    }(Component);
+
+    function _classCallCheck$2(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+    function _possibleConstructorReturn$2(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+    function _inherits$2(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+    var Loading = function (_Component) {
+      _inherits$2(Loading, _Component);
+      function Loading() {
+        _classCallCheck$2(this, Loading);
+        return _possibleConstructorReturn$2(this, _Component.apply(this, arguments));
+      }
+      Loading.prototype.componentDidMount = function componentDidMount() {
+        handleSuccess({
+          errMsg: 'showLoading:ok'
+        }, this.props.success, this.props.complete, this.props.resolve);
+      };
+      Loading.prototype.render = function render() {
+        return React.createElement(
+          Fragment,
+          null,
+          React.createElement(
+            'div',
+            { className: 'loading' },
+            React.createElement(
+              'div',
+              { className: 'icon' },
+              React.createElement('img', { style: { width: '1.5rem', height: '1.5rem' }, src: 'http://s.qunarzz.com/dev_test_2/loading4.gif' })
+            ),
+            React.createElement(
+              'div',
+              { className: 'title' },
+              this.props.title
+            )
+          ),
+          React.createElement(
+            'style',
+            { jsx: true },
+            '\n          .loading { \n            display: flex;\n            flex-direction: column;\n            position: fixed;\n            width: 120px;\n            height: 120px;\n            background-color: rgba(0, 0, 0, 0.4);\n            margin: auto;\n            left: 0; \n            top: 0;\n            bottom: 0;\n            right: 0;\n            border-radius: 5px;\n          }\n          .icon {\n            height: 90px;\n            color: #fff;\n            text-align: center;\n            font-size: 30px;\n            line-height: 90px;\n          }\n          .title {\n            height: 30px;\n            text-align: center;\n            line-height: 30px;\n            color: #fff;\n            overflow: hidden;\n          }\n        '
+          )
+        );
+      };
+      return Loading;
+    }(Component);
+
+    function _classCallCheck$3(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+    function _possibleConstructorReturn$3(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+    function _inherits$3(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+    var ActionSheet = function (_Component) {
+        _inherits$3(ActionSheet, _Component);
+        function ActionSheet() {
+            _classCallCheck$3(this, ActionSheet);
+            return _possibleConstructorReturn$3(this, _Component.apply(this, arguments));
+        }
+        ActionSheet.prototype.handleSelect = function handleSelect(index) {
+            handleSuccess({
+                index: index
+            }, this.props.success, this.props.complete, this.props.resolve);
+            document.getElementById('h5-api-showActionSheet').remove();
+        };
+        ActionSheet.prototype.handleCancel = function handleCancel() {
+            handleFail({
+                errMsg: 'showActionSheet:fail cancel'
+            }, this.props.fail, this.props.complete, this.props.reject);
+            document.getElementById('h5-api-showActionSheet').remove();
+        };
+        ActionSheet.prototype.render = function render() {
+            var _this2 = this;
+            return React.createElement(
+                Fragment,
+                null,
+                React.createElement(
+                    'div',
+                    { className: 'actionSheet' },
+                    this.props.itemList.map(function (item, index) {
+                        return React.createElement(
+                            'div',
+                            {
+                                className: 'item',
+                                onClick: _this2.handleSelect.bind(_this2, index),
+                                style: {
+                                    color: _this2.props.itemColor
+                                } },
+                            item
+                        );
+                    }),
+                    React.createElement(
+                        'div',
+                        {
+                            onClick: this.handleCancel.bind(this),
+                            className: 'cancel' },
+                        this.props.cancelButtonText
+                    )
+                ),
+                React.createElement(
+                    'style',
+                    { jsx: true },
+                    '\n                  .actionSheet { \n                    display: flex;\n                    flex-direction: column;\n                    position: fixed;\n                    width: 100%;\n                    background-color: #f8f8f8;\n                    margin: auto;\n                    left: 0;\n                    bottom: 0;\n                    right: 0;\n                  }\n                  .cancel {\n                    height: .8rem;\n                    line-height: .8rem;\n                    text-align: center;\n                    background-color: #fff;\n                    margin-top: .2rem;\n                  }\n                  .item {\n                    height: .8rem;\n                    line-height: .8rem;\n                    text-align: center;\n                    background-color: #fff;\n                    border-top: solid #f8f8f8 1px;\n                  }\n                '
+                )
+            );
+        };
+        return ActionSheet;
+    }(Component);
+
+    var render$1 = DOMRenderer.render;
+    var timer;
+    function showModal() {
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref$title = _ref.title,
+          title = _ref$title === undefined ? '' : _ref$title,
+          _ref$content = _ref.content,
+          content = _ref$content === undefined ? '' : _ref$content,
+          _ref$showCancel = _ref.showCancel,
+          showCancel = _ref$showCancel === undefined ? true : _ref$showCancel,
+          _ref$cancelText = _ref.cancelText,
+          cancelText = _ref$cancelText === undefined ? '取消' : _ref$cancelText,
+          _ref$cancelColor = _ref.cancelColor,
+          cancelColor = _ref$cancelColor === undefined ? '#000000' : _ref$cancelColor,
+          _ref$confirmText = _ref.confirmText,
+          confirmText = _ref$confirmText === undefined ? '确定' : _ref$confirmText,
+          _ref$confirmColor = _ref.confirmColor,
+          confirmColor = _ref$confirmColor === undefined ? '#3cc51f' : _ref$confirmColor,
+          _ref$success = _ref.success,
+          success = _ref$success === undefined ? function () {} : _ref$success,
+          _ref$fail = _ref.fail,
+          fail = _ref$fail === undefined ? function () {} : _ref$fail,
+          _ref$complete = _ref.complete,
+          complete = _ref$complete === undefined ? function () {} : _ref$complete;
+      return new Promise(function (resolve, reject) {
+        var id = 'h5-api-showModal',
+            modal = document.getElementById(id);
+        cancelText = cancelText.slice(0, 4);
+        confirmText = confirmText.slice(0, 4);
+        if (!modal) {
+          var container = document.createElement('div');
+          container.id = id;
+          container.style.position = 'fixed';
+          container.style.backgroundColor = 'rgba(0,0,0,0.4)';
+          container.style.width = '100%';
+          container.style.height = '100%';
+          document.body.appendChild(container);
+          render$1(React.createElement(Modal, {
+            title: title,
+            content: content,
+            showCancel: showCancel,
+            cancelText: cancelText,
+            cancelColor: cancelColor,
+            confirmText: confirmText,
+            confirmColor: confirmColor,
+            success: success,
+            fail: fail,
+            complete: complete,
+            resolve: resolve,
+            reject: reject
+          }), container);
+        }
+      });
+    }
+    function showToast() {
+      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref2$title = _ref2.title,
+          title = _ref2$title === undefined ? '' : _ref2$title,
+          _ref2$image = _ref2.image,
+          image = _ref2$image === undefined ? '' : _ref2$image,
+          _ref2$duration = _ref2.duration,
+          duration = _ref2$duration === undefined ? 1500 : _ref2$duration,
+          _ref2$mask = _ref2.mask,
+          mask = _ref2$mask === undefined ? false : _ref2$mask,
+          _ref2$success = _ref2.success,
+          success = _ref2$success === undefined ? function () {} : _ref2$success,
+          _ref2$fail = _ref2.fail,
+          fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
+          _ref2$complete = _ref2.complete,
+          complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
+      return new Promise(function (resolve, reject) {
+        var id = 'h5-api-showToast',
+            toast = document.getElementById(id);
+        if (!toast) {
+          var container = document.createElement('div');
+          container.id = id;
+          container.style.position = 'fixed';
+          container.style.width = mask ? '100%' : '120px';
+          container.style.height = mask ? '100%' : '120px';
+          document.body.appendChild(container);
+          render$1(React.createElement(Toast, {
+            title: title
+            , image: image,
+            success: success,
+            fail: fail,
+            complete: complete,
+            resolve: resolve,
+            reject: reject
+          }), container, function () {
+            timer = setTimeout(function () {
+              var toast = document.getElementById('h5-api-showToast');
+              toast && toast.remove();
+            }, duration);
+          });
+        }
+      });
+    }
+    function hideToast() {
+      var toast = document.getElementById('h5-api-showToast');
+      if (toast) {
+        toast.remove();
+        clearTimeout(timer);
+      }
+    }
+    function showLoading() {
+      var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref3$title = _ref3.title,
+          title = _ref3$title === undefined ? '' : _ref3$title,
+          _ref3$mask = _ref3.mask,
+          mask = _ref3$mask === undefined ? false : _ref3$mask,
+          _ref3$success = _ref3.success,
+          success = _ref3$success === undefined ? function () {} : _ref3$success,
+          _ref3$fail = _ref3.fail,
+          fail = _ref3$fail === undefined ? function () {} : _ref3$fail,
+          _ref3$complete = _ref3.complete,
+          complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
+      return new Promise(function (resolve, reject) {
+        var id = 'h5-api-showLoading',
+            toast = document.getElementById(id);
+        if (!toast) {
+          var container = document.createElement('div');
+          container.id = id;
+          container.style.position = 'fixed';
+          container.style.width = mask ? '100%' : '120px';
+          container.style.height = mask ? '100%' : '120px';
+          document.body.appendChild(container);
+          render$1(React.createElement(Loading, {
+            title: title,
+            icon: 'loading...',
+            success: success,
+            fail: fail,
+            complete: complete,
+            resolve: resolve,
+            reject: reject
+          }), container);
+        }
+      });
+    }
+    function hideLoading() {
+      var loading = document.getElementById('h5-api-showLoading');
+      if (loading) {
+        loading.remove();
+      }
+    }
+    function showActionSheet() {
+      var _ref4 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref4$itemList = _ref4.itemList,
+          itemList = _ref4$itemList === undefined ? [] : _ref4$itemList,
+          _ref4$itemColor = _ref4.itemColor,
+          itemColor = _ref4$itemColor === undefined ? '#000000' : _ref4$itemColor,
+          _ref4$cancelButtonTex = _ref4.cancelButtonText,
+          cancelButtonText = _ref4$cancelButtonTex === undefined ? '取消' : _ref4$cancelButtonTex,
+          _ref4$success = _ref4.success,
+          success = _ref4$success === undefined ? function () {} : _ref4$success,
+          _ref4$fail = _ref4.fail,
+          fail = _ref4$fail === undefined ? function () {} : _ref4$fail,
+          _ref4$complete = _ref4.complete,
+          complete = _ref4$complete === undefined ? function () {} : _ref4$complete;
+      return new Promise(function (resolve, reject) {
+        var id = 'h5-api-showActionSheet',
+            modal = document.getElementById(id);
+        if (!modal) {
+          var container = document.createElement('div');
+          container.id = id;
+          container.style.position = 'fixed';
+          container.style.backgroundColor = 'rgba(0,0,0,0.4)';
+          container.style.width = '100%';
+          container.style.height = '100%';
+          container.addEventListener('click', function (e) {
+            if (e.target.id === id) {
+              container.remove();
+              reject({
+                errMsg: 'showActionSheet:fail cancel'
+              });
+            }
+          });
+          document.body.appendChild(container);
+          render$1(React.createElement(ActionSheet, {
+            itemList: itemList,
+            itemColor: itemColor,
+            cancelButtonText: cancelButtonText,
+            success: success,
+            fail: fail,
+            complete: complete,
+            resolve: resolve,
+            reject: reject
+          }), container);
+        }
+      });
+    }
     var interaction = {
+      showModal: showModal,
+      showToast: showToast,
+      hideToast: hideToast,
+      showLoading: showLoading,
+      hideLoading: hideLoading,
+      showActionSheet: showActionSheet
     };
 
     function getLocation() {
@@ -4560,15 +4966,7 @@
         saveFile: notSupport('saveFile'),
         getClipboardData: notSupport('getClipboardData'),
         getNetworkType: notSupport('getNetworkType'),
-        createShortcut: notSupport('createShortcut'),
-        showModal: notSupport('showModal'),
-        showToast: notSupport('showToast'),
-        hideToast: notSupport('hideToast'),
-        showLoading: notSupport('showLoading'),
-        hideLoading: notSupport('hideLoading'),
-        showActionSheet: notSupport('showActionSheet'),
-        previewImage: notSupport('previewImage'),
-        share: notSupport('share')
+        createShortcut: notSupport('createShortcut')
     };
 
     var interfaceNameSpaces = {
@@ -4701,13 +5099,13 @@
     }
 
     var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-    var render$1 = DOMRenderer.render,
+    var render$2 = DOMRenderer.render,
         findDOMNode = DOMRenderer.findDOMNode;
-    var React = getWindow().React = {
+    var React$1 = getWindow().React = {
         findDOMNode: findDOMNode,
         version: '1.5.0',
-        render: render$1,
-        hydrate: render$1,
+        render: render$2,
+        hydrate: render$2,
         Fragment: Fragment,
         PropTypes: PropTypes,
         Children: Children,
@@ -4758,8 +5156,8 @@
             _getQuery2 = _slicedToArray(_getQuery, 2),
             path = _getQuery2[0],
             query = _getQuery2[1];
-        React.__currentPages.push(path);
-        var appInstance = React.__app;
+        React$1.__currentPages.push(path);
+        var appInstance = React$1.__app;
         var appConfig = appInstance.constructor.config;
         if (appConfig.pages.indexOf(path) === -1) {
             throw "没有注册该页面: " + path;
@@ -4774,8 +5172,8 @@
     }
     var apiContainer = {
         redirectTo: function redirectTo(options) {
-            if (React.__currentPages.length > 0) {
-                React.__currentPages.pop();
+            if (React$1.__currentPages.length > 0) {
+                React$1.__currentPages.pop();
             }
             history.replaceState({ url: options.url }, null, options.url);
             router(options);
@@ -4792,13 +5190,13 @@
                 fail = _ref2.fail,
                 complete = _ref2.complete;
             var path;
-            while (delta && React.__currentPages.length) {
-                path = React.__currentPages.pop();
+            while (delta && React$1.__currentPages.length) {
+                path = React$1.__currentPages.pop();
                 history.back();
                 delta--;
             }
-            path = React.__currentPages[React.__currentPages.length - 1];
-            var appInstance = React.__app;
+            path = React$1.__currentPages[React$1.__currentPages.length - 1];
+            var appInstance = React$1.__app;
             appInstance.setState({
                 path: path,
                 success: success,
@@ -4815,7 +5213,7 @@
                 _getQuery4 = _slicedToArray(_getQuery3, 2),
                 path = _getQuery4[0],
                 query = _getQuery4[1];
-            var config = React.__app.constructor.config;
+            var config = React$1.__app.constructor.config;
             if (config && config.tabBar && config.tabBar.list) {
                 if (config.tabBar.list.length < 2 || config.tabBar.list.length > 5) {
                     console.warn('tabBar数量非法，必须大于2且小于5个');
@@ -4827,7 +5225,7 @@
                     console.warn(path + '\u672A\u5728tabBar.list\u4E2D\u5B9A\u4E49!');
                     return;
                 }
-                React.__currentPages = [];
+                React$1.__currentPages = [];
                 this.navigateTo.call(this, { url: url, success: success, fail: fail, complete: complete });
             }
         }
@@ -4835,8 +5233,8 @@
     function getQuery(url) {
         return url.split('?');
     }
-    registerAPIs(React, apiContainer, more);
+    registerAPIs(React$1, apiContainer, more);
 
-    return React;
+    return React$1;
 
 }));

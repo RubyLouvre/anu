@@ -1,4 +1,5 @@
-import React, { Fragment } from 'react';
+import { Fragment } from 'react-core/util';
+import { Component } from 'react-core/Component';
 import NativeShare from 'nativeshare';
 import { handleSuccess, handleFail } from '../../utils';
 
@@ -30,7 +31,7 @@ const shareTypes = [
   }
 ];
 
-export default class Share extends React.Component {
+export default class Share extends Component {
   browserShare({ title, path, imageUrl, type = 'default', desc }) {
     var nativeShare = new NativeShare();
     nativeShare.setShareData({
