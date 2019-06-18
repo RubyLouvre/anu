@@ -39,13 +39,21 @@ const pageWrapper = template(`
 });
 const CLASS_NAME = 'Global';
 
-let registerTemplate = `
+const registerTemplate = `
+window.addEventListener('popstate', function({ state }) {
+    React.api.redirectTo({
+      url: state.url
+    });
+});
 React.registerApp(this);
+this.onLaunch();
+React.api.redirectTo({
+    url: ${CLASS_NAME}.config.pages[0]
+});
 `;
 
 
 module.exports = function ({ types: t }) {
-    // let pageIndex = 0;
     const importedPages = t.arrayExpression();
     return {
         visitor: {
@@ -66,12 +74,9 @@ module.exports = function ({ types: t }) {
                 if (!/pages/.test(importPath)) {
                     return;
                 }
-                // const PAGE_NAME = `PAGE_${pageIndex++}`;
-                // registerTemplate += `React.registerPage(${PAGE_NAME}, '${importPath.replace(/^\./, '')}')\n`;
                 const pageItem = t.stringLiteral(importPath.replace(/^\./, ''));
                 
                 importedPages.elements.push(pageItem);
-                // astPath.replaceWith(t.ImportDeclaration([t.importDefaultSpecifier(t.identifier(PAGE_NAME))], t.stringLiteral(importPath)));
             },
             ClassProperty(astPath) {
                 if (
@@ -109,10 +114,6 @@ module.exports = function ({ types: t }) {
                 }
             },
             ClassBody(astPath) {
-                registerTemplate += `this.onLaunch();
-                React.api.redirectTo({
-                    url: ${CLASS_NAME}.config.pages[0]
-                });`;
                 const registerApp = template(registerTemplate, {
                     placeholderPattern: false
                 });

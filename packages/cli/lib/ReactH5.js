@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-18T06
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-18T07
  * IE9+
  */
 
@@ -3584,35 +3584,40 @@
         __pages: {},
         __currentPages: []
     };
+    function router(_ref) {
+        var url = _ref.url,
+            success = _ref.success,
+            fail = _ref.fail,
+            complete = _ref.complete;
+        var _getQuery = getQuery(url),
+            _getQuery2 = _slicedToArray(_getQuery, 2),
+            path = _getQuery2[0],
+            query = _getQuery2[1];
+        React.__currentPages.push(path);
+        var appInstance = React.__app;
+        var appConfig = appInstance.constructor.config;
+        if (appConfig.pages.indexOf(path) === -1) {
+            throw "没有注册该页面: " + path;
+        }
+        appInstance.setState({
+            path: path,
+            query: query,
+            success: success,
+            fail: fail,
+            complete: complete
+        });
+    }
     var apiContainer = {
         redirectTo: function redirectTo(options) {
             if (React.__currentPages.length > 0) {
                 React.__currentPages.pop();
             }
-            this.navigateTo.call(this, options);
+            history.replaceState({ url: options.url }, null, options.url);
+            router(options);
         },
-        navigateTo: function navigateTo(_ref) {
-            var url = _ref.url,
-                success = _ref.success,
-                fail = _ref.fail,
-                complete = _ref.complete;
-            var _getQuery = getQuery(url),
-                _getQuery2 = _slicedToArray(_getQuery, 2),
-                path = _getQuery2[0],
-                query = _getQuery2[1];
-            React.__currentPages.push(path);
-            var appInstance = React.__app;
-            var appConfig = appInstance.constructor.config;
-            if (appConfig.pages.indexOf(path) === -1) {
-                throw "没有注册该页面: " + path;
-            }
-            appInstance.setState({
-                path: path,
-                query: query,
-                success: success,
-                fail: fail,
-                complete: complete
-            });
+        navigateTo: function navigateTo(options) {
+            history.pushState({ url: options.url }, null, options.url);
+            router(options);
         },
         navigateBack: function navigateBack() {
             var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
@@ -3624,6 +3629,7 @@
             var path;
             while (delta && React.__currentPages.length) {
                 path = React.__currentPages.pop();
+                history.back();
                 delta--;
             }
             path = React.__currentPages[React.__currentPages.length - 1];

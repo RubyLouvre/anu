@@ -99,33 +99,39 @@ let React = (getWindow().React = {
     __pages: {},
     __currentPages: []
 });
+function router({url, success, fail, complete}) {
+    var [path, query] = getQuery(url);
+    React.__currentPages.push(path);
+    var appInstance = React.__app;
+    var appConfig = appInstance.constructor.config;
+    if (appConfig.pages.indexOf(path) === -1){
+        throw "没有注册该页面: "+ path;
+    }
+    appInstance.setState({
+        path,
+        query, 
+        success, 
+        fail, 
+        complete
+    });
+}
 let apiContainer = {
     redirectTo: function(options) {
         if (React.__currentPages.length > 0) {
             React.__currentPages.pop();
         }
-        this.navigateTo.call(this, options);
+        history.replaceState({url: options.url}, null, options.url);
+        router(options);
     },
-    navigateTo: function({url, success, fail, complete}) {
-        var [path, query] = getQuery(url);
-        React.__currentPages.push(path);
-        var appInstance = React.__app;
-        var appConfig = appInstance.constructor.config;
-        if (appConfig.pages.indexOf(path) === -1){
-            throw "没有注册该页面: "+ path;
-        }
-        appInstance.setState({
-            path,
-            query, 
-            success, 
-            fail, 
-            complete
-        });
+    navigateTo: function(options) {
+        history.pushState({url: options.url}, null, options.url);
+        router(options);
     },
     navigateBack: function({delta = 1, success, fail, complete} = {}) {
         var path;
         while (delta && React.__currentPages.length) {
             path = React.__currentPages.pop();
+            history.back();
             delta--;
         }
         path = React.__currentPages[React.__currentPages.length - 1];
