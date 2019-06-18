@@ -12,7 +12,7 @@ import './pages/list/index';
 import './app.less';
 
 class Demo extends React.Component {
-    config = {
+    static config = {
         window: {
             backgroundTextStyle: 'light',
             navigationBarBackgroundColor: '#0088a4',

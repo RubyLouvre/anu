@@ -65,7 +65,7 @@ import './pages/platform/about/index';
 import './app.scss';
 
 class Global extends React.Component {
-	config = {
+	static config = {
 	    window: {
 	        backgroundTextStyle: 'light',
 	        // navigationBarBackgroundColor: '#0088a4',
@@ -197,3 +197,4 @@ class Global extends React.Component {
 // React.applyAppStore(store);
 // eslint-disable-next-line
 export default App(new Global());
+
