@@ -165,5 +165,4 @@ function getQuery(url) {
 }
 
 registerAPIs(React, apiContainer, more);
-
 export default React;

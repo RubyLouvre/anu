@@ -1,4 +1,4 @@
-import { handleSuccess, handleFail } from '@shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../utils';
 
 /**
  * 将页面滚动到目标位置

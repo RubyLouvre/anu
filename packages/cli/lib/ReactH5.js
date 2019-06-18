@@ -1,13 +1,19 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-18T07
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-18T08
  * IE9+
  */
 
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (global = global || self, global.React = factory());
-}(this, function () {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
+    typeof define === 'function' && define.amd ? define(['clipboard', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
+    (global = global || self, global.React = factory(global.Clipboard, global.axios, global.qs, global.MobileDetect, global.io));
+}(this, function (Clipboard, axios, qs, MobileDetect, io) {
+    Clipboard = Clipboard && Clipboard.hasOwnProperty('default') ? Clipboard['default'] : Clipboard;
+    axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
+    qs = qs && qs.hasOwnProperty('default') ? qs['default'] : qs;
+    MobileDetect = MobileDetect && MobileDetect.hasOwnProperty('default') ? MobileDetect['default'] : MobileDetect;
+    io = io && io.hasOwnProperty('default') ? io['default'] : io;
+
     var arrayPush = Array.prototype.push;
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var gSBU = 'getSnapshotBeforeUpdate';
@@ -686,14 +692,14 @@
     if (!inBrowser) {
         win.document = fakeDoc;
     }
-    var document = win.document;
+    var document$1 = win.document;
     var versions = {
         88: 7,
         80: 6,
         '00': NaN,
         '08': NaN
     };
-    var msie = document.documentMode || versions[typeNumber(document.all) + '' + typeNumber(win.XMLHttpRequest)];
+    var msie = document$1.documentMode || versions[typeNumber(document$1.all) + '' + typeNumber(win.XMLHttpRequest)];
     var modern = /NaN|undefined/.test(msie) || msie > 8;
     function contains(a, b) {
         if (b) {
@@ -1058,14 +1064,14 @@
             events[refName] = val;
         }
     }
-    var isTouch = 'ontouchstart' in document;
+    var isTouch = 'ontouchstart' in document$1;
     function dispatchEvent(e, type, endpoint) {
         e = new SyntheticEvent(e);
         if (type) {
             e.type = type;
         }
         var bubble = e.type,
-            terminal = endpoint || document,
+            terminal = endpoint || document$1,
             hook = eventPropHooks[e.type];
         if (hook && false === hook(e)) {
             return;
@@ -1127,7 +1133,7 @@
     function addGlobalEvent(name, capture) {
         if (!globalEvents[name]) {
             globalEvents[name] = true;
-            addEvent(document, name, dispatchEvent, capture);
+            addEvent(document$1, name, dispatchEvent, capture);
         }
     }
     function addEvent(el, type, fn, bool) {
@@ -1198,11 +1204,11 @@
         e.target.__onComposition = false;
     }
     var input2change = /text|password|search|url|email/i;
-    if (!document['__input']) {
-        globalEvents.input = document['__input'] = true;
-        addEvent(document, 'compositionstart', onCompositionStart);
-        addEvent(document, 'compositionend', onCompositionEnd);
-        addEvent(document, 'input', function (e) {
+    if (!document$1['__input']) {
+        globalEvents.input = document$1['__input'] = true;
+        addEvent(document$1, 'compositionstart', onCompositionStart);
+        addEvent(document$1, 'compositionend', onCompositionEnd);
+        addEvent(document$1, 'input', function (e) {
             var dom = getTarget(e);
             if (input2change.test(dom.type)) {
                 if (!dom.__onComposition) {
@@ -1256,7 +1262,7 @@
     eventPropHooks.click = function (e) {
         return !e.target.disabled;
     };
-    var fixWheelType = document.onwheel !== void 666 ? 'wheel' : 'onmousewheel' in document ? 'mousewheel' : 'DOMMouseScroll';
+    var fixWheelType = document$1.onwheel !== void 666 ? 'wheel' : 'onmousewheel' in document$1 ? 'mousewheel' : 'DOMMouseScroll';
     eventHooks.wheel = function (dom) {
         addEvent(dom, fixWheelType, specialHandles.wheel);
     };
@@ -1301,9 +1307,9 @@
         globalEvents[type] = true;
         if (modern) {
             var mark = '__' + type;
-            if (!document[mark]) {
-                document[mark] = true;
-                addEvent(document, type, blurFocus, true);
+            if (!document$1[mark]) {
+                document$1[mark] = true;
+                addEvent(document$1, type, blurFocus, true);
             }
         } else {
             eventHooks[type] = function (dom, name) {
@@ -1315,7 +1321,7 @@
         addEvent(dom, name, specialHandles[name]);
     };
     eventHooks.doubleclick = function (dom, name) {
-        addEvent(document, 'dblclick', specialHandles[name]);
+        addEvent(document$1, 'dblclick', specialHandles[name]);
     };
     function SyntheticEvent(event) {
         if (event.nativeEvent) {
@@ -2906,9 +2912,9 @@
                     node.nodeValue = props;
                     return node;
                 }
-                return document.createTextNode(props);
+                return document$1.createTextNode(props);
             case '#comment':
-                return document.createComment(props);
+                return document$1.createComment(props);
             case 'svg':
                 ns = NAMESPACE.svg;
                 break;
@@ -2931,21 +2937,21 @@
         try {
             if (ns) {
                 vnode.namespaceURI = ns;
-                return document.createElementNS(ns, type);
+                return document$1.createElementNS(ns, type);
             }
         } catch (e1) {
         }
-        var elem = document.createElement(type);
+        var elem = document$1.createElement(type);
         var inputType = props && props.type;
         if (inputType && elem.uniqueID) {
             try {
-                elem = document.createElement('<' + type + ' type=\'' + inputType + '\'/>');
+                elem = document$1.createElement('<' + type + ' type=\'' + inputType + '\'/>');
             } catch (e2) {
             }
         }
         return elem;
     }
-    var hyperspace = document.createElement('div');
+    var hyperspace = document$1.createElement('div');
     function _emptyElement(node) {
         while (node.firstChild) {
             node.removeChild(node.firstChild);
@@ -2970,7 +2976,7 @@
     }
     function safeActiveElement() {
         try {
-            return document.activeElement;
+            return document$1.activeElement;
         } catch (e) {}
     }
     function insertElement(fiber) {
@@ -3138,6 +3144,16 @@
             Renderer.currentOwner = get(owner)._owner;
         }
         return createElement(clazz, props);
+    }
+    function handleSuccess(options, success, complete, resolve) {
+        success(options);
+        complete(options);
+        resolve(options);
+    }
+    function handleFail(options, fail, complete, reject) {
+        fail(options);
+        complete(options);
+        reject(options);
     }
     function safeClone(originVal) {
         var temp = originVal instanceof Array ? [] : {};
@@ -3432,8 +3448,1157 @@
         promisefyApis(ReactWX, facade, override(facade));
     }
 
+    function makePhoneCall() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return new Promise(function (resolve, reject) {
+        var _options$phoneNumber = options.phoneNumber,
+            phoneNumber = _options$phoneNumber === undefined ? '' : _options$phoneNumber,
+            _options$success = options.success,
+            success = _options$success === undefined ? function () {} : _options$success,
+            _options$fail = options.fail,
+            fail = _options$fail === undefined ? function () {} : _options$fail,
+            _options$complete = options.complete,
+            complete = _options$complete === undefined ? function () {} : _options$complete;
+        phoneNumber = String(phoneNumber);
+        if (/^\d+$/.test(phoneNumber)) {
+          window.location.href = 'tel:' + phoneNumber;
+          handleSuccess({
+            errMsg: 'makePhoneCall: success',
+            phoneNumber: phoneNumber
+          }, success, complete, resolve);
+        } else {
+          handleFail({
+            errMsg: 'phoneNumber格式错误',
+            phoneNumber: phoneNumber
+          }, fail, complete, reject);
+        }
+      });
+    }
+    var call = {
+      makePhoneCall: makePhoneCall
+    };
+
+    var NOTSUPPORTAPI = [
+    'openLocation', 'chooseLocation',
+    'getClipboardData',
+    'saveImageToPhotosAlbum',
+    'getNetworkType', 'onNetworkStatusChange',
+    'startBeaconDiscovery', 'stopBeaconDiscovery', 'getBeacons', 'onBeaconUpdate', 'onBeaconServiceChange',
+    'hideKeyboard',
+    'setKeepScreenOn', 'getScreenBrightness', 'setScreenBrightness '];
+    function canIUse(api) {
+      var apis = Object.keys(apiData).map(function (k) {
+        return k;
+      });
+      return apis.indexOf(api) >= 0 && NOTSUPPORTAPI.indexOf(api) < 0;
+    }
+    var canIUse$1 = {
+      canIUse: canIUse
+    };
+
+    var CanvasContext = function CanvasContext(canvasId) {
+      var canvasDom = document.getElementById(canvasId);
+      if (!canvasDom || !canvasDom.getContext) {
+        console.error('canvasId错误，或浏览器不支持canvas');
+      } else {
+        this.canvasDom = canvasDom;
+        this.width = canvasDom.width;
+        this.height = canvasDom.height;
+        this.ctx = canvasDom.getContext('2d');
+      }
+      this.missions = [];
+    };
+    CanvasContext.prototype.setTextAlign = function (align) {
+      var _this = this;
+      this.missions.push(function () {
+        _this.ctx.textAlign = align;
+      });
+    };
+    CanvasContext.prototype.setTextBaseline = function (textBaseline) {
+      var _this2 = this;
+      this.missions.push(function () {
+        _this2.ctx.textBaseline = textBaseline;
+      });
+    };
+    CanvasContext.prototype.setFillStyle = function () {
+      var _this3 = this;
+      var color = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'black';
+      this.missions.push(function () {
+        _this3.ctx.fillStyle = color;
+      });
+    };
+    CanvasContext.prototype.setStrokeStyle = function () {
+      var _this4 = this;
+      var color = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'black';
+      this.missions.push(function () {
+        _this4.ctx.strokeStyle = color;
+      });
+    };
+    CanvasContext.prototype.setShadow = function () {
+      var offsetX = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+      var offsetY = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+      var _this5 = this;
+      var blur = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+      var color = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'black';
+      this.missions.push(function () {
+        _this5.ctx.shadowOffsetX = offsetX;
+        _this5.ctx.shadowOffsetY = offsetY;
+        _this5.ctx.shadowBlur = blur;
+        _this5.ctx.shadowColor = color;
+      });
+    };
+    CanvasContext.prototype.createLinearGradient = function (x0, y0, x1, y1) {
+      return this.ctx.createLinearGradient(x0, y0, x1, y1);
+    };
+    CanvasContext.prototype.createCircularGradient = function (x, y, r) {
+      return this.ctx.createRadialGradient(x, y, 0, x, y, r);
+    };
+    CanvasContext.prototype.setLineWidth = function (lineWidth) {
+      var _this6 = this;
+      this.missions.push(function () {
+        _this6.ctx.lineWidth = lineWidth;
+      });
+    };
+    CanvasContext.prototype.setLineCap = function (lineCap) {
+      var _this7 = this;
+      this.missions.push(function () {
+        _this7.ctx.lineCap = lineCap;
+      });
+    };
+    CanvasContext.prototype.setLineJoin = function (lineJoin) {
+      var _this8 = this;
+      this.missions.push(function () {
+        _this8.ctx.lineJoin = lineJoin;
+      });
+    };
+    CanvasContext.prototype.setMiterLimit = function (miterLimit) {
+      var _this9 = this;
+      this.missions.push(function () {
+        _this9.ctx.miterLimit = miterLimit;
+      });
+    };
+    CanvasContext.prototype.rect = function (x, y, width, height) {
+      var _this10 = this;
+      this.missions.push(function () {
+        _this10.ctx.rect(x, y, width, height);
+      });
+    };
+    CanvasContext.prototype.fillRect = function (x, y, width, height) {
+      var _this11 = this;
+      this.missions.push(function () {
+        _this11.ctx.fillRect(x, y, width, height);
+      });
+    };
+    CanvasContext.prototype.strokeRect = function (x, y, width, height) {
+      var _this12 = this;
+      this.missions.push(function () {
+        _this12.ctx.strokeRect(x, y, width, height);
+      });
+    };
+    CanvasContext.prototype.clearRect = function (x, y, width, height) {
+      var _this13 = this;
+      this.missions.push(function () {
+        _this13.ctx.clearRect(x, y, width, height);
+      });
+    };
+    CanvasContext.prototype.fill = function () {
+      var _this14 = this;
+      this.missions.push(function () {
+        _this14.ctx.fill();
+      });
+    };
+    CanvasContext.prototype.stroke = function () {
+      var _this15 = this;
+      this.missions.push(function () {
+        _this15.ctx.stroke();
+      });
+    };
+    CanvasContext.prototype.beginPath = function () {
+      var _this16 = this;
+      this.missions.push(function () {
+        _this16.ctx.beginPath();
+      });
+    };
+    CanvasContext.prototype.closePath = function () {
+      var _this17 = this;
+      this.missions.push(function () {
+        _this17.ctx.closePath();
+      });
+    };
+    CanvasContext.prototype.moveTo = function (x, y) {
+      var _this18 = this;
+      this.missions.push(function () {
+        _this18.ctx.moveTo(x, y);
+      });
+    };
+    CanvasContext.prototype.lineTo = function (x, y) {
+      var _this19 = this;
+      this.missions.push(function () {
+        _this19.ctx.lineTo(x, y);
+      });
+    };
+    CanvasContext.prototype.arc = function (x, y, r, sAngle, eAngle, counterclockwise) {
+      var _this20 = this;
+      this.missions.push(function () {
+        _this20.ctx.arc(x, y, r, sAngle, eAngle, counterclockwise);
+      });
+    };
+    CanvasContext.prototype.bezierCurveTo = function (cp1x, cp1y, cp2x, cp2y, x, y) {
+      var _this21 = this;
+      this.missions.push(function () {
+        _this21.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+      });
+    };
+    CanvasContext.prototype.clip = function () {
+      var _this22 = this;
+      this.missions.push(function () {
+        _this22.ctx.clip();
+      });
+    };
+    CanvasContext.prototype.quadraticCurveTo = function (cpx, cpy, x, y) {
+      var _this23 = this;
+      this.missions.push(function () {
+        _this23.ctx.quadraticCurveTo(cpx, cpy, x, y);
+      });
+    };
+    CanvasContext.prototype.scale = function (scaleWidth, scaleHeight) {
+      var _this24 = this;
+      this.missions.push(function () {
+        _this24.ctx.scale(scaleWidth, scaleHeight);
+      });
+    };
+    CanvasContext.prototype.rotate = function (rotate) {
+      var _this25 = this;
+      this.missions.push(function () {
+        _this25.ctx.rotate(rotate);
+      });
+    };
+    CanvasContext.prototype.translate = function (x, y) {
+      var _this26 = this;
+      this.missions.push(function () {
+        _this26.ctx.translate(x, y);
+      });
+    };
+    CanvasContext.prototype.setFontSize = function (fontSize) {
+      var _this27 = this;
+      this.missions.push(function () {
+        _this27.ctx.font = fontSize;
+      });
+    };
+    CanvasContext.prototype.fillText = function (text, x, y, maxWidth) {
+      var _this28 = this;
+      this.missions.push(function () {
+        _this28.ctx.fillText(text, x, y, maxWidth);
+      });
+    };
+    CanvasContext.prototype.drawImage = function (imageResource, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight) {
+      var _this29 = this;
+      this.missions.push(function () {
+        _this29.ctx.drawImage(imageResource, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight);
+      });
+    };
+    CanvasContext.prototype.setGlobalAlpha = function (alpha) {
+      var _this30 = this;
+      this.missions.push(function () {
+        _this30.ctx.globalAlpha = alpha;
+      });
+    };
+    CanvasContext.prototype.setLineDash = function (segments, offset) {
+      var _this31 = this;
+      this.missions.push(function () {
+        _this31.ctx.setLineDash(segments, offset);
+      });
+    };
+    CanvasContext.prototype.transform = function (scaleX, skewX, skewY, scaleY, translateX, translateY) {
+      var _this32 = this;
+      this.missions.push(function () {
+        _this32.ctx.transform(scaleX, skewX, skewY, scaleY, translateX, translateY);
+      });
+    };
+    CanvasContext.prototype.setTransform = function (scaleX, skewX, skewY, scaleY, translateX, translateY) {
+      var _this33 = this;
+      this.missions.push(function () {
+        _this33.ctx.setTransform(scaleX, skewX, skewY, scaleY, translateX, translateY);
+      });
+    };
+    CanvasContext.prototype.save = function () {
+      var _this34 = this;
+      this.missions.push(function () {
+        _this34.ctx.save();
+      });
+    };
+    CanvasContext.prototype.restore = function () {
+      var _this35 = this;
+      this.missions.push(function () {
+        _this35.ctx.restore();
+      });
+    };
+    CanvasContext.prototype.draw = function () {
+      var reserve = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+      if (!reserve) {
+        this.height = this.height;
+      }
+      this.missions.forEach(function (mission) {
+        mission();
+      });
+      callback();
+    };
+    CanvasContext.prototype.measureText = function (text) {
+      return this.ctx.measureText(text);
+    };
+    function createCanvasContext(canvasId) {
+      return new CanvasContext(canvasId);
+    }
+    function canvasToTempFilePath() {
+      console.warn('暂未实现');
+    }
+    var canvas = {
+      createCanvasContext: createCanvasContext,
+      canvasToTempFilePath: canvasToTempFilePath
+    };
+
+    function setClipboardData() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return new Promise(function (resolve, reject) {
+        var _options$data = options.data,
+            data = _options$data === undefined ? '' : _options$data,
+            _options$success = options.success,
+            success = _options$success === undefined ? function () {} : _options$success,
+            _options$fail = options.fail,
+            fail = _options$fail === undefined ? function () {} : _options$fail,
+            _options$complete = options.complete,
+            complete = _options$complete === undefined ? function () {} : _options$complete;
+        try {
+          var aux = document.createElement('input');
+          aux.setAttribute('data-clipboard-text', data);
+          new Clipboard(aux);
+          aux.click();
+          handleSuccess({
+            errMsg: 'setClipboardData success',
+            data: data
+          }, success, complete, resolve);
+        } catch (e) {
+          handleFail({
+            errMsg: e
+          }, fail, complete, reject);
+        }
+      });
+    }
+    var clipboard = {
+      setClipboardData: setClipboardData
+    };
+
+    var file = {};
+
+    function chooseImage(_ref) {
+      var _ref$files = _ref.files,
+          files = _ref$files === undefined ? [] : _ref$files;
+      var result = [];
+      var _loop = function _loop(i) {
+        var f = files[i];
+        if (!f) return 'break';
+        result.push(new Promise(function (res) {
+          var reader = new FileReader();
+          reader.readAsDataURL(f);
+          reader.onload = function () {
+            return res(reader.result);
+          };
+        }));
+      };
+      for (var i = 0; i < 9; i++) {
+        var _ret = _loop(i);
+        if (_ret === 'break') break;
+      }
+      return Promise.all(result);
+    }
+    function saveImageToPhotosAlbum(filePath) {
+      console.log(filePath);
+    }
+    function getImageInfo() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var img = new Image();
+      var src = options.src,
+          _options$success = options.success,
+          success = _options$success === undefined ? function () {} : _options$success,
+          _options$fail = options.fail,
+          fail = _options$fail === undefined ? function () {} : _options$fail,
+          _options$complete = options.complete,
+          complete = _options$complete === undefined ? function () {} : _options$complete;
+      img.src = src;
+      var result = {
+        width: 1,
+        height: 1,
+        path: '',
+        orientation: '',
+        type: ''
+      };
+      return new Promise(function (resolve, reject) {
+        try {
+          if (!src) {
+            handleFail({
+              errMsg: 'getImageInfo 参数错误'
+            }, fail, complete, reject);
+            return;
+          }
+          if (img.complete) {
+            result.width = img.width;
+            result.height = img.height;
+            result.path = img.src;
+            handleSuccess(result, success, complete, resolve);
+          } else {
+            img.onload = function () {
+              result.width = img.width;
+              result.height = img.height;
+              result.path = img.src;
+              handleSuccess(result, success, complete, resolve);
+            };
+          }
+        } catch (e) {
+          handleFail({
+            errMsg: e
+          }, fail, complete, reject);
+        }
+      });
+    }
+    var images = {
+      chooseImage: chooseImage,
+      saveImageToPhotosAlbum: saveImageToPhotosAlbum,
+      getImageInfo: getImageInfo
+    };
+
+    var interaction = {
+    };
+
+    function getLocation() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return new Promise(function (resolve, reject) {
+        var _options$altitude = options.altitude,
+            altitude = _options$altitude === undefined ? false : _options$altitude,
+            _options$success = options.success,
+            success = _options$success === undefined ? function () {} : _options$success,
+            _options$fail = options.fail,
+            fail = _options$fail === undefined ? function () {} : _options$fail,
+            _options$complete = options.complete,
+            complete = _options$complete === undefined ? function () {} : _options$complete;
+        if (!navigator.geolocation) {
+          handleFail({ errMsg: new Error('无法获取位置') }, fail, complete, reject);
+        }
+        navigator.geolocation.getCurrentPosition(function (position) {
+          handleSuccess(position.coords, success, complete, resolve);
+        }, function (err) {
+          handleFail({ errMsg: err.message }, fail, complete, reject);
+        }, {
+          enableHighAcuracy: altitude === 'true',
+          timeout: 5000
+        });
+      });
+    }
+    var location = {
+      getLocation: getLocation
+    };
+
+    var previewImage = {
+    };
+
+    axios.defaults.headers = {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    };
+    var cancel = void 0,
+        promiseArr = {};
+    var CancelToken = axios.CancelToken;
+    axios.interceptors.request.use(function (config) {
+      if (promiseArr[config.url]) {
+        promiseArr[config.url]('操作取消');
+        promiseArr[config.url] = cancel;
+      } else {
+        promiseArr[config.url] = cancel;
+      }
+      return config;
+    }, function (err) {
+      console.log('请求超时!');
+      return Promise.resolve(err);
+    });
+    axios.interceptors.response.use(function (response) {
+      return response.status === 200 ? Promise.resolve(response) : Promise.reject(response);
+    }, function (error) {
+      if (error && error.response) {
+        switch (error.response.status) {
+          case 404:
+            error.message = '请求错误,未找到该资源';
+            break;
+          case 500:
+            error.message = '服务器端出错';
+            break;
+          default:
+            error.message = '\u672A\u77E5\u9519\u8BEF: ' + error.response.status;
+        }
+      }
+      return Promise.resolve(error);
+    });
+    function getFormData(formData) {
+      var data = new FormData();
+      Object.keys(formData).forEach(function (k) {
+        data.append(k, formData[k]);
+      });
+      return data;
+    }
+    function request() {
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref$url = _ref.url,
+          url = _ref$url === undefined ? '' : _ref$url,
+          _ref$method = _ref.method,
+          method = _ref$method === undefined ? 'get' : _ref$method,
+          _ref$data = _ref.data,
+          data = _ref$data === undefined ? {} : _ref$data,
+          _ref$header = _ref.header,
+          header = _ref$header === undefined ? {} : _ref$header,
+          _ref$responseType = _ref.responseType,
+          responseType = _ref$responseType === undefined ? 'text' : _ref$responseType,
+          _ref$success = _ref.success,
+          success = _ref$success === undefined ? function () {} : _ref$success,
+          _ref$fail = _ref.fail,
+          fail = _ref$fail === undefined ? function () {} : _ref$fail,
+          _ref$complete = _ref.complete,
+          complete = _ref$complete === undefined ? function () {} : _ref$complete;
+      return new Promise(function (resolve, reject) {
+        method = method.toLowerCase();
+        Object.keys(data).forEach(function (key) {
+          if (data[key] === '' || data[key] == null) delete data[key];
+        });
+        if (method === 'get') data = { params: data };
+        if (method === 'post') data = qs.stringify(data);
+        axios({
+          method: method,
+          url: url,
+          data: data,
+          headers: header,
+          responseType: responseType,
+          cancelToken: new CancelToken(function (c) {
+            cancel = c;
+          })
+        }).then(function (res) {
+          handleSuccess(res, success, complete, resolve);
+        }).catch(function (err) {
+          handleFail(err, fail, complete, reject);
+        });
+      });
+    }
+    function uploadFile() {
+      var url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+      var formData = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var header = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var success = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : function () {};
+      var fail = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : function () {};
+      var complete = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : function () {};
+      return new Promise(function (resolve, reject) {
+        axios({
+          method: 'post',
+          url: url,
+          data: getFormData(formData),
+          headers: Object.assign({}, { 'content-type': 'multipart/form-data' }, header)
+        }).then(function (res) {
+          handleSuccess(res, success, complete, resolve);
+        }).catch(function (err) {
+          handleFail(err, fail, complete, reject);
+        });
+      });
+    }
+    function downloadFile() {
+      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref2$url = _ref2.url,
+          url = _ref2$url === undefined ? '' : _ref2$url,
+          _ref2$name = _ref2.name,
+          name = _ref2$name === undefined ? '' : _ref2$name,
+          _ref2$header = _ref2.header,
+          header = _ref2$header === undefined ? '' : _ref2$header,
+          _ref2$formData = _ref2.formData,
+          formData = _ref2$formData === undefined ? {} : _ref2$formData,
+          _ref2$success = _ref2.success,
+          success = _ref2$success === undefined ? function () {} : _ref2$success,
+          _ref2$fail = _ref2.fail,
+          fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
+          _ref2$complete = _ref2.complete,
+          complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
+      return new Promise(function (resolve, reject) {
+        var reg = /\.(\w+)$/;
+        name += url.match(reg) ? '.' + url.match(reg)[1] : '';
+        axios({
+          url: url,
+          method: 'GET',
+          responseType: 'blob',
+          headers: header,
+          data: getFormData(formData)
+        }).then(function (response) {
+          if (response && response.status === 200) {
+            var _url = window.URL.createObjectURL(new Blob([response.data]));
+            var link = document.createElement('a');
+            link.href = _url;
+            link.setAttribute('download', name);
+            document.body.appendChild(link);
+            link.click();
+            handleSuccess(response, success, complete, resolve);
+          } else {
+            handleFail(response, fail, complete, reject);
+          }
+        }).catch(function (err) {
+          handleFail(err, fail, complete, reject);
+        });
+      });
+    }
+    var request$1 = {
+      request: request,
+      uploadFile: uploadFile,
+      downloadFile: downloadFile
+    };
+
+    function pageScrollTo() {
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          scrollTop = _ref.scrollTop,
+          _ref$duration = _ref.duration,
+          _ref$success = _ref.success,
+          success = _ref$success === undefined ? function () {} : _ref$success,
+          _ref$fail = _ref.fail,
+          fail = _ref$fail === undefined ? function () {} : _ref$fail,
+          _ref$complete = _ref.complete,
+          complete = _ref$complete === undefined ? function () {} : _ref$complete;
+      return new Promise(function (resolve, reject) {
+        var container = document.getElementsByClassName('page-container');
+        if (container.length > 0) {
+          container[container.length - 1].scrollTo(0, scrollTop);
+          handleSuccess({ scrollTop: scrollTop }, success, complete, resolve);
+        } else {
+          handleFail({ errMsg: 'pageScrollTo fail' }, fail, complete, reject);
+        }
+      });
+    }
+    var scroll = {
+      pageScrollTo: pageScrollTo
+    };
+
+    var SelectorQuery = function SelectorQuery() {
+      var pages = document.getElementsByClassName('page-wrapper');
+      this.__page = pages[pages.length - 1];
+      this.__node = null;
+      this.__consumed = false;
+      this.__missions = [];
+    };
+    SelectorQuery.prototype.select = function (selector) {
+      this.__node = this.__page.querySelector(selector);
+      this.__consumed = false;
+      return this;
+    };
+    SelectorQuery.prototype.selectAll = function (selector) {
+      this.__node = this.__page.querySelectorAll(selector);
+      this.__consumed = false;
+      return this;
+    };
+    SelectorQuery.prototype.selectViewport = function () {
+      this.__node = this.__page;
+      this.__consumed = false;
+      return this;
+    };
+    SelectorQuery.prototype.boundingClientRect = function () {
+      if (!this.__consumed) {
+        if (!this.__node) {
+          this.__missions.push(null);
+        } else {
+          if (this.__node instanceof NodeList) {
+            this.__missions.push(Array.from(this.__node).map(function (__node) {
+              return __node.getBoundingClientRect();
+            }));
+          } else {
+            this.__missions.push(this.__node.getBoundingClientRect());
+          }
+        }
+      }
+      this.__consumed = true;
+      return this;
+    };
+    SelectorQuery.prototype.scrollOffset = function () {
+      if (!this.__consumed) {
+        if (!this.__node) {
+          this.__missions.push(null);
+        } else {
+          if (this.__node instanceof NodeList) {
+            this.__missions.push(Array.from(this.__node).map(function (__node) {
+              return {
+                scrollLeft: __node.scrollLeft,
+                scrollTop: __node.scrollTop
+              };
+            }));
+          } else {
+            this.__missions.push({
+              scrollLeft: this.__node.scrollLeft,
+              scrollTop: this.__node.scrollTop
+            });
+          }
+        }
+      }
+      this.__consumed = true;
+      return this;
+    };
+    SelectorQuery.prototype.exec = function (callback) {
+      callback(this.__missions);
+      this.__consumed = true;
+      this.__missions = [];
+      return this;
+    };
+    function createSelectorQuery() {
+      return new SelectorQuery();
+    }
+    var selectorQuery = {
+      createSelectorQuery: createSelectorQuery
+    };
+
+    var ERROR_MESSAGE = '不支持 localStorage !';
+    function isSupportStorage() {
+      if (!window.localStorage) {
+        console.log(ERROR_MESSAGE);
+        return false;
+      }
+      return true;
+    }
+    function setStorage() {
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          key = _ref.key,
+          data = _ref.data,
+          _ref$success = _ref.success,
+          success = _ref$success === undefined ? function () {} : _ref$success,
+          _ref$fail = _ref.fail,
+          fail = _ref$fail === undefined ? function () {} : _ref$fail,
+          _ref$complete = _ref.complete,
+          complete = _ref$complete === undefined ? function () {} : _ref$complete;
+      return new Promise(function (resolve, reject) {
+        if (!isSupportStorage()) {
+          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+        } else {
+          localStorage.setItem(key, JSON.stringify(data));
+          handleSuccess({ key: key, data: data }, success, complete, resolve);
+        }
+      });
+    }
+    function setStorageSync(key, data) {
+      if (!isSupportStorage()) {
+        return;
+      }
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+    function getStorage() {
+      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          key = _ref2.key,
+          _ref2$success = _ref2.success,
+          success = _ref2$success === undefined ? function () {} : _ref2$success,
+          _ref2$fail = _ref2.fail,
+          fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
+          _ref2$complete = _ref2.complete,
+          complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
+      return new Promise(function (resolve, reject) {
+        if (!isSupportStorage()) {
+          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+        } else {
+          handleSuccess({ data: JSON.parse(localStorage.getItem(key)) }, success, complete, resolve);
+        }
+      });
+    }
+    function getStorageSync(key) {
+      if (!isSupportStorage()) {
+        return;
+      }
+      return JSON.parse(localStorage.getItem(key));
+    }
+    function removeStorage() {
+      var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          key = _ref3.key,
+          _ref3$success = _ref3.success,
+          success = _ref3$success === undefined ? function () {} : _ref3$success,
+          _ref3$fail = _ref3.fail,
+          fail = _ref3$fail === undefined ? function () {} : _ref3$fail,
+          _ref3$complete = _ref3.complete,
+          complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
+      return new Promise(function (resolve, reject) {
+        if (!isSupportStorage()) {
+          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+        } else {
+          localStorage.removeItem(key);
+          handleSuccess(null, success, complete, resolve);
+        }
+      });
+    }
+    function removeStorageSync(key) {
+      if (!isSupportStorage()) {
+        return;
+      }
+      localStorage.removeItem(key);
+    }
+    function clearStorage() {
+      var _ref4 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref4$success = _ref4.success,
+          success = _ref4$success === undefined ? function () {} : _ref4$success,
+          _ref4$fail = _ref4.fail,
+          fail = _ref4$fail === undefined ? function () {} : _ref4$fail,
+          _ref4$complete = _ref4.complete,
+          complete = _ref4$complete === undefined ? function () {} : _ref4$complete;
+      return new Promise(function (resolve, reject) {
+        if (!isSupportStorage()) {
+          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+        } else {
+          localStorage.clear();
+          handleSuccess(null, success, complete, resolve);
+        }
+      });
+    }
+    function clearStorageSync() {
+      if (!isSupportStorage()) {
+        return;
+      }
+      localStorage.clear();
+    }
+    function get10KBStr() {
+      var str = '0123456789';
+      function add(s) {
+        s += str;
+        if (s.length === 10240) {
+          str = s;
+          return;
+        }
+        add(s);
+      }
+      add(str);
+      return str;
+    }
+    var LIMIT_SIZE_CACHE = -1;
+    function getStorageUnusedSize(cb) {
+      if (LIMIT_SIZE_CACHE !== -1) {
+        cb(LIMIT_SIZE_CACHE);
+      } else {
+        var _10KBStr = get10KBStr();
+        var sum = _10KBStr;
+        var id = setInterval(function () {
+          sum += _10KBStr;
+          try {
+            localStorage.removeItem('test');
+            localStorage.setItem('test', sum);
+          } catch (e) {
+            LIMIT_SIZE_CACHE = sum.length / 1024;
+            cb(LIMIT_SIZE_CACHE);
+            clearInterval(id);
+          }
+        }, 1);
+      }
+    }
+    function getStorageUsedSize() {
+      var values = Object.values(localStorage.valueOf());
+      return values.reduce(function (size, value) {
+        return value.length;
+      }, 0) / 1024;
+    }
+    async function getStorageInfoSync() {
+      var needLimitSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      var result = await getStorageInfo({ needLimitSize: needLimitSize });
+      return result;
+    }
+    function getStorageInfo() {
+      var _ref5 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref5$needLimitSize = _ref5.needLimitSize,
+          needLimitSize = _ref5$needLimitSize === undefined ? false : _ref5$needLimitSize,
+          _ref5$success = _ref5.success,
+          success = _ref5$success === undefined ? function () {} : _ref5$success,
+          _ref5$fail = _ref5.fail,
+          fail = _ref5$fail === undefined ? function () {} : _ref5$fail,
+          _ref5$complete = _ref5.complete,
+          complete = _ref5$complete === undefined ? function () {} : _ref5$complete;
+      return new Promise(function (resolve, reject) {
+        if (!isSupportStorage()) {
+          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+          return;
+        }
+        var result = {
+          keys: Object.keys(localStorage),
+          currentSize: getStorageUsedSize()
+        };
+        if (needLimitSize) {
+          getStorageUnusedSize(function (unUsedSize) {
+            handleSuccess(Object.assign({}, result, {
+              limitSize: result.currentSize + unUsedSize
+            }), success, complete, resolve);
+          });
+        } else {
+          handleSuccess(result, success, complete, resolve);
+        }
+      });
+    }
+    var storage = {
+      setStorage: setStorage,
+      setStorageSync: setStorageSync,
+      getStorage: getStorage,
+      getStorageSync: getStorageSync,
+      removeStorage: removeStorage,
+      removeStorageSync: removeStorageSync,
+      clearStorage: clearStorage,
+      clearStorageSync: clearStorageSync,
+      getStorageInfo: getStorageInfo,
+      getStorageInfoSync: getStorageInfoSync
+    };
+
+    function getSystemInfo() {
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref$success = _ref.success,
+          success = _ref$success === undefined ? function () {} : _ref$success,
+          _ref$fail = _ref.fail,
+          fail = _ref$fail === undefined ? function () {} : _ref$fail,
+          _ref$complete = _ref.complete,
+          complete = _ref$complete === undefined ? function () {} : _ref$complete;
+      return new Promise(function (resolve, reject) {
+        try {
+          var md = new MobileDetect(navigator.userAgent || navigator.vendor || window.opera, window.screen.width);
+          var res = {
+            brand: md.mobile(),
+            model: md.phone(),
+            pixelRatio: '',
+            screenWidth: window.screen.width,
+            screenHeight: window.screen.height,
+            windowWidth: window.screen.width,
+            windowHeight: window.screen.height,
+            statusBarHeight: '',
+            language: navigator.language || '',
+            version: md.version('Webkit'),
+            system: md.os(),
+            platform: md.os(),
+            fontSizeSetting: '',
+            SDKVersion: '',
+            storage: '',
+            currentBattery: '',
+            app: '',
+            benchmarkLevel: ''
+          };
+          handleSuccess(res, success, complete, resolve);
+        } catch (e) {
+          handleFail({ errMsg: e }, fail, complete, reject);
+        }
+      });
+    }
+    function getSystemInfoSync() {
+      var md = new MobileDetect(navigator.userAgent || navigator.vendor || window.opera, window.screen.width);
+      return {
+        brand: md.mobile(),
+        model: md.phone(),
+        pixelRatio: '',
+        screenWidth: window.screen.width,
+        screenHeight: window.screen.height,
+        windowWidth: window.screen.width,
+        windowHeight: window.screen.height,
+        statusBarHeight: '',
+        language: navigator.language || '',
+        version: md.version('Webkit'),
+        system: md.os(),
+        platform: md.os(),
+        fontSizeSetting: '',
+        SDKVersion: '',
+        storage: '',
+        currentBattery: '',
+        app: '',
+        benchmarkLevel: ''
+      };
+    }
+    var systemInfo = {
+      getSystemInfo: getSystemInfo,
+      getSystemInfoSync: getSystemInfoSync
+    };
+
+    function vibrateLong() {
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref$success = _ref.success,
+          success = _ref$success === undefined ? function () {} : _ref$success,
+          _ref$fail = _ref.fail,
+          fail = _ref$fail === undefined ? function () {} : _ref$fail,
+          _ref$complete = _ref.complete,
+          complete = _ref$complete === undefined ? function () {} : _ref$complete;
+      return new Promise(function (resolve, reject) {
+        if (navigator.vibrate) {
+          navigator.vibrate(400);
+          handleSuccess({ errMsg: 'vibrateLong success' }, success, complete, resolve);
+        } else {
+          handleFail({ errMsg: '不支持振动api' }, fail, complete, reject);
+        }
+      });
+    }
+    function vibrateShort() {
+      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref2$success = _ref2.success,
+          success = _ref2$success === undefined ? function () {} : _ref2$success,
+          _ref2$fail = _ref2.fail,
+          fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
+          _ref2$complete = _ref2.complete,
+          complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
+      return new Promise(function (resolve, reject) {
+        if (navigator.vibrate) {
+          navigator.vibrate(100);
+          handleSuccess({ errMsg: 'vibrateShort success' }, success, complete, resolve);
+        } else {
+          handleFail({ errMsg: '不支持振动api' }, fail, complete, reject);
+        }
+      });
+    }
+    var vibrate = {
+      vibrateLong: vibrateLong,
+      vibrateShort: vibrateShort
+    };
+
+    var Err = 'ws不存在';
+    var socket = null;
+    function connectSocket() {
+      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref$url = _ref.url,
+          url = _ref$url === undefined ? '' : _ref$url,
+          protocols = _ref.protocols,
+          _ref$header = _ref.header,
+          header = _ref$header === undefined ? {} : _ref$header,
+          _ref$success = _ref.success,
+          success = _ref$success === undefined ? function () {} : _ref$success,
+          _ref$fail = _ref.fail,
+          fail = _ref$fail === undefined ? function () {} : _ref$fail,
+          _ref$complete = _ref.complete,
+          complete = _ref$complete === undefined ? function () {} : _ref$complete;
+      return new Promise(async function (resolve, reject) {
+        try {
+          if (socket) {
+            await closeSocket();
+          }
+          socket = io(url, {
+            extraHeaders: header
+          });
+          handleSuccess('socket created!', success, complete, resolve);
+        } catch (e) {
+          handleFail(e, fail, complete, reject);
+        }
+      });
+    }
+    function onSocketOpen() {
+      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+      if (!socket) return callback(Err);
+      socket.on('connect', function () {
+        return callback(socket.id);
+      });
+    }
+    function closeSocket() {
+      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          _ref2$success = _ref2.success,
+          success = _ref2$success === undefined ? function () {} : _ref2$success,
+          _ref2$fail = _ref2.fail,
+          fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
+          _ref2$complete = _ref2.complete,
+          complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
+      return new Promise(function (resolve, reject) {
+        if (!socket) return handleFail(Err, fail, complete, reject);
+        socket.close();
+        socket = null;
+        handleSuccess('socket closed.', success, complete, resolve);
+      });
+    }
+    function sendSocketMessage() {
+      var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+          data = _ref3.data,
+          _ref3$success = _ref3.success,
+          success = _ref3$success === undefined ? function () {} : _ref3$success,
+          _ref3$fail = _ref3.fail,
+          fail = _ref3$fail === undefined ? function () {} : _ref3$fail,
+          _ref3$complete = _ref3.complete,
+          complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
+      return new Promise(function (resolve, reject) {
+        if (!socket) return handleFail(Err, fail, complete, reject);
+        socket.send(data, function (res) {
+          handleSuccess(res, success, complete, resolve);
+        });
+      });
+    }
+    function onSocketMessage() {
+      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+      if (!socket) return callback(Err);
+      socket.on('message', function (res) {
+        return callback(res);
+      });
+    }
+    function onSocketError() {
+      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+      if (!socket) return callback(Err);
+      socket.on('error', function (res) {
+        return callback(res);
+      });
+    }
+    function onSocketClose() {
+      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+      if (!socket) return callback(Err);
+      socket.on('disconnect', function (res) {
+        return callback(res);
+      });
+    }
+    var ws = {
+      connectSocket: connectSocket,
+      onSocketOpen: onSocketOpen,
+      closeSocket: closeSocket,
+      sendSocketMessage: sendSocketMessage,
+      onSocketMessage: onSocketMessage,
+      onSocketError: onSocketError,
+      onSocketClose: onSocketClose
+    };
+
+    var share = {
+    };
+
+    function notSupport(name) {
+        return function () {
+            console.warn('Web \u7AEF\u6682\u4E0D\u652F\u6301 ' + name);
+        };
+    }
+    var notSupport$1 = {
+        scanCode: notSupport('scanCode'),
+        getFileInfo: notSupport('getFileInfo'),
+        getSavedFileInfo: notSupport('getSavedFileInfo'),
+        getSavedFileList: notSupport('getSavedFileList'),
+        removeSavedFile: notSupport('removeSavedFile'),
+        saveFile: notSupport('saveFile'),
+        getClipboardData: notSupport('getClipboardData'),
+        getNetworkType: notSupport('getNetworkType'),
+        createShortcut: notSupport('createShortcut'),
+        showModal: notSupport('showModal'),
+        showToast: notSupport('showToast'),
+        hideToast: notSupport('hideToast'),
+        showLoading: notSupport('showLoading'),
+        hideLoading: notSupport('hideLoading'),
+        showActionSheet: notSupport('showActionSheet'),
+        previewImage: notSupport('previewImage'),
+        share: notSupport('share')
+    };
+
+    var interfaceNameSpaces = {
+        call: call,
+        canIUse: canIUse$1,
+        canvas: canvas,
+        clipboard: clipboard,
+        file: file,
+        images: images,
+        interaction: interaction,
+        location: location,
+        previewImage: previewImage,
+        request: request$1,
+        scroll: scroll,
+        selectorQuery: selectorQuery,
+        storage: storage,
+        systemInfo: systemInfo,
+        vibrate: vibrate,
+        ws: ws,
+        share: share,
+        notSupport: notSupport$1
+    };
+    function extractApis(interfaceNameSpaces) {
+        return Object.keys(interfaceNameSpaces).reduce(function (apis, interfaceNameSpaceName) {
+            return Object.assign({}, apis, interfaceNameSpaces[interfaceNameSpaceName]);
+        }, {});
+    }
+    var apiData = extractApis(interfaceNameSpaces);
     var more = function more() {
-      return {};
+        return extractApis(interfaceNameSpaces);
     };
 
     var rbeaconType = /click|tap|change|blur|input/i;

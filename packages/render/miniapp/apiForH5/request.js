@@ -1,7 +1,7 @@
 /* eslint no-console:0 */
 import axios from 'axios';
 import qs from 'qs';
-import { handleSuccess, handleFail } from '@shared/utils/handleCallback';
+import { handleSuccess, handleFail } from '../utils';
 
 axios.defaults.headers = {
   'Content-Type': 'application/x-www-form-urlencoded'
