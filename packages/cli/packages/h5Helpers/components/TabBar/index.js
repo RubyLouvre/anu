@@ -4,8 +4,10 @@ class TabBar extends Component {
     get borderStyle() {
         return this.props.borderStyle === 'black' ? '#ccc' : '#eee';
     }
-    onSelected() {
-
+    onSelected({pagePath} = {}) {
+        React.api.switchTab({
+            url: '/' + pagePath
+        });
     }
     render() {
         return <React.Fragment>

@@ -44,9 +44,8 @@ React.registerApp(this);
 `;
 
 
-let pageIndex = 0;
-
 module.exports = function ({ types: t }) {
+    // let pageIndex = 0;
     const importedPages = t.arrayExpression();
     return {
         visitor: {
@@ -67,12 +66,12 @@ module.exports = function ({ types: t }) {
                 if (!/pages/.test(importPath)) {
                     return;
                 }
-                const PAGE_NAME = `PAGE_${pageIndex++}`;
-                registerTemplate += `React.registerPage(${PAGE_NAME}, '${importPath.replace(/^\./, '')}')\n`;
+                // const PAGE_NAME = `PAGE_${pageIndex++}`;
+                // registerTemplate += `React.registerPage(${PAGE_NAME}, '${importPath.replace(/^\./, '')}')\n`;
                 const pageItem = t.stringLiteral(importPath.replace(/^\./, ''));
                 
                 importedPages.elements.push(pageItem);
-                astPath.replaceWith(t.ImportDeclaration([t.importDefaultSpecifier(t.identifier(PAGE_NAME))], t.stringLiteral(importPath)));
+                // astPath.replaceWith(t.ImportDeclaration([t.importDefaultSpecifier(t.identifier(PAGE_NAME))], t.stringLiteral(importPath)));
             },
             ClassProperty(astPath) {
                 if (

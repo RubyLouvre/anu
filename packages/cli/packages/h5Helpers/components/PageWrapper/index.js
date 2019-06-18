@@ -11,7 +11,8 @@ class PageWrapper extends React.Component{
                 borderStyle: 'black'
             },
             titleBar: {
-                height: 48
+                height: 48,
+                needBackButton: false
             },
             showTitleBar: true,
             pagePath: "",
@@ -38,6 +39,7 @@ class PageWrapper extends React.Component{
         });
     }
     setTitleAndTabs(app) {
+        
         var path = app.state.path;
         var PageClass = React.__pages[path];
         var appConfig = app.constructor.config || {};
@@ -54,11 +56,13 @@ class PageWrapper extends React.Component{
                 text: mixin.navigationBarTitleText,
                 textColor: mixin.navigationBarTextStyle,
                 backgroundColor: mixin.navigationBarBackgroundColor,
+                needBackButton: React.getCurrentPages().length > 1 ? true : false
             })
         });
     
         var tabBar = pageConfig.tabBar || appConfig.tabBar;
         if (tabBar && tabBar.list && tabBar.list.length) {
+            var isTabPage = false;
             tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
             tabBar.color = tabBar.color || "#000";
             tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
@@ -67,10 +71,16 @@ class PageWrapper extends React.Component{
                     console.warn(`tabBar.list[${i}] miss pagePath`, el);//eslint-disable-line
                     return;
                 }
-                el.selected = el.pagePath === path.replace(/^\.\//, '');
+                if (el.pagePath === path.replace(/^\//, '')) {
+                    el.selected = true;
+                    isTabPage = true;
+                } else {
+                    el.selected = false;
+                }
             });
             this.setState({
-                tabBar: tabBar
+                tabBar: tabBar,
+                isTabPage
             });
         }   
     }
@@ -85,7 +95,7 @@ class PageWrapper extends React.Component{
                             navigationBarTextStyle={this.state.titleBar.textColor}
                             navigationBarTitleText={this.state.titleBar.text}
                             navigationBarBackgroundColor={this.state.titleBar.backgroundColor}
-                            backButton={false}
+                            backButton={this.state.titleBar.needBackButton}
                             // animation: { duration, timingFunc }
                         ></TitleBar> : null
                 }
@@ -101,7 +111,7 @@ class PageWrapper extends React.Component{
                     <Page></Page>
                 </div>
                 { 
-                    this.state.tabBar.list.length ? 
+                    this.state.isTabPage ? 
                         <TabBar
                             list={this.state.tabBar.list}
                             backgroundColor={this.state.tabBar.backgroundColor}

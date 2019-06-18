@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-17T12
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-18T06
  * IE9+
  */
 
@@ -3080,17 +3080,6 @@
     }
     var usingComponents = [];
     var registeredComponents = {};
-    function getCurrentPage() {
-        var app = _getApp();
-        return app.$$page && app.$$page.reactInstance;
-    }
-    function _getCurrentPages() {
-        console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-        if (typeof getCurrentPages !== 'undefined') {
-            return getCurrentPages();
-        }
-        return [];
-    }
     function updateMiniApp(instance) {
         if (!instance || !instance.wx) {
             return;
@@ -3565,8 +3554,12 @@
         isValidElement: isValidElement,
         toClass: miniCreateClass,
         registerComponent: registerComponent,
-        getCurrentPage: getCurrentPage,
-        getCurrentPages: _getCurrentPages,
+        getCurrentPage: function getCurrentPage() {
+            return this.__currentPages[this.__currentPages.length - 1];
+        },
+        getCurrentPages: function getCurrentPages() {
+            return this.__currentPages;
+        },
         getApp: function getApp() {
             return this.__app;
         },
@@ -3588,10 +3581,17 @@
         cloneElement: cloneElement,
         appType: 'h5',
         __app: {},
-        __pages: {}
+        __pages: {},
+        __currentPages: []
     };
     var apiContainer = {
-        redirectTo: function redirectTo(_ref) {
+        redirectTo: function redirectTo(options) {
+            if (React.__currentPages.length > 0) {
+                React.__currentPages.pop();
+            }
+            this.navigateTo.call(this, options);
+        },
+        navigateTo: function navigateTo(_ref) {
             var url = _ref.url,
                 success = _ref.success,
                 fail = _ref.fail,
@@ -3600,10 +3600,10 @@
                 _getQuery2 = _slicedToArray(_getQuery, 2),
                 path = _getQuery2[0],
                 query = _getQuery2[1];
+            React.__currentPages.push(path);
             var appInstance = React.__app;
             var appConfig = appInstance.constructor.config;
             if (appConfig.pages.indexOf(path) === -1) {
-                console.log(appConfig.pages, path);
                 throw "没有注册该页面: " + path;
             }
             appInstance.setState({
@@ -3614,12 +3614,51 @@
                 complete: complete
             });
         },
-        navigateTo: function navigateTo() {
-            var _redirectTo;
-            for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-                args[_key] = arguments[_key];
+        navigateBack: function navigateBack() {
+            var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+                _ref2$delta = _ref2.delta,
+                delta = _ref2$delta === undefined ? 1 : _ref2$delta,
+                success = _ref2.success,
+                fail = _ref2.fail,
+                complete = _ref2.complete;
+            var path;
+            while (delta && React.__currentPages.length) {
+                path = React.__currentPages.pop();
+                delta--;
             }
-            (_redirectTo = this.redirectTo).call.apply(_redirectTo, [this].concat(args));
+            path = React.__currentPages[React.__currentPages.length - 1];
+            var appInstance = React.__app;
+            appInstance.setState({
+                path: path,
+                success: success,
+                fail: fail,
+                complete: complete
+            });
+        },
+        switchTab: function switchTab(_ref3) {
+            var url = _ref3.url,
+                success = _ref3.success,
+                fail = _ref3.fail,
+                complete = _ref3.complete;
+            var _getQuery3 = getQuery(url),
+                _getQuery4 = _slicedToArray(_getQuery3, 2),
+                path = _getQuery4[0],
+                query = _getQuery4[1];
+            var config = React.__app.constructor.config;
+            if (config && config.tabBar && config.tabBar.list) {
+                if (config.tabBar.list.length < 2 || config.tabBar.list.length > 5) {
+                    console.warn('tabBar数量非法，必须大于2且小于5个');
+                    return;
+                }
+                if (config.tabBar.list.every(function (item) {
+                    return item.pagePath !== path.replace(/^\//, '');
+                })) {
+                    console.warn(path + '\u672A\u5728tabBar.list\u4E2D\u5B9A\u4E49!');
+                    return;
+                }
+                React.__currentPages = [];
+                this.navigateTo.call(this, { url: url, success: success, fail: fail, complete: complete });
+            }
         }
     };
     function getQuery(url) {

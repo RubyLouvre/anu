@@ -9,6 +9,10 @@ class TitleBar extends Component {
         return this.props.page.App;
     }
 
+    handleBack() {
+        React.api.navigateBack();
+    }
+
     render() {
         const {
             titleBarHeight,
@@ -23,7 +27,7 @@ class TitleBar extends Component {
                 {backButton ? (
                     <div
                         className="__internal__Header-back"
-                        onClick={this.props.page.destroy}
+                        onClick={this.handleBack}
                     >
                         返回
                     </div>

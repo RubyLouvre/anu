@@ -1,26 +1,26 @@
+const path = require('path');
 
 module.exports = function({types: t}){
 
     return {
         visitor: {
-            // Program: {
-            //     exit(astPath) {
-            //         astPath.node.body.unshift(
-            //             t.importDeclaration(
-            //                 [t.importDefaultSpecifier(t.identifier('DynamicPageLoader'))],
-            //                 t.stringLiteral('@dynamic-page-loader')
-            //             )
-            //         );
-            //     }
-            // },
-            // ExportDefaultDeclaration(astPath) {
-            //     const page = astPath.get('declaration');
-            //     page.replaceWith(
-            //         t.callExpression(t.identifier('DynamicPageLoader'), [
-            //             page.node
-            //         ])
-            //     );
-            // }
+            ExportDefaultDeclaration(astPath, state) {
+                const { cwd, filename } = state;
+                const pagePath = '/' + path.relative(path.join(cwd, 'source'), filename).replace(/\.js$/, '');
+                const register = t.expressionStatement(
+                    t.callExpression(
+                        t.memberExpression(
+                            t.identifier('React'),
+                            t.identifier('registerPage')
+                        ),
+                        [
+                            astPath.get('declaration').node,
+                            t.stringLiteral(pagePath)
+                        ]
+                    )
+                );
+                astPath.insertBefore(register);
+            }
         }
     };
 };
