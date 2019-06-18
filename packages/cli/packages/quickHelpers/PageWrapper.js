@@ -104,7 +104,7 @@
         navigationBarTitleText: "",
         navigationBarTextStyle: "white",
         navigationBarBackgroundColor: "#000000"
-      }, appConfig, pageConfig);
+      }, appConfig.window, pageConfig);
 
       instance.setState({
           showTitleBar: mixin.navigationStyle !== "custom",

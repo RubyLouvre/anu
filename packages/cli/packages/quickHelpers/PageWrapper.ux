@@ -130,7 +130,7 @@
         navigationBarTitleText: "",
         navigationBarTextStyle: "white",
         navigationBarBackgroundColor: "#000000"
-      }, appConfig, pageConfig);
+      }, appConfig.window, pageConfig);
       instance.backgroundColor = mixin.backgroundColor || "#ffffff"
       instance.pageRefresh = !!mixin.enablePullDownRefresh;
 
@@ -144,7 +144,7 @@
       var tabBar = pageConfig.tabBar || appConfig.tabBar;
       if (tabBar && tabBar.list && tabBar.list.length) {
           tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
-          tabBar.color = tabBar.color || "#000";
+          tabBar.color = tabBar.color || "#000000";
           tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
           instance.tabBar = tabBar;
           tabBar.list.forEach(function(el, i){
