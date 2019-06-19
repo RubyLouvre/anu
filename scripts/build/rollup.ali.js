@@ -9,13 +9,19 @@ const json = require('../../package.json');
 
 export default {
     input: './packages/render/miniapp/index.ali.js',
-    output: {
+    output: [{
         strict: false,
         format: 'es',
         // exports: 'default',
         file: './dist/ReactAli.js',
         name: 'React'
-    },
+    }, {
+        strict: false,
+        format: 'es',
+        // exports: 'default',
+        file: './packages/cli/lib/ReactAli.js',
+        name: 'React'
+    }],
     plugins: [
         babel({
        

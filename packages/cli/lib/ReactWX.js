@@ -1,6 +1,5 @@
-/* eslint-disable */
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-31T15
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-06-19T08
  * IE9+
  */
 
@@ -948,9 +947,10 @@ function getCurrentPage() {
 }
 function _getCurrentPages() {
     console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-    if (isFn(getCurrentPages)) {
+    if (typeof getCurrentPages !== 'undefined') {
         return getCurrentPages();
     }
+    return [];
 }
 function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
@@ -2597,7 +2597,7 @@ var defer = Promise.resolve().then.bind(Promise.resolve());
 function registerComponent(type, name) {
     type.isMPComponent = true;
     registeredComponents[name] = type;
-    var reactInstances = type.reactInstances = [];
+    type.reactInstances = [];
     var config = {
         data: {
             props: {},
@@ -2611,7 +2611,7 @@ function registerComponent(type, name) {
                 defer(function () {
                     usingComponents[name] = type;
                     var uuid = wx.dataset.instanceUid || null;
-                    refreshComponent(reactInstances, wx, uuid);
+                    refreshComponent(type.reactInstances, wx, uuid);
                 });
             },
             detached: detachComponent,

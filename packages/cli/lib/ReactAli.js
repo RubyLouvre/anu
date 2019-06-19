@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-05-31
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-06-19
  */
 
 var arrayPush = Array.prototype.push;
@@ -623,9 +623,10 @@ function getCurrentPage() {
 }
 function _getCurrentPages() {
     console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-    if (isFn(getCurrentPages)) {
+    if (typeof getCurrentPages !== 'undefined') {
         return getCurrentPages();
     }
+    return [];
 }
 function updateMiniApp(instance) {
     if (!instance || !instance.wx) {

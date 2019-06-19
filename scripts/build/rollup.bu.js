@@ -9,13 +9,19 @@ const json = require('../../package.json');
 
 export default {
     input: './packages/render/miniapp/index.bu.js',
-    output: {
+    output: [{
         strict: false,
         format: 'es',
         // exports: 'default',
         file: './dist/ReactBu.js',
         name: 'React'
-    },
+    }, {
+        strict: false,
+        format: 'es',
+        // exports: 'default',
+        file: './packages/cli/lib/ReactBu.js',
+        name: 'React'
+    }],
     plugins: [
         babel({
        
