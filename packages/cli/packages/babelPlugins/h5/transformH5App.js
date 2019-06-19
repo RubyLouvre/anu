@@ -1,14 +1,11 @@
 const template = require('@babel/template').default;
-const utils = require('../../utils/index');
 
-// const importedPagesTemplatePrefixCode = template(`
-// import Loadable from 'react-loadable';
-// import QunarDefaultLoading from '@qunar-default-loading';
-// `)();
 const importedPagesTemplatePrefixCode = template(`
 import ReactDOM from 'react-dom';
 import PageWrapper from '@internalComponents/PageWrapper';
 import calculateRem from '@internalComponents/HOC/calculateRem';
+import Loadable from 'react-loadable';
+import QunarDefaultLoading from '@qunar-default-loading';
 `)();
 
 const buildAsyncImport = template(
@@ -39,7 +36,7 @@ const pageWrapper = template(`
 });
 const CLASS_NAME = 'Global';
 
-const registerTemplate = `
+let registerTemplate = `
 window.addEventListener('popstate', function({ state }) {
     React.api.redirectTo({
       url: state.url
@@ -55,6 +52,7 @@ React.api.redirectTo({
 
 module.exports = function ({ types: t }) {
     const importedPages = t.arrayExpression();
+    let pageIndex = 0;
     return {
         visitor: {
             Program: {
@@ -74,9 +72,16 @@ module.exports = function ({ types: t }) {
                 if (!/pages/.test(importPath)) {
                     return;
                 }
+                const PAGE_NAME = `PAGE_${pageIndex++}`;
+                registerTemplate += `React.registerPage(${PAGE_NAME}, '${importPath.replace(/^\./, '')}')\n`;
                 const pageItem = t.stringLiteral(importPath.replace(/^\./, ''));
                 
                 importedPages.elements.push(pageItem);
+                astPath.replaceWith(buildAsyncImport({
+                    PAGE_NAME,
+                    IMPORT_PATH: importPath
+                }));
+                // astPath.replaceWith(t.ImportDeclaration([t.importDefaultSpecifier(t.identifier(PAGE_NAME))], t.stringLiteral(importPath)));
             },
             ClassProperty(astPath) {
                 if (

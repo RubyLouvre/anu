@@ -41,7 +41,7 @@ module.exports = {
                 `${intermediateDirectoryName}/components`
             ),
             // '@app': resolveFromContext(`${intermediateDirectoryName}/app.js`),
-            // '@qunar-default-loading': resolveFromContext('src/views/Loading'),
+            '@qunar-default-loading': resolveFromH5Helper('components/Loading'),
             // '@dynamic-page-loader': resolveFromContext(
             //     'src/views/Page/DynamicPageLoader.js'
             // )
