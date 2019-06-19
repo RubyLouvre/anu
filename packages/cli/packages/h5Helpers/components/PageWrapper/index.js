@@ -5,6 +5,7 @@ class PageWrapper extends React.Component{
     constructor(props){
         super(props);
         this.$app = props.app;
+        this.initAppConfig();
         this.state = {
             tabBar: {
                 list: [],
@@ -20,11 +21,17 @@ class PageWrapper extends React.Component{
             isTabPage: true
         };
     }
+    initAppConfig() {
+        this.appConfig = this.props.app.constructor.config || {};
+        // 将window字段扁平化
+        Object.assign(this.appConfig, this.appConfig.window);
+        delete this.appConfig.window;
+    }
     componentWillMount() {
-        this.setTitleAndTabs(this.$app);
+        this.setTitleAndTabs(this.appConfig, this.$app.state.path);
     }
     componentWillUpdate(){
-        this.setTitleAndTabs(this.$app);
+        this.setTitleAndTabs(this.appConfig, this.$app.state.path);
     }
     onSelected(item) {
         if (item.selected){
@@ -38,17 +45,12 @@ class PageWrapper extends React.Component{
             url: item.pagePath
         });
     }
-    setTitleAndTabs(app) {
-        
-        var path = app.state.path;
-        var PageClass = React.__pages[path];
-        var appConfig = app.constructor.config || {};
-        var pageConfig = PageClass.config || {};
+    setTitleAndTabs(config, path) {
         var mixin = Object.assign({
             navigationBarTitleText: "",
             navigationBarTextStyle: "white",
             navigationBarBackgroundColor: "#000000"
-        }, appConfig && appConfig.window, pageConfig);
+        }, config);
         this.setState({
             showTitleBar: mixin.navigationStyle !== "custom",
             backgroundColor: mixin.backgroundColor || "#ffffff",
@@ -59,8 +61,7 @@ class PageWrapper extends React.Component{
                 needBackButton: React.getCurrentPages().length > 1 ? true : false
             })
         });
-    
-        var tabBar = pageConfig.tabBar || appConfig.tabBar;
+        var tabBar = config.tabBar;
         if (tabBar && tabBar.list && tabBar.list.length) {
             var isTabPage = false;
             tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
