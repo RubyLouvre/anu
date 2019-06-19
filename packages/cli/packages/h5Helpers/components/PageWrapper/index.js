@@ -1,6 +1,7 @@
 import React from '@react';
 import TitleBar from '../TitleBar';
 import TabBar from '../TabBar';
+import pageConfigMap from '@pageConfig';
 class PageWrapper extends React.Component{
     constructor(props){
         super(props);
@@ -27,8 +28,12 @@ class PageWrapper extends React.Component{
         Object.assign(this.appConfig, this.appConfig.window);
         delete this.appConfig.window;
     }
+    get pagePath() {
+        return this.$app.state.path;
+    }
     componentWillMount() {
-        this.setTitleAndTabs(this.appConfig, this.$app.state.path);
+        const pageConfig = pageConfigMap[this.pagePath];
+        this.setTitleAndTabs(Object.assign({}, this.appConfig, pageConfig), this.pagePath);
     }
     componentWillUpdate(){
         this.setTitleAndTabs(this.appConfig, this.$app.state.path);
