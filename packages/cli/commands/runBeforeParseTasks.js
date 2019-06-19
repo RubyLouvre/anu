@@ -227,7 +227,7 @@ function checkPagePath(dirname) {
         }
         let jsFileNum = 0;
         files.forEach(file => {
-            if (/[\\/]common[\\/]/.test(file)) return;
+            if (/[\\/]common([\\/]|$)/.test(file)) return;
             file = path.resolve(dirname, file);
             const stat = fs.statSync(file);
             if (stat.isFile()) {
