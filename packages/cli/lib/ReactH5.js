@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-18T11
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-19T04
  * IE9+
  */
 
@@ -5231,7 +5231,25 @@
         }
     };
     function getQuery(url) {
-        return url.split('?');
+        var _url$split = url.split('?'),
+            _url$split2 = _slicedToArray(_url$split, 2),
+            path = _url$split2[0],
+            query = _url$split2[1];
+        query = parseQueryStr2Obj(query);
+        return [path, query];
+    }
+    function parseQueryStr2Obj(query) {
+        if (typeof query === 'undefined') {
+            return {};
+        }
+        query.split('&').reduce(function (accr, curr) {
+            if (curr === '') {
+                return accr;
+            }
+            var temp = curr.split('=');
+            accr[temp[0]] = temp[1];
+            return accr;
+        }, {});
     }
     registerAPIs(React$1, apiContainer, more);
 

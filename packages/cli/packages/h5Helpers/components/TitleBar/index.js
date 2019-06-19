@@ -44,7 +44,7 @@ class TitleBar extends Component {
                         height: ${titleBarHeight}px;
                         line-height: ${titleBarHeight}px;
                         background-color: ${navigationBarBackgroundColor};
-                        position: fixed;
+                        position: absolute;
                         top: 0;
                         left: 0;
                         text-align: center;

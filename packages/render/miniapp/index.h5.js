@@ -161,7 +161,23 @@ let apiContainer = {
     }
 };
 function getQuery(url) {
-    return url.split('?');
+    var [path, query] = url.split('?');
+    query = parseQueryStr2Obj(query);
+    return [path, query];
+}
+
+function parseQueryStr2Obj(query) {
+    if (typeof query === 'undefined') {
+        return {};
+    }
+    query.split('&').reduce(function(accr, curr) {
+        if (curr === '') {
+            return accr;
+        }
+        var temp = curr.split('=');
+        accr[temp[0]] = temp[1];
+        return accr;
+    }, {});
 }
 
 registerAPIs(React, apiContainer, more);

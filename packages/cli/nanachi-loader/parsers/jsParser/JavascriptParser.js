@@ -52,6 +52,10 @@ class JavascriptParser {
     }
     getCodeForWebpack() {
         const res = babel.transformFromAstSync(this.ast, null, {
+            configFile: false,
+            babelrc: false,
+            comments: false,
+            ast: true,
             plugins: [
                 function() {
                     return {
