@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-06-17
+ * 运行于快应用的React by 司徒正美 Copyright 2019-06-19
  */
 
 var arrayPush = Array.prototype.push;
@@ -926,19 +926,14 @@ function setStorage(_ref) {
 }
 function getStorage(_ref2) {
     var key = _ref2.key,
-        _ref2$success = _ref2.success,
-        _success = _ref2$success === undefined ? noop : _ref2$success,
+        _success = _ref2.success,
+        fail = _ref2.fail,
         complete = _ref2.complete;
-    storage.get({
-        key: key,
-        success: function success(data) {
+    storage.get({ key: key, success: function success(data) {
             _success({
                 data: saveParse(data)
             });
-        },
-        fail: function fail() {
-            _success({});
-        }, complete: complete });
+        }, fail: fail, complete: complete });
 }
 function removeStorage(obj) {
     storage.delete(obj);
@@ -1809,7 +1804,11 @@ function promisefyApis(ReactWX, facade, more) {
                         obj[k] = function (res) {
                             options[k] && options[k](res);
                             if (k === 'success') {
-                                resolve(key === 'connectSocket' ? task : res);
+                                if (key === 'connectSocket') {
+                                    resolve(task);
+                                } else {
+                                    resolve(res);
+                                }
                             } else if (k === 'fail') {
                                 reject(res);
                             }
