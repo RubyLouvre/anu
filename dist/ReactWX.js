@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-06-18T03
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-06-19T08
  * IE9+
  */
 
@@ -801,7 +801,11 @@ function promisefyApis(ReactWX, facade, more) {
                         obj[k] = function (res) {
                             options[k] && options[k](res);
                             if (k === 'success') {
-                                resolve(key === 'connectSocket' ? task : res);
+                                if (key === 'connectSocket') {
+                                    resolve(task);
+                                } else {
+                                    resolve(res);
+                                }
                             } else if (k === 'fail') {
                                 reject(res);
                             }

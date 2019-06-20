@@ -267,7 +267,7 @@ function injectPluginsConfig() {
 
 async function runTask({ buildType, beta, betaUi, compress }){
     // 检查pages目录是否符合规范
-    if (getSubpackage(buildType).length > 0) {
+    if (buildType !== 'quick' && getSubpackage(buildType).length > 0) {
         checkPagePath(path.resolve(cwd, 'source/pages'));
     }
     const ReactLibName = REACT_LIB_MAP[buildType];

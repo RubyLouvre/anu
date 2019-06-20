@@ -9,13 +9,19 @@ const json = require('../../package.json');
 
 export default {
     input: './packages/render/miniapp/index.wx.js',
-    output: {
+    output: [{
         strict: false,
         format: 'es',
         // exports: 'default',
         file: './dist/ReactWX.js',
         name: 'React'
-    },
+    }, {
+        strict: false,
+        format: 'es',
+        // exports: 'default',
+        file: './packages/cli/lib/ReactWX.js',
+        name: 'React'
+    }],
     plugins: [
         babel({
        
