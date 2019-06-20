@@ -44,9 +44,6 @@ window.addEventListener('popstate', function({ state }) {
 });
 React.registerApp(this);
 this.onLaunch();
-React.api.redirectTo({
-    url: ${CLASS_NAME}.config.pages[0]
-});
 `;
 
 
@@ -119,6 +116,9 @@ module.exports = function ({ types: t }) {
                 }
             },
             ClassBody(astPath) {
+                registerTemplate += `React.api.redirectTo({
+                    url: ${CLASS_NAME}.config.pages[0]
+                });`;
                 const registerApp = template(registerTemplate, {
                     placeholderPattern: false
                 });

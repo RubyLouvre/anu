@@ -101,6 +101,7 @@ class PageWrapper extends React.Component{
     }
     render(){
         const Page = React.__pages[this.pagePath];
+        const instance = React.getCurrentPage();
         return (
             <div className='__internal__Page__' >
                 {
@@ -123,7 +124,7 @@ class PageWrapper extends React.Component{
                 //   onTouchEnd={this.onTouchEnd}
                 //   onTouchCancel={this.resetContainer}
                 >
-                    <Page refs={this.Comp} isTabPage={this.state.isTabPage} {...this.props}></Page>
+                    {instance}
                 </div>
                 { 
                     this.state.isTabPage ? 

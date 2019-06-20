@@ -101,7 +101,12 @@ let React = (getWindow().React = {
 });
 function router({url, success, fail, complete}) {
     var [path, query] = getQuery(url);
-    React.__currentPages.push(path);
+    var pageClass = React.__pages[path];
+    var pageInstance = React.createElement(pageClass, {
+        isTabPage: false,
+        ...React.__app.state
+    });
+    React.__currentPages.push(pageInstance);
     var appInstance = React.__app;
     var appConfig = appInstance.constructor.config;
     if (appConfig.pages.indexOf(path) === -1){
