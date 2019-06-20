@@ -81,7 +81,6 @@ module.exports = function ({ types: t }) {
                     PAGE_NAME,
                     IMPORT_PATH: importPath
                 }));
-                // astPath.replaceWith(t.ImportDeclaration([t.importDefaultSpecifier(t.identifier(PAGE_NAME))], t.stringLiteral(importPath)));
             },
             ClassProperty(astPath) {
                 if (
@@ -154,6 +153,9 @@ module.exports = function ({ types: t }) {
             ExportDefaultDeclaration(astPath) {
                 astPath.remove();
             }
+        },
+        post: function(){ 
+            pageIndex = 0;
         }
     };
 };

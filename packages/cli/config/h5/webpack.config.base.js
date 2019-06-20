@@ -47,7 +47,7 @@ module.exports = {
             //     'src/views/Page/DynamicPageLoader.js'
             // )
         },
-        modules: ['node_modules', resolveFromDirCwd('node_modules')]
+        modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')]
     },
     module: {
         rules: [

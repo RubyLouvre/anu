@@ -242,6 +242,7 @@ class Swiper extends Component {
 
   // swiper 位移，sign 为 true 的时候调用 onTransition
   translate(distance, sign = true) {
+    if (!this.wrapper) return;
     const { vertical, onTransition } = this.props;
     this.translateX = distance;
     this.wrapper.style.transform = `translate${
