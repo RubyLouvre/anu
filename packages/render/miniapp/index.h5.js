@@ -37,8 +37,8 @@ import {
     useMemo,
     useEffect, 
     useContext } from 'react-core/hooks';
-
-let { render, findDOMNode } = DOMRenderer;
+import { findDOMNode } from '../dom/findDOMNode';
+let { render } = DOMRenderer;
 
 let React = (getWindow().React = {
     //平台相关API

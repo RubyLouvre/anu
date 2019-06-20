@@ -30,22 +30,17 @@ module.exports = {
     resolve: {
         alias: {
             ...retrieveNanachiConfig(),
-            react: path.resolve(__dirname, '../../lib/ReactH5.js'),
-            '@react': path.resolve(__dirname, '../../lib/ReactH5.js'),
-            'react-dom': path.resolve(__dirname, '../../lib/ReactH5.js'),
+            react: resolveFromDirCwd('./source/ReactH5.js'),
+            '@react': resolveFromDirCwd('./source/ReactH5.js'),
+            'react-dom': resolveFromDirCwd('./source/ReactH5.js'),
             'schnee-ui': resolveFromContext(`${intermediateDirectoryName}/npm/schnee-ui`),
-            '@shared': resolveFromContext('./src/shared'),
             '@internalComponents': resolveFromH5Helper('components'),
             '@internalConsts': path.resolve(__dirname, '../../consts/'),
             '@components': resolveFromContext(
                 `${intermediateDirectoryName}/components`
             ),
             '@pageConfig': resolveFromContext(`${intermediateDirectoryName}/pageConfig.js`),
-            // '@app': resolveFromContext(`${intermediateDirectoryName}/app.js`),
             '@qunar-default-loading': resolveFromH5Helper('components/Loading'),
-            // '@dynamic-page-loader': resolveFromContext(
-            //     'src/views/Page/DynamicPageLoader.js'
-            // )
         },
         modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')]
     },
@@ -55,7 +50,7 @@ module.exports = {
                 test: /\.s?[ac]ss$/,
                 use: [
                     require.resolve('style-loader'),
-                    MiniCssExtractPlugin.loader,
+                    // MiniCssExtractPlugin.loader,
                     require.resolve('css-loader'),
                     {
                         loader: require.resolve('postcss-sass-loader'),
@@ -66,10 +61,10 @@ module.exports = {
                 ]
             },
             {
-                test: /\.less$/,
+                test: /\.(le|c)ss$/,
                 use: [
                     require.resolve('style-loader'),
-                    MiniCssExtractPlugin.loader,
+                    // MiniCssExtractPlugin.loader,
                     require.resolve('css-loader'),
                     {
                         loader: require.resolve('postcss-less-loader'),
@@ -94,10 +89,10 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: resolveFromH5Helper('./index.html')
         }),
-        new MiniCssExtractPlugin({
-            filename: '[name].[hash:10].css',
-            chunkFilename: '[id].[hash:10].css'
-        }),
+        // new MiniCssExtractPlugin({
+        //     filename: '[name].[hash:10].css',
+        //     chunkFilename: '[id].[hash:10].css'
+        // }),
         new webpack.EnvironmentPlugin({
             ANU_ENV: 'web'
         }),

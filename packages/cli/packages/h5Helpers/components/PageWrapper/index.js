@@ -1,6 +1,7 @@
 import React from '@react';
 import TitleBar from '../TitleBar';
 import TabBar from '../TabBar';
+
 import pageConfigMap from '@pageConfig';
 class PageWrapper extends React.Component{
     constructor(props){
@@ -38,18 +39,6 @@ class PageWrapper extends React.Component{
     componentWillUpdate(){
         this.setTitleAndTabs(this.appConfig, this.$app.state.path);
     }
-    onSelected(item) {
-        if (item.selected){
-            return false;
-        }
-        var page = React.api.getCurrentPage();
-        if (page.onTabItemTap) {
-            page.onTabItemTap(item);
-        }
-        React.api.navigateTo({
-            url: item.pagePath
-        });
-    }
     setTitleAndTabs(config, path) {
         var mixin = Object.assign({
             navigationBarTitleText: "",
@@ -64,7 +53,8 @@ class PageWrapper extends React.Component{
                 textColor: mixin.navigationBarTextStyle,
                 backgroundColor: mixin.navigationBarBackgroundColor,
                 needBackButton: React.getCurrentPages().length > 1 ? true : false
-            })
+            }),
+            pagePath: this.pagePath
         });
         var tabBar = config.tabBar;
         if (tabBar && tabBar.list && tabBar.list.length) {
@@ -91,7 +81,7 @@ class PageWrapper extends React.Component{
         }   
     }
     render(){
-        const Page = React.__pages[this.props.path];
+        const Page = React.__pages[this.pagePath];
         return (
             <div className='__internal__Page__' >
                 {

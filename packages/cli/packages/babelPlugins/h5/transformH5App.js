@@ -81,6 +81,7 @@ module.exports = function ({ types: t }) {
                     PAGE_NAME,
                     IMPORT_PATH: importPath
                 }));
+                // astPath.node.specifiers.push(t.importDefaultSpecifier(t.identifier(PAGE_NAME)));
             },
             ClassProperty(astPath) {
                 if (

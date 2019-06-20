@@ -1,0 +1,8 @@
+.page-appear {
+    transform: translate(500px);
+}
+.page-appear-done {
+    transform: translate(0);
+    transition: transform 300ms;
+}
+  

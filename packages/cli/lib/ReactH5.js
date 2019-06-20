@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-19T04
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-20T07
  * IE9+
  */
 
@@ -5098,9 +5098,45 @@
         return useCallbackImpl(create, deps, true);
     }
 
+    function findHostInstance(fiber) {
+        if (!fiber) {
+            return null;
+        } else if (fiber.nodeType) {
+            return fiber;
+        } else if (fiber.tag > 3) {
+            return fiber.stateNode;
+        } else if (fiber.tag < 3) {
+            return findHostInstance(fiber.stateNode);
+        } else if (fiber.refs && fiber.render) {
+            fiber = get(fiber);
+            var childrenMap = fiber.children;
+            if (childrenMap) {
+                for (var i in childrenMap) {
+                    var dom = findHostInstance(childrenMap[i]);
+                    if (dom) {
+                        return dom;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    function findDOMNode(fiber) {
+        if (fiber == null) {
+            return null;
+        }
+        if (fiber.nodeType === 1) {
+            return fiber;
+        }
+        if (!fiber.render) {
+            throw "findDOMNode:invalid type";
+        }
+        return findHostInstance(fiber);
+    }
+
     var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-    var render$2 = DOMRenderer.render,
-        findDOMNode = DOMRenderer.findDOMNode;
+    var render$2 = DOMRenderer.render;
     var React$1 = getWindow().React = {
         findDOMNode: findDOMNode,
         version: '1.5.0',
