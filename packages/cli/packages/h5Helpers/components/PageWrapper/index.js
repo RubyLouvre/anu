@@ -34,10 +34,11 @@ class PageWrapper extends React.Component{
     }
     componentWillMount() {
         const pageConfig = pageConfigMap[this.pagePath];
-        this.setTitleAndTabs(Object.assign({}, this.appConfig, pageConfig), this.pagePath);
+        this.setTitleAndTabs(Object.assign({}, this.appConfig, pageConfig, this.props.config), this.pagePath);
     }
     componentWillUpdate(){
-        this.setTitleAndTabs(this.appConfig, this.$app.state.path);
+        const pageConfig = pageConfigMap[this.pagePath];
+        this.setTitleAndTabs(Object.assign({}, this.appConfig, pageConfig, this.props.config), this.$app.state.path);
     }
     setTitleAndTabs(config, path) {
         var mixin = Object.assign({

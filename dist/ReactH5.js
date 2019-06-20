@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-20T08
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-20T10
  * IE9+
  */
 
@@ -5144,6 +5144,7 @@
     }
 
     var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+    function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
     var render$2 = DOMRenderer.render;
     var React$1 = getWindow().React = {
         findDOMNode: findDOMNode,
@@ -5214,6 +5215,13 @@
             complete: complete
         });
     }
+    var titleBarColorMap = {
+        'backgroundColor': 'navigationBarBackgroundColor',
+        'frontColor': 'navigationBarTextStyle'
+    };
+    var titleBarTitleMap = {
+        'title': 'navigationBarTitleText'
+    };
     var apiContainer = {
         redirectTo: function redirectTo(options) {
             if (React$1.__currentPages.length > 0) {
@@ -5272,6 +5280,34 @@
                 React$1.__currentPages = [];
                 this.navigateTo.call(this, { url: url, success: success, fail: fail, complete: complete });
             }
+        },
+        reLaunch: function reLaunch(_ref4) {
+            var url = _ref4.url,
+                success = _ref4.success,
+                fail = _ref4.fail,
+                complete = _ref4.complete;
+            React$1.__currentPages = [];
+            this.navigateTo.call(this, { url: url, success: success, fail: fail, complete: complete });
+        },
+        setNavigationBarColor: function setNavigationBarColor(options) {
+            var processedOptions = Object.keys(options).reduce(function (accr, curr) {
+                var key = titleBarColorMap[curr];
+                return Object.assign({}, accr, _defineProperty({}, key || curr, options[curr]));
+            }, {});
+            var appInstance = React$1.__app;
+            appInstance.setState({
+                config: processedOptions
+            });
+        },
+        setNavigationBarTitle: function setNavigationBarTitle(options) {
+            var processedOptions = Object.keys(options).reduce(function (accr, curr) {
+                var key = titleBarTitleMap[curr];
+                return Object.assign({}, accr, _defineProperty({}, key || curr, options[curr]));
+            }, {});
+            var appInstance = React$1.__app;
+            appInstance.setState({
+                config: processedOptions
+            });
         }
     };
     function getQuery(url) {

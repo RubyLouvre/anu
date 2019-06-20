@@ -8,7 +8,6 @@ import cssTransitionWrapper from '@internalComponents/HOC/cssTransitionWrapper';
 `)();
 
 module.exports = function({types: t}){
-    console.log(pageConfig);
     return {
         visitor: {
             Program: {

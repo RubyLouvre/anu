@@ -30,7 +30,7 @@ window.onload = function (){
 
 const calculateRem = template('const Wrapper = calculateRem(PageWrapper);');
 const pageWrapper = template(`
-    return <Wrapper app={this} path={this.state.path}  query={this.state.query} />
+    return <Wrapper app={this} path={this.state.path}  query={this.state.query} config={this.state.config}/>
 `, {
     plugins: ['jsx']
 });

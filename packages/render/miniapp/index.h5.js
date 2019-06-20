@@ -115,6 +115,14 @@ function router({url, success, fail, complete}) {
         complete
     });
 }
+const titleBarColorMap = {
+    'backgroundColor': 'navigationBarBackgroundColor',
+    'frontColor': 'navigationBarTextStyle'
+};
+const titleBarTitleMap = {
+    'title': 'navigationBarTitleText'
+};
+
 let apiContainer = {
     redirectTo: function(options) {
         if (React.__currentPages.length > 0) {
@@ -158,6 +166,30 @@ let apiContainer = {
             React.__currentPages = [];
             this.navigateTo.call(this, {url, success, fail, complete});
         }
+    },
+    reLaunch: function({ url, success, fail, complete }) {
+        React.__currentPages = [];
+        this.navigateTo.call(this, { url, success, fail, complete });
+    },
+    setNavigationBarColor: function(options) {
+        const processedOptions = Object.keys(options).reduce(function(accr, curr) {
+            let key = titleBarColorMap[curr];
+            return Object.assign({}, accr, { [key || curr]: options[curr] });
+        }, {}) ;
+        var appInstance = React.__app;
+        appInstance.setState({
+            config: processedOptions
+        });
+    },
+    setNavigationBarTitle: function(options) {
+        const processedOptions = Object.keys(options).reduce(function(accr, curr) {
+            let key = titleBarTitleMap[curr];
+            return Object.assign({}, accr, { [key || curr]: options[curr] });
+        }, {}) ;
+        var appInstance = React.__app;
+        appInstance.setState({
+            config: processedOptions
+        });
     }
 };
 function getQuery(url) {
