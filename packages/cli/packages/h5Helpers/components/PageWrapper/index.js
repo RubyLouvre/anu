@@ -104,7 +104,7 @@ class PageWrapper extends React.Component{
                 //   onTouchEnd={this.onTouchEnd}
                 //   onTouchCancel={this.resetContainer}
                 >
-                    <Page {...this.props}></Page>
+                    <Page isTabPage={this.state.isTabPage} {...this.props}></Page>
                 </div>
                 { 
                     this.state.isTabPage ? 

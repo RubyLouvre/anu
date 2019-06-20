@@ -7,7 +7,7 @@ export default function cssTransitionWrapper(Comp) {
         render() {
             return (
                 <CSSTransition
-                    classNames='page'
+                    classNames={this.props.isTabPage ? 'tab' : 'page'}
                     timeout={true}
                     in={true}
                     appear
