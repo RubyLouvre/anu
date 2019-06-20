@@ -6,6 +6,7 @@ import pageConfigMap from '@pageConfig';
 class PageWrapper extends React.Component{
     constructor(props){
         super(props);
+        this.Comp = React.createRef();
         this.$app = props.app;
         this.initAppConfig();
         this.state = {
@@ -22,12 +23,22 @@ class PageWrapper extends React.Component{
             backgroundColor: "#ffffff",
             isTabPage: true
         };
+        this.triggerLifeCycle('onLoad');
     }
     initAppConfig() {
         this.appConfig = this.props.app.constructor.config || {};
         // 将window字段扁平化
         Object.assign(this.appConfig, this.appConfig.window);
         delete this.appConfig.window;
+    }
+    triggerLifeCycle(name, ...args) {
+        const instance = this.Comp.current;
+        const appInstance = this.$app;
+        const globalName = name.replace(/^on/, '$&Global');
+        appInstance[globalName] &&
+            appInstance[globalName].call(appInstance, ...args);
+  
+        instance && instance[name] && instance[name].call(instance, ...args);
     }
     get pagePath() {
         return this.$app.state.path;
@@ -39,6 +50,13 @@ class PageWrapper extends React.Component{
     componentWillUpdate(){
         const pageConfig = pageConfigMap[this.pagePath];
         this.setTitleAndTabs(Object.assign({}, this.appConfig, pageConfig, this.props.config), this.$app.state.path);
+    }
+    componentWillUnmount() {
+        this.triggerLifeCycle('onUnload');
+    }
+    componentDidMount() {
+        this.triggerLifeCycle('onShow');
+        this.triggerLifeCycle('onReady');
     }
     setTitleAndTabs(config, path) {
         var mixin = Object.assign({
@@ -105,7 +123,7 @@ class PageWrapper extends React.Component{
                 //   onTouchEnd={this.onTouchEnd}
                 //   onTouchCancel={this.resetContainer}
                 >
-                    <Page isTabPage={this.state.isTabPage} {...this.props}></Page>
+                    <Page refs={this.Comp} isTabPage={this.state.isTabPage} {...this.props}></Page>
                 </div>
                 { 
                     this.state.isTabPage ? 
