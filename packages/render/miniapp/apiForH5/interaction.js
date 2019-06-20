@@ -32,7 +32,11 @@ function showModal({
       const container = document.createElement('div');
       container.id = id;
       container.style.position = 'fixed';
-      container.style.backgroundColor = 'rgba(0,0,0,0.4)';
+      container.style.backgroundColor = 'rgba(0,0,0,0)';
+      setTimeout(() => {
+        container.style.backgroundColor = 'rgba(0,0,0,0.4)';
+      }, 0);
+      container.style.transition = 'background-color 300ms';
       container.style.width = '100%';
       container.style.height = '100%';
       document.body.appendChild(container);
@@ -156,7 +160,11 @@ function showActionSheet({
       const container = document.createElement('div');
       container.id = id;
       container.style.position = 'fixed';
-      container.style.backgroundColor = 'rgba(0,0,0,0.4)';
+      container.style.backgroundColor = 'rgba(0,0,0,0)';
+      container.style.transition = 'background-color 300ms';
+      setTimeout(() => {
+        container.style.backgroundColor = 'rgba(0,0,0,0.4)';
+      }, 0);
       container.style.width = '100%';
       container.style.height = '100%';
       container.addEventListener('click', function(e) {

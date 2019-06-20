@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-20T07
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-20T08
  * IE9+
  */
 
@@ -4110,7 +4110,11 @@
           var container = document.createElement('div');
           container.id = id;
           container.style.position = 'fixed';
-          container.style.backgroundColor = 'rgba(0,0,0,0.4)';
+          container.style.backgroundColor = 'rgba(0,0,0,0)';
+          setTimeout(function () {
+            container.style.backgroundColor = 'rgba(0,0,0,0.4)';
+          }, 0);
+          container.style.transition = 'background-color 300ms';
           container.style.width = '100%';
           container.style.height = '100%';
           document.body.appendChild(container);
@@ -4242,7 +4246,11 @@
           var container = document.createElement('div');
           container.id = id;
           container.style.position = 'fixed';
-          container.style.backgroundColor = 'rgba(0,0,0,0.4)';
+          container.style.backgroundColor = 'rgba(0,0,0,0)';
+          container.style.transition = 'background-color 300ms';
+          setTimeout(function () {
+            container.style.backgroundColor = 'rgba(0,0,0,0.4)';
+          }, 0);
           container.style.width = '100%';
           container.style.height = '100%';
           container.addEventListener('click', function (e) {
