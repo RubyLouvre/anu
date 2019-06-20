@@ -170,7 +170,7 @@ function parseQueryStr2Obj(query) {
     if (typeof query === 'undefined') {
         return {};
     }
-    query.split('&').reduce(function(accr, curr) {
+    return query.split('&').reduce(function(accr, curr) {
         if (curr === '') {
             return accr;
         }
