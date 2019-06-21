@@ -104,6 +104,7 @@ function router({url, success, fail, complete}) {
     var pageClass = React.__pages[path];
     var pageInstance = React.createElement(pageClass, {
         isTabPage: false,
+        path,
         ...React.__app.state
     });
     React.__currentPages.push(pageInstance);
@@ -143,6 +144,7 @@ let apiContainer = {
     navigateBack: function({delta = 1, success, fail, complete} = {}) {
         var path;
         while (delta && React.__currentPages.length) {
+            React.__currentPages.pop();
             history.back();
             delta--;
         }

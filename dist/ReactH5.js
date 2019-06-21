@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-21T10
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-21T12
  * IE9+
  */
 
@@ -5203,7 +5203,8 @@
             query = _getQuery2[1];
         var pageClass = React$1.__pages[path];
         var pageInstance = React$1.createElement(pageClass, Object.assign({
-            isTabPage: false
+            isTabPage: false,
+            path: path
         }, React$1.__app.state));
         React$1.__currentPages.push(pageInstance);
         var appInstance = React$1.__app;
@@ -5247,6 +5248,7 @@
                 complete = _ref2.complete;
             var path;
             while (delta && React$1.__currentPages.length) {
+                React$1.__currentPages.pop();
                 history.back();
                 delta--;
             }
