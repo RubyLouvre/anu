@@ -143,11 +143,10 @@ let apiContainer = {
     navigateBack: function({delta = 1, success, fail, complete} = {}) {
         var path;
         while (delta && React.__currentPages.length) {
-            path = React.__currentPages.pop();
             history.back();
             delta--;
         }
-        path = React.__currentPages[React.__currentPages.length - 1];
+        path = React.__currentPages[React.__currentPages.length - 1].props.path;
         var appInstance = React.__app;
         appInstance.setState({
             path,

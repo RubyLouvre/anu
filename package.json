@@ -84,8 +84,7 @@
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-re": "^1.0.6",
     "semicolon-less": "^0.7.0",
-    "serve": "^8.1.3",
-    "fa-toolkit": "file:fa-toolkit-1.1.1-Stable.301.tgz"
+    "serve": "^8.1.3"
   },
   "dependencies": {
     "@rematch/core": "^1.0.0-alpha.9",
