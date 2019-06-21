@@ -5,7 +5,8 @@ const defer = Promise.resolve().then.bind(Promise.resolve());
 export function registerComponent (type, name) {
     type.isMPComponent = true;
     registeredComponents[name] = type;
-    let reactInstances = type.reactInstances = [];
+  //  let reactInstances = type.reactInstances = [];
+    type.reactInstances = [];
     let config = {
         data: {
             props: {},
@@ -22,7 +23,8 @@ export function registerComponent (type, name) {
                 defer(() => {
                     usingComponents[name] = type;
                     let uuid = wx.dataset.instanceUid || null;
-                    refreshComponent(reactInstances, wx, uuid);
+                 //   refreshComponent(reactInstances, wx, uuid);
+                    refreshComponent(type.reactInstances, wx, uuid);
                 });
             },
             detached: detachComponent,

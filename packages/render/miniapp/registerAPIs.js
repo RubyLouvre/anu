@@ -17,13 +17,10 @@ export function promisefyApis(ReactWX, facade, more) {
                 const p = new Promise((resolve, reject) => {
                     ['fail', 'success', 'complete'].forEach(k => {
                         obj[k] = res => {
+                            //执行用户自己的fail，success，complete
                             options[k] && options[k](res);
                             if (k === 'success') {
-                                if (key === 'connectSocket') {
-                                    resolve(task);
-                                } else {
-                                    resolve(res);
-                                }
+                                resolve(key === 'connectSocket' ? task: res);
                             } else if (k === 'fail') {
                                 reject(res);
                             }
@@ -88,6 +85,8 @@ export function registerAPIs(ReactWX, facade, override) {
 }
 
 export function registerAPIsQuick(ReactWX, facade, override) {
-    ReactWX.api = {};
-    promisefyApis(ReactWX, facade, override(facade) );
+    if(!ReactWX.api ){ //防止多次promisefyApis
+        ReactWX.api = {};
+        promisefyApis(ReactWX, facade, override(facade) );
+    }
 }
