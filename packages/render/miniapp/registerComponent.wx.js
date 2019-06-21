@@ -5,10 +5,6 @@ const defer = Promise.resolve().then.bind(Promise.resolve());
 export function registerComponent(type, name) {
     type.isMPComponent = true;
     registeredComponents[name] = type;
-<<<<<<< HEAD
-  //  let reactInstances = type.reactInstances = [];
-=======
->>>>>>> c380b83cc1b6570680ce552281993743b4db6535
     type.reactInstances = [];
     let config = {
         data: {
@@ -28,10 +24,6 @@ export function registerComponent(type, name) {
                     //如果原生微信与nanachi混合使用，外面的reactInstances在这个方法内可能出错，因此必须在这里
                     //通过type.reactInstances来取
                     let uuid = wx.dataset.instanceUid || null;
-<<<<<<< HEAD
-                 //   refreshComponent(reactInstances, wx, uuid);
-=======
->>>>>>> c380b83cc1b6570680ce552281993743b4db6535
                     refreshComponent(type.reactInstances, wx, uuid);
                 });
             },
