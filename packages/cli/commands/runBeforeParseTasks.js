@@ -219,7 +219,7 @@ function needInstallHapToolkit(){
 }
 
 function checkPagePath(dirname) {
-    
+    if (/[\\/]common([\\/]|$)/.test(dirname)) return;
     fs.readdir(dirname, function(err, files) {
         if (err) {
             console.log(err);
@@ -227,7 +227,6 @@ function checkPagePath(dirname) {
         }
         let jsFileNum = 0;
         files.forEach(file => {
-            if (/[\\/]common[\\/]/.test(file)) return;
             file = path.resolve(dirname, file);
             const stat = fs.statSync(file);
             if (stat.isFile()) {
@@ -268,7 +267,7 @@ function injectPluginsConfig() {
 
 async function runTask({ buildType, beta, betaUi, compress }){
     // 检查pages目录是否符合规范
-    if (getSubpackage(buildType).length > 0) {
+    if (buildType !== 'quick' && getSubpackage(buildType).length > 0) {
         checkPagePath(path.resolve(cwd, 'source/pages'));
     }
     const ReactLibName = REACT_LIB_MAP[buildType];

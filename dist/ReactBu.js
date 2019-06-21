@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-06-17
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-06-21
  */
 
 var arrayPush = Array.prototype.push;
@@ -2420,8 +2420,10 @@ function registerAPIs(ReactWX, facade, override) {
     ReactWX.api.pxTransform = ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
 function registerAPIsQuick(ReactWX, facade, override) {
-    ReactWX.api = {};
-    promisefyApis(ReactWX, facade, override(facade));
+    if (!ReactWX.api) {
+        ReactWX.api = {};
+        promisefyApis(ReactWX, facade, override(facade));
+    }
 }
 
 var more = function more(api) {

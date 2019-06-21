@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-05-31
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-06-21
  */
 
 var arrayPush = Array.prototype.push;
@@ -623,9 +623,10 @@ function getCurrentPage() {
 }
 function _getCurrentPages() {
     console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-    if (isFn(getCurrentPages)) {
+    if (typeof getCurrentPages !== 'undefined') {
         return getCurrentPages();
     }
+    return [];
 }
 function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
@@ -2358,11 +2359,7 @@ function promisefyApis(ReactWX, facade, more) {
                         obj[k] = function (res) {
                             options[k] && options[k](res);
                             if (k === 'success') {
-                                if (key === 'connectSocket') {
-                                    resolve(task);
-                                } else {
-                                    resolve(res);
-                                }
+                                resolve(key === 'connectSocket' ? task : res);
                             } else if (k === 'fail') {
                                 reject(res);
                             }
@@ -2423,8 +2420,10 @@ function registerAPIs(ReactWX, facade, override) {
     ReactWX.api.pxTransform = ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
 function registerAPIsQuick(ReactWX, facade, override) {
-    ReactWX.api = {};
-    promisefyApis(ReactWX, facade, override(facade));
+    if (!ReactWX.api) {
+        ReactWX.api = {};
+        promisefyApis(ReactWX, facade, override(facade));
+    }
 }
 
 function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }

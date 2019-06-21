@@ -9,13 +9,19 @@ const json = require('../../package.json');
 
 export default {
     input: './packages/render/miniapp/index.quick.js',
-    output: {
+    output: [{
         strict: false,
         format: 'es',
         // exports: 'default',
         file: './dist/ReactQuick.js',
         name: 'React'
-    },
+    }, {
+        strict: false,
+        format: 'es',
+        // exports: 'default',
+        file: './packages/cli/lib/ReactQuick.js',
+        name: 'React'
+    }],
     plugins: [
         babel({
        

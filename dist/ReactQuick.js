@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-06-17
+ * 运行于快应用的React by 司徒正美 Copyright 2019-06-21
  */
 
 var arrayPush = Array.prototype.push;
@@ -1846,8 +1846,10 @@ function promisefyApis(ReactWX, facade, more) {
     });
 }
 function registerAPIsQuick(ReactWX, facade, override) {
-    ReactWX.api = {};
-    promisefyApis(ReactWX, facade, override(facade));
+    if (!ReactWX.api) {
+        ReactWX.api = {};
+        promisefyApis(ReactWX, facade, override(facade));
+    }
 }
 
 function AnuPortal(props) {

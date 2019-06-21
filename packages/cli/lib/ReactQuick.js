@@ -1,6 +1,5 @@
-/* eslint-disable */
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-05-31
+ * 运行于快应用的React by 司徒正美 Copyright 2019-06-21
  */
 
 var arrayPush = Array.prototype.push;
@@ -696,12 +695,6 @@ function getCurrentPage() {
     var app = _getApp();
     return app.$$page && app.$$page.reactInstance;
 }
-function _getCurrentPages() {
-    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-    if (isFn(getCurrentPages)) {
-        return getCurrentPages();
-    }
-}
 function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
         return;
@@ -933,14 +926,19 @@ function setStorage(_ref) {
 }
 function getStorage(_ref2) {
     var key = _ref2.key,
-        _success = _ref2.success,
-        fail = _ref2.fail,
+        _ref2$success = _ref2.success,
+        _success = _ref2$success === undefined ? noop : _ref2$success,
         complete = _ref2.complete;
-    storage.get({ key: key, success: function success(data) {
+    storage.get({
+        key: key,
+        success: function success(data) {
             _success({
                 data: saveParse(data)
             });
-        }, fail: fail, complete: complete });
+        },
+        fail: function fail() {
+            _success({});
+        }, complete: complete });
 }
 function removeStorage(obj) {
     storage.delete(obj);
@@ -1325,8 +1323,20 @@ function pushOff() {
     return push.off();
 }
 
+function getCurrentPages$1() {
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    var globalData = _getApp().globalData;
+    var c = globalData.__currentPages;
+    if (!c || !c.length) {
+        var router = require('@system.router');
+        globalData.__currentPages = [router.getState()[path]];
+    }
+    return globalData.__currentPages;
+}
+
 var router = require('@system.router');
 var rQuery = /\?(.*)/;
+var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
 function getQueryFromUri(uri, query) {
     return uri.replace(rQuery, function (a, b) {
         b.split('&').forEach(function (param) {
@@ -1337,45 +1347,80 @@ function getQueryFromUri(uri, query) {
     });
 }
 function createRouter(name) {
-    return function (obj) {
-        var href = obj ? obj.url || obj.uri || '' : '';
-        var uri = href.slice(href.indexOf('/pages') + 1);
-        var params = {};
-        var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
-        if (urlReg.test(href)) {
-            var webview = require('@system.webview');
-            webview.loadUrl({
-                url: href,
-                allowthirdpartycookies: true
-            });
-            return;
-        }
-        if (process.env.ANU_WEBVIEW) {
-            var webViewRoutes = {};
-            try {
-                webViewRoutes = require('./webviewConfig.js');
-                var effectPath = uri.split('?')[0];
-                if (webViewRoutes[effectPath]) {
-                    var config = webViewRoutes[effectPath];
-                    params = {
-                        src: config.src || '',
-                        allowthirdpartycookies: config.allowthirdpartycookies || false,
-                        trustedurl: config.trustedurl || []
-                    };
+    return function (obj, inner) {
+        var uri = "",
+            params = {},
+            delta = 0;
+        if (name === 'back') {
+            delta = Object(obj).delta;
+            if (delta + 0 !== delta) {
+                console.warn('navigateBack的传参应该为({delta: number})');
+            }
+        } else {
+            var href = Object(obj).url || "";
+            if (urlReg.test(href)) {
+                var webview = require('@system.webview');
+                webview.loadUrl({
+                    url: href,
+                    allowthirdpartycookies: true
+                });
+                return;
+            }
+            uri = href.slice(href.indexOf('/pages') + 1);
+            if (process.env.ANU_WEBVIEW) {
+                var webViewRoutes = {};
+                try {
+                    webViewRoutes = require('./webviewConfig.js');
+                    var effectPath = uri.split('?')[0];
+                    if (webViewRoutes[effectPath]) {
+                        var config = webViewRoutes[effectPath];
+                        params = {
+                            src: config.src || '',
+                            allowthirdpartycookies: config.allowthirdpartycookies || false,
+                            trustedurl: config.trustedurl || []
+                        };
+                    }
+                } catch (err) {
                 }
-            } catch (err) {
+                if (webViewRoutes[uri.split('?')[0]]) {
+                    uri = '/pages/__web__view__';
+                }
             }
-            if (webViewRoutes[uri.split('?')[0]]) {
-                uri = '/pages/__web__view__';
+            uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
+            if (uri.charAt(0) !== '/') {
+                uri = '/' + uri;
             }
-        }
-        uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
-        if (uri.charAt(0) !== '/') {
-            uri = '/' + uri;
         }
         if (typeof getApp !== 'undefined') {
             var globalData = getApp().globalData;
             var queryObject = globalData.__quickQuery || (globalData.__quickQuery = {});
+            var currentPages = getCurrentPages$1();
+            switch (name) {
+                case 'push':
+                    currentPages.push(uri);
+                    break;
+                case 'replace':
+                    var last = currentPages.pop();
+                    delete queryObject[last];
+                    if (inner === 'clear') {
+                        currentPages.length = 0;
+                    }
+                    currentPages.push(uri);
+                    break;
+                case 'back':
+                    while (delta) {
+                        uri = currentPages.pop();
+                        if (uri) {
+                            delta = delta - 1;
+                            console.log("DEBUG::", router.getState().path == uri);
+                            params = queryObject[uri];
+                        } else {
+                            return;
+                        }
+                    }
+            }
+        }
+        if (name !== 'back') {
             queryObject[uri] = params;
         }
         router[name]({
@@ -1389,7 +1434,7 @@ var redirectTo = createRouter('replace');
 var navigateBack = createRouter('back');
 var reLaunch = function reLaunch(obj) {
     router.clear();
-    redirectTo(obj);
+    redirectTo(obj, 'clear');
 };
 function makePhoneCall(_ref) {
     var phoneNumber = _ref.phoneNumber,
@@ -1492,6 +1537,7 @@ var facade = {
     showLoading: showLoading,
     navigateTo: navigateTo,
     redirectTo: redirectTo,
+    switchTab: redirectTo,
     reLaunch: reLaunch,
     navigateBack: navigateBack,
     vibrateLong: vibrateLong,
@@ -1763,11 +1809,7 @@ function promisefyApis(ReactWX, facade, more) {
                         obj[k] = function (res) {
                             options[k] && options[k](res);
                             if (k === 'success') {
-                                if (key === 'connectSocket') {
-                                    resolve(task);
-                                } else {
-                                    resolve(res);
-                                }
+                                resolve(key === 'connectSocket' ? task : res);
                             } else if (k === 'fail') {
                                 reject(res);
                             }
@@ -1804,8 +1846,10 @@ function promisefyApis(ReactWX, facade, more) {
     });
 }
 function registerAPIsQuick(ReactWX, facade, override) {
-    ReactWX.api = {};
-    promisefyApis(ReactWX, facade, override(facade));
+    if (!ReactWX.api) {
+        ReactWX.api = {};
+        promisefyApis(ReactWX, facade, override(facade));
+    }
 }
 
 function AnuPortal(props) {
@@ -3344,6 +3388,11 @@ function registerPage(PageClass, path) {
             } else if (pageHook === 'onMenuPress') {
                 app.onShowMenu && app.onShowMenu(instance, this.$app);
                 return;
+            } else if (pageHook == 'onBackPress') {
+                if (instance[pageHook] && instance[pageHook]() === true) {
+                    return;
+                }
+                getCurrentPages$1().pop();
             }
             for (var i = 0; i < 2; i++) {
                 var method = i ? appHooks[pageHook] : pageHook;
@@ -3402,7 +3451,7 @@ var React = getWindow().React = {
     toClass: miniCreateClass,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
-    getCurrentPages: _getCurrentPages,
+    getCurrentPages: getCurrentPages$1,
     getApp: _getApp,
     registerPage: registerPage,
     toStyle: toStyle,
