@@ -21,7 +21,7 @@ class PageWrapper extends React.Component{
             showTitleBar: true,
             pagePath: "",
             backgroundColor: "#ffffff",
-            isTabPage: true
+            isTabPage: false
         };
         this.triggerLifeCycle('onLoad');
     }
@@ -100,7 +100,6 @@ class PageWrapper extends React.Component{
         }   
     }
     render(){
-        const Page = React.__pages[this.pagePath];
         const instance = React.getCurrentPage();
         return (
             <div className='__internal__Page__' >

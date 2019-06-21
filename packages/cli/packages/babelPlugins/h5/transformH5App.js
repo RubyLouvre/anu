@@ -34,7 +34,7 @@ const pageWrapper = template(`
 `, {
     plugins: ['jsx']
 });
-const CLASS_NAME = 'Global';
+let CLASS_NAME = 'Global';
 
 let registerTemplate = `
 window.addEventListener('popstate', function({ state }) {
@@ -53,6 +53,12 @@ module.exports = function ({ types: t }) {
     return {
         visitor: {
             Program: {
+                enter(astPath) {
+                    const exportDefaultNode = astPath.node.body.find(node => {
+                        return node.type === 'ExportDefaultDeclaration'
+                    });
+                    CLASS_NAME = exportDefaultNode.declaration.arguments[0].callee.name;
+                },
                 exit(astPath) {
                     astPath.node.body.unshift(...importedPagesTemplatePrefixCode);
                     astPath.node.body.push(domRender({
