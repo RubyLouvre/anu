@@ -1,5 +1,6 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
 const SizePlugin = require('../nanachi-loader/sizePlugin');
+const QuickPlugin = require('../nanachi-loader/QuickPlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
@@ -57,6 +58,23 @@ module.exports = function({
             aliasLoader, 
             nodeLoader) 
     }];
+    const copyAssetsRules = [{
+        from: '**',
+        to: 'assets',
+        context: 'source/assets',
+        ignore: [
+            '**/*.@(js|jsx|json|sass|scss|less|css)'
+        ],
+        ...copyPluginOption // 压缩图片配置
+    }];
+    const mergePlugins = [].concat( 
+        analysis ? new SizePlugin() : [],
+        new NanachiWebpackPlugin({
+            platform,
+            compress
+        }),
+        new CopyWebpackPlugin(copyAssetsRules),
+        plugins);
 
     const mergeRule = [].concat(
         {
@@ -98,16 +116,9 @@ module.exports = function({
                 prevLoaders)
         },
         rules);
-    const copyAssetsRules = [{
-        from: '**',
-        to: 'assets',
-        context: 'source/assets',
-        ignore: [
-            '**/*.@(js|jsx|json|sass|scss|less|css)'
-        ],
-        ...copyPluginOption // 压缩图片配置
-    }];
+    
     if (platform === 'quick') {
+        mergePlugins.push(new QuickPlugin());
         try {
             // quickConfig可能不存在 需要try catch
             const quickConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
@@ -139,14 +150,7 @@ module.exports = function({
         module: {
             rules: mergeRule
         },
-        plugins: [].concat( 
-            analysis ? new SizePlugin() : [],
-            new NanachiWebpackPlugin({
-                platform,
-                compress
-            }),
-            new CopyWebpackPlugin(copyAssetsRules),
-            plugins),
+        plugins: mergePlugins,
         resolve: {
             alias: aliasMap,
             mainFields: ['main']

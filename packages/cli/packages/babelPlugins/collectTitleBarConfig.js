@@ -6,24 +6,14 @@ const traverse = require('@babel/traverse').default;
 module.exports = function(){
     return {
         visitor: {
-            ClassDeclaration(astPath, state){
-                if (config['buildType'] !== 'quick') return;
+            ObjectProperty(astPath, state){
+                if (config['buildType'] !== 'quick' || astPath.node.key.name !== 'navigationBarTitleText') return;
                 let fileId = state.file.opts.filename;
-                
-                traverse(
-                    astPath.node, 
-                    {
-                        ObjectProperty(astPath){
-                            let node = astPath.node;
-                            if (node.key.name !== 'navigationBarTitleText') return;
-                            if (node.value.value === '') {
-                                //config.quick.disabledTitleBarPages.push(fileId)
-                                config['quick']['disabledTitleBarPages'].add(fileId);
-                            }
-                        },
-                    },
-                    astPath.scope
-                );
+                let node = astPath.node;
+                if (node.value.value === '') {
+                    //config.quick.disabledTitleBarPages.push(fileId)
+                    config['quick']['disabledTitleBarPages'].add(fileId);
+                }
             }
         }
     };

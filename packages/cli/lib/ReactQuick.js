@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-06-21
+ * 运行于快应用的React by 司徒正美 Copyright 2019-06-24
  */
 
 var arrayPush = Array.prototype.push;
@@ -926,14 +926,19 @@ function setStorage(_ref) {
 }
 function getStorage(_ref2) {
     var key = _ref2.key,
-        _success = _ref2.success,
-        fail = _ref2.fail,
+        _ref2$success = _ref2.success,
+        _success = _ref2$success === undefined ? noop : _ref2$success,
         complete = _ref2.complete;
-    storage.get({ key: key, success: function success(data) {
+    storage.get({
+        key: key,
+        success: function success(data) {
             _success({
                 data: saveParse(data)
             });
-        }, fail: fail, complete: complete });
+        },
+        fail: function fail() {
+            _success({});
+        }, complete: complete });
 }
 function removeStorage(obj) {
     storage.delete(obj);
@@ -1324,7 +1329,7 @@ function getCurrentPages$1() {
     var c = globalData.__currentPages;
     if (!c || !c.length) {
         var router = require('@system.router');
-        globalData.__currentPages = [router.getState()[path]];
+        globalData.__currentPages = [router.getState()['path']];
     }
     return globalData.__currentPages;
 }
@@ -1804,11 +1809,7 @@ function promisefyApis(ReactWX, facade, more) {
                         obj[k] = function (res) {
                             options[k] && options[k](res);
                             if (k === 'success') {
-                                if (key === 'connectSocket') {
-                                    resolve(task);
-                                } else {
-                                    resolve(res);
-                                }
+                                resolve(key === 'connectSocket' ? task : res);
                             } else if (k === 'fail') {
                                 reject(res);
                             }
@@ -1845,8 +1846,10 @@ function promisefyApis(ReactWX, facade, more) {
     });
 }
 function registerAPIsQuick(ReactWX, facade, override) {
-    ReactWX.api = {};
-    promisefyApis(ReactWX, facade, override(facade));
+    if (!ReactWX.api) {
+        ReactWX.api = {};
+        promisefyApis(ReactWX, facade, override(facade));
+    }
 }
 
 function AnuPortal(props) {
