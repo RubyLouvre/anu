@@ -5,7 +5,7 @@ export function getCurrentPages() {
     var c = globalData.__currentPages;
     if (!c || !c.length) {
         var router = require('@system.router');
-        globalData.__currentPages = [router.getState()[path]];
+        globalData.__currentPages = [router.getState()['path']];
     }
     return globalData.__currentPages;
 }

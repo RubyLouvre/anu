@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-06-21
+ * 运行于快应用的React by 司徒正美 Copyright 2019-06-24
  */
 
 var arrayPush = Array.prototype.push;
@@ -1329,7 +1329,7 @@ function getCurrentPages$1() {
     var c = globalData.__currentPages;
     if (!c || !c.length) {
         var router = require('@system.router');
-        globalData.__currentPages = [router.getState()[path]];
+        globalData.__currentPages = [router.getState()['path']];
     }
     return globalData.__currentPages;
 }
