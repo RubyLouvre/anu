@@ -4,7 +4,7 @@ const pageConfig = require('../../h5Helpers/pageConfig');
 
 const template = require('@babel/template').default;
 const extraImportedPath = template(`
-import cssTransitionWrapper from '@internalComponents/HOC/cssTransitionWrapper';
+import dynamicPage from '@internalComponents/HOC/dynamicPage';
 `)();
 
 module.exports = function({types: t}){
@@ -17,7 +17,7 @@ module.exports = function({types: t}){
             },
             ExportDefaultDeclaration(astPath) {
                 const declaration = astPath.node.declaration;
-                astPath.node.declaration = t.callExpression(t.identifier('cssTransitionWrapper'), [declaration]);
+                astPath.node.declaration = t.callExpression(t.identifier('dynamicPage'), [declaration]);
                 // const { cwd, filename } = state;
                 // const pagePath = '/' + path.relative(path.join(cwd, 'source'), filename).replace(/\.js$/, '');
                 // const register = t.expressionStatement(

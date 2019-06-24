@@ -105,6 +105,7 @@ function router({url, success, fail, complete}) {
     var pageInstance = React.createElement(pageClass, {
         isTabPage: false,
         path,
+        app: React.__app,
         ...React.__app.state
     });
     React.__currentPages.push(pageInstance);

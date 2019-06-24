@@ -163,6 +163,15 @@ module.exports = function ({ types: t }) {
         },
         post: function(){ 
             pageIndex = 0;
+            registerTemplate = `
+window.addEventListener('popstate', function({ state }) {
+    React.api.redirectTo({
+      url: state.url
+    });
+});
+React.registerApp(this);
+this.onLaunch();
+`;
         }
     };
 };

@@ -1,13 +1,13 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-24T07
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-24T10
  * IE9+
  */
 
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
     typeof define === 'function' && define.amd ? define(['clipboard', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
-    (global.React = factory(global.Clipboard,global.axios,global.qs,global.MobileDetect,global.io));
-}(this, (function (Clipboard,axios,qs,MobileDetect,io) {
+    (global = global || self, global.React = factory(global.Clipboard, global.axios, global.qs, global.MobileDetect, global.io));
+}(this, function (Clipboard, axios, qs, MobileDetect, io) {
     Clipboard = Clipboard && Clipboard.hasOwnProperty('default') ? Clipboard['default'] : Clipboard;
     axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
     qs = qs && qs.hasOwnProperty('default') ? qs['default'] : qs;
@@ -207,7 +207,7 @@
             toWarnDev("replaceState", true);
         },
         isReactComponent: returnTrue,
-        isMounted: function isMounted$$1() {
+        isMounted: function isMounted() {
             toWarnDev("isMounted", true);
             return this.updater.isMounted(this);
         },
@@ -477,7 +477,7 @@
         forEach: function forEach(children, func, context) {
             return proxyIt(children, func, null, context);
         },
-        toArray: function toArray$$1(children) {
+        toArray: function toArray(children) {
             return proxyIt(children, K, []);
         }
     };
@@ -1841,12 +1841,12 @@
             arr.splice(index, 1);
         }
     }
-    function detachFiber(fiber, effects$$1) {
+    function detachFiber(fiber, effects) {
         fiber.effectTag = DETACH;
-        effects$$1.push(fiber);
+        effects.push(fiber);
         fiber.disposed = true;
         for (var child = fiber.child; child; child = child.sibling) {
-            detachFiber(child, effects$$1);
+            detachFiber(child, effects);
         }
     }
 
@@ -2315,7 +2315,7 @@
             oldFibers = {};
         }
         var newFibers = fiberizeChildren(children, parentFiber);
-        var effects$$1 = parentFiber.effects || (parentFiber.effects = []);
+        var effects = parentFiber.effects || (parentFiber.effects = []);
         var matchFibers = new Object();
         delete parentFiber.child;
         for (var i in oldFibers) {
@@ -2328,7 +2328,7 @@
                 }
                 continue;
             }
-            detachFiber(oldFiber, effects$$1);
+            detachFiber(oldFiber, effects);
         }
         var prevFiber = void 0,
             index = 0;
@@ -2348,13 +2348,13 @@
                         delete _newFiber.deleteRef;
                     }
                     if (oldRef && oldRef !== _newFiber.ref) {
-                        effects$$1.push(alternate);
+                        effects.push(alternate);
                     }
                     if (_newFiber.tag === 5) {
                         _newFiber.lastProps = alternate.props;
                     }
                 } else {
-                    detachFiber(_oldFiber, effects$$1);
+                    detachFiber(_oldFiber, effects);
                 }
             } else {
                 _newFiber = new Fiber(_newFiber);
@@ -2470,10 +2470,10 @@
             }
         }
     }
-    function commitDFS(effects$$1) {
+    function commitDFS(effects) {
         Renderer.batchedUpdates(function () {
             var el;
-            while (el = effects$$1.shift()) {
+            while (el = effects.shift()) {
                 if (el.effectTag === DETACH && el.caughtError) {
                     disposeFiber(el);
                 } else {
@@ -2581,7 +2581,7 @@
     }
     function safeInvokeHooks(upateQueue, create, destory) {
         var uneffects = upateQueue[destory],
-            effects$$1 = upateQueue[create],
+            effects = upateQueue[create],
             fn;
         if (!uneffects) {
             return;
@@ -2591,7 +2591,7 @@
                 fn();
             } catch (e) {      }
         }
-        while (fn = effects$$1.shift()) {
+        while (fn = effects.shift()) {
             try {
                 var f = fn();
                 if (typeof f === 'function') {
@@ -5160,7 +5160,7 @@
         isValidElement: isValidElement,
         toClass: miniCreateClass,
         registerComponent: registerComponent,
-        getCurrentPage: function getCurrentPage$$1() {
+        getCurrentPage: function getCurrentPage() {
             return this.__currentPages[this.__currentPages.length - 1];
         },
         getCurrentPages: function getCurrentPages() {
@@ -5202,7 +5202,8 @@
         var pageClass = React$1.__pages[path];
         var pageInstance = React$1.createElement(pageClass, Object.assign({
             isTabPage: false,
-            path: path
+            path: path,
+            app: React$1.__app
         }, React$1.__app.state));
         React$1.__currentPages.push(pageInstance);
         var appInstance = React$1.__app;
@@ -5338,4 +5339,4 @@
 
     return React$1;
 
-})));
+}));
