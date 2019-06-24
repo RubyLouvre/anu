@@ -65,7 +65,7 @@ class PageWrapper extends React.Component{
             navigationBarBackgroundColor: "#000000"
         }, config);
         this.setState({
-            showTitleBar: mixin.navigationStyle !== "custom",
+            showTitleBar: mixin.navigationStyle !== "custom" && mixin.navigationBarTitleText !== "",
             backgroundColor: mixin.backgroundColor || "#ffffff",
             titleBar: Object.assign({}, this.state.titleBar, {
                 text: mixin.navigationBarTitleText,
@@ -146,12 +146,12 @@ class PageWrapper extends React.Component{
                         }
                         .__internal__Page-container {
                             width: 100%;
-                            height: ${this.state.isTabPage ? 'calc(100% - 60px - 48px)' : 'calc(100% - 48px)'};
+                            height: ${this.state.isTabPage ? `calc(100% - 60px - ${this.state.showTitleBar ? '48px': 0})` : `calc(100% - ${this.state.showTitleBar ? '48px': 0})`};
                             overflow-x: hidden;
                             overflow-y: auto;
                             background-color: ${this.state.backgroundColor};
                             -webkit-overflow-scrolling: touch;
-                            transform: translateY(48px);
+                            transform: translateY(${this.state.showTitleBar ? '48px': 0});
                         }
                     `}
                 </style>
