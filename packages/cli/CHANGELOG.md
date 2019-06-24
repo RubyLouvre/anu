@@ -1,5 +1,28 @@
 # Changelog
 
+# 1.3.1 (2019-06-24)
+
+## 核心库
+#### Feature
+
+- 添加快应用对React.api.switchTab的支持。
+- 快应用getStorage，出错时也回调success，返回一个空对象。
+
+#### Bug fix
+
+- 修正微信小程序的核心库 attached里面的闭包引发的错误问题。
+- 防止多次对API进行Promise化。
+
+## CLI
+#### Feature
+
+- 添加pages目录检查：page目录下（除common目录），所有目录最多包含一个js文件。（只在用到分包功能情况时检查）
+- 增加快应用form, button标签submit相关事件忽略。
+- 兼容支付宝标签属性bug（字符串问题），添加wxml补丁。
+
+#### Bug fix
+- 修复快应用配置不生效问题。
+
 # 1.3.0 (2019-06-14)
 
 ## CLI

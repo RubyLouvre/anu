@@ -1,4 +1,3 @@
-import { isFn} from 'react-core/util';
 import { dispatchEvent } from './eventSystem';
 import { onLoad, onUnload, onReady } from './registerPage.all';
 import { registerPageHook } from './registerPageHook';
