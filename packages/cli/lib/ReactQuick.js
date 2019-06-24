@@ -3331,6 +3331,22 @@ function onUnload() {
     callGlobalHook('onGlobalUnload');
 }
 
+function registerPageHook(appHooks, pageHook, app, instance, args) {
+    for (var i = 0; i < 2; i++) {
+        var method = i ? appHooks[pageHook] : pageHook;
+        var host = i ? app : instance;
+        if (host && host[method] && isFn(host[method])) {
+            var ret = host[method](args);
+            if (ret !== void 0) {
+                if (ret && ret.then && ret['catch']) {
+                    continue;
+                }
+                return ret;
+            }
+        }
+    }
+}
+
 var appHooks = {
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
@@ -3394,16 +3410,7 @@ function registerPage(PageClass, path) {
                 }
                 getCurrentPages$1().pop();
             }
-            for (var i = 0; i < 2; i++) {
-                var method = i ? appHooks[pageHook] : pageHook;
-                var host = i ? _getApp() : instance;
-                if (method && host && isFn(host[method])) {
-                    var ret = host[method](param);
-                    if (ret !== void 0) {
-                        return ret;
-                    }
-                }
-            }
+            return registerPageHook(appHooks, pageHook, app, instance, param);
         };
     });
     return config;

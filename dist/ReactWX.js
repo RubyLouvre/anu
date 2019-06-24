@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-06-24T03
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-06-24T08
  * IE9+
  */
 
@@ -2535,6 +2535,22 @@ function onUnload() {
     callGlobalHook('onGlobalUnload');
 }
 
+function registerPageHook(appHooks, pageHook, app, instance, args) {
+    for (var i = 0; i < 2; i++) {
+        var method = i ? appHooks[pageHook] : pageHook;
+        var host = i ? app : instance;
+        if (host && host[method] && isFn(host[method])) {
+            var ret = host[method](args);
+            if (ret !== void 0) {
+                if (ret && ret.then && ret['catch']) {
+                    continue;
+                }
+                return ret;
+            }
+        }
+    }
+}
+
 var appHooks = {
     onShare: 'onGlobalShare',
     onShow: 'onGlobalShow',
@@ -2569,17 +2585,7 @@ function registerPage(PageClass, path, testObject) {
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
             }
-            for (var i = 0; i < 2; i++) {
-                var method = i ? appHooks[pageHook] : pageHook;
-                var host = i ? _getApp() : instance;
-                console.log(i, method)
-                if (method && host && isFn(host[method])) {
-                    var ret = host[method](param);
-                    if (ret !== void 0) {
-                        return ret;
-                    }
-                }
-            }
+            return registerPageHook(appHooks, pageHook, _getApp(), instance, param);
         };
     });
     if (testObject) {
