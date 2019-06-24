@@ -42,7 +42,7 @@ class P extends React.Component {
           <div class="strategy-page">
               {this.state.data.map(function(item) {
                   return (
-                      <div onTap={this.showTip.bind(this)} class="strategy-item col" >
+                      <div key={item.desc} onTap={this.showTip.bind(this)} class="strategy-item col" >
                           <image class="big-image" src={item.bigImage} />
                           <div class="strategy-item-content">
                               <div class="col">

@@ -1,6 +1,8 @@
 import { isFn} from 'react-core/util';
 import { dispatchEvent } from './eventSystem';
 import { onLoad, onUnload, onReady } from './registerPage.all';
+import { registerPageHook } from './registerPageHook';
+
 import { _getApp } from './utils';
 var appHooks = {
     onShare: 'onGlobalShare',
@@ -48,17 +50,8 @@ export function registerPage(PageClass, path, testObject) {
                 //里修改全局对象的属性
                 _getApp().$$page = this;
                 _getApp().$$pagePath = instance.props.path;
-            }
-            for(let i = 0; i < 2; i ++){
-                let method = i ? appHooks[pageHook]: pageHook;
-                let host = i ?  _getApp(): instance;
-                if( method && host && isFn(host[method]) ){
-                   let ret = host[method](param);
-                   if(ret !== void 0){
-                       return ret;
-                   }
-                }
-            }
+            }  
+            return registerPageHook(appHooks, pageHook,  _getApp(), instance, param)
         };
     });
 

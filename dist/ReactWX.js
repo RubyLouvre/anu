@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-06-21T08
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-06-24T03
  * IE9+
  */
 
@@ -2572,6 +2572,7 @@ function registerPage(PageClass, path, testObject) {
             for (var i = 0; i < 2; i++) {
                 var method = i ? appHooks[pageHook] : pageHook;
                 var host = i ? _getApp() : instance;
+                console.log(i, method)
                 if (method && host && isFn(host[method])) {
                     var ret = host[method](param);
                     if (ret !== void 0) {

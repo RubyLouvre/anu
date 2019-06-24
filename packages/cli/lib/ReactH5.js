@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-19T08
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-24T03
  * IE9+
  */
 
@@ -3298,11 +3298,7 @@
                             obj[k] = function (res) {
                                 options[k] && options[k](res);
                                 if (k === 'success') {
-                                    if (key === 'connectSocket') {
-                                        resolve(task);
-                                    } else {
-                                        resolve(res);
-                                    }
+                                    resolve(key === 'connectSocket' ? task : res);
                                 } else if (k === 'fail') {
                                     reject(res);
                                 }
@@ -3363,8 +3359,10 @@
         ReactWX.api.pxTransform = ReactWX.pxTransform = pxTransform.bind(ReactWX);
     }
     function registerAPIsQuick(ReactWX, facade, override) {
-        ReactWX.api = {};
-        promisefyApis(ReactWX, facade, override(facade));
+        if (!ReactWX.api) {
+            ReactWX.api = {};
+            promisefyApis(ReactWX, facade, override(facade));
+        }
     }
 
     function makePhoneCall() {
