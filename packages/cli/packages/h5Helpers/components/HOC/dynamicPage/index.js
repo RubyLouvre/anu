@@ -1,5 +1,6 @@
 import React from '@react';
 import cssTransitionWrapper from '../cssTransitionWrapper';
+import ErrorBoundary from '../../ErrorBoundary';
 
 export default function dynamicPage(Comp) {
     return cssTransitionWrapper(class DynamicPage extends React.Component {
@@ -26,7 +27,9 @@ export default function dynamicPage(Comp) {
             instance && instance[name] && instance[name].call(instance, ...args);
         }
         render() {
-            return <Comp ref={this.Ref} {...this.props}></Comp>;
+            return <ErrorBoundary>
+                <Comp ref={this.Ref} {...this.props} />
+            </ErrorBoundary>;
         }
     });
 }
