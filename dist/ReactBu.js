@@ -2576,7 +2576,6 @@ function registerPageHook(appHooks, pageHook, app, instance, args) {
 }
 
 var appHooks = {
-    onShare: 'onGlobalShare',
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
@@ -2595,21 +2594,26 @@ function registerPage(PageClass, path, testObject) {
         config[hook] = function (e) {
             var instance = this.reactInstance,
                 pageHook = hook,
+                app = _getApp(),
                 param = e;
             if (pageHook === 'onShareAppMessage') {
                 if (!instance.onShare) {
-                    instance.onShare = instance.onShareAppMessage;
+                    instance.onShare = instance[pageHook];
                 }
-                pageHook = 'onShare';
+                var shareObject = instance.onShare && instance.onShare(param);
+                if (!shareObject) {
+                    shareObject = app.onGlobalShare && app.onGlobalShare(param);
+                }
+                return shareObject;
             } else if (pageHook === 'onShow') {
                 if (this.options) {
                     instance.props.query = this.options;
                 }
                 param = instance.props.query;
-                _getApp().$$page = this;
-                _getApp().$$pagePath = instance.props.path;
+                app.$$page = this;
+                app.$$pagePath = instance.props.path;
             }
-            return registerPageHook(appHooks, pageHook, _getApp(), instance, param);
+            return registerPageHook(appHooks, pageHook, app, instance, param);
         };
     });
     if (testObject) {
