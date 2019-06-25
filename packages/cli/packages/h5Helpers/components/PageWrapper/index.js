@@ -37,9 +37,18 @@ class PageWrapper extends React.Component{
         const pageConfig = pageConfigMap[this.pagePath];
         this.setTitleAndTabs(Object.assign({}, this.appConfig, pageConfig, this.props.config), this.pagePath);
     }
-    componentWillUpdate(){
-        const pageConfig = pageConfigMap[this.pagePath];
-        this.setTitleAndTabs(Object.assign({}, this.appConfig, pageConfig, this.props.config), this.$app.state.path);
+    componentWillUpdate(nextProps){
+        const mixinConfig = {};
+        if (nextProps.path !== this.props.path || nextProps.config !== this.props.config) {
+            const pageConfig = pageConfigMap[this.pagePath];
+            if (nextProps.path !== this.props.path) {
+                Object.assign(mixinConfig, this.appConfig, pageConfig);
+            }
+            if (nextProps.config !== this.props.config) {
+                Object.assign(mixinConfig, this.appConfig, pageConfig, nextProps.config);
+            }
+            this.setTitleAndTabs(mixinConfig, this.$app.state.path);
+        }
     }
     setTitleAndTabs(config, path) {
         var mixin = Object.assign({

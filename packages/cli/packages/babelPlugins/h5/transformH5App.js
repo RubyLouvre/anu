@@ -22,15 +22,15 @@ const buildAsyncImport = template(
 
 const domRender = template(`
 window.onload = function (){
-    ReactDOM.render( <CLASS_NAME />, document.querySelector("#app" ))
+    const Wrapper = calculateRem(CLASS_NAME);
+    ReactDOM.render( <Wrapper />, document.querySelector("#app" ))
 };`,
 {
     plugins: ['jsx']
 });
 
-const calculateRem = template('const Wrapper = calculateRem(PageWrapper);');
 const pageWrapper = template(`
-    return <Wrapper app={this} path={this.state.path}  query={this.state.query} config={this.state.config}/>
+    return <PageWrapper app={this} path={this.state.path}  query={this.state.query} config={this.state.config}/>
 `, {
     plugins: ['jsx']
 });
@@ -62,7 +62,7 @@ module.exports = function ({ types: t }) {
                 exit(astPath) {
                     astPath.node.body.unshift(...importedPagesTemplatePrefixCode);
                     astPath.node.body.push(domRender({
-                        CLASS_NAME: t.jsxIdentifier(CLASS_NAME)
+                        CLASS_NAME: t.identifier(CLASS_NAME)
                     }));
                 }
             },
@@ -150,7 +150,6 @@ module.exports = function ({ types: t }) {
                         [], 
                         t.blockStatement(
                             [
-                                calculateRem(),
                                 pageWrapper()
                             ]
                         )

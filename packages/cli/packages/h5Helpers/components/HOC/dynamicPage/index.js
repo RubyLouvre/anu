@@ -21,7 +21,7 @@ export default function dynamicPage(Comp) {
             const instance = this.Ref.current;
             const appInstance = this.$app;
             const globalName = name.replace(/^on/, '$&Global');
-            appInstance[globalName] &&
+            appInstance && appInstance[globalName] &&
                 appInstance[globalName].call(appInstance, ...args);
       
             instance && instance[name] && instance[name].call(instance, ...args);
