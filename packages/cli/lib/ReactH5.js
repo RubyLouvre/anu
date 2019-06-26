@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-24T06
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-24T08
  * IE9+
  */
 
@@ -4663,8 +4663,23 @@
         callGlobalHook('onGlobalUnload');
     }
 
+    function registerPageHook(appHooks, pageHook, app, instance, args) {
+        for (var i = 0; i < 2; i++) {
+            var method = i ? appHooks[pageHook] : pageHook;
+            var host = i ? app : instance;
+            if (host && host[method] && isFn(host[method])) {
+                var ret = host[method](args);
+                if (ret !== void 0) {
+                    if (ret && ret.then && ret['catch']) {
+                        continue;
+                    }
+                    return ret;
+                }
+            }
+        }
+    }
+
     var appHooks = {
-        onShare: 'onGlobalShare',
         onShow: 'onGlobalShow',
         onHide: 'onGlobalHide'
     };
@@ -4683,30 +4698,26 @@
             config[hook] = function (e) {
                 var instance = this.reactInstance,
                     pageHook = hook,
+                    app = _getApp(),
                     param = e;
                 if (pageHook === 'onShareAppMessage') {
                     if (!instance.onShare) {
-                        instance.onShare = instance.onShareAppMessage;
+                        instance.onShare = instance[pageHook];
                     }
-                    pageHook = 'onShare';
+                    var shareObject = instance.onShare && instance.onShare(param);
+                    if (!shareObject) {
+                        shareObject = app.onGlobalShare && app.onGlobalShare(param);
+                    }
+                    return shareObject;
                 } else if (pageHook === 'onShow') {
                     if (this.options) {
                         instance.props.query = this.options;
                     }
                     param = instance.props.query;
-                    _getApp().$$page = this;
-                    _getApp().$$pagePath = instance.props.path;
+                    app.$$page = this;
+                    app.$$pagePath = instance.props.path;
                 }
-                for (var i = 0; i < 2; i++) {
-                    var method = i ? appHooks[pageHook] : pageHook;
-                    var host = i ? _getApp() : instance;
-                    if (method && host && isFn(host[method])) {
-                        var ret = host[method](param);
-                        if (ret !== void 0) {
-                            return ret;
-                        }
-                    }
-                }
+                return registerPageHook(appHooks, pageHook, app, instance, param);
             };
         });
         if (testObject) {

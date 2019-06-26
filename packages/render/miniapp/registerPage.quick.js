@@ -4,6 +4,7 @@ import { onLoad, onUnload, onReady } from './registerPage.all'
 import {  _getApp } from './utils'
 import { getQueryFromUri } from './apiForQuick/router'
 import { getCurrentPages } from './getCurrentPages.quick'
+import { registerPageHook } from './registerPageHook';
 
 var appHooks = {
     onShow: 'onGlobalShow',
@@ -78,17 +79,9 @@ export function registerPage(PageClass, path) {
                 }
                 getCurrentPages().pop();
             }
-            for(let i = 0; i < 2; i ++){
-                let method = i ? appHooks[pageHook]: pageHook;
-                let host = i ?  _getApp(): instance;
-                if( method && host && isFn(host[method]) ){
-                   let ret = host[method](param);
-                   if(ret !== void 0){
-                       return ret;
-                   }
-                }
-            }
+            return registerPageHook(appHooks,  pageHook,  app, instance, param);
         }
     })
     return config
 }
+
