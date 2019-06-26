@@ -1,6 +1,6 @@
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
 const SizePlugin = require('../nanachi-loader/sizePlugin');
-const QuickPlugin = require('../nanachi-loader/QuickPlugin');
+const QuickPlugin = require('../nanachi-loader/quickPlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 const cwd = process.cwd();
@@ -20,6 +20,8 @@ const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 
 //处理 style
 const nanachiStyleLoader  = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
+
+
 
 module.exports = function({
     platform,

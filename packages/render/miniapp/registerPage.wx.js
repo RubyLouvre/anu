@@ -1,9 +1,10 @@
-import { isFn} from 'react-core/util';
 import { dispatchEvent } from './eventSystem';
 import { onLoad, onUnload, onReady } from './registerPage.all';
+import { registerPageHook } from './registerPageHook';
+
 import { _getApp } from './utils';
+
 var appHooks = {
-    onShare: 'onGlobalShare',
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
@@ -32,12 +33,17 @@ export function registerPage(PageClass, path, testObject) {
         config[hook] = function(e) {
             let instance = this.reactInstance,
              pageHook = hook,
+             app =  _getApp(),
              param = e 
             if (pageHook === 'onShareAppMessage'){
                 if( !instance.onShare){
-                    instance.onShare = instance.onShareAppMessage
+                    instance.onShare = instance[pageHook];
                 }
-                pageHook = 'onShare';
+                var shareObject = instance.onShare && instance.onShare(param);
+                if(!shareObject){
+                    shareObject = app.onGlobalShare && app.onGlobalShare(param);
+                }
+                return shareObject;
             } else if (pageHook === 'onShow'){
                 if(this.options){ //支付宝小程序不存在this.options
                    instance.props.query = this.options ;
@@ -46,19 +52,11 @@ export function registerPage(PageClass, path, testObject) {
                 //在百度小程序，从A页面跳转到B页面，模拟器下是先触发A的onHide再触发B的onShow
                 //真机下，却是先触发B的onShow再触发A的onHide,其他小程序可能也有这问题，因此我们只在onShow
                 //里修改全局对象的属性
-                _getApp().$$page = this;
-                _getApp().$$pagePath = instance.props.path;
-            }
-            for(let i = 0; i < 2; i ++){
-                let method = i ? appHooks[pageHook]: pageHook;
-                let host = i ?  _getApp(): instance;
-                if( method && host && isFn(host[method]) ){
-                   let ret = host[method](param);
-                   if(ret !== void 0){
-                       return ret;
-                   }
-                }
-            }
+                app.$$page = this;
+                app.$$pagePath = instance.props.path;
+            }  
+            //调用onShare/onHide/onGlobalShow/onGlobalHide/onPageScroll
+            return registerPageHook(appHooks, pageHook, app, instance, param)
         };
     });
 
