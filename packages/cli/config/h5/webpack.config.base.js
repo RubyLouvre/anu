@@ -47,7 +47,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.s?[ac]ss$/,
+                test: /\.s[ac]ss$/,
                 use: [
                     require.resolve('style-loader'),
                     // MiniCssExtractPlugin.loader,

@@ -92,7 +92,7 @@ class PageWrapper extends React.Component{
         }   
     }
     render(){
-        const instance = React.getCurrentPage();
+        const instances = React.getCurrentPages();
         return (
             <div className='__internal__Page__' >
                 {
@@ -106,16 +106,24 @@ class PageWrapper extends React.Component{
                             // animation: { duration, timingFunc }
                         ></TitleBar> : null
                 }
-                <div
-                    className="__internal__Page-container __internal__Page-release-animation"
-                //   onScroll={this.onScroll}
+                {/* <div
+                    className="__internal__Page-container __internal__Page-release-animation" */}
+                {/* //   onScroll={this.onScroll}
                 //   onTouchStart={this.onTouchStart}
                 //   onTouchMove={this.onTouchMove}
                 //   onTouchEnd={this.onTouchEnd}
                 //   onTouchCancel={this.resetContainer}
-                >
-                    {instance}
-                </div>
+                > */}
+                {instances.map((page, index) => {
+                    if (index === instances.length - 1) {
+                        return <div key={page.props.path} className="__internal__Page-container __internal__Page-release-animation">
+                            {page}
+                        </div>;
+                    }
+                    return <div key={page.props.path} style={{display: 'none'}}>
+                        {page}
+                    </div>;
+                })}
                 { 
                     this.state.isTabPage ? 
                         <TabBar
