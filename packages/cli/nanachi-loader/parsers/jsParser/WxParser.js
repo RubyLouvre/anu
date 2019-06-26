@@ -21,7 +21,7 @@ class WxParser extends JavascriptParser{
                     require('@babel/plugin-proposal-class-properties'),
                     { loose: true }
                 ],
-                //require('@babel/plugin-proposal-object-rest-spread'),
+                require('@babel/plugin-proposal-object-rest-spread'),
                 [
                     //重要,import { Xbutton } from 'schnee-ui' //按需引入
                     require('babel-plugin-import').default,
