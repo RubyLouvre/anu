@@ -331,8 +331,8 @@ let utils = {
         return objValue.concat(srcValue);
       }
     },
-    deepMerge(a, b) {
-        return mergeWith(a, b, this.customizer);
+    deepMerge(...args) {
+        return mergeWith(...args, this.customizer);
     }
 };
 

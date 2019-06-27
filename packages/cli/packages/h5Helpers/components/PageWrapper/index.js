@@ -4,15 +4,7 @@ import TabBar from '../TabBar';
 
 import pageConfigMap from '@pageConfig';
 
-function deepMerge(obj1, obj2) {
-    var key;
-    for (key in obj2) {
-        // 如果target(也就是obj1[key])存在，且是对象的话再去调用deepMerge，否则就是obj1[key]里面没这个对象，需要与obj2[key]合并
-        obj1[key] = obj1[key] && obj1[key].toString() === "[object Object]" ?
-            deepMerge(obj1[key], obj2[key]) : obj1[key] = obj2[key];
-    }
-    return obj1;
-}
+import { deepMerge } from '../../share/index';
 
 class PageWrapper extends React.Component{
     constructor(props){
@@ -46,24 +38,23 @@ class PageWrapper extends React.Component{
     }
     componentWillMount() {
         const pageConfig = pageConfigMap[this.pagePath];
-        console.log(Object.assign({}, this.appConfig));
-        this.setTitleAndTabs(Object.assign({}, this.appConfig), this.pagePath);
+        this.setTitleAndTabs(deepMerge({}, this.appConfig, pageConfig, this.props.config), this.pagePath);
     }
     componentWillUpdate(nextProps){
         const mixinConfig = {};
         if (nextProps.path !== this.props.path || nextProps.config !== this.props.config) {
             const pageConfig = pageConfigMap[this.pagePath];
             if (nextProps.path !== this.props.path) {
-                Object.assign(mixinConfig, this.appConfig, pageConfig);
+                deepMerge(mixinConfig, this.appConfig, pageConfig);
             }
             if (nextProps.config !== this.props.config) {
-                Object.assign(mixinConfig, this.appConfig, pageConfig, nextProps.config);
+                deepMerge(mixinConfig, this.appConfig, pageConfig, nextProps.config);
             }
             this.setTitleAndTabs(mixinConfig, this.$app.state.path);
         }
     }
     setTitleAndTabs(config, path) {
-        var mixin = Object.assign({
+        var mixin = deepMerge({
             navigationBarTitleText: "",
             navigationBarTextStyle: "white",
             navigationBarBackgroundColor: "#000000"
@@ -71,7 +62,7 @@ class PageWrapper extends React.Component{
         this.setState({
             showTitleBar: mixin.navigationStyle !== "custom" && mixin.navigationBarTitleText !== "",
             backgroundColor: mixin.backgroundColor || "#ffffff",
-            titleBar: Object.assign({}, this.state.titleBar, {
+            titleBar: deepMerge({}, this.state.titleBar, {
                 text: mixin.navigationBarTitleText,
                 textColor: mixin.navigationBarTextStyle,
                 backgroundColor: mixin.navigationBarBackgroundColor,
