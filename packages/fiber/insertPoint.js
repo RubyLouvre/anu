@@ -72,11 +72,11 @@ function downward(fiber) {
         if (fiber.tag > 3) {
             return fiber;
         }
-        if (fiber.forward) {
-            found = forward(fiber);
-            if (found) {
-                return found;
-            }
-        }
+        // if (fiber.forward) {
+        //     found = forward(fiber);
+        //     if (found) {
+        //         return found;
+        //     }
+        // }
     }
 }
