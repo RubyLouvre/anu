@@ -266,6 +266,16 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 transformBackground(decl);
             },
             'background-image'(decl) {
+                if (config.huawei) {
+                    // 华为url()中必须有引号，否则报错，此处兼容处理
+                    decl.value = decl.value.replace(/\(([^)]+)\)/, function(match, uri) {
+                        uri = uri.trim();
+                        if (!/^['"]/.test(uri)) {
+                            uri = `("${uri}")`
+                        }
+                        return uri;
+                    });
+                }
                 generateConflictDeclarations(
                     'background-image',
                     /(background|border)-color/i
