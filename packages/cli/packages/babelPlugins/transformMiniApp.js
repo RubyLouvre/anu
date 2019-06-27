@@ -25,7 +25,7 @@ let miniAppPlugin = function(){
             
             let filePath = opts.filename.replace(/\\/g, '/');
             modules.sourcePath = filePath;
-            modules.current = filePath.replace(process.cwd(), '');
+            modules.current = filePath.replace(process.cwd().replace(/\\/g, '/'), '');
             if (
                 /\/components\//.test(filePath)                
             ) {

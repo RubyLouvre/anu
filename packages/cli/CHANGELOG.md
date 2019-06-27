@@ -1,5 +1,124 @@
 # Changelog
 
+# 1.3.1 (2019-06-24)
+
+## 核心库
+#### Feature
+
+- 添加快应用对React.api.switchTab的支持。
+- 快应用getStorage，出错时也回调success，返回一个空对象。
+
+#### Bug fix
+
+- 修正微信小程序的核心库 attached里面的闭包引发的错误问题。
+- 防止多次对API进行Promise化。
+
+## CLI
+#### Feature
+
+- 添加pages目录检查：page目录下（除common目录），所有目录最多包含一个js文件。（只在用到分包功能情况时检查）
+- 增加快应用form, button标签submit相关事件忽略。
+- 兼容支付宝标签属性bug（字符串问题），添加wxml补丁。
+
+#### Bug fix
+- 修复快应用配置不生效问题。
+
+# 1.3.0 (2019-06-14)
+
+## CLI
+#### Feature
+
+- 所有平台迁移至webpack4编译。
+- app.js中引入的工具函数(common)或组件(components)目录不会配置到app.json文件中
+
+#### Bug fix
+- 修复linux平台路径找不到bug。
+
+# 1.2.8 (2019-06-06)
+## 核心库
+#### Feature
+
+- 快应用支持与小程序一样的getCurrentPages, navigatorBack 方法。
+- 支持微信小程序插件
+- 空心化核心库的insertElement, removeElement, emptyElement方法，换言之，它们只是空方法，里面没有代码。因为我们也不需生成假的DOM节点，这些少生成许多对象，性能大大提升。
+
+#### Bug fix
+
+- 事件里可以条件绑定函数。
+
+## CLI
+#### Feature
+
+- 微信小程序，QQ小程序不会在循环中添加wx:key="*this"
+- 模板项目添加分包与分包预加载的演示
+- 微信小程序、QQ小程序编译改用全新的nanachi-webpack，那是基于webpack4的CLI，性能是原来2倍的。
+- huawei合并manifest问题
+- pages目录下面请允许添加每个频道自己的components, assets, common目录，有利于分包。如果不这样做，每个频道的组件都放到主包中，导致体积超出限制。
+- 更新disabledTitleBarPages的逻辑(快应用)
+
+#### Bug fix
+- windows快应用产物后缀名bug。 #984
+
+# 1.2.7 (2019-05-28)
+## CLI
+#### Bug fix
+- 修复`-`路径名bug
+- 支持支付宝分包
+
+# 1.2.6 (2019-05-27)
+## CLI
+#### Bug fix
+- 修复快应用补丁组件引用问题
+- 修复静态资源别名解析路径bug
+
+# 1.2.5 (2019-05-24)
+
+## 核心库
+#### Feature
+- 抹平小程序与快应用在页面组件的onTabItemTap差异。
+- 组件支持静态的options对象， 以支持微信小程序的自定义组件的options.styleIsolation功能。 https://developers.weixin.qq.com/miniprogram/dev/framework/custom-component/wxml-wxss.html
+
+#### Bug fix
+- 修正onShare在页面只触发一次的BUG https://github.com/RubyLouvre/anu/issues/1000
+
+## CLI
+#### Feature
+- 请允许components出现在pages下面，以实现更好的分包功能。https://rubylouvre.github.io/nanachi/documents/subpackages.html
+- 重构qunar样板工程，以演示分包功能。
+
+
+# 1.2.4 (2019-05-17)
+
+## 核心库
+#### Feature
+- 添加React Hooks的支持，添加箭头函数的支持。
+- ReactWX添加结useState, useContext, useEffect的支持，并去掉Children, createPortal, cloneElement, isValidElement。
+- 抹平微信和qq小程序中getStorage api差异。
+
+#### Bug fix
+- 事件里可以条件绑定函数。
+
+## CLI
+#### Feature
+- regenerator-runtime锁定版本号。
+- 支持快应用自定义合并router。
+
+#### Bug fix
+- windows快应用产物后缀名bug。 [#984](https://github.com/RubyLouvre/anu/issues/984)
+
+# 1.2.2 (2019-04-26)
+
+## CLI
+#### Feature
+- 对 app.js 中 是否有 globalData 对象做强制校验。
+- 支持 QQ 小程序分包。
+
+#### Bug fix
+- 兼容快应用中 css 动画规则 keyframes。
+- 修复快应用下 showToast bug。
+- 修复静态资源 copy 路径 bug。
+
+
 
 # 1.2.1 (2019-04-19)
 

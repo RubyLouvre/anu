@@ -5,40 +5,24 @@ const CssParser = require('./CssParser');
 class StyleParserFactory {
     static create({
         type,
-        platform,
-        code,
-        map,
-        meta,
-        filepath
+        ...options
     }) {
         switch (type) {
             case 'sass':
             case 'scss':
                 return new SassParser({
-                    code,
-                    map,
-                    meta,
-                    filepath,
-                    platform,
-                    type: 'sass'
+                    type: 'sass',
+                    ...options
                 });
             case 'css':
                 return new CssParser({
-                    code,
-                    map,
-                    meta,
-                    filepath,
-                    platform,
-                    type
+                    type,
+                    ...options
                 });
             case 'less':
                 return new LessParser({
-                    code,
-                    map,
-                    meta,
-                    filepath,
-                    platform,
-                    type
+                    type,
+                    ...options
                 });
         }
     }

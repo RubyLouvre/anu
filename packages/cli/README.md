@@ -63,6 +63,11 @@ nanachi({
      */
     compress,
     /**
+     * @Object
+     * 压缩图片参数（压缩率等）
+     */
+    compressOption,
+    /**
      * @Boolean
      * 是否是huawei平台，默认值：false
      */
@@ -71,7 +76,7 @@ nanachi({
      * @Array
      * 自定义预处理loaders，默认值：[]
      */
-    preLoaders,
+    prevLoaders,
     /**
      * @Array
      * 自定义后处理loaders，默认值：[]
@@ -96,6 +101,15 @@ nanachi({
      */ 
     complete
 });
+/**
+ * compressOption:
+ * {
+ *  jpg: {} // 具体参考 https://github.com/imagemin/imagemin-mozjpeg/blob/master/readme.md
+ *  png: {} // 具体参考 https://github.com/imagemin/imagemin-optipng/blob/master/readme.md
+ *  gif: {} // 具体参考 https://github.com/imagemin/imagemin-gifsicle/blob/master/readme.md
+ *  svg: {} // 具体参考 https://github.com/imagemin/imagemin-svgo/blob/master/readme.md
+ * }
+ */
 ```
 
 ## 自定义loader

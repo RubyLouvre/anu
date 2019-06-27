@@ -1,71 +1,71 @@
 import React from '@react';
-import './pages/index/index';
+import './pages/platform/index/index';
 
-import './pages/demo/apis/index';
-import './pages/demo/apis/clipboard/index';
-import './pages/demo/apis/storage/index';
-import './pages/demo/apis/canvas/index';
-import './pages/demo/apis/canvas/strokeStyle/index';
-import './pages/demo/apis/canvas/textBaseline/index';
-import './pages/demo/apis/canvas/rect/index';
-import './pages/demo/apis/canvas/fillStyle/index';
-import './pages/demo/apis/canvas/arc/index';
-import './pages/demo/apis/canvas/globalAlpha/index';
-import './pages/demo/apis/route/index';
-import './pages/demo/apis/request/index';
+import './pages/apis/index/index';
+import './pages/apis/clipboard/index';
+import './pages/apis/storage/index';
+import './pages/apis/canvas/index';
+import './pages/apis/canvas/strokeStyle/index';
+import './pages/apis/canvas/textBaseline/index';
+import './pages/apis/canvas/rect/index';
+import './pages/apis/canvas/fillStyle/index';
+import './pages/apis/canvas/arc/index';
+import './pages/apis/canvas/globalAlpha/index';
+import './pages/apis/route/index';
+import './pages/apis/request/index';
 
-import './pages/demo/native/index/index';
-import './pages/demo/native/button/index';
-import './pages/demo/native/checkbox/index';
-import './pages/demo/native/input/index';
-import './pages/demo/native/slider/index';
-import './pages/demo/native/picker/index';
-import './pages/demo/native/radio/index';
-import './pages/demo/native/textarea/index';
-import './pages/demo/native/label/index';
-import './pages/demo/native/view/index';
-import './pages/demo/native/scrollView/index';
-import './pages/demo/native/movableView/index';
-import './pages/demo/native/swiper/index';
-import './pages/demo/native/audio/index';
-import './pages/demo/native/image/index';
-import './pages/demo/native/video/index';
-import './pages/demo/native/camera/index';
+import './pages/native/index/index';
+import './pages/native/button/index';
+import './pages/native/checkbox/index';
+import './pages/native/input/index';
+import './pages/native/slider/index';
+import './pages/native/picker/index';
+import './pages/native/radio/index';
+import './pages/native/textarea/index';
+import './pages/native/label/index';
+import './pages/native/view/index';
+import './pages/native/scrollView/index';
+import './pages/native/movableView/index';
+import './pages/native/swiper/index';
+import './pages/native/audio/index';
+import './pages/native/image/index';
+import './pages/native/video/index';
+import './pages/native/camera/index';
 
-import './pages/demo/syntax/index/index';
-import './pages/demo/syntax/stateless/index';
-import './pages/demo/syntax/loop/index';
-import './pages/demo/syntax/loop2/index';
-import './pages/demo/syntax/loop3/index';
-import './pages/demo/syntax/loop4/index';
-import './pages/demo/syntax/loop5/index';
-import './pages/demo/syntax/webview/index';
+import './pages/syntax/index/index';
+import './pages/syntax/extend/index';
+import './pages/syntax/stateless/index';
+import './pages/syntax/hooks/index';
+import './pages/syntax/loop/index';
+import './pages/syntax/loop2/index';
+import './pages/syntax/loop3/index';
+import './pages/syntax/loop4/index';
+import './pages/syntax/loop5/index';
+import './pages/syntax/webview/index';
+import './pages/syntax/inlineStyle/index';
+import './pages/syntax/if/index';
+import './pages/syntax/ifcom/index';
+import './pages/syntax/children/index';
+import './pages/syntax/await/index';
+import './pages/syntax/multiple/index';
 
-import './pages/demo/syntax/extend/index';
-import './pages/demo/syntax/inlineStyle/index';
-import './pages/demo/syntax/if/index';
-import './pages/demo/syntax/ifcom/index';
-import './pages/demo/syntax/children/index';
-import './pages/demo/syntax/await/index';
-import './pages/demo/syntax/multiple/index';
+import './pages/platform/ticketSearch/index'; 
+import './pages/platform/calendar/index';
+import './pages/platform/boat/index';
+import './pages/platform/scenic/index';
+import './pages/platform/strategy/index';
+import './pages/platform/userCenter/index';
+import './pages/platform/question/index/index';
+import './pages/platform/question/detail/index';
+import './pages/platform/cardList/index';
+import './pages/platform/citySelect/index';
 
-import './pages/demo/ticketSearch/index';
-import './pages/demo/calendar/index';
-import './pages/demo/boat/index';
-import './pages/demo/scenic/index';
-import './pages/demo/strategy/index';
-import './pages/demo/userCenter/index';
-import './pages/demo/question/index/index';
-import './pages/demo/question/detail/index';
-import './pages/demo/cardList/index';
-import './pages/demo/citySelect/index';
-
-import './pages/about/index';
+import './pages/platform/about/index';
 
 import './app.scss';
 
 class Global extends React.Component {
-	config = {
+	static config = {
 	    window: {
 	        backgroundTextStyle: 'light',
 	        // navigationBarBackgroundColor: '#0088a4',
@@ -79,25 +79,22 @@ class Global extends React.Component {
 	        backgroundColor: '#ffffff',
 	        list: [
 	            {
-	                pagePath: 'pages/index/index',
+	                pagePath: 'pages/platform/index/index',
 	                iconPath: '/assets/image/homepage_normal.png',
 	                selectedIconPath: '/assets/image/homepage_select.png',
-	                text: '首页',
-					name: 'Home'
+	                text: '首页'
 	            },
 	            {
-	                pagePath: 'pages/demo/question/index/index',
+	                pagePath: 'pages/platform/question/index/index',
 	                iconPath: '/assets/image/question_normal.png',
 	                selectedIconPath: '/assets/image/question_select.png',
-	                text: '问答社区',
-	                name: 'questionAndAnswer'
+	                text: '问答社区'
 	            },
 	            {
-	                pagePath: 'pages/demo/userCenter/index',
+	                pagePath: 'pages/platform/userCenter/index',
 	                iconPath: '/assets/image/uc_normal.png',
 	                selectedIconPath: '/assets/image/uc_select.png',
-	                text: '我的',
-	                name: 'My'
+	                text: '我的'
 	            }
 	        ]
 	    }
@@ -168,7 +165,7 @@ class Global extends React.Component {
 	                        api.getSystemInfo({
 	                            success: function(appInfo) {
 	                                api.redirectTo({
-	                                    url: `pages/about/index?brand=${appInfo.brand}&version=${appInfo.version}`
+	                                    url: `pages/platform/about/index?brand=${appInfo.brand}&version=${appInfo.version}`
 	                                });
 	                            }
 	                        });
@@ -196,7 +193,8 @@ class Global extends React.Component {
 	}
 }
 //这样写相当于为每一个页面组件的外面都加上一个<Provider />，如果你想在页面上用到store里的数据，
-//需要用react-redux的connect方法包一下，详见pages/demo/syntax/redux
+//需要用react-redux的connect方法包一下，详见pages/syntax/redux
 // React.applyAppStore(store);
 // eslint-disable-next-line
 export default App(new Global());
+

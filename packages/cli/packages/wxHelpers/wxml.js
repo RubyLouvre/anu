@@ -13,12 +13,13 @@ const attrValueHelper = require(`../${helper}/attrValue`);
 const logicHelper = require(`../${helper}/logic`);
 const chalk = require('chalk');
 
+
 function beautifyXml(code){
     return beautify.html(code, {
         indent: 4
     });
 }
-
+const rcomponentName = /^[A-Z].+/ //必须大写开头
 const quickTextContainer = {
     text: 1,
     a: 1,
@@ -33,6 +34,7 @@ const quickTextContainer = {
 function wxml(code, modules) {
     let result = babel.transform(code, {
         configFile: false,
+        comments: false,
         babelrc: false,
         plugins: [
             require('@babel/plugin-syntax-jsx'),
@@ -56,11 +58,13 @@ function wxml(code, modules) {
 let visitor = {
     JSXOpeningElement: {
         exit: function(astPath) {
-            let openTag = astPath.node.name;
-            if (openTag.type === 'JSXMemberExpression' && openTag.object.name === 'React') {
-                if (openTag.property.name === 'useComponent') {
-                    let is, instanceUid;
-                    let attributes = [];
+            let openTag = astPath.node.name, 
+                newTagName = false, 
+                attributes = [],
+                childNodes = astPath.parentPath.node.children;
+            if (openTag.type === 'JSXMemberExpression' ) {
+                if (openTag.object.name === 'React' && openTag.property.name === 'useComponent') {
+                    let instanceUid;
                     astPath.node.attributes.forEach(function(el) {
                         let attrName = el.name.name;
                         if (!el.value) {
@@ -79,19 +83,27 @@ let visitor = {
                         }
 
                         if (attrName === 'is') {
-                            is = 'anu-' + attrValue.slice(1, -1).toLowerCase();
+                            newTagName = 'anu-' + attrValue.slice(1, -1).toLowerCase();
                         }
                         if (attrName === 'data-instance-uid') {
                             instanceUid = attrValue;
                             attributes.push(utils.createAttribute('data-instance-uid', `{{${instanceUid}}}`));
                         }
                     });
-
-                    let template = utils.createElement(is, attributes, astPath.parentPath.node.children);
                     //将组件变成template标签
-                    astPath.parentPath.replaceWith(template);
+                }else{
+                    //将<GlobalTheme.Provider />, <React.Fragment /> 变成<block/>
+                    newTagName = 'block';
+                    //将组件变成template标签
                 }
-            } 
+            } else if(openTag.type === 'JSXIdentifier' && rcomponentName.test(openTag.name) ){
+                 //将<Login /> 变成<block/>
+                newTagName = 'block';
+            }
+            if(newTagName){
+                let container = utils.createElement(newTagName, attributes, childNodes);
+                astPath.parentPath.replaceWith(container);
+            }
         }
     },
     JSXAttribute(astPath, state) {
@@ -110,8 +122,18 @@ let visitor = {
                     value = fixKey;
                 }
             }
-            modules.key = value;
-            astPath.remove();
+
+            
+            //冒泡找到最近的一个map调用函数，找到其中的callee(如：xxx.map)作为键值对储存jsx key属性的值。
+            var CallExpression = astPath.findParent(t.isCallExpression);
+            if (CallExpression) {
+                var callee = CallExpression.node.callee;
+                modules.key = modules.key || {};
+                //this.state.xxx.map
+                let calleeCode = generate(callee).code;
+                modules.key[calleeCode] = value;
+                astPath.remove();
+            }
             return;
         }
         attrNameHelper(astPath, attrName, astPath.parentPath.node.name.name);
@@ -166,18 +188,27 @@ let visitor = {
     JSXExpressionContainer: {
         exit(astPath, state) {
             let expr = astPath.node.expression;
+
+        
             //如果是位于属性中
             if (t.isJSXAttribute(astPath.parent)) {
                 attrValueHelper(astPath);
+                // 支付宝补丁， 支付宝"{{variable + \"a\"}}"语法会报错 需将字符串双引号转为单引号"{{variable + 'a'}}"
+                if (config.buildType === 'ali' && astPath.node.type === 'StringLiteral') {
+                    astPath.node.value = astPath.node.value.replace(/"/g, "'");
+                }
             } else if (
                 expr.type === 'MemberExpression' &&
         /props\.children\s*$/.test(generate(expr).code)
             ) {
+                
                 let attributes = [];
                 let template = utils.createElement('slot', attributes, []);
                 astPath.replaceWith(template);
             } else {
+               
                 let modules = utils.getAnu(state);
+                
                 //返回block元素或template元素
                 let isWrapText = false;
                 if (astPath.parentPath.type === 'JSXElement'){
@@ -192,7 +223,10 @@ let visitor = {
                         } 
                     }
                 }
+                
+               
                 let block = logicHelper(expr, modules, isWrapText);
+
                 try {
                     astPath.replaceWithMultiple(block);
                 } catch (e) {

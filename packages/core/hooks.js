@@ -1,30 +1,33 @@
-import { dispatcher } from 'react-fiber/dispatcher';
+import { 
+    useReducerImpl,
+    useEffectImpl, 
+    useCallbackImpl, 
+    useRef, 
+    useContext,
+    useImperativeHandle } from 'react-fiber/dispatcher';
 import { PASSIVE, HOOK } from 'react-fiber/effectTag';
 export function useState(initValue) {
-    return dispatcher.useReducer(null, initValue);
+    return useReducerImpl(null, initValue);
 }
 export function useReducer(reducer, initValue, initAction) {
-    return dispatcher.useReducer(reducer, initValue, initAction);
+    return useReducerImpl(reducer, initValue, initAction);
 }
 export function useEffect(create, deps) {
-    return dispatcher.useEffect(create, deps, PASSIVE, 'passive', 'unpassive');
+    return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
 }
 export function useLayoutEffect(create, deps) {
-    return dispatcher.useEffect(create, deps, HOOK, 'layout', 'unlayout');
+    return useEffectImpl(create, deps, HOOK, 'layout', 'unlayout');
 }
 
 export function useCallback(create, deps) {
-    return dispatcher.useCallbackOrMemo(create, deps);
+    return useCallbackImpl(create, deps);
 }
 export function useMemo(create, deps) {
-    return dispatcher.useCallbackOrMemo(create, deps, true);
+    return useCallbackImpl(create, deps, true);
 }
-export function useRef(initValue) {
-    return dispatcher.useRef(initValue);
-}
-export function useContext(initValue) {//这个不对
-    return dispatcher.useContext(initValue);
-}
-export function useImperativeHandle(ref, create, deps) {
-    return dispatcher.useImperativeHandle(ref, create, deps);
+
+export {
+    useRef, 
+    useContext,//这个不对
+    useImperativeHandle
 }

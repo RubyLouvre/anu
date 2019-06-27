@@ -1,7 +1,7 @@
 const chalk = require('chalk');
 const ora = require('ora');
 const { build: buildLog } = require('./queue');
-
+const utils = require('../../packages/utils/index');
 
 let successNum = 0;
 
@@ -14,7 +14,7 @@ const successLog = (filepath, code) => {
     // filepath = path.join(filepath);
     const log = chalk`{gray [${++successNum}]} {green 编译完成} ${filepath} {gray [${getSize(code)}]}`;
     buildLog.push(log);
-    if (process.env.NODE_ENV !== 'production') {
+    if ( !utils.isMportalEnv() ) {
         // eslint-disable-next-line
         console.log(log);
     }
@@ -25,14 +25,18 @@ const timerLog = (timer) => {
     ora(chalk`{green 项目构建完成，耗时：{inverse.bold ${timer.getProcessTime()}s}}`).succeed();
 };
 
-const warningLog = ( {id, msg} ) => {
+const warningLog = ( {id, msg, loc} ) => {
+    let result = '';
+    result = chalk`{underline ${id}}\n{grey ${loc.line}:${loc.column}}\t{yellow warning}\t${msg}\n`; 
     // eslint-disable-next-line
-    console.log(chalk`{white {yellow.inverse Warning:} {yellow ${msg}} ${id}}`);
+    console.log(result);
 };
 
-const errorLog = ( {id, msg} ) => {
+const errorLog = ( {id, msg, loc} ) => {
+    let result = '';
+    result = chalk`{underline ${id}}\n{grey ${loc.line}:${loc.column}}\t{red error}\t${msg}\n`; 
     // eslint-disable-next-line
-    console.log(chalk`{white {red.inverse Error:} {red ${msg}} ${id}}`);
+    console.log(result);
 };
 
 const resetNum = () => {

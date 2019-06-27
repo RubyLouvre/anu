@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2019-04-15
+ * by 司徒正美 Copyright 2019-06-24
  * IE9+
  */
 
@@ -654,7 +654,7 @@
         });
         function getContext(fiber) {
             while (fiber.return) {
-                if (fiber.name == 'Provider') {
+                if (fiber.type == Provider) {
                     return instance.value;
                 }
                 fiber = fiber.return;
@@ -680,94 +680,92 @@
         hookCursor++;
         return key;
     }
-    var dispatcher = {
-        useContext: function useContext(getContext) {
-            if (isFn(getContext)) {
-                var fiber = getCurrentFiber();
-                var context = getContext(fiber);
-                var list = getContext.subscribers;
-                if (list.indexOf(fiber) === -1) {
-                    list.push(fiber);
-                }
-                return context;
-            }
-            return null;
-        },
-        useReducer: function useReducer(reducer, initValue, initAction) {
+    function useContext(getContext) {
+        if (isFn(getContext)) {
             var fiber = getCurrentFiber();
-            var key = getCurrentKey();
-            var updateQueue = fiber.updateQueue;
-            var compute = reducer ? function (cursor, action) {
-                return reducer(updateQueue[cursor], action || { type: Math.random() });
-            } : function (cursor, value) {
-                var novel = updateQueue[cursor];
-                return typeof value == 'function' ? value(novel) : value;
-            };
-            var dispatch = setter.bind(fiber, compute, key);
-            if (key in updateQueue) {
-                delete updateQueue.isForced;
-                return [updateQueue[key], dispatch];
+            var context = getContext(fiber);
+            var list = getContext.subscribers;
+            if (list.indexOf(fiber) === -1) {
+                list.push(fiber);
             }
-            var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
-            return [value, dispatch];
-        },
-        useCallbackOrMemo: function useCallbackOrMemo(create, deps, isMemo) {
-            var fiber = getCurrentFiber();
-            var key = getCurrentKey();
-            var updateQueue = fiber.updateQueue;
-            var nextInputs = Array.isArray(deps) ? deps : [create];
-            var prevState = updateQueue[key];
-            if (prevState) {
-                var prevInputs = prevState[1];
-                if (areHookInputsEqual(nextInputs, prevInputs)) {
-                    return prevState[0];
-                }
-            }
-            var value = isMemo ? create() : create;
-            updateQueue[key] = [value, nextInputs];
-            return value;
-        },
-        useRef: function useRef(initValue) {
-            var fiber = getCurrentFiber();
-            var key = getCurrentKey();
-            var updateQueue = fiber.updateQueue;
-            if (key in updateQueue) {
-                return updateQueue[key];
-            }
-            return updateQueue[key] = { current: initValue };
-        },
-        useEffect: function useEffect(create, deps, EffectTag, createList, destroyList) {
-            var fiber = getCurrentFiber();
-            var cb = dispatcher.useCallbackOrMemo(create, deps);
-            if (fiber.effectTag % EffectTag) {
-                fiber.effectTag *= EffectTag;
-            }
-            var updateQueue = fiber.updateQueue;
-            var list = updateQueue[createList] || (updateQueue[createList] = []);
-            updateQueue[destroyList] || (updateQueue[destroyList] = []);
-            list.push(cb);
-        },
-        useImperativeHandle: function useImperativeHandle(ref, create, deps) {
-            var nextInputs = Array.isArray(deps) ? deps.concat([ref]) : [ref, create];
-            dispatcher.useEffect(function () {
-                if (typeof ref === 'function') {
-                    var refCallback = ref;
-                    var inst = create();
-                    refCallback(inst);
-                    return function () {
-                        return refCallback(null);
-                    };
-                } else if (ref !== null && ref !== undefined) {
-                    var refObject = ref;
-                    var _inst = create();
-                    refObject.current = _inst;
-                    return function () {
-                        refObject.current = null;
-                    };
-                }
-            }, nextInputs);
+            return context;
         }
-    };
+        return null;
+    }
+    function useReducerImpl(reducer, initValue, initAction) {
+        var fiber = getCurrentFiber();
+        var key = getCurrentKey();
+        var updateQueue = fiber.updateQueue;
+        var compute = reducer ? function (cursor, action) {
+            return reducer(updateQueue[cursor], action || { type: Math.random() });
+        } : function (cursor, value) {
+            var novel = updateQueue[cursor];
+            return typeof value == 'function' ? value(novel) : value;
+        };
+        var dispatch = setter.bind(fiber, compute, key);
+        if (key in updateQueue) {
+            delete updateQueue.isForced;
+            return [updateQueue[key], dispatch];
+        }
+        var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
+        return [value, dispatch];
+    }
+    function useCallbackImpl(create, deps, isMemo) {
+        var fiber = getCurrentFiber();
+        var key = getCurrentKey();
+        var updateQueue = fiber.updateQueue;
+        var nextInputs = Array.isArray(deps) ? deps : [create];
+        var prevState = updateQueue[key];
+        if (prevState) {
+            var prevInputs = prevState[1];
+            if (areHookInputsEqual(nextInputs, prevInputs)) {
+                return prevState[0];
+            }
+        }
+        var value = isMemo ? create() : create;
+        updateQueue[key] = [value, nextInputs];
+        return value;
+    }
+    function useRef(initValue) {
+        var fiber = getCurrentFiber();
+        var key = getCurrentKey();
+        var updateQueue = fiber.updateQueue;
+        if (key in updateQueue) {
+            return updateQueue[key];
+        }
+        return updateQueue[key] = { current: initValue };
+    }
+    function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
+        var fiber = getCurrentFiber();
+        var cb = useCallbackImpl(create, deps);
+        if (fiber.effectTag % EffectTag) {
+            fiber.effectTag *= EffectTag;
+        }
+        var updateQueue = fiber.updateQueue;
+        var list = updateQueue[createList] || (updateQueue[createList] = []);
+        updateQueue[destroyList] || (updateQueue[destroyList] = []);
+        list.push(cb);
+    }
+    function useImperativeHandle(ref, create, deps) {
+        var nextInputs = Array.isArray(deps) ? deps.concat([ref]) : [ref, create];
+        useEffectImpl(function () {
+            if (typeof ref === 'function') {
+                var refCallback = ref;
+                var inst = create();
+                refCallback(inst);
+                return function () {
+                    return refCallback(null);
+                };
+            } else if (ref !== null && ref !== undefined) {
+                var refObject = ref;
+                var _inst = create();
+                refObject.current = _inst;
+                return function () {
+                    refObject.current = null;
+                };
+            }
+        }, nextInputs);
+    }
     function getCurrentFiber() {
         return get(Renderer.currentOwner);
     }
@@ -799,31 +797,22 @@
     var effectLength = effectNames.length;
 
     function useState(initValue) {
-        return dispatcher.useReducer(null, initValue);
+        return useReducerImpl(null, initValue);
     }
     function useReducer(reducer, initValue, initAction) {
-        return dispatcher.useReducer(reducer, initValue, initAction);
+        return useReducerImpl(reducer, initValue, initAction);
     }
     function useEffect(create, deps) {
-        return dispatcher.useEffect(create, deps, PASSIVE, 'passive', 'unpassive');
+        return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
     }
     function useLayoutEffect(create, deps) {
-        return dispatcher.useEffect(create, deps, HOOK, 'layout', 'unlayout');
+        return useEffectImpl(create, deps, HOOK, 'layout', 'unlayout');
     }
     function useCallback(create, deps) {
-        return dispatcher.useCallbackOrMemo(create, deps);
+        return useCallbackImpl(create, deps);
     }
     function useMemo(create, deps) {
-        return dispatcher.useCallbackOrMemo(create, deps, true);
-    }
-    function useRef(initValue) {
-        return dispatcher.useRef(initValue);
-    }
-    function useContext(initValue) {
-        return dispatcher.useContext(initValue);
-    }
-    function useImperativeHandle(ref, create, deps) {
-        return dispatcher.useImperativeHandle(ref, create, deps);
+        return useCallbackImpl(create, deps, true);
     }
 
     function findHostInstance(fiber) {
@@ -1864,26 +1853,9 @@
                 Renderer.currentOwner = instance;
                 extend(instance, {
                     __isStateless: true,
-                    __init: true,
                     renderImpl: type,
                     render: function f() {
-                        var a = this.__keep;
-                        if (a) {
-                            delete this.__keep;
-                            return a.value;
-                        }
-                        a = this.renderImpl(this.props, this.context);
-                        if (a && a.render) {
-                            delete this.__isStateless;
-                            for (var i in a) {
-                                instance[i == 'render' ? 'renderImpl' : i] = a[i];
-                            }
-                        } else if (this.__init) {
-                            this.__keep = {
-                                value: a
-                            };
-                        }
-                        return a;
+                        return this.renderImpl(this.props, this.context);
                     }
                 });
                 Renderer.currentOwner = instance;
@@ -1891,9 +1863,6 @@
                     instance.render = function () {
                         return type.render(this.props, this.ref);
                     };
-                } else {
-                    instance.render();
-                    delete instance.__init;
                 }
             } else {
                 instance = new type(props, context);

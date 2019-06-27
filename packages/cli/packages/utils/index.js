@@ -11,11 +11,14 @@ const template = require('@babel/template').default;
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
 const config = require('../../config/config');
+const isWindow = require('./isWindow');
+const isNpm = require('./isNpmModule');
+const toUpperCamel = require('./toUpperCamel');
 const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const userConfig = pkg.nanachi || pkg.mpreact || {};
-const { REACT_LIB_MAP } = require('../../consts/index');
-const fs = require('fs-extra');
+
+const cachedUsingComponents = {}
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
     on() {
@@ -24,13 +27,10 @@ let utils = {
     emit() {
         Event.emit.apply(global, arguments);
     },
-    spinner(text) {
+    spinner(text) { //在控制台显示进度条
         return ora(text);
     },
-    getStyleValue: require('./getStyleValue'),
-    isWin() {
-        return process.platform === 'win32';
-    },
+    getStyleValue: require('./calculateStyleString'),
     useYarn() {
         if (config['useYarn'] != undefined) {
             return config['useYarn'];
@@ -55,6 +55,7 @@ let utils = {
     },
     getEventName(eventName, nodeName, buildType) {
         if (eventName == 'Click' || eventName == 'Tap') {
+            //如果是点击事件，PC端与快应用 使用quick
             if (buildType === 'quick' || buildType === 'h5') {
                 return 'Click';
             } else {
@@ -95,55 +96,23 @@ let utils = {
         //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
         return (astPath, modules) => {
             // 在回调函数中取patchNode，在外层取会比babel插件逻辑先执行，导致一直为{}
-            const patchNode = config[config.buildType].jsxPatchNode || {}; 
-            const UIName = 'schnee-ui';
+            const pagesNeedPatchComponents = config[config.buildType].patchPages || {};
+           
             var orig = astPath.node.name.name;
-            var fileId = modules.sourcePath;
-            var isPatchNode = patchNode[fileId] && patchNode[fileId].includes(orig);
-            var prefix = 'X';
-            var patchName = '';
             //组件名肯定大写开头
             if (/^[A-Z]/.test(orig)) {
                 return orig;
             }
+            var pagePath = modules.sourcePath;
+            var currentPage = pagesNeedPatchComponents[pagePath];
+            
             //schnee-ui补丁
-            if (isPatchNode) {
-                if (/\-/.test(orig)) {
-                    //'rich-text' ==> RichText;
-                    patchName = orig.split('-').map((el) => {
-                        return el.replace(/^[a-z]/, (match) => {
-                            return match.toUpperCase()
-                        })
-                    }).join('');
-                    patchName = prefix + patchName;
-                } else {
-                    //button ==> XButton
-                    patchName = prefix + orig.charAt(0).toUpperCase() + orig.substring(1);
-                }
-                modules.importComponents[patchName] = {
-                    source: UIName
-                };
+            if (currentPage && currentPage[orig]) {
+                var patchName = toUpperCamel( 'x-' + orig );
                 return patchName;
             }
             return (astPath.node.name.name = map[orig] || backup);
         }
-    },
-    getUsedComponentsPath(bag, nodeName, modules) {
-        let isNpm = this.isNpm(bag.source);
-        let sourcePath = modules.sourcePath;
-        let isNodeModulePathReg = this.isWin() ? /\\npm\\/ : /\/npm\//;
-
-        //import { xxx } from 'schnee-ui';
-        if (isNpm) {
-            return '/npm/' + bag.source + '/components/' + nodeName + '/index';
-        }
-        //如果XPicker中存在 import XOverlay from '../XOverlay/index';
-        if ( isNodeModulePathReg.test(sourcePath) && /^\./.test(bag.source) ) {
-            //获取用组件的绝对路径
-            let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
-            return '/npm/' + importerAbPath.split(`${path.sep}npm${path.sep}`)[1]
-        }
-        return `/components/${nodeName}/index`;
     },
     createAttribute(name, value) {
         return t.JSXAttribute(
@@ -167,7 +136,15 @@ let utils = {
     },
     genKey(key) {
         key = key + '';
-        return key.indexOf('.') > 0 ? key.split('.').pop() : '*this';
+        let keyPathAry = key.split('.')
+        if( keyPathAry.length > 2) {
+            // item.a.b =>  "{{a.b}}"
+            key = '{{' + keyPathAry.slice(1).join('.') + '}}';
+        } else {
+            // item.a => "a"
+            key = keyPathAry.slice(1).join('')
+        }
+        return keyPathAry.length > 1 ? key : '*this';
     },
     getAnu(state) {
         return state.file.opts.anu;
@@ -203,17 +180,8 @@ let utils = {
             return template(`module.exports["${name}"] = ${name};`)();
         }
     },
-    isNpm(name) {
-        if (/^\/|\./.test(name)) {
-            return false;
-        }
-        //非自定义alias, @components ...
-        let aliasKeys = Object.keys(this.getAliasConfig());
-        if (aliasKeys.includes(name.split('/')[0])) {
-            return false;
-        }
-        return true;
-    },
+
+    isNpm: isNpm,
     createRegisterStatement(className, path, isPage) {
         /**
          * placeholderPattern
@@ -230,35 +198,6 @@ let utils = {
             CLASSNAME: t.identifier(className),
             ASTPATH: t.stringLiteral(path)
         });
-    },
-    /**
-     *
-     * @param {String} 要修改的路径（存在平台差异性）
-     * @param {String} segement
-     * @param {String} newSegement
-     * @param {String?} ext 新的后缀名
-     */
-    updatePath(spath, segement, newSegement, newExt, ext) {
-        var lastSegement = '',
-            replaced = false;
-        var arr = spath.split(path.sep).map(function (el) {
-            lastSegement = el;
-            if (segement === el && !replaced) {
-                replaced = true;
-                return newSegement;
-            }
-            return el;
-        });
-        if (newExt) {
-            ext = ext || 'js';
-            arr[arr.length - 1] = lastSegement.replace('.' + ext, '.' + newExt);
-        }
-        let resolvedPath = path.join.apply(path, arr);
-        if (!this.isWin()) {
-            // Users/x/y => /Users/x/y;
-            resolvedPath = '/' + resolvedPath;
-        }
-        return resolvedPath;
     },
     installer(npmName, dev, needModuleEntryPath) {
         needModuleEntryPath = needModuleEntryPath || false;
@@ -300,95 +239,8 @@ let utils = {
             resolve(npmPath);
         });
     },
-    getReactLibName(buildType) {
-        return REACT_LIB_MAP[buildType];
-    },
-    getAliasConfig() {
-        let React = this.getReactLibName(config.buildType);
-        let userAlias = userConfig.alias ? userConfig.alias : {};
-        let ret = {}
-
-        //用户自定义的alias配置设置成绝对路径
-        Object.keys(userAlias).forEach((key) => {
-            ret[key] = path.join(cwd, userAlias[key])
-        });
-
-        let defaultAlias = {
-            'react': path.join(cwd, `${config.sourceDir}/${React}`),
-            '@react': path.join(cwd, `${config.sourceDir}/${React}`),
-            '@components': path.join(cwd, `${config.sourceDir}/components`),
-            ...ret
-        }
-        return defaultAlias;
-    },
-    resolveDistPath(filePath) {
-        let dist = config.buildType === 'quick' ? 'src' : (config.buildDir || 'dist');
-        let sep = path.sep;
-        let reg = this.isWin() ? /\\node_modules\\/g : /\/node_modules\//g;
-        filePath = utils.updatePath(filePath, 'dist', dist); //待优化
-        return reg.test(filePath) ?
-            utils.updatePath(filePath, 'node_modules', `${dist}${sep}npm`) :
-            utils.updatePath(filePath, config.sourceDir, dist);
-    },
-    resolveAliasPath(id, deps) {
-        let ret = {};
-        Object.keys(deps).forEach((depKey) => {
-            ret[depKey] = path.relative(
-                path.dirname(this.resolveDistPath(id)),
-                this.resolveDistPath(deps[depKey])
-            )
-        });
-        return ret;
-    },
-    getRegeneratorRuntimePath: function (sourcePath) {
-        //小程序async/await语法依赖regenerator-runtime/runtime
-        try {
-            return nodeResolve.sync('regenerator-runtime/runtime', {
-                basedir: path.resolve(process.cwd(), 'source')
-            });
-            // const distPath = path.resolve(cwd, config.buildType === 'quick' ? './src' : './dist');
-            // console.log(path.resolve(distPath, './regenerator-runtime/runtime.js'));
-            // if (fs.ensureFileSync(path.resolve(distPath, 'regenerator-runtime/runtime.js'))) {
-            //     return path.resolve(distPath, 'regenerator-runtime/runtime');
-            // } else {
-            //     // eslint-disable-next-line
-            //     console.log(
-            //         'Error: ' +
-            //         sourcePath +
-            //         '\n' +
-            //         'Msg: ' +
-            //         chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
-            //     );
-            // }
-        } catch (err) {
-            // eslint-disable-next-line
-            console.log(
-                'Error: ' +
-                sourcePath +
-                '\n' +
-                'Msg: ' +
-                chalk.red('async/await语法缺少依赖 regenerator-runtime ,请安装')
-            );
-        }
-    },
-    resolveStyleAlias(importer, basedir) {
-        //解析样式中的alias别名配置
-        let aliasMap = (userConfig && userConfig.alias) || {};
-        let depLevel = importer.split('/'); //'@path/x/y.scss' => ['@path', 'x', 'y.scss']
-        let prefix = depLevel[0];
-
-        //将alias以及相对路径引用解析成绝对路径
-        if (aliasMap[prefix]) {
-            importer = path.join(
-                cwd,
-                aliasMap[prefix],
-                depLevel.slice(1).join('/') //['@path', 'x', 'y.scss'] => 'x/y.scss'
-            );
-            let val = path.relative(basedir, importer);
-            val = /^\w/.test(val) ? `./${val}` : val; //相对路径加./
-            return val;
-        }
-        return importer;
+    getDistName(buildType) {
+        return buildType === 'quick' ? 'src' : (userConfig && userConfig.buildDir || 'dist');
     },
     getDeps(messages = []) {
         return messages.filter((item) => {
@@ -396,7 +248,7 @@ let utils = {
         });
     },
     getComponentOrAppOrPageReg() {
-        return new RegExp(this.sepForRegex + '(?:pages|app|components|patchComponents)');
+        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
     },
     hasNpm(npmName) {
         let flag = false;
@@ -412,11 +264,7 @@ let utils = {
         }
         return flag;
     },
-    decodeChinese(code) {
-        return code.replace(/\\?(?:\\u)([\da-f]{4})/gi, function (a, b) {
-            return unescape(`%u${b}`);
-        });
-    },
+    decodeChinise: require('./decodeChinese'),
     isWebView(fileId) {
         
         if (config.buildType != 'quick') {
@@ -440,15 +288,7 @@ let utils = {
         return isWebView;
 
     },
-    parseCamel(str) {
-        return str
-            .replace(/-([a-z])/g, function(match, first) {
-                return first.toUpperCase();
-            })
-            .replace(/^[a-z]/, function(match) {
-                return match.toUpperCase();
-            });
-    },
+    parseCamel: toUpperCamel,//转换为大驼峰风格
     uniquefilter(arr, key = '') {
         const map = {};
         return arr.filter(item => {
@@ -462,10 +302,29 @@ let utils = {
             return false;
         });
     },
-    sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep,
+    isWin: function(){
+        return isWindow
+    },
+    sepForRegex: isWindow ? `\\${path.win32.sep}` : path.sep,
     fixWinPath(p) {
         return p.replace(/\\/g, '/');
+    },
+    isMportalEnv() {
+        return ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase()))
+    },
+    cleanLog(log) {
+        // 清理eslint stylelint错误日志内容
+        const reg = /[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm;
+        if (reg.test(log)) {
+            return log.replace(/^\s*@[\s\S]*$/gm, '').replace(reg, '');
+        }
+        return log;
+    },
+    validatePlatform(platform, platforms) {
+        return platforms.some((p) => {
+            return p.buildType === platform;
+        });
     }
 };
 
-exports = module.exports = utils;
+module.exports = utils;

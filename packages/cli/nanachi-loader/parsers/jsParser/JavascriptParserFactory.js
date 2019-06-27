@@ -1,60 +1,25 @@
 const WxParser = require('./WxParser');
+const QqParser = require('./QqParser');
 const AliParser = require('./AliParser');
 const BuParser = require('./BuParser');
 const TtParser = require('./TtParser');
 const QuickParser = require('./QuickParser');
-
+const H5Parser = require('./H5Parser');
+const maps = {
+    wx: WxParser,
+    qq: QqParser,
+    ali: AliParser,
+    bu: BuParser,
+    tt: TtParser,
+    quick: QuickParser,
+    h5: H5Parser
+}
 class JavascriptParserFactory {
     static create({
-        platform,
-        code,
-        map,
-        meta,
-        filepath
+        platform
     }) {
-        switch (platform) {
-            case 'wx':
-                return new WxParser({
-                    platform,
-                    code,
-                    map,
-                    meta,
-                    filepath
-                });
-            case 'ali':
-                return new AliParser({
-                    platform,
-                    code,
-                    map,
-                    meta,
-                    filepath
-                });
-            case 'bu':
-                return new BuParser({
-                    platform,
-                    code,
-                    map,
-                    meta,
-                    filepath
-                });
-            case 'tt':
-                return new TtParser({
-                    platform,
-                    code,
-                    map,
-                    meta,
-                    filepath
-                });
-            case 'quick':
-                return new QuickParser({
-                    platform,
-                    code,
-                    map,
-                    meta,
-                    filepath
-                });
-        }
-        
+        var parser = maps[platform] || Number;
+        return new parser( arguments[0] );
     }
 }
 

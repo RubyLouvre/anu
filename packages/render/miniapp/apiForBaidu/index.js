@@ -4,12 +4,12 @@ export var more = function(api) {
     return {
         // 界面交互
         showActionSheet: function _(a) {
-            var success = a['success'],
-                complete = a['complete'];
-            a['success'] = res => {
+            var success = a.success,
+                complete = a.complete;
+            a.success = res => {
                 success && success({ index: res.tapIndex });
             };
-            a['complete'] = res => {
+            a.complete = res => {
                 complete && complete({ index: res.tapIndex });
             };
             return api.showActionSheet.apply(api, arguments);
@@ -25,23 +25,21 @@ export var more = function(api) {
             return api.showLoading(a);
         },
         setMetaDescription: function _(a) {
-            let empty = function(res){};
             let defailt = {
                 content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
+                success: noop,
+                fail: noop,
+                complete: noop
             };
             let options = Object.assign(defailt, a);
             return api.setMetaDescription && api.setMetaDescription(options);
         },
         setMetaKeywords: function _(a) {
-            let empty = function(res){};
             let defailt = {
                 content: '',
-                success: empty,
-                fail: empty,
-                complete: empty
+                success: noop,
+                fail: noop,
+                complete: noop
             };
             let options = Object.assign(defailt, a);
             return api.setMetaKeywords && api.setMetaKeywords(options);

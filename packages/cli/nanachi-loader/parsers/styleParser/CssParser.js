@@ -1,11 +1,7 @@
-const StyleParser = require('./StyleParser');
+const LessParser = require('./LessParser');
 
-class CssParser extends StyleParser {
-    parse() {
-        return {
-            css: this.code
-        };
-    }
+class CssParser extends LessParser {
+    
 }
 
 module.exports = CssParser;

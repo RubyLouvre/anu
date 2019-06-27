@@ -8,8 +8,6 @@ const quickFiles = require('./quickFiles');
 const config = require('../../config/config');
 const utils = require('../utils');
 
-const deps = [];
-
 var wrapperPath = path.join(process.cwd(), config.sourceDir, 'components', 'PageWrapper', 'index.ux');
 /**
  * 将return后面的内容进行转换，再变成wxml
@@ -42,6 +40,7 @@ exports.exit = function (astPath, type, componentName, modules) {
              */
             var jsxAst = babel.transform(jsx, {
                 configFile: false,
+                comments: false,
                 babelrc: false,
                 plugins: [[require('@babel/plugin-transform-react-jsx'), { pragma: 'h' }]],
                 ast: true
@@ -70,7 +69,7 @@ exports.exit = function (astPath, type, componentName, modules) {
                 if (modules.componentType === 'Page') {
                     let pageWraperPath = path.relative(path.dirname(modules.sourcePath), wrapperPath);
                     if (utils.isWin()) {
-                        pageWraperPath = pageWraperPath.replace(/\\/g, '/');
+                        pageWraperPath = utils.fixWinPath(pageWraperPath);
                     }
                     quickFile.template = `
 <import name="anu-page-wrapper" src="${pageWraperPath}"></import>

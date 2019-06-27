@@ -13,7 +13,7 @@
       <slot></slot>
     </block>
     <div class="tabBar" if="{{tabBar.list.length}}" style="background-color:{{tabBar.backgroundColor}}">
-      <div class="tab" for="(index, item) in tabBar.list" @click="onSelected(item)">
+      <div class="tab" for="(index, item) in tabBar.list" @click="onTabClick(item, index)">
         <image src="{{ item.selected ? item.selectedIconPath : item.iconPath }}" />
         <text style="color:{{ item.selected ? tabBar.selectedColor: tabBar.color }};font-size: 20px;">
           {{item.text}}
@@ -74,9 +74,25 @@
     onShow() {
       setTitleAndTabs(this, this.$app);
     },
+    onTabClick(item, index) {
+      this.pagePath = item.pagePath;
+      if(item.selected){
+        return false;
+      }
+      var page = getCurrentPage();
+      if (page.onTabItemTap) {
+        page.onTabItemTap({
+          pagePath: item.pagePath,
+          index: index,
+          text: item.text
+        })
+      }
+      React.api.navigateTo({
+        url: item.pagePath
+      })
+    },
     onReachBottom(e) {
       var react = getCurrentPage();
-      console.log('onReachBottom',react)
       if (react.onReachBottom) {
         react.onReachBottom(e)
       }
@@ -87,52 +103,6 @@
       if (react.onPageScroll) {
         react.onPageScroll(e)
       }
-    },
-
-    onMenuPress: function () {
-      React.api.showActionSheet({
-        itemList: [
-          '分享',
-          'item2',
-          'item3',
-          'item4'
-        ],
-        success: function (data) {
-          console.log('handling success', data)
-          if (data.index === 0) {
-            // 分享
-            React.api.share({
-              type: 'text/html',
-              data: '<b>bold</b>',
-              success: function (data) {
-                console.log('handling success')
-              },
-              fail: function (data, code) {
-                console.log(`handling fail, code = ${code}`)
-              }
-            })
-          }
-        },
-        cancel: function () {
-          console.log('handling cancel')
-        },
-        fail: function (data, code) {
-          console.log(`handling fail, code = ${code}`)
-        }
-      })
-    },
-    onSelected(item) {
-      this.pagePath = item.pagePath;
-      if(item.selected){
-        return false;
-      }
-      var page = getCurrentPage();
-      if (page.onTabItemTap) {
-        page.onTabItemTap(item)
-      }
-      React.api.navigateTo({
-        url: item.pagePath
-      })
     },
     onPullDownRefresh(e) {
       var app = this.$app;
@@ -149,38 +119,6 @@
       setTimeout(() => {
         this.pageRefreshing = false
       }, 3000)
-    },
-    onMenuPress: function () {
-      React.api.showActionSheet({
-        itemList: [
-          '分享',
-          'item2',
-          'item3',
-          'item4'
-        ],
-        success: function (data) {
-          console.log('handling success', data)
-          if (data.index === 0) {
-            // 分享
-            React.api.share({
-              type: 'text/html',
-              data: '<b>bold</b>',
-              success: function (data) {
-                console.log('handling success')
-              },
-              fail: function (data, code) {
-                console.log(`handling fail, code = ${code}`)
-              }
-            })
-          }
-        },
-        cancel: function () {
-          console.log('handling cancel')
-        },
-        fail: function (data, code) {
-          console.log(`handling fail, code = ${code}`)
-        }
-      })
     }
   };
 
@@ -192,7 +130,7 @@
         navigationBarTitleText: "",
         navigationBarTextStyle: "white",
         navigationBarBackgroundColor: "#000000"
-      }, appConfig, pageConfig);
+      }, appConfig.window, pageConfig);
       instance.backgroundColor = mixin.backgroundColor || "#ffffff"
       instance.pageRefresh = !!mixin.enablePullDownRefresh;
 
@@ -206,11 +144,15 @@
       var tabBar = pageConfig.tabBar || appConfig.tabBar;
       if (tabBar && tabBar.list && tabBar.list.length) {
           tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
-          tabBar.color = tabBar.color || "#000";
+          tabBar.color = tabBar.color || "#000000";
           tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
           instance.tabBar = tabBar;
-          tabBar.list.forEach(function(el){
-             el.selected = handlePageUri(el.pagePath) === handlePageUri(instance.pagePath);
+          tabBar.list.forEach(function(el, i){
+            if(!el.pagePath){
+               console.warn(`tabBar.list[${i}] miss pagePath`, el);//eslint-disable-line
+               return
+            }
+            el.selected = trimPagePath(el.pagePath) === trimPagePath(instance.pagePath);
           })
       }   
   }
@@ -228,7 +170,8 @@
   }
 
   // 处理/pages/这种形式的pagePath
-  function handlePageUri(href) {
-    return href.slice(href.indexOf('/pages') + 1);
+  var rpages = /^\/?pages/
+  function trimPagePath(href) {
+    return href.replace(rpages,'');
   }
 </script>

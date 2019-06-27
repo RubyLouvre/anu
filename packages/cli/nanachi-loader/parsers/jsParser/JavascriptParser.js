@@ -1,13 +1,8 @@
 const path = require('path');
 const fs = require('fs');
 const babel = require('@babel/core');
-const cwd = process.cwd();
-const nodeResolve = require('resolve');
-const utils = require('../../../packages/utils/index');
 
-const getRelativePath = (from, to) => {
-    return path.relative(from, to).replace(/^(?=[^.])/, './'); // ReactQuick -> ./ReactQuick
-};
+const removeAst = (ast) => { ast.remove(); }
 
 class JavascriptParser {
     constructor({
@@ -33,6 +28,19 @@ class JavascriptParser {
         this.extraModules = [];
         this.parsedCode = '';
         this.ast = null;
+        this.componentType = null;
+        this.setComponentType();
+    }
+    setComponentType() {
+        if (
+            /\/components\//.test(this.filepath)                
+        ) {
+            this.componentType = 'Component';
+        } else if (/\/pages\//.test(this.filepath)) {
+            this.componentType = 'Page';
+        } else if (/app\.js$/.test(this.filepath)) {
+            this.componentType = 'App';
+        }
     }
     
     async parse() {
@@ -42,6 +50,22 @@ class JavascriptParser {
         this.ast = res.ast;
         return res;
     }
+    getCodeForWebpack() {
+        const res = babel.transformFromAstSync(this.ast, null, {
+            plugins: [
+                function() {
+                    return {
+                        visitor: {
+                            // 移除所有jsx，对webpack解析无用
+                            JSXElement: removeAst,
+                            ClassProperty: removeAst
+                        }
+                    };
+                }
+            ]
+        });
+        return res.code;
+    }
 
     getExtraFiles() {
         return this.queues;
@@ -49,58 +73,16 @@ class JavascriptParser {
 
     getExportCode() {
         let res = this.parsedCode;
+        // modules去重
+        this.extraModules = this.extraModules.filter((m, i, self) => {
+            return self.indexOf(m) === i;
+        });
         this.extraModules.forEach(module => {
             // windows 补丁
             module = module.replace(/\\/g, '\\\\');
             res = `import '${module}';\n` + res;
         });
         return res;
-    }
-    resolveAlias() {
-        const aliasMap = require('../../../consts/alias')(this.platform);
-        const from = path.resolve(cwd, 'source', this.relativePath);
-
-        const result = babel.transformFromAstSync(this.ast, null, {
-            configFile: false,
-            babelrc: false,
-            comments: false,
-            ast: true,
-            plugins: [
-                [
-                    require('babel-plugin-module-resolver'),        //计算别名配置以及处理npm路径计算
-                    {
-                        resolvePath(moduleName) {
-                            if (/^\./.test(moduleName)) {
-                                return moduleName;
-                            }
-                            // 替换别名
-                            moduleName = moduleName.replace(/^[@-\w]+/, function(alias) {
-                                return aliasMap[alias] || alias;
-                            });
-                            // 如果是 import babel from '@babel' 这种node_modules引入，处理路径 node_modules -> npm
-                            if (/^(?=[^./\\])/.test(moduleName)) {
-                                try {
-                                    const nodePath = nodeResolve.sync(moduleName, {
-                                        basedir: cwd
-                                    });
-                                    moduleName = path.resolve(cwd, 'source/npm', path.relative(path.resolve(cwd, 'node_modules'), nodePath));
-                                } catch (e) {
-                                    // eslint-disable-next-line
-                                    console.log(e);
-                                    return;
-                                }
-                            } else {
-                                moduleName = path.resolve(cwd, moduleName);
-                            }
-
-                         
-                            return getRelativePath(path.dirname(from), moduleName).replace(/\\/g, '/');
-                        }
-                    }
-                ]
-            ]
-        });
-        return result.code;
     }
 }
 

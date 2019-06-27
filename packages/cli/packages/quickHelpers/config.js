@@ -4,7 +4,6 @@
 
 */
 const path = require('path');
-const utils = require('../utils');
 const platConfig = require('../../config/config');
 
 //默认manifest.json
@@ -130,30 +129,91 @@ function setRouter(config) {
             manifest.router.entry = routePath;
         } 
     });
+  
+    //webview路由跳转
+    var globalConfig = require('../../config/config');
+    if (globalConfig.webview && globalConfig.webview.pages.length) {
+        let routePath = 'pages/__web__view__';
+        manifest.router.pages[routePath] = {
+            component: 'index'
+        }
+    }
+
+    let userConfig = {};
+    try {
+        userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
+        
+    } catch (err) {
+        // eslint-disable-next-line
+    }
+
+    if (
+        userConfig.router 
+        && Object.prototype.toString.call(userConfig.router) === '[object Object]'
+    ) 
+    {
+        let pages = {};
+        if (userConfig.router.entry) {
+            // 不允许用户配置router.entry
+            delete userConfig.router.entry;
+        }
+        if (userConfig.router.pages && Object.prototype.toString.call(userConfig.router.pages) === '[object Object]') {
+            // 合并router.pages
+            pages = Object.assign({}, manifest.router && manifest.router.pages, userConfig.router.pages);
+        }
+        Object.assign(manifest.router, userConfig.router);
+        Object.assign(manifest.router.pages, pages);
+    }
+    if (
+        platConfig.huawei
+        && userConfig.widgets 
+        && Object.prototype.toString.call(userConfig.widgets) === '[object Array]'
+    ) 
+    {
+        manifest.widgets = userConfig.widgets
+    }
+
 }
 
 
-//配置titlebar
+//为app.js的config对象配置titlebar
 function setTitleBar(config) {
     var display = manifest.display;
     let userConfig = {};
     try {
-        userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+        userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
     } catch (err) {
         // eslint-disable-next-line
+    }
+
+    //webview配置titlebar
+    var globalConfig = require('../../config/config');
+
+    if ( globalConfig.webview 
+        && /true|false/.test(globalConfig.webview.showTitleBar)
+        && !globalConfig.webview.showTitleBar ) {
+        let routePath = 'pages/__web__view__';
+        display['pages'] = display['pages'] || {};
+        display['pages'][routePath] = {
+            titleBar: false
+        }
     }
     
     if (
         userConfig.display 
-        && Object.prototype.toString.call(userConfig.display.titleBar) === '[object Boolean]'
+        && /true|false/.test(userConfig.display.titleBar)
         && !userConfig.display.titleBar
     ) 
     {
         display.titleBar = false;
         return;
     }
+
+    
+    //这里取得 app.js 类的config.window 得值，但是 pageWrapper又是取得config的值。造成必须两者都要写
     var win = config.window || {};
-    var disabledTitleBarPages = platConfig[platConfig['buildType']].disabledTitleBarPages || [];
+    //从config
+    var disabledTitleBarPages = globalConfig.quick.disabledTitleBarPages || []
     disabledTitleBarPages.forEach(function(el){
         // userPath/titledemo/source/pages/index/index.js => pages/index/index
         let route = path.relative( path.join(process.cwd(), platConfig.sourceDir),  path.dirname(el) );
@@ -164,9 +224,11 @@ function setTitleBar(config) {
     
     display.titleBarText = win.navigationBarTitleText || 'nanachi';
     display.titleBarTextColor = win.navigationBarTextStyle || 'black';
-    display.backgroundColor = win.navigationBarBackgroundColor || '#000000';
-
-    
+    //快应用的display.backgroundColor 颜色又是取得win.navigationBarBackgroundColor导航栏背景的颜色，
+    //应该取win.backgroundColor窗口背景的颜色
+    //如果少了个display.titleBarBackgroundColor 会导致页面切换出现黑色闪屏
+    display.titleBarBackground = win.navigationBarBackgroundColor || '#ffffff';
+    display.backgroundColor = win.backgroundColor || '#ffffff';
 
 }
 
@@ -174,14 +236,14 @@ function setTitleBar(config) {
 function setOtherConfig() {
     let userConfig = {};
     try {
-        userConfig = require(path.join(process.cwd(), 'quickConfig.json'));
+        userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
     } catch (err) {
         // eslint-disable-next-line
     }
 
     if (
         userConfig.display 
-        && Object.prototype.toString.call(userConfig.display.menu) === '[object Boolean]'
+        && /true|false/.test(userConfig.display.menu)
         && !userConfig.display.menu
     ) 
     {
@@ -198,7 +260,6 @@ function setOtherConfig() {
     });
     
     manifest.features = features;
-
     [
         'name', 
         'versionName',

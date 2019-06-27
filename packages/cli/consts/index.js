@@ -23,6 +23,17 @@ const MAP = {
         },
         patchComponents: []
     },
+    'qq': {
+        EXT_NAME: {
+            'css': 'qss',
+            'scss': 'qss',
+            'sass': 'qss',
+            'less': 'qss',
+            'html': 'qml',
+            'jsx': 'js',
+        },
+        patchComponents: []
+    },
     'ali': {
         EXT_NAME: {
             'css': 'acss',
@@ -59,8 +70,22 @@ const MAP = {
         patchComponents: []
     },
     'quick': {
-        EXT_NAME: {},
+        EXT_NAME: {
+            'css': 'css',
+            'scss': 'css',
+            'sass': 'css',
+            'less': 'css'
+        },
         patchComponents: ['radio', 'radio-group', 'checkbox', 'checkbox-group', 'label', 'navigator', 'picker']
+    },
+    'h5': {
+        EXT_NAME: {
+            'css': 'css',
+            'scss': 'css',
+            'sass': 'css',
+            'less': 'css'
+        },
+        patchComponents: []
     }
 };
 
@@ -77,6 +102,14 @@ const BUILD_OPTIONS = {
     },
     'huawei': {
         desc: '补丁华为快应用'
+    },
+    'analysis': {
+        alias: 'a',
+        desc: '打包产物分析'
+    },
+    'silent': {
+        alias: 's',
+        desc: '关闭eslint warning'
     }
 };
 

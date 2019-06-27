@@ -5,12 +5,6 @@
 	<meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
 
-<script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
-  <script src="./react-dom.development.js"></script>
-<!--
- <script src="./dist/React.js"></script>
--->
-	<script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
@@ -19,104 +13,38 @@
 	<div id='root' class="root">
 
 	</div>
-	<script type='text/babel'>
-        
-var container = document.getElementById('root');
-  var div = container;
-  if (!window.ReactDOM) {
-      window.ReactDOM = React;
+	<script>
+
+  function ListNode(val) {
+      this.val = val;
+      this.next = null;
   }
-  var expect = function(a) {
-      return {
-          toBe: function(b) {
-              console.log(a, 'vs', b, a === b);
-          },
-          toEqual(b) {
-              console.log(a, 'vs', b, a + '' === b + '');
-          },
-          toThrow(){
-              try{
-                  a()
-              }catch(e){
-                  console.log(e,"catch")
-              }
-          }
-      };
-};
-var {useState, useEffect, useRef, useLayoutEffect} = React;
-function Example() {
-    const [count, setCount] = useState(0);
-    const [text, setText] = useState('');
-    var a = useRef("xxx")
-    useEffect(() => {
-      console.log(a, 'useEffect')
-       document.title = `You clicked ${count} times`;
-       return () =>{
-        console.log(a, 'end useEffect')
-        document.title = `remove`;
-       }
-     });
-     useLayoutEffect(() => {
-      console.log(a, 'useLayoutEffect')
-       document.title = `You clicked ${count} times`;
-       return () =>{
-        console.log(a, 'end useLayoutEffect')
-        document.title += '!!!';
-       }
-     });
-    console.log(count, '更新Example')
-    return (
-      <quoteblock>
-        <p>You clicked {count} times</p>
-        <button onClick={() => setCount(count + 1)}>
-          Click me
-        </button>
-        <input ref={a} value={text} onChange={function(e){
-          setText(e.target.value)
-        }} />
-        <span>共{text.length}个字符</span><Child />
-      </quoteblock>
-    );
-}
 
-
-class App extends React.Component{
-    state = {
-      aaa: 1
-    }
-    onClick(){
-      this.setState(function(s){
-        return {
-          aaa: s.aaa +1
+var a = new ListNode(1)
+var b = a.next = new ListNode(2)
+var c = b.next = new ListNode(3)
+var d = c.next = new ListNode(4)
+ var swapPairs = function(head) {
+    var prevHead = new ListNode(0);
+    prevHead.next = head;
+    var prev = prevHead;//0
+      while(prev && prev.next){//1  
+        var first = prev.next; //1
+        var second = first.next; //2
+        if(second){
+          prev.next = second;
+          var next = second.next;
+          second.next = first;
+          first.next = next;
+          prev = first;
+        }else{
+          prev = null;
         }
-      })
     }
-    componentDidMount(){
-      console.log("app mount")
-    }
-    componentDidUpdate(){
-      console.log("app update")
-    }
-    render(){
-      return <div>{this.state.aaa < 10 ? <Example />: null}
-              <h1 onClick={this.onClick.bind(this)}>{ this.state.aaa}</h1>
-        </div>
-    }
-}
-
-class Child extends React.Component {
-    componentDidMount(){
-      console.log("Child mount")
-    }
-    componentDidUpdate(){
-      console.log("Child update")
-    }
-    render(){
-      return <span>Child</span>
-    }
-}
-ReactDOM.render(<App />, container)
-	
+    return prevHead.next 
+};
+console.log(swapPairs(a))//1 2 3 4
+            //2 1 3 4
     </script>
 
 

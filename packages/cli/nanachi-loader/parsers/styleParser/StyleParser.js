@@ -2,7 +2,6 @@ const path = require('path');
 const postcss = require('postcss');
 const utils = require('../../../packages/utils/index');
 const fs = require('fs');
-const quickFiles = require('../../../packages/quickHelpers/quickFiles');
 
 class StyleParser {
     constructor({
@@ -11,7 +10,8 @@ class StyleParser {
         meta,
         filepath,
         platform,
-        type
+        type,
+        loaderContext
     }) {
         this.code = code || fs.readFileSync(filepath, 'utf-8');
         this.map = map;
@@ -24,6 +24,7 @@ class StyleParser {
         this._postcssOptions = {};
         this.parsedCode = '';
         this.extraModules = [];
+        this.loaderContext = loaderContext || {}; // loader中的this
     }
     getRelativePath(filepath) {
         if (/node_modules[\\\/]schnee-ui/.test(filepath)) {
@@ -32,7 +33,6 @@ class StyleParser {
             return path.relative(path.resolve(process.cwd(), 'source'), filepath);
         }
     }
-    
     async parse() {
         const res = await new Promise((resolve, reject) => {
             postcss(this._postcssPlugins).process(this.code, this._postcssOptions).then((res) => {
@@ -49,16 +49,6 @@ class StyleParser {
         return res;
     }
     getExtraFiles() {
-        if (this.platform === 'quick') {
-            const find = Object.keys(quickFiles).find(file => quickFiles[utils.fixWinPath(file)].cssPath === this.filepath);
-            if (find) {
-                return [{
-                    type: 'ux',
-                    path: this.getRelativePath(find),
-                    code: this.getUxCode(find)
-                }];
-            }
-        }
         return [{
             type: 'css',
             path: this.relativePath,
@@ -73,11 +63,6 @@ class StyleParser {
             res = `import '${module}';\n` + res;
         });
         return res;
-    }
-    getUxCode(path) {
-        const obj = quickFiles[utils.fixWinPath(path)];
-        obj.cssCode = this.parsedCode ? `<style>\n${this.parsedCode}\n</style>` : '';
-        return obj.header + '\n' + obj.jsCode + '\n' + obj.cssCode;
     }
 }
 

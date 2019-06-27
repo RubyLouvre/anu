@@ -1,6 +1,5 @@
 var prompt = require('@system.prompt');
-
-import { noop } from 'react-core/util';
+import {runCallbacks} from '../utils'
 /**
  * 显示一个可以带两个按钮的弹窗
  * @param {*} obj 
@@ -42,18 +41,13 @@ export function showModal(obj) {
 }
 export function showToast(obj) {  
     obj.message = obj.title;
-    obj.duration = obj.duration / 1000;
-    let success = obj.success || noop,
-        fail = obj.fail || noop,
-        complete = obj.complete || noop;
-    try {
+    //快应用 duration显示的持续时间，0为短时，1为长时，默认0。
+    //         短时大约为2000毫秒，长时大约为3500毫秒。
+    //其他小程序 duration 默认 1500 ms	
+    obj.duration = obj.duration / 1000 >= 1 ? 1: 0;
+    runCallbacks(function(){
         prompt.showToast(obj);
-        success();
-    } catch (err) {
-        fail(err);
-    } finally {
-        complete();
-    }
+    }, obj.success, obj.fail, obj.complete )
 }
 
 export function showActionSheet(obj) {

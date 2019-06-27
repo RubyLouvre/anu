@@ -8,7 +8,7 @@ import url from './utils/bsurl';
 let bsurl = url.bsurl;
 
 class Demo extends React.Component {
-  config = {
+  static config = {
       window: {
           navigationBarTextStyle: 'white',
           navigationBarTitleText: 'Music',
@@ -127,3 +127,4 @@ class Demo extends React.Component {
 
 // eslint-disable-next-line
 export default App(new Demo());
+

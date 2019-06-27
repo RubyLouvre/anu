@@ -8,18 +8,19 @@ const ora = require('ora');
 const glob = require('glob');
 const { REACT_LIB_MAP } = require('../consts/index');
 const utils = require('../packages/utils/index');
-
+const nodeResolve = require('resolve');
 
 const cliRoot = path.resolve(__dirname, '..');
-const isWin = process.platform === 'win32';
+const config = require('../config/config');
+const getSubpackage = require('../packages/utils/getSubPackage');
 
 //删除dist目录, 以及快应的各配置文件
 function getRubbishFiles(buildType){
     let fileList = ['package-lock.json', 'yarn.lock'];
-    buildType !== 'quick'
-        ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
-        : fileList = fileList.concat(['dist']);
-
+    buildType === 'quick'
+    ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
+    : fileList = fileList.concat([utils.getDistName(buildType)]);
+    
     //构建应用时，要删除source目录下其他的 React lib 文件。
     let libList = Object.keys(REACT_LIB_MAP)
         .map(function(key){
@@ -125,27 +126,50 @@ function getReactLibFile(ReactLibName) {
     }
 }
 
-
-function getAssetsFile( buildType ) {
+function getAssetsFile( buildType, huawei ) {
+    let quickConfig;
+    try {
+        quickConfig = require(path.resolve(cwd, 'source', 'quickConfig.json'));
+    } catch (err) {
+        // quickConfig可能不存在
+    }
     const assetsDir = path.join(cwd, 'source', 'assets');
     let files = glob.sync( assetsDir+'/**', {nodir: true});
-    files = files
-    .filter(function(id){
+    
+    files = files.filter(function(id){
         //过滤js, css, sass, scss, less, json文件
-        return !/\.(js|scss|sass|less|css|json)$/.test(id)
-    })
-    .map(function(id){
-        let sourceReg = isWin ? /\\source\\/ : /\/source\//;
+        return !/\.(js|scss|sass|less|css|json)$/.test(id);
+    });
+    if (quickConfig && quickConfig.router && quickConfig.router.widgets) {
+        Object.keys(quickConfig.router.widgets).forEach(key => {
+            let widgetPath = quickConfig.router.widgets[key].path;
+            if (widgetPath) {
+                widgetPath = path.join(cwd, 'source', widgetPath);
+                const widgetFiles = glob.sync( widgetPath + '/**', {nodir: true});
+                files = files.concat(widgetFiles);
+            }
+        });
+    }
+    if (huawei && quickConfig && quickConfig.widgets && Object.prototype.toString.call(quickConfig.widgets) === '[object Array]') {
+        quickConfig.widgets.forEach(widget => {
+            let widgetPath = widget.path;
+            if (widgetPath) {
+                widgetPath = path.join(cwd, 'source', widgetPath);
+                const widgetFiles = glob.sync( widgetPath + '/**', {nodir: true});
+                files = files.concat(widgetFiles);
+            }
+        })
+    }
+    files = files.map(function(id){
+        let sourceReg = /[\\/]source[\\/]/;
         let dist = id.replace(sourceReg, buildType === 'quick' ? `${path.sep}src${path.sep}` : `${path.sep}dist${path.sep}`);
         return {
             id: id,
             dist: dist ,
             ACTION_TYPE: 'COPY'
-        }
+        };
     });
-    
     return files;
-
 }
 
 //copy project.config.json
@@ -194,11 +218,76 @@ function needInstallHapToolkit(){
     }
 }
 
-async function runTask({ buildType, beta, betaUi }){
+function checkPagePath(dirname) {
+    if (/[\\/]common([\\/]|$)/.test(dirname)) return;
+    fs.readdir(dirname, function(err, files) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        let jsFileNum = 0;
+        files.forEach(file => {
+            file = path.resolve(dirname, file);
+            const stat = fs.statSync(file);
+            if (stat.isFile()) {
+                if (/\.js$/.test(file)) {
+                    jsFileNum++;
+                }
+            } else {
+                checkPagePath(file);
+            }
+            if (jsFileNum > 1) {
+                console.error(chalk`{red Error: }{grey ${path.dirname(file)}} 目录不符合分包规范，该目录下不允许包含多个js文件`);
+                process.exit();
+            }
+        });
+    });
+}
+
+function injectPluginsConfig() {
+    let userConfig;
+    try {
+        userConfig = require(path.join(process.cwd(), 'source', `${config.buildType}Config.json`));
+    } catch (e) {
+    
+    }
+    if (userConfig && userConfig.plugins && Object.prototype.toString.call(userConfig.plugins) === '[object Object]') {
+        Object.keys(userConfig.plugins).forEach(key => {
+            const name = userConfig.plugins[key].name;
+            if (!name) {
+                delete userConfig[key];
+                throw `${key}配置项必须包含name字段`;
+            }
+            config.pluginTags[name] = `plugin://${key}/${name}`;
+            delete userConfig.plugins[key].name;
+        });
+        config.plugins = userConfig.plugins;
+    }
+}
+
+async function runTask({ buildType, beta, betaUi, compress }){
+    // 检查pages目录是否符合规范
+    if (buildType !== 'quick' && getSubpackage(buildType).length > 0) {
+        checkPagePath(path.resolve(cwd, 'source/pages'));
+    }
     const ReactLibName = REACT_LIB_MAP[buildType];
     const isQuick = buildType === 'quick';
     let tasks  = [];
     
+    // 安装nanachi-compress-loader包
+    if (compress) {
+        const compressLoaderName = 'nanachi-compress-loader';
+        try {
+            nodeResolve.sync(compressLoaderName, { basedir: process.cwd() });
+        } catch (e) {
+            let spinner = ora(chalk.green.bold(`正在安装${compressLoaderName}`)).start();
+            utils.installer(
+                compressLoaderName,
+                '--save-dev'
+            );
+            spinner.succeed(chalk.green.bold(`${compressLoaderName}安装成功`));
+        }
+    }
 
     if (betaUi) {
         downloadSchneeUI();
@@ -227,12 +316,12 @@ async function runTask({ buildType, beta, betaUi }){
             );
         }
     }
-    
+    injectPluginsConfig();
     //copy project.config.json
     //tasks = tasks.concat(getProjectConfigFile(buildType));
 
-    //copy assets目录下静态资源
-    tasks = tasks.concat(getAssetsFile(buildType));
+    //copy assets目录下静态资源 (改用copyWebpackPlugin拷贝静态资源，处理压缩)
+    // tasks = tasks.concat(getAssetsFile(buildType));
 
     try {
         //每次build时候, 必须先删除'dist', 'build', 'sign', 'src', 'babel.config.js'等等冗余文件或者目录
