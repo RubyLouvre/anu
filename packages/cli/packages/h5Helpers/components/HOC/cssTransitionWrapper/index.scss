@@ -5,4 +5,11 @@
     transform: translate(0);
     transition: transform 300ms;
 }
+.page-exit {
+    transform: translate(0);
+}
+.page-exit-done {
+    transform: translate(500px);
+    transition: transform 300ms;
+}
   
