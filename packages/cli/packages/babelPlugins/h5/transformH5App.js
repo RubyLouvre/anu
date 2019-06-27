@@ -36,15 +36,25 @@ const pageWrapper = template(`
 });
 let CLASS_NAME = 'Global';
 
-let registerTemplate = `
-window.addEventListener('popstate', function({ state }) {
-    React.api.redirectTo({
-      url: state.url
-    });
+const temp = `window.addEventListener('popstate', function ({
+    state
+  }) {
+    const pages = React.getCurrentPages();
+    const index = pages.findIndex(page => page.props.path === state.url );
+    if (index > -1) {
+      React.api.navigateBack({
+        delta: pages.length - 1 - index
+      })
+    } else {
+        React.api.navigateTo({
+        url: state.url
+        });
+    }
 });
 React.registerApp(this);
 this.onLaunch();
 `;
+let registerTemplate = temp;
 
 
 module.exports = function ({ types: t }) {
@@ -162,15 +172,7 @@ module.exports = function ({ types: t }) {
         },
         post: function(){ 
             pageIndex = 0;
-            registerTemplate = `
-window.addEventListener('popstate', function({ state }) {
-    React.api.redirectTo({
-      url: state.url
-    });
-});
-React.registerApp(this);
-this.onLaunch();
-`;
+            registerTemplate = temp;
         }
     };
 };

@@ -148,7 +148,7 @@ class PageWrapper extends React.Component{
                         }
                         .__internal__Page-container {
                             width: 100%;
-                            height: ${this.state.isTabPage ? `calc(100% - 60px - ${this.state.showTitleBar ? '48px': 0})` : `calc(100% - ${this.state.showTitleBar ? '48px': 0})`};
+                            height: ${this.state.isTabPage ? `calc(100% - 60px - ${this.state.showTitleBar ? '48px': '0px'})` : `calc(100% - ${this.state.showTitleBar ? '48px': '0px'})`};
                             overflow-x: hidden;
                             overflow-y: auto;
                             background-color: ${this.state.backgroundColor};
