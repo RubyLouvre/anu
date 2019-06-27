@@ -1,7 +1,7 @@
 const nanachi = require('../index');
 const { NANACHI_CONFIG_PATH } = require('../consts/index');
 const fs = require('fs-extra');
-
+const { deepMerge } = require('../packages/utils/index');
 
 module.exports = async function(args){
     try {
@@ -20,9 +20,9 @@ module.exports = async function(args){
         // 合并nanachi.config.js中的用户自定义配置
         if (fs.existsSync(NANACHI_CONFIG_PATH)) {
             const userConfig = require(NANACHI_CONFIG_PATH);
-            Object.assign(nanachiConfig, userConfig);
+            deepMerge(nanachiConfig, userConfig);
         }
-        Object.assign(nanachiConfig, baseConfig);
+        deepMerge(nanachiConfig, baseConfig);
         
         nanachi(nanachiConfig);
 

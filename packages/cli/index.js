@@ -184,6 +184,7 @@ async function nanachi({
             prevLoaders,
             postLoaders,
             rules,
+            huawei
             // maxAssetSize
         });
 
