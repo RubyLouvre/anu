@@ -124,12 +124,13 @@ class PageWrapper extends React.Component{
                 //   onTouchCancel={this.resetContainer}
                 > */}
                 {instances.map((page, index) => {
+                    let className = '__hidden';
                     if (index === instances.length - 1) {
-                        return <div className={`__internal__Page-container ${this.props.showBackAnimation ? '__backAnimation' : ''}`}>
-                            {page}
-                        </div>;
+                        className = `__internal__Page-container ${this.props.showBackAnimation ? '__backAnimation' : ''}`;
+                    } else if (index === instances.length - 2) {
+                        className = "__bottom";
                     }
-                    return <div className="__hidden">
+                    return <div className={className}>
                         {page}
                     </div>;
                 })}
@@ -162,6 +163,9 @@ class PageWrapper extends React.Component{
                             transform: translateY(${this.state.showTitleBar ? '48px': 0});
                         }
                         .__hidden {
+                            display: none;
+                        }
+                        .__bottom {
                             position: fixed;
                             width: 100%;
                             transform: translateY(${this.state.showTitleBar ? '48px': 0});
