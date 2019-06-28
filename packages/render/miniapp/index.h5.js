@@ -105,8 +105,8 @@ function router({url, success, fail, complete}) {
     var pageInstance = React.createElement(pageClass, {
         isTabPage: false,
         path,
-        app: React.__app,
-        ...React.__app.state
+        query,
+        app: React.__app
     });
     React.__currentPages.push(pageInstance);
     var appInstance = React.__app;
@@ -146,10 +146,10 @@ let apiContainer = {
         var path;
         while (delta && React.__currentPages.length) {
             React.__currentPages.pop();
-            history.back();
             delta--;
         }
         path = React.__currentPages[React.__currentPages.length - 1].props.path;
+        history.replaceState({ url: path }, null, path);
         var appInstance = React.__app;
         appInstance.setState({
             path,
@@ -171,7 +171,7 @@ let apiContainer = {
                 return;
             }
             React.__currentPages = [];
-            this.navigateTo.call(this, {url, success, fail, complete});
+            this.navigateTo.call(this, {url, query, success, fail, complete});
         }
     },
     reLaunch: function({ url, success, fail, complete }) {
