@@ -10,6 +10,10 @@ export default function cssTransitionWrapper(Comp) {
                     classNames={this.props.isTabPage ? 'tab' : 'page'}
                     timeout={true}
                     in={true}
+                    mountOnEnter={true}
+                    unmountOnExit={true}
+                    onEnter={()=>{console.log('enter')}}
+                    onExit={()=>{console.log('exit')}}
                     appear
                 >
                     <Comp {...this.props}/>

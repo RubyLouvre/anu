@@ -132,9 +132,18 @@ module.exports = function ({ types: t }) {
                 }
             },
             ClassBody(astPath) {
-                registerTemplate += `React.api.redirectTo({
+                registerTemplate += `const pathname = location.pathname;
+                    React.api.redirectTo({
                     url: ${CLASS_NAME}.config.pages[0]
-                });`;
+                    });
+                    if (${CLASS_NAME}.config.pages.some(page => page === pathname)) {
+                    if (pathname !== ${CLASS_NAME}.config.pages[0]) {
+                        React.api.navigateTo({
+                        url: pathname
+                        });
+                    }
+                }`;
+
                 const registerApp = template(registerTemplate, {
                     placeholderPattern: false
                 });
