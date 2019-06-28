@@ -133,16 +133,25 @@ module.exports = function ({ types: t }) {
             },
             ClassBody(astPath) {
                 registerTemplate += `const pathname = location.pathname;
-                    React.api.redirectTo({
+                const search = location.search;
+                if (${CLASS_NAME}.config.tabBar && ${CLASS_NAME}.config.tabBar.list && ${CLASS_NAME}.config.tabBar.list.some(item => item.pagePath.replace(/^\\.\\//, '') === pathname.replace(/^\\//, ''))) {
+                  React.api.redirectTo({
+                    url: pathname + search
+                  });
+                } else {
+                  React.api.redirectTo({
                     url: ${CLASS_NAME}.config.pages[0]
-                    });
-                    if (${CLASS_NAME}.config.pages.some(page => page === pathname)) {
+                  });
+              
+                  if (${CLASS_NAME}.config.pages.some(page => page === pathname)) {
                     if (pathname !== ${CLASS_NAME}.config.pages[0]) {
-                        React.api.navigateTo({
-                        url: pathname
-                        });
+                      React.api.navigateTo({
+                        url: pathname + search
+                      });
                     }
+                  }
                 }`;
+                
 
                 const registerApp = template(registerTemplate, {
                     placeholderPattern: false
