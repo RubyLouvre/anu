@@ -166,7 +166,7 @@ class PageWrapper extends React.Component{
                             display: none;
                         }
                         .__bottom {
-                            position: fixed;
+                            position: absolute;
                             width: 100%;
                             transform: translateY(${this.state.showTitleBar ? '48px': 0});
                         }
