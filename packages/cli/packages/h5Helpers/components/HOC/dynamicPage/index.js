@@ -17,6 +17,9 @@ export default function dynamicPage(Comp) {
             this.triggerLifeCycle('onShow');
             this.triggerLifeCycle('onReady');
         }
+        componentWillReceiveProps(nextProps) {
+            this.triggerLifeCycle(nextProps.show ? 'onShow' : 'onHide');
+        }
         triggerLifeCycle(name, ...args) {
             const instance = this.Ref.current;
             const appInstance = this.$app;

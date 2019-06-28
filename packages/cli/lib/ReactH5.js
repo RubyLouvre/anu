@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-28T05
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-28T07
  * IE9+
  */
 
@@ -5200,11 +5200,18 @@
             path = _getQuery2[0],
             query = _getQuery2[1];
         var pageClass = React$1.__pages[path];
+        React$1.__currentPages.forEach(function (page, index, self) {
+            var pageClass = React$1.__pages[page.props.path];
+            self[index] = React$1.createElement(pageClass, Object.assign(page.props, {
+                show: false
+            }));
+        });
         var pageInstance = React$1.createElement(pageClass, {
             isTabPage: false,
             path: path,
             query: query,
-            app: React$1.__app
+            app: React$1.__app,
+            show: true
         });
         React$1.__currentPages.push(pageInstance);
         var appInstance = React$1.__app;
@@ -5246,20 +5253,15 @@
                 success = _ref2.success,
                 fail = _ref2.fail,
                 complete = _ref2.complete;
-            var path;
             while (delta && React$1.__currentPages.length) {
                 React$1.__currentPages.pop();
                 delta--;
             }
-            path = React$1.__currentPages[React$1.__currentPages.length - 1].props.path;
+            var _React$__currentPages = React$1.__currentPages[React$1.__currentPages.length - 1].props,
+                path = _React$__currentPages.path,
+                query = _React$__currentPages.query;
             history.replaceState({ url: path }, null, path);
-            var appInstance = React$1.__app;
-            appInstance.setState({
-                path: path,
-                success: success,
-                fail: fail,
-                complete: complete
-            });
+            this.redirectTo.call(this, { url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
         },
         switchTab: function switchTab(_ref3) {
             var url = _ref3.url,
@@ -5335,6 +5337,11 @@
             accr[temp[0]] = temp[1];
             return accr;
         }, {});
+    }
+    function parseObj2Query(obj) {
+        return '?' + Object.keys(obj).map(function (key) {
+            return key + '=' + obj[key];
+        }).join('&');
     }
     registerAPIs(React$1, apiContainer, more);
 

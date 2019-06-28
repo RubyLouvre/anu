@@ -119,11 +119,11 @@ class PageWrapper extends React.Component{
                 > */}
                 {instances.map((page, index) => {
                     if (index === instances.length - 1) {
-                        return <div key={page.props.path} className="__internal__Page-container __internal__Page-release-animation">
+                        return <div className="__internal__Page-container __internal__Page-release-animation">
                             {page}
                         </div>;
                     }
-                    return <div key={page.props.path} style={{display: 'none'}}>
+                    return <div className="__hidden">
                         {page}
                     </div>;
                 })}
@@ -154,6 +154,9 @@ class PageWrapper extends React.Component{
                             background-color: ${this.state.backgroundColor};
                             -webkit-overflow-scrolling: touch;
                             transform: translateY(${this.state.showTitleBar ? '48px': 0});
+                        }
+                        .__hidden {
+                            display: none;
                         }
                     `}
                 </style>

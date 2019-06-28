@@ -102,11 +102,21 @@ let React = (getWindow().React = {
 function router({url, success, fail, complete}) {
     var [path, query] = getQuery(url);
     var pageClass = React.__pages[path];
+    React.__currentPages.forEach((page, index, self) => {
+        const pageClass = React.__pages[page.props.path];
+        self[index] = React.createElement(pageClass, Object.assign(
+            page.props,
+            {
+                show: false
+            }
+        ));
+    });
     var pageInstance = React.createElement(pageClass, {
         isTabPage: false,
         path,
         query,
-        app: React.__app
+        app: React.__app,
+        show: true
     });
     React.__currentPages.push(pageInstance);
     var appInstance = React.__app;
@@ -143,20 +153,13 @@ let apiContainer = {
         router(options);
     },
     navigateBack: function({delta = 1, success, fail, complete} = {}) {
-        var path;
         while (delta && React.__currentPages.length) {
             React.__currentPages.pop();
             delta--;
         }
-        path = React.__currentPages[React.__currentPages.length - 1].props.path;
+        let { path, query } = React.__currentPages[React.__currentPages.length - 1].props;
         history.replaceState({ url: path }, null, path);
-        var appInstance = React.__app;
-        appInstance.setState({
-            path,
-            success, 
-            fail, 
-            complete
-        });
+        this.redirectTo.call(this, {url: path + parseObj2Query(query), success, fail, complete});
     },
     switchTab: function({url, success, fail, complete}) {
         var [path, query] = getQuery(url);
@@ -217,6 +220,10 @@ function parseQueryStr2Obj(query) {
         accr[temp[0]] = temp[1];
         return accr;
     }, {});
+}
+
+function parseObj2Query(obj) {
+    return '?' + Object.keys(obj).map(key => `${key}=${obj[key]}`).join('&');
 }
 
 registerAPIs(React, apiContainer, more);
