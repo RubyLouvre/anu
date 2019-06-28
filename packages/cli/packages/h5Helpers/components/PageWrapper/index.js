@@ -24,7 +24,8 @@ class PageWrapper extends React.Component{
             showTitleBar: true,
             pagePath: "",
             backgroundColor: "#ffffff",
-            isTabPage: false
+            isTabPage: false,
+            hide: false
         };
     }
     initAppConfig() {
@@ -37,6 +38,11 @@ class PageWrapper extends React.Component{
         return this.$app.state.path;
     }
     componentWillMount() {
+        setTimeout(() => {
+            this.setState({
+                hide: true
+            });
+        }, 500);
         const pageConfig = pageConfigMap[this.pagePath];
         this.setTitleAndTabs(deepMerge({}, this.appConfig, pageConfig, this.props.config), this.pagePath);
     }
@@ -97,7 +103,7 @@ class PageWrapper extends React.Component{
     render(){
         const instances = React.getCurrentPages();
         return (
-            <div className='__internal__Page__' >
+            <div className={`__internal__Page__ ${this.props.showBackAnimation ? '__backAnimation' : ''}`} >
                 {
                     this.state.showTitleBar ? 
                         <TitleBar
@@ -119,7 +125,7 @@ class PageWrapper extends React.Component{
                 > */}
                 {instances.map((page, index) => {
                     if (index === instances.length - 1) {
-                        return <div className="__internal__Page-container __internal__Page-release-animation">
+                        return <div className='__internal__Page-container'>
                             {page}
                         </div>;
                     }
@@ -157,6 +163,10 @@ class PageWrapper extends React.Component{
                         }
                         .__hidden {
                             display: none;
+                        }
+                        .__backAnimation {
+                            transform: translateX(375px);
+                            transition: transform 500ms ease;
                         }
                     `}
                 </style>

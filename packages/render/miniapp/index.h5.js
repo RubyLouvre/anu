@@ -129,7 +129,8 @@ function router({url, success, fail, complete}) {
         query, 
         success, 
         fail, 
-        complete
+        complete,
+        showBackAnimation: false
     });
 }
 const titleBarColorMap = {
@@ -153,13 +154,19 @@ let apiContainer = {
         router(options);
     },
     navigateBack: function({delta = 1, success, fail, complete} = {}) {
-        while (delta && React.__currentPages.length) {
-            React.__currentPages.pop();
-            delta--;
-        }
-        let { path, query } = React.__currentPages[React.__currentPages.length - 1].props;
-        history.replaceState({ url: path }, null, path);
-        this.redirectTo.call(this, {url: path + parseObj2Query(query), success, fail, complete});
+        var appInstance = React.__app;
+        appInstance.setState({
+            showBackAnimation: true
+        });
+        setTimeout(() => {
+            while (delta && React.__currentPages.length) {
+                React.__currentPages.pop();
+                delta--;
+            }
+            let { path, query } = React.__currentPages[React.__currentPages.length - 1].props;
+            history.replaceState({ url: path }, null, path);
+            this.redirectTo.call(this, {url: path + parseObj2Query(query), success, fail, complete});
+        }, 300);
     },
     switchTab: function({url, success, fail, complete}) {
         var [path, query] = getQuery(url);

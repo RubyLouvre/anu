@@ -30,7 +30,7 @@ window.onload = function (){
 });
 
 const pageWrapper = template(`
-    return <PageWrapper app={this} path={this.state.path}  query={this.state.query} config={this.state.config}/>
+    return <PageWrapper app={this} path={this.state.path}  query={this.state.query} config={this.state.config} showBackAnimation={this.state.showBackAnimation}/>
 `, {
     plugins: ['jsx']
 });
@@ -42,12 +42,12 @@ const temp = `window.addEventListener('popstate', function ({
     const pages = React.getCurrentPages();
     const index = pages.findIndex(page => page.props.path === state.url.split('?')[0] );
     if (index > -1) {
-      React.api.navigateBack({
-        delta: pages.length - 1 - index
-      })
+        React.api.navigateBack({
+            delta: pages.length - 1 - index
+        })
     } else {
         React.api.navigateTo({
-        url: state.url
+            url: state.url
         });
     }
 });

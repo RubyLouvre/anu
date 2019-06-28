@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-28T07
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-28T11
  * IE9+
  */
 
@@ -5224,7 +5224,8 @@
             query: query,
             success: success,
             fail: fail,
-            complete: complete
+            complete: complete,
+            showBackAnimation: false
         });
     }
     var titleBarColorMap = {
@@ -5247,21 +5248,28 @@
             router(options);
         },
         navigateBack: function navigateBack() {
+            var _this = this;
             var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
                 _ref2$delta = _ref2.delta,
                 delta = _ref2$delta === undefined ? 1 : _ref2$delta,
                 success = _ref2.success,
                 fail = _ref2.fail,
                 complete = _ref2.complete;
-            while (delta && React$1.__currentPages.length) {
-                React$1.__currentPages.pop();
-                delta--;
-            }
-            var _React$__currentPages = React$1.__currentPages[React$1.__currentPages.length - 1].props,
-                path = _React$__currentPages.path,
-                query = _React$__currentPages.query;
-            history.replaceState({ url: path }, null, path);
-            this.redirectTo.call(this, { url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
+            var appInstance = React$1.__app;
+            appInstance.setState({
+                showBackAnimation: true
+            });
+            setTimeout(function () {
+                while (delta && React$1.__currentPages.length) {
+                    React$1.__currentPages.pop();
+                    delta--;
+                }
+                var _React$__currentPages = React$1.__currentPages[React$1.__currentPages.length - 1].props,
+                    path = _React$__currentPages.path,
+                    query = _React$__currentPages.query;
+                history.replaceState({ url: path }, null, path);
+                _this.redirectTo.call(_this, { url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
+            }, 300);
         },
         switchTab: function switchTab(_ref3) {
             var url = _ref3.url,
