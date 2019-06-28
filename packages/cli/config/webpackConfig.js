@@ -29,6 +29,7 @@ module.exports = function({
     compressOption,
     plugins,
     rules,
+    huawei,
     analysis,
     prevLoaders, // 自定义预处理loaders
     postLoaders, // 自定义后处理loaders
@@ -124,7 +125,22 @@ module.exports = function({
         try {
             // quickConfig可能不存在 需要try catch
             const quickConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
-            if (quickConfig && quickConfig.router && quickConfig.router.widgets) {
+            if (huawei) {
+                if (quickConfig && quickConfig.widgets) {
+                    quickConfig.widgets.forEach(widget => {
+                        const widgetPath = widget.path;
+                        if (widgetPath) {
+                            const rule = {
+                                from: '**',
+                                to: widgetPath.replace(/^[\\/]/, ''),
+                                context: path.join('source', widgetPath),
+                                ...copyPluginOption
+                            };
+                            copyAssetsRules.push(rule);
+                        }
+                    });
+                }
+            } else if (quickConfig && quickConfig.router && quickConfig.router.widgets) {
                 Object.keys(quickConfig.router.widgets).forEach(key => {
                     const widgetPath = quickConfig.router.widgets[key].path;
                     if (widgetPath) {

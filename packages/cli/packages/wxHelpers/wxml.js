@@ -230,8 +230,8 @@ let visitor = {
             //如果是位于属性中
             if (t.isJSXAttribute(astPath.parent)) {
                 attrValueHelper(astPath);
-                // 支付宝补丁， 支付宝"{{variable + \"a\"}}"语法会报错 需将字符串双引号转为单引号"{{variable + 'a'}}"
-                if (config.buildType === 'ali' && astPath.node.type === 'StringLiteral') {
+                // "{{variable + \"a\"}}"语法会报错 需将字符串双引号转为单引号"{{variable + 'a'}}"
+                if (astPath.node.type === 'StringLiteral') {
                     astPath.node.value = astPath.node.value.replace(/"/g, "'");
                 }
             } else if (

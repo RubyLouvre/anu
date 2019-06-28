@@ -157,9 +157,12 @@ function setRouter(config) {
             // 不允许用户配置router.entry
             delete userConfig.router.entry;
         }
-        if (userConfig.router.pages && Object.prototype.toString.call(userConfig.router.pages) === '[object Object]') {
+        if (platConfig.huawei && userConfig.router.pages && Object.prototype.toString.call(userConfig.router.pages) === '[object Object]') {
             // 合并router.pages
             pages = Object.assign({}, manifest.router && manifest.router.pages, userConfig.router.pages);
+        } else {
+            // 如果不是华为，删除用户自己配置的router.pages字段
+            delete userConfig.router.pages;
         }
         Object.assign(manifest.router, userConfig.router);
         Object.assign(manifest.router.pages, pages);
