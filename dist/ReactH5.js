@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-28T11
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-28T16
  * IE9+
  */
 
@@ -5347,7 +5347,8 @@
         }, {});
     }
     function parseObj2Query(obj) {
-        return '?' + Object.keys(obj).map(function (key) {
+        var keys = Object.keys(obj);
+        return (keys.length ? '?' : '') + keys.map(function (key) {
             return key + '=' + obj[key];
         }).join('&');
     }

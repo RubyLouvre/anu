@@ -230,7 +230,8 @@ function parseQueryStr2Obj(query) {
 }
 
 function parseObj2Query(obj) {
-    return '?' + Object.keys(obj).map(key => `${key}=${obj[key]}`).join('&');
+    const keys = Object.keys(obj);
+    return (keys.length ? '?' : '') + keys.map(key => `${key}=${obj[key]}`).join('&');
 }
 
 registerAPIs(React, apiContainer, more);

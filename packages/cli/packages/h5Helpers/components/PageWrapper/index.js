@@ -103,7 +103,7 @@ class PageWrapper extends React.Component{
     render(){
         const instances = React.getCurrentPages();
         return (
-            <div className={`__internal__Page__ ${this.props.showBackAnimation ? '__backAnimation' : ''}`} >
+            <div className={`__internal__Page__`} >
                 {
                     this.state.showTitleBar ? 
                         <TitleBar
@@ -125,7 +125,7 @@ class PageWrapper extends React.Component{
                 > */}
                 {instances.map((page, index) => {
                     if (index === instances.length - 1) {
-                        return <div className='__internal__Page-container'>
+                        return <div className={`__internal__Page-container ${this.props.showBackAnimation ? '__backAnimation' : ''}`}>
                             {page}
                         </div>;
                     }
@@ -162,10 +162,12 @@ class PageWrapper extends React.Component{
                             transform: translateY(${this.state.showTitleBar ? '48px': 0});
                         }
                         .__hidden {
-                            display: none;
+                            position: fixed;
+                            width: 100%;
+                            transform: translateY(${this.state.showTitleBar ? '48px': 0});
                         }
                         .__backAnimation {
-                            transform: translateX(375px);
+                            transform: translate(375px, ${this.state.showTitleBar ? '48px': 0});
                             transition: transform 500ms ease;
                         }
                     `}
