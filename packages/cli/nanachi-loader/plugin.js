@@ -44,8 +44,12 @@ class NanachiWebpackPlugin {
                     }
                 };
             }
-            
-            delete compilation.assets[compiler.options.output.filename];
+            const reg = new RegExp(compiler.options.output.filename);
+            Object.keys(compilation.assets).forEach(key => {
+                if (reg.test(key)) {
+                    delete compilation.assets[key];
+                }
+            });
         });
 
         compiler.hooks.run.tapAsync(id, async (compilation, callback) => {
