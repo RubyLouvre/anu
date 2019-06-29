@@ -40,15 +40,22 @@ const temp = `window.addEventListener('popstate', function ({
     state
   }) {
     const pages = React.getCurrentPages();
-    const index = pages.findIndex(page => page.props.path === state.url.split('?')[0] );
+    const pathname = state.url.split('?')[0];
+    const index = pages.findIndex(page => page.props.path === pathname );
     if (index > -1) {
         React.api.navigateBack({
             delta: pages.length - 1 - index
         })
     } else {
-        React.api.navigateTo({
-            url: state.url
-        });
+        if (React.__isTab(pathname)) {
+            React.api.switchTab({
+                url: state.url
+            });
+        } else {
+            React.api.navigateTo({
+                url: state.url
+            });
+        }
     }
 });
 React.registerApp(this);
@@ -134,7 +141,7 @@ module.exports = function ({ types: t }) {
             ClassBody(astPath) {
                 registerTemplate += `const pathname = location.pathname;
                 const search = location.search;
-                if (${CLASS_NAME}.config.tabBar && ${CLASS_NAME}.config.tabBar.list && ${CLASS_NAME}.config.tabBar.list.some(item => item.pagePath.replace(/^\\.\\//, '') === pathname.replace(/^\\//, ''))) {
+                if (React.__isTab(pathname)) {
                   React.api.redirectTo({
                     url: pathname + search
                   });

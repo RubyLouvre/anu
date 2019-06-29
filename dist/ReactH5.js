@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-28T16
+ * 运行于webview的React by 司徒正美 Copyright 2019-06-29T15
  * IE9+
  */
 
@@ -5188,7 +5188,13 @@
         appType: 'h5',
         __app: {},
         __pages: {},
-        __currentPages: []
+        __currentPages: [],
+        __isTab: function __isTab(pathname) {
+            if (this.__app.constructor.config.tabBar && this.__app.constructor.config.tabBar.list && this.__app.constructor.config.tabBar.list.some(function (item) {
+                return item.pagePath.replace(/^\.\//, '') === pathname.replace(/^\//, '');
+            })) return true;
+            return false;
+        }
     };
     function router(_ref) {
         var url = _ref.url,

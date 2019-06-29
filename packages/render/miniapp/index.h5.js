@@ -97,7 +97,16 @@ let React = (getWindow().React = {
     appType: 'h5',
     __app: {},
     __pages: {},
-    __currentPages: []
+    __currentPages: [],
+    __isTab: function(pathname) {
+        if (this.__app.constructor.config.tabBar 
+            && this.__app.constructor.config.tabBar.list 
+            && this.__app.constructor.config.tabBar.list.some(
+                item => item.pagePath.replace(/^\.\//, '') === pathname.replace(/^\//, '')
+            )
+        ) return true;
+        return false;
+    }
 });
 function router({url, success, fail, complete}) {
     var [path, query] = getQuery(url);
