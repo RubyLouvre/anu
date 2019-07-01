@@ -1,5 +1,22 @@
 # Changelog
 
+# 1.3.2 (2019-07-01)
+
+## 核心库
+#### Feature
+
+- 调整分享钩子的逻辑，确保onGlobalShare钩子有机会触发。
+
+#### Bug fix
+
+- 处理onShow, onHIde使用了async/await后，对应的全局构子不执行的问题。
+
+## CLI
+#### Feature
+
+- 华为background-image:url(xxx)自动添加引号处理，防止华为编译报错。
+- 华为负一屏卡片配置支持。
+
 # 1.3.1 (2019-06-24)
 
 ## 核心库

@@ -56,13 +56,43 @@ function wxml(code, modules) {
 }
 
 let visitor = {
+    CallExpression:{
+        exit: function(astPath,state){
+            var callee = astPath.node.callee;
+            let modules = utils.getAnu(state);
+            if(modules.isInAttribute){
+               if(!modules.isInTag){
+                    return
+                }
+               if( modules.isInAttribute == 'style'|| /^(on|catch|style)/.test(modules.isInAttribute)){
+                   return
+               }
+               console.warn(chalk.red("请不要在JSX中的 "+modules.isInAttribute," 属性中调用函数 "+ generate(astPath.node).code+"\n\n"));
+               return
+
+            }
+            if(callee.type === 'MemberExpression' && callee.property.name === 'map'){
+               //这是map循环
+            }else{
+                console.log(chalk.red("请不要在JSX中调用函数 " + generate(astPath.node).code +"\n\n"))
+            }
+       }
+       
+    },
     JSXOpeningElement: {
-        exit: function(astPath) {
+        enter: function(astPath,state) {
+            let modules = utils.getAnu(state);
+            modules.isInTag = astPath.node.name.name ;
+        },
+        exit: function(astPath,state) {
+            let modules = utils.getAnu(state);
+          //  modules.isInTag = astPath.node.name.name ;
+            modules.isInTag = false
             let openTag = astPath.node.name, 
                 newTagName = false, 
                 attributes = [],
                 childNodes = astPath.parentPath.node.children;
-            if (openTag.type === 'JSXMemberExpression' ) {
+            if ( openTag.type === 'JSXMemberExpression' ) {
                 if (openTag.object.name === 'React' && openTag.property.name === 'useComponent') {
                     let instanceUid;
                     astPath.node.attributes.forEach(function(el) {
@@ -106,37 +136,44 @@ let visitor = {
             }
         }
     },
-    JSXAttribute(astPath, state) {
-        let attrName = astPath.node.name.name;
-        let attrValue = astPath.node.value;
-        if (attrName === 'key') {
-            let value;
-            let modules = utils.getAnu(state);
-            if (t.isStringLiteral(attrValue)) {
-                value = attrValue.value;
-            } else {
-                value = generate(attrValue.expression).code;
-                if((buildType === 'qq' || buildType === 'wx') && value.indexOf('+') > 0){
-                    var fixKey = value.replace(/\+.+/, '').trim();
-                    console.log(chalk.cyan(`微信/QQ小程序的key不支持加号表达式${value}-->${fixKey}`));
-                    value = fixKey;
-                }
-            }
+    JSXAttribute:{
 
-            
-            //冒泡找到最近的一个map调用函数，找到其中的callee(如：xxx.map)作为键值对储存jsx key属性的值。
-            var CallExpression = astPath.findParent(t.isCallExpression);
-            if (CallExpression) {
-                var callee = CallExpression.node.callee;
-                modules.key = modules.key || {};
-                //this.state.xxx.map
-                let calleeCode = generate(callee).code;
-                modules.key[calleeCode] = value;
-                astPath.remove();
+        enter: function (astPath, state) {
+            let attrName = astPath.node.name.name;
+            let attrValue = astPath.node.value;
+            let modules = utils.getAnu(state);
+            modules.isInAttribute = attrName
+            if (attrName === 'key') {
+                let value;
+
+                if (t.isStringLiteral(attrValue)) {
+                    value = attrValue.value;
+                } else {
+                    value = generate(attrValue.expression).code;
+                    if ((buildType === 'qq' || buildType === 'wx') && value.indexOf('+') > 0) {
+                        var fixKey = value.replace(/\+.+/, '').trim();
+                        console.log(chalk.cyan(`微信/QQ小程序的key不支持加号表达式${value}-->${fixKey}`));
+                        value = fixKey;
+                    }
+                }
+                //冒泡找到最近的一个map调用函数，找到其中的callee(如：xxx.map)作为键值对储存jsx key属性的值。
+                var CallExpression = astPath.findParent(t.isCallExpression);
+                if (CallExpression) {
+                    var callee = CallExpression.node.callee;
+                    modules.key = modules.key || {};
+                    //this.state.xxx.map
+                    let calleeCode = generate(callee).code;
+                    modules.key[calleeCode] = value;
+                    astPath.remove();
+                }
+                return;
             }
-            return;
-        }
-        attrNameHelper(astPath, attrName, astPath.parentPath.node.name.name);
+            attrNameHelper(astPath, attrName, astPath.parentPath.node.name.name);
+        },
+        exit: function (astPath, state) {
+            let modules = utils.getAnu(state);
+            modules.isInAttribute = false;
+        },
     },
     JSXText: {
         exit(astPath) {
@@ -193,8 +230,8 @@ let visitor = {
             //如果是位于属性中
             if (t.isJSXAttribute(astPath.parent)) {
                 attrValueHelper(astPath);
-                // 支付宝补丁， 支付宝"{{variable + \"a\"}}"语法会报错 需将字符串双引号转为单引号"{{variable + 'a'}}"
-                if (config.buildType === 'ali' && astPath.node.type === 'StringLiteral') {
+                // "{{variable + \"a\"}}"语法会报错 需将字符串双引号转为单引号"{{variable + 'a'}}"
+                if (astPath.node.type === 'StringLiteral') {
                     astPath.node.value = astPath.node.value.replace(/"/g, "'");
                 }
             } else if (
