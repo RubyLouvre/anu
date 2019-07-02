@@ -4,16 +4,35 @@ const chalk = require('chalk');
 const path = require('path');
 const fs = require('fs-extra');
 const axios = require('axios');
+const glob = require('glob');
 
 function unPack(src, dist) {
+    dist = path.join(dist, 'source');
     fs.ensureDirSync(dist);
     fs.emptyDirSync(dist);
     const unzipExec = shelljs.exec(`tar -zxvf ${src} -C ${dist}`, {
         silent: true
     });
     if (unzipExec.code) {
+        // eslint-disable-next-line
         console.log(chalk.bold.red(unzipExec.stderr));
     }
+    try {
+        let files = glob.sync( dist + '/**', {nodir: true, dot: true});
+        files.forEach(function(el){
+            let fileName = path.basename(el);
+            if (
+                /\/package\.json$/.test(el)
+                || /\/\.\w+$/.test(el)
+            ) {
+                fs.moveSync( el, path.join(dist, '..', fileName));
+            }
+        });
+
+    } catch (err) {
+        // eslint-disable-next-line
+    }
+   
 }
 
 
