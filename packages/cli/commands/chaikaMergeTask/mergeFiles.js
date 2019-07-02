@@ -295,10 +295,54 @@ function getMergedPkgJsonContent(alias) {
     };
 }
 
+//校验app.js是否正确
+function validateAppJsFileCount(queue) {
+    let appJsFileCount = queue
+        .filter(function(el){
+            return /\/app\.js$/.test(el);
+        })
+        .map(function(el){
+            return el.replace(/\\/g, '/').split('/download/').pop();
+        });
+    if (!appJsFileCount.length || appJsFileCount.length > 1) {
+        // eslint-disable-next-line
+        console.log(chalk.bold.red('校验到多个拆库仓库中存在app.js. 在业务线的拆库工程中，有且只能有一个拆库需要包含app.js:\n'), chalk.bold.red(JSON.stringify(appJsFileCount, null, 4)));
+        process.exit(1);
+    }
+}
+
+//校验config.json路径是否正确
+function validateConfigFileCount(queue) {
+    let configFiles = queue.filter(function(el){
+        return /Config\.json$/.test(el);
+    });
+    let errorFiles = [];
+    configFiles.forEach(function(el) {
+        el = el.replace(/\\/g, '/');
+        //'User/nnc_module_qunar_platform/.CACHE/download/nnc_home_qunar/app.json' => nnc_home_qunar
+        let projectName = el.replace(/\\/g, '/').split('/download/')[1].split('/')[0];
+        let reg = new RegExp(projectName + '/' + process.env.ANU_ENV + 'Config.json$');
+        let dir = path.dirname(el);
+        if ( reg.test(el) && !fs.existsSync( path.join(dir, 'app.js') ) ) {
+            errorFiles.push(el);
+        }
+    });
+       
+    
+    if (errorFiles.length) {
+        // eslint-disable-next-line
+        console.log(chalk.bold.red('校验到拆库仓库中配置文件路径错误，请将该配置文件放到 source 目录中:\n'), chalk.bold.red(JSON.stringify(errorFiles, null, 4)));
+        process.exit(1);
+    }
+}
+
 module.exports = function(){
     let queue = Array.from(mergeFilesQueue);
-    let map = getFilesMap(queue);
+
+    validateAppJsFileCount(queue);
+    validateConfigFileCount(queue);
     
+    let map = getFilesMap(queue);
     let tasks = [
         //app.js路由注入
         getMergedAppJsConent( getAppJsSourcePath(queue), map.pages),
@@ -340,16 +384,17 @@ module.exports = function(){
         let installList = installPkgList.join(' ');
         // --no-save 是为了不污染用户的package.json
         // eslint-disable-next-line
-        console.log(chalk.bold.green(`npm 正在安装 ${installList}, 请稍等...`));
-        let cmd = `npm install ${installList} --no-save`;
-       
+        console.log(chalk.bold.green(`npm 正在安装各拆库依赖： ${installList}, 请稍等...`));
+        fs.ensureDir(path.join(cwd, 'node_modules'));
+        let cmd = `npm install ${installList} --no-save --package-lock-only`;
         // eslint-disable-next-line
+        
         let std = shelljs.exec(cmd, {
-            cwd: cwd,
             silent: true
         });
        
-        if (/fatal:/.test(std.stderr)) {
+      
+        if (/npm ERR!/.test(std.stderr)) {
             // eslint-disable-next-line
             console.log(chalk.red(std.stderr));
             process.exit(1);

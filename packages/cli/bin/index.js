@@ -88,7 +88,7 @@ program
     .action(function(name, opts){
         if (process.env.NANACHI_CHAIK_MODE != 'CHAIK_MODE') {
             // eslint-disable-next-line
-            console.log(chalk.bold.red('配置错误, 拆库开发功能请查阅文档: https://rubylouvre.github.io/nanachi/documents/chaika.html'));
+            console.log(chalk.bold.red('需在package.json中配置{"nanachi": {"chaika_mode": true }}, 拆库开发功能请查阅文档: https://rubylouvre.github.io/nanachi/documents/chaika.html'));
             process.exit(1);
         }
         let downloadInfo = {};
