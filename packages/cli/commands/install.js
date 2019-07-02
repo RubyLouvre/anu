@@ -56,38 +56,35 @@ function downLoadGitRepo(target, branch){
         process.exit(1);
     } 
     // eslint-disable-next-line
-    console.log(chalk.green(`download ${gitRepoName} success.`));
+    console.log(chalk.green(`安装依赖包 ${gitRepoName} 成功.`));
 }
 
 
 async function downLoadBinaryLib(lib) {
-    let libUrl = '', libName = '', ext = '';
+    let [tarName, version] = lib.split('@');
+    let tarUrl = '';
     let nanachiUserConfig = {};
     try {
-        nanachiUserConfig = require(path.join(cwd, 'nanachi.config.js'));
+        nanachiUserConfig = require(path.join(cwd, 'nanachi.config'));
     } catch (err) {
-        // eslint-disable-next-line
-    }
-
-    let iRules = nanachiUserConfig.chaikaConfig && nanachiUserConfig.chaikaConfig.installRules || [];
-    
-    for (let i = 0; i < iRules.length; i++) {
-        if ( iRules[i].test.test(lib) && iRules[i].rule ) {
-            libUrl = iRules[i].rule(lib);
-            libName = path.parse(libUrl).name;
-            ext = path.parse(libUrl).ext;
-            break;
+        if (/SyntaxError/.test(err)) {
+            // eslint-disable-next-line
+            console.log(err);
         }
     }
-    if (libUrl) {
+   
+    let onInstallTarball = nanachiUserConfig.chaikaConfig && nanachiUserConfig.chaikaConfig.onInstallTarball || function(){ return ''; };
+    tarUrl = onInstallTarball(tarName, version);
+    
+    if (tarUrl) {
         let axiosConfig = {
-            url: libUrl,
+            url: tarUrl,
             type: 'GET',
             responseType: 'arraybuffer'
         };
         
         let { data } = await axios(axiosConfig);
-        let libDist = path.join(cwd, `.CACHE/lib/${libName}${ext}`);
+        let libDist = path.join(cwd, `.CACHE/lib/${path.basename(tarUrl)}`);
         fs.ensureFileSync(libDist);
         fs.writeFile(libDist, data, function(err){
             if (err) {
@@ -96,10 +93,10 @@ async function downLoadBinaryLib(lib) {
                 return;
             }
             // eslint-disable-next-line
-            console.log(chalk.green(`download ${libName} success.`));
+            console.log(chalk.green(`安装依赖包 ${tarName}@${version} 成功.`));
             unPack(
                 libDist, 
-                path.join(cwd, `.CACHE/download/${libName}`)
+                path.join(cwd, `.CACHE/download/${tarName}`)
             );
         });
     }
@@ -111,6 +108,7 @@ function downLoadConfigDepModule(){
     var depModules = pkg.modules || {};
     let depKey = Object.keys(depModules);
     if (!depKey.length) {
+        // eslint-disable-next-line
         console.log(chalk.bold.red('未在package.json中发现拆库依赖包, 安装失败.'));
         process.exit(1);
     }
