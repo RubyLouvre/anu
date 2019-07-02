@@ -43,6 +43,8 @@ module.exports = function (modules, json) {
             delete subPackagesItem.name;
         }
 
+       
+
         //核心是根据配置中的 resource 创建正则，去遍历出 pages 中的的匹配这个正则的路由。
         let reg = new RegExp('^' + resource);
         json[keys[buildType]].push(subPackagesItem);
@@ -52,7 +54,7 @@ module.exports = function (modules, json) {
 
                 //如果匹配到分包，需要从 pages 中将分包的路径删除掉
                 let subPage = routes.splice(_index, 1)[0];
-
+                
                 // pages/demo/syntax/multiple/index => multiple/index
                 subPackagesItem.pages.push(subPage.replace(resource + '/', ''));
             }

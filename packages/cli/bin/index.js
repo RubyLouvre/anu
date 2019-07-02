@@ -5,6 +5,9 @@ const semver = require('semver');
 const program = require('commander');
 const platforms = require('../consts/platforms');
 const { BUILD_OPTIONS } = require('../consts/index');
+const path = require('path');
+
+
 function checkNodeVersion(version){
     if (semver.lt(process.version, version)) {
         // eslint-disable-next-line
@@ -17,6 +20,22 @@ function checkNodeVersion(version){
     }
 }
 checkNodeVersion('8.6.0');
+
+
+function injectChaikEnv(){
+    let pkg = {};
+    try {
+        pkg = require(path.join(process.cwd(), 'package.json'));
+    } catch (err) {
+        // eslint-disable-next-line
+    }
+    let chaikaMode = pkg.nanachi && pkg.nanachi.chaika_mode
+        ? 'CHAIK_MODE'
+        : 'NOT_CHAIK_MODE';
+    process.env.NANACHI_CHAIK_MODE = chaikaMode;
+}
+
+injectChaikEnv();
 
 /**
  * 注册命令
@@ -57,9 +76,45 @@ program
     .version(require('../package.json').version)
     .usage('<command> [options]');
 
+
 registeCommand('init <app-name>', 'description: 初始化项目', {}, (appName)=>{
     require('../commands/init')(appName);
 });
+
+program
+    .command('install [name]')
+    .description('description: 安装拆库模块. 文档: https://rubylouvre.github.io/nanachi/documents/chaika.html')
+    .option('-b, --branch [branchName]', '指定分支')
+    .action(function(name, opts){
+        if (process.env.NANACHI_CHAIK_MODE != 'CHAIK_MODE') {
+            // eslint-disable-next-line
+            console.log(chalk.bold.red('需在package.json中配置{"nanachi": {"chaika_mode": true }}, 拆库开发功能请查阅文档: https://rubylouvre.github.io/nanachi/documents/chaika.html'));
+            process.exit(1);
+        }
+        let downloadInfo = {};
+        if (!name && !opts.branch) {
+            //nanachi install package.json中配置的所有包
+            downloadInfo = {
+                type: 'all',
+                lib: ''
+            };
+        }
+        if (name && !/\.git$/.test(name) ) {
+            //nanachi install xxx@kkk
+            downloadInfo = {
+                type: 'binary',
+                lib: name
+            };
+        }
+        if (/\.git$/.test(name) && opts.branch && typeof opts.branch === 'string' ) {
+            downloadInfo = {
+                type: 'git',
+                lib: name,
+                version: opts.branch
+            };
+        }
+        require('../commands/install')(downloadInfo);
+    });
 
 ['page', 'component'].forEach(type => {
     registeCommand(
@@ -115,6 +170,8 @@ program
     });
 
 program.parse(process.argv);
+
+
 if (!process.argv.slice(2).length) {
     program.outputHelp();
 }
