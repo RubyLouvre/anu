@@ -106,7 +106,6 @@
     "stylelint": "^10.0.1",
     "stylelint-plugin-nanachi": "latest",
     "table": "^5.2.3",
-    "targz": "^1.0.1",
     "validate-npm-package-name": "^3.0.0",
     "webpack": "^4.29.6",
     "webpack-dev-server": "^3.4.1",
