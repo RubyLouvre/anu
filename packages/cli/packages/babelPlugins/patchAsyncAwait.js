@@ -1,6 +1,6 @@
 let fs = require('fs-extra');
 let path = require('path');
-let cwd = process.cwd();
+
 let nodeResolve = require('resolve');
 let t = require('@babel/types');
 
@@ -42,14 +42,24 @@ module.exports  = [
 
                         let root = astPath.findParent(t.isProgram);
                         root.node.body.unshift(
-                            t.variableDeclaration('var', [
-                                t.variableDeclarator(
-                                    t.identifier('regeneratorRuntime'),
-                                    t.callExpression(t.identifier('require'), [
-                                        t.stringLiteral('regenerator-runtime/runtime')
-                                    ])
-                                )
-                            ])
+
+                            t.importDeclaration(
+                                [
+                                    t.ImportDefaultSpecifier(
+                                        t.identifier('regeneratorRuntime')
+                                    )
+                                ],
+                                t.stringLiteral('regenerator-runtime/runtime')
+                            )
+
+                            // t.variableDeclaration('var', [
+                            //     t.variableDeclarator(
+                            //         t.identifier('regeneratorRuntime'),
+                            //         t.callExpression(t.identifier('require'), [
+                            //             t.stringLiteral('regenerator-runtime/runtime')
+                            //         ])
+                            //     )
+                            // ])
                         );
 
                         patchAsync = true;
@@ -62,10 +72,12 @@ module.exports  = [
                         // 锁版本
                         utils.installer(pkgName + '@0.12.1');
                     }
+                    let cwd = process.cwd();
+                    
                     let dist = path.join( cwd, utils.getDistName(config.buildType), 'npm', `${pkgName}/runtime.js`);
                     let src =  path.join( cwd, 'node_modules', `${pkgName}/runtime.js`);
-                    fs.ensureFileSync(dist);
-                    fs.copyFileSync(src, dist);
+                    // fs.ensureFileSync(dist);
+                    // fs.copyFileSync(src, dist);
                     copyFlag = true;
                 }
 

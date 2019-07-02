@@ -46,13 +46,13 @@ class SizePlugin {
                 
                 // reasons 表示 module.id 依赖宿主（被谁依赖）
                 var reasons = module.reasons
-                .map(function(el){
-                    if (el.moduleId) {
-                        return el.moduleId.split(/\/source\//)[1]
-                    } else {
-                        return '';
-                    }
-                })
+                    .map(function(el){
+                        if (el.moduleId) {
+                            return el.moduleId.split(/\/source\//)[1];
+                        } else {
+                            return '';
+                        }
+                    });
                 reasons = Array.from( new Set(reasons) );
 
                 // 标示哪些资源是公用的， 如果 module.id 依赖宿主为多个, 则表示该文件是公用的。
