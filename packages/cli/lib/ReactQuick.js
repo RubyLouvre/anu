@@ -3374,24 +3374,47 @@ function getQuery(wx, huaweiHack) {
 }
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
-    var appQuery = _getApp().$def.globalQuery;
-    var pageQuery = PageClass.pageQuery;
-    if (!pageQuery && PageClass.protected) {
+    var def = _getApp().$def;
+    var appInner = def.innerQuery;
+    var appOuter = def.outerQuery;
+    var pageInner = PageClass.innerQuery;
+    var pageOuter = PageClass.outerQuery;
+    if (!pageInner && PageClass.protected) {
         console.warn('protected静态对象已经被废弃，请改用pageQuery静态对象');
-        pageQuery = PageClass.protected;
+        pageInner = PageClass.protected;
     }
-    var queryObject = pageQuery ? Object.assign({}, appQuery, pageQuery) : appQuery || emptyObject;
+    var innerQuery = pageInner ? Object.assign({}, appInner, pageInner) : appInner;
+    var outerQuery = pageOuter ? Object.assign({}, appOuter, pageOuter) : appOuter;
+    var duplicate = {};
+    if (innerQuery) {
+        for (var i in innerQuery) {
+            duplicate[i] = true;
+        }
+    }
+    if (outerQuery) {
+        var keys = [];
+        for (var i in outerQuery) {
+            if (duplicate[i] === true) {
+                keys.push(i);
+            }
+            duplicate[i] = true;
+        }
+        if (keys.length) {
+            throw '页面 ' + path + ' 的两个参数对象存在重复的键名 ' + keys;
+        }
+    }
     var config = {
         private: {
             props: Object,
             context: Object,
             state: Object
         },
-        protected: queryObject,
+        protected: innerQuery,
+        public: outerQuery,
         dispatchEvent: dispatchEvent,
         onInit: function onInit() {
             var app = this.$app;
-            var instance = onLoad.call(this, PageClass, path, getQuery(this, queryObject));
+            var instance = onLoad.call(this, PageClass, path, getQuery(this, duplicate));
             var pageConfig = PageClass.config || instance.config || emptyObject;
             app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
         },
@@ -3404,7 +3427,7 @@ function registerPage(PageClass, path) {
                 app = _getApp(),
                 param = e;
             if (pageHook === 'onShow') {
-                param = instance.props.query = getQuery(this, queryObject);
+                param = instance.props.query = getQuery(this, duplicate);
                 app.$$page = instance.wx;
                 app.$$pagePath = instance.props.path;
             } else if (pageHook === 'onMenuPress') {
