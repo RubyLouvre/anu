@@ -3363,14 +3363,14 @@ function getQuery(wx, huaweiHack) {
             return query;
         }
     }
+    var data = _getApp().globalData;
+    var routerQuery = data && data.__quickQuery && data.__quickQuery[page.path] || query;
     if (huaweiHack && Object.keys(huaweiHack).length) {
         for (var _i in huaweiHack) {
-            query[_i] = wx[_i];
+            routerQuery[_i] = wx[_i];
         }
-        return query;
     }
-    var data = _getApp().globalData;
-    return data && data.__quickQuery && data.__quickQuery[page.path] || query;
+    return routerQuery;
 }
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];

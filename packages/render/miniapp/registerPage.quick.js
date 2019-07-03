@@ -25,16 +25,16 @@ function getQuery(wx, huaweiHack) {
             return query;
         }
     }
-    //华为快应用从protected中抽取
-    if ( huaweiHack && Object.keys(huaweiHack).length) {
-        for (let i in huaweiHack) {
-            query[i] = wx[i];
-        }
-        return query;
-    }
     //否则返回navigateTo/redirectTo/navigateBack中储存起来的参数
     var data = _getApp().globalData;
-    return data && data.__quickQuery && data.__quickQuery[page.path] || query;
+    var routerQuery = data && data.__quickQuery && data.__quickQuery[page.path] || query;
+     //华为快应用从protected、public中抽取
+    if ( huaweiHack && Object.keys(huaweiHack).length) { 
+        for (let i in huaweiHack) {
+           routerQuery[i] = wx[i];
+        }
+    }
+    return routerQuery;
 }
 
 export function registerPage(PageClass, path) {
