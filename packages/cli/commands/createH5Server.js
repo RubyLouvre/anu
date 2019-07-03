@@ -9,7 +9,13 @@ module.exports = function(compiler) {
             publicPath: webpackH5Config.output.publicPath,
             host: '0.0.0.0',
             port: PORT,
-            historyApiFallback: true,
+            historyApiFallback: {
+                rewrites: [{
+                    from: /.*/g,
+                    to: '/web/'
+                }]
+            },
+            disableHostCheck: true,
             // noInfo: true,
             hot: true,
             stats: 'errors-only',

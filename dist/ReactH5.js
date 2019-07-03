@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-06-29T15
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-02T11
  * IE9+
  */
 
@@ -4316,21 +4316,7 @@
     axios.defaults.headers = {
       'Content-Type': 'application/x-www-form-urlencoded'
     };
-    var cancel = void 0,
-        promiseArr = {};
     var CancelToken = axios.CancelToken;
-    axios.interceptors.request.use(function (config) {
-      if (promiseArr[config.url]) {
-        promiseArr[config.url]('操作取消');
-        promiseArr[config.url] = cancel;
-      } else {
-        promiseArr[config.url] = cancel;
-      }
-      return config;
-    }, function (err) {
-      console.log('请求超时!');
-      return Promise.resolve(err);
-    });
     axios.interceptors.response.use(function (response) {
       return response.status === 200 ? Promise.resolve(response) : Promise.reject(response);
     }, function (error) {
@@ -4387,7 +4373,6 @@
           headers: header,
           responseType: responseType,
           cancelToken: new CancelToken(function (c) {
-            cancel = c;
           })
         }).then(function (res) {
           handleSuccess(res, success, complete, resolve);
@@ -5241,16 +5226,17 @@
     var titleBarTitleMap = {
         'title': 'navigationBarTitleText'
     };
+    var prefix = '/web';
     var apiContainer = {
         redirectTo: function redirectTo(options) {
             if (React$1.__currentPages.length > 0) {
                 React$1.__currentPages.pop();
             }
-            history.replaceState({ url: options.url }, null, options.url);
+            history.replaceState({ url: options.url }, null, prefix + options.url);
             router(options);
         },
         navigateTo: function navigateTo(options) {
-            history.pushState({ url: options.url }, null, options.url);
+            history.pushState({ url: options.url }, null, prefix + options.url);
             router(options);
         },
         navigateBack: function navigateBack() {

@@ -11,22 +11,22 @@ let cancel,
   promiseArr = {};
 const CancelToken = axios.CancelToken;
 
-axios.interceptors.request.use(
-  config => {
-    //发起请求时，取消掉当前正在进行的相同请求
-    if (promiseArr[config.url]) {
-      promiseArr[config.url]('操作取消');
-      promiseArr[config.url] = cancel;
-    } else {
-      promiseArr[config.url] = cancel;
-    }
-    return config;
-  },
-  err => {
-    console.log('请求超时!');
-    return Promise.resolve(err);
-  }
-);
+// axios.interceptors.request.use(
+//   config => {
+//     //发起请求时，取消掉当前正在进行的相同请求
+//     if (promiseArr[config.url]) {
+//       promiseArr[config.url]('操作取消');
+//       promiseArr[config.url] = cancel;
+//     } else {
+//       promiseArr[config.url] = cancel;
+//     }
+//     return config;
+//   },
+//   err => {
+//     console.log('请求超时!');
+//     return Promise.resolve(err);
+//   }
+// );
 
 axios.interceptors.response.use(
   response => {

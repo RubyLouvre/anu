@@ -139,7 +139,7 @@ module.exports = function ({ types: t }) {
                 }
             },
             ClassBody(astPath) {
-                registerTemplate += `const pathname = location.pathname;
+                registerTemplate += `const pathname = location.pathname.replace(/^\\/web/, '');
                 const search = location.search;
                 if (React.__isTab(pathname)) {
                   React.api.redirectTo({

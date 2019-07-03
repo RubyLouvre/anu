@@ -56,7 +56,7 @@ function getWebViewRules() {
 }
 
 function injectBuildEnv({ buildType, compress, huawei } = {}) {
-    process.env.ANU_ENV = buildType;
+    process.env.ANU_ENV = (buildType === 'h5' ? 'web' : buildType);
     globalConfig['buildType'] = buildType;
     globalConfig['compress'] = compress;
     if (buildType === 'quick') {

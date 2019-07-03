@@ -16,7 +16,6 @@ const h5helperPath = path.resolve(__dirname, '../../packages/h5Helpers');
 const resolveFromContext = R.curryN(2, path.resolve)(context);
 const resolveFromDirCwd = R.curryN(2, path.resolve)(process.cwd());
 const resolveFromH5Helper = R.curryN(2, path.resolve)(h5helperPath);
-
 module.exports = {
     mode: 'development',
     context,
@@ -25,7 +24,7 @@ module.exports = {
     output: {
         path: resolveFromDirCwd(outputDirectory),
         filename: 'bundle.[hash:10].js',
-        publicPath: '/'
+        publicPath: '/web/'
     },
     resolve: {
         alias: {
@@ -94,7 +93,8 @@ module.exports = {
         //     chunkFilename: '[id].[hash:10].css'
         // }),
         new webpack.EnvironmentPlugin({
-            ANU_ENV: 'web'
+            ANU_ENV: 'web',
+            ...process.env
         }),
         // new CleanWebpackPlugin()
     ],

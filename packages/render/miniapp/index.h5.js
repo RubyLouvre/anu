@@ -150,16 +150,18 @@ const titleBarTitleMap = {
     'title': 'navigationBarTitleText'
 };
 
+const prefix = '/web';
+
 let apiContainer = {
     redirectTo: function(options) {
         if (React.__currentPages.length > 0) {
             React.__currentPages.pop();
         }
-        history.replaceState({url: options.url}, null, options.url);
+        history.replaceState({url: options.url}, null, prefix + options.url);
         router(options);
     },
     navigateTo: function(options) {
-        history.pushState({url: options.url}, null, options.url);
+        history.pushState({url: options.url}, null, prefix + options.url);
         router(options);
     },
     navigateBack: function({delta = 1, success, fail, complete} = {}) {
