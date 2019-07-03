@@ -27,7 +27,7 @@ function getMergedAppJsConent( appJsSrcPath, pages = [] ) {
         pageRoute = `import '${pageRoute}';\n`;
         return pageRoute;
     }).join('');
-
+    
     return new Promise(function(rel, rej) {
         let appJsSrcContent = '';
         let appJsDist =  path.join(mergeDir, 'source', 'app.js');
@@ -133,11 +133,11 @@ function getFilesMap(queue = []) {
         }
         
         var reg = new RegExp( env +'Config.json$');
+        map['xconfig'] =  map['xconfig'] || [];
         if (reg.test(file)) {
             try {
                 var config = require(file);
                 if (config) {
-                    map['xconfig'] =  map['xconfig'] || [];
                     map['xconfig'].push({
                         id: file,
                         content: config
@@ -203,7 +203,7 @@ function getValueByPath(path, data){
 }
 
 function xDiff(list) {
-    if (!list) return {};
+    if (!list.length) return {};
     let first = list[0];
     let confictQueue = [];
     let other = list.slice(1);
@@ -258,7 +258,7 @@ function xDiff(list) {
                 var tpl = `
 冲突文件: ${(errItem.confictFile)}
 冲突路径 ${errItem.confictKeyPath}
-冲突值：${errItem.confictValue}
+冲突详情：${ JSON.stringify({ [ JSON.parse(errItem.confictKeyPath).pop() ] : errItem.confictValue}, null, 4) }
 `;
                 kindErr += tpl;
             });
@@ -266,7 +266,7 @@ function xDiff(list) {
         });
         
         // eslint-disable-next-line
-        console.log(chalk.bold.red(msg));
+        console.log(chalk.bold.red('⚠️  发现冲突! 请先解决冲突。\n\n' + msg));
         process.exit(1);
     }
 
@@ -328,7 +328,6 @@ function validateConfigFileCount(queue) {
         }
     });
        
-    
     if (errorFiles.length) {
         // eslint-disable-next-line
         console.log(chalk.bold.red('校验到拆库仓库中配置文件路径错误，请将该配置文件放到 source 目录中:\n'), chalk.bold.red(JSON.stringify(errorFiles, null, 4)));
@@ -337,12 +336,13 @@ function validateConfigFileCount(queue) {
 }
 
 module.exports = function(){
+   
     let queue = Array.from(mergeFilesQueue);
-
+   
     validateAppJsFileCount(queue);
     validateConfigFileCount(queue);
-    
     let map = getFilesMap(queue);
+
     let tasks = [
         //app.js路由注入
         getMergedAppJsConent( getAppJsSourcePath(queue), map.pages),
@@ -386,7 +386,7 @@ module.exports = function(){
         // eslint-disable-next-line
         console.log(chalk.bold.green(`npm 正在安装各拆库依赖： ${installList}, 请稍等...`));
         fs.ensureDir(path.join(cwd, 'node_modules'));
-        let cmd = `npm install ${installList} --no-save --package-lock-only`;
+        let cmd = `npm install ${installList} --no-save`;
         // eslint-disable-next-line
         
         let std = shelljs.exec(cmd, {
