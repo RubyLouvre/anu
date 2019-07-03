@@ -183,7 +183,8 @@ class Swiper extends Component {
             current,
             currentItemId: this.currentItemId,
             source: source || ''
-          }
+          },
+          current
         });
     }
 
