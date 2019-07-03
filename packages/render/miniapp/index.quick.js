@@ -85,6 +85,14 @@ let React = getWindow().React = {
             name = appMethods[name] || name;
             app[name] = value;
         }
+        for (let name in demo.constructor){
+            let value = demo.constructor[name];
+            if( !app[name]){
+                app[name] = value;
+            }else{
+                throw 'app.js已经存在同名的静态属性与实例属性 '+name+' !'
+            }
+        }
         delete app.constructor;//有这属性会报错
         return app;
     }   

@@ -1,4 +1,4 @@
-import { isFn, emptyObject } from 'react-core/util'
+import { emptyObject } from 'react-core/util'
 import { dispatchEvent } from './eventSystem.quick'
 import { onLoad, onUnload, onReady } from './registerPage.all'
 import {  _getApp } from './utils'
@@ -39,8 +39,14 @@ function getQuery(wx, huaweiHack) {
 
 export function registerPage(PageClass, path) {
     PageClass.reactInstances = []
-    var queryObject = PageClass.protected || emptyObject
+    var appQuery = _getApp().$def.globalQuery;
+    var pageQuery = PageClass.pageQuery;
 
+    if( !pageQuery && PageClass.protected){
+        console.warn( 'protected静态对象已经被废弃，请改用pageQuery静态对象' )
+        pageQuery = PageClass.protected
+    }
+    var queryObject = pageQuery ?  Object.assign({}, appQuery, pageQuery ): appQuery || emptyObject;
     let config = {
         private: {
             props: Object,

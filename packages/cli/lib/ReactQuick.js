@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-06-24
+ * 运行于快应用的React by 司徒正美 Copyright 2019-07-03
  */
 
 var arrayPush = Array.prototype.push;
@@ -3374,7 +3374,13 @@ function getQuery(wx, huaweiHack) {
 }
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
-    var queryObject = PageClass.protected || emptyObject;
+    var appQuery = _getApp().$def.globalQuery;
+    var pageQuery = PageClass.pageQuery;
+    if (!pageQuery && PageClass.protected) {
+        console.warn('protected静态对象已经被废弃，请改用pageQuery静态对象');
+        pageQuery = PageClass.protected;
+    }
+    var queryObject = pageQuery ? Object.assign({}, appQuery, pageQuery) : appQuery || emptyObject;
     var config = {
         private: {
             props: Object,
@@ -3476,6 +3482,14 @@ var React = getWindow().React = {
             var value = demo[name];
             name = appMethods[name] || name;
             app[name] = value;
+        }
+        for (var _name in demo.constructor) {
+            var _value = demo.constructor[_name];
+            if (!app[_name]) {
+                app[_name] = _value;
+            } else {
+                throw 'app.js已经存在同名的静态属性与实例属性 ' + _name + ' !';
+            }
         }
         delete app.constructor;
         return app;
