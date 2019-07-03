@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-02T11
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-03T12
  * IE9+
  */
 
@@ -584,6 +584,15 @@
         return {
             current: null
         };
+    }
+
+    function AnuPortal(props) {
+        return props.children;
+    }
+    function createPortal(children, parent) {
+        var child = createElement(AnuPortal, { children: children, parent: parent });
+        child.isPortal = true;
+        return child;
     }
 
     var MAX_NUMBER = 1073741823;
@@ -1642,10 +1651,6 @@
             }
         }
     };
-
-    function AnuPortal(props) {
-        return props.children;
-    }
 
     function UpdateQueue() {
         return {
@@ -5138,6 +5143,7 @@
         PropTypes: PropTypes,
         Children: Children,
         Component: Component,
+        createPortal: createPortal,
         createContext: createContext,
         createElement: createElement,
         createFactory: createFactory,
@@ -5190,6 +5196,11 @@
             _getQuery2 = _slicedToArray(_getQuery, 2),
             path = _getQuery2[0],
             query = _getQuery2[1];
+        var appInstance = React$1.__app;
+        var appConfig = appInstance.constructor.config;
+        if (appConfig.pages.indexOf(path) === -1) {
+            throw "没有注册该页面: " + path;
+        }
         var pageClass = React$1.__pages[path];
         React$1.__currentPages.forEach(function (page, index, self) {
             var pageClass = React$1.__pages[page.props.path];
@@ -5205,11 +5216,6 @@
             show: true
         });
         React$1.__currentPages.push(pageInstance);
-        var appInstance = React$1.__app;
-        var appConfig = appInstance.constructor.config;
-        if (appConfig.pages.indexOf(path) === -1) {
-            throw "没有注册该页面: " + path;
-        }
         appInstance.setState({
             path: path,
             query: query,

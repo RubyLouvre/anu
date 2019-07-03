@@ -3,6 +3,7 @@ import { PropTypes } from 'react-core/PropTypes';
 import { Component } from 'react-core/Component';
 import { PureComponent } from 'react-core/PureComponent';
 import { createRef, forwardRef } from 'react-core/createRef';
+import { createPortal } from 'react-core/createPortal';
 import {
     createElement,
     cloneElement,
@@ -56,7 +57,7 @@ let React = (getWindow().React = {
     PropTypes,
     Children,
     Component,
-    // createPortal,
+    createPortal,
     createContext,
     createElement,
     createFactory,
@@ -110,6 +111,11 @@ let React = (getWindow().React = {
 });
 function router({url, success, fail, complete}) {
     var [path, query] = getQuery(url);
+    var appInstance = React.__app;
+    var appConfig = appInstance.constructor.config;
+    if (appConfig.pages.indexOf(path) === -1){
+        throw "没有注册该页面: "+ path;
+    }
     var pageClass = React.__pages[path];
     React.__currentPages.forEach((page, index, self) => {
         const pageClass = React.__pages[page.props.path];
@@ -128,11 +134,6 @@ function router({url, success, fail, complete}) {
         show: true
     });
     React.__currentPages.push(pageInstance);
-    var appInstance = React.__app;
-    var appConfig = appInstance.constructor.config;
-    if (appConfig.pages.indexOf(path) === -1){
-        throw "没有注册该页面: "+ path;
-    }
     appInstance.setState({
         path,
         query, 

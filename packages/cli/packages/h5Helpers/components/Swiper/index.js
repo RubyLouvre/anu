@@ -165,7 +165,7 @@ class Swiper extends Component {
     }
 
     this.current = index;
-    this.currentItemId = this.items[index].itemId || '';
+    this.currentItemId = this.items[index] && this.items[index].itemId || '';
     let current = this.current;
     // circular 模式下更新位置的时候，并不需要更新 indicators和触发 onChange，此时 source 传 null
     // circular 模式下需要处理 current

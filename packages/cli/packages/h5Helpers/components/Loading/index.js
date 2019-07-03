@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 
 export default function(props) {
   if (props.error) {
+    console.log(props.error);
     return (
       <Fragment>
         <div>网络好像不太给力，刷新试试？</div>

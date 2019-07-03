@@ -44,7 +44,6 @@ export default class InternalImage extends React.Component {
     switch (mode) {
       case 'scaleToFill':
         state.modeClassName = 'scale-to-fill';
-
         break;
 
       case 'aspectFit':
@@ -134,6 +133,9 @@ export default class InternalImage extends React.Component {
               div img {
                 position: relative;
               }
+              .scale-to-fill {
+                width: 100%;
+              }
               .scale-to-fill img {
                 width: 100%;
                 height: 100%;
@@ -155,8 +157,12 @@ export default class InternalImage extends React.Component {
                 left: 50%;
                 transform: translate(-50%, -50%);
               }
-              .width-fix img {
+              .width-fix {
                 width: ${this.state.imageWidth}px;
+                height: 100%;
+              }
+              .width-fix img {
+                width: 100%;
                 height: auto;
               }
               .top img {

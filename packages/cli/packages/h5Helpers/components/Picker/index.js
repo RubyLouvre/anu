@@ -86,7 +86,7 @@ class Picker extends React.Component {
     }
 
     newselected.push(_selected);
-    let item = data[_selected];
+    let item = data[_selected] || {};
 
     var _group = JSON.parse(JSON.stringify(data));
     _group.forEach(g => delete g[subKey]);
