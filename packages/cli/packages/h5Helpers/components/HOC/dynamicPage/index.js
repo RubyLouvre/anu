@@ -14,10 +14,13 @@ export default function dynamicPage(Comp) {
                 onPullRefreshRelease: true
             };
             this.resetContainer.bind(this);
+            this.shouldPullDown.bind(this);
             this.touchCoordinate = {
                 pageY: 0
             };
             this.triggerLifeCycle('onLoad');
+            this.pageConfig = Comp.config;
+            this.appConfig = this.$app.constructor.config;
         }
         static maxPullRefreshDistance = 75;
         static maxPullRefreshTime = 3000;
@@ -28,6 +31,13 @@ export default function dynamicPage(Comp) {
                 }
             } = event;
             return { pageY };
+        }
+        shouldPullDown() {
+            if ((this.pageConfig && this.pageConfig.enablePullDownRefresh)
+                || (this.appConfig && this.appConfig.window && this.appConfig.window.enablePullDownRefresh)) {
+                    return true;
+                }
+            return false;
         }
         componentWillUnmount() {
             this.triggerLifeCycle('onUnload');
@@ -54,6 +64,9 @@ export default function dynamicPage(Comp) {
             console.log('onscroll');
         }
         onTouchStart(e) {
+            if (!this.shouldPullDown()) {
+                return;
+            }
             const { pageY } = DynamicPage.extractCoordinate(e);
     
             this.touchCoordinate = {
@@ -64,6 +77,9 @@ export default function dynamicPage(Comp) {
             });
         }
         onTouchMove(e) {
+            if (!this.shouldPullDown()) {
+                return;
+            }
             const { scrollTop } = this.Ref;
             const deltaY = this.calculateDeltaY(e);
     
@@ -74,8 +90,10 @@ export default function dynamicPage(Comp) {
             });
         }
         onTouchEnd(e) {
+            if (!this.shouldPullDown()) {
+                return;
+            }
             const deltaY = this.calculateDeltaY(e);
-    
             if (deltaY > -DynamicPage.maxPullRefreshDistance) {
                 this.resetContainer();
                 return;
