@@ -131,6 +131,7 @@ export default class InternalImage extends React.Component {
               }
               div img {
                 position: relative;
+                margin: 0;
               }
               .scale-to-fill {
                 width: 100%;
@@ -155,10 +156,6 @@ export default class InternalImage extends React.Component {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-              }
-              .width-fix {
-                width: ${this.state.imageWidth}px;
-                height: 100%;
               }
               .width-fix img {
                 width: 100%;
