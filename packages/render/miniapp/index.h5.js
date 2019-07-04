@@ -226,6 +226,9 @@ let apiContainer = {
         }));
         const appInstance = React.__app;
         appInstance.setState({});
+    },
+    createModal: function(instance) {
+        return createPortal(instance, document.getElementsByClassName('__internal__Modal__')[0]);
     }
 };
 function getQuery(url) {

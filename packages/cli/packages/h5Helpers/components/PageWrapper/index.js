@@ -135,6 +135,7 @@ class PageWrapper extends React.Component{
                         /> :
                         null
                 }
+                <div className='__internal__Modal__'></div>
                 <style jsx>{`
                         .__internal__Page__ {
                             width: 100%;

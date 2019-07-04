@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-04T06
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-04T11
  * IE9+
  */
 
@@ -3246,7 +3246,8 @@
       createWorker: true,
       getPushProvider: true,
       getProvider: true,
-      canvasToTempFilePath: true
+      canvasToTempFilePath: true,
+      createModal: true
     };
     var otherApis = {
       uploadFile: true,
@@ -5329,6 +5330,9 @@
             }));
             var appInstance = React$1.__app;
             appInstance.setState({});
+        },
+        createModal: function createModal(instance) {
+            return createPortal(instance, document.getElementsByClassName('__internal__Modal__')[0]);
         }
     };
     function getQuery(url) {
