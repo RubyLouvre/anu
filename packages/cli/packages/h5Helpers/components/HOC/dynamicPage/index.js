@@ -11,7 +11,7 @@ export default function dynamicPage(Comp) {
             this.Ref = React.createRef();
             this.state = {
                 containerOffsetTop: 0,
-                onPullRefreshRelease: false
+                onPullRefreshRelease: true
             };
             this.resetContainer.bind(this);
             this.touchCoordinate = {
