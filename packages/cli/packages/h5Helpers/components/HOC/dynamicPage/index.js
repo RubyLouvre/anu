@@ -1,6 +1,7 @@
 import React from '@react';
 import cssTransitionWrapper from '../cssTransitionWrapper';
 import ErrorBoundary from '../../ErrorBoundary';
+import PullDownLoading from '../../PullDownLoading';
 
 export default function dynamicPage(Comp) {
     return cssTransitionWrapper(class DynamicPage extends React.Component {
@@ -97,7 +98,7 @@ export default function dynamicPage(Comp) {
         render() {
             return <React.Fragment>
                 <div className="__internal__Page-pull-refresh __internal__Page-release-animation">
-                    下拉刷新
+                    <PullDownLoading/>
                 </div>
                 <div
                     className='__internal__DynamicPage-container'
@@ -116,8 +117,6 @@ export default function dynamicPage(Comp) {
                     .__internal__DynamicPage-container {
                         height: 100%;
                         transform: translateY(${this.state.containerOffsetTop}px);
-                    }
-                    .__internal__Page-release-animation {
                         ${this.state.onPullRefreshRelease ? 'transition: all .3s ease;' : ''}
                     }
                     .__internal__Page-pull-refresh {
