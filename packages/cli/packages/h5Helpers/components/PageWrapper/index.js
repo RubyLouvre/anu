@@ -103,7 +103,7 @@ class PageWrapper extends React.Component{
     render(){
         const instances = React.getCurrentPages();
         return (
-            <div className={`__internal__Page__`} >
+            <div className='__internal__Page__' >
                 {
                     this.state.showTitleBar ? 
                         <TitleBar
@@ -115,14 +115,6 @@ class PageWrapper extends React.Component{
                             // animation: { duration, timingFunc }
                         ></TitleBar> : null
                 }
-                {/* <div
-                    className="__internal__Page-container __internal__Page-release-animation" */}
-                {/* //   onScroll={this.onScroll}
-                //   onTouchStart={this.onTouchStart}
-                //   onTouchMove={this.onTouchMove}
-                //   onTouchEnd={this.onTouchEnd}
-                //   onTouchCancel={this.resetContainer}
-                > */}
                 {instances.map((page, index) => {
                     let className = '__hidden';
                     if (index === instances.length - 1) {
