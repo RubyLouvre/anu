@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-03T12
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-04T06
  * IE9+
  */
 
@@ -5321,6 +5321,14 @@
             appInstance.setState({
                 config: processedOptions
             });
+        },
+        stopPullDownRefresh: function stopPullDownRefresh(options) {
+            var pageInstance = React$1.getCurrentPages().pop();
+            React$1.getCurrentPages().push(cloneElement(pageInstance, {
+                stopPullDownRefresh: true
+            }));
+            var appInstance = React$1.__app;
+            appInstance.setState({});
         }
     };
     function getQuery(url) {

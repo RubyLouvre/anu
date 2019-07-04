@@ -35,7 +35,12 @@ export default function dynamicPage(Comp) {
             this.triggerLifeCycle('onReady');
         }
         componentWillReceiveProps(nextProps) {
-            this.triggerLifeCycle(nextProps.show ? 'onShow' : 'onHide');
+            if (nextProps.stopPullDownRefresh) {
+                this.resetContainer();
+            }
+            if (nextProps.show !== this.props.show) {
+                this.triggerLifeCycle(nextProps.show ? 'onShow' : 'onHide');
+            }
         }
         resetContainer() {
             this.setState({
@@ -74,7 +79,7 @@ export default function dynamicPage(Comp) {
                 return;
             }
             this.triggerLifeCycle('onPullDownRefresh', this.Ref);
-            this.resetContainer();
+            setTimeout(this.resetContainer.bind(this), 5000);
         }
         calculateDeltaY(e) {
             const { pageY } = DynamicPage.extractCoordinate(e);

@@ -61,7 +61,6 @@ let React = (getWindow().React = {
     createContext,
     createElement,
     createFactory,
-    // cloneElement,
     PureComponent,
     isValidElement,
 
@@ -219,6 +218,14 @@ let apiContainer = {
         appInstance.setState({
             config: processedOptions
         });
+    },
+    stopPullDownRefresh: function(options) {
+        const pageInstance = React.getCurrentPages().pop();
+        React.getCurrentPages().push(cloneElement(pageInstance, {
+            stopPullDownRefresh: true
+        }));
+        const appInstance = React.__app;
+        appInstance.setState({});
     }
 };
 function getQuery(url) {
