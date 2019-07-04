@@ -192,6 +192,19 @@ module.exports = function ({ types: t }) {
                     name: 'config'
                 }) && astPath.get('value').isObjectExpression()) {
                     if (!astPath.node.static) astPath.node.static = true;
+                    astPath.traverse({
+                        ObjectProperty: property => {
+                            const { key } = property.node;
+                            let name;
+                            if (t.isIdentifier(key)) name = key.name;
+                            if (t.isStringLiteral(key)) name = key.value;
+                            if (name === 'webList') {
+                                property.get('key').replaceWith(
+                                    t.identifier('list')
+                                );
+                            }
+                        }
+                    });
                 }
             },
             CallExpression(astPath) {
