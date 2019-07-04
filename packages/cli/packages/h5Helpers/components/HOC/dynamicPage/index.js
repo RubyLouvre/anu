@@ -35,8 +35,8 @@ export default function dynamicPage(Comp) {
         shouldPullDown() {
             if ((this.pageConfig && this.pageConfig.enablePullDownRefresh)
                 || (this.appConfig && this.appConfig.window && this.appConfig.window.enablePullDownRefresh)) {
-                    return true;
-                }
+                return true;
+            }
             return false;
         }
         componentWillUnmount() {
@@ -61,7 +61,7 @@ export default function dynamicPage(Comp) {
             });
         }
         onScroll() {
-            console.log('onscroll');
+            // TODO
         }
         onTouchStart(e) {
             if (!this.shouldPullDown()) {

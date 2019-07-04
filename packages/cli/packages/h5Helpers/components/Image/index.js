@@ -66,7 +66,7 @@ export default class InternalImage extends React.Component {
 
       case 'widthFix':
         state.modeClassName = 'width-fix';
-        state.imageWidth = containerWidth;
+        state.imageWidth = isWidthLonger ? '100%' : 'auto';
         state.containerHeight = containerWidth / ratio;
 
         break;
@@ -98,7 +98,6 @@ export default class InternalImage extends React.Component {
   onLoad(event) {
     const { onLoad } = this.props;
     const { naturalHeight, naturalWidth } = this.image.current;
-
     this.naturalHeight = naturalHeight;
     this.naturalWidth = naturalWidth;
 

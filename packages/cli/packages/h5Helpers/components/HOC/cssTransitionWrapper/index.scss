@@ -4,7 +4,7 @@
 }
 .page-appear-done {
     transform: translate(0);
-    transition: transform 300ms;
+    transition: transform 300ms ease;
     height: 100%;
 }
 .page-exit {
@@ -13,7 +13,7 @@
 }
 .page-exit-done {
     transform: translate(500px);
-    transition: transform 300ms;
+    transition: transform 300ms ease;
     height: 100%;
 }
   

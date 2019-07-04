@@ -16,7 +16,9 @@ export default function cssTransitionWrapper(Comp) {
                     // onExit={()=>{console.log('exit')}}
                     appear
                 >
-                    <Comp {...this.props}/>
+                    <div>
+                        <Comp {...this.props}/>
+                    </div>
                 </CSSTransition>
             );
         }
