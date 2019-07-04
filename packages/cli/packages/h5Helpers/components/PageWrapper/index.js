@@ -128,7 +128,7 @@ class PageWrapper extends React.Component{
                     if (index === instances.length - 1) {
                         className = `__internal__Page-container ${this.props.showBackAnimation ? '__backAnimation' : ''}`;
                     } else if (index === instances.length - 2) {
-                        className = "__bottom";
+                        className = `${this.props.showBackAnimation ? '__bottom' : '__hidden'}`;
                     }
                     return <div className={className}>
                         {page}
