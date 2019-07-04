@@ -84,11 +84,13 @@ module.exports = function createLogicHelper(prefix, keyName, hasDefaultKey){
             var forExpr = '(' + fn.params[1].name + ',' + fn.params[0].name + ') in ' + parseExpr(callee.object).slice(2, -2);
             attrs.push(createAttribute('for', forExpr));
         }
-       
-        if (modules.key) {
+
+        var key = Array.isArray(modules.key) === true ? modules.key[modules.key.length - 1] : void 666;
+
+        if (key && key.split('.')[0] === fn.params[0].name) {
             //快应用不生成key
-            prefix &&  attrs.push(createAttribute(keyName, utils.genKey(modules.key)));
-            modules.key = null;
+            prefix && attrs.push(createAttribute(keyName, utils.genKey(key)));
+            modules.key.pop();
         } else if (hasDefaultKey) {
             attrs.push(createAttribute(keyName, '*this'));
         }
