@@ -49,21 +49,10 @@ function getMergedAppJsConent( appJsSrcPath, pages = [] ) {
  * @return {String} 找到app.js的路径
  */
 function getAppJsSourcePath( queue = []) {
-    let appJsSourcePath = '';
-    let appJsFileCount = queue.reduce(function(list, file){
-        if (/\.js$/.test(file)) {
-            list.push(file);
-        }
-        return list;
-    }, []);
-
-    if ( appJsFileCount.length > 1 ) {
-        // eslint-disable-next-line
-        console.error('整个项目中只能存在一个app.js\n',JSON.stringify(appJsFileCount, null, 4));
-        process.exit(1);
-    } else {
-        appJsSourcePath = appJsFileCount[0];
-    }
+    let appJsSourcePath = queue.filter(function(file){
+        file = file.replace(/\\/g, '/');
+        return /\/app\.js$/.test(file);
+    })[0];
     return appJsSourcePath;
 }
 
@@ -71,7 +60,8 @@ function getFilesMap(queue = []) {
     let map = {};
     let env = process.env.ANU_ENV;
     queue.forEach(function(file){
-        if (/package\.json$/.test(file)) {
+        file = file.replace(/\\/g, '/');
+        if (/\/package\.json$/.test(file)) {
             let { dependencies = {}, devDependencies = {} } = require(file);
             if ( dependencies ) {
                 map['pkgDependencies'] = map['pkgDependencies'] || [];
@@ -92,7 +82,7 @@ function getFilesMap(queue = []) {
             }
             return;
         }
-        if (/app\.json$/.test(file)) {
+        if (/\/app\.json$/.test(file)) {
             var { alias={}, pages=[], order = 0 } = require(file);
            
             if (alias) {
@@ -128,6 +118,7 @@ function getFilesMap(queue = []) {
                     routes: Array.from(allInjectRoutes),
                     order: order
                 }); 
+                
             } 
             return;
         }
@@ -222,7 +213,6 @@ function xDiff(list) {
 
     if (isConfict) {
         var errList = [];
-        
         confictQueue.forEach(function(confictEl){
             //let keyName = confictEl.path[confictEl.path.length - 1];
             let kind = [];
@@ -239,7 +229,6 @@ function xDiff(list) {
                     } else if (el.type === 'alias') {
                         errorItem.confictKeyPath = ['nanachi', 'alias', ...confictEl.path];
                     } else {
-                        
                         errorItem.confictKeyPath = confictEl.path;
                     }
                     //console.log(errorItem);
@@ -306,7 +295,7 @@ function validateAppJsFileCount(queue) {
         });
     if (!appJsFileCount.length || appJsFileCount.length > 1) {
         // eslint-disable-next-line
-        console.log(chalk.bold.red('校验到多个拆库仓库中存在app.js. 在业务线的拆库工程中，有且只能有一个拆库需要包含app.js:\n'), chalk.bold.red(JSON.stringify(appJsFileCount, null, 4)));
+        console.log(chalk.bold.red('校验到多个拆库仓库中存在app.js. 在业务线的拆库工程中，有且只能有一个拆库需要包含app.js:'), chalk.bold.red('\n' + JSON.stringify(appJsFileCount, null, 4)));
         process.exit(1);
     }
 }
@@ -341,6 +330,7 @@ module.exports = function(){
    
     validateAppJsFileCount(queue);
     validateConfigFileCount(queue);
+
     let map = getFilesMap(queue);
 
     let tasks = [
@@ -355,7 +345,6 @@ module.exports = function(){
     
     function getNodeModulesList(config) {
         let mergeData = getMergedData(config);
-        
         return Object.keys(mergeData).reduce(function(ret, key){
             ret.push(key + '@' + mergeData[key]);
             return ret;
