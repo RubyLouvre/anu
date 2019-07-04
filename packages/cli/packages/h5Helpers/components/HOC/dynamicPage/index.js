@@ -20,6 +20,7 @@ export default function dynamicPage(Comp) {
             this.triggerLifeCycle('onLoad');
         }
         static maxPullRefreshDistance = 75;
+        static maxPullRefreshTime = 3000;
         static extractCoordinate(event) {
             const {
                 nativeEvent: {
@@ -80,7 +81,7 @@ export default function dynamicPage(Comp) {
                 return;
             }
             this.triggerLifeCycle('onPullDownRefresh', this.Ref);
-            setTimeout(this.resetContainer.bind(this), 5000);
+            setTimeout(this.resetContainer.bind(this), DynamicPage.maxPullRefreshTime);
         }
         calculateDeltaY(e) {
             const { pageY } = DynamicPage.extractCoordinate(e);
@@ -121,6 +122,7 @@ export default function dynamicPage(Comp) {
                     }
                     .__internal__Page-pull-refresh {
                         position: absolute;
+                        ${this.state.onPullRefreshRelease ? 'visibility: hidden;' : 'visibility: visible;'}
                         width: 100%;
                         top: ${-DynamicPage.maxPullRefreshDistance + this.state.containerOffsetTop}px;
                         height: ${DynamicPage.maxPullRefreshDistance}px;
