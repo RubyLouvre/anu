@@ -156,6 +156,15 @@ async function nanachi({
                             }
                         });
                     }
+                    if (stats.hasWarnings() && !silent) {
+                        info.warnings.forEach(warning => {
+                            // webpack require语句中包含变量会报warning: Critical dependency，此处过滤掉这个warning
+                            if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
+                                // eslint-disable-next-line
+                                console.log(chalk.yellow('Warning:\n'), utils.cleanLog(warning));
+                            }
+                        });
+                    }
                 });
             }
         }
