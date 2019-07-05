@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-04T11
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-05T06
  * IE9+
  */
 
@@ -5186,13 +5186,36 @@
                 return item.pagePath.replace(/^\.\//, '') === pathname.replace(/^\//, '');
             })) return true;
             return false;
-        }
+        },
+        __navigateBack: __navigateBack
     };
-    function router(_ref) {
-        var url = _ref.url,
+    function __navigateBack() {
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref$delta = _ref.delta,
+            delta = _ref$delta === undefined ? 1 : _ref$delta,
             success = _ref.success,
             fail = _ref.fail,
             complete = _ref.complete;
+        var appInstance = React$1.__app;
+        appInstance.setState({
+            showBackAnimation: true
+        });
+        setTimeout(function () {
+            while (delta && React$1.__currentPages.length) {
+                React$1.__currentPages.pop();
+                delta--;
+            }
+            var _React$__currentPages = React$1.__currentPages[React$1.__currentPages.length - 1].props,
+                path = _React$__currentPages.path,
+                query = _React$__currentPages.query;
+            React$1.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
+        }, 300);
+    }
+    function router(_ref2) {
+        var url = _ref2.url,
+            success = _ref2.success,
+            fail = _ref2.fail,
+            complete = _ref2.complete;
         var _getQuery = getQuery(url),
             _getQuery2 = _slicedToArray(_getQuery, 2),
             path = _getQuery2[0],
@@ -5247,34 +5270,16 @@
             router(options);
         },
         navigateBack: function navigateBack() {
-            var _this = this;
-            var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-                _ref2$delta = _ref2.delta,
-                delta = _ref2$delta === undefined ? 1 : _ref2$delta,
-                success = _ref2.success,
-                fail = _ref2.fail,
-                complete = _ref2.complete;
-            var appInstance = React$1.__app;
-            appInstance.setState({
-                showBackAnimation: true
-            });
-            setTimeout(function () {
-                while (delta && React$1.__currentPages.length) {
-                    React$1.__currentPages.pop();
-                    delta--;
-                }
-                var _React$__currentPages = React$1.__currentPages[React$1.__currentPages.length - 1].props,
-                    path = _React$__currentPages.path,
-                    query = _React$__currentPages.query;
-                history.replaceState({ url: path }, null, path);
-                _this.redirectTo.call(_this, { url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
-            }, 300);
+            var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+                _ref3$delta = _ref3.delta,
+                delta = _ref3$delta === undefined ? 1 : _ref3$delta;
+            history.go(-delta);
         },
-        switchTab: function switchTab(_ref3) {
-            var url = _ref3.url,
-                success = _ref3.success,
-                fail = _ref3.fail,
-                complete = _ref3.complete;
+        switchTab: function switchTab(_ref4) {
+            var url = _ref4.url,
+                success = _ref4.success,
+                fail = _ref4.fail,
+                complete = _ref4.complete;
             var _getQuery3 = getQuery(url),
                 _getQuery4 = _slicedToArray(_getQuery3, 2),
                 path = _getQuery4[0],
@@ -5295,11 +5300,11 @@
                 this.navigateTo.call(this, { url: url, query: query, success: success, fail: fail, complete: complete });
             }
         },
-        reLaunch: function reLaunch(_ref4) {
-            var url = _ref4.url,
-                success = _ref4.success,
-                fail = _ref4.fail,
-                complete = _ref4.complete;
+        reLaunch: function reLaunch(_ref5) {
+            var url = _ref5.url,
+                success = _ref5.success,
+                fail = _ref5.fail,
+                complete = _ref5.complete;
             React$1.__currentPages = [];
             this.navigateTo.call(this, { url: url, success: success, fail: fail, complete: complete });
         },

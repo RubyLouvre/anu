@@ -43,7 +43,7 @@ const temp = `window.addEventListener('popstate', function ({
     const pathname = state.url.split('?')[0];
     const index = pages.findIndex(page => page.props.path === pathname );
     if (index > -1) {
-        React.api.navigateBack({
+        React.__navigateBack({
             delta: pages.length - 1 - index
         })
     } else {

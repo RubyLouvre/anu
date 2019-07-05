@@ -13,7 +13,7 @@ import {
 
 import { createContext } from 'react-core/createContext';
 
-import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
+import { Fragment, getWindow, miniCreateClass, noop } from 'react-core/util';
 
 
 //import { dispatchEvent, webview } from './eventSystem';
@@ -106,8 +106,23 @@ let React = (getWindow().React = {
             )
         ) return true;
         return false;
-    }
+    },
+    __navigateBack
 });
+function __navigateBack({delta = 1, success, fail, complete} = {}) {
+    var appInstance = React.__app;
+    appInstance.setState({
+        showBackAnimation: true
+    });
+    setTimeout(() => {
+        while (delta && React.__currentPages.length) {
+            React.__currentPages.pop();
+            delta--;
+        }
+        let { path, query } = React.__currentPages[React.__currentPages.length - 1].props;
+        React.api.redirectTo({url: path + parseObj2Query(query), success, fail, complete});
+    }, 300);
+}
 function router({url, success, fail, complete}) {
     var [path, query] = getQuery(url);
     var appInstance = React.__app;
@@ -164,20 +179,8 @@ let apiContainer = {
         history.pushState({url: options.url}, null, prefix + options.url);
         router(options);
     },
-    navigateBack: function({delta = 1, success, fail, complete} = {}) {
-        var appInstance = React.__app;
-        appInstance.setState({
-            showBackAnimation: true
-        });
-        setTimeout(() => {
-            while (delta && React.__currentPages.length) {
-                React.__currentPages.pop();
-                delta--;
-            }
-            let { path, query } = React.__currentPages[React.__currentPages.length - 1].props;
-            history.replaceState({ url: path }, null, path);
-            this.redirectTo.call(this, {url: path + parseObj2Query(query), success, fail, complete});
-        }, 300);
+    navigateBack: function({delta = 1} = {}) {
+        history.go(-delta);
     },
     switchTab: function({url, success, fail, complete}) {
         var [path, query] = getQuery(url);
