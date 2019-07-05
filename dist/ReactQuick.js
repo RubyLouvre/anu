@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-07-03
+ * 运行于快应用的React by 司徒正美 Copyright 2019-07-05
  */
 
 var arrayPush = Array.prototype.push;
@@ -1463,20 +1463,7 @@ function vibrateShort() {
 function share(obj) {
     var share = require('@service.share');
     share.getAvailablePlatforms({
-        success: function success(data) {
-            var shareType = 0;
-            if (obj.path && obj.title) {
-                shareType = 0;
-            } else if (obj.title) {
-                shareType = 1;
-            } else if (obj.imageUrl) {
-                shareType = 2;
-            }
-            obj.shareType = obj.shareType || shareType;
-            obj.targetUrl = obj.path;
-            obj.summary = obj.desc;
-            obj.imagePath = obj.imageUrl;
-            obj.platforms = data.platforms;
+        success: function success() {
             share.share(obj);
         }
     });
