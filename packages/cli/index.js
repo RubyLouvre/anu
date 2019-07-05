@@ -141,7 +141,22 @@ async function nanachi({
             if (watch) {
                 createH5Server(compilerH5);
             } else {
-                compilerH5.run();
+                compilerH5.run(function(err, stats) {
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    const info = stats.toJson();
+                    if (stats.hasErrors()) {
+                        info.errors.forEach(e => {
+                            // eslint-disable-next-line
+                            console.error(chalk.red('Error:\n'), utils.cleanLog(e));
+                            if (utils.isMportalEnv()) {
+                                process.exit();
+                            }
+                        });
+                    }
+                });
             }
         }
 
