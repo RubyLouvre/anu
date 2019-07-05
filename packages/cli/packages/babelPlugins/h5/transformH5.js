@@ -39,9 +39,14 @@ const componentsNameMap = {
 };
 
 const utils = require('../../utils/index');
+const fpath = require('path');
+let styleKey = '';
 
 module.exports = function ({ types: t }) {
     return {
+        pre(state) {
+            styleKey = utils.getStyleNamespace(fpath.dirname(state.opts.filename));
+        },
         visitor: {
             Program: {
                 exit(astPath, state) {
@@ -105,6 +110,9 @@ module.exports = function ({ types: t }) {
                                     name.node.name = 'onClick';
                                 }
                             }
+                        },
+                        JSXElement(astPath) {
+                            astPath.get('openingElement').node.attributes.push(t.jSXAttribute(t.jSXIdentifier(styleKey), null));
                         }
                     });
                 }
