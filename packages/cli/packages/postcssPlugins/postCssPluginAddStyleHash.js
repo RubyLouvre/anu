@@ -10,7 +10,7 @@ const postCssPluginAddStyleHash = postCss.plugin('postcss-plugin-add-style-hash'
             if (rule.selector && rule.parent.type !== 'atrule') {
                 rule.selector = parser((selector) => {
                     selector.walk(s => {
-                        if (s.type === 'selector') {
+                        if (s.type === 'selector' && s.parent.type !== 'pseudo') {
                             s.nodes.unshift(parser.attribute({attribute: styleHash}));
                         }
                     });
