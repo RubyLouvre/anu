@@ -1,4 +1,4 @@
-const nanachi = require('../index');
+
 const { NANACHI_CONFIG_PATH } = require('../consts/index');
 const fs = require('fs-extra');
 const { deepMerge } = require('../packages/utils/index');
@@ -24,7 +24,7 @@ module.exports = async function(args){
         }
         deepMerge(nanachiConfig, baseConfig);
         
-        nanachi(nanachiConfig);
+        require('../index')(nanachiConfig);
 
     } catch (e) {
         // eslint-disable-next-line

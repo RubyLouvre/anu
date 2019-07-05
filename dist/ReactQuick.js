@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-06-24
+ * 运行于快应用的React by 司徒正美 Copyright 2019-07-05
  */
 
 var arrayPush = Array.prototype.push;
@@ -1463,20 +1463,7 @@ function vibrateShort() {
 function share(obj) {
     var share = require('@service.share');
     share.getAvailablePlatforms({
-        success: function success(data) {
-            var shareType = 0;
-            if (obj.path && obj.title) {
-                shareType = 0;
-            } else if (obj.title) {
-                shareType = 1;
-            } else if (obj.imageUrl) {
-                shareType = 2;
-            }
-            obj.shareType = obj.shareType || shareType;
-            obj.targetUrl = obj.path;
-            obj.summary = obj.desc;
-            obj.imagePath = obj.imageUrl;
-            obj.platforms = data.platforms;
+        success: function success() {
             share.share(obj);
         }
     });
@@ -3363,29 +3350,58 @@ function getQuery(wx, huaweiHack) {
             return query;
         }
     }
+    var data = _getApp().globalData;
+    var routerQuery = data && data.__quickQuery && data.__quickQuery[page.path] || query;
     if (huaweiHack && Object.keys(huaweiHack).length) {
         for (var _i in huaweiHack) {
-            query[_i] = wx[_i];
+            routerQuery[_i] = wx[_i];
         }
-        return query;
     }
-    var data = _getApp().globalData;
-    return data && data.__quickQuery && data.__quickQuery[page.path] || query;
+    return routerQuery;
 }
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
-    var queryObject = PageClass.protected || emptyObject;
+    var def = _getApp().$def;
+    var appInner = def.innerQuery;
+    var appOuter = def.outerQuery;
+    var pageInner = PageClass.innerQuery;
+    var pageOuter = PageClass.outerQuery;
+    if (!pageInner && PageClass.protected) {
+        console.warn('protected静态对象已经被废弃，请改用pageQuery静态对象');
+        pageInner = PageClass.protected;
+    }
+    var innerQuery = pageInner ? Object.assign({}, appInner, pageInner) : appInner;
+    var outerQuery = pageOuter ? Object.assign({}, appOuter, pageOuter) : appOuter;
+    var duplicate = {};
+    if (innerQuery) {
+        for (var i in innerQuery) {
+            duplicate[i] = true;
+        }
+    }
+    if (outerQuery) {
+        var keys = [];
+        for (var i in outerQuery) {
+            if (duplicate[i] === true) {
+                keys.push(i);
+            }
+            duplicate[i] = true;
+        }
+        if (keys.length) {
+            throw '页面 ' + path + ' 的两个参数对象存在重复的键名 ' + keys;
+        }
+    }
     var config = {
         private: {
             props: Object,
             context: Object,
             state: Object
         },
-        protected: queryObject,
+        protected: innerQuery,
+        public: outerQuery,
         dispatchEvent: dispatchEvent,
         onInit: function onInit() {
             var app = this.$app;
-            var instance = onLoad.call(this, PageClass, path, getQuery(this, queryObject));
+            var instance = onLoad.call(this, PageClass, path, getQuery(this, duplicate));
             var pageConfig = PageClass.config || instance.config || emptyObject;
             app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
         },
@@ -3398,7 +3414,7 @@ function registerPage(PageClass, path) {
                 app = _getApp(),
                 param = e;
             if (pageHook === 'onShow') {
-                param = instance.props.query = getQuery(this, queryObject);
+                param = instance.props.query = getQuery(this, duplicate);
                 app.$$page = instance.wx;
                 app.$$pagePath = instance.props.path;
             } else if (pageHook === 'onMenuPress') {
@@ -3476,6 +3492,14 @@ var React = getWindow().React = {
             var value = demo[name];
             name = appMethods[name] || name;
             app[name] = value;
+        }
+        for (var _name in demo.constructor) {
+            var _value = demo.constructor[_name];
+            if (!app[_name]) {
+                app[_name] = _value;
+            } else {
+                throw 'app.js已经存在同名的静态属性与实例属性 ' + _name + ' !';
+            }
         }
         delete app.constructor;
         return app;
