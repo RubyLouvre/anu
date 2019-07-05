@@ -135,7 +135,8 @@ async function nanachi({
         }
 
         if (platform === 'h5') {
-            const webpackH5Config = require('./config/h5/webpack.config.js');
+            const configPath = watch ? './config/h5/webpack.config.js' : './config/h5/webpack.config.prod.js';
+            const webpackH5Config = require(configPath);
             const compilerH5 = webpack(webpackH5Config);
             if (watch) {
                 createH5Server(compilerH5);
