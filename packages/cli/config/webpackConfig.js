@@ -1,9 +1,11 @@
+
 const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
 const SizePlugin = require('../nanachi-loader/sizePlugin');
 const QuickPlugin = require('../nanachi-loader/quickPlugin');
+const ChaikaPlugin = require('../nanachi-loader/chaika-plugin/chaikaPlugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
-const cwd = process.cwd();
+
 const utils = require('../packages/utils/index');
 const { intermediateDirectoryName } = require('./h5/configurations');
 //各种loader
@@ -21,7 +23,7 @@ const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 //处理 style
 const nanachiStyleLoader  = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
 
-
+const cwd = process.cwd();
 
 module.exports = function({
     platform,
@@ -35,15 +37,15 @@ module.exports = function({
     postLoaders, // 自定义后处理loaders
     // maxAssetSize // 资源大小限制，超出后报warning
 }) {
+    
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
-
     let distPath = path.resolve(cwd, utils.getDistName(platform));
     if (platform === 'h5') {
         distPath = path.join(distPath, intermediateDirectoryName);
     }
     let copyPluginOption = null;
     if (compress) {
-        const compressImage = require(path.resolve(process.cwd(), 'node_modules', 'nanachi-compress-loader/utils/compressImage.js'));
+        const compressImage = require(path.resolve(cwd, 'node_modules', 'nanachi-compress-loader/utils/compressImage.js'));
         copyPluginOption = {
             transform(content, path) {
                 const type = path.replace(/.*\.(.*)$/, '$1');
@@ -71,6 +73,7 @@ module.exports = function({
         ...copyPluginOption // 压缩图片配置
     }];
     const mergePlugins = [].concat( 
+        new ChaikaPlugin(),
         analysis ? new SizePlugin() : [],
         new NanachiWebpackPlugin({
             platform,
@@ -122,9 +125,14 @@ module.exports = function({
     
     if (platform === 'quick') {
         mergePlugins.push(new QuickPlugin());
+        // quickConfig可能不存在 需要try catch
         try {
-            // quickConfig可能不存在 需要try catch
-            const quickConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
+             // quickConfig可能不存在 需要try catch
+             // chaika里，各种XConfig.json会合并到.CACHE/nanachi/source中
+             var quickConfig = {};
+             process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+                 ? quickConfig = require(path.join(cwd, '.CACHE/nanachi/source', 'quickConfig.json'))
+                 : quickConfig = require(path.join(cwd, 'source', 'quickConfig.json'));
             if (huawei) {
                 if (quickConfig && quickConfig.widgets) {
                     quickConfig.widgets.forEach(widget => {
@@ -141,6 +149,7 @@ module.exports = function({
                     });
                 }
             } else if (quickConfig && quickConfig.router && quickConfig.router.widgets) {
+        
                 Object.keys(quickConfig.router.widgets).forEach(key => {
                     const widgetPath = quickConfig.router.widgets[key].path;
                     if (widgetPath) {
@@ -158,8 +167,11 @@ module.exports = function({
             // eslint-disable-next-line
         }
     }
+    const entry = process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+        ? path.join(cwd, '.CACHE/nanachi/source/app')
+        : path.join(cwd, 'source/app');
     return {
-        entry: './source/app',
+        entry: entry,
         mode: 'development',
         output: {
             path: distPath,
@@ -171,7 +183,11 @@ module.exports = function({
         plugins: mergePlugins,
         resolve: {
             alias: aliasMap,
-            mainFields: ['main']
+            mainFields: ['main'],
+            symlinks: true,
+            modules: [
+                path.join(process.cwd(), 'node_modules')
+            ]
         },
         externals: platform === 'h5' ? ['react','@react','react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/] : []
         // performance: {

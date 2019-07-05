@@ -1,6 +1,5 @@
 const webpack = require('webpack');
 const path = require('path');
-const cwd = process.cwd();
 const globalConfig = require('./config/config.js');
 const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
 const createH5Server = require('./commands/createH5Server');
@@ -9,12 +8,13 @@ const utils = require('./packages/utils/index');
 const { errorLog, warningLog } = require('./nanachi-loader/logger/index');
 const { build: buildLog } = require('./nanachi-loader/logger/queue');
 const chalk = require('chalk');
-
+const getWebPackConfig = require('./config/webpackConfig');
 const babel = require('@babel/core');
 const spawn = require('child_process').spawnSync;
 
 //获取 WEBVIEW 配置
 function getWebViewRules() {
+    const cwd = process.cwd();
     if (globalConfig.buildType != 'quick') return;
     let bin = 'grep';
     let opts = ['-r', '-E', "pages:\\s*(\\btrue\\b|\\[.+\\])", path.join(cwd, 'source', 'pages')];
@@ -148,7 +148,6 @@ async function nanachi({
         complete(err, stats);
     }
     try {
-
         if (!utils.validatePlatform(platform, platforms)) {
             throw new Error(`不支持的platform：${platform}`);
         }
@@ -174,7 +173,7 @@ async function nanachi({
             postLoaders.unshift('nanachi-compress-loader');
         }
 
-        const webpackConfig = require('./config/webpackConfig')({
+        const webpackConfig = getWebPackConfig({
             platform,
             compress,
             compressOption,

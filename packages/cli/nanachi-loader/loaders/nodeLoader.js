@@ -6,11 +6,12 @@ const isReact = function(sourcePath){
 };
 
 module.exports = async function(code, map, meta) {
+   
     const callback = this.async();
     let relativePath = '';
     let queues;
     // 如果不是业务目录下的资源，直接返回空
-    if (!this.resourcePath.startsWith(process.cwd())) {
+    if (/\/webpack\//.test(this.resourcePath.replace(/\\/g, ''))) {
         queues = [];
         callback(null, {
             queues,
@@ -18,6 +19,7 @@ module.exports = async function(code, map, meta) {
         }, map, meta);
         return;
     }
+  
     // 处理第三方模块中的环境变量，如process.env.NODE_ENV
     code = babel.transformSync(code, {
         configFile: false,
