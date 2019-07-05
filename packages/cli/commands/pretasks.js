@@ -64,10 +64,19 @@ function getQuickPkgFile() {
 //copy 快应用构建的基础依赖
 function getQuickBuildConfigFile(){
     const baseDir = path.join(cliRoot, 'packages/quickHelpers/quickInitConfig');
+    let signDir = baseDir;
     const sign = 'sign', babelConfig = 'babel.config.js';
+    try {
+        const userSignDir = path.join(cwd, 'source/sign');
+        const files = fs.readdirSync(userSignDir);
+        if (files.length) {
+            signDir = path.join(cwd, 'source');
+        }
+    } catch (e) {
+    }
     return [
         {
-            id: path.join(baseDir, sign),
+            id: path.join(signDir, sign),
             dist: path.join(cwd, sign),
             ACTION_TYPE: 'COPY'
         },
