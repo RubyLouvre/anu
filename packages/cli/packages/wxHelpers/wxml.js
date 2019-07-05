@@ -114,7 +114,10 @@ let visitor = {
                     value = fixKey;
                 }
             }
-            modules.key = value;
+            if (Array.isArray(modules.key) === false) {
+                modules.key = []
+            }
+            modules.key.push(value);
             astPath.remove();
             return;
         }
