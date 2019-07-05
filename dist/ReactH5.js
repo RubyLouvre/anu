@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-05T06
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-05T13
  * IE9+
  */
 
@@ -5262,12 +5262,12 @@
             if (React$1.__currentPages.length > 0) {
                 React$1.__currentPages.pop();
             }
-            history.replaceState({ url: options.url }, null, prefix + options.url);
             router(options);
+            history.replaceState({ url: options.url }, null, prefix + options.url);
         },
         navigateTo: function navigateTo(options) {
-            history.pushState({ url: options.url }, null, prefix + options.url);
             router(options);
+            history.pushState({ url: options.url }, null, prefix + options.url);
         },
         navigateBack: function navigateBack() {
             var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},

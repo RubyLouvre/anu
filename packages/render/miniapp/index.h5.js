@@ -172,12 +172,12 @@ let apiContainer = {
         if (React.__currentPages.length > 0) {
             React.__currentPages.pop();
         }
-        history.replaceState({url: options.url}, null, prefix + options.url);
         router(options);
+        history.replaceState({url: options.url}, null, prefix + options.url);
     },
     navigateTo: function(options) {
-        history.pushState({url: options.url}, null, prefix + options.url);
         router(options);
+        history.pushState({url: options.url}, null, prefix + options.url);
     },
     navigateBack: function({delta = 1} = {}) {
         history.go(-delta);
