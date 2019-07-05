@@ -325,7 +325,7 @@ async function runTask({ buildType, beta, betaUi, compress }){
     injectPluginsConfig();
     
     //copy project.config.json
-    //tasks = tasks.concat(getProjectConfigFile(buildType));
+    tasks = tasks.concat(getProjectConfigFile(buildType));
 
     //copy assets目录下静态资源 (改用copyWebpackPlugin拷贝静态资源，处理压缩)
     // tasks = tasks.concat(getAssetsFile(buildType));

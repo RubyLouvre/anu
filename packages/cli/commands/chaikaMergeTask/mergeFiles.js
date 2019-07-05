@@ -231,7 +231,7 @@ function xDiff(list) {
                     } else {
                         errorItem.confictKeyPath = confictEl.path;
                     }
-                    //console.log(errorItem);
+                    
                     errorItem.confictKeyPath = JSON.stringify(errorItem.confictKeyPath);
                     kind.push(errorItem);
                 }
@@ -293,9 +293,16 @@ function validateAppJsFileCount(queue) {
         .map(function(el){
             return el.replace(/\\/g, '/').split('/download/').pop();
         });
+   
     if (!appJsFileCount.length || appJsFileCount.length > 1) {
+        let msg = '';
+        if (!appJsFileCount.length) {
+            msg = '校验到无 app.js 文件的拆库工程，请检查是否安装了该包含 app.js 文件的拆库工程.';
+        } else if ( appJsFileCount.length > 1){
+            msg = '校验到多个拆库仓库中存在app.js. 在业务线的拆库工程中，有且只能有一个拆库需要包含app.js' + '\n' + JSON.stringify(appJsFileCount, null, 4);
+        }
         // eslint-disable-next-line
-        console.log(chalk.bold.red('校验到多个拆库仓库中存在app.js. 在业务线的拆库工程中，有且只能有一个拆库需要包含app.js:'), chalk.bold.red('\n' + JSON.stringify(appJsFileCount, null, 4)));
+        console.log(chalk.bold.red(msg));
         process.exit(1);
     }
 }
