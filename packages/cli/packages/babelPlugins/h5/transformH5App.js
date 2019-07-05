@@ -42,6 +42,12 @@ const temp = `window.addEventListener('popstate', function ({
     const pages = React.getCurrentPages();
     const pathname = state.url.split('?')[0];
     const index = pages.findIndex(page => page.props.path === pathname );
+    if (!CLASS_NAME.config.pages.includes(pathname)) {
+        React.__navigateBack({
+          delta: 1
+        });
+        return;
+    }
     if (index > -1) {
         React.__navigateBack({
             delta: pages.length - 1 - index
@@ -147,11 +153,11 @@ module.exports = function ({ types: t }) {
                   });
                 } else {
                   React.api.redirectTo({
-                    url: ${CLASS_NAME}.config.pages[0]
+                    url: CLASS_NAME.config.pages[0]
                   });
               
-                  if (${CLASS_NAME}.config.pages.some(page => page === pathname)) {
-                    if (pathname !== ${CLASS_NAME}.config.pages[0]) {
+                  if (CLASS_NAME.config.pages.some(page => page === pathname)) {
+                    if (pathname !== CLASS_NAME.config.pages[0]) {
                       React.api.navigateTo({
                         url: pathname + search
                       });
@@ -161,13 +167,15 @@ module.exports = function ({ types: t }) {
                 
 
                 const registerApp = template(registerTemplate, {
-                    placeholderPattern: false
+                    placeholderPattern: /^CLASS_NAME$/
+                })({
+                    CLASS_NAME: t.identifier(CLASS_NAME)
                 });
                 let find = false;
                 astPath.get('body').forEach(p => {
                     if (p.type === 'ClassMethod' && p.node.key.name === 'componentWillMount') {
                         find = true;
-                        p.node.body.body.push(...registerApp());
+                        p.node.body.body.push(...registerApp);
                     }
                 });
                 if (!find) {
@@ -175,7 +183,7 @@ module.exports = function ({ types: t }) {
                         t.classMethod('method', t.identifier('componentWillMount'),
                             [], 
                             t.blockStatement(
-                                registerApp()
+                                registerApp
                             )
                         )
                     );
