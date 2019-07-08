@@ -22,9 +22,17 @@ const mergeFiles = [
     'package.json'
 ];
 
+//这种文件全局只能有一个, 不参与合并
+const lockFiles = [
+    'project.config.json'
+];
+
+
+
 function isIgnoreFile(fileName){
     return ignoreFiles.includes(fileName) 
         || mergeFiles.includes(fileName)
+        || lockFiles.includes(fileName)
         || configFileReg.test(fileName)
         || reactFileReg.test(fileName)
         || docFilesReg.test(fileName);
@@ -33,6 +41,10 @@ function isIgnoreFile(fileName){
 function isMergeFile(fileName){
     return mergeFiles.includes(fileName)
         || configFileReg.test(fileName);
+}
+
+function isLockFile(fileName) {
+    return lockFiles.includes(fileName);
 }
 
 function copyCurrentProject() {
@@ -60,7 +72,7 @@ function copyOtherProject() {
     files = files.filter((file)=>{
         let fileName = path.parse(file).base;
         if (isIgnoreFile(fileName)) {
-            if (isMergeFile(fileName)) {
+            if (isMergeFile(fileName) || isLockFile(fileName) ) {
                 mergeFilesQueue.add(file);
             }
             return false;
