@@ -132,7 +132,7 @@ export function miniCreateClass(ctor:Function, superClass:Function, methods:Obje
 }
 
 let lowerCache = {};
-export function toLowerCas(s: string): string {
+export function toLowerCase(s: string): string {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
 
