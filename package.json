@@ -7,6 +7,7 @@
     "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.ali.js  &&rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.quick.js &&rollup -c ./scripts/build/rollup.wx.js && rollup -c ./scripts/build/rollup.h5.js",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
+    "tt": "rollup -c ./scripts/build/rollup.ts.js",
     "sync": "node ./scripts/build/syncAntd.js",
     "buildIE": "webpack --config ./scripts/build/buildIE.js",
     "fa-build": "webpack --config ./node_modules/fa-toolkit/webpack.config.js",
@@ -64,6 +65,7 @@
     "es3ify-webpack-plugin": "0.0.1",
     "eslint": "^5.4.0",
     "eslint-plugin-react": "^7.1.0",
+    "fa-toolkit": "file:fa-toolkit-1.1.1-Stable.301.tgz",
     "fs-extra": "^4.0.3",
     "glob": "^7.1.2",
     "jasmine-check": "^1.0.0-rc.0",
@@ -83,9 +85,11 @@
     "rollup-plugin-license": "^0.6.0",
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-re": "^1.0.6",
+    "rollup-plugin-typescript": "^1.0.1",
     "semicolon-less": "^0.7.0",
     "serve": "^8.1.3",
-    "fa-toolkit": "file:fa-toolkit-1.1.1-Stable.301.tgz"
+    "tslib": "^1.10.0",
+    "typescript": "^3.5.2"
   },
   "dependencies": {
     "@rematch/core": "^1.0.0-alpha.9",

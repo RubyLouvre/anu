@@ -15,55 +15,212 @@
 
   </div>
   <script >
- class Graph {
-      constructor(vertices) {
-        var n = vertices.length;
-        var map = {}, head = [];
-        for(var i = 0; i < n; i++){
-            map[vertices[i]] = i;
-            head[i] = -1;
-        }
-        this.vertices = vertices; //保存所有顶点信息
-        this.head = head;
-        this.map = map;
-        this.ends = []
+  var COLOR = {
+      WHITE: void 666,
+      GRAY: 1,
+      BLACK: -1
+    }
+  class GraphByEdge {
+    constructor(vertices, isDirected = false) {
+      var n = vertices.length;
+      var map = {};
+      for (var i = 0; i < n; i++) {
+        map[vertices[i]] = i;
       }
-      addEdge(a, b, weight = 1) {
-        var from = this.map[a]
-        var to = this.map[b]
-        var len = this.ends.length
-        this.ends.push({
-          to,
-          next: this.head[from],
-          weight,
-        })
-        this.head[from] = len
-      }
-
-      toString() {
-        var ends = this.ends
-        var str = '['
-        console.log(this)
-        for (var u = 0; u < this.head.length; u++) {
-          for (var i = this.head[u]; i != -1; i = ends[i].next) {
-              console.log("0000")
-            str += `{${u}, ${ends[i].to}, ${ends[i].weight}}\n`;
-          }
-        }
-        return str += ']'
+      this.vertices = vertices; //保存所有顶点信息
+      this.map = map;
+      this.edges = [];
+      this.isDirected = isDirected;
+    }
+    insertEdge(from, to, weight) {
+      this.edges.push({
+        to,
+        from,
+        weight,
+      })
+    }
+    addEdge(a, b, weight = 1) {
+      var from = this.map[a];
+      var to = this.map[b];
+      this.insertEdge(from, to, weight);
+      if (!this.isDirected) {
+        this.insertEdge(to, from, weight);
       }
     }
-    // https://blog.csdn.net/u012342878/article/details/40050401
-    var g = new Graph([0, 1,2,3,4,5])
-    g.addEdge(1, 2);
-    g.addEdge(2, 3)
-    g.addEdge(3, 4)
-    g.addEdge(1, 3)
-    g.addEdge(4, 1)
-    g.addEdge(1, 5)
-    g.addEdge(4, 5)
-    g.addEdge(0, 2)
-    console.log(g + "")
+    johnsons(){
+      var vertices = this.vertices;
+      var n = vertices.length;
+      //添加新点
+      var virtual = "virtual"+n
+      this.map[virtual] = n;
+      this.vertices.push(virtual);
+      //保存旧边
+      var oldEdges = this.edges.concat();
+      //添加新边
+      for(var i = 0; i < n; i++){
+        this.addEdge(virtual, this.vertices[i], 0)
+      }
+      var { distance } =  this.bellmanFord(virtual) ;
+      var h = distance
+      //还原
+      delete this.map[virtual];
+      this.vertices.pop()
+      this.edges = oldEdges;
+      //re-weight
+      this.edges.forEach(function(edge){
+        edge.weight = edge.weight+ (h[edge.from] - h[edge.to])
+      })
+
+     //对所有边dijkstra
+      var distSet = []
+      for (var i = 0; i < n; i++) {
+        distSet[i] = []
+        for (var j = 0; j < n; j++) {
+          distSet[i][j] = i == j ? 0 : Infinity
+        }
+      }
+      for (var begin = 0; begin < n; begin++) {
+        var obj = this.dijkstra(this.vertices[begin]);
+        var dist = obj.distance
+        for (var end = 0; end < dist.length; end++) {
+          if (dist[end] != Infinity) {
+            //减回之前加上的值
+            distSet[begin][end] = dist[end] - (h[begin] - h[end]);
+          }
+        }
+      }
+      return distSet
+    }
+    toString(obj) {
+        function addWhiteSpace(str, n, left) {
+          if (str.length < n) {
+            if (left) {
+              return addWhiteSpace(' ' + str, n, false)
+            } else {
+              return addWhiteSpace(str + ' ', n, true)
+            }
+          }
+          return str
+        }
+        obj = obj || this.matrix;
+        return obj.map(function (row) {
+          return row.map(function (el) {
+            return addWhiteSpace(el + "", 8, true)
+          }).join('  ')
+        }).join("\n");
+      }
+    bellmanFord(start) {
+      var source = this.map[start]
+      var distance = [], n = this.vertices.length, m = this.edges.length;
+      for (var i = 0; i < n; i++) {
+        distance[i] = Infinity;
+      }
+      distance[source] = 0;
+      for (var i = 0; i < n - 1; i++) {//循环n-1个顶点
+        //用来标记本轮松弛操作中数组distance是否会发生更新
+        var check = 0
+        for (var j = 0; j < m; j++) {//循环所有边
+          var edge = this.edges[j];
+          var { from, to, weight } = edge;
+          if (distance[from] != Infinity && distance[to] > distance[from] + weight) {
+            distance[to] = distance[from] + weight;
+            check = 1; //数组distance发生更新，改变check的值
+          }
+        }
+        if (check === 0) {
+          break
+        }
+      }
+       // 3. 检查是否存在负回路（负环）
+      var hasCycle = false
+      for (var j = 0; j < m; j++) {
+        var edge = this.edges[j];
+        var { from, to, weight } = edge;
+        if (distance[from] != Infinity && distance[to] > distance[from] + weight) {
+          hasCycle = true;
+          break
+        }
+      }
+      return {
+        hasCycle,
+        distance
+      }
+    }
+    dijkstra(start) {
+      var u = this.map[start];
+      var n = this.vertices.length;
+      //开始时到所有点的距离都是无限的
+      var distance = new Array(this.vertices.length).fill(Infinity)
+      distance[u] = 0;
+      function compare(a, b) {
+        return a.value - b.value
+      }
+      var visited = [];
+      var queue = [{ index: u, value: 0 }]
+      visited[u] = COLOR.GRAY;
+      var shortPaths = {};//记录经过的顶点名字
+      shortPaths[u] = start
+      while (queue.length) {
+        var p = queue.shift();
+        var u = p.index;
+        var hasAdd = false
+        for (var i = 0; i < this.edges.length; i++) {
+          if (this.edges[i].from == u) {
+            var e = this.edges[i];
+            var w = e.to;
+            if (visited[w] === COLOR.WHITE) {
+              if (distance[w] > distance[u] + e.weight) {
+                visited[u] = COLOR.GRAY;
+                distance[w] = distance[u] + e.weight;
+                shortPaths[w] = shortPaths[u] + " --> " + this.vertices[w];
+                queue.push({ index: w, value: distance[w] })
+                hasAdd = true;
+              }
+            }
+          }
+        }
+        hasAdd && queue.sort(compare);//重点，这里需要排序，让最 
+      }
+      return {
+        distance,
+        shortPaths
+      }
+    }
+  }
+  function logJohnsons(g) {
+    var distSet = g.johnsons()
+    console.log(g.toString(distSet))
+  }
+
+  var g = new GraphByEdge(['A', 'B', 'C', 'D'], true)
+  g.addEdge('A', 'B', -5);
+  g.addEdge('B', 'C', 4);
+  g.addEdge('C', 'D', 1);
+  g.addEdge('A', 'D', 3);
+  g.addEdge('A', 'C', 2);
+  logJohnsons(g)
+  console.log("========")
+
+  var g1 = new GraphByEdge([0, 1, 2, 3, 4], true)
+
+  g1.addEdge(0, 1, -1);
+  g1.addEdge(0, 2, 4);
+  g1.addEdge(1, 2, 3);
+  g1.addEdge(1, 3, 2);
+  g1.addEdge(1, 4, 2);
+  g1.addEdge(3, 2, 5);
+  g1.addEdge(3, 1, 1);
+  g1.addEdge(4, 3, -3);
+  logJohnsons(g1)
+  console.log("========")
+  var g2 = new GraphByEdge([0, 1, 2, 3], true);
+  g2.addEdge(0, 1, 5);
+  g2.addEdge(0, 3, 10);
+  g2.addEdge(1, 2, 3);
+  g2.addEdge(2, 3, 1);
+  logJohnsons(g2)
+
+  //  console.log(g.dijkstra("A"))
     </script>
 </html>
 
