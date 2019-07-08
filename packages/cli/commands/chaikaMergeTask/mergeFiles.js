@@ -123,6 +123,12 @@ function getFilesMap(queue = []) {
             return;
         }
         
+        if (/\/project\.config\.json$/.test(file)) {
+            map['projectConfigJson'] = map['projectConfigJson'] || [];
+            map['projectConfigJson'].push(file);
+            return;
+        }
+
         var reg = new RegExp( env +'Config.json$');
         map['xconfig'] =  map['xconfig'] || [];
         if (reg.test(file)) {
@@ -284,6 +290,18 @@ function getMergedPkgJsonContent(alias) {
     };
 }
 
+function getMiniAppProjectConfigJson(projectConfigQueue = []) {
+    let dist = path.join(mergeDir, 'project.config.json');
+    let distContent = '';
+    if (projectConfigQueue.length) {
+        distContent = JSON.stringify(require( projectConfigQueue[0] ), null, 4);
+    } 
+    return {
+        dist: dist,
+        content: distContent
+    };
+}
+
 //校验app.js是否正确
 function validateAppJsFileCount(queue) {
     let appJsFileCount = queue
@@ -293,7 +311,7 @@ function validateAppJsFileCount(queue) {
         .map(function(el){
             return el.replace(/\\/g, '/').split('/download/').pop();
         });
-   
+
     if (!appJsFileCount.length || appJsFileCount.length > 1) {
         let msg = '';
         if (!appJsFileCount.length) {
@@ -303,6 +321,17 @@ function validateAppJsFileCount(queue) {
         }
         // eslint-disable-next-line
         console.log(chalk.bold.red(msg));
+        process.exit(1);
+    }
+}
+
+function validateMiniAppProjectConfigJson(queue) {
+    let projectConfigJsonList = queue.filter(function(el){
+        return /\/project\.config\.json$/.test(el);
+    });
+    if ( projectConfigJsonList.length > 1 ) {
+        // eslint-disable-next-line
+        console.log(chalk.bold.red('校验到多个拆库仓库中存在project.config.json. 在业务线的拆库工程中，最多只能有一个拆库需要包含project.config.jon:'), chalk.bold.red('\n' + JSON.stringify(projectConfigJsonList, null, 4)));
         process.exit(1);
     }
 }
@@ -332,11 +361,12 @@ function validateConfigFileCount(queue) {
 }
 
 module.exports = function(){
-   
+    
     let queue = Array.from(mergeFilesQueue);
-   
+    
     validateAppJsFileCount(queue);
     validateConfigFileCount(queue);
+    validateMiniAppProjectConfigJson(queue);
 
     let map = getFilesMap(queue);
 
@@ -346,7 +376,9 @@ module.exports = function(){
         //*Config.json合并
         getMergedXConfigContent(map.xconfig),
         //alias合并
-        getMergedPkgJsonContent(getMergedData(map.alias))
+        getMergedPkgJsonContent(getMergedData(map.alias)),
+        //project.config.json处理
+        getMiniAppProjectConfigJson(map.projectConfigJson)
     ];
 
     
@@ -401,6 +433,10 @@ module.exports = function(){
         .then(function(queue){
             queue = queue.map(function( {dist, content} ){
                 return new Promise(function(rel, rej){
+                    if (!content) {
+                        rel(1);
+                        return;
+                    }
                     fs.ensureFileSync(dist);
                     fs.writeFile( dist, content, function(err){
                         if (err) {
