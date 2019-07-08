@@ -8,7 +8,7 @@ import url from './utils/bsurl';
 let bsurl = url.bsurl;
 
 class Demo extends React.Component {
-  config = {
+  static config = {
       window: {
           navigationBarTextStyle: 'white',
           navigationBarTitleText: 'Music',

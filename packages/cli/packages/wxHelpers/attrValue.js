@@ -2,10 +2,11 @@
 
 const t = require('@babel/types');
 const generate = require('@babel/generator').default;
-const getStyleValue = require('../utils/getStyleValue');
-const buildType = require('../config').buildType;
+const buildType = require('../../config/config').buildType;
+const calculateStyleString = require('../utils/calculateStyleString');
 
 module.exports = function (astPath) {
+  
     let expr = astPath.node.expression;
     let attrName = astPath.parent.name.name;
     let isEventRegex =
@@ -26,7 +27,10 @@ module.exports = function (astPath) {
             }
         }
     });
+
+
     var attrValue = generate(expr).code;//没有this.
+    
     switch (expr.type) {
         case 'ArrayExpression': //[]
         case 'NumericLiteral': //11
@@ -59,8 +63,22 @@ module.exports = function (astPath) {
             //通过style={{a:1,b:1}}
             //变成style="{{props.style4338}}"
             if (attrName === 'style') {
-                replaceWithExpr(astPath, getStyleValue(expr), true);
+                replaceWithExpr(astPath, calculateStyleString(expr), true);
             }
+
+            //不转译 Spread 运算。{{...a}} 
+            if (['wx', 'qq', 'tt'].includes(buildType)) {
+                if (
+                    expr.properties.every(function(prop){
+                        return prop.type === 'SpreadElement' || prop.type === 'ObjectProperty'
+                    })
+                ) {
+                    // {...a} => '{{...a}}'
+                    let value = '{' +  attrValue.replace(/\n/g, '') + '}';
+                    astPath.replaceWith(t.stringLiteral(value));
+                }
+            }
+
             break;
         case 'BinaryExpression': { // a + b
             if (attrName === 'class' || attrName === 'className') {

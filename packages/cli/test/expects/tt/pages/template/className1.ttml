@@ -1,0 +1,1 @@
+<view class="{{state.flag === 'checked' ? 'checked' : ''}}"></view>

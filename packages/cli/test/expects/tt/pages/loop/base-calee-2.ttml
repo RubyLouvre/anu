@@ -1,0 +1,7 @@
+<view>
+      <block tt:if="{{state.array && state.array.length}}">
+        <block tt:for="{{state.array}}" tt:for-item="item" tt:for-index="i150" tt:key="*this">
+          <view>{{item.item}}</view>
+        </block>
+      </block>
+    </view>

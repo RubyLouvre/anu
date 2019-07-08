@@ -11,7 +11,7 @@ export function registerComponent (type, name) {
             state: {},
             context: {}
         },
-
+        options: type.options,
         attached() {
             usingComponents[name] = type;
             let uuid = this.dataset.instanceUid || null;

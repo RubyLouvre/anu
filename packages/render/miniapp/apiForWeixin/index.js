@@ -34,12 +34,12 @@ export var more = function(api) {
             RequestQueue.facade = api;
             return RequestQueue.request(_a);
         },
-        getStorage: function({ key, success, complete }) {
+        getStorage: function({key, success, complete}){
             return api.getStorage({
                 key,
                 complete,
                 success,
-                fail: function(e) { //QQ小程序如果找不到数据会报错，而不是返回一个空对象
+                fail: function(e){//QQ小程序如果找不到数据会报错，而不是返回一个空对象
                     //QQ的错误描述：getStorage:fail data not found
                     //微信的错误描述：getStorage:fail:data not found
                     //真机调试的错误可能是 timeout

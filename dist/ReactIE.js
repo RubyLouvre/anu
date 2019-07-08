@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-05-09
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-07-05
  */
 
 (function (global, factory) {
@@ -1722,7 +1722,6 @@
                 Renderer.currentOwner = instance;
                 extend(instance, {
                     __isStateless: true,
-                    __init: true,
                     renderImpl: type,
                     render: function f() {
                         return this.renderImpl(this.props, this.context);
@@ -3298,7 +3297,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.5.3',
+            version: '1.5.0',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,

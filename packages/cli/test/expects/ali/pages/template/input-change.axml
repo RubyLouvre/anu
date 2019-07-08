@@ -1,0 +1,1 @@
+<input type="idcard" onInput="dispatchEvent" data-input-uid="e3_36" data-beacon-uid="default" />

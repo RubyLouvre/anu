@@ -19,28 +19,26 @@ import { dispatchEvent, webview } from './eventSystem';
 import { Renderer } from './render.all';
 
 import { toStyle } from './toStyle';
-import {
-    _getApp,
-    getCurrentPage,
-    _getCurrentPages,
-    useComponent
-} from './utils';
+import { 
+    _getApp , 
+    getCurrentPage, 
+    _getCurrentPages, 
+    useComponent } from './utils';
 import { registerPage } from './registerPage.wx';
 import { registerComponent } from './registerComponent.wx';
-import {
+import { 
     useState,
-    useReducer,
+    useReducer, 
     useCallback,
     useMemo,
-    useEffect,
-    useContext
-} from 'react-core/hooks';
+    useEffect, 
+    useContext } from 'react-core/hooks';
 
 
 
 let { render } = Renderer;
 
-let React = getWindow().React = {
+let React = getWindow().React =  {
     //平台相关API
     eventSystem: {
         dispatchEvent
@@ -55,12 +53,12 @@ let React = getWindow().React = {
     webview,
     Fragment,
     PropTypes,
-    // Children,
+   // Children,
     Component,
-    //  createPortal,
+  //  createPortal,
     createElement,
     createFactory,
-    // cloneElement,
+   // cloneElement,
     PureComponent,
     isValidElement,
     createContext,
@@ -72,24 +70,24 @@ let React = getWindow().React = {
     registerPage,
     toStyle,
     useState,
-    useReducer,
+    useReducer, 
     useCallback,
     useMemo,
-    useEffect,
+    useEffect, 
     useContext,
     useComponent,
     appType: 'wx'
 };
 let apiContainer = {};
-if (typeof wx != 'undefined') {
-    apiContainer = wx; //eslint-disable-line
-} else if (typeof qq != 'undefined') {
-    apiContainer = qq; //eslint-disable-line
+if (typeof wx != 'undefined'){
+    apiContainer = wx;//eslint-disable-line
+} else if (typeof qq != 'undefined'){
+    apiContainer = qq;//eslint-disable-line
     React.appType = 'qq';
-} else if (typeof tt != 'undefined') {
-    apiContainer = tt; //eslint-disable-line
+} else if (typeof tt != 'undefined'){
+    apiContainer = tt;//eslint-disable-line
     React.appType = 'tt';
-}
+} 
 
 registerAPIs(React, apiContainer, more);
 

@@ -23,12 +23,17 @@ function setStorage ({ key, data, success, fail = noop, complete }) {
     storage.set({ key, value, success, fail, complete});
 }
 
-function getStorage ({ key, success, fail, complete }) {
-    storage.get({ key, success: function(data){
-        success({
-            data: saveParse(data)
-        });
-    }, fail, complete});
+function getStorage ({ key, success = noop, complete }) {
+    storage.get({ 
+        key, 
+        success: function(data){
+            success({
+                data: saveParse(data)
+            });
+        }, 
+        fail:function(){
+            success({});
+       }, complete});
 }
 
 function removeStorage (obj) {

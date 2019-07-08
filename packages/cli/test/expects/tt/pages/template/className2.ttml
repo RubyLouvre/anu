@@ -1,0 +1,1 @@
+<view class="aaa {{state.isOk && state.flag === 'checked' ? 'checked' : ''}}"></view>

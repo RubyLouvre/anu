@@ -1,0 +1,44 @@
+<import name="anu-page-wrapper" src="../../../../source/components/PageWrapper/index.ux">
+    </import>
+    <template>
+      <anu-page-wrapper>
+
+        <block if="{{state.tasks !== null}}">
+          <div class="page-body">
+            <text>tasks</text>
+          </div>
+        </block>
+        <block elif="true">
+          <block if="{{state.task.length === 0}}">
+            <div class="page-body">
+              <text>{{tasks.length}}</text>
+            </div>
+          </block>
+          <block elif="true">
+            <div class="page-body">
+              <text>Hello world!</text>
+            </div>
+          </block>
+        </block>
+
+      </anu-page-wrapper>
+    </template>
+    <script>
+      function P() {}
+
+      P = React.toClass(P, React.Components, {
+      render: function() {
+      var h = React.createElement;
+      return this.state.tasks !== null ? h("div", {
+      class: "page-body"
+      }, "tasks") : this.state.task.length === 0 ? h("div", {
+      class: "page-body"
+      }, h("text", null, tasks.length)) : h("div", {
+      class: "page-body"
+      }, h("text", null, "Hello world!"));;
+      },
+      classUid: "c519"
+      }, {});
+      P = React.registerPage(P, "pages/control-flow/if-eles");
+      export default P;
+    </script>

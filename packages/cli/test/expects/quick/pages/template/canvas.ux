@@ -1,0 +1,23 @@
+<import name="anu-page-wrapper" src="../../../../source/components/PageWrapper/index.ux">
+    </import>
+    <template>
+      <anu-page-wrapper>
+        <canvas id="myCanvas">
+        </canvas>
+      </anu-page-wrapper>
+    </template>
+    <script>
+      function P() {}
+
+      P = React.toClass(P, React.Components, {
+      render: function() {
+      var h = React.createElement;
+      return h("canvas", {
+      id: "myCanvas"
+      });;
+      },
+      classUid: "c97"
+      }, {});
+      P = React.registerPage(P, "pages/template/canvas");
+      export default P;
+    </script>

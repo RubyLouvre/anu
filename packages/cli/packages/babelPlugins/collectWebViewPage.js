@@ -1,4 +1,4 @@
-const globalConfig = require('../config');
+const globalConfig = require('../../config/config');
 const traverse = require('@babel/traverse').default;
 const g = require('@babel/generator').default;
 const json5 = require('json5');
@@ -6,13 +6,21 @@ const path = require('path');
 const buildType = process.env.ANU_ENV;
 const cwd = process.cwd();
 
+let WebViewRules = {
+    pages: [],
+    allowthirdpartycookies: false,
+    trustedurl: [],
+    showTitleBar:  true
+}
+
 module.exports = ()=>{
     return {
         visitor: {
             ClassDeclaration(astPath, state){
+               
                 if (buildType !== 'quick') return;
                 let fileId = state.file.opts.filename;
-                
+               
                 traverse(
                     astPath.node, 
                     {
@@ -24,15 +32,7 @@ module.exports = ()=>{
                             if ( !( webViewConfig  && webViewConfig[buildType]) ) return;
                             webViewConfig = webViewConfig[buildType];
                             
-
-                            globalConfig.webview =  globalConfig.webview || {
-                                pages: [],
-                                allowthirdpartycookies: false,
-                                trustedurl: [],
-                                showTitleBar:  true
-                            }
-                            
-                            Object.assign(globalConfig.webview, {
+                            Object.assign(WebViewRules, {
                                 allowthirdpartycookies: webViewConfig.allowthirdpartycookies,
                                 trustedurl: webViewConfig.trustedurl,
                                 showTitleBar: webViewConfig.showTitleBar
@@ -47,7 +47,7 @@ module.exports = ()=>{
                              */
                             if (Array.isArray(webViewConfig.pages)) {
                                 
-                                globalConfig.webview.pages = globalConfig.webview.pages.concat(
+                                WebViewRules.pages = WebViewRules.pages.concat(
                                     webViewConfig.pages.map((el)=>{
                                         return path.join(
                                             cwd,
@@ -73,13 +73,17 @@ module.exports = ()=>{
                             ) {
                                 let startPath = path.join(path.dirname(fileId), '..');
                                 let reg = new RegExp('^' + startPath );
-                                globalConfig.webview.pages.push(reg);
+                                WebViewRules.pages.push(reg);
                             }
                         }
+
                     },
                     astPath.scope
                 );
             }
+        },
+        post: function(){
+           globalConfig.WebViewRules = WebViewRules;
         }
     };
 };

@@ -38,11 +38,13 @@ module.exports = function createLogicHelper(prefix, keyName, hasDefaultKey){
         ) {
             // 处理列表指令
             if (expr.arguments[0].type === 'ArrowFunctionExpression') {
+                
                 return loop(expr.callee, expr.arguments[0], modules);
             } else if (
                 expr.arguments[0] &&
                 expr.arguments[0].type === 'FunctionExpression'
             ) {
+               
                 return loop(expr.callee, expr.arguments[0], modules);
             } else {
                 throw generate(expr.callee.object).code +
@@ -84,13 +86,17 @@ module.exports = function createLogicHelper(prefix, keyName, hasDefaultKey){
             var forExpr = '(' + fn.params[1].name + ',' + fn.params[0].name + ') in ' + parseExpr(callee.object).slice(2, -2);
             attrs.push(createAttribute('for', forExpr));
         }
-
-        var key = Array.isArray(modules.key) === true ? modules.key[modules.key.length - 1] : void 666;
-
-        if (key && key.split('.')[0] === fn.params[0].name) {
+       
+        ;
+        if (Object.keys(modules.key || {}).length) {
             //快应用不生成key
-            prefix && attrs.push(createAttribute(keyName, utils.genKey(key)));
-            modules.key.pop();
+
+            //用于取到对应的 key
+            var calleeCode = generate(callee).code;
+            prefix &&  attrs.push( createAttribute(keyName, utils.genKey(modules.key[calleeCode])) );
+            
+            delete modules.key[calleeCode];
+           // modules.key = null;
         } else if (hasDefaultKey) {
             attrs.push(createAttribute(keyName, '*this'));
         }

@@ -24,14 +24,13 @@ import { registerAPIs } from './registerAPIs';
 import { more } from './apiForAlipay/index';
 import { registerComponent } from './registerComponent.ali';
 import { registerPage } from './registerPage.wx';
-import {
+import { 
     useState,
-    useReducer,
+    useReducer, 
     useCallback,
     useMemo,
-    useEffect,
-    useContext
-} from 'react-core/hooks';
+    useEffect, 
+    useContext } from 'react-core/hooks';
 
 let { render } = Renderer;
 
@@ -68,10 +67,10 @@ let React = (getWindow().React = {
     registerPage,
     toStyle,
     useState,
-    useReducer,
+    useReducer, 
     useCallback,
     useMemo,
-    useEffect,
+    useEffect, 
     useContext,
     useComponent,
     appType: 'ali'

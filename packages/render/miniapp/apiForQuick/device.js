@@ -2,19 +2,18 @@ const device = require('@system.device');
 var mapNames = {
     osVersionName: 'version',
     osVersionCode: 'system',
-    platformVersionName: 'platform',
+    platformVersionName: 'platform' ,
     platformVersionCode: 'SDKVersion'
 };
-
-function getSystemInfo({ success, fail, complete }) {
-
+function getSystemInfo({success, fail, complete}) {
+   
     device.getInfo({
         success: function(rawObject) {
             var result = {
                 fontSizeSetting: 14,
             };
 
-            for (let name in rawObject) {
+            for (let name in rawObject){
                 result[mapNames[name] || name] = rawObject[name];
             }
             success && success(result);
@@ -33,7 +32,7 @@ function getUserId(options) {
     return device.getUserId(options);
 }
 
-export { getSystemInfo, getDeviceId, getUserId };
+export { getSystemInfo ,getDeviceId, getUserId};
 
 // https://doc.quickapp.cn/features/system/device.html
 /* 快应用

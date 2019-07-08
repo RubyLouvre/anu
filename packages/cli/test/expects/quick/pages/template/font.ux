@@ -1,0 +1,28 @@
+<import name="anu-page-wrapper" src="../../../../source/components/PageWrapper/index.ux">
+    </import>
+    <template>
+      <anu-page-wrapper>
+        <div class='page'>
+          <text>¥</text>
+          <text>¢</text>
+          <text>£</text>
+          <text>€</text>
+          <text>©</text>
+        </div>
+      </anu-page-wrapper>
+    </template>
+    <script>
+      function P() {}
+
+      P = React.toClass(P, React.Components, {
+      render: function() {
+      var h = React.createElement;
+      return h("div", {
+      class: "page"
+      }, h("text", null, "\xA5"), h("text", null, "\xA2"), h("text", null, "\xA3"), h("text", null, "\u20AC"), h("text", null, "\xA9"));;
+      },
+      classUid: "c316"
+      }, {});
+      P = React.registerPage(P, "pages/template/font");
+      export default P;
+    </script>
