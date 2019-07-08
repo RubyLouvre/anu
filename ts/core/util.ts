@@ -10,28 +10,39 @@ export const topNodes = [];
 export const emptyArray = [];
 export const emptyObject = {};
 
+
 export const REACT_ELEMENT_TYPE = hasSymbol
     ? Symbol['for']('react.element')
     : 0xeac7;
 
+interface Ref{
+    [propName: string]: any
+}
+interface booleanFn{
+    (arg0: any):boolean
+}
+
+type Primitive = number | string | boolean
+type Nil = null | void
+
+
 export function noop() {}
 
-export function Fragment(props) {
+export function Fragment(props: Ref) {
     return props.children;
 }
 
-export function returnFalse():boolean {
+
+export var returnFalse: booleanFn = function(){
     return false;
 }
 
-export function returnTrue():boolean {
+export var returnTrue: booleanFn = function(){
     return true;
 }
-interface Info{
-    containerStack: Array<any>,
-    contextStack: Array<any>,
-}
-export function resetStack(info: Info):void {
+
+
+export function resetStack(info: Ref):void {
     keepLast(info.containerStack);
     keepLast(info.contextStack);
 }
@@ -41,14 +52,15 @@ function keepLast(list: Array<any>): void {
     list.splice(0, n - 1);
 }
 
-export function get(key) {
+export function get(key: Ref): Ref {
     return key._reactInternalFiber;
 }
 
 export let __type = Object.prototype.toString;
 
+
 var fakeWindow = {};
-export function getWindow() {
+export function getWindow():Ref {
     try {
         if (window){
             return window;
@@ -64,12 +76,12 @@ export function getWindow() {
     return fakeWindow;
 }
 
-export function isMounted(instance) {
+export var isMounted: booleanFn = function(instance) {
     var fiber = get(instance);
     return !!(fiber && fiber.hasMounted);
 }
 
-export function toWarnDev(msg, deprecated) {
+export function toWarnDev(msg: string, deprecated: boolean | void ): void | never {
     msg = deprecated ? msg + ' is deprecated' : msg;
     let process = getWindow().process;
     if (process && process.env.NODE_ENV === 'development') {
@@ -77,7 +89,7 @@ export function toWarnDev(msg, deprecated) {
     }
 }
 
-export function extend(obj, props) {
+export function extend(obj:Ref, props:Ref):Ref {
     for (let i in props) {
         if (hasOwnProperty.call(props, i)) {
             obj[i] = props[i];
@@ -86,7 +98,7 @@ export function extend(obj, props) {
     return obj;
 }
 
-export function inherit(SubClass, SupClass) {
+export function inherit(SubClass: Function, SupClass:Function): Function {
     function Bridge() {}
     let orig = SubClass.prototype;
     Bridge.prototype = SupClass.prototype;
@@ -102,7 +114,7 @@ try {
     /* istanbul ignore next  */
 } catch (e) {}
 let rname = /function\s+(\w+)/;
-export function miniCreateClass(ctor, superClass, methods, statics) {
+export function miniCreateClass(ctor:Function, superClass:Function, methods:Object, statics:Object|void):Function {
     let className = ctor.name || (ctor.toString().match(rname) ||['','Anonymous'])[1];
     let Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) : 
         function ReactInstance() {
@@ -120,17 +132,17 @@ export function miniCreateClass(ctor, superClass, methods, statics) {
 }
 
 let lowerCache = {};
-export function toLowerCase(s:string):string {
+export function toLowerCas(s: string): string {
     return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
 
-export function isFn(obj) {
+export function isFn(obj:any): boolean {
     return __type.call(obj) === '[object Function]';
 }
 
 let rword = /[^, ]+/g;
 
-export function oneObject(array, val) {
+export function oneObject(array:string|Array<string>, val:Primitive|Nil):Ref {
     if (array + '' === array) {
         //利用字符串的特征进行优化，字符串加上一个空字符串等于自身
         array = array.match(rword) || [];
@@ -145,7 +157,7 @@ export function oneObject(array, val) {
 }
 
 let rcamelize = /[-_][^-_]/g;
-export function camelize(target) {
+export function camelize(target:string):string {
     //提前判断，提高getStyle等的效率
     if (!target || (target.indexOf('-') < 0 && target.indexOf('_') < 0)) {
         return target;
@@ -157,7 +169,7 @@ export function camelize(target) {
     return firstLetterLower(str);
 }
 
-export function firstLetterLower(str) {
+export function firstLetterLower(str:string):string {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
@@ -185,7 +197,7 @@ export function typeNumber(data: any): number {
 
 export let toArray =
     Array.from ||
-    function(a) {
+    function(a: any[]) {
         let ret = [];
         for (let i = 0, n = a.length; i < n; i++) {
             ret[i] = a[i];
