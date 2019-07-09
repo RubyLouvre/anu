@@ -27,7 +27,7 @@ module.exports = async function(){
         //创建软连接
         makeSymLink();
         //更改进程所在目录
-        changeWorkingDir();
+        //changeWorkingDir();
         
     } catch (err) {
         // eslint-disable-next-line

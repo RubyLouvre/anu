@@ -4,7 +4,6 @@ const chalk = require('chalk');
 const spawn = require('cross-spawn');
 const axios = require('axios');
 const ora = require('ora');
-const glob = require('glob');
 const { REACT_LIB_MAP } = require('../consts/index');
 const utils = require('../packages/utils/index');
 const nodeResolve = require('resolve');
@@ -12,7 +11,7 @@ const nodeResolve = require('resolve');
 const cliRoot = path.resolve(__dirname, '..');
 const config = require('../config/config');
 const getSubpackage = require('../packages/utils/getSubPackage');
-let cwd = '';
+let cwd = process.cwd();
 
 //删除dist目录, 以及快应的各配置文件
 function getRubbishFiles(buildType){
@@ -104,9 +103,19 @@ function downloadSchneeUI(){
     spinner.succeed(chalk.green.bold(`同步 schnee-ui 成功!`));
 }
 
+function isChaikaMode() {
+    return process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
+}
+
+function getReactPath(ReactLibName) {
+    if (isChaikaMode()) {
+        return path.join(cwd, '.CACHE/nanachi/source', ReactLibName);
+    }
+    return  path.join(cwd, 'source', ReactLibName);
+}
 
 async function getRemoteReactFile(ReactLibName) {
-    let dist = path.join(cwd, 'source', ReactLibName);
+    let dist = getReactPath(ReactLibName);
     let { data } = await axios.get(`https://raw.githubusercontent.com/RubyLouvre/anu/branch3/dist/${ReactLibName}`);
     return [
         {
@@ -119,7 +128,7 @@ async function getRemoteReactFile(ReactLibName) {
 
 function getReactLibFile(ReactLibName) {
     let src = path.join(cliRoot, 'lib', ReactLibName);
-    let dist = path.join(cwd, 'source', ReactLibName);
+    let dist = getReactPath(ReactLibName);
     try {
         //文件有就不COPY
         fs.accessSync(dist);
@@ -135,51 +144,6 @@ function getReactLibFile(ReactLibName) {
     }
 }
 
-function getAssetsFile( buildType, huawei ) {
-    let quickConfig;
-    try {
-        quickConfig = require(path.resolve(cwd, 'source', 'quickConfig.json'));
-    } catch (err) {
-        // quickConfig可能不存在
-    }
-    const assetsDir = path.join(cwd, 'source', 'assets');
-    let files = glob.sync( assetsDir+'/**', {nodir: true});
-    
-    files = files.filter(function(id){
-        //过滤js, css, sass, scss, less, json文件
-        return !/\.(js|scss|sass|less|css|json)$/.test(id);
-    });
-    if (quickConfig && quickConfig.router && quickConfig.router.widgets) {
-        Object.keys(quickConfig.router.widgets).forEach(key => {
-            let widgetPath = quickConfig.router.widgets[key].path;
-            if (widgetPath) {
-                widgetPath = path.join(cwd, 'source', widgetPath);
-                const widgetFiles = glob.sync( widgetPath + '/**', {nodir: true});
-                files = files.concat(widgetFiles);
-            }
-        });
-    }
-    if (huawei && quickConfig && quickConfig.widgets && Object.prototype.toString.call(quickConfig.widgets) === '[object Array]') {
-        quickConfig.widgets.forEach(widget => {
-            let widgetPath = widget.path;
-            if (widgetPath) {
-                widgetPath = path.join(cwd, 'source', widgetPath);
-                const widgetFiles = glob.sync( widgetPath + '/**', {nodir: true});
-                files = files.concat(widgetFiles);
-            }
-        })
-    }
-    files = files.map(function(id){
-        let sourceReg = /[\\/]source[\\/]/;
-        let dist = id.replace(sourceReg, buildType === 'quick' ? `${path.sep}src${path.sep}` : `${path.sep}dist${path.sep}`);
-        return {
-            id: id,
-            dist: dist ,
-            ACTION_TYPE: 'COPY'
-        };
-    });
-    return files;
-}
 
 //copy project.config.json
 function getProjectConfigFile(buildType) {
@@ -279,8 +243,7 @@ function injectPluginsConfig() {
 }
 
 async function runTask({ buildType, beta, betaUi, compress }){
-    cwd = process.cwd();
-    
+   
     // 检查pages目录是否符合规范
     if (buildType !== 'quick' && getSubpackage(buildType).length > 0) {
         //checkPagePath(path.resolve(cwd, 'source/pages'));
@@ -322,11 +285,11 @@ async function runTask({ buildType, beta, betaUi, compress }){
         tasks = tasks.concat(getQuickBuildConfigFile(), getQuickPkgFile());
         if (needInstallHapToolkit()) {
             //获取package.json中hap-toolkit版本，并安装
-            let toolName = 'hap-toolkit';
+            let toolName = 'hap-toolkit@latest';
             // eslint-disable-next-line
-            console.log(chalk.green(`缺少快应用构建工具${toolName}, 正在安装, 请稍候...`));
+            console.log(chalk.bold.green(`缺少快应用构建工具 ${toolName}, 正在安装, 请稍候...`));
             utils.installer(
-                `${toolName}@${require( path.join(cwd, 'package.json'))['devDependencies'][toolName] }`,
+                toolName,
                 '--save-dev'
             );
         }
@@ -336,9 +299,7 @@ async function runTask({ buildType, beta, betaUi, compress }){
     //copy project.config.json
     tasks = tasks.concat(getProjectConfigFile(buildType));
 
-    //copy assets目录下静态资源 (改用copyWebpackPlugin拷贝静态资源，处理压缩)
-    // tasks = tasks.concat(getAssetsFile(buildType));
-
+    
     try {
         //每次build时候, 必须先删除'dist', 'build', 'sign', 'src', 'babel.config.js'等等冗余文件或者目录
         await Promise.all(getRubbishFiles(buildType).map(function(task){

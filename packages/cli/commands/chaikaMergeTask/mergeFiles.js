@@ -278,7 +278,7 @@ function xDiff(list) {
 
 function getMergedPkgJsonContent(alias) {
     let currentPkg = require(path.join(cwd, 'package.json'));
-    let distContent = Object.assign(currentPkg, {
+    let distContent = Object.assign({}, currentPkg, {
         nanachi: {
             alias: alias
         }
@@ -412,7 +412,7 @@ module.exports = function(){
         let installList = installPkgList.join(' ');
         // --no-save 是为了不污染用户的package.json
         // eslint-disable-next-line
-        console.log(chalk.bold.green(`npm 正在安装各拆库依赖： ${installList}, 请稍等...`));
+        console.log(chalk.bold.green(`缺少各拆库依赖 ${installList}, 正在安装, 请稍候...`));
         fs.ensureDir(path.join(cwd, 'node_modules'));
         let cmd = `npm install ${installList} --no-save`;
         // eslint-disable-next-line
