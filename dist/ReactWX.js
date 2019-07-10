@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-07-05T02
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-07-09
  * IE9+
  */
 
@@ -2439,12 +2439,9 @@ var Renderer$1 = createRenderer({
             props: fiber.props
         };
     },
-    insertElement: function insertElement(fiber) {
-    },
-    emptyElement: function emptyElement(fiber) {
-    },
-    removeElement: function removeElement(fiber) {
-    }
+    insertElement: function insertElement(fiber) {},
+    emptyElement: function emptyElement(fiber) {},
+    removeElement: function removeElement(fiber) {}
 });
 
 var rhyphen = /([a-z\d])([A-Z]+)/g;

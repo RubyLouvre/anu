@@ -1,3 +1,5 @@
+import { Ref, Primitive, Nil, booleanFn, stringConvert } from  "./type"
+
 export const arrayPush = Array.prototype.push;
 export const innerHTML:string = 'dangerouslySetInnerHTML';
 export const hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -15,39 +17,28 @@ export const REACT_ELEMENT_TYPE = hasSymbol
     ? Symbol['for']('react.element')
     : 0xeac7;
 
-interface Ref{
-    [propName: string]: any
-}
-interface booleanFn{
-    (arg0: any):boolean
-}
-
-type Primitive = number | string | boolean
-type Nil = null | void
 
 
 export function noop() {}
 
-export function Fragment(props: Ref) {
+export function Fragment(props: Ref):any {
     return props.children;
 }
-
 
 export var returnFalse: booleanFn = function(){
     return false;
 }
 
-export var returnTrue: booleanFn = function(){
+export var returnTrue: booleanFn = function() {
     return true;
 }
-
 
 export function resetStack(info: Ref):void {
     keepLast(info.containerStack);
     keepLast(info.contextStack);
 }
 
-function keepLast(list: Array<any>): void {
+function keepLast(list: Array<Ref>): void {
     var n = list.length;
     list.splice(0, n - 1);
 }
@@ -131,10 +122,7 @@ export function miniCreateClass(ctor:Function, superClass:Function, methods:Obje
     return Ctor;
 }
 
-let lowerCache = {};
-export function toLowerCase(s: string): string {
-    return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
-}
+
 
 export function isFn(obj:any): boolean {
     return __type.call(obj) === '[object Function]';
@@ -156,8 +144,10 @@ export function oneObject(array:string|Array<string>, val:Primitive|Nil):Ref {
     return result;
 }
 
+
 let rcamelize = /[-_][^-_]/g;
-export function camelize(target:string):string {
+
+export var camelize: stringConvert<string> = function(target) {
     //提前判断，提高getStyle等的效率
     if (!target || (target.indexOf('-') < 0 && target.indexOf('_') < 0)) {
         return target;
@@ -169,8 +159,13 @@ export function camelize(target:string):string {
     return firstLetterLower(str);
 }
 
-export function firstLetterLower(str:string):string {
+export var firstLetterLower: stringConvert<string> = function(str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
+}
+
+let lowerCache = {};
+export var toLowerCase: stringConvert<string> = function(str) {
+    return lowerCache[str] || (lowerCache[str] = str.toLowerCase());
 }
 
 let numberMap = {
@@ -204,3 +199,4 @@ export let toArray =
         }
         return ret;
     };
+
