@@ -41,6 +41,9 @@ import {
 import { findDOMNode } from '../dom/findDOMNode';
 let { render } = DOMRenderer;
 
+let __currentPages = [];
+const MAX_PAGE_STACK_NUM = 10;
+
 let React = (getWindow().React = {
     //平台相关API
   //  eventSystem: {
@@ -68,10 +71,10 @@ let React = (getWindow().React = {
     
     registerComponent,
     getCurrentPage: function() {
-        return this.__currentPages[this.__currentPages.length - 1];
+        return __currentPages[__currentPages.length - 1];
     },
     getCurrentPages: function() {
-        return this.__currentPages;
+        return __currentPages;
     },
     getApp: function() {
         return this.__app;
@@ -97,7 +100,6 @@ let React = (getWindow().React = {
     appType: 'h5',
     __app: {},
     __pages: {},
-    __currentPages: [],
     __isTab: function(pathname) {
         if (this.__app.constructor.config.tabBar 
             && this.__app.constructor.config.tabBar.list 
@@ -115,11 +117,11 @@ function __navigateBack({delta = 1, success, fail, complete} = {}) {
         showBackAnimation: true
     });
     setTimeout(() => {
-        while (delta && React.__currentPages.length) {
-            React.__currentPages.pop();
+        while (delta && __currentPages.length) {
+            __currentPages.pop();
             delta--;
         }
-        let { path, query } = React.__currentPages[React.__currentPages.length - 1].props;
+        let { path, query } = __currentPages[__currentPages.length - 1].props;
         React.api.redirectTo({url: path + parseObj2Query(query), success, fail, complete});
     }, 300);
 }
@@ -130,8 +132,9 @@ function router({url, success, fail, complete}) {
     if (appConfig.pages.indexOf(path) === -1){
         throw "没有注册该页面: "+ path;
     }
+    if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
     var pageClass = React.__pages[path];
-    React.__currentPages.forEach((page, index, self) => {
+    __currentPages.forEach((page, index, self) => {
         const pageClass = React.__pages[page.props.path];
         self[index] = React.createElement(pageClass, Object.assign(
             page.props,
@@ -144,10 +147,11 @@ function router({url, success, fail, complete}) {
         isTabPage: false,
         path,
         query,
+        url,
         app: React.__app,
         show: true
     });
-    React.__currentPages.push(pageInstance);
+    __currentPages.push(pageInstance);
     appInstance.setState({
         path,
         query, 
@@ -169,8 +173,8 @@ const prefix = '/web';
 
 let apiContainer = {
     redirectTo: function(options) {
-        if (React.__currentPages.length > 0) {
-            React.__currentPages.pop();
+        if (__currentPages.length > 0) {
+            __currentPages.pop();
         }
         router(options);
         history.replaceState({url: options.url}, null, prefix + options.url);
@@ -179,8 +183,13 @@ let apiContainer = {
         router(options);
         history.pushState({url: options.url}, null, prefix + options.url);
     },
-    navigateBack: function({delta = 1} = {}) {
-        history.go(-delta);
+    navigateBack: function(options = {}) {
+        const {delta = 1} = options;
+        __currentPages.slice(0, -delta).forEach(page => {
+            const url = page.props.url;
+            history.pushState({url: url}, null, prefix + url);
+        });
+        React.__navigateBack(options);
     },
     switchTab: function({url, success, fail, complete}) {
         var [path, query] = getQuery(url);
@@ -194,12 +203,12 @@ let apiContainer = {
                 console.warn(`${path}未在tabBar.list中定义!`);
                 return;
             }
-            React.__currentPages = [];
+            __currentPages = [];
             this.navigateTo.call(this, {url, query, success, fail, complete});
         }
     },
     reLaunch: function({ url, success, fail, complete }) {
-        React.__currentPages = [];
+        __currentPages = [];
         this.navigateTo.call(this, { url, success, fail, complete });
     },
     setNavigationBarColor: function(options) {
@@ -222,7 +231,7 @@ let apiContainer = {
             config: processedOptions
         });
     },
-    stopPullDownRefresh: function(options) {
+    stopPullDownRefresh: function() {
         const pageInstance = React.getCurrentPages().pop();
         React.getCurrentPages().push(cloneElement(pageInstance, {
             stopPullDownRefresh: true

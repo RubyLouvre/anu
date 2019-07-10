@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-05T13
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-10T07
  * IE9+
  */
 
@@ -5135,6 +5135,8 @@
     var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
     function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
     var render$2 = DOMRenderer.render;
+    var __currentPages = [];
+    var MAX_PAGE_STACK_NUM = 10;
     var React$1 = getWindow().React = {
         findDOMNode: findDOMNode,
         version: '1.5.0',
@@ -5153,10 +5155,10 @@
         toClass: miniCreateClass,
         registerComponent: registerComponent,
         getCurrentPage: function getCurrentPage() {
-            return this.__currentPages[this.__currentPages.length - 1];
+            return __currentPages[__currentPages.length - 1];
         },
         getCurrentPages: function getCurrentPages() {
-            return this.__currentPages;
+            return __currentPages;
         },
         getApp: function getApp() {
             return this.__app;
@@ -5180,7 +5182,6 @@
         appType: 'h5',
         __app: {},
         __pages: {},
-        __currentPages: [],
         __isTab: function __isTab(pathname) {
             if (this.__app.constructor.config.tabBar && this.__app.constructor.config.tabBar.list && this.__app.constructor.config.tabBar.list.some(function (item) {
                 return item.pagePath.replace(/^\.\//, '') === pathname.replace(/^\//, '');
@@ -5201,13 +5202,13 @@
             showBackAnimation: true
         });
         setTimeout(function () {
-            while (delta && React$1.__currentPages.length) {
-                React$1.__currentPages.pop();
+            while (delta && __currentPages.length) {
+                __currentPages.pop();
                 delta--;
             }
-            var _React$__currentPages = React$1.__currentPages[React$1.__currentPages.length - 1].props,
-                path = _React$__currentPages.path,
-                query = _React$__currentPages.query;
+            var _currentPages$props = __currentPages[__currentPages.length - 1].props,
+                path = _currentPages$props.path,
+                query = _currentPages$props.query;
             React$1.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
         }, 300);
     }
@@ -5225,8 +5226,9 @@
         if (appConfig.pages.indexOf(path) === -1) {
             throw "没有注册该页面: " + path;
         }
+        if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
         var pageClass = React$1.__pages[path];
-        React$1.__currentPages.forEach(function (page, index, self) {
+        __currentPages.forEach(function (page, index, self) {
             var pageClass = React$1.__pages[page.props.path];
             self[index] = React$1.createElement(pageClass, Object.assign(page.props, {
                 show: false
@@ -5236,10 +5238,11 @@
             isTabPage: false,
             path: path,
             query: query,
+            url: url,
             app: React$1.__app,
             show: true
         });
-        React$1.__currentPages.push(pageInstance);
+        __currentPages.push(pageInstance);
         appInstance.setState({
             path: path,
             query: query,
@@ -5259,8 +5262,8 @@
     var prefix = '/web';
     var apiContainer = {
         redirectTo: function redirectTo(options) {
-            if (React$1.__currentPages.length > 0) {
-                React$1.__currentPages.pop();
+            if (__currentPages.length > 0) {
+                __currentPages.pop();
             }
             router(options);
             history.replaceState({ url: options.url }, null, prefix + options.url);
@@ -5270,16 +5273,20 @@
             history.pushState({ url: options.url }, null, prefix + options.url);
         },
         navigateBack: function navigateBack() {
-            var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-                _ref3$delta = _ref3.delta,
-                delta = _ref3$delta === undefined ? 1 : _ref3$delta;
-            history.go(-delta);
+            var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+            var _options$delta = options.delta,
+                delta = _options$delta === undefined ? 1 : _options$delta;
+            __currentPages.slice(0, -delta).forEach(function (page) {
+                var url = page.props.url;
+                history.pushState({ url: url }, null, prefix + url);
+            });
+            React$1.__navigateBack(options);
         },
-        switchTab: function switchTab(_ref4) {
-            var url = _ref4.url,
-                success = _ref4.success,
-                fail = _ref4.fail,
-                complete = _ref4.complete;
+        switchTab: function switchTab(_ref3) {
+            var url = _ref3.url,
+                success = _ref3.success,
+                fail = _ref3.fail,
+                complete = _ref3.complete;
             var _getQuery3 = getQuery(url),
                 _getQuery4 = _slicedToArray(_getQuery3, 2),
                 path = _getQuery4[0],
@@ -5296,16 +5303,16 @@
                     console.warn(path + '\u672A\u5728tabBar.list\u4E2D\u5B9A\u4E49!');
                     return;
                 }
-                React$1.__currentPages = [];
+                __currentPages = [];
                 this.navigateTo.call(this, { url: url, query: query, success: success, fail: fail, complete: complete });
             }
         },
-        reLaunch: function reLaunch(_ref5) {
-            var url = _ref5.url,
-                success = _ref5.success,
-                fail = _ref5.fail,
-                complete = _ref5.complete;
-            React$1.__currentPages = [];
+        reLaunch: function reLaunch(_ref4) {
+            var url = _ref4.url,
+                success = _ref4.success,
+                fail = _ref4.fail,
+                complete = _ref4.complete;
+            __currentPages = [];
             this.navigateTo.call(this, { url: url, success: success, fail: fail, complete: complete });
         },
         setNavigationBarColor: function setNavigationBarColor(options) {
@@ -5328,7 +5335,7 @@
                 config: processedOptions
             });
         },
-        stopPullDownRefresh: function stopPullDownRefresh(options) {
+        stopPullDownRefresh: function stopPullDownRefresh() {
             var pageInstance = React$1.getCurrentPages().pop();
             React$1.getCurrentPages().push(cloneElement(pageInstance, {
                 stopPullDownRefresh: true

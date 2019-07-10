@@ -58,7 +58,7 @@ const temp = `window.addEventListener('popstate', function ({
                 url: state.url
             });
         } else {
-            React.api.navigateTo({
+            React.api.redirectTo({
                 url: state.url
             });
         }
