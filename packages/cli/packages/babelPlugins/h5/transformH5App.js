@@ -43,13 +43,13 @@ const temp = `window.addEventListener('popstate', function ({
     const pathname = state.url.split('?')[0];
     const index = pages.findIndex(page => page.props.path === pathname );
     if (!CLASS_NAME.config.pages.includes(pathname)) {
-        React.__navigateBack({
+        React.api.navigateBack({
           delta: 1
         });
         return;
     }
     if (index > -1) {
-        React.__navigateBack({
+        React.api.navigateBack({
             delta: pages.length - 1 - index
         })
     } else {
@@ -58,7 +58,7 @@ const temp = `window.addEventListener('popstate', function ({
                 url: state.url
             });
         } else {
-            React.api.redirectTo({
+            React.api.navigateTo({
                 url: state.url
             });
         }
