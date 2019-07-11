@@ -118,8 +118,8 @@ export function createFactory(type) {
 }
 /*
 tag的值
-FunctionComponent = 0;
-ClassComponent = 1;
+FunctionComponent = 1;
+ClassComponent = 2;
 HostPortal = 4; 
 HostComponent = 5;
 HostText = 6;
