@@ -2,6 +2,9 @@ const Timer = require('../packages/utils/timer');
 const { resetNum, timerLog } = require('./logger/index');
 const setWebView = require('../packages/utils/setWebVeiw');
 const id = 'NanachiWebpackPlugin';
+const pageConfig = require('../packages/h5Helpers/pageConfig');
+const generate = require('@babel/generator').default;
+const t = require('@babel/types');
 
 class NanachiWebpackPlugin {
     constructor({
@@ -28,7 +31,25 @@ class NanachiWebpackPlugin {
         
         // 删除webpack打包产物
         compiler.hooks.emit.tap(id, (compilation) => {
-            delete compilation.assets[compiler.options.output.filename];
+            if (this.nanachiOptions.platform === 'h5') {
+                // 生成pageConfig 文件 用于动态加载情况下，读取页面配置信息
+                // console.log(generate(t.exportDefaultDeclaration(pageConfig)).code);
+                const { code } = generate(t.exportDefaultDeclaration(pageConfig));
+                compilation.assets['pageConfig.js'] = {
+                    source: function() {
+                        return code;
+                    },
+                    size: function() {
+                        return code.length;
+                    }
+                };
+            }
+            const reg = new RegExp(compiler.options.output.filename);
+            Object.keys(compilation.assets).forEach(key => {
+                if (reg.test(key)) {
+                    delete compilation.assets[key];
+                }
+            });
         });
 
         compiler.hooks.run.tapAsync(id, async (compilation, callback) => {

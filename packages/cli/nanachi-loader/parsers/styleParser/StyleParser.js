@@ -20,7 +20,12 @@ class StyleParser {
         this.type = type;
         this.platform = platform;
         this.relativePath = this.getRelativePath(filepath);
-        this._postcssPlugins = [];
+        this._postcssPlugins = [
+            require('stylelint')({
+                configFile: require.resolve(`../../../config/stylelint/.stylelint-${this.platform}.config.js`)
+            }),
+            require('../../../packages/postcssPlugins/postCssPluginReport')
+        ];
         this._postcssOptions = {};
         this.parsedCode = '';
         this.extraModules = [];
@@ -57,11 +62,13 @@ class StyleParser {
     }
     getExportCode() {
         let res = `module.exports=${JSON.stringify(this.parsedCode)};`;
-        this.extraModules.forEach(module => {
-            // windows 补丁
-            module = module.replace(/\\/g, '\\\\');
-            res = `import '${module}';\n` + res;
-        });
+        if (this.platform !== 'h5') {
+            this.extraModules.forEach(module => {
+                // windows 补丁
+                module = module.replace(/\\/g, '\\\\');
+                res = `import '${module}';\n` + res;
+            });
+        }
         return res;
     }
 }

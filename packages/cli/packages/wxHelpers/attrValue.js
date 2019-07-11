@@ -28,7 +28,6 @@ module.exports = function (astPath) {
         }
     });
 
-
     var attrValue = generate(expr).code;//没有this.
     
     switch (expr.type) {

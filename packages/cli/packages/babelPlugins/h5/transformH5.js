@@ -39,9 +39,14 @@ const componentsNameMap = {
 };
 
 const utils = require('../../utils/index');
+const fpath = require('path');
+let styleKey = '';
 
 module.exports = function ({ types: t }) {
     return {
+        pre(state) {
+            styleKey = utils.getStyleNamespace(fpath.dirname(state.opts.filename));
+        },
         visitor: {
             Program: {
                 exit(astPath, state) {
@@ -105,6 +110,9 @@ module.exports = function ({ types: t }) {
                                     name.node.name = 'onClick';
                                 }
                             }
+                        },
+                        JSXElement(astPath) {
+                            astPath.get('openingElement').node.attributes.push(t.jSXAttribute(t.jSXIdentifier(styleKey), null));
                         }
                     });
                 }
@@ -184,6 +192,35 @@ module.exports = function ({ types: t }) {
                             state.externalComponents = state.externalComponents || new Set();
                             state.externalComponents.add(externalComponentName);
                         }
+                    }
+                }
+            },
+            ClassProperty(astPath) {
+                if (astPath.get('key').isIdentifier({
+                    name: 'config'
+                }) && astPath.get('value').isObjectExpression()) {
+                    if (!astPath.node.static) astPath.node.static = true;
+                    astPath.traverse({
+                        ObjectProperty: property => {
+                            const { key } = property.node;
+                            let name;
+                            if (t.isIdentifier(key)) name = key.name;
+                            if (t.isStringLiteral(key)) name = key.value;
+                            if (name === 'webList') {
+                                property.get('key').replaceWith(
+                                    t.identifier('list')
+                                );
+                            }
+                        }
+                    });
+                }
+            },
+            CallExpression(astPath) {
+                let args = astPath.node.arguments;
+                if (utils.isLoopMap(astPath)) {
+                    //添加上第二参数
+                    if (!args[1] && args[0].type === 'FunctionExpression') {
+                        args.push(t.thisExpression());
                     }
                 }
             }

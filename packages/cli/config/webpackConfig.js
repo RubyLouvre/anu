@@ -41,7 +41,7 @@ module.exports = function({
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
     let distPath = path.resolve(cwd, utils.getDistName(platform));
     if (platform === 'h5') {
-        distPath = path.resolve(__dirname, '../packages/h5Helpers/pageWrapper', intermediateDirectoryName);
+        distPath = path.join(distPath, intermediateDirectoryName);
     }
     let copyPluginOption = null;
     if (compress) {
@@ -189,8 +189,7 @@ module.exports = function({
                 path.join(process.cwd(), 'node_modules')
             ]
         },
-        
-        externals: ['react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/]
+        externals: platform === 'h5' ? ['react','@react','react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/] : []
         // performance: {
         //     hints: 'warning',
         //     assetFilter(filename) {

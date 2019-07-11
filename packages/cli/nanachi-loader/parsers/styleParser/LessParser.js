@@ -5,11 +5,7 @@ const { MAP } = require('../../../consts/index');
 class LessParser extends StyleParser {
     constructor(props) {
         super(props);
-        this._postcssPlugins = [
-            require('stylelint')({
-                configFile: require.resolve(`../../../config/stylelint/.stylelint-${this.platform}.config.js`)
-            }),
-            require('../../../packages/postcssPlugins/postCssPluginReport'),
+        this._postcssPlugins = this._postcssPlugins.concat([
             require('postcss-import')({
                 resolve: function(importer, baseDir){
                     //如果@import的值没有文件后缀
@@ -28,13 +24,14 @@ class LessParser extends StyleParser {
                 extName: MAP[this.platform]['EXT_NAME'][this.type],
                 type: this.type,
             })] : [
-                require('../../../packages/postcssPlugins/postCssPluginRpxToRem')
+                require('../../../packages/postcssPlugins/postCssPluginRpxToRem'),
+                require('../../../packages/postcssPlugins/postCssPluginAddStyleHash')
             ],
             require('../../../packages/postcssPlugins/postCssPluginFixNumber'),
             require('../../../packages/postcssPlugins/postCssPluginValidateStyle'),
             require('../../../packages/postcssPlugins/postCssPluginTransformKeyFrames'),
             require('../../../packages/postcssPlugins/postCssPluginRemoveComments')
-        ];
+        ]);
         this._postcssOptions = {
             from: this.filepath,
             parser: require('postcss-less')

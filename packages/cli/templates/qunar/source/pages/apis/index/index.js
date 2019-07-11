@@ -268,7 +268,7 @@ class P extends React.Component {
             <text>文件下载</text>
           </div>
           <div
-            onClick={this.gotoSome.bind(this, '../../../pages/apis/request/index')}
+            onClick={this.gotoSome.bind(this, '/pages/apis/request/index')}
             class="anu-item"
           >
             <text>数据请求</text>
@@ -277,7 +277,7 @@ class P extends React.Component {
             <text>扫一扫</text>
           </div>
           <div
-            onClick={this.gotoSome.bind(this, '../../../pages/apis/storage/index')}
+            onClick={this.gotoSome.bind(this, '/pages/apis/storage/index')}
             class="anu-item"
           >
             <text>存储</text>
@@ -287,13 +287,13 @@ class P extends React.Component {
             <text>获取本地文件</text>
           </div>
           <div
-            onClick={this.gotoSome.bind(this, '../../../pages/apis/clipboard/index')}
+            onClick={this.gotoSome.bind(this, '/pages/apis/clipboard/index')}
             class="anu-item"
           >
             <text>剪切板</text>
           </div>
           <div
-            onClick={this.gotoSome.bind(this, '../../../pages/apis/canvas/index')}
+            onClick={this.gotoSome.bind(this, '/pages/apis/canvas/index')}
             class="anu-item"
           >
             <text>画板</text>
@@ -322,7 +322,7 @@ class P extends React.Component {
             <text>保存图标到桌面</text>
           </div>
           <div
-            onClick={this.gotoSome.bind(this, '../../../pages/apis/route/index')}
+            onClick={this.gotoSome.bind(this, '/pages/apis/route/index')}
             class="anu-item"
           >
             <text>路由</text>

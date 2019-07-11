@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-06-24
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-07-11
  */
 
 var arrayPush = Array.prototype.push;
@@ -2221,7 +2221,8 @@ var noPromiseApis = {
   createWorker: true,
   getPushProvider: true,
   getProvider: true,
-  canvasToTempFilePath: true
+  canvasToTempFilePath: true,
+  createModal: true
 };
 var otherApis = {
   uploadFile: true,

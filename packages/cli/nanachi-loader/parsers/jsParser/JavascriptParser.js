@@ -1,8 +1,15 @@
 const path = require('path');
 const fs = require('fs');
 const babel = require('@babel/core');
+const t = require('@babel/types');
 
-const removeAst = (ast) => { ast.remove(); }
+const removeAst = (ast) => { 
+    if (ast.node.type === 'JSXElement') {
+        ast.replaceWith(t.nullLiteral());
+    } else {
+        ast.remove(); 
+    }
+};
 
 class JavascriptParser {
     constructor({
@@ -36,7 +43,7 @@ class JavascriptParser {
             /\/components\//.test(this.filepath)                
         ) {
             this.componentType = 'Component';
-        } else if (/\/pages\//.test(this.filepath)) {
+        } else if (/\/pages\//.test(this.filepath) && !/\/common\//.test(this.filepath)) {
             this.componentType = 'Page';
         } else if (/app\.js$/.test(this.filepath)) {
             this.componentType = 'App';
@@ -52,6 +59,10 @@ class JavascriptParser {
     }
     getCodeForWebpack() {
         const res = babel.transformFromAstSync(this.ast, null, {
+            configFile: false,
+            babelrc: false,
+            comments: false,
+            ast: true,
             plugins: [
                 function() {
                     return {
