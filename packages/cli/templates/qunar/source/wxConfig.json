@@ -1,0 +1,35 @@
+{
+    "subpackages": [
+        {
+            "name": "native",
+            "resource": "pages/native"
+        },
+        {
+            "name": "syntax",
+            "resource": "pages/syntax"
+        },
+        {
+            "name": "apis",
+            "resource": "pages/apis"
+        }
+    ],
+    "preloadRule": {
+        "pages/platform/index/index": {
+            "network": "all",
+            "packages": [
+                "apis",
+                "native"
+            ]
+        },
+        "pages/native/index/index": {
+            "packages": [
+                "syntax"
+            ]
+        },
+        "pages/apis/index/index": {
+            "packages": [
+                "syntax"
+            ]
+        }
+    }
+}

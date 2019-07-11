@@ -1,7 +1,7 @@
 import { isFn, toLowerCase, get } from 'react-core/util';
 import { createRenderer } from 'react-core/createRenderer';
 import { render } from 'react-fiber/scheduleWork';
-import { updateMiniApp, _getApp, delayMounts, registeredComponents } from './utils';
+import { updateMiniApp, _getApp, delayMounts } from './utils';
 
 var onEvent = /(?:on|catch)[A-Z]/;
 
@@ -17,9 +17,6 @@ export let Renderer = createRenderer({
         let { props, lastProps } = fiber;
         let beaconId = props['data-beacon-uid'];
         let instance = fiber._owner; //clazz[instanceId];
-       // if (instance && !instance.classUid) {
-       //     instance = get(instance)._owner;
-       // }
         if (instance && beaconId) {
             var cached =
                 instance.$$eventCached || (instance.$$eventCached = {});
@@ -56,7 +53,7 @@ export let Renderer = createRenderer({
                 instance.instanceUid = uuid;
             }
             //只处理component目录下的组件
-           // let wxInstances = type.wxInstances;
+            // let wxInstances = type.wxInstances;
             if (type.isMPComponent) {
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
@@ -77,58 +74,20 @@ export let Renderer = createRenderer({
         updateMiniApp(fiber.stateNode);
     },
     createElement(fiber) {
-        return fiber.tag === 5
-            ? {
-                type: fiber.type,
-                props: fiber.props || {},
-                children: []
-            }
-            : {
-                type: fiber.type,
-                props: fiber.props
-            };
+        return fiber.tag === 5 ? {
+            type: fiber.type,
+            props: fiber.props || {},
+            children: []
+        } : {
+            type: fiber.type,
+            props: fiber.props
+        };
     },
     insertElement(fiber) {
-        let dom = fiber.stateNode,
-            parentNode = fiber.parent,
-            forwardFiber = fiber.forwardFiber,
-            before = forwardFiber ? forwardFiber.stateNode : null,
-            children = parentNode.children;
-
-        try {
-            if (before == null) {
-                //要插入最前面
-                if (dom !== children[0]) {
-                    remove(children, dom);
-                    dom.parentNode = parentNode;
-                    children.unshift(dom);
-                }
-            } else {
-                if (dom !== children[children.length - 1]) {
-                    remove(children, dom);
-                    dom.parentNode = parentNode;
-                    var i = children.indexOf(before);
-                    children.splice(i + 1, 0, dom);
-                }
-            }
-        } catch (e) {
-            throw e;
-        }
     },
     emptyElement(fiber) {
-        let dom = fiber.stateNode;
-        let children = dom && dom.children;
-        if (dom && Array.isArray(children)) {
-            children.forEach(Renderer.removeElement);
-        }
     },
     removeElement(fiber) {
-        if (fiber.parent) {
-            var parent = fiber.parent;
-            var node = fiber.stateNode;
-            node.parentNode = null;
-            remove(parent.children, node);
-        }
     }
 });
 

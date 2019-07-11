@@ -48,7 +48,7 @@ export function onReady() {
 export function onUnload() {
     for (let i in usingComponents) {
         let a = usingComponents[i];
-        if (a.reactInstances.length) {
+        if (a.reactInstances) {
             a.reactInstances.length = 0;
         }
         delete usingComponents[i];

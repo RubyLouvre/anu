@@ -1,19 +1,12 @@
 const postCss = require('postcss');
-const chalk = require('chalk');
-const config = require('../config');
+const config = require('../../config/config');
 const parser = require('postcss-selector-parser');
 const ignoreCss = require('../quickHelpers/ignoreCss');
+const logQueue = require('../../nanachi-loader/logger/queue');
 
 const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style', () => {
     return (root, result) => {
         const from = result.opts.from;
-        function warningLog(log) {
-            // eslint-disable-next-line
-            console.warn(
-                chalk.yellow(`Warning: ${log} `) + 
-                chalk.grey(`[${from}]`)
-            );
-        }
         
         function removeCss(declaration) {
             let value = declaration.value;
@@ -34,20 +27,20 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
             }
         }
         
-        function parseSelector(css) {
-            let result = [];
-            parser((selector) => {
-                if (selector.nodes && selector.nodes.length) {
-                    // 遍历选择器
-                    for (var i = 0, length = selector.nodes.length; i < length; i++) {
-                        result = result.concat(selector.nodes[i].toString().split(/\s+/));
-                    }
-                }
-            }).processSync(css, {
-                lossless: false
-            });
-            return result;
-        }
+        // function parseSelector(css) {
+        //     let result = [];
+        //     parser((selector) => {
+        //         if (selector.nodes && selector.nodes.length) {
+        //             // 遍历选择器
+        //             for (var i = 0, length = selector.nodes.length; i < length; i++) {
+        //                 result = result.concat(selector.nodes[i].toString().split(/\s+/));
+        //             }
+        //         }
+        //     }).processSync(css, {
+        //         lossless: false
+        //     });
+        //     return result;
+        // }
         
         function findInvalidateRule(css, { invalidatePseudos }) {
             const selectorReg = /^tag|class|id$/;
@@ -58,13 +51,21 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                     for (var i = 0, length = selector.nodes.length; i < length; i++) {
                         find = selector.nodes[i].nodes.some(node => {
                             if (node.type === 'pseudo' && node.value.match(new RegExp(invalidatePseudos.join('|')))) {
-                                warningLog(`快应用不支持${invalidatePseudos.join('、')}伪类选择器`);
+                                // logQueue.warning.push({
+                                //     id: from,
+                                //     level: 'warning',
+                                //     msg: `快应用不支持${invalidatePseudos.join('、')}伪类选择器`
+                                // });
                                 return true;
                             }
                             if (selectorReg.test(node.type)) {
                                 const next = node.next();
                                 if (next && selectorReg.test(next.type)) {
-                                    warningLog(`快应用不支持${selector.toString()}选择器`);
+                                    // logQueue.warning.push({
+                                    //     id: from,
+                                    //     level: 'warning',
+                                    //     msg: `快应用不支持${selector.toString()}选择器`
+                                    // });
                                     return true;
                                 }
                             }
@@ -94,15 +95,23 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
             });
         }
         
-        function validateMargin(decl) {
-            if (decl.value.indexOf('auto') !== -1) {
-                warningLog('在快应用中无法在 margin 中使用 auto 居中，请使用 flex 布局。');
-            }
-        }
+        // function validateMargin(decl) {
+        //     if (decl.value.indexOf('auto') !== -1) {
+        //         logQueue.warning.push({
+        //             id: from,
+        //             level: 'warning',
+        //             msg: `在快应用中无法在 margin 中使用 auto 居中，请使用 flex 布局。`
+        //         });
+        //     }
+        // }
         
         function splitBorder(decl) {
             if (decl.value === 'none') {
-                warningLog('快应用不支持border: none');
+                // logQueue.warning.push({
+                //     id: from,
+                //     level: 'warning',
+                //     msg: `快应用不支持border: none`
+                // });
                 decl.value = '0';
             }
             const properties = ['width', 'style', 'color'];
@@ -110,10 +119,11 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
             if (values) {
                 if (values.length > 3) {
                     // eslint-disable-next-line
-                    console.warn(
-                        chalk `{red ${decl.prop}} 参数个数错误, {red ${values}, }` +
-                        chalk ` 只保留前三个参数 ({cyan ${values.slice(0, 3)}})`
-                    );
+                    // logQueue.warning.push({
+                    //     id: from,
+                    //     level: 'warning',
+                    //     msg: `${decl.prop} 参数个数错误, ${values}, 只保留前三个参数 ${values.slice(0, 3)})`
+                    // });
                     values = values.slice(0, 3);
                 }
                 values.map((value, index) => {
@@ -139,9 +149,11 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 parent.each((node) => {
                     if (conflictRegex.test(node.prop)) {
                         // eslint-disable-next-line
-                        console.log(
-                            chalk `if {red ${declName}} is set, {red ${node.prop}} will be removed.`
-                        );
+                        // logQueue.warning.push({
+                        //     id: from,
+                        //     level: 'warning',
+                        //     msg: `if ${declName} is set, ${node.prop} will be removed.`
+                        // });
                         node.remove();
                     }
                 });
@@ -158,10 +170,11 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
             const values = decl.value.replace(/(,\s+)/g, ',').trim().split(/\s+/);
             let res = values;
             if (values.length > 4) {
-                // eslint-disable-next-line
-                console.warn(
-                    chalk `{red ${decl.prop}} 参数个数错误, {red ${values}, }`
-                );
+                // logQueue.warning.push({
+                //     id: from,
+                //     level: 'warning',
+                //     msg: `${decl.prop} 参数个数错误, ${values}`
+                // });
                 return;
             }
             switch (values.length) {
@@ -219,17 +232,21 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
             'border-style'(decl) {
                 const match = decl.value.match(/[a-z]+/gi);
                 if (match && match.length > 1) {
-                    // eslint-disable-next-line
-                    console.log(
-                        chalk `{red border-style} should only have one value, got {red ${decl.value}},` +
-                        chalk ` only keeps the first value ({cyan ${match[0]}})`
-                    );
+                    // logQueue.warning.push({
+                    //     id: from,
+                    //     level: 'warning',
+                    //     msg: `border-style should only have one value, got ${decl.value}, only keeps the first value ${match[0]}`
+                    // });
                     decl.value = match[0];
                 }
             },
             'border'(decl) {
                 if (decl.value === 'none') {
-                    warningLog('快应用不支持border: none');
+                    // logQueue.warning.push({
+                    //     id: from,
+                    //     level: 'warning',
+                    //     msg: '快应用不支持border: none'
+                    // });
                     decl.value = '0';
                 }
         
@@ -249,12 +266,22 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 transformBackground(decl);
             },
             'background-image'(decl) {
+                if (config.huawei) {
+                    // 华为url()中必须有引号，否则报错，此处兼容处理
+                    decl.value = decl.value.replace(/\(([^)]+)\)/, function(match, uri) {
+                        uri = uri.trim();
+                        if (!/^['"]/.test(uri)) {
+                            uri = `("${uri}")`
+                        }
+                        return uri;
+                    });
+                }
                 generateConflictDeclarations(
                     'background-image',
                     /(background|border)-color/i
                 )(decl);
             },
-            margin: validateMargin,
+            // margin: validateMargin,
             'border-left': splitBorder,
             'border-right': splitBorder,
             'border-bottom': splitBorder,
@@ -341,7 +368,11 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 decl.value = rpxToPx(decl.value);
                 // 快应用不支持!important
                 if (decl.important) { 
-                    warningLog('快应用不支持!important');
+                    // logQueue.warning.push({
+                    //     id: from,
+                    //     level: 'warning',
+                    //     msg: '快应用不支持!important'
+                    // });
                     decl.important = false;
                 }
             });
@@ -357,16 +388,19 @@ const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style
                 if (find) { rule.remove(); }
             });
         }
-        root.walkRules(rule => {
-            const selectors = parseSelector(rule.selector);
-            const patchComponents = config[config.buildType].patchComponents || [];
-            patchComponents.forEach(comp => {
-                if (selectors.indexOf(comp) !== -1) {
-                    warningLog(`补丁组件{red ${comp}}不支持标签选择器`);
-                }
-            });
-
-        });
+        // root.walkRules(rule => {
+        //     const selectors = parseSelector(rule.selector);
+        //     const patchComponents = config[config.buildType].patchComponents || [];
+        //     patchComponents.forEach(comp => {
+        //         if (selectors.indexOf(comp) !== -1) {
+        //             logQueue.warning.push({
+        //                 id: from,
+        //                 level: 'warning',
+        //                 msg: `补丁组件${comp}不支持标签选择器`
+        //             });
+        //         }
+        //     });
+        // });
     };
 });
 

@@ -1,0 +1,32 @@
+<import name="anu-page-wrapper" src="../../../../source/components/PageWrapper/index.ux">
+    </import>
+    <template>
+      <anu-page-wrapper>
+        <div>
+          <block for="(i90,item) in state.multiArr">
+            <div>
+              <block for="(i189,item2) in item.list">
+                <text>{{item2}}</text>
+              </block>
+            </div>
+          </block>
+        </div>
+      </anu-page-wrapper>
+    </template>
+    <script>
+      function P() {}
+
+      P = React.toClass(P, React.Components, {
+      render: function() {
+      var h = React.createElement;
+      return h("div", null, this.state.multiArr.map(function(item, i90) {
+      return h("div", null, item.list.map(function(item2, i189) {
+      return h("text", null, item2);
+      }, this));
+      }, this));;
+      },
+      classUid: "c369"
+      }, {});
+      P = React.registerPage(P, "pages/loop/base-2");
+      export default P;
+    </script>

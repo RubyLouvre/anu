@@ -4,6 +4,12 @@
     "nanachi_project": true,
     "name": "music",
     "dependencies": {
-        "regenerator-runtime": "^0.12.1"
+        "regenerator-runtime": "0.12.1"
+    },
+    "devDependencies": {
+        "eslint": "^5.16.0",
+        "eslint-plugin-nanachi": "latest",
+        "stylelint": "^10.0.1",
+        "stylelint-plugin-nanachi": "latest"
     }
 }

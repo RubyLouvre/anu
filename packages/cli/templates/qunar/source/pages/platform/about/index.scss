@@ -1,0 +1,90 @@
+.demo-page {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+}
+
+/* 应用图标 */
+.icon {
+    margin-top: 90rpx;
+    width: 134rpx;
+    height: 134rpx;
+    border-radius: 10rpx;
+    border: 1rpx solid #8d8d8d;
+}
+
+/* 应用名 */
+.name {
+    margin-top: 20rpx;
+    font-size: 36rpx;
+    color: #000000;
+}
+
+/* 应用标签 */
+.tags {
+    margin-top: 22rpx;
+    align-items: center;
+}
+
+.tag {
+    padding-left: 20rpx;
+    padding-right: 20rpx;
+    font-size: 28rpx;
+    color: #2a9700;
+}
+
+.gap {
+    font-size: 22rpx;
+    color: #b2b2b2;
+}
+
+/* 应用描述 */
+.desc {
+    width: 650rpx;
+    margin-top: 40rpx;
+    line-height: 35rpx;
+    font-size: 25rpx;
+    color: #8d8d8d;
+}
+
+/* 应用详情 */
+.detail {
+    width: 650rpx;
+    height: 90rpx;
+    border-bottom-width: 1rpx;
+    border-bottom-color: #f0f0f0;
+}
+
+.detail-first {
+    margin-top: 65rpx;
+    border-top-width: 1rpx;
+    border-top-color: #f0f0f0;
+}
+
+.detail-title {
+    width: 160rpx;
+    padding-left: 10rpx;
+    font-size: 25rpx;
+    color: #000000;
+}
+
+.detail-content {
+    font-size: 25rpx;
+    color: #8d8d8d;
+}
+
+/* 按钮 */
+.btn {
+    margin-top: 75rpx;
+}
+
+/* 底部版权信息 */
+.footer {
+    width: 750rpx;
+    position: fixed;
+    bottom: 55rpx;
+    font-size: 25rpx;
+    color: #8d8d8d;
+    text-align: center;
+}

@@ -33,16 +33,16 @@ export function dispatchEvent(e) {
             return;
         }
     }
-    if (app && app.onCollectLogs && beaconType.test(eventType)) {
-        app.onCollectLogs(dataset, eventType, fiber.stateNode);
-    }
     var safeTarget = {
         dataset: dataset,
         nodeName: target._nodeName || target.nodeName || target.type,
         value: e.value
     };
+    if (app && app.onCollectLogs && beaconType.test(eventType)) {
+        app.onCollectLogs(dataset, eventType, fiber.stateNode);
+    }
 
-    Renderer.batchedUpdates(function() {
+    Renderer.batchedUpdates(function () {
         try {
             var fn = instance.$$eventCached[eventUid];
             fn && fn.call(instance, createEvent(e, safeTarget, eventType));

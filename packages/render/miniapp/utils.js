@@ -35,11 +35,12 @@ export function getCurrentPage () {
     var app = _getApp();
     return app.$$page && app.$$page.reactInstance;
 }
-export function _getCurrentPages () {
+export function _getCurrentPages() {
     console.warn('getCurrentPages存在严重的平台差异性，不建议再使用'); // eslint-disable-line
-    if (isFn(getCurrentPages)) {
-       return getCurrentPages(); // eslint-disable-line
+    if (typeof getCurrentPages !== 'undefined') {
+        return getCurrentPages(); // eslint-disable-line
     }
+    return [];
 }
 
 // 用于保存所有用miniCreateClass创建的类，然后在事件系统中用到
@@ -100,17 +101,6 @@ export function runFunction (fn, a, b) {
     }
 }
 
-// 计算参数中有多少个函数
-function functionCount () {
-    var ret = 0;
-    for (var i = 0; i < arguments.length; i++) {
-        if (isFn(arguments[i])) {
-            ret++;
-        }
-    }
-    return ret;
-}
-
 export function runCallbacks ( cb, success, fail, complete ) {
     try {
         cb();
@@ -138,6 +128,19 @@ export function useComponent(props) {
     return createElement(clazz, props);
 }
 
+export function handleSuccess(options, success, complete, resolve) {
+    success(options);
+    complete(options);
+    resolve(options);
+}
+  
+export function handleFail(options, fail, complete, reject) {
+    fail(options);
+    complete(options);
+    reject(options);
+}
+  
+
 function safeClone (originVal) {
     let temp = originVal instanceof Array ? [] : {};
     for (let item in originVal) {
@@ -155,3 +158,4 @@ function safeClone (originVal) {
     }
     return temp;
 }
+

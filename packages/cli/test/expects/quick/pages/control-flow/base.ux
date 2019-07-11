@@ -1,0 +1,35 @@
+<import name="anu-page-wrapper" src="../../../../source/components/PageWrapper/index.ux">
+    </import>
+    <template>
+      <anu-page-wrapper>
+
+        <block if="{{state.tasks !== null}}">
+          <div class="page-body">
+            <text>tasks</text>
+          </div>
+        </block>
+        <block elif="true">
+          <div class="page-body">
+            <text>Hello world!</text>
+          </div>
+        </block>
+
+      </anu-page-wrapper>
+    </template>
+    <script>
+      function P() {}
+
+      P = React.toClass(P, React.Components, {
+      render: function() {
+      var h = React.createElement;
+      return this.state.tasks !== null ? h("div", {
+      class: "page-body"
+      }, "tasks") : h("div", {
+      class: "page-body"
+      }, h("text", null, "Hello world!"));;
+      },
+      classUid: "c259"
+      }, {});
+      P = React.registerPage(P, "pages/control-flow/base");
+      export default P;
+    </script>

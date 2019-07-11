@@ -1,0 +1,13 @@
+<view>
+        <block a:if="{{state.show}}">
+          <block a:if="{{state.isOk}}">
+            <view>hello word</view>
+          </block>
+          <block a:elif="true">
+            <view>hello</view>
+          </block>
+        </block>
+        <block a:elif="true">
+          <view>nanachi</view>
+        </block>
+      </view>

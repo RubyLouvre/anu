@@ -1,6 +1,6 @@
 const postCss = require('postcss');
 
-const postcssPluginRemoveComments = postCss.plugin('postcss-plugin-remove-comments', function() {
+const postCssPluginRemoveComments = postCss.plugin('postcss-plugin-remove-comments', function() {
     return function(root) {
         root.walkComments(function(node) {
             node.remove();
@@ -8,4 +8,4 @@ const postcssPluginRemoveComments = postCss.plugin('postcss-plugin-remove-commen
     };
 });
 
-module.exports = postcssPluginRemoveComments;
+module.exports = postCssPluginRemoveComments;

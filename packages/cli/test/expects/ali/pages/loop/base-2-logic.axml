@@ -1,0 +1,14 @@
+<view>
+          <block a:for="{{state.multiArr}}" a:for-item="item" a:for-index="i90" a:key="*this">
+            <view>
+              <block a:for="{{item.list}}" a:for-item="item2" a:for-index="i189" a:key="*this">
+                <block a:if="{{state.isOk}}">
+                  <text>{{item2}}</text>
+                </block>
+                <block a:elif="true">
+                  <view>noOk</view>
+                </block>
+              </block>
+            </view>
+          </block>
+        </view>

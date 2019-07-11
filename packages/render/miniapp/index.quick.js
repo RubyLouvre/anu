@@ -19,22 +19,20 @@ import { registerAPIsQuick } from './registerAPIs';
 import { Renderer } from './render.all';
 
 import { toStyle } from './toStyle.quick';
-import {
-    _getApp,
-    getCurrentPage,
-    _getCurrentPages,
-    useComponent
-} from './utils';
+import { 
+    _getApp , 
+    getCurrentPage, 
+    useComponent } from './utils';
+import {getCurrentPages} from './getCurrentPages.quick';
 import { registerComponent } from './registerComponent.quick';
 import { registerPage } from './registerPage.quick';
-import {
+import { 
     useState,
-    useReducer,
+    useReducer, 
     useCallback,
     useMemo,
-    useEffect,
-    useContext
-} from 'react-core/hooks';
+    useEffect, 
+    useContext } from 'react-core/hooks';
 
 let appMethods = {
     onLaunch: 'onCreate',
@@ -56,47 +54,55 @@ let React = getWindow().React = {
 
     Fragment,
     PropTypes,
-    // Children,
+   // Children,
     Component,
-    // createPortal,
+   // createPortal,
     createElement,
     createFactory,
-    // cloneElement,
+   // cloneElement,
     PureComponent,
     isValidElement,
     createContext,
     toClass: miniCreateClass,
     registerComponent,
     getCurrentPage,
-    getCurrentPages: _getCurrentPages,
+    getCurrentPages: getCurrentPages,
     getApp: _getApp,
     registerPage,
     toStyle,
     useState,
-    useReducer,
+    useReducer, 
     useCallback,
     useMemo,
-    useEffect,
+    useEffect, 
     useContext,
     useComponent,
     appType: 'quick',
-    registerApp(demo) {
+    registerApp(demo){
         var app = {};
-        for (let name in demo) {
+        for (let name in demo){
             let value = demo[name];
             name = appMethods[name] || name;
             app[name] = value;
         }
-        delete app.constructor; //有这属性会报错
+        for (let name in demo.constructor){
+            let value = demo.constructor[name];
+            if( !app[name]){
+                app[name] = value;
+            }else{
+                throw 'app.js已经存在同名的静态属性与实例属性 '+name+' !'
+            }
+        }
+        delete app.constructor;//有这属性会报错
         return app;
-    }
+    }   
 };
 
-if (typeof global !== 'undefined') {
+if (typeof global !== 'undefined'){
     var ref = Object.getPrototypeOf(global) || global;
     ref.ReactQuick = React;
 }
-registerAPIsQuick(React, facade, more);
+registerAPIsQuick(React, facade, more); 
 
 export default React;
 export { Children, createElement, Component };

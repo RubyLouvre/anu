@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-05-09
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-07-09
  * IE9+
  */
 
@@ -801,11 +801,7 @@ function promisefyApis(ReactWX, facade, more) {
                         obj[k] = function (res) {
                             options[k] && options[k](res);
                             if (k === 'success') {
-                                if (key === 'connectSocket') {
-                                    resolve(task);
-                                } else {
-                                    resolve(res);
-                                }
+                                resolve(key === 'connectSocket' ? task : res);
                             } else if (k === 'fail') {
                                 reject(res);
                             }
@@ -866,8 +862,10 @@ function registerAPIs(ReactWX, facade, override) {
     ReactWX.api.pxTransform = ReactWX.pxTransform = pxTransform.bind(ReactWX);
 }
 function registerAPIsQuick(ReactWX, facade, override) {
-    ReactWX.api = {};
-    promisefyApis(ReactWX, facade, override(facade));
+    if (!ReactWX.api) {
+        ReactWX.api = {};
+        promisefyApis(ReactWX, facade, override(facade));
+    }
 }
 
 var RequestQueue = {
@@ -947,9 +945,10 @@ function getCurrentPage() {
 }
 function _getCurrentPages() {
     console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-    if (isFn(getCurrentPages)) {
+    if (typeof getCurrentPages !== 'undefined') {
         return getCurrentPages();
     }
+    return [];
 }
 function updateMiniApp(instance) {
     if (!instance || !instance.wx) {
@@ -1133,7 +1132,6 @@ function createInstance(fiber, context) {
             Renderer.currentOwner = instance;
             extend(instance, {
                 __isStateless: true,
-                __init: true,
                 renderImpl: type,
                 render: function f() {
                     return this.renderImpl(this.props, this.context);
@@ -2441,53 +2439,10 @@ var Renderer$1 = createRenderer({
             props: fiber.props
         };
     },
-    insertElement: function insertElement(fiber) {
-        var dom = fiber.stateNode,
-            parentNode = fiber.parent,
-            forwardFiber = fiber.forwardFiber,
-            before = forwardFiber ? forwardFiber.stateNode : null,
-            children = parentNode.children;
-        try {
-            if (before == null) {
-                if (dom !== children[0]) {
-                    remove(children, dom);
-                    dom.parentNode = parentNode;
-                    children.unshift(dom);
-                }
-            } else {
-                if (dom !== children[children.length - 1]) {
-                    remove(children, dom);
-                    dom.parentNode = parentNode;
-                    var i = children.indexOf(before);
-                    children.splice(i + 1, 0, dom);
-                }
-            }
-        } catch (e) {
-            throw e;
-        }
-    },
-    emptyElement: function emptyElement(fiber) {
-        var dom = fiber.stateNode;
-        var children = dom && dom.children;
-        if (dom && Array.isArray(children)) {
-            children.forEach(Renderer$1.removeElement);
-        }
-    },
-    removeElement: function removeElement(fiber) {
-        if (fiber.parent) {
-            var parent = fiber.parent;
-            var node = fiber.stateNode;
-            node.parentNode = null;
-            remove(parent.children, node);
-        }
-    }
+    insertElement: function insertElement(fiber) {},
+    emptyElement: function emptyElement(fiber) {},
+    removeElement: function removeElement(fiber) {}
 });
-function remove(children, node) {
-    var index = children.indexOf(node);
-    if (index !== -1) {
-        children.splice(index, 1);
-    }
-}
 
 var rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
@@ -2555,7 +2510,7 @@ function onReady() {
 function onUnload() {
     for (var i in usingComponents) {
         var a = usingComponents[i];
-        if (a.reactInstances.length) {
+        if (a.reactInstances) {
             a.reactInstances.length = 0;
         }
         delete usingComponents[i];
@@ -2577,8 +2532,23 @@ function onUnload() {
     callGlobalHook('onGlobalUnload');
 }
 
-var globalHooks = {
-    onShare: 'onGlobalShare',
+function registerPageHook(appHooks, pageHook, app, instance, args) {
+    for (var i = 0; i < 2; i++) {
+        var method = i ? appHooks[pageHook] : pageHook;
+        var host = i ? app : instance;
+        if (host && host[method] && isFn(host[method])) {
+            var ret = host[method](args);
+            if (ret !== void 0) {
+                if (ret && ret.then && ret['catch']) {
+                    continue;
+                }
+                return ret;
+            }
+        }
+    }
+}
+
+var appHooks = {
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
@@ -2593,35 +2563,30 @@ function registerPage(PageClass, path, testObject) {
         onReady: onReady,
         onUnload: onUnload
     };
-    Array('onPageScroll', 'onShareAppMessage', 'onReachBottom', 'onPullDownRefresh', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
+    Array('onShareAppMessage', 'onPageScroll', 'onReachBottom', 'onPullDownRefresh', 'onTabItemTap', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
         config[hook] = function (e) {
             var instance = this.reactInstance,
-                fn = instance[hook],
+                pageHook = hook,
+                app = _getApp(),
                 param = e;
-            if (hook === 'onShareAppMessage') {
-                hook = 'onShare';
-                fn = fn || instance[hook];
-            } else if (hook === 'onShow') {
+            if (pageHook === 'onShareAppMessage') {
+                if (!instance.onShare) {
+                    instance.onShare = instance[pageHook];
+                }
+                var shareObject = instance.onShare && instance.onShare(param);
+                if (!shareObject) {
+                    shareObject = app.onGlobalShare && app.onGlobalShare(param);
+                }
+                return shareObject;
+            } else if (pageHook === 'onShow') {
                 if (this.options) {
                     instance.props.query = this.options;
                 }
                 param = instance.props.query;
-                _getApp().$$page = this;
-                _getApp().$$pagePath = instance.props.path;
+                app.$$page = this;
+                app.$$pagePath = instance.props.path;
             }
-            if (isFn(fn)) {
-                var ret = fn.call(instance, param);
-                if (hook === 'onShare') {
-                    return ret;
-                }
-            }
-            var globalHook = globalHooks[hook];
-            if (globalHook) {
-                ret = callGlobalHook(globalHook, param);
-                if (hook === 'onShare') {
-                    return ret;
-                }
-            }
+            return registerPageHook(appHooks, pageHook, app, instance, param);
         };
     });
     if (testObject) {
@@ -2638,20 +2603,21 @@ var defer = Promise.resolve().then.bind(Promise.resolve());
 function registerComponent(type, name) {
     type.isMPComponent = true;
     registeredComponents[name] = type;
-    var reactInstances = type.reactInstances = [];
+    type.reactInstances = [];
     var config = {
         data: {
             props: {},
             state: {},
             context: {}
         },
+        options: type.options,
         lifetimes: {
             attached: function attached() {
                 var wx = this;
                 defer(function () {
                     usingComponents[name] = type;
                     var uuid = wx.dataset.instanceUid || null;
-                    refreshComponent(reactInstances, wx, uuid);
+                    refreshComponent(type.reactInstances, wx, uuid);
                 });
             },
             detached: detachComponent,

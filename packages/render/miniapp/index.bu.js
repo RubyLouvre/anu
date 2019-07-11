@@ -16,26 +16,24 @@ import { dispatchEvent, webview } from './eventSystem';
 import { Renderer } from './render.all';
 
 import { toStyle } from './toStyle';
-import {
-    _getApp,
-    getCurrentPage,
-    _getCurrentPages,
-    useComponent
-} from './utils';
+import { 
+    _getApp , 
+    getCurrentPage, 
+    _getCurrentPages, 
+    useComponent } from './utils';
 //小程序的API注入
 import { registerAPIs } from './registerAPIs';
 import { more } from './apiForBaidu/index';
 
 import { registerComponent } from './registerComponent.bu';
 import { registerPage } from './registerPage.wx';
-import {
+import { 
     useState,
-    useReducer,
+    useReducer, 
     useCallback,
     useMemo,
-    useEffect,
-    useContext
-} from 'react-core/hooks';
+    useEffect, 
+    useContext } from 'react-core/hooks';
 
 let { render } = Renderer;
 
@@ -57,16 +55,16 @@ let React = (getWindow().React = {
     PropTypes,
     // Children,
     Component,
-    // createPortal,
+   // createPortal,
     createContext,
     createElement,
     createFactory,
-    // cloneElement,
+   // cloneElement,
     PureComponent,
     isValidElement,
 
     toClass: miniCreateClass,
-
+    
     registerComponent,
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
@@ -74,10 +72,10 @@ let React = (getWindow().React = {
     registerPage,
     toStyle,
     useState,
-    useReducer,
+    useReducer, 
     useCallback,
     useMemo,
-    useEffect,
+    useEffect, 
     useContext,
     useComponent,
     appType: 'bu'
