@@ -1,6 +1,5 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+// const CleanWebpackPlugin = require('clean-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 const R = require('ramda');
@@ -11,11 +10,23 @@ const {
     retrieveNanachiConfig
 } = require('./configurations');
 
+const fs = require('fs-extra');
+
 const context = path.resolve(process.cwd(), 'dist');
 const h5helperPath = path.resolve(__dirname, '../../packages/h5Helpers');
 const resolveFromContext = R.curryN(2, path.resolve)(context);
 const resolveFromDirCwd = R.curryN(2, path.resolve)(process.cwd());
 const resolveFromH5Helper = R.curryN(2, path.resolve)(h5helperPath);
+let templatePath = resolveFromH5Helper('./index.html');
+
+try {
+    const userTemplatePath = resolveFromDirCwd('./index.html');
+    fs.statSync(userTemplatePath);
+    templatePath = userTemplatePath;
+} catch (e) {
+    // 用户根目录不存在模板html文件则用默认模板
+}
+
 module.exports = {
     mode: 'development',
     context,
@@ -49,7 +60,6 @@ module.exports = {
                 test: /\.s[ac]ss$/,
                 use: [
                     require.resolve('style-loader'),
-                    // MiniCssExtractPlugin.loader,
                     require.resolve('css-loader'),
                     {
                         loader: require.resolve('postcss-sass-loader'),
@@ -63,7 +73,6 @@ module.exports = {
                 test: /\.(le|c)ss$/,
                 use: [
                     require.resolve('style-loader'),
-                    // MiniCssExtractPlugin.loader,
                     require.resolve('css-loader'),
                     {
                         loader: require.resolve('postcss-less-loader'),
@@ -86,12 +95,8 @@ module.exports = {
     devtool: 'cheap-source-map',
     plugins: [
         new HtmlWebpackPlugin({
-            template: resolveFromH5Helper('./index.html')
+            template: templatePath
         }),
-        // new MiniCssExtractPlugin({
-        //     filename: '[name].[hash:10].css',
-        //     chunkFilename: '[id].[hash:10].css'
-        // }),
         new webpack.EnvironmentPlugin({
             ANU_ENV: 'web',
             ...process.env

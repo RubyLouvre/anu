@@ -6,6 +6,8 @@ import pageConfigMap from '@pageConfig';
 
 import { deepMerge } from '../../share/index';
 
+import './index.scss';
+
 class PageWrapper extends React.Component{
     constructor(props){
         super(props);
