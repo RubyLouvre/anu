@@ -1,11 +1,20 @@
 /**
- * This configuration file is reserved for building ES2015+ bundle.
- * The environment to run this bundle should support
- * features defined in ES2015+ like Promise, async/await, Symbol etc.
+ * This configuration is designed for legacy environment
+ * which has full support of ES5.
  */
 const developmentConfig = require('./webpack.config');
 const merge = require('webpack-merge');
 
 module.exports = merge(developmentConfig, {
-    mode: 'development'
+    mode: 'production',
+    devtool: ['prod', 'rc'].includes(process.env.NODE_ENV) ? '' : 'cheap-source-map',
+    optimization: {
+        noEmitOnErrors: true,
+        splitChunks: {
+            chunks: 'async'
+        }
+    },
+    performance: {
+        hints: false
+    }
 });

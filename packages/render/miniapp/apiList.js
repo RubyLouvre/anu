@@ -80,7 +80,9 @@ export var noPromiseApis = {
     getProvider: true,
 
     // 特殊功能API
-    canvasToTempFilePath: true
+    canvasToTempFilePath: true,
+    // h5 蒙层api
+    createModal: true
 };
 export var otherApis = {
     // 网络

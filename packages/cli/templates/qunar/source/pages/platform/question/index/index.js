@@ -43,7 +43,7 @@ class P extends React.Component {
         });
     }
     questionDetail() {
-        React.api.navigateTo({ url: '/pages/demo/question/detail/index' });
+        React.api.navigateTo({ url: '/pages/platform/question/detail/index' });
     }
     componentDidMount() {
         this.getData();
@@ -62,7 +62,7 @@ class P extends React.Component {
   };
   toCitySelect() {
       this.navItemClick(2);
-      React.api.navigateTo({ url: '/pages/demo/citySelect/index' });
+      React.api.navigateTo({ url: '/pages/platform/citySelect/index' });
   }
   render() {
       return (

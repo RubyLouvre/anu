@@ -1,6 +1,5 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+// const CleanWebpackPlugin = require('clean-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 const R = require('ramda');
@@ -11,50 +10,59 @@ const {
     retrieveNanachiConfig
 } = require('./configurations');
 
-const context = path.resolve(__dirname, '../../packages/h5Helpers/pageWrapper');
+const fs = require('fs-extra');
+
+const context = path.resolve(process.cwd(), 'dist');
+const h5helperPath = path.resolve(__dirname, '../../packages/h5Helpers');
 const resolveFromContext = R.curryN(2, path.resolve)(context);
 const resolveFromDirCwd = R.curryN(2, path.resolve)(process.cwd());
+const resolveFromH5Helper = R.curryN(2, path.resolve)(h5helperPath);
+let templatePath = resolveFromH5Helper('./index.html');
+
+try {
+    const userTemplatePath = resolveFromDirCwd('./index.html');
+    fs.statSync(userTemplatePath);
+    templatePath = userTemplatePath;
+} catch (e) {
+    // 用户根目录不存在模板html文件则用默认模板
+}
 
 module.exports = {
     mode: 'development',
     context,
     target: 'web',
-    entry: resolveFromContext('src/index.js'),
+    entry: resolveFromContext(`${intermediateDirectoryName}/app.js`),
     output: {
         path: resolveFromDirCwd(outputDirectory),
         filename: 'bundle.[hash:10].js',
-        publicPath: '/'
+        publicPath: '/web/'
     },
     resolve: {
         alias: {
             ...retrieveNanachiConfig(),
-            react: path.resolve(__dirname, '../../lib/ReactH5.js'),
-            '@react': path.resolve(__dirname, '../../lib/ReactH5.js'),
-            'react-dom': path.resolve(__dirname, '../../lib/ReactH5.js'),
+            react: resolveFromDirCwd('./source/ReactH5.js'),
+            '@react': resolveFromDirCwd('./source/ReactH5.js'),
+            'react-dom': resolveFromDirCwd('./source/ReactH5.js'),
             'schnee-ui': resolveFromContext(`${intermediateDirectoryName}/npm/schnee-ui`),
-            '@shared': resolveFromContext('./src/shared'),
-            '@internalComponents': resolveFromContext('src/views/InternalComponents'),
+            '@internalComponents': resolveFromH5Helper('components'),
+            '@internalConsts': path.resolve(__dirname, '../../consts/'),
             '@components': resolveFromContext(
                 `${intermediateDirectoryName}/components`
             ),
-            '@app': resolveFromContext(`${intermediateDirectoryName}/app.js`),
-            '@qunar-default-loading': resolveFromContext('src/views/Loading'),
-            '@dynamic-page-loader': resolveFromContext(
-                'src/views/Page/DynamicPageLoader.js'
-            )
+            '@pageConfig': resolveFromContext(`${intermediateDirectoryName}/pageConfig.js`),
+            '@qunar-default-loading': resolveFromH5Helper('components/Loading'),
         },
-        modules: ['node_modules', resolveFromDirCwd('node_modules')]
+        modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')]
     },
     module: {
         rules: [
             {
-                test: /\.s?[ac]ss$/,
+                test: /\.s[ac]ss$/,
                 use: [
-                    'style-loader',
-                    MiniCssExtractPlugin.loader,
-                    'css-loader',
+                    require.resolve('style-loader'),
+                    require.resolve('css-loader'),
                     {
-                        loader: 'postcss-sass-loader',
+                        loader: require.resolve('postcss-sass-loader'),
                         options: {
                             plugin: []
                         }
@@ -62,13 +70,12 @@ module.exports = {
                 ]
             },
             {
-                test: /\.less$/,
+                test: /\.(le|c)ss$/,
                 use: [
-                    'style-loader',
-                    MiniCssExtractPlugin.loader,
-                    'css-loader',
+                    require.resolve('style-loader'),
+                    require.resolve('css-loader'),
                     {
-                        loader: 'postcss-less-loader',
+                        loader: require.resolve('postcss-less-loader'),
                         options: {
                             plugin: []
                         }
@@ -77,7 +84,7 @@ module.exports = {
             },
             {
                 test: /\.(jpg|png|gif)$/,
-                loader: 'file-loader',
+                loader: require.resolve('file-loader'),
                 options: {
                     outputPath: 'assets',
                     name: '[name].[hash:10].[ext]'
@@ -88,16 +95,13 @@ module.exports = {
     devtool: 'cheap-source-map',
     plugins: [
         new HtmlWebpackPlugin({
-            template: resolveFromContext('./src/index.html')
-        }),
-        new MiniCssExtractPlugin({
-            filename: '[name].[hash:10].css',
-            chunkFilename: '[id].[hash:10].css'
+            template: templatePath
         }),
         new webpack.EnvironmentPlugin({
-            ANU_ENV: 'web'
+            ANU_ENV: 'web',
+            ...process.env
         }),
-        new CleanWebpackPlugin()
+        // new CleanWebpackPlugin()
     ],
     stats: 'errors-only'
 };

@@ -147,7 +147,7 @@ function getReactLibFile(ReactLibName) {
 
 //copy project.config.json
 function getProjectConfigFile(buildType) {
-    if (buildType === 'quick') return [];
+    if (buildType === 'quick' || buildType === 'h5') return [];
     let fileName = 'project.config.json';
     let src = '';
     fs.existsSync(path.join(cwd, fileName))

@@ -56,7 +56,7 @@ function getWebViewRules() {
 }
 
 function injectBuildEnv({ buildType, compress, huawei } = {}) {
-    process.env.ANU_ENV = buildType;
+    process.env.ANU_ENV = (buildType === 'h5' ? 'web' : buildType);
     globalConfig['buildType'] = buildType;
     globalConfig['compress'] = compress;
     if (buildType === 'quick') {
@@ -135,12 +135,37 @@ async function nanachi({
         }
 
         if (platform === 'h5') {
-            const webpackH5Config = require('./config/h5/webpack.config.js');
+            const configPath = watch ? './config/h5/webpack.config.js' : './config/h5/webpack.config.prod.js';
+            const webpackH5Config = require(configPath);
             const compilerH5 = webpack(webpackH5Config);
             if (watch) {
                 createH5Server(compilerH5);
             } else {
-                compilerH5.run();
+                compilerH5.run(function(err, stats) {
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    const info = stats.toJson();
+                    if (stats.hasErrors()) {
+                        info.errors.forEach(e => {
+                            // eslint-disable-next-line
+                            console.error(chalk.red('Error:\n'), utils.cleanLog(e));
+                            if (utils.isMportalEnv()) {
+                                process.exit();
+                            }
+                        });
+                    }
+                    if (stats.hasWarnings() && !silent) {
+                        info.warnings.forEach(warning => {
+                            // webpack require语句中包含变量会报warning: Critical dependency，此处过滤掉这个warning
+                            if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
+                                // eslint-disable-next-line
+                                console.log(chalk.yellow('Warning:\n'), utils.cleanLog(warning));
+                            }
+                        });
+                    }
+                });
             }
         }
 
@@ -150,10 +175,10 @@ async function nanachi({
         if (!utils.validatePlatform(platform, platforms)) {
             throw new Error(`不支持的platform：${platform}`);
         }
-        if (platform === 'h5') {
-            require(`mini-html5/runkit/${watch ? 'run' : 'build'}`);
-            return;
-        }
+        // if (platform === 'h5') {
+        //     require(`mini-html5/runkit/${watch ? 'run' : 'build'}`);
+        //     return;
+        // }
 
         injectBuildEnv({
             buildType: platform,

@@ -1,9 +1,11 @@
 const JavascriptParserFactory = require('../parsers/jsParser/JavascriptParserFactory');
 const utils = require('../../packages/utils/index');
+const path = require('path');
 
 module.exports = async function(code, map, meta) {
     const callback = this.async();
-    
+    // 增加config.json文件依赖
+    // this.addDependency(path.resolve(`./source/${this.nanachiOptions.platform}Config.json`));
     try {
         const parser = JavascriptParserFactory.create({
             platform: this.nanachiOptions.platform,

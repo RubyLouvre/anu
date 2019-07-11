@@ -8,7 +8,7 @@ module.exports = merge(developmentConfig, {
         rules: [
             {
                 test: /\.jsx?$/,
-                loader: 'babel-loader',
+                loader: require.resolve('babel-loader'),
                 options: {
                     exclude: [/node_modules/],
                     cacheDirectory: true,
