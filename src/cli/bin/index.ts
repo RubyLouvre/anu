@@ -1,0 +1,67 @@
+#!/usr/bin/env node
+import { version } from '../package.json';
+import platforms from '../ts-consts/platforms';
+import BUILD_OPTIONS from '../ts-consts/buildOptions';
+import CliBuilder from './builder';
+
+const cli: CliBuilder = new CliBuilder();
+cli.checkNodeVersion('8.6.0');
+
+cli.version = version;
+
+cli.addCommand('init <app-name>', null, 'description: 初始化项目', {}, (appName: any)=>{
+    require('../commands/init')(appName);
+});
+
+cli.addCommand(
+    'install [name]',
+    null,
+    'description: 安装拆库模块. 文档: https://rubylouvre.github.io/nanachi/documents/chaika.html',
+    {
+        'branch': {
+            desc: '指定分支',
+            alias: 'b'
+        }
+    },
+    function(name, opts){
+        require('../commands/install')(name, opts);
+    }
+);
+
+['page', 'component'].forEach(type => {
+    cli.addCommand(
+        `${type} <page-name>`,
+        null,
+        `description: 创建${type}s/<${type}-name>/index.js模版`,
+        {}, 
+        (name)=>{
+            require('../commands/createPage')( {name, isPage: type === 'page'} );
+        });
+});
+
+platforms.forEach(function(el){
+    const { buildType, des, isDefault } = el;
+    ['build', 'watch'].forEach(function (compileType) {
+        cli.addCommand(
+            `${compileType}:${buildType}`, 
+            isDefault ? compileType : null,
+            des, 
+            BUILD_OPTIONS,
+            (options) => {
+                const args: {
+                    [propName: string]: any
+                } = {};
+                Object.keys(options).forEach(key => {
+                    args[key] = options.key;
+                });
+                require('../commands/build')({
+                    ...args,
+                    watch: compileType === 'watch',
+                    buildType
+                });
+            }
+        );
+    });
+});
+
+cli.run();
