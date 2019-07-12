@@ -1,7 +1,16 @@
+"use strict";
 /*!
 输出命令行提示与选择模板
 */
-/* eslint-disable */
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 const validateProjectName = require('validate-npm-package-name');
 const chalk = require('chalk');
 const fs = require('fs-extra');
@@ -9,17 +18,15 @@ const path = require('path');
 const cwd = process.cwd();
 const inquirer = require('inquirer');
 const templates = require('../consts/templates');
-
-function checkAppName(appName){
+function checkAppName(appName) {
     let appPath = path.join(cwd, appName);
-    let {validForNewPackages, warnings} = validateProjectName( path.parse(appName).base );
+    let { validForNewPackages, warnings } = validateProjectName(path.parse(appName).base);
     if (!validForNewPackages) {
         console.log(chalk.red('Error: 项目名称不能包含大写字母'));
         process.exit(1);
     }
     return appPath;
 }
-
 const askTemplate = () => {
     return inquirer.prompt({
         type: 'list',
@@ -28,27 +35,19 @@ const askTemplate = () => {
         choices: templates
     });
 };
-
-function copyTemplate(data){
-    let { appTplName, appPath} = data;
-    let tplSrc = path.join( __dirname, '..', 'templates',  appTplName);
+function copyTemplate(data) {
+    let { appTplName, appPath } = data;
+    let tplSrc = path.join(__dirname, '..', 'templates', appTplName);
     let appName = path.basename(appPath);
     if (fs.existsSync(appPath)) {
         console.log(chalk.red(`目录 ${appName} 已存在\n`));
         process.exit(1);
     }
-
     fs.ensureDirSync(appPath);
     fs.copySync(tplSrc, appPath);
 }
-
 function outputLog({ appName, appPath }) {
-    console.log(
-        `\n项目 ${chalk.green(appName)} 创建成功, 路径: ${chalk.green(
-            appPath
-        )}\n`
-    );
-
+    console.log(`\n项目 ${chalk.green(appName)} 创建成功, 路径: ${chalk.green(appPath)}\n`);
     console.log(chalk.green('nanachi watch'));
     console.log(`  实时构建项目, 
                    \t或使用nanachi watch:ali 构建支付宝小程序
@@ -69,23 +68,19 @@ function outputLog({ appName, appPath }) {
                    \t或使用nanachi build:qq 构建QQ小程序
                    \t或使用nanachi build:h5 构建h5`);
     console.log();
-    console.log(
-        chalk.magenta(
-            '请敲入下面两行命令，享受您的开发之旅' +
-                chalk.magenta.bold('(npm i可改成yarn)')
-        )
-    );
+    console.log(chalk.magenta('请敲入下面两行命令，享受您的开发之旅' +
+        chalk.magenta.bold('(npm i可改成yarn)')));
     console.log();
-    console.log(`  cd ${ path.relative(cwd, appPath) } && npm i `);
+    console.log(`  cd ${path.relative(cwd, appPath)} && npm i `);
     console.log('  nanachi watch');
     console.log();
 }
-
-async function init(appName){
-    const appPath = checkAppName(appName);
-    const { appTplName } = await askTemplate();
-    copyTemplate({ appPath, appTplName});
-    outputLog({ appName, appPath });
+function init(appName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const appPath = checkAppName(appName);
+        const { appTplName } = yield askTemplate();
+        copyTemplate({ appPath, appTplName });
+        outputLog({ appName, appPath });
+    });
 }
-
-module.exports = init;
+exports.default = init;

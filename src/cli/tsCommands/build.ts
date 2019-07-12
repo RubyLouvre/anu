@@ -1,11 +1,17 @@
 
-const { NANACHI_CONFIG_PATH } = require('../consts/index');
-const fs = require('fs-extra');
+import { NANACHI_CONFIG_PATH } from '../ts-consts/index';
+import * as fs from 'fs-extra';
 const { deepMerge } = require('../packages/utils/index');
 
-module.exports = async function(args){
+interface BulidOptions {
+    watch: boolean;
+    buildType: string;
+    [props: string]: any;
+}
+
+export default async function(args: BulidOptions){
     try {
-        const { buildType, beta, betaUi, watch, compress, huawei,  analysis, silent} = args;
+        const { buildType, beta, betaUi, watch, compress, huawei, analysis, silent} = args;
         const nanachiConfig = {};
         const baseConfig = {
             platform: buildType,

@@ -15,7 +15,7 @@ interface CliBuilderInterface {
     checkNodeVersion(version: string): void;
 }
 
-export default class CliBuilder implements CliBuilderInterface {
+class CliBuilder implements CliBuilderInterface {
     private __version: string;
     private __program: Command;
     constructor() {
@@ -69,3 +69,5 @@ export default class CliBuilder implements CliBuilderInterface {
         }
     }
 }
+
+export default CliBuilder;

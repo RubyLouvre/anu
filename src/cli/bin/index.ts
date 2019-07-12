@@ -2,7 +2,10 @@
 import { version } from '../package.json';
 import platforms from '../ts-consts/platforms';
 import BUILD_OPTIONS from '../ts-consts/buildOptions';
-import CliBuilder from './builder';
+import CliBuilder from './cliBuilder';
+import init from '../tsCommands/init';
+import createPage from '../tsCommands/createPage';
+import build from '../tsCommands/build';
 
 const cli: CliBuilder = new CliBuilder();
 cli.checkNodeVersion('8.6.0');
@@ -10,7 +13,7 @@ cli.checkNodeVersion('8.6.0');
 cli.version = version;
 
 cli.addCommand('init <app-name>', null, 'description: 初始化项目', {}, (appName: any)=>{
-    require('../commands/init')(appName);
+    init(appName);
 });
 
 cli.addCommand(
@@ -35,7 +38,7 @@ cli.addCommand(
         `description: 创建${type}s/<${type}-name>/index.js模版`,
         {}, 
         (name)=>{
-            require('../commands/createPage')( {name, isPage: type === 'page'} );
+            createPage({name, isPage: type === 'page'});
         });
 });
 
@@ -54,7 +57,7 @@ platforms.forEach(function(el){
                 Object.keys(options).forEach(key => {
                     args[key] = options.key;
                 });
-                require('../commands/build')({
+                build({
                     ...args,
                     watch: compileType === 'watch',
                     buildType

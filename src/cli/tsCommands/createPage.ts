@@ -1,9 +1,10 @@
-const chalk = require('chalk');
-const cwd = process.cwd();
-const fs = require('fs-extra');
-const path = require('path');
+import chalk from 'chalk';
+import * as path from 'path';
+import * as fs from 'fs-extra';
 
-function getCode(name, isPage){
+const cwd = process.cwd();
+
+function getCode(name: string, isPage: boolean){
     let clsName = isPage ? 'P' : name;
     let code = `
 import React from '@react';
@@ -38,7 +39,9 @@ export default ${clsName};
 
 //校验当前目录是否是 nanachi 工程
 function validateNanachiProject(){
-    let pkg = {};
+    let pkg: {
+        [propsName: string]: any
+    } = {};
     try {
         pkg = require(path.join(cwd, 'package.json'));
     } catch (err) {
@@ -54,7 +57,7 @@ function validateNanachiProject(){
 }
 
 //校验 page 名是否合法
-function validatePageName(pageName, isPage){
+function validatePageName(pageName: string, isPage: boolean){
     if (/[^\w]/g.test(pageName)) {
         // eslint-disable-next-line
         console.log(chalk.red('目录命名不合法, 创建失败.'));
@@ -71,7 +74,7 @@ function validatePageName(pageName, isPage){
 
 
 //校验 page 是否存在
-function validatePageExists(dist, isPage){
+function validatePageExists(dist: string, isPage: boolean){
     let exists = fs.existsSync(dist);
     if (exists) {
         // eslint-disable-next-line
@@ -80,7 +83,11 @@ function validatePageExists(dist, isPage){
     }
 }
 
-function createPage(data){
+function createPage(data: {
+    name: string,
+    dist: string,
+    isPage: boolean
+}){
     let {name, dist, isPage} = data;
     let code = getCode(name, isPage);
     fs.ensureFileSync(dist);
@@ -93,7 +100,10 @@ function createPage(data){
     });
 }
 
-module.exports = function( data ){
+export default function( data: {
+    name: string,
+    isPage: boolean
+} ){
     let { name, isPage } = data;
     let dist = path.join(
         cwd, 
@@ -104,7 +114,7 @@ module.exports = function( data ){
     );
     validateNanachiProject();
     validatePageName(name, isPage);
-    validatePageExists(dist);
+    validatePageExists(dist, isPage);
     createPage({
         name,
         dist, 
