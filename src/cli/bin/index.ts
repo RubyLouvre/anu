@@ -3,9 +3,10 @@ import { version } from '../package.json';
 import platforms from '../ts-consts/platforms';
 import BUILD_OPTIONS from '../ts-consts/buildOptions';
 import CliBuilder from './cliBuilder';
-import init from '../tsCommands/init';
-import createPage from '../tsCommands/createPage';
-import build from '../tsCommands/build';
+import init from './commands/init';
+import createPage from './commands/createPage';
+import build from './commands/build';
+import install from './commands/install';
 
 const cli: CliBuilder = new CliBuilder();
 cli.checkNodeVersion('8.6.0');
@@ -27,7 +28,7 @@ cli.addCommand(
         }
     },
     function(name, opts){
-        require('../commands/install')(name, opts);
+        install(name, opts);
     }
 );
 

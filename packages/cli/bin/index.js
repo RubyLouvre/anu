@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const package_json_1 = require("../package.json");
-const platforms_1 = require("../ts-consts/platforms");
-const buildOptions_1 = require("../ts-consts/buildOptions");
-const cliBuilder_1 = require("./cliBuilder");
-const init_1 = require("../tsCommands/init");
-const createPage_1 = require("../tsCommands/createPage");
-const build_1 = require("../tsCommands/build");
+const platforms_1 = __importDefault(require("../ts-consts/platforms"));
+const buildOptions_1 = __importDefault(require("../ts-consts/buildOptions"));
+const cliBuilder_1 = __importDefault(require("./cliBuilder"));
+const init_1 = __importDefault(require("./commands/init"));
+const createPage_1 = __importDefault(require("./commands/createPage"));
+const build_1 = __importDefault(require("./commands/build"));
+const install_1 = __importDefault(require("./commands/install"));
 const cli = new cliBuilder_1.default();
 cli.checkNodeVersion('8.6.0');
 cli.version = package_json_1.version;
@@ -20,7 +24,7 @@ cli.addCommand('install [name]', null, 'description: 安装拆库模块. 文档:
         alias: 'b'
     }
 }, function (name, opts) {
-    require('../commands/install')(name, opts);
+    install_1.default(name, opts);
 });
 ['page', 'component'].forEach(type => {
     cli.addCommand(`${type} <page-name>`, null, `description: 创建${type}s/<${type}-name>/index.js模版`, {}, (name) => {

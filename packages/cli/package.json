@@ -116,7 +116,9 @@
     },
     "devDependencies": {
         "@types/fs-extra": "^8.0.0",
+        "@types/inquirer": "^6.0.3",
         "@types/semver": "^6.0.1",
+        "@types/shelljs": "^0.8.5",
         "jest": "^24.7.1"
     }
 }

@@ -1,8 +1,8 @@
 const webpack = require('webpack');
 const path = require('path');
 const globalConfig = require('./config/config.js');
-const runBeforeParseTasks = require('./commands/runBeforeParseTasks');
-const createH5Server = require('./commands/createH5Server');
+const runBeforeParseTasks = require('./tasks/runBeforeParseTasks');
+const createH5Server = require('./tasks/createH5Server');
 const platforms = require('./consts/platforms');
 const utils = require('./packages/utils/index');
 const { errorLog, warningLog } = require('./nanachi-loader/logger/index');

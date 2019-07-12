@@ -7,7 +7,9 @@
         "rootDir": "src",
         "outDir": "packages",
         "resolveJsonModule": true,
-        "target": "es6"
+        "esModuleInterop": true,
+        "target": "es6",
+        "declaration": true,
     },
     "include": [
         "src/**/*"

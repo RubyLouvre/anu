@@ -2,13 +2,13 @@
 输出命令行提示与选择模板
 */
 /* eslint-disable */
-const validateProjectName = require('validate-npm-package-name');
-const chalk = require('chalk');
-const fs = require('fs-extra');
-const path = require('path');
+import validateProjectName from 'validate-npm-package-name';
+import chalk from 'chalk';
+import * as fs from 'fs-extra';
+import * as path from 'path';
+import inquirer from 'inquirer';
+import templates from '../../ts-consts/templates';
 const cwd = process.cwd();
-const inquirer = require('inquirer');
-const templates = require('../consts/templates');
 
 function checkAppName(appName: string){
     let appPath = path.join(cwd, appName);
@@ -20,7 +20,7 @@ function checkAppName(appName: string){
     return appPath;
 }
 
-const askTemplate = () => {
+const askTemplate = ():any => {
     return inquirer.prompt({
         type: 'list',
         name: 'appTplName',
@@ -34,7 +34,7 @@ function copyTemplate(data: {
     appTplName: string
 }){
     let { appTplName, appPath} = data;
-    let tplSrc = path.join( __dirname, '..', 'templates',  appTplName);
+    let tplSrc = path.join( __dirname, '../..', 'templates',  appTplName);
     let appName = path.basename(appPath);
     if (fs.existsSync(appPath)) {
         console.log(chalk.red(`目录 ${appName} 已存在\n`));
@@ -89,7 +89,7 @@ function outputLog({ appName, appPath }: {
 
 async function init(appName: string){
     const appPath: string = checkAppName(appName);
-    const { appTplName }: {appTplName: string} = await askTemplate();
+    const { appTplName } = await askTemplate();
     copyTemplate({ appPath, appTplName});
     outputLog({ appName, appPath });
 }

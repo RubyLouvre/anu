@@ -1,12 +1,12 @@
-const shelljs = require('shelljs');
+import shelljs from 'shelljs';
+import chalk from 'chalk';
+import * as path from 'path';
+import * as fs from 'fs-extra';
+import axios from 'axios';
+import glob from 'glob';
 const cwd = process.cwd();
-const chalk = require('chalk');
-const path = require('path');
-const fs = require('fs-extra');
-const axios = require('axios');
-const glob = require('glob');
 
-function unPack(src, dist) {
+function unPack(src: string, dist: string) {
     dist = path.join(dist, 'source');
     fs.ensureDirSync(dist);
     fs.emptyDirSync(dist);
@@ -19,7 +19,7 @@ function unPack(src, dist) {
     }
     try {
         let files = glob.sync( dist + '/**', {nodir: true, dot: true});
-        files.forEach(function(el){
+        files.forEach(function(el: string){
             let fileName = path.basename(el);
             if (
                 /\/package\.json$/.test(el)
@@ -36,7 +36,7 @@ function unPack(src, dist) {
 }
 
 
-function downLoadGitRepo(target, branch){
+function downLoadGitRepo(target: string, branch: string){
     let cmd = `git clone ${target} -b ${branch}`;
     let distDir = path.join(cwd, '.CACHE', 'download');
     let gitRepoName = target.split('/').pop().replace(/\.git$/, '');
@@ -60,10 +60,10 @@ function downLoadGitRepo(target, branch){
 }
 
 
-async function downLoadBinaryLib(lib) {
+async function downLoadBinaryLib(lib: string) {
     let [tarName, version] = lib.split('@');
     let tarUrl = '';
-    let nanachiUserConfig = {};
+    let nanachiUserConfig: any = {};
     try {
         nanachiUserConfig = require(path.join(cwd, 'nanachi.config'));
     } catch (err) {
@@ -122,8 +122,41 @@ function downLoadConfigDepModule(){
 
 }
 
-module.exports = function( downloadInfo ){
-   
+export default function(name: string, opts: any){
+    if (process.env.NANACHI_CHAIK_MODE != 'CHAIK_MODE') {
+        // eslint-disable-next-line
+        console.log(chalk.bold.red('需在package.json中配置{"nanachi": {"chaika_mode": true }}, 拆库开发功能请查阅文档: https://rubylouvre.github.io/nanachi/documents/chaika.html'));
+        process.exit(1);
+    }
+    let downloadInfo:{
+        type: string;
+        lib: string;
+        version?: string;
+    } = {
+        type: '',
+        lib: ''
+    };
+    if (!name && !opts.branch) {
+        //nanachi install package.json中配置的所有包
+        downloadInfo = {
+            type: 'all',
+            lib: ''
+        };
+    }
+    if (name && !/\.git$/.test(name) ) {
+        //nanachi install xxx@kkk
+        downloadInfo = {
+            type: 'binary',
+            lib: name
+        };
+    }
+    if (/\.git$/.test(name) && opts.branch && typeof opts.branch === 'string' ) {
+        downloadInfo = {
+            type: 'git',
+            lib: name,
+            version: opts.branch
+        };
+    }
     let {type, lib, version} = downloadInfo;
 
     if (type === 'git') {

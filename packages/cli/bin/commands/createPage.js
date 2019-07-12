@@ -1,8 +1,18 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const chalk_1 = require("chalk");
-const path = require("path");
-const fs = require("fs-extra");
+const chalk_1 = __importDefault(require("chalk"));
+const path = __importStar(require("path"));
+const fs = __importStar(require("fs-extra"));
 const cwd = process.cwd();
 function getCode(name, isPage) {
     let clsName = isPage ? 'P' : name;
@@ -88,4 +98,3 @@ function default_1(data) {
     });
 }
 exports.default = default_1;
-;
