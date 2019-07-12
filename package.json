@@ -5,7 +5,7 @@
   "main": "dist/React.js",
   "scripts": {
     "dev": "tsc -w",
-    "build": "rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.ali.js  &&rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.quick.js &&rollup -c ./scripts/build/rollup.wx.js && rollup -c ./scripts/build/rollup.h5.js",
+    "build": "tsc && rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.ali.js  &&rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.quick.js &&rollup -c ./scripts/build/rollup.wx.js && rollup -c ./scripts/build/rollup.h5.js",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
     "tt": "rollup -c ./scripts/build/rollup.ts.js",
