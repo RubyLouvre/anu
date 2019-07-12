@@ -1,6 +1,6 @@
 const path = require('path');
 const postcss = require('postcss');
-const utils = require('../../../packages/utils/index');
+const utils = require('../../packages/utils/index');
 const fs = require('fs');
 
 class StyleParser {
@@ -22,9 +22,9 @@ class StyleParser {
         this.relativePath = this.getRelativePath(filepath);
         this._postcssPlugins = [
             require('stylelint')({
-                configFile: require.resolve(`../../../config/stylelint/.stylelint-${this.platform}.config.js`)
+                configFile: require.resolve(`../../config/stylelint/.stylelint-${this.platform}.config.js`)
             }),
-            require('../../../packages/postcssPlugins/postCssPluginReport')
+            require('../../packages/postcssPlugins/postCssPluginReport')
         ];
         this._postcssOptions = {};
         this.parsedCode = '';

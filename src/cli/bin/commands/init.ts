@@ -2,15 +2,15 @@
 输出命令行提示与选择模板
 */
 /* eslint-disable */
-const validateProjectName = require('validate-npm-package-name');
-const chalk = require('chalk');
-const fs = require('fs-extra');
-const path = require('path');
+import validateProjectName from 'validate-npm-package-name';
+import chalk from 'chalk';
+import * as fs from 'fs-extra';
+import * as path from 'path';
+import inquirer from 'inquirer';
+import templates from '../../ts-consts/templates';
 const cwd = process.cwd();
-const inquirer = require('inquirer');
-const templates = require('../consts/templates');
 
-function checkAppName(appName){
+function checkAppName(appName: string){
     let appPath = path.join(cwd, appName);
     let {validForNewPackages, warnings} = validateProjectName( path.parse(appName).base );
     if (!validForNewPackages) {
@@ -20,7 +20,7 @@ function checkAppName(appName){
     return appPath;
 }
 
-const askTemplate = () => {
+const askTemplate = ():any => {
     return inquirer.prompt({
         type: 'list',
         name: 'appTplName',
@@ -29,9 +29,12 @@ const askTemplate = () => {
     });
 };
 
-function copyTemplate(data){
+function copyTemplate(data: {
+    appPath: string,
+    appTplName: string
+}){
     let { appTplName, appPath} = data;
-    let tplSrc = path.join( __dirname, '..', 'templates',  appTplName);
+    let tplSrc = path.join( __dirname, '../..', 'templates',  appTplName);
     let appName = path.basename(appPath);
     if (fs.existsSync(appPath)) {
         console.log(chalk.red(`目录 ${appName} 已存在\n`));
@@ -42,7 +45,10 @@ function copyTemplate(data){
     fs.copySync(tplSrc, appPath);
 }
 
-function outputLog({ appName, appPath }) {
+function outputLog({ appName, appPath }: {
+    appName: string,
+    appPath: string
+}) {
     console.log(
         `\n项目 ${chalk.green(appName)} 创建成功, 路径: ${chalk.green(
             appPath
@@ -81,11 +87,11 @@ function outputLog({ appName, appPath }) {
     console.log();
 }
 
-async function init(appName){
-    const appPath = checkAppName(appName);
+async function init(appName: string){
+    const appPath: string = checkAppName(appName);
     const { appTplName } = await askTemplate();
     copyTemplate({ appPath, appTplName});
     outputLog({ appName, appPath });
 }
 
-module.exports = init;
+export default init;

@@ -1,6 +1,5 @@
-const JavascriptParserFactory = require('../parsers/jsParser/JavascriptParserFactory');
+const JavascriptParserFactory = require('../../parsers/jsParser/JavascriptParserFactory');
 const utils = require('../../packages/utils/index');
-const path = require('path');
 
 module.exports = async function(code, map, meta) {
     const callback = this.async();
