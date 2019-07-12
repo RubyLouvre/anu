@@ -1,5 +1,5 @@
 const path = require('path');
-const StyleParserFactory = require('../parsers/styleParser/StyleParserFactory');
+const StyleParserFactory = require('../../parsers/styleParser/StyleParserFactory');
 
 module.exports = async function(code, map, meta) {
     const callback = this.async();
