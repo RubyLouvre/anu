@@ -1,23 +1,39 @@
-"use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const path = __importStar(require("path"));
-let userConfig = {};
+import * as path from 'path';
+let userConfig: any = {};
 try {
     const pkg = require(path.join(process.cwd(), 'package.json'));
     userConfig = pkg.nanachi || pkg.mpreact || userConfig;
-}
-catch (err) {
+} catch (err) {
+    // eslint-disable-next-line
 }
 const buildDir = userConfig.buildDir || 'dist';
 const sourceDir = userConfig.sourceDir || 'source';
-const config = {
+
+interface patchComponents {
+    [patchName: string]: number;
+}
+
+interface PlatConfig {
+    libName: string;
+    styleExt?: string;
+    xmlExt?: string;
+    jsExt?: string;
+    helpers: string;
+    patchComponents: patchComponents,
+    disabledTitleBarPages: Set<string>;
+}
+
+interface GlobalConfigMap {
+    buildType: string;      //构建类型默认微信小程序
+    buildDir: string;   //非快应用项目默认构建目录为dist
+    sourceDir: string;  //默认生成的源码目录
+    huawei: boolean;
+    patchComponents: patchComponents; // 项目中使用的补丁组件
+    pluginTags: any;
+    plugins: any;
+    [platName: string]: PlatConfig | string | boolean | patchComponents;
+}
+const config: GlobalConfigMap =  {
     wx: {
         libName: 'ReactWX',
         styleExt: 'wxss',
@@ -54,16 +70,17 @@ const config = {
         libName: 'ReactQuick',
         jsExt: 'ux',
         helpers: 'quickHelpers',
+       
         patchComponents: {
             'radio': 1,
             'radio-group': 1,
             'checkbox': 1,
-            'checkbox-group': 1,
+            'checkbox-group':1,
             'label': 1,
             'navigator': 1,
             'picker': 1
         },
-        disabledTitleBarPages: new Set()
+        disabledTitleBarPages:new Set()
     },
     tt: {
         libName: 'ReactWX',
@@ -74,13 +91,14 @@ const config = {
         patchComponents: {},
         disabledTitleBarPages: new Set()
     },
-    buildType: 'wx',
-    buildDir: buildDir,
-    sourceDir: sourceDir,
+    buildType: 'wx',      //构建类型默认微信小程序
+    buildDir: buildDir,   //非快应用项目默认构建目录为dist
+    sourceDir: sourceDir,  //默认生成的源码目录
     huawei: false,
-    patchComponents: {},
+    patchComponents: {}, // 项目中使用的补丁组件
     pluginTags: {},
     plugins: {}
 };
+
 module.exports = config;
-exports.default = config;
+export default config;
