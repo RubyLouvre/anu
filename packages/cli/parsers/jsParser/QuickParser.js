@@ -1,17 +1,36 @@
-const path = require('path');
-const JavascriptParser = require('./JavascriptParser');
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const path = __importStar(require("path"));
+const JavascriptParser_1 = __importDefault(require("./JavascriptParser"));
 const mergeUx = require('../../packages/quickHelpers/mergeUx');
 const quickFiles = require('../../packages/quickHelpers/quickFiles');
 const utils = require('../../packages/utils/index');
-const isStyle = path => {
+const isStyle = (path) => {
     return /\.(?:less|scss|sass|css)$/.test(path);
 };
 const thePathHasCommon = /\bcommon\b/;
-
-class QuickParser extends JavascriptParser {
+class QuickParser extends JavascriptParser_1.default {
     constructor(props) {
         super(props);
-        this.filterCommonFile = thePathHasCommon.test(this.filepath) ? []: require('../../packages/babelPlugins/transformMiniApp')(this.filepath);
+        this.filterCommonFile = thePathHasCommon.test(this.filepath) ? [] : require('../../packages/babelPlugins/transformMiniApp')(this.filepath);
         this._babelPlugin = {
             configFile: false,
             babelrc: false,
@@ -25,7 +44,6 @@ class QuickParser extends JavascriptParser {
                 ],
                 require('@babel/plugin-proposal-object-rest-spread'),
                 [
-                    //重要,import { Xbutton } from 'schnee-ui' //按需引入
                     require('babel-plugin-import').default,
                     {
                         libraryName: 'schnee-ui',
@@ -38,62 +56,60 @@ class QuickParser extends JavascriptParser {
                 require('../../packages/babelPlugins/collectTitleBarConfig'),
                 require('../../packages/babelPlugins/patchComponents'),
                 ...require('../../packages/babelPlugins/transformEnv'),
-                [ require('@babel/plugin-transform-template-literals'), { loose: true }],
+                [require('@babel/plugin-transform-template-literals'), { loose: true }],
                 require('../../packages/babelPlugins/transformIfImport'),
                 ...this.filterCommonFile,
                 ...require('../../packages/babelPlugins/patchAsyncAwait'),
             ]
         };
     }
-    async parse() {
-        const result = await super.parse();
-        // 解析快应用依赖的样式文件
-        let cssPath = this.extraModules.filter((fileId)=>{
-            return isStyle(fileId);
-        })[0];
-        if (cssPath) {
-            cssPath = path.resolve(path.dirname(this.filepath), cssPath);
-            Object.assign(quickFiles[utils.fixWinPath(this.filepath)], { // \ => / windows补丁
-                cssPath
-            });
-        }
-        this.queues = result.options.anu && result.options.anu.queue || this.queues;
-
-        // 合并ux文件
-        const uxRes = await mergeUx({
-            sourcePath: this.filepath,
-            result,
-            relativePath: this.relativePath
-        }, this.queues);
-        if (uxRes.type === 'ux') {
-            this.queues.push({
-                type: uxRes.type,
-                path: this.relativePath,
-                code: this.getUxCode(),
-            });
-        } else {
-            this.queues.push({
-                type: uxRes.type,
-                path: this.relativePath,
-                code: uxRes.code,
-                ast: this.ast,
-            });
-        }
+    parse() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield this._parse();
+            let cssPath = this.extraModules.filter((fileId) => {
+                return isStyle(fileId);
+            })[0];
+            if (cssPath) {
+                cssPath = path.resolve(path.dirname(this.filepath), cssPath);
+                Object.assign(quickFiles[utils.fixWinPath(this.filepath)], {
+                    cssPath
+                });
+            }
+            this.queues = result.options.anu && result.options.anu.queue || this.queues;
+            const uxRes = yield mergeUx({
+                sourcePath: this.filepath,
+                result,
+                relativePath: this.relativePath
+            }, this.queues);
+            if (uxRes.type === 'ux') {
+                this.queues.push({
+                    type: uxRes.type,
+                    path: this.relativePath,
+                    code: this.getUxCode(),
+                });
+            }
+            else {
+                this.queues.push({
+                    type: uxRes.type,
+                    path: this.relativePath,
+                    code: uxRes.code,
+                    ast: this.ast,
+                });
+            }
+        });
     }
     getUxCode() {
         const obj = quickFiles[utils.fixWinPath(this.filepath)];
         let code = obj.header + '\n' + obj.jsCode;
         if (obj.cssPath) {
-            let relativePath = path.relative( path.dirname(this.filepath),  obj.cssPath);
-            relativePath = /^\w/.test(relativePath) ? './' + relativePath: relativePath;
+            let relativePath = path.relative(path.dirname(this.filepath), obj.cssPath);
+            relativePath = /^\w/.test(relativePath) ? './' + relativePath : relativePath;
             relativePath = relativePath
-            .replace(/\\/g, '/')
-            .replace(/\.(scss|sass|less)$/, '.css');
-            code += `\n<style>\n@import '${relativePath}';\n</style>`
+                .replace(/\\/g, '/')
+                .replace(/\.(scss|sass|less)$/, '.css');
+            code += `\n<style>\n@import '${relativePath}';\n</style>`;
         }
-        return code
+        return code;
     }
-    
 }
-
-module.exports = QuickParser;
+exports.default = QuickParser;

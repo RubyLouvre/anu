@@ -3,6 +3,7 @@ export interface NanachiQueue {
     path: string;
     type: string;
     ast?: any;
+    extraModules?: Array<string>;
 }
 export interface NanachiLoaderStruct {
     queues: Array<NanachiQueue>;

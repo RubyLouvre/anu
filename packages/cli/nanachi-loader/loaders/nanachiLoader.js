@@ -7,14 +7,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const JavascriptParserFactory = require('../../parsers/jsParser/JavascriptParserFactory');
+const JavascriptParserFactory_1 = __importDefault(require("../../parsers/jsParser/JavascriptParserFactory"));
 const utils = require('../../packages/utils/index');
 module.exports = function (code, map, meta) {
     return __awaiter(this, void 0, void 0, function* () {
         const callback = this.async();
         try {
-            const parser = JavascriptParserFactory.create({
+            const parser = JavascriptParserFactory_1.default.create({
                 platform: this.nanachiOptions.platform,
                 filepath: this.resourcePath,
                 code,

@@ -14,13 +14,16 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __importStar(require("path"));
-const StyleParserFactory = require('../../parsers/styleParser/StyleParserFactory');
+const StyleParserFactory_1 = __importDefault(require("../../parsers/styleParser/StyleParserFactory"));
 module.exports = function (code, map, meta) {
     return __awaiter(this, void 0, void 0, function* () {
         const callback = this.async();
-        const parser = StyleParserFactory.create({
+        const parser = StyleParserFactory_1.default.create({
             type: path.extname(this.resourcePath).replace(/^\./, ''),
             platform: this.nanachiOptions.platform,
             code,
