@@ -637,7 +637,7 @@
                 return this.props.children;
             }
         });
-        var Consumer = miniCreateClass(function Consumer(a, b) {
+        var Consumer = miniCreateClass(function Consumer() {
             instance.subscribers.push(this);
             this.observedBits = 0;
             this.state = {
@@ -719,7 +719,7 @@
         if (prevState) {
             var prevInputs = prevState[1];
             if (areHookInputsEqual(nextInputs, prevInputs)) {
-                return prevState[0];
+                return;
             }
         }
         var value = isMemo ? create() : create;
