@@ -1,7 +1,7 @@
-import JavascriptParser from './JavascriptParser';
+import JavascriptParser, { BabelRes } from './JavascriptParser';
 import { parserOptions } from './JavascriptParserFactory';
 declare class WxParser extends JavascriptParser {
     constructor(props: parserOptions);
-    parse(): Promise<void>;
+    parse(): Promise<BabelRes>;
 }
 export default WxParser;

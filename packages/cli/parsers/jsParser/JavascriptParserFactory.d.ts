@@ -1,3 +1,6 @@
+import WxParser from './WxParser';
+import QuickParser from './QuickParser';
+import H5Parser from './H5Parser';
 export interface parserMap {
     [platName: string]: any;
 }
@@ -9,6 +12,6 @@ export interface parserOptions {
     platform: string;
 }
 declare class JavascriptParserFactory {
-    static create(options: parserOptions): any;
+    static create(options: parserOptions): QuickParser | WxParser | H5Parser;
 }
 export default JavascriptParserFactory;

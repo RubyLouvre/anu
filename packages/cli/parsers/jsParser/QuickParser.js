@@ -64,8 +64,11 @@ class QuickParser extends JavascriptParser_1.default {
         };
     }
     parse() {
+        const _super = Object.create(null, {
+            parse: { get: () => super.parse }
+        });
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield this._parse();
+            const result = yield _super.parse.call(this);
             let cssPath = this.extraModules.filter((fileId) => {
                 return isStyle(fileId);
             })[0];
@@ -96,6 +99,7 @@ class QuickParser extends JavascriptParser_1.default {
                     ast: this.ast,
                 });
             }
+            return result;
         });
     }
     getUxCode() {

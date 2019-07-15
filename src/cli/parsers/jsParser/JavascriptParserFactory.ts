@@ -18,21 +18,27 @@ export interface parserOptions {
     platform: string;
 }
 
-const maps: parserMap = {
-    wx: WxParser,
-    qq: QqParser,
-    ali: AliParser,
-    bu: BuParser,
-    tt: TtParser,
-    quick: QuickParser,
-    h5: H5Parser
-}
-
 class JavascriptParserFactory {
     static create(options: parserOptions) {
         const { platform } = options
-        const Parser = maps[platform];
-        return new Parser(options);
+        switch (platform) {
+            case 'wx':
+                return new WxParser(options);
+            case 'qq':
+                return new QqParser(options);
+            case 'ali':
+                return new AliParser(options);
+            case 'bu':
+                return new BuParser(options);
+            case 'tt':
+                return new TtParser(options);
+            case 'quick':
+                return new QuickParser(options);
+            case 'h5':
+                return new H5Parser(options);
+            default:
+                return new WxParser(options);
+        }
     }
 }
 

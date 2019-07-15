@@ -1,7 +1,7 @@
 import * as babel from '@babel/core';
 import { parserOptions } from './JavascriptParserFactory';
 import { NanachiQueue } from '../../nanachi-loader/loaders/nanachiLoader';
-interface BabelRes extends babel.BabelFileResult {
+export interface BabelRes extends babel.BabelFileResult {
     options?: {
         anu?: any;
     };
@@ -22,7 +22,7 @@ declare class JavascriptParser {
     protected _babelPlugin: babel.TransformOptions;
     constructor({ code, map, meta, filepath, platform }: parserOptions);
     setComponentType(): void;
-    _parse(): Promise<BabelRes>;
+    parse(): Promise<BabelRes>;
     getCodeForWebpack(): string;
     getExtraFiles(): NanachiQueue[];
     getExportCode(): string;
