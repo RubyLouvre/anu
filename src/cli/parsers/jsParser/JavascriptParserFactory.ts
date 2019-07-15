@@ -6,10 +6,6 @@ import TtParser from './TtParser';
 import QuickParser from './QuickParser';
 import H5Parser from './H5Parser';
 
-export interface parserMap {
-    [platName: string]: any
-}
-
 export interface parserOptions {
     code: string;
     map: any;
