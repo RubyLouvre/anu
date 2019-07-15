@@ -637,7 +637,7 @@
                 return this.props.children;
             }
         });
-        var Consumer = miniCreateClass(function Consumer() {
+        var Consumer = miniCreateClass(function Consumer(a, b) {
             instance.subscribers.push(this);
             this.observedBits = 0;
             this.state = {
@@ -649,7 +649,7 @@
                 instance.subscribers.splice(i, 1);
             },
             render: function render() {
-                return this.props.children(this.state.value);
+                return this.props.children(getContext(get(this)));
             }
         });
         function getContext(fiber) {
