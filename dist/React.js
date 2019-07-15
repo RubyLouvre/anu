@@ -637,7 +637,7 @@
                 return this.props.children;
             }
         });
-        var Consumer = miniCreateClass(function Consumer(a, b) {
+        var Consumer = miniCreateClass(function Consumer() {
             instance.subscribers.push(this);
             this.observedBits = 0;
             this.state = {
@@ -719,7 +719,7 @@
         if (prevState) {
             var prevInputs = prevState[1];
             if (areHookInputsEqual(nextInputs, prevInputs)) {
-                return prevState[0];
+                return;
             }
         }
         var value = isMemo ? create() : create;
@@ -813,6 +813,51 @@
     }
     function useMemo(create, deps) {
         return useCallbackImpl(create, deps, true);
+    }
+
+    function Suspense(props) {
+        return props.children;
+    }
+
+    var LazyComponent = miniCreateClass(function LazyComponent(props, context) {
+        this.props = props;
+        this.context = context;
+        var promise = props.lazyFn();
+        if (!promise || !isFn(promise.then)) {
+            throw "lazy必须返回一个thenable对象";
+        }
+        var that = this;
+        this.state = {
+            render: null,
+            resolve: false
+        };
+        promise.then(function (value) {
+            that.setState({
+                render: value.default,
+                resolve: true
+            });
+        });
+    }, Component, {
+        getSuspense: function getSuspense() {
+            var fiber = get(this);
+            while (fiber.return) {
+                if (fiber.return.type === Suspense) {
+                    return fiber.return.props.fallback;
+                }
+                fiber = fiber.return;
+            }
+            throw "lazy组件必须包一个Suspense组件";
+        },
+        render: function render() {
+            return this.state.resolve ? this.state.render() : this.getSuspense();
+        }
+    });
+    function lazy(fn) {
+        return function () {
+            return createElement(LazyComponent, {
+                lazyFn: fn
+            });
+        };
     }
 
     function findHostInstance(fiber) {
@@ -3182,6 +3227,8 @@
             Children: Children,
             createPortal: createPortal,
             createContext: createContext,
+            lazy: lazy,
+            Suspense: Suspense,
             Component: Component,
             createRef: createRef,
             forwardRef: forwardRef,

@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-07-15T04
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-07-15T06
  * IE9+
  */
 
@@ -577,7 +577,7 @@ function createContext(defaultValue, calculateChangedBits) {
             instance.subscribers.splice(i, 1);
         },
         render: function render() {
-            return this.props.children(this.state.value);
+            return this.props.children(getContext(get(this)));
         }
     });
     function getContext(fiber) {
@@ -1370,7 +1370,7 @@ function useCallbackImpl(create, deps, isMemo) {
     if (prevState) {
         var prevInputs = prevState[1];
         if (areHookInputsEqual(nextInputs, prevInputs)) {
-            return prevState[0];
+            return;
         }
     }
     var value = isMemo ? create() : create;

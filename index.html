@@ -10,27 +10,37 @@
 <body>
 
 <script src="./dist/React.js"></script>
- <!--<script src="https://cdn.bootcss.com/react/16.9.0-alpha.0/umd/react.development.js"></script>
-  <script src="https://cdn.bootcss.com/react-dom/16.9.0-alpha.0/umd/react-dom.development.js"></script> -->
+<!--
+  <script src="https://cdn.bootcss.com/react/16.9.0-alpha.0/umd/react.development.js"></script>
+  <script src="https://cdn.bootcss.com/react-dom/16.9.0-alpha.0/umd/react-dom.development.js"></script> 
+-->
   <script type='text/javascript' src="./lib/babel.js"></script>
   <script type='text/babel'>
-      window.onload = function(){
-       var Context = React.createContext();
-       //========  组件 =========
-       const App = ({ children }) => (
-        <div>
-          <Context.Provider value='123'>
-            <Context.Consumer>
-              {(ctx) => (<div>consumer在provider内：{ctx}</div>)}
-            </Context.Consumer>
-          </Context.Provider>
-          <Context.Consumer>
-            {(ctx) => (<div>consumer在provider外：{ctx}</div>)}
-          </Context.Consumer>
-        </div>
-      );
+window.onload = function(){
+  var { lazy, Suspense } = React
+  const OtherComponent = lazy(function (){
+    return new Promise(function(resolve){
+      setTimeout(function(){
+        resolve({
+          default: function A(){
+            return <div>lazy!!!</div>
+          }
+        })
+      },3000);
+    })
+  });
 
-ReactDOM.render(<App />, document.getElementById("root"));
+  function MyComponent() {
+    return (
+       <div>
+          <Suspense fallback={<div>Loading...</div>}>
+             <OtherComponent />
+          </Suspense>
+        </div>
+    );
+  }
+
+  ReactDOM.render(<MyComponent />, document.getElementById("root"));
 
 }
     </script>
@@ -38,3 +48,4 @@ ReactDOM.render(<App />, document.getElementById("root"));
 </body>
 
 </html>
+
