@@ -5,10 +5,11 @@
   "main": "dist/React.js",
   "scripts": {
     "dev": "tsc -w",
-    "build": "tsc && rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js && rollup -c ./scripts/build/rollup.ali.js  &&rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.quick.js &&rollup -c ./scripts/build/rollup.wx.js && rollup -c ./scripts/build/rollup.h5.js",
+    "build": "tsc -w && rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
-    "tt": "rollup -c ./scripts/build/rollup.ts.js",
+    "mp": "tsc -w && rollup -c ./scripts/build/rollup.wx.js && rollup -c ./scripts/build/rollup.ali.js  &&rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.quick.js  && rollup -c ./scripts/build/rollup.h5.js",
+    "ts": "rollup -c ./scripts/build/rollup.ts.js",
     "sync": "node ./scripts/build/syncAntd.js",
     "buildIE": "webpack --config ./scripts/build/buildIE.js",
     "fa-build": "webpack --config ./node_modules/fa-toolkit/webpack.config.js",

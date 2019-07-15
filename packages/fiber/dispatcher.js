@@ -58,7 +58,8 @@ export function useCallbackImpl(create, deps, isMemo) {//ok
         if (prevState) {
             let prevInputs = prevState[1];
             if (areHookInputsEqual(nextInputs, prevInputs)) {
-                return prevState[0];
+              //  return prevState[0];
+              return
             }
         }
 

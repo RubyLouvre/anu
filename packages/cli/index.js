@@ -145,12 +145,11 @@ function showLog() {
         }
         console.log(log);
     }
-    const errorStack = require('./nanachi-loader/logger/queue');
-    while (errorStack.warning.length) {
-        index_1.warningLog(errorStack.warning.shift());
+    while (queue_1.warning.length) {
+        index_1.warningLog(queue_1.warning.shift());
     }
-    if (errorStack.error.length) {
-        errorStack.error.forEach(function (error) {
+    if (queue_1.error.length) {
+        queue_1.error.forEach(function (error) {
             index_1.errorLog(error);
         });
         if (utils.isMportalEnv()) {

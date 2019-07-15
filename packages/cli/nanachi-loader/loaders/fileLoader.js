@@ -1,5 +1,5 @@
 const { MAP } = require('../../consts/index');
-const { successLog } = require('../logger/index');
+const { successLog } = require('../../packages/utils/logger/index');
 const utils = require('../../packages/utils/index');
 const path = require('path');
 

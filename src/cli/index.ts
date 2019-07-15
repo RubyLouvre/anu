@@ -1,7 +1,7 @@
 import webpack from 'webpack';
 import * as path from 'path';
 import platforms from './consts/platforms';
-import { build as buildLog, Log } from './packages/utils/logger/queue';
+import { build as buildLog, Log, warning, error } from './packages/utils/logger/queue';
 import { errorLog, warningLog } from './packages/utils/logger/index';
 import chalk from 'chalk';
 import getWebPackConfig from './config/webpackConfig';
@@ -178,13 +178,12 @@ function showLog() {
         // eslint-disable-next-line
         console.log(log);
     }
-    const errorStack = require('./nanachi-loader/logger/queue');
-    while (errorStack.warning.length) {
-        warningLog(errorStack.warning.shift());
+    while (warning.length) {
+        warningLog(warning.shift());
     }
     
-    if (errorStack.error.length) {
-        errorStack.error.forEach(function(error: Log){
+    if (error.length) {
+        error.forEach(function(error: Log){
             errorLog(error);
         });
         if ( utils.isMportalEnv() ) {
