@@ -10,11 +10,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const timer_1 = __importDefault(require("../packages/utils/timer"));
 const index_1 = require("../packages/utils/logger/index");
 const generator_1 = __importDefault(require("@babel/generator"));
-const types_1 = __importDefault(require("@babel/types"));
+const t = __importStar(require("@babel/types"));
 const setWebView = require('../packages/utils/setWebVeiw');
 const id = 'NanachiWebpackPlugin';
 const pageConfig = require('../packages/h5Helpers/pageConfig');
@@ -36,7 +43,7 @@ class NanachiWebpackPlugin {
         });
         compiler.hooks.emit.tap(id, (compilation) => {
             if (this.nanachiOptions.platform === 'h5') {
-                const { code } = generator_1.default(types_1.default.exportDefaultDeclaration(pageConfig));
+                const { code } = generator_1.default(t.exportDefaultDeclaration(pageConfig));
                 compilation.assets['pageConfig.js'] = {
                     source: function () {
                         return code;

@@ -1,7 +1,7 @@
 import Timer from '../packages/utils/timer';
 import { resetNum, timerLog } from '../packages/utils/logger/index';
 import generate from '@babel/generator';
-import t from '@babel/types';
+import * as t from '@babel/types';
 import { NanachiOptions } from '../index';
 import webpack = require('webpack');
 const setWebView = require('../packages/utils/setWebVeiw');
@@ -43,7 +43,6 @@ class NanachiWebpackPlugin implements webpack.Plugin {
         compiler.hooks.emit.tap(id, (compilation) => {
             if (this.nanachiOptions.platform === 'h5') {
                 // 生成pageConfig 文件 用于动态加载情况下，读取页面配置信息
-                // console.log(generate(t.exportDefaultDeclaration(pageConfig)).code);
                 const { code } = generate(t.exportDefaultDeclaration(pageConfig));
                 compilation.assets['pageConfig.js'] = {
                     source: function() {
