@@ -25,7 +25,7 @@ const queue_1 = require("./packages/utils/logger/queue");
 const index_1 = require("./packages/utils/logger/index");
 const chalk_1 = __importDefault(require("chalk"));
 const webpackConfig_1 = __importDefault(require("./config/webpackConfig"));
-const core_1 = __importDefault(require("@babel/core"));
+const babel = __importStar(require("@babel/core"));
 const child_process_1 = require("child_process");
 const utils = require('./packages/utils/index');
 const globalConfig = require('./config/config.js');
@@ -172,7 +172,7 @@ function getWebViewRules() {
     });
     webViewRoutes.forEach(function (pagePath) {
         return __awaiter(this, void 0, void 0, function* () {
-            core_1.default.transformFileSync(pagePath, {
+            babel.transformFileSync(pagePath, {
                 configFile: false,
                 babelrc: false,
                 comments: false,

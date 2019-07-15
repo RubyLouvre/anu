@@ -1,7 +1,7 @@
-const path = require('path');
+import * as path from 'path';
 const StyleParserFactory = require('../../parsers/styleParser/StyleParserFactory');
 
-module.exports = async function(code, map, meta) {
+module.exports = async function(code: string, map: any, meta: any) {
     const callback = this.async();
     const parser = StyleParserFactory.create({
         type: path.extname(this.resourcePath).replace(/^\./, ''), // sass less css

@@ -1,7 +1,7 @@
-const { MAP } = require('../../consts/index');
-const { successLog } = require('../logger/index');
+import { NanachiLoaderStruct } from './nanachiLoader';
+import { successLog } from '../../packages/utils/logger/index';
+import * as path from 'path';
 const utils = require('../../packages/utils/index');
-const path = require('path');
 
 /**
  * queues 存放需要输出的文件
@@ -9,16 +9,7 @@ const path = require('path');
  * 处理快应用的多个文件合并成一个文件，QQ小程序添加空的样式文件的各种情况
  */
 
-interface NanachiQueue {
-    
-}
-
-interface NanachiLoaderStruct {
-    queues: Array<NanachiQueue>;
-    exportCode: string;
-}
-
-module.exports = async function({ queues = [], exportCode = '' }: NanachiLoaderStruct, map, meta) {
+module.exports = async function({ queues = [], exportCode = '' }: NanachiLoaderStruct, map: any, meta: any) {
     this._compiler.NANACHI = this._compiler.NANACHI || {};
     this._compiler.NANACHI.webviews = this._compiler.NANACHI.webviews || [];
     if ( utils.isWebView(this.resourcePath) ) {
@@ -31,7 +22,7 @@ module.exports = async function({ queues = [], exportCode = '' }: NanachiLoaderS
     }
 
     const callback = this.async();
-    queues.forEach(({ code = '', path: relativePath, type }) => {
+    queues.forEach(({ code = '', path: relativePath }) => {
         //qq轻应用，页面必须有样式，否则页面无法渲染，这是qq轻应用bug
         if ( this.nanachiOptions.platform === 'qq' && /[\/\\](pages|components)[\/\\]/.test(this.resourcePath) && path.parse(this.resourcePath).base === 'index.js' ) {
             //to do .css 有问题

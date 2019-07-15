@@ -1,17 +1,19 @@
-const { MAP } = require('../../consts/index');
-const babel = require('@babel/core');
+import { MAP } from '../../consts/index';
+import * as babel from '@babel/core';
+import { NanachiLoaderStruct } from './nanachiLoader';
+import getAliasMap, { Alias } from '../../consts/alias';
 const calculateAlias = require('../../packages/utils/calculateAlias');
 
 //提取package.json中的别名配置
-function resolveAlias(code, aliasMap, relativePath, ast, ctx) {
-    const babelConfig = {
+function resolveAlias(code: string, aliasMap: Alias, relativePath: string, ast: any, ctx: any) {
+    const babelConfig: babel.TransformOptions = {
         configFile: false,
         babelrc: false,
         plugins: [
             [
                 require('babel-plugin-module-resolver'),       
                 {
-                    resolvePath(moduleName) {
+                    resolvePath(moduleName: string) {
                         //计算别名配置以及处理npm路径计算
                         return calculateAlias(ctx.resourcePath, moduleName);
                     }
@@ -32,8 +34,8 @@ function resolveAlias(code, aliasMap, relativePath, ast, ctx) {
  * 别名解析loader，将queue中代码的别名解析成相对路径
  */
 
-module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
-    const aliasMap = require('../../consts/alias')(this.nanachiOptions.platform);
+module.exports = async function({ queues = [], exportCode = '' }: NanachiLoaderStruct, map: any, meta: any) {
+    const aliasMap = getAliasMap(this.nanachiOptions.platform);
     let ctx = this;
     const callback = this.async();
     queues = queues.map(({ code = '', path: filePath, type, ast }) => {

@@ -5,7 +5,7 @@ import { build as buildLog, Log, warning, error } from './packages/utils/logger/
 import { errorLog, warningLog } from './packages/utils/logger/index';
 import chalk from 'chalk';
 import getWebPackConfig from './config/webpackConfig';
-import babel from '@babel/core';
+import * as babel from '@babel/core';
 import { spawnSync as spawn } from 'child_process';
 const utils = require('./packages/utils/index');
 const globalConfig = require('./config/config.js');
@@ -126,8 +126,6 @@ async function nanachi({
 
         await runBeforeParseTasks({ buildType: platform, beta, betaUi, compress });
 
-        // 添加解码中文字符loader
-        // postLoaders.unshift(require.resolve('./nanachi-loader/loaders/decodeChineseLoader'));
         if (compress) {
             // 添加代码压缩loader
             postLoaders.unshift('nanachi-compress-loader');

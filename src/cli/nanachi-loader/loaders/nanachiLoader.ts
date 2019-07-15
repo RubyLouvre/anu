@@ -1,6 +1,18 @@
 const JavascriptParserFactory = require('../../parsers/jsParser/JavascriptParserFactory');
 const utils = require('../../packages/utils/index');
 
+export interface NanachiQueue {
+    code: string;
+    path: string;
+    type: string;
+    ast?: any;
+}
+
+export interface NanachiLoaderStruct {
+    queues: Array<NanachiQueue>;
+    exportCode: string;
+}
+
 module.exports = async function(code: string, map: any, meta: any) {
     const callback = this.async();
 

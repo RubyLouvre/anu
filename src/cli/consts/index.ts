@@ -1,7 +1,9 @@
 import * as path from 'path';
 const cwd = process.cwd();
 
-export const REACT_LIB_MAP = {
+export const REACT_LIB_MAP: {
+    [propsName: string]: string;
+} = {
     wx: 'ReactWX.js',
     ali: 'ReactAli.js',
     bu: 'ReactBu.js',
@@ -11,7 +13,14 @@ export const REACT_LIB_MAP = {
     tt: 'ReactWX.js'
 };
 
-export const MAP: any = {
+export const MAP: {
+    [propsName: string]: {
+        EXT_NAME: {
+            [extName: string]: string;
+        },
+        patchComponents: Array<string>;
+    }
+} = {
     'wx': {
         EXT_NAME: {
             'css': 'wxss',

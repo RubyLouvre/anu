@@ -1,15 +1,16 @@
-const path = require('path');
-const babel = require('@babel/core');
+import * as path from 'path';
+import * as babel from '@babel/core';
+import { NanachiQueue } from './nanachiLoader';
 
-const isReact = function(sourcePath){
+const isReact = function(sourcePath: string){
     return /React\w+\.js$/.test(path.basename(sourcePath));
 };
 
-module.exports = async function(code, map, meta) {
+module.exports = async function(code: string, map: any, meta: any) {
    
     const callback = this.async();
     let relativePath = '';
-    let queues;
+    let queues: Array<NanachiQueue>;
     // 如果不是业务目录下的资源，直接返回空
     if (/\/webpack\//.test(this.resourcePath.replace(/\\/g, ''))) {
         queues = [];

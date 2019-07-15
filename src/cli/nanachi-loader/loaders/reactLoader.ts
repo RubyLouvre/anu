@@ -1,7 +1,7 @@
-const babel = require('@babel/core');
+import * as babel from '@babel/core';
 const buildType = process.env.ANU_ENV;
 
-module.exports = async function(code, map, meta) {
+module.exports = async function(code: string, map: any, meta: any) {
     const callback = this.async();
     if (buildType === 'quick') {
         try {
