@@ -8,9 +8,9 @@ import getWebPackConfig from './config/webpackConfig';
 import * as babel from '@babel/core';
 import { spawnSync as spawn } from 'child_process';
 const utils = require('./packages/utils/index');
-const globalConfig = require('./config/config.js');
-const runBeforeParseTasks = require('./tasks/runBeforeParseTasks');
-const createH5Server = require('./tasks/createH5Server');
+import globalConfig from './config/config';
+import runBeforeParseTasks from './tasks/runBeforeParseTasks';
+import createH5Server from './tasks/createH5Server';
 
 export interface NanachiOptions {
     watch?: boolean;
@@ -124,7 +124,7 @@ async function nanachi({
 
         getWebViewRules();
 
-        await runBeforeParseTasks({ buildType: platform, beta, betaUi, compress });
+        await runBeforeParseTasks({ platform, beta, betaUi, compress });
 
         if (compress) {
             // 添加代码压缩loader
@@ -224,8 +224,8 @@ function getWebViewRules() {
         });
     });
 
-
-    if (globalConfig.WebViewRules && globalConfig.WebViewRules.pages.length) {
+    const WebViewRules: any = globalConfig.WebViewRules;
+    if (WebViewRules && WebViewRules.pages.length) {
         process.env.ANU_WEBVIEW = 'need_require_webview_file';
     } else {
         process.env.ANU_WEBVIEW = '';

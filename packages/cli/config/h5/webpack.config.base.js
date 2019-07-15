@@ -1,57 +1,46 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const webpack_1 = __importDefault(require("webpack"));
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-// const CleanWebpackPlugin = require('clean-webpack-plugin');
-const webpack = require('webpack');
-const path = require('path');
-const R = require('ramda');
-
-const {
-    intermediateDirectoryName,
-    outputDirectory,
-    retrieveNanachiConfig
-} = require('./configurations');
-
-const fs = require('fs-extra');
-
+const path = __importStar(require("path"));
+const ramda_1 = __importDefault(require("ramda"));
+const configurations_1 = require("./configurations");
+const fs = __importStar(require("fs-extra"));
 const context = path.resolve(process.cwd(), 'dist');
 const h5helperPath = path.resolve(__dirname, '../../packages/h5Helpers');
-const resolveFromContext = R.curryN(2, path.resolve)(context);
-const resolveFromDirCwd = R.curryN(2, path.resolve)(process.cwd());
-const resolveFromH5Helper = R.curryN(2, path.resolve)(h5helperPath);
+const resolveFromContext = ramda_1.default.curryN(2, path.resolve)(context);
+const resolveFromDirCwd = ramda_1.default.curryN(2, path.resolve)(process.cwd());
+const resolveFromH5Helper = ramda_1.default.curryN(2, path.resolve)(h5helperPath);
 let templatePath = resolveFromH5Helper('./index.html');
-
 try {
     const userTemplatePath = resolveFromDirCwd('./index.html');
     fs.statSync(userTemplatePath);
     templatePath = userTemplatePath;
-} catch (e) {
-    // 用户根目录不存在模板html文件则用默认模板
 }
-
-module.exports = {
+catch (e) {
+}
+const webpackConfig = {
     mode: 'development',
     context,
     target: 'web',
-    entry: resolveFromContext(`${intermediateDirectoryName}/app.js`),
+    entry: resolveFromContext(`${configurations_1.intermediateDirectoryName}/app.js`),
     output: {
-        path: resolveFromDirCwd(outputDirectory),
+        path: resolveFromDirCwd(configurations_1.outputDirectory),
         filename: 'bundle.[hash:10].js',
         publicPath: '/web/'
     },
     resolve: {
-        alias: {
-            ...retrieveNanachiConfig(),
-            react: resolveFromDirCwd('./source/ReactH5.js'),
-            '@react': resolveFromDirCwd('./source/ReactH5.js'),
-            'react-dom': resolveFromDirCwd('./source/ReactH5.js'),
-            'schnee-ui': resolveFromContext(`${intermediateDirectoryName}/npm/schnee-ui`),
-            '@internalComponents': resolveFromH5Helper('components'),
-            '@internalConsts': path.resolve(__dirname, '../../consts/'),
-            '@components': resolveFromContext(
-                `${intermediateDirectoryName}/components`
-            ),
-            '@pageConfig': resolveFromContext(`${intermediateDirectoryName}/pageConfig.js`),
-            '@qunar-default-loading': resolveFromH5Helper('components/Loading'),
-        },
+        alias: Object.assign({}, configurations_1.retrieveNanachiConfig(), { react: resolveFromDirCwd('./source/ReactH5.js'), '@react': resolveFromDirCwd('./source/ReactH5.js'), 'react-dom': resolveFromDirCwd('./source/ReactH5.js'), 'schnee-ui': resolveFromContext(`${configurations_1.intermediateDirectoryName}/npm/schnee-ui`), '@internalComponents': resolveFromH5Helper('components'), '@internalConsts': path.resolve(__dirname, '../../consts/'), '@components': resolveFromContext(`${configurations_1.intermediateDirectoryName}/components`), '@pageConfig': resolveFromContext(`${configurations_1.intermediateDirectoryName}/pageConfig.js`), '@qunar-default-loading': resolveFromH5Helper('components/Loading') }),
         modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')]
     },
     module: {
@@ -97,11 +86,8 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: templatePath
         }),
-        new webpack.EnvironmentPlugin({
-            ANU_ENV: 'web',
-            ...process.env
-        }),
-        // new CleanWebpackPlugin()
+        new webpack_1.default.EnvironmentPlugin(Object.assign({ ANU_ENV: 'web' }, process.env)),
     ],
     stats: 'errors-only'
 };
+exports.default = webpackConfig;

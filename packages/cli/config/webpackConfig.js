@@ -17,7 +17,7 @@ const chaikaPlugin_1 = __importDefault(require("../nanachi-loader/chaika-plugin/
 const copy_webpack_plugin_1 = __importDefault(require("copy-webpack-plugin"));
 const path = __importStar(require("path"));
 const utils = require('../packages/utils/index');
-const { intermediateDirectoryName } = require('./h5/configurations');
+const configurations_1 = require("./h5/configurations");
 const fileLoader = require.resolve('../nanachi-loader/loaders/fileLoader');
 const aliasLoader = require.resolve('../nanachi-loader/loaders/aliasLoader');
 const nanachiLoader = require.resolve('../nanachi-loader/loaders/nanachiLoader');
@@ -29,7 +29,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
     let distPath = path.resolve(cwd, utils.getDistName(platform));
     if (platform === 'h5') {
-        distPath = path.join(distPath, intermediateDirectoryName);
+        distPath = path.join(distPath, configurations_1.intermediateDirectoryName);
     }
     let copyPluginOption = null;
     if (compress) {

@@ -30,6 +30,7 @@ const inlineElement = {
     q: 1
 };
 
+
 let cache = {};
 if (buildType == 'quick') {
     //快应用不需要放到Component/Page方法中

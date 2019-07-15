@@ -1,55 +1,43 @@
-const path = require('path');
-const fs = require('fs-extra');
-const R = require('ramda');
-
-const intermediateDirectoryName =
-  '__intermediate__directory__do__not__modify__';
-const sourceDirectoryName = 'source';
-const assetsDirectoryName = 'assets';
-const outputDirectory = 'dist';
-const production = process.env.NODE_ENV === 'production';
-const rootDirectory = path.resolve(process.cwd(), 'dist');
-
-const resolveFromContext = R.curryN(2, path.resolve)(rootDirectory);
-
+"use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const path = __importStar(require("path"));
+const fs = __importStar(require("fs-extra"));
+const ramda_1 = __importDefault(require("ramda"));
+exports.intermediateDirectoryName = '__intermediate__directory__do__not__modify__';
+exports.sourceDirectoryName = 'source';
+exports.assetsDirectoryName = 'assets';
+exports.outputDirectory = 'dist';
+exports.production = process.env.NODE_ENV === 'production';
+exports.rootDirectory = path.resolve(process.cwd(), 'dist');
+const resolveFromContext = ramda_1.default.curryN(2, path.resolve)(exports.rootDirectory);
 function resolveNanachiAlias(alias) {
     const resolved = {
-        '@assets': resolveFromContext(`${intermediateDirectoryName}/assets`)
+        '@assets': resolveFromContext(`${exports.intermediateDirectoryName}/assets`)
     };
-
-    Object.keys(alias).forEach(function(k) {
-        // NOTE
-        // nanachi 定义的路径是相对于项目根目录的
-        // 而在这应该是相对于 source 目录的
-        // 因此需要去掉 source/ 前缀
+    Object.keys(alias).forEach(function (k) {
         const nanachiAlias = alias[k].replace('source/', '');
-
-        resolved[k] = resolveFromContext(
-            `${intermediateDirectoryName}/${nanachiAlias}`
-        );
+        resolved[k] = resolveFromContext(`${exports.intermediateDirectoryName}/${nanachiAlias}`);
     });
-
     return resolved;
 }
-
 function retrieveNanachiConfig() {
     const cwd = process.env.NANACHI_CWD || process.cwd();
-    const resolveFromDirCwd = R.curryN(2, path.resolve)(cwd);
+    const resolveFromDirCwd = ramda_1.default.curryN(2, path.resolve)(cwd);
     const packageJSONPath = resolveFromDirCwd('package.json');
-    const packageJson =
-      fs.readJSONSync(packageJSONPath) ||
-      new Error(`cannot find package.json in ${cwd}`);
+    const packageJson = fs.readJSONSync(packageJSONPath) ||
+        new Error(`cannot find package.json in ${cwd}`);
     const { nanachi = {} } = packageJson;
     const { alias = {} } = nanachi;
     return resolveNanachiAlias(alias);
 }
-
-module.exports = {
-    intermediateDirectoryName,
-    sourceDirectoryName,
-    assetsDirectoryName,
-    outputDirectory,
-    rootDirectory,
-    production,
-    retrieveNanachiConfig
-};
+exports.retrieveNanachiConfig = retrieveNanachiConfig;

@@ -1,19 +1,9 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const webpack_config_base_1 = __importDefault(require("./webpack.config.base"));
-const path = __importStar(require("path"));
-const webpack_merge_1 = __importDefault(require("webpack-merge"));
-const config = webpack_merge_1.default(webpack_config_base_1.default, {
+import developmentConfig from './webpack.config.base';
+import * as path from 'path';
+import merge from 'webpack-merge';
+import webpack = require('webpack');
+
+const config: webpack.Configuration = merge(developmentConfig, {
     mode: 'development',
     module: {
         rules: [
@@ -43,6 +33,7 @@ const config = webpack_merge_1.default(webpack_config_base_1.default, {
     performance: {
         hints: false
     }
-});
-exports.default = config;
+})
+
+export default config;
 module.exports = config;
