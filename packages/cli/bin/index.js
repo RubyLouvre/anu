@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const package_json_1 = require("../package.json");
-const platforms_1 = __importDefault(require("../ts-consts/platforms"));
-const buildOptions_1 = __importDefault(require("../ts-consts/buildOptions"));
+const platforms_1 = __importDefault(require("../consts/platforms"));
+const buildOptions_1 = __importDefault(require("../consts/buildOptions"));
 const cliBuilder_1 = __importDefault(require("./cliBuilder"));
 const init_1 = __importDefault(require("./commands/init"));
 const createPage_1 = __importDefault(require("./commands/createPage"));

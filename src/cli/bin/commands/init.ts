@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import inquirer from 'inquirer';
-import templates from '../../ts-consts/templates';
+import templates from '../../consts/templates';
 const cwd = process.cwd();
 
 function checkAppName(appName: string){

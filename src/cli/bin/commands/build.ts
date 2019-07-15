@@ -1,5 +1,5 @@
 
-import { NANACHI_CONFIG_PATH } from '../../ts-consts/index';
+import { NANACHI_CONFIG_PATH } from '../../consts/index';
 import * as fs from 'fs-extra';
 const { deepMerge } = require('../../packages/utils/index');
 

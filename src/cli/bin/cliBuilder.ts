@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
 import * as semver from 'semver';
-import { CmdOption, CmdMap } from '../ts-consts/buildOptions';
+import { CmdOption, CmdMap } from '../consts/buildOptions';
 
 interface CliBuilderInterface {
     addCommand(

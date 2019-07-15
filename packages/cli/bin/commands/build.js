@@ -15,7 +15,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_1 = require("../../ts-consts/index");
+const index_1 = require("../../consts/index");
 const fs = __importStar(require("fs-extra"));
 const { deepMerge } = require('../../packages/utils/index');
 function default_1(args) {

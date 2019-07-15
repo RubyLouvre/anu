@@ -1,0 +1,239 @@
+import webpack from 'webpack';
+import * as path from 'path';
+const globalConfig = require('./config/config.js');
+const runBeforeParseTasks = require('./tasks/runBeforeParseTasks');
+const createH5Server = require('./tasks/createH5Server');
+import platforms from './consts/platforms';
+const utils = require('./packages/utils/index');
+const { errorLog, warningLog } = require('./nanachi-loader/logger/index');
+const { build: buildLog } = require('./nanachi-loader/logger/queue');
+import chalk from 'chalk';
+const getWebPackConfig = require('./config/webpackConfig');
+import babel from '@babel/core';
+import { spawnSync as spawn } from 'child_process';
+
+export interface NanachiOptions {
+    watch?: boolean;
+    platform?: string;
+    beta?: boolean;
+    betaUi?: boolean;
+    compress?: boolean;
+    compressOption?: any;
+    huawei?: boolean;
+    rules?: Array<webpack.Rule>;
+    prevLoaders?: Array<string>;
+    postLoaders?: Array<string>;
+    plugins?: Array<webpack.Plugin>;
+    analysis?: boolean;
+    silent?: boolean;
+    complete?: Function;
+}
+
+async function nanachi({
+    // entry = './source/app', // TODO: 入口文件配置暂时不支持
+    watch = false,
+    platform = 'wx',
+    beta = false,
+    betaUi = false,
+    compress = false,
+    compressOption = {},
+    huawei = false,
+    rules = [],
+    prevLoaders = [], // 自定义预处理loaders
+    postLoaders = [], // 自定义后处理loaders
+    plugins = [],
+    analysis = false,
+    silent = false, // 是否显示warning
+    // maxAssetSize = 20480, // 最大资源限制，超出报warning
+    complete = () => { }
+}: NanachiOptions = {}) {
+    function callback(err: Error, stats?: webpack.Stats) {
+        if (err) {
+            // eslint-disable-next-line
+            console.log(err);
+            return;
+        }
+       
+        showLog();
+        const info = stats.toJson();
+        if (stats.hasErrors()) {
+            info.errors.forEach(e => {
+                // eslint-disable-next-line
+                console.error(chalk.red('Error:\n'), utils.cleanLog(e));
+                if (utils.isMportalEnv()) {
+                    process.exit();
+                }
+            });
+        }
+        if (stats.hasWarnings() && !silent) {
+            info.warnings.forEach(warning => {
+                // webpack require语句中包含变量会报warning: Critical dependency，此处过滤掉这个warning
+                if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
+                    // eslint-disable-next-line
+                    console.log(chalk.yellow('Warning:\n'), utils.cleanLog(warning));
+                }
+            });
+        }
+
+        if (platform === 'h5') {
+            const configPath = watch ? './config/h5/webpack.config.js' : './config/h5/webpack.config.prod.js';
+            const webpackH5Config = require(configPath);
+            const compilerH5 = webpack(webpackH5Config);
+            if (watch) {
+                createH5Server(compilerH5);
+            } else {
+                compilerH5.run(function(err, stats) {
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    const info = stats.toJson();
+                    if (stats.hasErrors()) {
+                        info.errors.forEach(e => {
+                            // eslint-disable-next-line
+                            console.error(chalk.red('Error:\n'), utils.cleanLog(e));
+                            if (utils.isMportalEnv()) {
+                                process.exit();
+                            }
+                        });
+                    }
+                    if (stats.hasWarnings() && !silent) {
+                        info.warnings.forEach(warning => {
+                            // webpack require语句中包含变量会报warning: Critical dependency，此处过滤掉这个warning
+                            if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
+                                // eslint-disable-next-line
+                                console.log(chalk.yellow('Warning:\n'), utils.cleanLog(warning));
+                            }
+                        });
+                    }
+                });
+            }
+        }
+        complete(err, stats);
+    }
+    try {
+        if (!utils.validatePlatform(platform, platforms)) {
+            throw new Error(`不支持的platform：${platform}`);
+        }
+
+        injectBuildEnv({
+            platform,
+            compress,
+            huawei
+        });
+
+        getWebViewRules();
+
+        await runBeforeParseTasks({ buildType: platform, beta, betaUi, compress });
+
+        // 添加解码中文字符loader
+        // postLoaders.unshift(require.resolve('./nanachi-loader/loaders/decodeChineseLoader'));
+        if (compress) {
+            // 添加代码压缩loader
+            postLoaders.unshift('nanachi-compress-loader');
+        }
+
+        const webpackConfig = getWebPackConfig({
+            platform,
+            compress,
+            compressOption,
+            beta,
+            betaUi,
+            plugins,
+            analysis,
+            prevLoaders,
+            postLoaders,
+            rules,
+            huawei
+            // maxAssetSize
+        });
+
+        const compiler = webpack(webpackConfig);
+
+        if (watch) {
+            compiler.watch({}, callback);
+        } else {
+            compiler.run(callback);
+        }
+    } catch (err) {
+        callback(err);
+    }
+}
+
+function injectBuildEnv({ platform, compress, huawei }: NanachiOptions) {
+    process.env.ANU_ENV = (platform === 'h5' ? 'web' : platform);
+    globalConfig['buildType'] = platform;
+    globalConfig['compress'] = compress;
+    if (platform === 'quick') {
+        globalConfig['huawei'] = huawei || false;
+    }
+}
+
+function showLog() {
+    if ( utils.isMportalEnv() ) {
+        let log = '';
+        while (buildLog.length) {
+            log += buildLog.shift() + (buildLog.length !== 0 ? '\n' : '');
+        }
+        // eslint-disable-next-line
+        console.log(log);
+    }
+    const errorStack = require('./nanachi-loader/logger/queue');
+    while (errorStack.warning.length) {
+        warningLog(errorStack.warning.shift());
+    }
+    
+    if (errorStack.error.length) {
+        errorStack.error.forEach(function(error: Error){
+            errorLog(error);
+        });
+        if ( utils.isMportalEnv() ) {
+            process.exit(1);
+        }
+    }
+}
+
+//获取 WEBVIEW 配置
+function getWebViewRules() {
+    const cwd = process.cwd();
+    if (globalConfig.buildType != 'quick') return;
+    let bin = 'grep';
+    let opts = ['-r', '-E', "pages:\\s*(\\btrue\\b|\\[.+\\])", path.join(cwd, 'source', 'pages')];
+    let ret = spawn(bin, opts).stdout.toString().trim();
+
+    let webViewRoutes = ret.split(/\s/)
+        .filter(function (el) {
+            return /\/pages\//.test(el)
+        }).map(function (el) {
+            return el.replace(/\:$/g, '')
+        });
+
+    webViewRoutes.forEach(async function (pagePath) {
+        babel.transformFileSync(pagePath, {
+            configFile: false,
+            babelrc: false,
+            comments: false,
+            ast: true,
+            presets: [
+                require('@babel/preset-react')
+            ],
+            plugins: [
+                [require('@babel/plugin-proposal-decorators'), { legacy: true }],
+                [require('@babel/plugin-proposal-class-properties'), { loose: true }],
+                require('@babel/plugin-proposal-object-rest-spread'),
+                require('@babel/plugin-syntax-jsx'),
+                require('./packages/babelPlugins/collectWebViewPage'),
+            ]
+        });
+    });
+
+
+    if (globalConfig.WebViewRules && globalConfig.WebViewRules.pages.length) {
+        process.env.ANU_WEBVIEW = 'need_require_webview_file';
+    } else {
+        process.env.ANU_WEBVIEW = '';
+    }
+
+}
+
+export default nanachi;
