@@ -25,7 +25,7 @@ const nodeLoader = require.resolve('../nanachi-loader/loaders/nodeLoader');
 const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 const nanachiStyleLoader = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
 const cwd = process.cwd();
-module.exports = function ({ platform, compress, compressOption, plugins, rules, huawei, analysis, prevLoaders, postLoaders, }) {
+function default_1({ platform, compress, compressOption, plugins, rules, huawei, analysis, prevLoaders, postLoaders, }) {
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
     let distPath = path.resolve(cwd, utils.getDistName(platform));
     if (platform === 'h5') {
@@ -127,4 +127,6 @@ module.exports = function ({ platform, compress, compressOption, plugins, rules,
         },
         externals: platform === 'h5' ? ['react', '@react', 'react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/] : []
     };
-};
+}
+exports.default = default_1;
+;

@@ -1,16 +1,16 @@
 import webpack from 'webpack';
 import * as path from 'path';
+import platforms from './consts/platforms';
+import { build as buildLog, Log } from './packages/utils/logger/queue';
+import { errorLog, warningLog } from './packages/utils/logger/index';
+import chalk from 'chalk';
+import getWebPackConfig from './config/webpackConfig';
+import babel from '@babel/core';
+import { spawnSync as spawn } from 'child_process';
+const utils = require('./packages/utils/index');
 const globalConfig = require('./config/config.js');
 const runBeforeParseTasks = require('./tasks/runBeforeParseTasks');
 const createH5Server = require('./tasks/createH5Server');
-import platforms from './consts/platforms';
-const utils = require('./packages/utils/index');
-const { errorLog, warningLog } = require('./nanachi-loader/logger/index');
-const { build: buildLog } = require('./nanachi-loader/logger/queue');
-import chalk from 'chalk';
-const getWebPackConfig = require('./config/webpackConfig');
-import babel from '@babel/core';
-import { spawnSync as spawn } from 'child_process';
 
 export interface NanachiOptions {
     watch?: boolean;
@@ -133,7 +133,7 @@ async function nanachi({
             postLoaders.unshift('nanachi-compress-loader');
         }
 
-        const webpackConfig = getWebPackConfig({
+        const webpackConfig: webpack.Configuration = getWebPackConfig({
             platform,
             compress,
             compressOption,
@@ -184,7 +184,7 @@ function showLog() {
     }
     
     if (errorStack.error.length) {
-        errorStack.error.forEach(function(error: Error){
+        errorStack.error.forEach(function(error: Log){
             errorLog(error);
         });
         if ( utils.isMportalEnv() ) {

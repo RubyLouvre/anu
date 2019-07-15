@@ -1,6 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 class Timer {
+    private startTime: [number, number];
+    private endTime: [number, number];
     constructor() {
         this.startTime = process.hrtime();
     }
@@ -18,4 +18,4 @@ class Timer {
         return (this.endTime[0] + this.endTime[1] / NS_PER_SEC).toFixed(precision);
     }
 }
-exports.default = Timer;
+export default Timer;

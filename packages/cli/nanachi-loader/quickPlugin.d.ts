@@ -1,4 +1,5 @@
+import webpack = require("webpack");
 declare class QuickPlugin {
-    apply(compiler: any): void;
+    apply(compiler: webpack.Compiler): void;
 }
 export default QuickPlugin;

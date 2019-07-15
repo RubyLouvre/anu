@@ -20,17 +20,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const webpack_1 = __importDefault(require("webpack"));
 const path = __importStar(require("path"));
+const platforms_1 = __importDefault(require("./consts/platforms"));
+const queue_1 = require("./packages/utils/logger/queue");
+const index_1 = require("./packages/utils/logger/index");
+const chalk_1 = __importDefault(require("chalk"));
+const webpackConfig_1 = __importDefault(require("./config/webpackConfig"));
+const core_1 = __importDefault(require("@babel/core"));
+const child_process_1 = require("child_process");
+const utils = require('./packages/utils/index');
 const globalConfig = require('./config/config.js');
 const runBeforeParseTasks = require('./tasks/runBeforeParseTasks');
 const createH5Server = require('./tasks/createH5Server');
-const platforms_1 = __importDefault(require("./consts/platforms"));
-const utils = require('./packages/utils/index');
-const { errorLog, warningLog } = require('./nanachi-loader/logger/index');
-const { build: buildLog } = require('./nanachi-loader/logger/queue');
-const chalk_1 = __importDefault(require("chalk"));
-const getWebPackConfig = require('./config/webpackConfig');
-const core_1 = __importDefault(require("@babel/core"));
-const child_process_1 = require("child_process");
 function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, rules = [], prevLoaders = [], postLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = {}) {
     return __awaiter(this, void 0, void 0, function* () {
         function callback(err, stats) {
@@ -103,7 +103,7 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
             if (compress) {
                 postLoaders.unshift('nanachi-compress-loader');
             }
-            const webpackConfig = getWebPackConfig({
+            const webpackConfig = webpackConfig_1.default({
                 platform,
                 compress,
                 compressOption,
@@ -140,18 +140,18 @@ function injectBuildEnv({ platform, compress, huawei }) {
 function showLog() {
     if (utils.isMportalEnv()) {
         let log = '';
-        while (buildLog.length) {
-            log += buildLog.shift() + (buildLog.length !== 0 ? '\n' : '');
+        while (queue_1.build.length) {
+            log += queue_1.build.shift() + (queue_1.build.length !== 0 ? '\n' : '');
         }
         console.log(log);
     }
     const errorStack = require('./nanachi-loader/logger/queue');
     while (errorStack.warning.length) {
-        warningLog(errorStack.warning.shift());
+        index_1.warningLog(errorStack.warning.shift());
     }
     if (errorStack.error.length) {
         errorStack.error.forEach(function (error) {
-            errorLog(error);
+            index_1.errorLog(error);
         });
         if (utils.isMportalEnv()) {
             process.exit(1);

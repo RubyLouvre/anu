@@ -8,7 +8,17 @@ const path = require('path');
  * exportCode fileLoader的输出结果，提供给 webpack，用来解析下个依赖文件
  * 处理快应用的多个文件合并成一个文件，QQ小程序添加空的样式文件的各种情况
  */
-module.exports = async function({ queues = [], exportCode = '' }, map, meta) {
+
+interface NanachiQueue {
+    
+}
+
+interface NanachiLoaderStruct {
+    queues: Array<NanachiQueue>;
+    exportCode: string;
+}
+
+module.exports = async function({ queues = [], exportCode = '' }: NanachiLoaderStruct, map, meta) {
     this._compiler.NANACHI = this._compiler.NANACHI || {};
     this._compiler.NANACHI.webviews = this._compiler.NANACHI.webviews || [];
     if ( utils.isWebView(this.resourcePath) ) {

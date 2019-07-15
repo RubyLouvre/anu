@@ -29,10 +29,10 @@ class SizePlugin {
             var map = {}, tree = {}, pages = [], Identifiers = {};
             var assetsInfo = compilation.toJson().assets;
             compilation.toJson().modules.forEach(function (module) {
-                if (/\/node_modules\//.test(module.id)) {
+                if (/\/node_modules\//.test(module.id.toString())) {
                     return;
                 }
-                let fileId = module.id.split(/\/source\//)[1];
+                let fileId = module.id.toString().split(/\/source\//)[1];
                 if (/(pages|app)\/?/.test(fileId) && /\.js$/.test(fileId)) {
                     pages.push(fileId);
                 }
@@ -132,9 +132,9 @@ class SizePlugin {
                 files = files.concat(tem);
                 let tableItem = [];
                 let allSize = (getSize(files) / 1000).toFixed(2);
-                let commonPercent = (getSize(commonFiles) / 1000).toFixed(2) / allSize;
-                commonPercent = commonPercent.toFixed(2) * 100;
-                tableItem.push(plat, Math.round((getSize(files) / 1000).toFixed(2)) + ' Kb', commonPercent + ' %');
+                let commonPercent = +(getSize(commonFiles) / 1000).toFixed(2) / allSize;
+                commonPercent = +commonPercent.toFixed(2) * 100;
+                tableItem.push(plat, Math.round(+(getSize(files) / 1000).toFixed(2)) + ' Kb', commonPercent + ' %');
                 output.push(tableItem);
             }
             var data = [

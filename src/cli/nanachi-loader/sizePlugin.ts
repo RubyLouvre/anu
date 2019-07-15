@@ -1,12 +1,14 @@
+import webpack = require("webpack");
+
 const path = require('path');
 const fs = require('fs');
 const id = 'SizePlugin';
 const table =  require('table').table;
 
 //扁平化数组
-function flatten(ary){
-    var ret = [];
-    ary.map(function(el){
+function flatten(ary: any){
+    var ret: any = [];
+    ary.map(function(el: any){
         if (Array.isArray(el)) {
             ret = ret.concat(el)
         } else {
@@ -17,28 +19,28 @@ function flatten(ary){
 }
 
 
-function getSize(ary){
+function getSize(ary: any): number{
     let defaultSize = 0;
-    ary.forEach(function(el){
+    ary.forEach(function(el: any){
         defaultSize += el.size;
     });
     return defaultSize;
 }
 
 class SizePlugin {
-    apply(compiler){
+    apply(compiler: webpack.Compiler){
         compiler.hooks.done.tap(id, (compilation) => {
-            var map = {}, tree = {}, pages = [], Identifiers = {};
+            var map: any = {}, tree: any = {}, pages: any = [], Identifiers: any = {};
             var assetsInfo = compilation.toJson().assets;
 
-            compilation.toJson().modules.forEach(function(module){
+            compilation.toJson().modules.forEach(function(module: any){
                 
                 //过滤 node_modules 模块
-                if (/\/node_modules\//.test(module.id)) {
+                if (/\/node_modules\//.test(module.id.toString())) {
                     return;
                 }
 
-                let fileId = module.id.split(/\/source\//)[1];
+                let fileId = module.id.toString().split(/\/source\//)[1];
                 // pages 和 app.js 作为业务 size 统计
                 if (/(pages|app)\/?/.test( fileId ) && /\.js$/.test(fileId) ) {
                     pages.push(fileId);
@@ -46,7 +48,7 @@ class SizePlugin {
                 
                 // reasons 表示 module.id 依赖宿主（被谁依赖）
                 var reasons = module.reasons
-                    .map(function(el){
+                    .map(function(el: any){
                         if (el.moduleId) {
                             return el.moduleId.split(/\/source\//)[1];
                         } else {
@@ -73,7 +75,7 @@ class SizePlugin {
             });
 
             //获得依赖树
-            pages.forEach(function( pagePath ){
+            pages.forEach(function( pagePath: string ){
                 for(let i in map) {
                     if (map[i].reasons.includes(pagePath)) {
                         tree[pagePath] = tree[pagePath] || [];
@@ -86,12 +88,12 @@ class SizePlugin {
             })
 
             //dep代表当前平台依赖哪些资源（包括公共资源），common代表该平台用到的公共资源
-            let ret = {};
+            let ret: any = {};
             fs.readdirSync(path.join(process.cwd(), 'source', 'pages'))
-            .filter(function(el){
+            .filter(function(el: string){
                 return /^\w+/.test(el);
             })
-            .forEach(function(plat){
+            .forEach(function(plat: any){
                 ret[plat] = {
                     plat: plat,
                     dep: [],
@@ -102,9 +104,9 @@ class SizePlugin {
            
             for( let i in tree ) {
                //获取单个文件打包的xml,样式, js 资源
-               let fileDeps = tree[i].map(function(dep){
+               let fileDeps = tree[i].map(function(dep: any){
                     var depAssets = map[dep].assets;
-                    return depAssets.map(function(el){
+                    return depAssets.map(function(el: any){
                         let target = assetsInfo.find(function(item){
                             return item.name == el;
                         });
@@ -123,7 +125,7 @@ class SizePlugin {
                 ret[plat].dep = ret[plat].dep.concat(fileDeps);
                } else {
                 // app.js 过滤里面的 pages, react runtime 依赖, 没必要计算进去。
-                fileDeps = fileDeps.filter(function(el){
+                fileDeps = fileDeps.filter(function(el: any){
                     return !/^pages\//.test(el.name) && !/React\w+\.js$/.test(el.name)
                 });
                 ret.app = ret.app || {
@@ -136,13 +138,13 @@ class SizePlugin {
 
             let output = [];
             for(let plat in ret) {
-                let dep = ret[plat].dep, tem = [], commonFiles = [], files = [];
+                let dep = ret[plat].dep, tem: any = [], commonFiles: any = [], files: any = [];
                 
-                dep = dep.filter(function(el){
+                dep = dep.filter(function(el: any){
                     return !/React\w+\.js$/.test(el.name);
                 });
 
-                dep.forEach(function(el){
+                dep.forEach(function(el: any){
                     //公共资源
                     if (Identifiers[el.name] == 1) {
                         commonFiles.push(el);   
@@ -162,13 +164,13 @@ class SizePlugin {
 
                 //配置 table 输出数据
                 let tableItem = [];
-                let allSize = (getSize(files)/1000).toFixed(2);
-                let commonPercent =  (getSize(commonFiles)/1000).toFixed(2) / allSize;
-                commonPercent = commonPercent.toFixed(2) * 100;
+                let allSize: any = (getSize(files)/1000).toFixed(2);
+                let commonPercent = +(getSize(commonFiles)/1000).toFixed(2) / allSize;
+                commonPercent = +commonPercent.toFixed(2) * 100;
                 
                 tableItem.push(
                      plat,
-                     Math.round( ( getSize(files)/1000).toFixed(2) )  + ' Kb',
+                     Math.round( +( getSize(files)/1000).toFixed(2) )  + ' Kb',
                      commonPercent + ' %'
                 );
                 

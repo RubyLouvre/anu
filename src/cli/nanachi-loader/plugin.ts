@@ -1,18 +1,28 @@
-const Timer = require('../packages/utils/timer');
-const { resetNum, timerLog } = require('./logger/index');
+import Timer from '../packages/utils/timer';
+import { resetNum, timerLog } from '../packages/utils/logger/index';
+import generate from '@babel/generator';
+import t from '@babel/types';
+import { NanachiOptions } from '../index';
+import webpack = require('webpack');
 const setWebView = require('../packages/utils/setWebVeiw');
 const id = 'NanachiWebpackPlugin';
 const pageConfig = require('../packages/h5Helpers/pageConfig');
-const generate = require('@babel/generator').default;
-const t = require('@babel/types');
 
-class NanachiWebpackPlugin {
+interface NanachiCompiler extends webpack.Compiler {
+    NANACHI?: {
+        webviews?: Array<any>
+    }
+}
+
+class NanachiWebpackPlugin implements webpack.Plugin {
+    private timer: Timer;
+    private nanachiOptions: NanachiOptions;
     constructor({
         platform = 'wx',
         compress = false,
-        beta,
-        betaUi
-    } = {}) {
+        beta = false,
+        betaUi = false
+    }: NanachiOptions = {}) {
         this.timer = new Timer();
         this.nanachiOptions = {
             platform,
@@ -21,7 +31,7 @@ class NanachiWebpackPlugin {
             betaUi
         };
     }
-    apply(compiler) {
+    apply(compiler: NanachiCompiler) {
 
         compiler.hooks.compilation.tap(id, (compilation) => {
             compilation.hooks.normalModuleLoader.tap(id, (loaderContext) => {

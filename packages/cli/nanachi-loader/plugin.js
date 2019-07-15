@@ -7,17 +7,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const Timer = require('../packages/utils/timer');
-const { resetNum, timerLog } = require('./logger/index');
+const timer_1 = __importDefault(require("../packages/utils/timer"));
+const index_1 = require("../packages/utils/logger/index");
+const generator_1 = __importDefault(require("@babel/generator"));
+const types_1 = __importDefault(require("@babel/types"));
 const setWebView = require('../packages/utils/setWebVeiw');
 const id = 'NanachiWebpackPlugin';
 const pageConfig = require('../packages/h5Helpers/pageConfig');
-const generate = require('@babel/generator').default;
-const t = require('@babel/types');
 class NanachiWebpackPlugin {
-    constructor({ platform = 'wx', compress = false, beta, betaUi } = {}) {
-        this.timer = new Timer();
+    constructor({ platform = 'wx', compress = false, beta = false, betaUi = false } = {}) {
+        this.timer = new timer_1.default();
         this.nanachiOptions = {
             platform,
             compress,
@@ -33,7 +36,7 @@ class NanachiWebpackPlugin {
         });
         compiler.hooks.emit.tap(id, (compilation) => {
             if (this.nanachiOptions.platform === 'h5') {
-                const { code } = generate(t.exportDefaultDeclaration(pageConfig));
+                const { code } = generator_1.default(types_1.default.exportDefaultDeclaration(pageConfig));
                 compilation.assets['pageConfig.js'] = {
                     source: function () {
                         return code;
@@ -52,18 +55,18 @@ class NanachiWebpackPlugin {
         });
         compiler.hooks.run.tapAsync(id, (compilation, callback) => __awaiter(this, void 0, void 0, function* () {
             this.timer.start();
-            resetNum();
+            index_1.resetNum();
             callback();
         }));
         compiler.hooks.watchRun.tapAsync(id, (compilation, callback) => __awaiter(this, void 0, void 0, function* () {
             this.timer.start();
-            resetNum();
+            index_1.resetNum();
             callback();
         }));
         compiler.hooks.done.tap(id, () => {
             this.timer.end();
             setWebView(compiler.NANACHI && compiler.NANACHI.webviews);
-            timerLog(this.timer);
+            index_1.timerLog(this.timer);
         });
     }
 }

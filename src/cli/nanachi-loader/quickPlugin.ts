@@ -1,9 +1,11 @@
+import webpack = require("webpack");
+
 const config = require('../config/config');
 const id = 'QuickPlugin';
 const path = require('path');
 
 class QuickPlugin {
-    apply(compiler) {
+    apply(compiler: webpack.Compiler) {
         // 删除webpack打包产物
         compiler.hooks.emit.tap(id, (compilation) => {
             if (config.quick.disabledTitleBarPages.size) {

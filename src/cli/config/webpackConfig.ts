@@ -6,6 +6,7 @@ import ChaikaPlugin from '../nanachi-loader/chaika-plugin/chaikaPlugin';
 import CopyWebpackPlugin, {} from 'copy-webpack-plugin';
 import { NanachiOptions } from '../index';
 import * as path from 'path';
+import webpack from 'webpack';
 const utils = require('../packages/utils/index');
 const { intermediateDirectoryName } = require('./h5/configurations');
 //各种loader
@@ -25,7 +26,7 @@ const nanachiStyleLoader  = require.resolve('../nanachi-loader/loaders/nanachiSt
 
 const cwd = process.cwd();
 
-module.exports = function({
+export default function({
     platform,
     compress,
     compressOption,
@@ -36,7 +37,7 @@ module.exports = function({
     prevLoaders, // 自定义预处理loaders
     postLoaders, // 自定义后处理loaders
     // maxAssetSize // 资源大小限制，超出后报warning
-}: NanachiOptions) {
+}: NanachiOptions): webpack.Configuration {
     
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
     let distPath = path.resolve(cwd, utils.getDistName(platform));
