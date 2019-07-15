@@ -1,8 +1,8 @@
 
-const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
-const SizePlugin = require('../nanachi-loader/sizePlugin');
-const QuickPlugin = require('../nanachi-loader/quickPlugin');
-const ChaikaPlugin = require('../nanachi-loader/chaika-plugin/chaikaPlugin');
+import NanachiWebpackPlugin from '../nanachi-loader/plugin';
+import SizePlugin from '../nanachi-loader/sizePlugin';
+import QuickPlugin from '../nanachi-loader/quickPlugin';
+import ChaikaPlugin from '../nanachi-loader/chaika-plugin/chaikaPlugin';
 import CopyWebpackPlugin, {} from 'copy-webpack-plugin';
 import { NanachiOptions } from '../index';
 import * as path from 'path';

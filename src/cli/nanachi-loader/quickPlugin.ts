@@ -25,4 +25,4 @@ class QuickPlugin {
     }
 }
 
-module.exports = QuickPlugin;
+export default QuickPlugin;

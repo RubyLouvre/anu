@@ -12,6 +12,7 @@ const init_1 = __importDefault(require("./commands/init"));
 const createPage_1 = __importDefault(require("./commands/createPage"));
 const build_1 = __importDefault(require("./commands/build"));
 const install_1 = __importDefault(require("./commands/install"));
+require("../tasks/chaikaMergeTask/injectChaikaEnv");
 const cli = new cliBuilder_1.default();
 cli.checkNodeVersion('8.6.0');
 cli.version = package_json_1.version;

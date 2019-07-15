@@ -7,6 +7,7 @@ import init from './commands/init';
 import createPage from './commands/createPage';
 import build from './commands/build';
 import install from './commands/install';
+import '../tasks/chaikaMergeTask/injectChaikaEnv';
 
 const cli: CliBuilder = new CliBuilder();
 cli.checkNodeVersion('8.6.0');

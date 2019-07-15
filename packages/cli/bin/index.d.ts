@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-export {};
+import '../tasks/chaikaMergeTask/injectChaikaEnv';

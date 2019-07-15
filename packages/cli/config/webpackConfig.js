@@ -10,10 +10,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const NanachiWebpackPlugin = require('../nanachi-loader/plugin');
-const SizePlugin = require('../nanachi-loader/sizePlugin');
-const QuickPlugin = require('../nanachi-loader/quickPlugin');
-const ChaikaPlugin = require('../nanachi-loader/chaika-plugin/chaikaPlugin');
+const plugin_1 = __importDefault(require("../nanachi-loader/plugin"));
+const sizePlugin_1 = __importDefault(require("../nanachi-loader/sizePlugin"));
+const quickPlugin_1 = __importDefault(require("../nanachi-loader/quickPlugin"));
+const chaikaPlugin_1 = __importDefault(require("../nanachi-loader/chaika-plugin/chaikaPlugin"));
 const copy_webpack_plugin_1 = __importDefault(require("copy-webpack-plugin"));
 const path = __importStar(require("path"));
 const utils = require('../packages/utils/index');
@@ -49,7 +49,7 @@ module.exports = function ({ platform, compress, compressOption, plugins, rules,
     const copyAssetsRules = [Object.assign({ from: '**', to: 'assets', context: 'source/assets', ignore: [
                 '**/*.@(js|jsx|json|sass|scss|less|css)'
             ] }, copyPluginOption)];
-    const mergePlugins = [].concat(new ChaikaPlugin(), analysis ? new SizePlugin() : [], new NanachiWebpackPlugin({
+    const mergePlugins = [].concat(new chaikaPlugin_1.default(), analysis ? new sizePlugin_1.default() : [], new plugin_1.default({
         platform,
         compress
     }), new copy_webpack_plugin_1.default(copyAssetsRules), plugins);
@@ -73,7 +73,7 @@ module.exports = function ({ platform, compress, compressOption, plugins, rules,
         use: [].concat(fileLoader, postLoaders, platform !== 'h5' ? aliasLoader : [], nanachiStyleLoader, prevLoaders)
     }, rules);
     if (platform === 'quick') {
-        mergePlugins.push(new QuickPlugin());
+        mergePlugins.push(new quickPlugin_1.default());
         try {
             var quickConfig = {};
             process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'

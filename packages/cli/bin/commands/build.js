@@ -14,9 +14,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../../consts/index");
 const fs = __importStar(require("fs-extra"));
+const index_2 = __importDefault(require("../../index"));
 const { deepMerge } = require('../../packages/utils/index');
 function default_1(args) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -38,7 +42,7 @@ function default_1(args) {
                 deepMerge(nanachiConfig, userConfig);
             }
             deepMerge(nanachiConfig, baseConfig);
-            require('../../index')(nanachiConfig);
+            index_2.default(nanachiConfig);
         }
         catch (e) {
             console.log(e);

@@ -27,4 +27,4 @@ class ChaikaPlugin {
     }
 }
 
-module.exports = ChaikaPlugin;
+export default ChaikaPlugin;

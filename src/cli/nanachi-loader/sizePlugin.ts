@@ -199,5 +199,4 @@ class SizePlugin {
     }
 }
 
-
-module.exports = SizePlugin;
+export default SizePlugin;

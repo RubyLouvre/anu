@@ -76,4 +76,4 @@ class NanachiWebpackPlugin {
     }
 }
 
-module.exports = NanachiWebpackPlugin;
+export default NanachiWebpackPlugin;
