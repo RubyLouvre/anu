@@ -1,4 +1,4 @@
-import JavascriptParser from './JavascriptParser';
+import JavascriptParser, { BabelRes } from './JavascriptParser';
 import { parserOptions } from './JavascriptParserFactory';
 const thePathHasCommon = /\bcommon\b/;
 
@@ -45,7 +45,7 @@ class WxParser extends JavascriptParser{
         };
     }
     async parse() {
-        const res = await this._parse();
+        const res = await super.parse();
         this.queues = res.options.anu && res.options.anu.queue || this.queues;
         this.extraModules = res.options.anu && res.options.anu.extraModules || this.extraModules;
         this.queues.push({
@@ -55,6 +55,7 @@ class WxParser extends JavascriptParser{
             ast: this.ast,
             extraModules: this.extraModules
         });
+        return res;
     }
 }
 

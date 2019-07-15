@@ -47,7 +47,7 @@ class QuickParser extends JavascriptParser {
         };
     }
     async parse() {
-        const result = await this._parse();
+        const result = await super.parse();
         // 解析快应用依赖的样式文件
         let cssPath = this.extraModules.filter((fileId)=>{
             return isStyle(fileId);
@@ -80,6 +80,7 @@ class QuickParser extends JavascriptParser {
                 ast: this.ast,
             });
         }
+        return result;
     }
     getUxCode() {
         const obj = quickFiles[utils.fixWinPath(this.filepath)];

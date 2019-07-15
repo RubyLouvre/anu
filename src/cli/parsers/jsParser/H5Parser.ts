@@ -36,7 +36,7 @@ class H5Parser extends JavascriptParser{
         }
     }
     async parse() {
-        const res = await this._parse();
+        const res = await super.parse();
         // 只有h5需要处理parsedCode，因为多一次babel.transform会再遍历ast树，损耗编译性能
         this.parsedCode = this.getCodeForWebpack();
         this.queues.push({
@@ -46,6 +46,7 @@ class H5Parser extends JavascriptParser{
             ast: this.ast,
             extraModules: this.extraModules
         });
+        return res;
     }
 }
 

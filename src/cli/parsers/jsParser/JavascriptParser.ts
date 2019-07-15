@@ -13,7 +13,7 @@ const removeAst = (ast: any) => {
     }
 };
 
-interface BabelRes extends babel.BabelFileResult {
+export interface BabelRes extends babel.BabelFileResult {
     options?: {
         anu?: any
     }
@@ -71,7 +71,7 @@ class JavascriptParser{
         }
     }
     
-    async _parse() {
+    async parse():Promise<BabelRes> {
         const res: BabelRes = await babel.transformFileAsync(this.filepath, this._babelPlugin);
         this.extraModules = res.options.anu && res.options.anu.extraModules || this.extraModules;
         this.parsedCode = res.code;

@@ -10,20 +10,27 @@ const BuParser_1 = __importDefault(require("./BuParser"));
 const TtParser_1 = __importDefault(require("./TtParser"));
 const QuickParser_1 = __importDefault(require("./QuickParser"));
 const H5Parser_1 = __importDefault(require("./H5Parser"));
-const maps = {
-    wx: WxParser_1.default,
-    qq: QqParser_1.default,
-    ali: AliParser_1.default,
-    bu: BuParser_1.default,
-    tt: TtParser_1.default,
-    quick: QuickParser_1.default,
-    h5: H5Parser_1.default
-};
 class JavascriptParserFactory {
     static create(options) {
         const { platform } = options;
-        const Parser = maps[platform];
-        return new Parser(options);
+        switch (platform) {
+            case 'wx':
+                return new WxParser_1.default(options);
+            case 'qq':
+                return new QqParser_1.default(options);
+            case 'ali':
+                return new AliParser_1.default(options);
+            case 'bu':
+                return new BuParser_1.default(options);
+            case 'tt':
+                return new TtParser_1.default(options);
+            case 'quick':
+                return new QuickParser_1.default(options);
+            case 'h5':
+                return new H5Parser_1.default(options);
+            default:
+                return new WxParser_1.default(options);
+        }
     }
 }
 exports.default = JavascriptParserFactory;
