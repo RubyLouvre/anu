@@ -19,39 +19,38 @@ import share from './share';
 import notSupport from './notSupport';
 
 const interfaceNameSpaces = {
-  call,
-  canIUse,
-  canvas,
-  clipboard,
-  file,
-  images,
-  interaction,
-  location,
-  previewImage,
-  request,
-  scroll,
-  selectorQuery,
-  storage,
-  systemInfo,
-  vibrate,
-  ws,
-  share,
-  notSupport
+    call,
+    canIUse,
+    canvas,
+    clipboard,
+    file,
+    images,
+    interaction,
+    location,
+    previewImage,
+    request,
+    scroll,
+    selectorQuery,
+    storage,
+    systemInfo,
+    vibrate,
+    ws,
+    share,
+    notSupport
 };
 
 function extractApis(interfaceNameSpaces) {
-  return Object.keys(interfaceNameSpaces).reduce(function(
-    apis,
-    interfaceNameSpaceName
-  ) {
-    return function () {
-      return { ...apis, ...interfaceNameSpaces[interfaceNameSpaceName] };
-    }
-  },
-  {});
+    return Object.keys(interfaceNameSpaces).reduce(function(
+        apis,
+        interfaceNameSpaceName
+    ) {
+        return { ...apis, ...interfaceNameSpaces[interfaceNameSpaceName] };
+    },
+    {});
 }
 
 export default extractApis(interfaceNameSpaces);
 export var more = function() {
-  return extractApis(interfaceNameSpaces)
-}
+    return extractApis(interfaceNameSpaces);
+};
+

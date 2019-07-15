@@ -1,7 +1,15 @@
-const path = require('path');
+"use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const path = __importStar(require("path"));
 const cwd = process.cwd();
-
-const REACT_LIB_MAP = {
+exports.REACT_LIB_MAP = {
     wx: 'ReactWX.js',
     ali: 'ReactAli.js',
     bu: 'ReactBu.js',
@@ -10,8 +18,7 @@ const REACT_LIB_MAP = {
     qq: 'ReactWX.js',
     tt: 'ReactWX.js'
 };
-
-const MAP = {
+exports.MAP = {
     'wx': {
         EXT_NAME: {
             'css': 'wxss',
@@ -44,7 +51,7 @@ const MAP = {
             'jsx': 'js',
         },
         patchComponents: [
-            'rich-text' //年前还不支持这标签 https://docs.alipay.com/mini/component/rich-text
+            'rich-text'
         ]
     },
     'bu': {
@@ -88,36 +95,4 @@ const MAP = {
         patchComponents: []
     }
 };
-
-const BUILD_OPTIONS = {
-    'compress': {
-        alias: 'c',
-        desc: '压缩资源'
-    },
-    'beta': {
-        desc: '同步react runtime'
-    },
-    'beta-ui': {
-        desc: '同步schnee-ui'
-    },
-    'huawei': {
-        desc: '补丁华为快应用'
-    },
-    'analysis': {
-        alias: 'a',
-        desc: '打包产物分析'
-    },
-    'silent': {
-        alias: 's',
-        desc: '关闭eslint warning'
-    }
-};
-
-const NANACHI_CONFIG_PATH = path.resolve(cwd, 'nanachi.config.js');
-
-module.exports = {
-    REACT_LIB_MAP,
-    BUILD_OPTIONS,
-    MAP,
-    NANACHI_CONFIG_PATH
-};
+exports.NANACHI_CONFIG_PATH = path.resolve(cwd, 'nanachi.config.js');

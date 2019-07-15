@@ -116,15 +116,7 @@ export function createFactory(type) {
     factory.type = type;
     return factory;
 }
-/*
-tag的值
-FunctionComponent = 0;
-ClassComponent = 1;
-HostPortal = 4; 
-HostComponent = 5;
-HostText = 6;
-Fragment = 7;
-*/
+
 function ReactElement(type, tag, props, key, ref, owner) {
     var ret = {
         type,

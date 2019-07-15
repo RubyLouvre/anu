@@ -416,7 +416,7 @@ let Link = props => (
                         if (fn) {
                             fn(event);
                         }
-                      
+                        event.preventDefault();
                         if (shouldNavigate(event)) {
                             event.preventDefault();
                             navigate(href, { state, replace });
@@ -550,7 +550,9 @@ let createRoute = basepath => element => {
 };
 
 function shouldNavigate(event) {
-    return (!event.button &&
+    return (
+        !event.defaultPrevented &&
+    event.button === 0 &&
     !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
     );
 }

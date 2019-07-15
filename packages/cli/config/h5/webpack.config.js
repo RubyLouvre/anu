@@ -1,14 +1,25 @@
-const developmentConfig = require('./webpack.config.base');
-const merge = require('webpack-merge');
-const path = require('path');
-
-module.exports = merge(developmentConfig, {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const webpack_config_base_1 = __importDefault(require("./webpack.config.base"));
+const path = __importStar(require("path"));
+const webpack_merge_1 = __importDefault(require("webpack-merge"));
+const config = webpack_merge_1.default(webpack_config_base_1.default, {
     mode: 'development',
     module: {
         rules: [
             {
                 test: /\.jsx?$/,
-                loader: 'babel-loader',
+                loader: require.resolve('babel-loader'),
                 options: {
                     exclude: [/node_modules/],
                     cacheDirectory: true,
@@ -33,3 +44,5 @@ module.exports = merge(developmentConfig, {
         hints: false
     }
 });
+exports.default = config;
+module.exports = config;

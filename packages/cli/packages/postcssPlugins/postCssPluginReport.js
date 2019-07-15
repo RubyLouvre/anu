@@ -1,5 +1,5 @@
 const postCss = require('postcss');
-const { warning, error } = require('../../nanachi-loader/logger/queue');
+const { warning, error } = require('../utils/logger/queue');
 
 // 输出stylelint生成的warning
 const postCssPluginReport = postCss.plugin('postcss-plugin-report', ()=> {

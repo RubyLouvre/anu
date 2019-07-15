@@ -84,10 +84,46 @@ export let Renderer = createRenderer({
         };
     },
     insertElement(fiber) {
+        /*         let dom = fiber.stateNode,
+                    parentNode = fiber.parent,
+                    forwardFiber = fiber.forwardFiber,
+                    before = forwardFiber ? forwardFiber.stateNode : null,
+                    children = parentNode.children;
+
+                try {
+                    if (before == null) {
+                        //要插入最前面
+                        if (dom !== children[0]) {
+                            remove(children, dom);
+                            dom.parentNode = parentNode;
+                            children.unshift(dom);
+                        }
+                    } else {
+                        if (dom !== children[children.length - 1]) {
+                            remove(children, dom);
+                            dom.parentNode = parentNode;
+                            var i = children.indexOf(before);
+                            children.splice(i + 1, 0, dom);
+                        }
+                    }
+                } catch (e) {
+                    throw e;
+                } */
     },
     emptyElement(fiber) {
+        /*  let dom = fiber.stateNode;
+         let children = dom && dom.children;
+         if (dom && Array.isArray(children)) {
+             children.forEach(Renderer.removeElement);
+         } */
     },
     removeElement(fiber) {
+        /*         if (fiber.parent) {
+                    var parent = fiber.parent;
+                    var node = fiber.stateNode;
+                    node.parentNode = null;
+                    remove(parent.children, node);
+                } */
     }
 });
 

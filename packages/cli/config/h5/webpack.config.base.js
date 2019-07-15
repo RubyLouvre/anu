@@ -1,60 +1,57 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const webpack_1 = __importDefault(require("webpack"));
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const webpack = require('webpack');
-const path = require('path');
-const R = require('ramda');
-
-const {
-    intermediateDirectoryName,
-    outputDirectory,
-    retrieveNanachiConfig
-} = require('./configurations');
-
-const context = path.resolve(__dirname, '../../packages/h5Helpers/pageWrapper');
-const resolveFromContext = R.curryN(2, path.resolve)(context);
-const resolveFromDirCwd = R.curryN(2, path.resolve)(process.cwd());
-
-module.exports = {
+const path = __importStar(require("path"));
+const ramda_1 = __importDefault(require("ramda"));
+const configurations_1 = require("./configurations");
+const fs = __importStar(require("fs-extra"));
+const context = path.resolve(process.cwd(), 'dist');
+const h5helperPath = path.resolve(__dirname, '../../packages/h5Helpers');
+const resolveFromContext = ramda_1.default.curryN(2, path.resolve)(context);
+const resolveFromDirCwd = ramda_1.default.curryN(2, path.resolve)(process.cwd());
+const resolveFromH5Helper = ramda_1.default.curryN(2, path.resolve)(h5helperPath);
+let templatePath = resolveFromH5Helper('./index.html');
+try {
+    const userTemplatePath = resolveFromDirCwd('./index.html');
+    fs.statSync(userTemplatePath);
+    templatePath = userTemplatePath;
+}
+catch (e) {
+}
+const webpackConfig = {
     mode: 'development',
     context,
     target: 'web',
-    entry: resolveFromContext('src/index.js'),
+    entry: resolveFromContext(`${configurations_1.intermediateDirectoryName}/app.js`),
     output: {
-        path: resolveFromDirCwd(outputDirectory),
+        path: resolveFromDirCwd(configurations_1.outputDirectory),
         filename: 'bundle.[hash:10].js',
-        publicPath: '/'
+        publicPath: '/web/'
     },
     resolve: {
-        alias: {
-            ...retrieveNanachiConfig(),
-            react: path.resolve(__dirname, '../../lib/ReactH5.js'),
-            '@react': path.resolve(__dirname, '../../lib/ReactH5.js'),
-            'react-dom': path.resolve(__dirname, '../../lib/ReactH5.js'),
-            'schnee-ui': resolveFromContext(`${intermediateDirectoryName}/npm/schnee-ui`),
-            '@shared': resolveFromContext('./src/shared'),
-            '@internalComponents': resolveFromContext('src/views/InternalComponents'),
-            '@components': resolveFromContext(
-                `${intermediateDirectoryName}/components`
-            ),
-            '@app': resolveFromContext(`${intermediateDirectoryName}/app.js`),
-            '@qunar-default-loading': resolveFromContext('src/views/Loading'),
-            '@dynamic-page-loader': resolveFromContext(
-                'src/views/Page/DynamicPageLoader.js'
-            )
-        },
-        modules: ['node_modules', resolveFromDirCwd('node_modules')]
+        alias: Object.assign({}, configurations_1.retrieveNanachiConfig(), { react: resolveFromDirCwd('./source/ReactH5.js'), '@react': resolveFromDirCwd('./source/ReactH5.js'), 'react-dom': resolveFromDirCwd('./source/ReactH5.js'), 'schnee-ui': resolveFromContext(`${configurations_1.intermediateDirectoryName}/npm/schnee-ui`), '@internalComponents': resolveFromH5Helper('components'), '@internalConsts': path.resolve(__dirname, '../../consts/'), '@components': resolveFromContext(`${configurations_1.intermediateDirectoryName}/components`), '@pageConfig': resolveFromContext(`${configurations_1.intermediateDirectoryName}/pageConfig.js`), '@qunar-default-loading': resolveFromH5Helper('components/Loading') }),
+        modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')]
     },
     module: {
         rules: [
             {
-                test: /\.s?[ac]ss$/,
+                test: /\.s[ac]ss$/,
                 use: [
-                    'style-loader',
-                    MiniCssExtractPlugin.loader,
-                    'css-loader',
+                    require.resolve('style-loader'),
+                    require.resolve('css-loader'),
                     {
-                        loader: 'postcss-sass-loader',
+                        loader: require.resolve('postcss-sass-loader'),
                         options: {
                             plugin: []
                         }
@@ -62,13 +59,12 @@ module.exports = {
                 ]
             },
             {
-                test: /\.less$/,
+                test: /\.(le|c)ss$/,
                 use: [
-                    'style-loader',
-                    MiniCssExtractPlugin.loader,
-                    'css-loader',
+                    require.resolve('style-loader'),
+                    require.resolve('css-loader'),
                     {
-                        loader: 'postcss-less-loader',
+                        loader: require.resolve('postcss-less-loader'),
                         options: {
                             plugin: []
                         }
@@ -77,7 +73,7 @@ module.exports = {
             },
             {
                 test: /\.(jpg|png|gif)$/,
-                loader: 'file-loader',
+                loader: require.resolve('file-loader'),
                 options: {
                     outputPath: 'assets',
                     name: '[name].[hash:10].[ext]'
@@ -88,16 +84,10 @@ module.exports = {
     devtool: 'cheap-source-map',
     plugins: [
         new HtmlWebpackPlugin({
-            template: resolveFromContext('./src/index.html')
+            template: templatePath
         }),
-        new MiniCssExtractPlugin({
-            filename: '[name].[hash:10].css',
-            chunkFilename: '[id].[hash:10].css'
-        }),
-        new webpack.EnvironmentPlugin({
-            ANU_ENV: 'web'
-        }),
-        new CleanWebpackPlugin()
+        new webpack_1.default.EnvironmentPlugin(Object.assign({ ANU_ENV: 'web' }, process.env)),
     ],
     stats: 'errors-only'
 };
+exports.default = webpackConfig;
