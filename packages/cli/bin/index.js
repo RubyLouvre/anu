@@ -5,13 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const package_json_1 = require("../package.json");
-const platforms_1 = __importDefault(require("../ts-consts/platforms"));
-const buildOptions_1 = __importDefault(require("../ts-consts/buildOptions"));
+const platforms_1 = __importDefault(require("../consts/platforms"));
+const buildOptions_1 = __importDefault(require("../consts/buildOptions"));
 const cliBuilder_1 = __importDefault(require("./cliBuilder"));
 const init_1 = __importDefault(require("./commands/init"));
 const createPage_1 = __importDefault(require("./commands/createPage"));
 const build_1 = __importDefault(require("./commands/build"));
 const install_1 = __importDefault(require("./commands/install"));
+require("../tasks/chaikaMergeTask/injectChaikaEnv");
 const cli = new cliBuilder_1.default();
 cli.checkNodeVersion('8.6.0');
 cli.version = package_json_1.version;

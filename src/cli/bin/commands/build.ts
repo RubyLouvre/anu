@@ -1,6 +1,7 @@
 
-import { NANACHI_CONFIG_PATH } from '../../ts-consts/index';
+import { NANACHI_CONFIG_PATH } from '../../consts/index';
 import * as fs from 'fs-extra';
+import nanachi from '../../index';
 const { deepMerge } = require('../../packages/utils/index');
 
 interface BulidOptions {
@@ -30,7 +31,7 @@ export default async function(args: BulidOptions){
         }
         deepMerge(nanachiConfig, baseConfig);
         
-        require('../../index')(nanachiConfig);
+        nanachi(nanachiConfig);
 
     } catch (e) {
         // eslint-disable-next-line

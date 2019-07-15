@@ -1,15 +1,9 @@
-"use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const path = __importStar(require("path"));
+import * as path from 'path';
 const cwd = process.cwd();
-exports.REACT_LIB_MAP = {
+
+export const REACT_LIB_MAP: {
+    [propsName: string]: string;
+} = {
     wx: 'ReactWX.js',
     ali: 'ReactAli.js',
     bu: 'ReactBu.js',
@@ -18,7 +12,15 @@ exports.REACT_LIB_MAP = {
     qq: 'ReactWX.js',
     tt: 'ReactWX.js'
 };
-exports.MAP = {
+
+export const MAP: {
+    [propsName: string]: {
+        EXT_NAME: {
+            [extName: string]: string;
+        },
+        patchComponents: Array<string>;
+    }
+} = {
     'wx': {
         EXT_NAME: {
             'css': 'wxss',
@@ -51,7 +53,7 @@ exports.MAP = {
             'jsx': 'js',
         },
         patchComponents: [
-            'rich-text'
+            'rich-text' //年前还不支持这标签 https://docs.alipay.com/mini/component/rich-text
         ]
     },
     'bu': {
@@ -95,4 +97,5 @@ exports.MAP = {
         patchComponents: []
     }
 };
-exports.NANACHI_CONFIG_PATH = path.resolve(cwd, 'nanachi.config.js');
+
+export const NANACHI_CONFIG_PATH = path.resolve(cwd, 'nanachi.config.js');

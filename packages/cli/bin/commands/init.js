@@ -26,7 +26,7 @@ const chalk_1 = __importDefault(require("chalk"));
 const fs = __importStar(require("fs-extra"));
 const path = __importStar(require("path"));
 const inquirer_1 = __importDefault(require("inquirer"));
-const templates_1 = __importDefault(require("../../ts-consts/templates"));
+const templates_1 = __importDefault(require("../../consts/templates"));
 const cwd = process.cwd();
 function checkAppName(appName) {
     let appPath = path.join(cwd, appName);

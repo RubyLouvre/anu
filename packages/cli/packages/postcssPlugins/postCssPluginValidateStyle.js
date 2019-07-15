@@ -2,7 +2,6 @@ const postCss = require('postcss');
 const config = require('../../config/config');
 const parser = require('postcss-selector-parser');
 const ignoreCss = require('../quickHelpers/ignoreCss');
-const logQueue = require('../../nanachi-loader/logger/queue');
 
 const postCssPluginValidateStyle = postCss.plugin('postcss-plugin-validate-style', () => {
     return (root, result) => {

@@ -1,19 +1,33 @@
-const Timer = require('../packages/utils/timer');
-const { resetNum, timerLog } = require('./logger/index');
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const timer_1 = __importDefault(require("../packages/utils/timer"));
+const index_1 = require("../packages/utils/logger/index");
+const generator_1 = __importDefault(require("@babel/generator"));
+const t = __importStar(require("@babel/types"));
 const setWebView = require('../packages/utils/setWebVeiw');
 const id = 'NanachiWebpackPlugin';
 const pageConfig = require('../packages/h5Helpers/pageConfig');
-const generate = require('@babel/generator').default;
-const t = require('@babel/types');
-
 class NanachiWebpackPlugin {
-    constructor({
-        platform = 'wx',
-        compress = false,
-        beta,
-        betaUi
-    } = {}) {
-        this.timer = new Timer();
+    constructor({ platform = 'wx', compress = false, beta = false, betaUi = false } = {}) {
+        this.timer = new timer_1.default();
         this.nanachiOptions = {
             platform,
             compress,
@@ -22,24 +36,19 @@ class NanachiWebpackPlugin {
         };
     }
     apply(compiler) {
-
         compiler.hooks.compilation.tap(id, (compilation) => {
             compilation.hooks.normalModuleLoader.tap(id, (loaderContext) => {
                 loaderContext.nanachiOptions = this.nanachiOptions;
             });
         });
-        
-        // 删除webpack打包产物
         compiler.hooks.emit.tap(id, (compilation) => {
             if (this.nanachiOptions.platform === 'h5') {
-                // 生成pageConfig 文件 用于动态加载情况下，读取页面配置信息
-                // console.log(generate(t.exportDefaultDeclaration(pageConfig)).code);
-                const { code } = generate(t.exportDefaultDeclaration(pageConfig));
+                const { code } = generator_1.default(t.exportDefaultDeclaration(pageConfig));
                 compilation.assets['pageConfig.js'] = {
-                    source: function() {
+                    source: function () {
                         return code;
                     },
-                    size: function() {
+                    size: function () {
                         return code.length;
                     }
                 };
@@ -51,29 +60,21 @@ class NanachiWebpackPlugin {
                 }
             });
         });
-
-        compiler.hooks.run.tapAsync(id, async (compilation, callback) => {
+        compiler.hooks.run.tapAsync(id, (compilation, callback) => __awaiter(this, void 0, void 0, function* () {
             this.timer.start();
-            resetNum();
+            index_1.resetNum();
             callback();
-        });
-
-        compiler.hooks.watchRun.tapAsync(id, async (compilation, callback) => {
+        }));
+        compiler.hooks.watchRun.tapAsync(id, (compilation, callback) => __awaiter(this, void 0, void 0, function* () {
             this.timer.start();
-            resetNum();
+            index_1.resetNum();
             callback();
-        });
-        
+        }));
         compiler.hooks.done.tap(id, () => {
-
             this.timer.end();
-            
             setWebView(compiler.NANACHI && compiler.NANACHI.webviews);
-
-            timerLog(this.timer);
+            index_1.timerLog(this.timer);
         });
-     
     }
 }
-
-module.exports = NanachiWebpackPlugin;
+exports.default = NanachiWebpackPlugin;

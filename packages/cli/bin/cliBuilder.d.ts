@@ -1,4 +1,4 @@
-import { CmdMap } from '../ts-consts/buildOptions';
+import { CmdMap } from '../consts/buildOptions';
 interface CliBuilderInterface {
     addCommand(commandName: string, aliaName: string | null, description: string, options: CmdMap, callback: (...options: any[]) => void): void;
     run(): void;

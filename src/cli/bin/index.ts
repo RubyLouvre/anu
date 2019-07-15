@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import { version } from '../package.json';
-import platforms from '../ts-consts/platforms';
-import BUILD_OPTIONS from '../ts-consts/buildOptions';
+import platforms from '../consts/platforms';
+import BUILD_OPTIONS from '../consts/buildOptions';
 import CliBuilder from './cliBuilder';
 import init from './commands/init';
 import createPage from './commands/createPage';
 import build from './commands/build';
 import install from './commands/install';
+import '../tasks/chaikaMergeTask/injectChaikaEnv';
 
 const cli: CliBuilder = new CliBuilder();
 cli.checkNodeVersion('8.6.0');
