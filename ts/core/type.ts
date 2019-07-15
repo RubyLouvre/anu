@@ -9,4 +9,5 @@ export interface stringConvert<T>{
 }
 export type Primitive = number | string | boolean
 export type Nil = null | void
+export type Simple = Primitive & Nil
 
