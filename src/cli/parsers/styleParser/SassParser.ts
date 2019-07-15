@@ -1,15 +1,15 @@
-const StyleParser = require('./StyleParser');
-const { MAP } = require('../../consts/index');
+import StyleParser from './StyleParser';
+import { MAP } from '../../consts/index';
+import { StyleParserOptions } from './StyleParserFactory';
 const calculateAlias = require('../../packages/utils/calculateAlias');
 
-
 class SassParser extends StyleParser {
-    constructor(props) {
+    constructor(props: StyleParserOptions) {
         super(props);
         
         this._postcssPlugins = this._postcssPlugins.concat([
             require('postcss-import')({
-                resolve: function(importer, baseDir){
+                resolve: function(importer: string, baseDir: string){
                     //如果@import的值没有文件后缀
                     if (!/\.s[ca]ss$/.test(importer)) {
                         importer = importer + '.scss';
@@ -43,4 +43,4 @@ class SassParser extends StyleParser {
     }
 }
 
-module.exports = SassParser;
+export default SassParser;

@@ -1,9 +1,25 @@
-const path = require('path');
-const postcss = require('postcss');
+import * as path from 'path';
+import postcss from 'postcss';
+import * as fs from 'fs';
+import { StyleParserOptions } from './StyleParserFactory';
+import webpack = require('webpack');
 const utils = require('../../packages/utils/index');
-const fs = require('fs');
 
 class StyleParser {
+    public map: any;
+    public meta: any;
+    public ast: any;
+    public filepath: string;
+    public code: string;
+    public parsedCode: string;
+    public platform: string;
+    public type: string;
+    public componentType: string;
+    public relativePath: string;
+    public extraModules: Array<string>;
+    public loaderContext: webpack.loader.LoaderContext | {};
+    protected _postcssPlugins: Array<any>;
+    protected _postcssOptions: postcss.ProcessOptions;
     constructor({
         code,
         map,
@@ -12,7 +28,7 @@ class StyleParser {
         platform,
         type,
         loaderContext
-    }) {
+    }: StyleParserOptions) {
         this.code = code || fs.readFileSync(filepath, 'utf-8');
         this.map = map;
         this.meta = meta;
@@ -31,7 +47,7 @@ class StyleParser {
         this.extraModules = [];
         this.loaderContext = loaderContext || {}; // loader中的this
     }
-    getRelativePath(filepath) {
+    getRelativePath(filepath: string) {
         if (/node_modules[\\\/]schnee-ui/.test(filepath)) {
             return path.join('npm', path.relative(path.resolve(process.cwd(), 'node_modules'), filepath));
         } else {
@@ -39,7 +55,7 @@ class StyleParser {
         }
     }
     async parse() {
-        const res = await new Promise((resolve, reject) => {
+        const res: postcss.Result = await new Promise((resolve, reject) => {
             postcss(this._postcssPlugins).process(this.code, this._postcssOptions).then((res) => {
                 resolve(res);
             }).catch((err) => {
@@ -48,7 +64,7 @@ class StyleParser {
         });
         const deps = utils.getDeps(res.messages);
         if (deps) {
-            this.extraModules = deps.map(d => d.file);
+            this.extraModules = deps.map((d: any) => d.file);
         }
         this.parsedCode = res.css;
         return res;
@@ -73,4 +89,4 @@ class StyleParser {
     }
 }
 
-module.exports = StyleParser;
+export default StyleParser;

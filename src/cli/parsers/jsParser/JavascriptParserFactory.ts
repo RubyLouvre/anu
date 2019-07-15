@@ -37,3 +37,4 @@ class JavascriptParserFactory {
 }
 
 export default JavascriptParserFactory;
+module.exports = JavascriptParserFactory;

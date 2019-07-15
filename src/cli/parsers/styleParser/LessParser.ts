@@ -1,13 +1,14 @@
-const StyleParser = require('./StyleParser');
+import StyleParser from './StyleParser';
+import { MAP } from '../../consts/index';
+import { StyleParserOptions } from './StyleParserFactory';
 const calculateAlias = require('../../packages/utils/calculateAlias');
-const { MAP } = require('../../consts/index');
 
 class LessParser extends StyleParser {
-    constructor(props) {
+    constructor(props: StyleParserOptions) {
         super(props);
         this._postcssPlugins = this._postcssPlugins.concat([
             require('postcss-import')({
-                resolve: function(importer, baseDir){
+                resolve: function(importer: string, baseDir: string){
                     //如果@import的值没有文件后缀
                     if (!/\.less$/.test(importer)) {
                         importer = importer + '.less';
@@ -39,4 +40,4 @@ class LessParser extends StyleParser {
     }
 }
 
-module.exports = LessParser;
+export default LessParser;
