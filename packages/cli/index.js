@@ -28,9 +28,9 @@ const webpackConfig_1 = __importDefault(require("./config/webpackConfig"));
 const babel = __importStar(require("@babel/core"));
 const child_process_1 = require("child_process");
 const utils = require('./packages/utils/index');
-const globalConfig = require('./config/config.js');
-const runBeforeParseTasks = require('./tasks/runBeforeParseTasks');
-const createH5Server = require('./tasks/createH5Server');
+const config_1 = __importDefault(require("./config/config"));
+const runBeforeParseTasks_1 = __importDefault(require("./tasks/runBeforeParseTasks"));
+const createH5Server_1 = __importDefault(require("./tasks/createH5Server"));
 function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, rules = [], prevLoaders = [], postLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = {}) {
     return __awaiter(this, void 0, void 0, function* () {
         function callback(err, stats) {
@@ -60,7 +60,7 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
                 const webpackH5Config = require(configPath);
                 const compilerH5 = webpack_1.default(webpackH5Config);
                 if (watch) {
-                    createH5Server(compilerH5);
+                    createH5Server_1.default(compilerH5);
                 }
                 else {
                     compilerH5.run(function (err, stats) {
@@ -99,7 +99,7 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
                 huawei
             });
             getWebViewRules();
-            yield runBeforeParseTasks({ buildType: platform, beta, betaUi, compress });
+            yield runBeforeParseTasks_1.default({ platform, beta, betaUi, compress });
             if (compress) {
                 postLoaders.unshift('nanachi-compress-loader');
             }
@@ -131,10 +131,10 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
 }
 function injectBuildEnv({ platform, compress, huawei }) {
     process.env.ANU_ENV = (platform === 'h5' ? 'web' : platform);
-    globalConfig['buildType'] = platform;
-    globalConfig['compress'] = compress;
+    config_1.default['buildType'] = platform;
+    config_1.default['compress'] = compress;
     if (platform === 'quick') {
-        globalConfig['huawei'] = huawei || false;
+        config_1.default['huawei'] = huawei || false;
     }
 }
 function showLog() {
@@ -159,7 +159,7 @@ function showLog() {
 }
 function getWebViewRules() {
     const cwd = process.cwd();
-    if (globalConfig.buildType != 'quick')
+    if (config_1.default.buildType != 'quick')
         return;
     let bin = 'grep';
     let opts = ['-r', '-E', "pages:\\s*(\\btrue\\b|\\[.+\\])", path.join(cwd, 'source', 'pages')];
@@ -190,7 +190,8 @@ function getWebViewRules() {
             });
         });
     });
-    if (globalConfig.WebViewRules && globalConfig.WebViewRules.pages.length) {
+    const WebViewRules = config_1.default.WebViewRules;
+    if (WebViewRules && WebViewRules.pages.length) {
         process.env.ANU_WEBVIEW = 'need_require_webview_file';
     }
     else {

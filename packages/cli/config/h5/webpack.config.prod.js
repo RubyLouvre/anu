@@ -1,13 +1,9 @@
-/**
- * This configuration is designed for legacy environment
- * which has full support of ES5.
- */
 const developmentConfig = require('./webpack.config');
 const merge = require('webpack-merge');
-
+const env = ['prod', 'rc'];
 module.exports = merge(developmentConfig, {
     mode: 'production',
-    devtool: ['prod', 'rc'].includes(process.env.NODE_ENV) ? '' : 'cheap-source-map',
+    devtool: env.includes(process.env.NODE_ENV) ? '' : 'cheap-source-map',
     optimization: {
         noEmitOnErrors: true,
         splitChunks: {

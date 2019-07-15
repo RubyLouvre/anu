@@ -1,37 +1,37 @@
-const StyleParser = require('./StyleParser');
-const { MAP } = require('../../consts/index');
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const StyleParser_1 = __importDefault(require("./StyleParser"));
+const index_1 = require("../../consts/index");
 const calculateAlias = require('../../packages/utils/calculateAlias');
-
-
-class SassParser extends StyleParser {
+class SassParser extends StyleParser_1.default {
     constructor(props) {
         super(props);
-        
         this._postcssPlugins = this._postcssPlugins.concat([
             require('postcss-import')({
-                resolve: function(importer, baseDir){
-                    //如果@import的值没有文件后缀
+                resolve: function (importer, baseDir) {
                     if (!/\.s[ca]ss$/.test(importer)) {
                         importer = importer + '.scss';
                     }
-                    //处理alias路径
                     return calculateAlias(props.filepath, importer);
                 },
                 plugins: this.platform !== 'h5' ? [
-                    require('../../packages/postcssPlugins/postCssPluginRemoveRules') // 删除import文件的所有rules，保留@mixins、$variables、@functions等
+                    require('../../packages/postcssPlugins/postCssPluginRemoveRules')
                 ] : []
             }),
             require('@csstools/postcss-sass'),
             ...this.platform !== 'h5' ? [
                 require('../../packages/postcssPlugins/postCssPluginAddImport')({
-                    extName: MAP[this.platform]['EXT_NAME'][this.type],
+                    extName: index_1.MAP[this.platform]['EXT_NAME'][this.type],
                     type: this.type
-                }), // 添加@import规则，小程序可以解析原有依赖
+                }),
             ] : [
                 require('../../packages/postcssPlugins/postCssPluginRpxToRem'),
                 require('../../packages/postcssPlugins/postCssPluginAddStyleHash')
             ],
-            require('../../packages/postcssPlugins/postCssPluginFixNumber'), // 数字精度插件
+            require('../../packages/postcssPlugins/postCssPluginFixNumber'),
             require('../../packages/postcssPlugins/postCssPluginValidateStyle'),
             require('../../packages/postcssPlugins/postCssPluginTransformKeyFrames'),
             require('../../packages/postcssPlugins/postCssPluginRemoveComments')
@@ -42,5 +42,4 @@ class SassParser extends StyleParser {
         };
     }
 }
-
-module.exports = SassParser;
+exports.default = SassParser;

@@ -1,5 +1,5 @@
 import * as path from 'path';
-const StyleParserFactory = require('../../parsers/styleParser/StyleParserFactory');
+import StyleParserFactory from '../../parsers/styleParser/StyleParserFactory';
 
 module.exports = async function(code: string, map: any, meta: any) {
     const callback = this.async();

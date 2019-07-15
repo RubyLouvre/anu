@@ -8,7 +8,7 @@ import { NanachiOptions } from '../index';
 import * as path from 'path';
 import webpack from 'webpack';
 const utils = require('../packages/utils/index');
-const { intermediateDirectoryName } = require('./h5/configurations');
+import { intermediateDirectoryName } from './h5/configurations';
 //各种loader
 //生成文件
 const fileLoader = require.resolve('../nanachi-loader/loaders/fileLoader');

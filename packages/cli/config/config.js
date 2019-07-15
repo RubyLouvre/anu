@@ -1,14 +1,23 @@
-const path = require('path');
+"use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const path = __importStar(require("path"));
 let userConfig = {};
 try {
     const pkg = require(path.join(process.cwd(), 'package.json'));
     userConfig = pkg.nanachi || pkg.mpreact || userConfig;
-} catch (err) {
-    // eslint-disable-next-line
+}
+catch (err) {
 }
 const buildDir = userConfig.buildDir || 'dist';
 const sourceDir = userConfig.sourceDir || 'source';
-module.exports = {
+const config = {
     wx: {
         libName: 'ReactWX',
         styleExt: 'wxss',
@@ -42,20 +51,19 @@ module.exports = {
         disabledTitleBarPages: new Set()
     },
     quick: {
-        libName: 'ReactWX',
+        libName: 'ReactQuick',
         jsExt: 'ux',
         helpers: 'quickHelpers',
-       
         patchComponents: {
-            radio: 1,
+            'radio': 1,
             'radio-group': 1,
-            checkbox: 1,
-            'checkbox-group':1,
-            label: 1,
-            navigator: 1,
-            picker: 1
+            'checkbox': 1,
+            'checkbox-group': 1,
+            'label': 1,
+            'navigator': 1,
+            'picker': 1
         },
-        disabledTitleBarPages:new Set()
+        disabledTitleBarPages: new Set()
     },
     tt: {
         libName: 'ReactWX',
@@ -66,11 +74,13 @@ module.exports = {
         patchComponents: {},
         disabledTitleBarPages: new Set()
     },
-    buildType: 'wx',      //构建类型默认微信小程序
-    buildDir: buildDir,   //非快应用项目默认构建目录为dist
-    sourceDir: sourceDir,  //默认生成的源码目录
+    buildType: 'wx',
+    buildDir: buildDir,
+    sourceDir: sourceDir,
     huawei: false,
-    patchComponents: {}, // 项目中使用的补丁组件
+    patchComponents: {},
     pluginTags: {},
     plugins: {}
 };
+module.exports = config;
+exports.default = config;
