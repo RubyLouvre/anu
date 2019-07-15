@@ -1,26 +1,29 @@
-const WxParser = require('./WxParser');
-const QqParser = require('./QqParser');
-const AliParser = require('./AliParser');
-const BuParser = require('./BuParser');
-const TtParser = require('./TtParser');
-const QuickParser = require('./QuickParser');
-const H5Parser = require('./H5Parser');
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const WxParser_1 = __importDefault(require("./WxParser"));
+const QqParser_1 = __importDefault(require("./QqParser"));
+const AliParser_1 = __importDefault(require("./AliParser"));
+const BuParser_1 = __importDefault(require("./BuParser"));
+const TtParser_1 = __importDefault(require("./TtParser"));
+const QuickParser_1 = __importDefault(require("./QuickParser"));
+const H5Parser_1 = __importDefault(require("./H5Parser"));
 const maps = {
-    wx: WxParser,
-    qq: QqParser,
-    ali: AliParser,
-    bu: BuParser,
-    tt: TtParser,
-    quick: QuickParser,
-    h5: H5Parser
-}
+    wx: WxParser_1.default,
+    qq: QqParser_1.default,
+    ali: AliParser_1.default,
+    bu: BuParser_1.default,
+    tt: TtParser_1.default,
+    quick: QuickParser_1.default,
+    h5: H5Parser_1.default
+};
 class JavascriptParserFactory {
-    static create({
-        platform
-    }) {
-        var parser = maps[platform] || Number;
-        return new parser( arguments[0] );
+    static create(options) {
+        const { platform } = options;
+        const Parser = maps[platform];
+        return new Parser(options);
     }
 }
-
-module.exports = JavascriptParserFactory;
+exports.default = JavascriptParserFactory;

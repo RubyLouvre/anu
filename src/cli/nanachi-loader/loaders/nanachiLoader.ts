@@ -1,4 +1,4 @@
-const JavascriptParserFactory = require('../../parsers/jsParser/JavascriptParserFactory');
+import JavascriptParserFactory from '../../parsers/jsParser/JavascriptParserFactory';
 const utils = require('../../packages/utils/index');
 
 export interface NanachiQueue {
@@ -6,6 +6,7 @@ export interface NanachiQueue {
     path: string;
     type: string;
     ast?: any;
+    extraModules?: Array<string>
 }
 
 export interface NanachiLoaderStruct {
