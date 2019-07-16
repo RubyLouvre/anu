@@ -1,6 +1,4 @@
 
-const path = require('path');
-const pageConfig = require('../../h5Helpers/pageConfig');
 
 const template = require('@babel/template').default;
 const extraImportedPath = template(`
@@ -20,14 +18,15 @@ module.exports = function({types: t}){
                 astPath.node.declaration = t.callExpression(t.identifier('dynamicPage'), [declaration]);
             },
             ClassProperty(astPath, state) {
-                const { cwd, filename } = state;
-                if (astPath.get('key').isIdentifier({
-                    name: 'config'
-                }) && astPath.get('value').isObjectExpression()) {
-                    const node = astPath.get('value').node;
-                    const pagePath = '/' + path.relative(path.join(cwd, 'source'), filename).replace(/\.js$/, '');
-                    pageConfig.properties.push(t.objectProperty(t.stringLiteral(pagePath), node));
-                }
+                // 不需要pageConfig了
+                // const { cwd, filename } = state;
+                // if (astPath.get('key').isIdentifier({
+                //     name: 'config'
+                // }) && astPath.get('value').isObjectExpression()) {
+                //     const node = astPath.get('value').node;
+                //     const pagePath = '/' + path.relative(path.join(cwd, 'source'), filename).replace(/\.js$/, '');
+                //     pageConfig.properties.push(t.objectProperty(t.stringLiteral(pagePath), node));
+                // }
             },
         }
     };

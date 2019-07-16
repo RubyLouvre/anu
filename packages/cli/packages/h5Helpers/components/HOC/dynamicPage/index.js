@@ -144,9 +144,6 @@ export default function dynamicPage(Comp) {
             }, 500);
             this.setTitleAndTabs(deepMerge({}, this.appConfig, this.pageConfig, this.props.config), this.props.path);
         }
-        componentWillUpdate(nextProps){
-            
-        }
         setTitleAndTabs(config, path) {
             var mixin = deepMerge({
                 navigationBarTitleText: "",
