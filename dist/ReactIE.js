@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-07-15
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-07-16
  */
 
 (function (global, factory) {
@@ -3163,42 +3163,42 @@
     }
 
     var LazyComponent = miniCreateClass(function LazyComponent(props, context) {
+        var _this = this;
         this.props = props;
         this.context = context;
-        var promise = props.lazyFn();
+        this.state = {
+            component: null,
+            resolved: false
+        };
+        var promise = props.render();
         if (!promise || !isFn(promise.then)) {
             throw "lazy必须返回一个thenable对象";
         }
-        var that = this;
-        this.state = {
-            render: null,
-            resolve: false
-        };
         promise.then(function (value) {
-            that.setState({
-                render: value.default,
-                resolve: true
+            return _this.setState({
+                component: value.default,
+                resolved: true
             });
         });
     }, Component, {
-        getSuspense: function getSuspense() {
-            var fiber = get(this);
-            while (fiber.return) {
-                if (fiber.return.type === Suspense) {
-                    return fiber.return.props.fallback;
+        getSuspenseFallback: function getSuspenseFallback() {
+            var parent = Object(get(this)).return;
+            while (parent) {
+                if (parent.type === Suspense) {
+                    return parent.props.fallback;
                 }
-                fiber = fiber.return;
+                parent = parent.return;
             }
             throw "lazy组件必须包一个Suspense组件";
         },
         render: function render() {
-            return this.state.resolve ? this.state.render() : this.getSuspense();
+            return this.state.resolved ? createElement(this.state.component) : this.getSuspenseFallback();
         }
     });
     function lazy(fn) {
         return function () {
             return createElement(LazyComponent, {
-                lazyFn: fn
+                render: fn
             });
         };
     }
