@@ -196,8 +196,7 @@ export default function dynamicPage(Comp) {
             return height;
         }
         render() {
-            
-            return <React.Fragment>
+            return <div className='__internal_DynamicPage'>
                 {
                     this.state.showTitleBar ? 
                         <TitleBar
@@ -235,30 +234,35 @@ export default function dynamicPage(Comp) {
                 }
                 <style jsx>
                     {`
+                    .__internal_DynamicPage {
+                        background-color: ${this.state.backgroundColor};
+                        z-index: -100;
+                        width: 100%;
+                        height: 100%;
+                    }
                     .__internal__DynamicPage-container {
                         height: ${this.titleAndTabHeight ? `calc(100% - ${this.titleAndTabHeight}px)` : '100%'};
                         overflow-x: hidden;
                         overflow-y: auto;
-                        background-color: ${this.state.backgroundColor};
                         transform: translateY(${this.state.showTitleBar ? (48 + this.state.containerOffsetTop) :  this.state.containerOffsetTop}px);
                         ${this.state.onPullRefreshRelease ? 'transition: all .3s ease;' : ''}
+                        background-color: ${this.state.backgroundColor};
                     }
                     .__internal__Page-pull-refresh {
                         position: absolute;
+                        background-color: ${this.state.backgroundColor};
                         ${this.state.onPullRefreshRelease ? 'visibility: hidden;' : 'visibility: visible;'}
                         width: 100%;
                         top: ${-DynamicPage.maxPullRefreshDistance + this.state.showTitleBar ? 48 : 0 + this.state.containerOffsetTop}px;
                         height: ${DynamicPage.maxPullRefreshDistance}px;
                         line-height: ${DynamicPage.maxPullRefreshDistance}px;
-                        z-index: -1;
+                        z-index: 0;
                         text-align: center;
                         color: #999;
                     }
                     `}
                 </style>
-            </React.Fragment>
-            
-            ;
+            </div>;
         }
     });
 }
