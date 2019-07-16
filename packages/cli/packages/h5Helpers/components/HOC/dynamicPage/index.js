@@ -237,6 +237,8 @@ export default function dynamicPage(Comp) {
                     .__internal_DynamicPage {
                         background-color: ${this.state.backgroundColor};
                         z-index: -100;
+                        width: 100%;
+                        height: 100%;
                     }
                     .__internal__DynamicPage-container {
                         height: ${this.titleAndTabHeight ? `calc(100% - ${this.titleAndTabHeight}px)` : '100%'};
