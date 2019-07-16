@@ -2,6 +2,9 @@ import React from '@react';
 import cssTransitionWrapper from '../cssTransitionWrapper';
 import ErrorBoundary from '../../ErrorBoundary';
 import PullDownLoading from '../../PullDownLoading';
+import TitleBar from '../../TitleBar';
+import TabBar from '../../TabBar';
+import { deepMerge } from '../../../share/index';
 
 export default function dynamicPage(Comp) {
     return cssTransitionWrapper(class DynamicPage extends React.Component {
@@ -11,7 +14,19 @@ export default function dynamicPage(Comp) {
             this.Ref = React.createRef();
             this.state = {
                 containerOffsetTop: 0,
-                onPullRefreshRelease: true
+                onPullRefreshRelease: true,
+                showTitleBar: true,
+                titleBar: {
+                    height: 48,
+                    needBackButton: false
+                },
+                tabBar: {
+                    list: [],
+                    borderStyle: 'black'
+                },
+                backgroundColor: '#ffffff',
+                isTabPage: false,
+                hide: false
             };
             this.resetContainer.bind(this);
             this.shouldPullDown.bind(this);
@@ -52,6 +67,13 @@ export default function dynamicPage(Comp) {
             }
             if (nextProps.show !== this.props.show) {
                 this.triggerLifeCycle(nextProps.show ? 'onShow' : 'onHide');
+            }
+            if (nextProps.config !== this.props.config) {
+                const mixinConfig = {};
+                if (nextProps.config !== this.props.config) {
+                    deepMerge(mixinConfig, this.appConfig, this.pageConfig, nextProps.config);
+                }
+                this.setTitleAndTabs(mixinConfig, this.$app.state.path);
             }
         }
         resetContainer() {
@@ -114,8 +136,79 @@ export default function dynamicPage(Comp) {
       
             instance && instance[name] && instance[name].call(instance, ...args);
         }
+        componentWillMount() {
+            setTimeout(() => {
+                this.setState({
+                    hide: true
+                });
+            }, 500);
+            this.setTitleAndTabs(deepMerge({}, this.appConfig, this.pageConfig, this.props.config), this.props.path);
+        }
+        setTitleAndTabs(config, path) {
+            var mixin = deepMerge({
+                navigationBarTitleText: "",
+                navigationBarTextStyle: "white",
+                navigationBarBackgroundColor: "#000000"
+            }, config);
+            this.setState({
+                showTitleBar: mixin.navigationStyle !== "custom" && mixin.navigationBarTitleText !== "",
+                backgroundColor: mixin.backgroundColor || "#ffffff",
+                titleBar: deepMerge({}, this.state.titleBar, {
+                    text: mixin.navigationBarTitleText,
+                    textColor: mixin.navigationBarTextStyle,
+                    backgroundColor: mixin.navigationBarBackgroundColor,
+                    needBackButton: React.getCurrentPages().length > 1 ? true : false
+                }),
+                pagePath: this.pagePath
+            });
+            var tabBar = config.tabBar;
+            if (tabBar && tabBar.list && tabBar.list.length) {
+                var isTabPage = false;
+                tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
+                tabBar.color = tabBar.color || "#000";
+                tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
+                tabBar.list.forEach((el, i) => {
+                    if (!el.pagePath){
+                        console.warn(`tabBar.list[${i}] miss pagePath`, el);//eslint-disable-line
+                        return;
+                    }
+                    if (el.pagePath === path.replace(/^\//, '')) {
+                        el.selected = true;
+                        isTabPage = true;
+                    } else {
+                        el.selected = false;
+                    }
+                });
+                this.setState({
+                    tabBar: tabBar,
+                    isTabPage
+                });
+            }   
+        }
+        get titleAndTabHeight() {
+            let height = 0;
+            if (this.state.isTabPage) {
+                height += 60;
+            }
+            if (this.state.showTitleBar) {
+                height += 48;
+            }
+            return height;
+        }
         render() {
+            
             return <React.Fragment>
+                {
+                    this.state.showTitleBar ? 
+                        <TitleBar
+                            titleBarHeight={this.state.titleBar.height}
+                            navigationBarTextStyle={this.state.titleBar.textColor}
+                            navigationBarTitleText={this.state.titleBar.text}
+                            navigationBarBackgroundColor={this.state.titleBar.backgroundColor}
+                            backButton={this.props.needBackButton}
+                            // animation: { duration, timingFunc }
+                        ></TitleBar> : null
+                }
                 <div className="__internal__Page-pull-refresh __internal__Page-release-animation">
                     <PullDownLoading/>
                 </div>
@@ -131,18 +224,30 @@ export default function dynamicPage(Comp) {
                         <Comp ref={this.Ref} {...this.props} />
                     </ErrorBoundary>
                 </div>
+                { 
+                    this.state.isTabPage ? 
+                        <TabBar
+                            list={this.state.tabBar.list}
+                            backgroundColor={this.state.tabBar.backgroundColor}
+                            borderStyle={this.state.tabBar.borderStyle}
+                        /> :
+                        null
+                }
                 <style jsx>
                     {`
                     .__internal__DynamicPage-container {
-                        height: 100%;
-                        transform: translateY(${this.state.containerOffsetTop}px);
+                        height: ${this.titleAndTabHeight ? `calc(100% - ${this.titleAndTabHeight}px)` : '100%'};
+                        overflow-x: hidden;
+                        overflow-y: auto;
+                        background-color: ${this.state.backgroundColor};
+                        transform: translateY(${this.state.showTitleBar ? (48 + this.state.containerOffsetTop) :  this.state.containerOffsetTop}px);
                         ${this.state.onPullRefreshRelease ? 'transition: all .3s ease;' : ''}
                     }
                     .__internal__Page-pull-refresh {
                         position: absolute;
                         ${this.state.onPullRefreshRelease ? 'visibility: hidden;' : 'visibility: visible;'}
                         width: 100%;
-                        top: ${-DynamicPage.maxPullRefreshDistance + this.state.containerOffsetTop}px;
+                        top: ${-DynamicPage.maxPullRefreshDistance + this.state.showTitleBar ? 48 : 0 + this.state.containerOffsetTop}px;
                         height: ${DynamicPage.maxPullRefreshDistance}px;
                         line-height: ${DynamicPage.maxPullRefreshDistance}px;
                         z-index: -1;

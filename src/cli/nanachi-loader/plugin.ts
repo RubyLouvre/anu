@@ -6,7 +6,7 @@ import { NanachiOptions } from '../index';
 import webpack = require('webpack');
 const setWebView = require('../packages/utils/setWebVeiw');
 const id = 'NanachiWebpackPlugin';
-const pageConfig = require('../packages/h5Helpers/pageConfig');
+// const pageConfig = require('../packages/h5Helpers/pageConfig');
 
 interface NanachiCompiler extends webpack.Compiler {
     NANACHI?: {
@@ -41,18 +41,18 @@ class NanachiWebpackPlugin implements webpack.Plugin {
         
         // 删除webpack打包产物
         compiler.hooks.emit.tap(id, (compilation) => {
-            if (this.nanachiOptions.platform === 'h5') {
-                // 生成pageConfig 文件 用于动态加载情况下，读取页面配置信息
-                const { code } = generate(t.exportDefaultDeclaration(pageConfig));
-                compilation.assets['pageConfig.js'] = {
-                    source: function() {
-                        return code;
-                    },
-                    size: function() {
-                        return code.length;
-                    }
-                };
-            }
+            // if (this.nanachiOptions.platform === 'h5') {
+            //     // 生成pageConfig 文件 用于动态加载情况下，读取页面配置信息
+            //     const { code } = generate(t.exportDefaultDeclaration(pageConfig));
+            //     compilation.assets['pageConfig.js'] = {
+            //         source: function() {
+            //             return code;
+            //         },
+            //         size: function() {
+            //             return code.length;
+            //         }
+            //     };
+            // }
             const reg = new RegExp(compiler.options.output.filename);
             Object.keys(compilation.assets).forEach(key => {
                 if (reg.test(key)) {

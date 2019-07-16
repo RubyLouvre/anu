@@ -49,7 +49,7 @@ const webpackConfig: webpack.Configuration = {
             '@components': resolveFromContext(
                 `${intermediateDirectoryName}/components`
             ),
-            '@pageConfig': resolveFromContext(`${intermediateDirectoryName}/pageConfig.js`),
+            // '@pageConfig': resolveFromContext(`${intermediateDirectoryName}/pageConfig.js`),
             '@qunar-default-loading': resolveFromH5Helper('components/Loading'),
         },
         modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')]
