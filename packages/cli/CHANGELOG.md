@@ -1,5 +1,38 @@
 # Changelog
 
+# 1.3.3 (2019-07-11)
+
+## 核心库
+#### Feature
+
+- 华为快应用添加两个静态对象，innerQuery、outterQuery分别获取页面间的传参和外部跳进来页面的传参。
+- 简化了快应用分享。
+
+## CLI
+#### Feature
+
+- chaika分包工具整合成nanachi webpack plugin。
+- h5方案重构，去掉mobx层，支持自定义html模板，与其他平台解析逻辑统一。
+- 支持快应用sign目录用户自定义。
+- 增加限制规则：jsx内不能调用非map函数。
+
+# 1.3.2 (2019-07-01)
+
+## 核心库
+#### Feature
+
+- 调整分享钩子的逻辑，确保onGlobalShare钩子有机会触发。
+
+#### Bug fix
+
+- 处理onShow, onHIde使用了async/await后，对应的全局构子不执行的问题。
+
+## CLI
+#### Feature
+
+- 华为background-image:url(xxx)自动添加引号处理，防止华为编译报错。
+- 华为负一屏卡片配置支持。
+
 # 1.3.1 (2019-06-24)
 
 ## 核心库

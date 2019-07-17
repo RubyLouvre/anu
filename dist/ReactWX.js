@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-06-24T08
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-07-17T03
  * IE9+
  */
 
@@ -577,7 +577,7 @@ function createContext(defaultValue, calculateChangedBits) {
             instance.subscribers.splice(i, 1);
         },
         render: function render() {
-            return this.props.children(this.state.value);
+            return this.props.children(getContext(get(this)));
         }
     });
     function getContext(fiber) {
@@ -663,7 +663,8 @@ var noPromiseApis = {
   createWorker: true,
   getPushProvider: true,
   getProvider: true,
-  canvasToTempFilePath: true
+  canvasToTempFilePath: true,
+  createModal: true
 };
 var otherApis = {
   uploadFile: true,
@@ -811,19 +812,11 @@ function promisefyApis(ReactWX, facade, more) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
                         task = needWrapper.apply(facade, args);
+                        if (task && options.getRawResult) {
+                            options.getRawResult(task);
+                        }
                     }
                 });
-                if (key === 'uploadFile' || key === 'downloadFile') {
-                    p.progress = function (cb) {
-                        task.onProgressUpdate(cb);
-                        return p;
-                    };
-                    p.abort = function (cb) {
-                        cb && cb();
-                        task.abort();
-                        return p;
-                    };
-                }
                 return p;
             };
         } else {
@@ -1369,7 +1362,7 @@ function useCallbackImpl(create, deps, isMemo) {
     if (prevState) {
         var prevInputs = prevState[1];
         if (areHookInputsEqual(nextInputs, prevInputs)) {
-            return prevState[0];
+            return;
         }
     }
     var value = isMemo ? create() : create;

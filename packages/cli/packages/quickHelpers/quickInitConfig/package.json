@@ -6,8 +6,5 @@
         "build": "hap build",
         "release": "hap release",
         "watch": "hap watch"
-    },
-    "devDependencies": {
-        "hap-toolkit": "latest"
     }
 }

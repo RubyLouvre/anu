@@ -1,4 +1,6 @@
-module.exports = [
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const templates = [
     {
         name: '去哪儿',
         value: 'qunar'
@@ -16,3 +18,4 @@ module.exports = [
         value: 'helloNanachi'
     }
 ];
+exports.default = templates;

@@ -14,6 +14,8 @@ import {
     createFactory
 } from 'react-core/createElement';
 import { Fragment, getWindow } from 'react-core/util';
+import { lazy } from 'react-fiber/lazy';
+import { Suspense } from 'react-fiber/Suspense';
 
 import { findDOMNode } from './findDOMNode';
 import { DOMRenderer } from './DOMRenderer';
@@ -46,6 +48,8 @@ if (prevReact && prevReact.eventSystem) {
         Children,
         createPortal,
         createContext,
+        lazy,
+        Suspense,
         Component,
         createRef,
         forwardRef,

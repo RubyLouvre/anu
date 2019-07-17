@@ -1,7 +1,8 @@
-import React, { Fragment } from 'react';
+import { Fragment } from 'react-core/util';
+import { Component } from 'react-core/Component';
 import { handleSuccess, handleFail } from '../../utils';
 
-export default class Loading extends React.Component {
+export default class Loading extends Component {
   componentDidMount() {
     handleSuccess({
       errMsg: 'showLoading:ok'

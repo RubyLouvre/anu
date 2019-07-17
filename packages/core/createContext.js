@@ -60,7 +60,7 @@ export function createContext(defaultValue, calculateChangedBits) {
             instance.subscribers.splice(i, 1);
         },
         render: function render() {
-            return this.props.children(this.state.value);
+            return this.props.children(getContext(get(this)));
         }
     });
     function getContext(fiber){

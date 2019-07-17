@@ -1,4 +1,4 @@
-const platforms = require('../../consts/platforms');
+const platforms = require('../../consts/platforms').default;
 const generate = require('@babel/generator').default;
 
 module.exports =  function transformConfig(modules, astPath, buildType ){

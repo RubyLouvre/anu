@@ -1,5 +1,5 @@
-const JavascriptParserFactory = require('../../nanachi-loader/parsers/jsParser/JavascriptParserFactory');
-const StyleParserFactory = require('../../nanachi-loader/parsers/styleParser/StyleParserFactory');
+const JavascriptParserFactory = require('../../parsers/jsParser/JavascriptParserFactory');
+const StyleParserFactory = require('../../parsers/styleParser/StyleParserFactory');
 const path = require('path');
 const fs = require('fs');
 const prettifyXml = require('prettify-xml');

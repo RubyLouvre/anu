@@ -17,7 +17,8 @@ const toUpperCamel = require('./toUpperCamel');
 const Event = new EventEmitter();
 const pkg = require(path.join(cwd, 'package.json'));
 const userConfig = pkg.nanachi || pkg.mpreact || {};
-
+const mergeWith = require('lodash.mergewith');
+const crypto = require('crypto');
 const cachedUsingComponents = {}
 // 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
@@ -324,6 +325,19 @@ let utils = {
         return platforms.some((p) => {
             return p.buildType === platform;
         });
+    },
+    customizer(objValue, srcValue) {
+      if (Array.isArray(objValue)) {
+        return objValue.concat(srcValue);
+      }
+    },
+    deepMerge(...args) {
+        return mergeWith(...args, this.customizer);
+    },
+    getStyleNamespace(dirname) {
+        const s = crypto.createHash('md5');
+        s.update(dirname);
+        return `anu-style-${s.digest('hex').substr(0, 6)}`;
     }
 };
 
