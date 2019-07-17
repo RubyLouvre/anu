@@ -102,6 +102,13 @@ class P extends React.Component {
               title: 'fail',
               content: `code = ${code}`
             });
+          },
+          getRawResult: function(task){
+              task.onProgressUpdate(res => {
+                console.log('上传进度', res.progress);
+                console.log('已经上传的数据长度', res.totalBytesSent);
+                console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend);
+              });
           }
         });
       }
@@ -128,6 +135,13 @@ class P extends React.Component {
       },
       fail: function(data, code) {
         alert(`handling fail, code = ${code}`);
+      },
+      getRawResult: function(task){
+        task.onProgressUpdate(res => {
+          console.log('上传进度', res.progress);
+          console.log('已经上传的数据长度', res.totalBytesSent);
+          console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend);
+        });
       }
     });
   }
@@ -157,7 +171,51 @@ class P extends React.Component {
         }
       }
   }
+  chooseImg() {
+    React.api.chooseImage({
+        count: 1,
+        success: res => {
+            console.log(res.tempFilePaths[0]);
+            React.api.showLoading({title: '正在上传...'});
+            const promise = React.api.uploadFile({
+                url: `https://complain.qunar.com/complain/getUploadImgUrl.do?${+new Date()}`,
+                // url: 'https://wxapp.qunar.com/event/api/upload/baskphoto.json',
+                filePath: res.tempFilePaths[0],
+                name: 'file',
+                success: res => {
+                    if (res.data.status !== 0) {
+                        React.api.showToast({
+                            icon: 'none',
+                            title: '网络繁忙...'
+                        });
+                        return;
+                    }
+                    console.log('上传图片成功', res.data.data);
+                },
+                fail: err => {
+                    console.log('上传图片失败', err);
+                    React.api.showToast({
+                        icon: 'none',
+                        title: '网络繁忙...'
+                    });
+                },
+                
+                complete: () => {
+                    React.api.hideLoading();
+                },
+                getRawResult: function(task){
+                  task.onProgressUpdate(res => {
+                    console.log('上传进度', res.progress);
+                    console.log('已经上传的数据长度', res.totalBytesSent);
+                    console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend);
+                  });
+                }
+            });
 
+            
+        }
+    });
+}
 
   getSavedFileInfo() {
     React.api.getSavedFileInfo({
@@ -262,10 +320,10 @@ class P extends React.Component {
             <text>打电话</text>
           </div>
           <div onClick={this.upload} class="anu-item">
-            <text>文件上传</text>
+            <text>文件上传，里面有一个getRawResult方法，可以获uploadTask对象，从而添加进度回调</text>
           </div>
           <div onClick={this.download} class="anu-item">
-            <text>文件下载</text>
+            <text>文件下载，里面有一个getRawResult方法，可以获downloadTask对象，从而添加进度回调</text>
           </div>
           <div
             onClick={this.gotoSome.bind(this, '/pages/apis/request/index')}

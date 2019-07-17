@@ -1,13 +1,13 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-16T09
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-17T03
  * IE9+
  */
 
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
     typeof define === 'function' && define.amd ? define(['clipboard', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
-    (global = global || self, global.React = factory(global.Clipboard, global.axios, global.qs, global.MobileDetect, global.io));
-}(this, function (Clipboard, axios, qs, MobileDetect, io) {
+    (global.React = factory(global.Clipboard,global.axios,global.qs,global.MobileDetect,global.io));
+}(this, (function (Clipboard,axios,qs,MobileDetect,io) {
     Clipboard = Clipboard && Clipboard.hasOwnProperty('default') ? Clipboard['default'] : Clipboard;
     axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
     qs = qs && qs.hasOwnProperty('default') ? qs['default'] : qs;
@@ -207,7 +207,7 @@
             toWarnDev("replaceState", true);
         },
         isReactComponent: returnTrue,
-        isMounted: function isMounted() {
+        isMounted: function isMounted$$1() {
             toWarnDev("isMounted", true);
             return this.updater.isMounted(this);
         },
@@ -477,7 +477,7 @@
         forEach: function forEach(children, func, context) {
             return proxyIt(children, func, null, context);
         },
-        toArray: function toArray(children) {
+        toArray: function toArray$$1(children) {
             return proxyIt(children, K, []);
         }
     };
@@ -1846,12 +1846,12 @@
             arr.splice(index, 1);
         }
     }
-    function detachFiber(fiber, effects) {
+    function detachFiber(fiber, effects$$1) {
         fiber.effectTag = DETACH;
-        effects.push(fiber);
+        effects$$1.push(fiber);
         fiber.disposed = true;
         for (var child = fiber.child; child; child = child.sibling) {
-            detachFiber(child, effects);
+            detachFiber(child, effects$$1);
         }
     }
 
@@ -2320,7 +2320,7 @@
             oldFibers = {};
         }
         var newFibers = fiberizeChildren(children, parentFiber);
-        var effects = parentFiber.effects || (parentFiber.effects = []);
+        var effects$$1 = parentFiber.effects || (parentFiber.effects = []);
         var matchFibers = new Object();
         delete parentFiber.child;
         for (var i in oldFibers) {
@@ -2333,7 +2333,7 @@
                 }
                 continue;
             }
-            detachFiber(oldFiber, effects);
+            detachFiber(oldFiber, effects$$1);
         }
         var prevFiber = void 0,
             index = 0;
@@ -2353,13 +2353,13 @@
                         delete _newFiber.deleteRef;
                     }
                     if (oldRef && oldRef !== _newFiber.ref) {
-                        effects.push(alternate);
+                        effects$$1.push(alternate);
                     }
                     if (_newFiber.tag === 5) {
                         _newFiber.lastProps = alternate.props;
                     }
                 } else {
-                    detachFiber(_oldFiber, effects);
+                    detachFiber(_oldFiber, effects$$1);
                 }
             } else {
                 _newFiber = new Fiber(_newFiber);
@@ -2475,10 +2475,10 @@
             }
         }
     }
-    function commitDFS(effects) {
+    function commitDFS(effects$$1) {
         Renderer.batchedUpdates(function () {
             var el;
-            while (el = effects.shift()) {
+            while (el = effects$$1.shift()) {
                 if (el.effectTag === DETACH && el.caughtError) {
                     disposeFiber(el);
                 } else {
@@ -2586,7 +2586,7 @@
     }
     function safeInvokeHooks(upateQueue, create, destory) {
         var uneffects = upateQueue[destory],
-            effects = upateQueue[create],
+            effects$$1 = upateQueue[create],
             fn;
         if (!uneffects) {
             return;
@@ -2596,7 +2596,7 @@
                 fn();
             } catch (e) {      }
         }
-        while (fn = effects.shift()) {
+        while (fn = effects$$1.shift()) {
             try {
                 var f = fn();
                 if (typeof f === 'function') {
@@ -3395,19 +3395,11 @@
                             console.warn('平台未不支持', key, '方法');
                         } else {
                             task = needWrapper.apply(facade, args);
+                            if (task && options.getRawResult) {
+                                options.getRawResult(task);
+                            }
                         }
                     });
-                    if (key === 'uploadFile' || key === 'downloadFile') {
-                        p.progress = function (cb) {
-                            task.onProgressUpdate(cb);
-                            return p;
-                        };
-                        p.abort = function (cb) {
-                            cb && cb();
-                            task.abort();
-                            return p;
-                        };
-                    }
                     return p;
                 };
             } else {
@@ -5154,7 +5146,7 @@
         isValidElement: isValidElement,
         toClass: miniCreateClass,
         registerComponent: registerComponent,
-        getCurrentPage: function getCurrentPage() {
+        getCurrentPage: function getCurrentPage$$1() {
             return __currentPages[__currentPages.length - 1];
         },
         getCurrentPages: function getCurrentPages() {
@@ -5375,4 +5367,4 @@
 
     return React$1;
 
-}));
+})));
