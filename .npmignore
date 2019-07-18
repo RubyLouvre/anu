@@ -3,6 +3,7 @@
 /md/*
 /coverage/
 /test/*
+/aaa/*
 /benchmarks/*
 package-lock.json
 node_modules/*
