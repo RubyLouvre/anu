@@ -9,40 +9,78 @@
 </head>
 <body>
 
-<script src="./dist/React.js"></script>
-<!--
-  <script src="https://cdn.bootcss.com/react/16.9.0-alpha.0/umd/react.development.js"></script>
-  <script src="https://cdn.bootcss.com/react-dom/16.9.0-alpha.0/umd/react-dom.development.js"></script> 
--->
-  <script type='text/javascript' src="./lib/babel.js"></script>
-  <script type='text/babel'>
-window.onload = function(){
-  var { lazy, Suspense } = React
-  const OtherComponent = lazy(function (){
-    return new Promise(function(resolve){
-      setTimeout(function(){
-        resolve({
-          default: function A(){
-            return <div>lazy!!!</div>
+  <script>
+     function a(str, k){
+       var hash = {}
+       for(var i = 0; i < str.length; i++){
+          var c = str[i]
+          hash[c] = !hash[c] ? 1: hash[c] +1
+       }
+     }
+function longestSubstring(str, k) {
+       var hash = {}
+       for(var i = 0; i < str.length; i++){
+          var c = str[i]
+          hash[c] = !hash[c] ? 1: hash[c] +1
+       }
+       console.log(hash)
+       var old = str
+       str += "钟"
+
+       hash['钟'] = 1
+       var children = '', lastChildren = '', max = 0, hasSplit = false
+       for(var i = 0; i < str.length; i++){
+          var c = str[i];
+          if(hash[c] < k){
+            if(children.length>=k){
+
+            }
+            hasSplit = true
+            if(children.length > lastChildren.length ){
+              max = children.length
+              console.log(children)
+              lastChildren = children
+            }
+             children = ""
+          }else{
+             children += c
           }
-        })
-      },3000);
-    })
-  });
+       }
+       if(!hasSplit){
+         return old.length >= k ? old.length: 0
+       }
+       return max
+};
+   
+  function longestSubstring( s,  k) {
+	    return longestSubstringSub(s, k, 0, s.length - 1);
+	}
+ 
+	 function longestSubstringSub( s,  k,  start,  end){
+	    if(start > end) return 0;
+	    varcount = new Array(26).fill(0)
+	    for(var i = start; i <= end; i++){
+	        count[s.charCodeAt(i) - 97]++;
+	    }
+	    for(var i = 0; i < 26; i++){
+	        if(count[i] > 0 && count[i] < k){
+	            var pos = s.indexOf( String.fromCharCode(i+97), start);
+	            return Math.max(longestSubstringSub(s, k, start, pos - 1), longestSubstringSub(s, k, pos + 1, end));
+	        }
+	    }
+	    return end - start + 1;
+	}
 
-  function MyComponent() {
-    return (
-       <div>
-          <Suspense fallback={<div>Loading...</div>}>
-             <OtherComponent />
-          </Suspense>
-        </div>
-    );
-  }
 
-  ReactDOM.render(<MyComponent />, document.getElementById("root"));
 
-}
+console.log(longestSubstring('ababacb',3))//SEM是付费的，IOS是越狱市场， 积分墙
+/*
+console.log(longestSubstring('aaabb',3))
+console.log(longestSubstring('ababbc',2))
+console.log(longestSubstring('ababbddcaaabbb',2))
+*/
+
+
     </script>
   <div id='root'></div>
 </body>

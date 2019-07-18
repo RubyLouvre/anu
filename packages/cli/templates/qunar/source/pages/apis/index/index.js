@@ -83,15 +83,17 @@ class P extends React.Component {
     console.log('upload');
     React.api.chooseImage({
       success: function(data) {
-        console.log(`handling success: ${data.uri}`);
+        console.log("handling success: ", data);
         React.api.uploadFile({
           url: 'http://yapi.demo.qunar.com/mock/291/aaaaa',
-          filePath: data.uri,
-          name: 'file1',
+          filePath: data.tempFilePaths[0],
+          name: 'file',
+          fileType: 'image',
           formData: {
             user: 'test'
           },
           success: function(data) {
+            console.log(data, '---')
             React.api.showModal({
               title: 'success'
             });
@@ -171,51 +173,7 @@ class P extends React.Component {
         }
       }
   }
-  chooseImg() {
-    React.api.chooseImage({
-        count: 1,
-        success: res => {
-            console.log(res.tempFilePaths[0]);
-            React.api.showLoading({title: '正在上传...'});
-            const promise = React.api.uploadFile({
-                url: `https://complain.qunar.com/complain/getUploadImgUrl.do?${+new Date()}`,
-                // url: 'https://wxapp.qunar.com/event/api/upload/baskphoto.json',
-                filePath: res.tempFilePaths[0],
-                name: 'file',
-                success: res => {
-                    if (res.data.status !== 0) {
-                        React.api.showToast({
-                            icon: 'none',
-                            title: '网络繁忙...'
-                        });
-                        return;
-                    }
-                    console.log('上传图片成功', res.data.data);
-                },
-                fail: err => {
-                    console.log('上传图片失败', err);
-                    React.api.showToast({
-                        icon: 'none',
-                        title: '网络繁忙...'
-                    });
-                },
-                
-                complete: () => {
-                    React.api.hideLoading();
-                },
-                getRawResult: function(task){
-                  task.onProgressUpdate(res => {
-                    console.log('上传进度', res.progress);
-                    console.log('已经上传的数据长度', res.totalBytesSent);
-                    console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend);
-                  });
-                }
-            });
-
-            
-        }
-    });
-}
+  
 
   getSavedFileInfo() {
     React.api.getSavedFileInfo({

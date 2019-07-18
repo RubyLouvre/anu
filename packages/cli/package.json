@@ -108,7 +108,6 @@
         "stylelint-plugin-nanachi": "latest",
         "table": "^5.2.3",
         "validate-npm-package-name": "^3.0.0",
-        "copy-webpack-plugin": "^5.0.2",
         "webpack": "^4.29.6",
         "webpack-dev-server": "^3.4.1",
         "webpack-merge": "^4.2.1",

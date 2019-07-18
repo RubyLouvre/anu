@@ -34,6 +34,16 @@ export var more = function(api) {
             RequestQueue.facade = api;
             return RequestQueue.request(_a);
         },
+        uploadFile: function _(a) {
+            var cb = a.success || Number;
+            a.success = function(res){
+                 if(res.data+'' === res.data){
+                   res.data = JSON.parse(res.data)
+                 }
+                 cb(res)
+            }
+            return api.uploadFile(a);
+        },
         getStorage: function({key, success, complete}){
             return api.getStorage({
                 key,
