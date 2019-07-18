@@ -2,10 +2,11 @@
 /node_modules/*
 /md/*
 /ts/*
-/packages/*
+/packages/cli/node_modules/*
 /coverage/
 package-lock.json
 node_modules/
+/node_modules/*
 chromedriver
 selenium-server-*
 /.vscode/*
