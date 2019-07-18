@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2019-07-16
+ * by 司徒正美 Copyright 2019-07-18
  * IE9+
  */
 
@@ -838,7 +838,7 @@
             });
         });
     }, Component, {
-        getSuspenseFallback: function getSuspenseFallback() {
+        fallback: function fallback() {
             var parent = Object(get(this)).return;
             while (parent) {
                 if (parent.type === Suspense) {
@@ -849,7 +849,7 @@
             throw "lazy组件必须包一个Suspense组件";
         },
         render: function render() {
-            return this.state.resolved ? createElement(this.state.component) : this.getSuspenseFallback();
+            return this.state.resolved ? createElement(this.state.component) : this.fallback();
         }
     });
     function lazy(fn) {
@@ -3218,7 +3218,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.5.1',
+            version: '1.5.4',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,
