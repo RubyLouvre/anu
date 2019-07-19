@@ -108,9 +108,23 @@ let React = (getWindow().React = {
             )
         ) return true;
         return false;
-    }
+    },
+    __navigateBack
 });
-
+function __navigateBack({delta = 1, success, fail, complete} = {}) {
+    var appInstance = React.__app;
+    appInstance.setState({
+        showBackAnimation: true
+    });
+    setTimeout(() => {
+        while (delta && __currentPages.length) {
+            __currentPages.pop();
+            delta--;
+        }
+        let { path, query } = __currentPages[__currentPages.length - 1].props;
+        React.api.redirectTo({url: path + parseObj2Query(query), success, fail, complete});
+    }, 300);
+}
 function router({url, success, fail, complete}) {
     var [path, query] = getQuery(url);
     var appInstance = React.__app;
@@ -121,9 +135,13 @@ function router({url, success, fail, complete}) {
     if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
     var pageClass = React.__pages[path];
     __currentPages.forEach((page, index, self) => {
-        self[index] = React.cloneElement(self[index], {
-            show: false
-        });
+        const pageClass = React.__pages[page.props.path];
+        self[index] = React.createElement(pageClass, Object.assign(
+            page.props,
+            {
+                show: false
+            }
+        ));
     });
     var pageInstance = React.createElement(pageClass, {
         isTabPage: false,
@@ -131,8 +149,7 @@ function router({url, success, fail, complete}) {
         query,
         url,
         app: React.__app,
-        show: true,
-        needBackButton: __currentPages.length > 0 ? true : false
+        show: true
     });
     __currentPages.push(pageInstance);
     appInstance.setState({
@@ -167,23 +184,12 @@ let apiContainer = {
         history.pushState({url: options.url}, null, prefix + options.url);
     },
     navigateBack: function(options = {}) {
-        let { delta = 1, success, fail, complete } = options;
+        const {delta = 1} = options;
         __currentPages.slice(0, -delta).forEach(page => {
             const url = page.props.url;
             history.pushState({url: url}, null, prefix + url);
         });
-        const appInstance = React.__app;
-        appInstance.setState({
-            showBackAnimation: true
-        });
-        setTimeout(() => {
-            while (delta && __currentPages.length) {
-                __currentPages.pop();
-                delta--;
-            }
-            let { path, query } = __currentPages[__currentPages.length - 1].props;
-            React.api.redirectTo({url: path + parseObj2Query(query), success, fail, complete});
-        }, 300);
+        React.__navigateBack(options);
     },
     switchTab: function({url, success, fail, complete}) {
         var [path, query] = getQuery(url);
@@ -210,24 +216,20 @@ let apiContainer = {
             let key = titleBarColorMap[curr];
             return Object.assign({}, accr, { [key || curr]: options[curr] });
         }, {}) ;
-        const currentPage = __currentPages.pop();
-        __currentPages.push(cloneElement(currentPage, {
-            config: processedOptions
-        }));
         var appInstance = React.__app;
-        appInstance.setState({});
+        appInstance.setState({
+            config: processedOptions
+        });
     },
     setNavigationBarTitle: function(options) {
         const processedOptions = Object.keys(options).reduce(function(accr, curr) {
             let key = titleBarTitleMap[curr];
             return Object.assign({}, accr, { [key || curr]: options[curr] });
         }, {}) ;
-        const currentPage = __currentPages.pop();
-        __currentPages.push(cloneElement(currentPage, {
-            config: processedOptions
-        }));
         var appInstance = React.__app;
-        appInstance.setState({});
+        appInstance.setState({
+            config: processedOptions
+        });
     },
     stopPullDownRefresh: function() {
         const pageInstance = React.getCurrentPages().pop();

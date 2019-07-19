@@ -1,5 +1,5 @@
 import { noop } from 'react-core/util';
-
+import {fixFilePath} from './file'
 export var more = function(api) {
     return {
         // 交互
@@ -36,10 +36,12 @@ export var more = function(api) {
         },
         // 震动
         vibrateLong: function _(a) {
-            return api.vibrate(a);
+            var name =  api.vibrateLong ? "vibrateLong" :"vibrate"
+            return api[name](a);
         },
         vibrateShort: function _(a) {
-            return api.vibrate(a);
+            var name =  api.vibrateShort ? "vibrateShort" :"vibrate"
+            return api[name](a);
         },
         // 图片保存到本地
         saveImageToPhotosAlbum: function _(a) {
@@ -53,20 +55,11 @@ export var more = function(api) {
             a.current = index;
             return api.previewImage(a);
         },
-
+       
         // 文件
-        getFileInfo: function _(a) {
-            a.apFilePath = a.filePath;
-            return api.getFileInfo(a);
-        },
-        getSavedFileInfo: function _(a) {
-            a.apFilePath = a.filePath;
-            return api.getSavedFileInfo(a);
-        },
-        removeSavedFile: function _(a) {
-            a.apFilePath = a.filePath;
-            return api.removeSavedFile(a);
-        },
+        getFileInfo: fixFilePath(api, 'getFileInfo'),
+        getSavedFileInfo: fixFilePath(api, 'getSavedFileInfo'),
+        removeSavedFile: fixFilePath(api, 'removeSavedFile'),
         saveFile: function _(a) {
             a.apFilePath = a.tempFilePath;
             let fn = a['success'];
@@ -113,8 +106,8 @@ export var more = function(api) {
         },
         // 下载
         downloadFile: function _(a) {
-            let fn = a['success'];
-            a['success'] = res => {
+            let fn = a.success;
+            a.success = res => {
                 res.tempFilePath = res.apFilePath;
                 fn && fn(res);
             };

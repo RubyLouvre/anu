@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-18T07
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-19T03
  * IE9+
  */
 
@@ -5179,13 +5179,36 @@
                 return item.pagePath.replace(/^\.\//, '') === pathname.replace(/^\//, '');
             })) return true;
             return false;
-        }
+        },
+        __navigateBack: __navigateBack
     };
-    function router(_ref) {
-        var url = _ref.url,
+    function __navigateBack() {
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref$delta = _ref.delta,
+            delta = _ref$delta === undefined ? 1 : _ref$delta,
             success = _ref.success,
             fail = _ref.fail,
             complete = _ref.complete;
+        var appInstance = React$1.__app;
+        appInstance.setState({
+            showBackAnimation: true
+        });
+        setTimeout(function () {
+            while (delta && __currentPages.length) {
+                __currentPages.pop();
+                delta--;
+            }
+            var _currentPages$props = __currentPages[__currentPages.length - 1].props,
+                path = _currentPages$props.path,
+                query = _currentPages$props.query;
+            React$1.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
+        }, 300);
+    }
+    function router(_ref2) {
+        var url = _ref2.url,
+            success = _ref2.success,
+            fail = _ref2.fail,
+            complete = _ref2.complete;
         var _getQuery = getQuery(url),
             _getQuery2 = _slicedToArray(_getQuery, 2),
             path = _getQuery2[0],
@@ -5198,9 +5221,10 @@
         if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
         var pageClass = React$1.__pages[path];
         __currentPages.forEach(function (page, index, self) {
-            self[index] = React$1.cloneElement(self[index], {
+            var pageClass = React$1.__pages[page.props.path];
+            self[index] = React$1.createElement(pageClass, Object.assign(page.props, {
                 show: false
-            });
+            }));
         });
         var pageInstance = React$1.createElement(pageClass, {
             isTabPage: false,
@@ -5208,8 +5232,7 @@
             query: query,
             url: url,
             app: React$1.__app,
-            show: true,
-            needBackButton: __currentPages.length > 0 ? true : false
+            show: true
         });
         __currentPages.push(pageInstance);
         appInstance.setState({
@@ -5244,34 +5267,18 @@
         navigateBack: function navigateBack() {
             var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
             var _options$delta = options.delta,
-                delta = _options$delta === undefined ? 1 : _options$delta,
-                success = options.success,
-                fail = options.fail,
-                complete = options.complete;
+                delta = _options$delta === undefined ? 1 : _options$delta;
             __currentPages.slice(0, -delta).forEach(function (page) {
                 var url = page.props.url;
                 history.pushState({ url: url }, null, prefix + url);
             });
-            var appInstance = React$1.__app;
-            appInstance.setState({
-                showBackAnimation: true
-            });
-            setTimeout(function () {
-                while (delta && __currentPages.length) {
-                    __currentPages.pop();
-                    delta--;
-                }
-                var _currentPages$props = __currentPages[__currentPages.length - 1].props,
-                    path = _currentPages$props.path,
-                    query = _currentPages$props.query;
-                React$1.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
-            }, 300);
+            React$1.__navigateBack(options);
         },
-        switchTab: function switchTab(_ref2) {
-            var url = _ref2.url,
-                success = _ref2.success,
-                fail = _ref2.fail,
-                complete = _ref2.complete;
+        switchTab: function switchTab(_ref3) {
+            var url = _ref3.url,
+                success = _ref3.success,
+                fail = _ref3.fail,
+                complete = _ref3.complete;
             var _getQuery3 = getQuery(url),
                 _getQuery4 = _slicedToArray(_getQuery3, 2),
                 path = _getQuery4[0],
@@ -5292,11 +5299,11 @@
                 this.navigateTo.call(this, { url: url, query: query, success: success, fail: fail, complete: complete });
             }
         },
-        reLaunch: function reLaunch(_ref3) {
-            var url = _ref3.url,
-                success = _ref3.success,
-                fail = _ref3.fail,
-                complete = _ref3.complete;
+        reLaunch: function reLaunch(_ref4) {
+            var url = _ref4.url,
+                success = _ref4.success,
+                fail = _ref4.fail,
+                complete = _ref4.complete;
             __currentPages = [];
             this.navigateTo.call(this, { url: url, success: success, fail: fail, complete: complete });
         },
@@ -5305,24 +5312,20 @@
                 var key = titleBarColorMap[curr];
                 return Object.assign({}, accr, _defineProperty({}, key || curr, options[curr]));
             }, {});
-            var currentPage = __currentPages.pop();
-            __currentPages.push(cloneElement(currentPage, {
-                config: processedOptions
-            }));
             var appInstance = React$1.__app;
-            appInstance.setState({});
+            appInstance.setState({
+                config: processedOptions
+            });
         },
         setNavigationBarTitle: function setNavigationBarTitle(options) {
             var processedOptions = Object.keys(options).reduce(function (accr, curr) {
                 var key = titleBarTitleMap[curr];
                 return Object.assign({}, accr, _defineProperty({}, key || curr, options[curr]));
             }, {});
-            var currentPage = __currentPages.pop();
-            __currentPages.push(cloneElement(currentPage, {
-                config: processedOptions
-            }));
             var appInstance = React$1.__app;
-            appInstance.setState({});
+            appInstance.setState({
+                config: processedOptions
+            });
         },
         stopPullDownRefresh: function stopPullDownRefresh() {
             var pageInstance = React$1.getCurrentPages().pop();
