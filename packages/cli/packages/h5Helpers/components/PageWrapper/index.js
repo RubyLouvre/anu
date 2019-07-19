@@ -8,18 +8,12 @@ class PageWrapper extends React.Component{
         this.Comp = React.createRef();
         this.$app = props.app;
         this.initAppConfig();
-        this.state = {
-            pagePath: ''
-        };
     }
     initAppConfig() {
         this.appConfig = this.props.app.constructor.config || {};
         // 将window字段扁平化
         Object.assign(this.appConfig, this.appConfig.window);
         delete this.appConfig.window;
-    }
-    get pagePath() {
-        return this.$app.state.path;
     }
     render(){
         const instances = React.getCurrentPages();

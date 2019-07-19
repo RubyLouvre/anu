@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-16T09
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-18T07
  * IE9+
  */
 
@@ -5211,7 +5211,7 @@
             });
         });
         var pageInstance = React$1.createElement(pageClass, {
-            isTabPage: false,
+            isTabPage: React$1.__isTab(path),
             path: path,
             query: query,
             url: url,

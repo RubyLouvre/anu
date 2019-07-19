@@ -146,13 +146,13 @@ export default function dynamicPage(Comp) {
         }
         setTitleAndTabs(config, path) {
             var mixin = deepMerge({
-                navigationBarTitleText: "",
-                navigationBarTextStyle: "white",
-                navigationBarBackgroundColor: "#000000"
+                navigationBarTitleText: '',
+                navigationBarTextStyle: 'white',
+                navigationBarBackgroundColor: '#000000'
             }, config);
             this.setState({
-                showTitleBar: mixin.navigationStyle !== "custom" && mixin.navigationBarTitleText !== "",
-                backgroundColor: mixin.backgroundColor || "#ffffff",
+                showTitleBar: mixin.navigationStyle !== 'custom' && mixin.navigationBarTitleText !== 'custom',
+                backgroundColor: mixin.backgroundColor || '#ffffff',
                 titleBar: deepMerge({}, this.state.titleBar, {
                     text: mixin.navigationBarTitleText,
                     textColor: mixin.navigationBarTextStyle,
@@ -164,9 +164,9 @@ export default function dynamicPage(Comp) {
             var tabBar = config.tabBar;
             if (tabBar && tabBar.list && tabBar.list.length) {
                 var isTabPage = false;
-                tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
-                tabBar.color = tabBar.color || "#000";
-                tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
+                tabBar.backgroundColor = tabBar.backgroundColor || '#f9faf5';
+                tabBar.color = tabBar.color || '#000';
+                tabBar.selectedColor = tabBar.selectedColor || '#48adc4';
                 tabBar.list.forEach((el, i) => {
                     if (!el.pagePath){
                         console.warn(`tabBar.list[${i}] miss pagePath`, el);//eslint-disable-line
