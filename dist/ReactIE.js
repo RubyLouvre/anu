@@ -580,8 +580,9 @@
         };
     }
     function forwardRef(fn) {
-        createRef.render = fn;
-        return createRef;
+        return function ForwardRefComponent(props) {
+            return fn(props, this.ref);
+        };
     }
 
     function AnuPortal(props) {
@@ -1728,11 +1729,6 @@
                     }
                 });
                 Renderer.currentOwner = instance;
-                if (type.render) {
-                    instance.render = function () {
-                        return type.render(this.props, this.ref);
-                    };
-                }
             } else {
                 instance = new type(props, context);
                 if (!(instance instanceof Component)) {

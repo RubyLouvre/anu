@@ -39,12 +39,13 @@ export function createInstance(fiber, context) {
                 }
             });
             Renderer.currentOwner = instance;
-            if (type.render) {
+        /*    if (type.render) {
                 //forwardRef函数形式只会执行一次，对象形式执行多次
                 instance.render = function() {
                     return type.render(this.props, this.ref);
                 };
             }
+         */
         } else {
             // 有狀态组件
             instance = new type(props, context);
