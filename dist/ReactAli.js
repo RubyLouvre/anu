@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-07-15
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-07-18
  */
 
 var arrayPush = Array.prototype.push;
@@ -2370,19 +2370,11 @@ function promisefyApis(ReactWX, facade, more) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
                         task = needWrapper.apply(facade, args);
+                        if (task && options.getRawResult) {
+                            options.getRawResult(task);
+                        }
                     }
                 });
-                if (key === 'uploadFile' || key === 'downloadFile') {
-                    p.progress = function (cb) {
-                        task.onProgressUpdate(cb);
-                        return p;
-                    };
-                    p.abort = function (cb) {
-                        cb && cb();
-                        task.abort();
-                        return p;
-                    };
-                }
                 return p;
             };
         } else {
@@ -2514,6 +2506,16 @@ var more = function more(api) {
         },
         uploadFile: function _(a) {
             a.fileName = a.name;
+            var cb = a.success || Number;
+            if (!('fileType' in a)) {
+                throw '支付宝小程序上传时配置对象需要加fileType属性';
+            }
+            a.success = function (res) {
+                if (res.data + '' === res.data) {
+                    res.data = JSON.parse(res.data);
+                }
+                cb(res);
+            };
             return api.uploadFile(a);
         },
         downloadFile: function _(a) {

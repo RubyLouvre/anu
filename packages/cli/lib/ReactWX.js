@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-07-15T06
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-07-18T07
  * IE9+
  */
 
@@ -812,19 +812,11 @@ function promisefyApis(ReactWX, facade, more) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
                         task = needWrapper.apply(facade, args);
+                        if (task && options.getRawResult) {
+                            options.getRawResult(task);
+                        }
                     }
                 });
-                if (key === 'uploadFile' || key === 'downloadFile') {
-                    p.progress = function (cb) {
-                        task.onProgressUpdate(cb);
-                        return p;
-                    };
-                    p.abort = function (cb) {
-                        cb && cb();
-                        task.abort();
-                        return p;
-                    };
-                }
                 return p;
             };
         } else {
@@ -900,6 +892,16 @@ var more = function more(api) {
         request: function request(_a) {
             RequestQueue.facade = api;
             return RequestQueue.request(_a);
+        },
+        uploadFile: function _(a) {
+            var cb = a.success || Number;
+            a.success = function (res) {
+                if (res.data + '' === res.data) {
+                    res.data = JSON.parse(res.data);
+                }
+                cb(res);
+            };
+            return api.uploadFile(a);
         },
         getStorage: function getStorage(_ref) {
             var key = _ref.key,

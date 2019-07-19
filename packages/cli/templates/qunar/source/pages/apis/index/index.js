@@ -83,15 +83,17 @@ class P extends React.Component {
     console.log('upload');
     React.api.chooseImage({
       success: function(data) {
-        console.log(`handling success: ${data.uri}`);
+        console.log("handling success: ", data);
         React.api.uploadFile({
           url: 'http://yapi.demo.qunar.com/mock/291/aaaaa',
-          filePath: data.uri,
-          name: 'file1',
+          filePath: data.tempFilePaths[0],
+          name: 'file',
+          fileType: 'image',
           formData: {
             user: 'test'
           },
           success: function(data) {
+            console.log(data, '---')
             React.api.showModal({
               title: 'success'
             });
@@ -102,6 +104,13 @@ class P extends React.Component {
               title: 'fail',
               content: `code = ${code}`
             });
+          },
+          getRawResult: function(task){
+              task.onProgressUpdate(res => {
+                console.log('上传进度', res.progress);
+                console.log('已经上传的数据长度', res.totalBytesSent);
+                console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend);
+              });
           }
         });
       }
@@ -128,6 +137,13 @@ class P extends React.Component {
       },
       fail: function(data, code) {
         alert(`handling fail, code = ${code}`);
+      },
+      getRawResult: function(task){
+        task.onProgressUpdate(res => {
+          console.log('下载进度', res.progress);
+          console.log('已经下载的数据长度', res.totalBytesWritten);
+          console.log('预期需要下载的数据总长度', res.totalBytesExpectedToWrite);
+        });
       }
     });
   }
@@ -157,7 +173,7 @@ class P extends React.Component {
         }
       }
   }
-
+  
 
   getSavedFileInfo() {
     React.api.getSavedFileInfo({
@@ -262,10 +278,10 @@ class P extends React.Component {
             <text>打电话</text>
           </div>
           <div onClick={this.upload} class="anu-item">
-            <text>文件上传</text>
+            <text>文件上传，里面有一个getRawResult方法，可以获uploadTask对象，从而添加进度回调</text>
           </div>
           <div onClick={this.download} class="anu-item">
-            <text>文件下载</text>
+            <text>文件下载，里面有一个getRawResult方法，可以获downloadTask对象，从而添加进度回调</text>
           </div>
           <div
             onClick={this.gotoSome.bind(this, '/pages/apis/request/index')}

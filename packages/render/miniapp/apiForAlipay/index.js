@@ -99,6 +99,16 @@ export var more = function(api) {
         // 上传
         uploadFile: function _(a) {
             a.fileName = a.name;
+            var cb = a.success || Number;
+            if(!('fileType' in a)){
+                throw '支付宝小程序上传时配置对象需要加fileType属性'
+            }
+            a.success = function(res){
+                 if(res.data+'' === res.data){
+                   res.data = JSON.parse(res.data)
+                 }
+                 cb(res)
+            }
             return api.uploadFile(a);
         },
         // 下载
