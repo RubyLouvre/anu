@@ -24,20 +24,31 @@
   </div>
   <script type='text/babel'>
 
-const MyButton = React.forwardRef((props, ref) => (
-  <button ref={ref} className="MyButton">
-    {props.children}
-  </button>
-));
-
-// 通过ref可以直接操作<button>元素:
-const ref = React.createRef();
-
-var a = null
- ReactDOM.render( <MyButton ref={ref} a="1" >Click me!</MyButton>, document.getElementById('root'),function(){
-   console.log(ref, this)
- });
-	
+function numSubarrayProductLessThanK(nums, k) {
+     var n = nums.length
+     var hash = {}, left = 0, right = 0, maxCount = 0,res = 0
+    for ( ; right < n; right++) {
+        var c = nums[right];
+        hash[c] = !hash[c] ? 1 : hash[c]+1;
+        
+        maxCount = Math.max(maxCount, hash[c]) //得到当前优势的字符
+        if(right - left + 1 - maxCount > k){
+          hash[nums[left]] --;
+          left++
+        }
+        res = Math.max(res, right - left+1)       
+    }
+    
+    return res;
+}
+function DynamicTag(props){
+  
+   return json.type === 'input' ? <input /> :
+          json.type === 'div' ?   <div><DynamicTag>{props.children}</DynamicTag></div> :
+          json.type === 'span' ?  <span><DynamicTag>{props.children}</DynamicTag></span> :
+          json.type === 'image' ?  <span><DynamicTag>{props.children}</DynamicTag></span> :
+          ""
+}
     </script>
   </body>
 </html>

@@ -11,48 +11,26 @@
 
   <script>
 
-    function longestPalindrome( s) {
-        if(s.length <= 1)
-            return s;
-        var carry = {
-          sub: '',
-          maxLen: 0
-        }
-        var n = s.length - 1; //因为i+1, 需要多留一个
-        for(var i = 0;i < n;i++){
-            findLongestPalindrome(s,i,i,n, carry);//单核回文
-            findLongestPalindrome(s,i,i+1,n, carry);//双核回文
-        }
-        return carry.sub;
-    }
-    function findLongestPalindrome( s, low, high, n, carry ){
-        while (low >= 0 && high <= n){
-            if(s[low] == s[high]){
-                if(high - low + 1 > carry.maxLen){
-                     carry.maxLen = high - low + 1;
-                     carry.sub = s.substring(low , high+1);
-                }
-                low --;//向两边扩散找当前字符为中心的最大回文子串
-                high ++;
-            } else{
-                break;
-            } 
-        }
-    }
+    var sum = [], min = [], max = []
+    function build(n, array){
+      for(var bit=1; bit<=n+1; bit<<=1){};
+console.log(bit)
+for(var i = bit+1; i < bit+n; i++){
+  sum[i] = array[i]
+}
 
-
-console.log(longestPalindrome('babad'))
-console.log(longestPalindrome('cbbd'))
-
-
-//SEM是付费的，IOS是越狱市场， 积分墙
-/*
-console.log(longestSubstring('aaabb',3))
-console.log(longestSubstring('ababbc',2))
-console.log(longestSubstring('ababbddcaaabbb',2))
-*/
-
-
+    }
+    function Node(left, right) {
+  this.left = left;
+  this.right = right;
+  this.leftChild = null;
+  this.rightChild = null;
+  this.sum = 0; //求区间和，还可以加min, max等区间极值。
+}
+   
+ //[10,18,12,5,7,11,4,15] //这样我们就可以在控制台中拿到这个数组
+var array = [10,18,12,5,7,11,4,15]
+build(array.length, array)
     </script>
   <div id='root'></div>
 </body>
