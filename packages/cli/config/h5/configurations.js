@@ -34,8 +34,12 @@ function retrieveNanachiConfig() {
     const cwd = process.env.NANACHI_CWD || process.cwd();
     const resolveFromDirCwd = ramda_1.default.curryN(2, path.resolve)(cwd);
     const packageJSONPath = resolveFromDirCwd('package.json');
-    const packageJson = fs.readJSONSync(packageJSONPath) ||
-        new Error(`cannot find package.json in ${cwd}`);
+    let packageJson = {};
+    try {
+        packageJson = fs.readJSONSync(packageJSONPath);
+    }
+    catch (e) {
+    }
     const { nanachi = {} } = packageJson;
     const { alias = {} } = nanachi;
     return resolveNanachiAlias(alias);

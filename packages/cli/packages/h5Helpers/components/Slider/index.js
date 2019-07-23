@@ -212,25 +212,26 @@ export default class Slider extends React.Component {
         </div>
 
         {showValue && <div className="h5-slider-show-value">{value}</div>}
-        <style jsx>{`
-          .track-bg {
-            margin: ${radius}px;
-            background-color: ${backgroundColor};
-          }
-          .track-active {
-            margin: ${radius}px;
-            background-color: ${activeColor};
-            width: ${distance}px;
-          }
-          .handler {
-            width: ${blockSize}px;
-            height: ${blockSize}px;
-            background-color: ${blockColor};
-            border-radius: ${radius}px;
-            box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-            transform: translateX(${distance}px);
-          }
-        `}</style>
+        <style ref={(node) => {
+              Object(node).textContent = `
+              .track-bg {
+                margin: ${radius}px;
+                background-color: ${backgroundColor};
+              }
+              .track-active {
+                margin: ${radius}px;
+                background-color: ${activeColor};
+                width: ${distance}px;
+              }
+              .handler {
+                width: ${blockSize}px;
+                height: ${blockSize}px;
+                background-color: ${blockColor};
+                border-radius: ${radius}px;
+                box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+                transform: translateX(${distance}px);
+              }`;
+        }}/>
       </div>
     );
   }

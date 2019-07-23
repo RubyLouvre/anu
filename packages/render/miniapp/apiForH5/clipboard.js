@@ -47,6 +47,6 @@ function setClipboardData(options = {}) {
 }
 
 export default {
-  // getClipboardData,
-  setClipboardData
+    // getClipboardData,
+    setClipboardData
 };

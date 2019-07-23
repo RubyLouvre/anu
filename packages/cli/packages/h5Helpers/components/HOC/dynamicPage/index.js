@@ -146,13 +146,13 @@ export default function dynamicPage(Comp) {
         }
         setTitleAndTabs(config, path) {
             var mixin = deepMerge({
-                navigationBarTitleText: "",
-                navigationBarTextStyle: "white",
-                navigationBarBackgroundColor: "#000000"
+                navigationBarTitleText: '',
+                navigationBarTextStyle: 'white',
+                navigationBarBackgroundColor: '#000000'
             }, config);
             this.setState({
-                showTitleBar: mixin.navigationStyle !== "custom" && mixin.navigationBarTitleText !== "",
-                backgroundColor: mixin.backgroundColor || "#ffffff",
+                showTitleBar: mixin.navigationStyle !== 'custom' && mixin.navigationBarTitleText !== 'custom',
+                backgroundColor: mixin.backgroundColor || '#ffffff',
                 titleBar: deepMerge({}, this.state.titleBar, {
                     text: mixin.navigationBarTitleText,
                     textColor: mixin.navigationBarTextStyle,
@@ -164,9 +164,9 @@ export default function dynamicPage(Comp) {
             var tabBar = config.tabBar;
             if (tabBar && tabBar.list && tabBar.list.length) {
                 var isTabPage = false;
-                tabBar.backgroundColor = tabBar.backgroundColor || "#f9faf5";
-                tabBar.color = tabBar.color || "#000";
-                tabBar.selectedColor = tabBar.selectedColor || "#48adc4";
+                tabBar.backgroundColor = tabBar.backgroundColor || '#f9faf5';
+                tabBar.color = tabBar.color || '#000';
+                tabBar.selectedColor = tabBar.selectedColor || '#48adc4';
                 tabBar.list.forEach((el, i) => {
                     if (!el.pagePath){
                         console.warn(`tabBar.list[${i}] miss pagePath`, el);//eslint-disable-line
@@ -232,35 +232,38 @@ export default function dynamicPage(Comp) {
                         /> :
                         null
                 }
-                <style jsx>
-                    {`
-                    .__internal_DynamicPage {
-                        background-color: ${this.state.backgroundColor};
-                        z-index: -100;
-                        width: 100%;
-                        height: 100%;
+                <style ref={
+                    (node) => {
+                        Object(node).textContent = `
+                        .__internal_DynamicPage {
+                            background-color: ${this.state.backgroundColor};
+                            z-index: -100;
+                            width: 100%;
+                            height: 100%;
+                        }
+                        .__internal__DynamicPage-container {
+                            height: ${this.titleAndTabHeight ? `calc(100% - ${this.titleAndTabHeight}px)` : '100%'};
+                            overflow-x: hidden;
+                            overflow-y: auto;
+                            transform: translateY(${this.state.showTitleBar ? (48 + this.state.containerOffsetTop) :  this.state.containerOffsetTop}px);
+                            ${this.state.onPullRefreshRelease ? 'transition: all .3s ease;' : ''}
+                            background-color: ${this.state.backgroundColor};
+                        }
+                        .__internal__Page-pull-refresh {
+                            position: absolute;
+                            background-color: ${this.state.backgroundColor};
+                            ${this.state.onPullRefreshRelease ? 'visibility: hidden;' : 'visibility: visible;'}
+                            width: 100%;
+                            top: ${-DynamicPage.maxPullRefreshDistance + this.state.showTitleBar ? 48 : 0 + this.state.containerOffsetTop}px;
+                            height: ${DynamicPage.maxPullRefreshDistance}px;
+                            line-height: ${DynamicPage.maxPullRefreshDistance}px;
+                            z-index: 0;
+                            text-align: center;
+                            color: #999;
+                        }
+                        `;
                     }
-                    .__internal__DynamicPage-container {
-                        height: ${this.titleAndTabHeight ? `calc(100% - ${this.titleAndTabHeight}px)` : '100%'};
-                        overflow-x: hidden;
-                        overflow-y: auto;
-                        transform: translateY(${this.state.showTitleBar ? (48 + this.state.containerOffsetTop) :  this.state.containerOffsetTop}px);
-                        ${this.state.onPullRefreshRelease ? 'transition: all .3s ease;' : ''}
-                        background-color: ${this.state.backgroundColor};
-                    }
-                    .__internal__Page-pull-refresh {
-                        position: absolute;
-                        background-color: ${this.state.backgroundColor};
-                        ${this.state.onPullRefreshRelease ? 'visibility: hidden;' : 'visibility: visible;'}
-                        width: 100%;
-                        top: ${-DynamicPage.maxPullRefreshDistance + this.state.showTitleBar ? 48 : 0 + this.state.containerOffsetTop}px;
-                        height: ${DynamicPage.maxPullRefreshDistance}px;
-                        line-height: ${DynamicPage.maxPullRefreshDistance}px;
-                        z-index: 0;
-                        text-align: center;
-                        color: #999;
-                    }
-                    `}
+                }>
                 </style>
             </div>;
         }

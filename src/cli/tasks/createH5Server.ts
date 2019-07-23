@@ -22,6 +22,7 @@ export default async function(compiler: webpack.Compiler) {
             },
             disableHostCheck: true,
             // noInfo: true,
+            // https: true, // TODO做成配置项
             hot: true,
             stats: 'errors-only',
             overlay: true,

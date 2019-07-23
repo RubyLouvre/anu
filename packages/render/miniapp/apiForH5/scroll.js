@@ -12,7 +12,7 @@ function pageScrollTo({
 } = {}) {
   // TODO 暂不考虑动画效果
   return new Promise(function(resolve, reject) {
-    const container = document.getElementsByClassName('page-container');
+    const container = document.getElementsByClassName('__internal__DynamicPage-container');
     if (container.length > 0) {
       container[container.length - 1].scrollTo(0, scrollTop);
       handleSuccess({ scrollTop }, success, complete, resolve);

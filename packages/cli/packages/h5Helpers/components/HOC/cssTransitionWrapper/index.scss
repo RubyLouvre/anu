@@ -15,4 +15,11 @@
     transition: transform 300ms ease;
     height: 100%;
 }
+.tab-appear {
+    opacity: 0;
+}
+.tab-appear-done {
+    height: 100%;
+    transition: opacity 300ms ease;
+}
   

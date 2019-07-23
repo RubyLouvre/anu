@@ -23,6 +23,15 @@ interface PlatConfig {
     disabledTitleBarPages: Set<string>;
 }
 
+enum Platforms {
+    wx = 'wx',
+    qq = 'qq',
+    ali = 'ali',
+    bu = 'bu',
+    tt = 'tt',
+    quick = 'quick',
+}
+
 interface GlobalConfigMap {
     buildType: string;      //构建类型默认微信小程序
     buildDir: string;   //非快应用项目默认构建目录为dist
@@ -31,7 +40,14 @@ interface GlobalConfigMap {
     patchComponents: patchComponents; // 项目中使用的补丁组件
     pluginTags: any;
     plugins: any;
-    [platName: string]: PlatConfig | string | boolean | patchComponents;
+    compress?: boolean;
+    WebViewRules?: any; // TODO
+    [Platforms.wx]: PlatConfig;
+    [Platforms.qq]: PlatConfig;
+    [Platforms.ali]: PlatConfig;
+    [Platforms.bu]: PlatConfig;
+    [Platforms.quick]: PlatConfig;
+    [Platforms.tt]: PlatConfig;
 }
 const config: GlobalConfigMap =  {
     wx: {

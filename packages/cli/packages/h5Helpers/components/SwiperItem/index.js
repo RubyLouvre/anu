@@ -30,12 +30,13 @@ class SwiperItem extends Component {
         onClick={onClick}
       >
         {children}
-        <style jsx>{`
-          .h5-swiper-item {
-            flex-basis: ${length / displayMultipleItems}px;
-            flex-shrink: 0;
-          }
-        `}</style>
+        <style ref={(node) => {
+            Object(node).textContent = `
+            .h5-swiper-item {
+              flex-basis: ${length / displayMultipleItems}px;
+              flex-shrink: 0;
+            }`;
+        }}/>
       </div>
     );
   }
