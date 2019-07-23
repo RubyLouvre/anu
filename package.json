@@ -67,6 +67,7 @@
     "@types/html-webpack-plugin": "^3.2.1",
     "@types/inquirer": "^6.0.3",
     "@types/json5": "0.0.30",
+    "@types/less": "^3.0.0",
     "@types/ramda": "^0.26.15",
     "@types/resolve": "0.0.8",
     "@types/semver": "^6.0.1",
