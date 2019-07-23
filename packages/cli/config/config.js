@@ -25,6 +25,7 @@ var Platforms;
     Platforms["bu"] = "bu";
     Platforms["tt"] = "tt";
     Platforms["quick"] = "quick";
+    Platforms["h5"] = "h5";
 })(Platforms || (Platforms = {}));
 const config = {
     wx: {
@@ -56,6 +57,12 @@ const config = {
         styleExt: 'css',
         xmlExt: 'swan',
         helpers: 'buHelpers',
+        patchComponents: {},
+        disabledTitleBarPages: new Set()
+    },
+    h5: {
+        libName: 'ReactH5',
+        helpers: 'h5Helpers',
         patchComponents: {},
         disabledTitleBarPages: new Set()
     },

@@ -1,0 +1,97 @@
+.pickerenter {
+  animation-name: pickerenter;
+  animation-duration: 400ms;
+  animation-timing-function: ease-in;
+}
+
+.pickerleave {
+  animation-name: pickerleave;
+  animation-duration: 300ms;
+  animation-timing-function: ease-in;
+}
+
+@keyframes pickerenter {
+  0% {
+    height: 0;
+    transform: translateY(300px);
+  }
+
+  100% {
+
+    transform: translateY(0);
+  }
+}
+
+@keyframes pickerleave {
+  0% {
+
+    transform: translateY(0);
+  }
+
+  100% {
+    height: 0;
+    transform: translateY(300px);
+  }
+}
+
+.quist-picker {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 300px;
+  // animation-fill-mode: forwards;
+  background-color: #ffffff;
+  flex-direction: column;
+  z-index: 300
+}
+
+.quist-picker-title {
+  width: 100%;
+  height: 40px;
+  justify-content: space-between;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.quist-picker-cancel {
+  padding: 0 15px;
+
+}
+
+.quist-picker-confirm {
+  padding: 0 15px;
+
+}
+
+.quist-picker-ul {
+  flex: 1;
+  width: 100%;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+}
+
+.quist-picker-li {
+  flex-direction: column;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+}
+
+.anu-picker-item {
+  display: flex;
+  flex: 1;
+  justify-content: center
+}
+
+.quist-picker-content {
+  height: 238px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}

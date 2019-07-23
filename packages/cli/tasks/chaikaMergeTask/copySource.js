@@ -2,13 +2,20 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const glob_1 = __importDefault(require("glob"));
-const path_1 = __importDefault(require("path"));
+const path = __importStar(require("path"));
 const cwd = process.cwd();
-const downLoadDir = path_1.default.join(cwd, '.CACHE/download');
-const mergeDir = path_1.default.join(cwd, '.CACHE/nanachi');
+const downLoadDir = path.join(cwd, '.CACHE/download');
+const mergeDir = path.join(cwd, '.CACHE/nanachi');
 const mergeFilesQueue = require('./mergeFilesQueue');
 const ignoreFiles = [
     'package-lock.json',
@@ -43,8 +50,8 @@ function copyCurrentProject() {
     let projectDirName = cwd.replace(/\\/g, '/').split('/').pop();
     let files = glob_1.default.sync('./!(node_modules|dist)', {});
     let allPromiseCopy = files.map(function (el) {
-        let src = path_1.default.join(cwd, el);
-        let dist = path_1.default.join(downLoadDir, projectDirName, el);
+        let src = path.join(cwd, el);
+        let dist = path.join(downLoadDir, projectDirName, el);
         if (/\.\w+$/.test(el)) {
             fs_extra_1.default.ensureFileSync(dist);
             return fs_extra_1.default.copyFile(src, dist);
@@ -59,7 +66,7 @@ function copyCurrentProject() {
 function copyOtherProject() {
     let files = glob_1.default.sync(downLoadDir + '/**', { nodir: true });
     files = files.filter((file) => {
-        let fileName = path_1.default.parse(file).base;
+        let fileName = path.parse(file).base;
         if (isIgnoreFile(fileName)) {
             if (isMergeFile(fileName) || isLockFile(fileName)) {
                 mergeFilesQueue.add(file);
@@ -74,10 +81,10 @@ function copyOtherProject() {
         let dist = '';
         file = file.replace(/\\/g, '/');
         if (/\/source\//.test(file)) {
-            dist = path_1.default.join(mergeDir, 'source', file.split('/source/').pop());
+            dist = path.join(mergeDir, 'source', file.split('/source/').pop());
         }
         else {
-            dist = path_1.default.join(mergeDir, file.split('/').pop());
+            dist = path.join(mergeDir, file.split('/').pop());
         }
         fs_extra_1.default.ensureFileSync(dist);
         return fs_extra_1.default.copyFile(file, dist);

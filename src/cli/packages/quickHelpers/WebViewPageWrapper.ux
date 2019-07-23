@@ -1,0 +1,27 @@
+<template>
+    <div>
+        <web src="{{_src}}" allowthirdpartycookies="{{_allowthirdpartycookies}}" trustedurl="{{_trustedurl}}" ></web>
+    </div>
+</template>
+<script>
+export default {
+    protected: {
+        src: '',
+        allowthirdpartycookies: '',
+        trustedurl: []
+    },
+    pritive() {
+        return {
+            _src: "",
+            _allowthirdpartycookies: false,
+            _trustedurl: []
+        };
+    },
+    onInit() {
+        this._src = this.src
+        this._allowthirdpartycookies = this.allowthirdpartycookies;
+        this._trustedurl = this.trustedurl;
+    }
+};
+</script>
+    

@@ -1,0 +1,13 @@
+{
+    "scripts": {
+        "server": "hap server",
+        "postinstall": "hap postinstall",
+        "debug": "hap debug",
+        "build": "hap build",
+        "release": "hap release",
+        "watch": "hap watch"
+    },
+    "devDependencies": {
+        "hap-toolkit": "latest"
+    }
+}

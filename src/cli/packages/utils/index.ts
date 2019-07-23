@@ -121,7 +121,7 @@ let utils = {
             return (astPath.node.name.name = map[orig] || backup);
         }
     },
-    createAttribute(name: string, value: string) {
+    createAttribute(name: string, value: babel.Node | string) {
         return t.JSXAttribute(
             // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
             t.jsxIdentifier(name),
@@ -180,7 +180,7 @@ let utils = {
             )
         );
     },
-    exportExpr(name: string, isDefault: boolean) {
+    exportExpr(name: string, isDefault?: boolean) {
         if (isDefault == true) {
             return template(`module.exports.default = ${name};`)();
         } else {
@@ -189,7 +189,7 @@ let utils = {
     },
 
     isNpm: isNpm,
-    createRegisterStatement(className: string, path: any, isPage: boolean) {
+    createRegisterStatement(className: string, path: any, isPage?: boolean) {
         /**
          * placeholderPattern
          * Type: RegExp | false Default: /^[_$A-Z0-9]+$/
@@ -349,3 +349,4 @@ let utils = {
 };
 
 module.exports = utils;
+export default utils;

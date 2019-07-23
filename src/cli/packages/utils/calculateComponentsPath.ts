@@ -1,7 +1,7 @@
 import * as path from 'path';
+import getDistPath from './getDistPath';
+import calculateAlias from './calculateAlias';
 const cwd = process.cwd();
-const getDistPath = require('./getDistPath');
-const calculateAlias = require('./calculateAlias');
 let cachedUsingComponents: {
     [props: string]: string;
 } = {};
@@ -14,7 +14,7 @@ let cachedUsingComponents: {
 function fixWinPath(p: string) {
     return p.replace(/\\/g, '/');
 }
-module.exports = function calculateComponentsPath( bag: any ) {
+function calculateComponentsPath( bag: any ) {
     
     if (!path.isAbsolute(bag.sourcePath)) {
         console.error('bag.sourcePath 必须为绝对路径.');
@@ -43,3 +43,6 @@ module.exports = function calculateComponentsPath( bag: any ) {
     cachedUsingComponents[bag.source] = usingPath;
     return usingPath;
 };
+
+module.exports = calculateComponentsPath;
+export default calculateComponentsPath;

@@ -1,7 +1,9 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 function fixWinPath(p) {
     return p.replace(/\\/g, '/');
 }
-module.exports = function (sourcePath) {
+function getDistPath(sourcePath) {
     sourcePath = fixWinPath(sourcePath);
     let nodeModuleReg = /\/node_modules\//;
     let distPath = '';
@@ -12,4 +14,7 @@ module.exports = function (sourcePath) {
         ? distPath.replace(/\/dist\//, '/src/')
         : distPath;
     return distPath;
-};
+}
+;
+module.exports = getDistPath;
+exports.default = getDistPath;

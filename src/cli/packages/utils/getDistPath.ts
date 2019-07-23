@@ -10,7 +10,7 @@
 function fixWinPath(p: string) {
     return p.replace(/\\/g, '/');
 }
-module.exports = function (sourcePath: string) {
+function getDistPath(sourcePath: string) {
     sourcePath = fixWinPath(sourcePath);
     let nodeModuleReg = /\/node_modules\//;
     let distPath = '';
@@ -26,3 +26,6 @@ module.exports = function (sourcePath: string) {
         : distPath;
     return distPath;
 };
+
+module.exports = getDistPath;
+export default getDistPath;
