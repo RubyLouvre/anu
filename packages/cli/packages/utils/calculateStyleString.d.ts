@@ -1,4 +1,2 @@
-declare const generate: any;
-declare const isVar: RegExp;
-declare const rhyphen: RegExp;
-declare function hyphen(target: string): string;
+declare function calculateStyleString(expr: any): any;
+export default calculateStyleString;

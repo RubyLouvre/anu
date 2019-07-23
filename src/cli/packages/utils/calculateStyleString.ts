@@ -9,7 +9,7 @@ function hyphen(target: string) {
     return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
 
-module.exports = function calculateStyleString(expr: any) {
+function calculateStyleString(expr: any) {
     return expr.properties
         .map(function(node: any) {
 
@@ -24,3 +24,5 @@ module.exports = function calculateStyleString(expr: any) {
         .join(';');
 }
 
+module.exports = calculateStyleString;
+export default calculateStyleString;

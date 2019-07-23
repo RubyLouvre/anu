@@ -1,15 +1,17 @@
-const postCss = require('postcss');
-const { warning, error } = require('../utils/logger/queue');
-
-// 输出stylelint生成的warning
-const postCssPluginReport = postCss.plugin('postcss-plugin-report', ()=> {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const postcss_1 = __importDefault(require("postcss"));
+const queue_1 = require("../utils/logger/queue");
+const postCssPluginReport = postcss_1.default.plugin('postcss-plugin-report', () => {
     return (root, result) => {
         const from = result.opts.from;
         result.messages.filter(m => {
             return m.plugin === 'stylelint';
         }).forEach(m => {
-            // TODO: warning 还是 error
-            warning.push({
+            queue_1.warning.push({
                 id: from,
                 msg: m.text,
                 loc: {
@@ -20,5 +22,4 @@ const postCssPluginReport = postCss.plugin('postcss-plugin-report', ()=> {
         });
     };
 });
-
 module.exports = postCssPluginReport;

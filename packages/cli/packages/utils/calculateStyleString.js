@@ -1,10 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const generate = require('@babel/generator').default;
 const isVar = /Expression|Identifier/;
 const rhyphen = /([a-z\d])([A-Z]+)/g;
 function hyphen(target) {
     return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
-module.exports = function calculateStyleString(expr) {
+function calculateStyleString(expr) {
     return expr.properties
         .map(function (node) {
         return (hyphen(node.key.name) +
@@ -14,4 +16,6 @@ module.exports = function calculateStyleString(expr) {
                 : node.value.value));
     })
         .join(';');
-};
+}
+module.exports = calculateStyleString;
+exports.default = calculateStyleString;
