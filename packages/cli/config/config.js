@@ -17,6 +17,15 @@ catch (err) {
 }
 const buildDir = userConfig.buildDir || 'dist';
 const sourceDir = userConfig.sourceDir || 'source';
+var Platforms;
+(function (Platforms) {
+    Platforms["wx"] = "wx";
+    Platforms["qq"] = "qq";
+    Platforms["ali"] = "ali";
+    Platforms["bu"] = "bu";
+    Platforms["tt"] = "tt";
+    Platforms["quick"] = "quick";
+})(Platforms || (Platforms = {}));
 const config = {
     wx: {
         libName: 'ReactWX',

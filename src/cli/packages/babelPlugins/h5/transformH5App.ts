@@ -1,45 +1,43 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const template_1 = __importDefault(require("@babel/template"));
-const t = __importStar(require("@babel/types"));
-const importedPagesTemplatePrefixCode = template_1.default(`
+import template from '@babel/template';
+import * as t from '@babel/types';
+import { Node, NodePath } from '@babel/core';
+
+const importedPagesTemplatePrefixCode: any = template(`
 import ReactDOM from 'react-dom';
 import PageWrapper from '@internalComponents/PageWrapper';
 import calculateRem from '@internalComponents/HOC/calculateRem';
 import Loadable from 'react-loadable';
 import QunarDefaultLoading from '@qunar-default-loading';
 `)();
-const buildAsyncImport = template_1.default(`
+
+const buildAsyncImport: any = template(
+    `
   const PAGE_NAME = Loadable({
     loader: () => import('IMPORT_PATH'),
     loading: QunarDefaultLoading,
     delay: 300
-  });`, {
-    plugins: ['dynamicImport']
-});
-const domRender = template_1.default(`
+  });`,
+    {
+        plugins: ['dynamicImport']
+    }
+);
+
+const domRender: any = template(`
 window.onload = function (){
     const Wrapper = calculateRem(CLASS_NAME);
     ReactDOM.render( <Wrapper />, document.querySelector("#app" ))
-};`, {
+};`,
+{
     plugins: ['jsx']
 });
-const pageWrapper = template_1.default(`
+
+const pageWrapper: any = template(`
     return <PageWrapper app={this} path={this.state.path}  query={this.state.query} config={this.state.config} showBackAnimation={this.state.showBackAnimation}/>
 `, {
     plugins: ['jsx']
 });
 let CLASS_NAME = 'Global';
+
 const temp = `window.addEventListener('popstate', function ({
     state
   }) {
@@ -72,26 +70,27 @@ React.registerApp(this);
 this.onLaunch();
 `;
 let registerTemplate = temp;
+
 module.exports = function () {
     const importedPages = t.arrayExpression();
     let pageIndex = 0;
     return {
         visitor: {
             Program: {
-                enter(astPath) {
-                    const exportDefaultNode = astPath.node.body.find((node) => {
-                        return node.type === 'ExportDefaultDeclaration';
+                enter(astPath: NodePath<t.Program>) {
+                    const exportDefaultNode: any = astPath.node.body.find((node: Node) => {
+                        return node.type === 'ExportDefaultDeclaration'
                     });
                     CLASS_NAME = exportDefaultNode.declaration.arguments[0].callee.name;
                 },
-                exit(astPath) {
+                exit(astPath: NodePath<t.Program>) {
                     astPath.node.body.unshift(...importedPagesTemplatePrefixCode);
                     astPath.node.body.push(domRender({
                         CLASS_NAME: t.identifier(CLASS_NAME)
                     }));
                 }
             },
-            ImportDeclaration(astPath) {
+            ImportDeclaration(astPath: NodePath<t.ImportDeclaration>) {
                 if (astPath.get('specifiers').length !== 0) {
                     return;
                 }
@@ -103,40 +102,50 @@ module.exports = function () {
                 const PAGE_NAME = `PAGE_${pageIndex++}`;
                 registerTemplate += `React.registerPage(${PAGE_NAME}, '${importPath.replace(/^\./, '')}')\n`;
                 const pageItem = t.stringLiteral(importPath.replace(/^\./, ''));
+                
                 importedPages.elements.push(pageItem);
                 astPath.replaceWith(buildAsyncImport({
                     PAGE_NAME,
                     IMPORT_PATH: importPath
                 }));
+                // astPath.node.specifiers.push(t.importDefaultSpecifier(t.identifier(PAGE_NAME)));
             },
-            ClassProperty(astPath) {
-                if (astPath.get('key').isIdentifier({
-                    name: 'config'
-                })
-                    && astPath.get('value').isObjectExpression()) {
+            ClassProperty(astPath: NodePath<t.ClassProperty>) {
+                if (
+                    astPath.get('key').isIdentifier({
+                        name: 'config'
+                    })
+                    && astPath.get('value').isObjectExpression()
+                ) {
                     astPath.traverse({
-                        ObjectProperty: (property) => {
+                        ObjectProperty: (property: any) => {
                             const { key, value } = property.node;
                             let name;
-                            if (t.isIdentifier(key))
-                                name = key.name;
-                            if (t.isStringLiteral(key))
-                                name = key.value;
+
+                            if (t.isIdentifier(key)) name = key.name;
+                            if (t.isStringLiteral(key)) name = key.value;
+
                             if (name === 'iconPath' || name === 'selectedIconPath') {
                                 if (t.isStringLiteral(value)) {
                                     property
                                         .get('value')
-                                        .replaceWith(t.callExpression(t.identifier('require'), [
-                                        t.stringLiteral(`@${value.value.replace(/^(\.?\/)/, '')}`)
-                                    ]));
+                                        .replaceWith(
+                                            t.callExpression(t.identifier('require'), [
+                                                t.stringLiteral(
+                                                    `@${value.value.replace(/^(\.?\/)/, '')}`
+                                                )
+                                            ])
+                                        );
                                 }
                             }
                         }
                     });
-                    astPath.get('value').node.properties.push(t.objectProperty(t.identifier('pages'), importedPages));
+
+                    // 注入pages属性
+                    (astPath.get('value') as NodePath<t.ObjectExpression>).node.properties.push(t.objectProperty(t.identifier('pages'), importedPages));
                 }
             },
-            ClassBody(astPath) {
+            ClassBody(astPath: NodePath<t.ClassBody>) {
                 registerTemplate += `const pathname = location.pathname.replace(/^\\/web/, '');
                 const search = location.search;
                 if (React.__isTab(pathname)) {
@@ -156,30 +165,46 @@ module.exports = function () {
                     }
                   }
                 }`;
-                const registerApp = template_1.default(registerTemplate, {
+                
+
+                const registerApp: any = template(registerTemplate, {
                     placeholderPattern: /^CLASS_NAME$/
                 })({
                     CLASS_NAME: t.identifier(CLASS_NAME)
                 });
                 let find = false;
-                astPath.get('body').forEach((p) => {
+                astPath.get('body').forEach((p: any) => {
                     if (p.type === 'ClassMethod' && p.node.key.name === 'componentWillMount') {
                         find = true;
                         p.node.body.body.push(...registerApp);
                     }
                 });
                 if (!find) {
-                    astPath.node.body.push(t.classMethod('method', t.identifier('componentWillMount'), [], t.blockStatement(registerApp)));
+                    astPath.node.body.push(
+                        t.classMethod('method', t.identifier('componentWillMount'),
+                            [], 
+                            t.blockStatement(
+                                registerApp
+                            )
+                        )
+                    );
                 }
-                astPath.node.body.push(t.classMethod('method', t.identifier('render'), [], t.blockStatement([
-                    pageWrapper()
-                ])));
+                astPath.node.body.push(
+                    t.classMethod('method', t.identifier('render'),
+                        [], 
+                        t.blockStatement(
+                            [
+                                pageWrapper()
+                            ]
+                        )
+                    )
+                );
             },
-            ExportDefaultDeclaration(astPath) {
+            ExportDefaultDeclaration(astPath: NodePath<t.ExportDefaultDeclaration>) {
                 astPath.remove();
             }
         },
-        post: function () {
+        post: function(){ 
             pageIndex = 0;
             registerTemplate = temp;
         }

@@ -10,6 +10,14 @@ interface PlatConfig {
     patchComponents: patchComponents;
     disabledTitleBarPages: Set<string>;
 }
+declare enum Platforms {
+    wx = "wx",
+    qq = "qq",
+    ali = "ali",
+    bu = "bu",
+    tt = "tt",
+    quick = "quick"
+}
 interface GlobalConfigMap {
     buildType: string;
     buildDir: string;
@@ -18,7 +26,14 @@ interface GlobalConfigMap {
     patchComponents: patchComponents;
     pluginTags: any;
     plugins: any;
-    [platName: string]: PlatConfig | string | boolean | patchComponents;
+    compress?: boolean;
+    WebViewRules?: any;
+    [Platforms.wx]: PlatConfig;
+    [Platforms.qq]: PlatConfig;
+    [Platforms.ali]: PlatConfig;
+    [Platforms.bu]: PlatConfig;
+    [Platforms.quick]: PlatConfig;
+    [Platforms.tt]: PlatConfig;
 }
 declare const config: GlobalConfigMap;
 export default config;
