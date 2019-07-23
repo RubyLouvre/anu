@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-07-22
+ * 运行于快应用的React by 司徒正美 Copyright 2019-07-23
  */
 
 var arrayPush = Array.prototype.push;
@@ -1387,7 +1387,7 @@ function createRouter(name) {
                 }
             }
             uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
-            if (uri.charAt(0) !== '/' && !(uri.indexOf("hap://") === 0)) {
+            if (uri.charAt(0) !== '/' && !uri.test(/^(hap|https?)\:/)) {
                 uri = '/' + uri;
             }
         }

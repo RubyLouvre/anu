@@ -119,9 +119,9 @@ export default class InternalImage extends React.Component {
           )}
         >
           <img ref={this.image} {...this.props} onLoad={this.onLoad} />
-          <style jsx>
-            {`
-              div {
+          <style ref={(node) => {
+              Object(node).textContent = `
+              .__internal__image__ {
                 display: inline-block;
                 vertical-align: top;
                 overflow: hidden;
@@ -129,7 +129,7 @@ export default class InternalImage extends React.Component {
                 width: ${this.state.containerWidth}px;
                 height: ${this.state.containerHeight}px;
               }
-              div img {
+              .__internal__image__ img {
                 position: relative;
                 margin: 0;
               }
@@ -203,8 +203,8 @@ export default class InternalImage extends React.Component {
                 bottom: 0;
                 right: 0;
               }
-            `}
-          </style>
+            `;
+          }}/>
         </div>
       );
     } else {

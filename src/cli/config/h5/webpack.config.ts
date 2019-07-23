@@ -15,7 +15,6 @@ const config: webpack.Configuration = merge(developmentConfig, {
                     cacheDirectory: true,
                     root: path.resolve(__dirname, '../../packages/h5Helpers/pageWrapper'),
                     plugins: [
-                        require.resolve('styled-jsx/babel'),
                         require.resolve('@babel/plugin-transform-runtime'),
                         require.resolve('@babel/plugin-syntax-dynamic-import'),
                         require.resolve('@babel/plugin-proposal-object-rest-spread'),

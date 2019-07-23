@@ -37,8 +37,8 @@ class TitleBar extends Component {
                         {navigationBarTitleText}
                     </div>
                 </div>
-                <style jsx>
-                    {`
+                <style ref={(node) => {
+                    Object(node).textContent = `
                     .__internal__Header {
                         width: 100%;
                         height: ${titleBarHeight}px;
@@ -70,9 +70,8 @@ class TitleBar extends Component {
                     }
                     .__internal__Header-back:active {
                         background-color: rgba(255, 255, 255, 0.15);
-                    }
-                `}
-                </style>
+                    }`;
+                }}/>
             </header>
         );
     }
