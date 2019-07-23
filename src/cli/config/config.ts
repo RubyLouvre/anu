@@ -10,7 +10,7 @@ const buildDir = userConfig.buildDir || 'dist';
 const sourceDir = userConfig.sourceDir || 'source';
 
 interface patchComponents {
-    [patchName: string]: number;
+    [patchName: string]: number | string;
 }
 
 interface PlatConfig {
@@ -21,6 +21,7 @@ interface PlatConfig {
     helpers: string;
     patchComponents: patchComponents,
     disabledTitleBarPages: Set<string>;
+    patchPages?: any;
 }
 
 enum Platforms {
@@ -30,10 +31,13 @@ enum Platforms {
     bu = 'bu',
     tt = 'tt',
     quick = 'quick',
+    h5 = 'h5'
 }
 
+export type validatePlatforms = 'wx' | 'qq' | 'ali' | 'bu' | 'tt' | 'quick' | 'h5';
+
 interface GlobalConfigMap {
-    buildType: string;      //构建类型默认微信小程序
+    buildType: validatePlatforms;      //构建类型默认微信小程序
     buildDir: string;   //非快应用项目默认构建目录为dist
     sourceDir: string;  //默认生成的源码目录
     huawei: boolean;
@@ -48,6 +52,7 @@ interface GlobalConfigMap {
     [Platforms.bu]: PlatConfig;
     [Platforms.quick]: PlatConfig;
     [Platforms.tt]: PlatConfig;
+    [Platforms.h5]: PlatConfig;
 }
 const config: GlobalConfigMap =  {
     wx: {
@@ -82,11 +87,16 @@ const config: GlobalConfigMap =  {
         patchComponents: {},
         disabledTitleBarPages: new Set()
     },
+    h5: {
+        libName: 'ReactH5',
+        helpers: 'h5Helpers',
+        patchComponents: {},
+        disabledTitleBarPages: new Set()
+    },
     quick: {
         libName: 'ReactQuick',
         jsExt: 'ux',
         helpers: 'quickHelpers',
-       
         patchComponents: {
             'radio': 1,
             'radio-group': 1,

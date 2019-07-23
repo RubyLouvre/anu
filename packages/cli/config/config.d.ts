@@ -1,5 +1,5 @@
 interface patchComponents {
-    [patchName: string]: number;
+    [patchName: string]: number | string;
 }
 interface PlatConfig {
     libName: string;
@@ -9,6 +9,7 @@ interface PlatConfig {
     helpers: string;
     patchComponents: patchComponents;
     disabledTitleBarPages: Set<string>;
+    patchPages?: any;
 }
 declare enum Platforms {
     wx = "wx",
@@ -16,10 +17,12 @@ declare enum Platforms {
     ali = "ali",
     bu = "bu",
     tt = "tt",
-    quick = "quick"
+    quick = "quick",
+    h5 = "h5"
 }
+export declare type validatePlatforms = 'wx' | 'qq' | 'ali' | 'bu' | 'tt' | 'quick' | 'h5';
 interface GlobalConfigMap {
-    buildType: string;
+    buildType: validatePlatforms;
     buildDir: string;
     sourceDir: string;
     huawei: boolean;
@@ -34,6 +37,7 @@ interface GlobalConfigMap {
     [Platforms.bu]: PlatConfig;
     [Platforms.quick]: PlatConfig;
     [Platforms.tt]: PlatConfig;
+    [Platforms.h5]: PlatConfig;
 }
 declare const config: GlobalConfigMap;
 export default config;

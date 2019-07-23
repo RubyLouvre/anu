@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import glob from 'glob';
-import path from 'path';
+import * as path from 'path';
 const cwd = process.cwd();
 const downLoadDir = path.join(cwd, '.CACHE/download');
 const mergeDir = path.join(cwd, '.CACHE/nanachi');

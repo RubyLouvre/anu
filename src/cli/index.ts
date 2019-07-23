@@ -7,14 +7,15 @@ import chalk from 'chalk';
 import getWebPackConfig from './config/webpackConfig';
 import * as babel from '@babel/core';
 import { spawnSync as spawn } from 'child_process';
-const utils = require('./packages/utils/index');
+import utils from './packages/utils/index';
 import globalConfig from './config/config';
 import runBeforeParseTasks from './tasks/runBeforeParseTasks';
 import createH5Server from './tasks/createH5Server';
+import { validatePlatforms } from './config/config';
 
 export interface NanachiOptions {
     watch?: boolean;
-    platform?: string;
+    platform?: validatePlatforms;
     beta?: boolean;
     betaUi?: boolean;
     compress?: boolean;

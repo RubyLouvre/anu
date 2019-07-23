@@ -1,14 +1,16 @@
-let config = require('../../config/config');
-const path = require('path');
+import config from '../../config/config';
+import * as path from 'path';
+import utils from '../utils/index';
+import nodeResolve from 'resolve';
+import * as t from '@babel/types';
+import { NodePath } from '@babel/core';
 const cwd = process.cwd();
-const utils = require('../utils/index');
 const pkgName = 'schnee-ui';
-const nodeResolve = require('resolve');
 
 let installFlag = false;
 let patchSchneeUi = false;
 
-function needInstall( pkgName ){
+function needInstall( pkgName: string ): boolean{
     try {
         nodeResolve.sync(pkgName, { 
             basedir: process.cwd(),
@@ -32,17 +34,18 @@ function needInstall( pkgName ){
  * }
  */
 
-function getPatchComponentPath(name) {
+function getPatchComponentPath(name: string) {
     return path.join(cwd, `./node_modules/schnee-ui/components/${name}/index.js`);
 }
 
 module.exports = ()=>{
     return {
         visitor: {
-            JSXOpeningElement: function(astPath, state){
+            JSXOpeningElement: function(astPath: NodePath<t.JSXOpeningElement>, state: any){
                
-                let pagePath =   utils.fixWinPath(state.filename);
-                let nodeName = astPath.node.name.name;
+                let pagePath = utils.fixWinPath(state.filename);
+                // tsc提示：没有考虑到<A.B></A.B>这种组件情况
+                let nodeName = (astPath.node.name as t.JSXIdentifier).name;
                 let platConfig = config[config.buildType];
                 let patchComponents = platConfig.patchComponents;
 

@@ -52,3 +52,4 @@ function calculateAlias(srcPath, importerSource) {
     }
 }
 module.exports = calculateAlias;
+exports.default = calculateAlias;

@@ -74,3 +74,4 @@ function calculateAlias(srcPath: string, importerSource: string): string {
     
 }
 module.exports = calculateAlias;
+export default calculateAlias;

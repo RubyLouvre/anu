@@ -1,4 +1,4 @@
-import path from 'path';
+import * as path from 'path';
 import runChaikaMergeTask from './chaikaMergeTask/index';
 import runPreTasks from './pretasks';
 import { NanachiOptions } from '..';

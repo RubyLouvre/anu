@@ -1,5 +1,5 @@
 
-let config = require('../../config/config');
+import config from '../../config/config';
 module.exports = [
     [
         //配置环境变量

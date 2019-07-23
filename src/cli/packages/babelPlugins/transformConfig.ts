@@ -1,7 +1,8 @@
-const platforms = require('../../consts/platforms').default;
-const generate = require('@babel/generator').default;
+import platforms from '../../consts/platforms';
+import generate from '@babel/generator';
+import { validatePlatforms } from '../../config/config';
 
-module.exports =  function transformConfig(modules, astPath, buildType ){
+function transformConfig(modules: any, astPath: any, buildType: validatePlatforms){
     if (/App|Page|Component/.test(modules.componentType)) {
            try {
                var json = eval('0,' + generate(astPath.node.right).code);
@@ -24,3 +25,5 @@ module.exports =  function transformConfig(modules, astPath, buildType ){
        }
 }
 
+module.exports = transformConfig;
+export default transformConfig;

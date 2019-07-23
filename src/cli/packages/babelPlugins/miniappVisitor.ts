@@ -1,25 +1,28 @@
-const t = require('@babel/types');
-const generate = require('@babel/generator').default;
-const template = require('@babel/template').default;
-const path = require('path');
-const utils = require('../utils');
-const fs = require('fs-extra');
-const config = require('../../config/config');
+import { NodePath } from '@babel/core';
+import * as t from '@babel/types';
+import generate from '@babel/generator';
+import template from '@babel/template';
+import * as path from 'path';
+import fs from 'fs-extra';
+import utils from '../utils';
+import calculateComponentsPath from '../utils/calculateComponentsPath';
+import config from '../../config/config';
+import transformConfig from './transformConfig';
 const buildType = config['buildType'];
 const quickhuaweiStyle = require('../quickHelpers/huaweiStyle');
 const ignoreAttri = require('../quickHelpers/ignoreAttri');
 const ignorePrevAttri = require('../quickHelpers/ignorePrevAttri');
-const calculateComponentsPath = require('../utils/calculateComponentsPath');
 const cwd = process.cwd();
 
-const transformConfig = require('./transformConfig');
 const quickFiles = require('../quickHelpers/quickFiles');
 const quickConfig = require('../quickHelpers/config');
 /* eslint no-console: 0 */
 const helpers = require(`../${config[buildType].helpers}/index`);
 //const deps = [];
 //微信的文本节点，需要处理换行符
-const inlineElement = {
+const inlineElement: {
+    [props: string]: number;
+} = {
     text: 1,
     span: 1,
     b: 1,
@@ -30,8 +33,9 @@ const inlineElement = {
     q: 1
 };
 
-
-let cache = {};
+let cache: {
+    [props: string]: boolean;
+} = {};
 if (buildType == 'quick') {
     //快应用不需要放到Component/Page方法中
     utils.createRegisterStatement = function (className, path, isPage) {
@@ -57,25 +61,23 @@ if (buildType == 'quick') {
     };
 }
 
-function registerPageOrComponent(name, path, modules) {
+function registerPageOrComponent(name: string, path: NodePath<t.ExportDefaultDeclaration>, modules: any) {
     if (name == modules.className) {
         path.insertBefore(modules.registerStatement);
     }
 }
-/**
- * JS文件转译器
- */
-module.exports = {
+
+const visitor = {
     ClassDeclaration: helpers.classDeclaration,
     //babel 6 没有ClassDeclaration，只有ClassExpression
     ClassExpression: helpers.classDeclaration,
     ClassMethod: {
-        enter(astPath, state) {
+        enter(astPath: NodePath<t.ClassMethod>, state: any) {
             if (!astPath.node) {
                 return;
             }
             let modules = utils.getAnu(state);
-            let methodName = astPath.node.key.name;
+            let methodName = (astPath.node.key as t.Identifier).name;
             modules.walkingMethod = methodName;
             if (methodName !== 'constructor') {
                 //快应用要转换onLaunch为onCreate
@@ -134,8 +136,9 @@ module.exports = {
             }
 
         },
-        exit(astPath, state) {
-            let methodName = astPath.node.key.name;
+        exit(astPath: NodePath<t.ClassMethod>, state: any) {
+            // tsc: 需确定astPath.node.key.name有没有问题
+            let methodName = (astPath.node.key as t.Identifier).name;
             if (methodName === 'render') {
                 let modules = utils.getAnu(state);
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,
@@ -148,7 +151,7 @@ module.exports = {
                 );
                 //在render的前面加入var h = React.createElement;
                 astPath.node.body.body.unshift(
-                    template(utils.shortcutOfCreateElement())()
+                    template(utils.shortcutOfCreateElement())() as any
                 );
             }
         }
@@ -156,7 +159,7 @@ module.exports = {
 
     FunctionDeclaration: {
         //enter里面会转换jsx中的JSXExpressionContainer
-        exit(astPath, state) {
+        exit(astPath: NodePath<t.FunctionDeclaration>, state: any) {
             //函数声明转换为无状态组件
             let modules = utils.getAnu(state);
             let name = astPath.node.id.name;
@@ -180,12 +183,12 @@ module.exports = {
                 modules.componentType === 'Component'
             ) {
                 astPath.node.body.body.unshift(
-                    template(utils.shortcutOfCreateElement())()
+                    template(utils.shortcutOfCreateElement())() as any
                 );
             }
         }
     },
-    ImportDeclaration(astPath, state) {
+    ImportDeclaration(astPath: NodePath<t.ImportDeclaration>, state: any) {
         let node = astPath.node;
         let modules = utils.getAnu(state);
         let source = node.source.value;
@@ -242,7 +245,7 @@ module.exports = {
     },
 
     Program: {
-        exit(astPath, state) {
+        exit(astPath: NodePath<t.Program>, state: any) {
             var modules = utils.getAnu(state);
             //支付宝的自定义组件机制实现有问题，必须要在json.usingComponents引入了这个类
             //这个类所在的JS 文件才会加入Component全局函数，否则会报Component不存在的BUG
@@ -260,7 +263,8 @@ module.exports = {
                     var value = modules.importComponents[i];
                     if(value.astPath && i === parentClass){
                         modules.usedComponents['anu-' +i.toLowerCase()] = 
-                            calculateComponentsPath(value, i);
+                            // calculateComponentsPath(value, i); tsc todo 参数一个还是两个？
+                            calculateComponentsPath(value); 
                         value.astPath = null;     
                     }
                 }
@@ -284,7 +288,9 @@ module.exports = {
             
             
             var keys = Object.keys(modules.usedComponents),
-                usings;
+                usings: {
+                    [props: string]: string;
+                };
             if (keys.length) {
                 usings = json.usingComponents || (json.usingComponents = {});
                 keys.forEach(function (name) {
@@ -313,7 +319,7 @@ module.exports = {
                 //merge ${buildType}Config.json
                 json = require('../utils/mergeConfigJson')(modules, json);
                 
-
+                let relPath = '';
                
                 if (/\/node_modules\//.test(modules.sourcePath.replace(/\\/g, '/'))) {
                     relPath = 'npm/' + path.relative( path.join(cwd, 'node_modules'), modules.sourcePath);
@@ -330,12 +336,12 @@ module.exports = {
         }
     },
     ExportDefaultDeclaration: {
-        exit(astPath, state) {
+        exit(astPath: NodePath<t.ExportDefaultDeclaration>, state: any) {
             var modules = utils.getAnu(state);
 
             if (/Page|Component/.test(modules.componentType)) {
                 let declaration = astPath.node.declaration;
-                let name = declaration.name
+                let name = (declaration as t.Identifier).name
                 if (declaration.type == 'FunctionDeclaration') {
                     //将export default function AAA(){}的方法提到前面
                     astPath.insertBefore(declaration);
@@ -349,17 +355,18 @@ module.exports = {
     },
 
     ExportNamedDeclaration: {
-        exit(astPath) {
+        exit(astPath: NodePath<t.ExportNamedDeclaration>) {
             //生成 module.exports.default = ${name};
-            let declaration = astPath.node.declaration || {
+            let declaration: any = astPath.node.declaration || { // tsc: 暂时any
                 type: '{}'
             };
             switch (declaration.type) {
+                // tsc: 待验证是否存在Identifier类型
                 case 'Identifier':
-                    astPath.replaceWith(utils.exportExpr(declaration.name));
+                    astPath.replaceWith(utils.exportExpr((declaration as t.Identifier).name));
                     break;
                 case 'VariableDeclaration':
-                    var id = declaration.declarations[0].id.name;
+                    var id = ((declaration as t.VariableDeclaration).declarations[0].id as any).name;
                     declaration.kind = 'var'; //转换const,let为var
                     astPath.replaceWithMultiple([
                         declaration,
@@ -374,7 +381,8 @@ module.exports = {
                     break;
                 case '{}':
                     astPath.replaceWithMultiple(
-                        astPath.node.specifiers.map(function (el) {
+                        // tsc: 待验证bug
+                        astPath.node.specifiers.map(function (el: any) {
                             return utils.exportExpr(el.local.name);
                         })
                     );
@@ -383,23 +391,23 @@ module.exports = {
         }
     },
     ThisExpression: {
-        exit(astPath, state) {
+        exit(astPath: NodePath<t.ThisExpression>, state: any) {
             let modules = utils.getAnu(state);
             if (modules.walkingMethod == 'constructor') {
                 var expression = astPath.parentPath.parentPath;
                 if (expression.type === 'AssignmentExpression') {
-                    var right = expression.node.right;
+                    var right = (expression.node as t.AssignmentExpression).right;
                     if (!t.isObjectExpression(right)) {
                         return;
                     }
                     //将  this.config 变成 static config
-                    var propertyName = astPath.container.property.name;
+                    var propertyName = (astPath.container as any).property.name; // tsc todo
                     if (propertyName === 'config' && !modules.configIsReady) {
                         //对配置项进行映射                 
                         transformConfig(modules, expression, buildType);
                         var staticConfig = template(`${modules.className}.config = %%CONFIGS%%;`, {
-                            syntacticPlaceholders: true
-                        })({
+                            syntacticPlaceholders: true // tsc todo 参数是否正确？
+                        } as any)({
                             CONFIGS: right
                         });
                         var classAstPath = expression.findParent(function (parent) {
@@ -412,7 +420,7 @@ module.exports = {
                     if (propertyName === 'globalData') {
                         if (modules.componentType === 'App') {
                             var properties = right.properties;
-                            var hasBuildType = properties.some(function (el) {
+                            var hasBuildType = properties.some(function (el: any) {
                                 return el.key.name === 'buildType';
                             });
                             if (!hasBuildType) {
@@ -435,12 +443,12 @@ module.exports = {
 
         }
     },
-    MemberExpression(astPath, state) {
+    MemberExpression(astPath: NodePath<t.MemberExpression>, state: any) {
         //处理 static config = {}
         if (astPath.parentPath.type === 'AssignmentExpression') {
             let modules = utils.getAnu(state);
             if (!modules.configIsReady &&
-                astPath.node.object.name === modules.className &&
+                (astPath.node.object as any).name === modules.className &&
                 astPath.node.property.name === 'config'
             ) {
                 transformConfig(modules, astPath.parentPath, buildType);
@@ -449,7 +457,7 @@ module.exports = {
     },
 
     CallExpression: {
-        enter(astPath, state) {
+        enter(astPath: NodePath<t.CallExpression>, state: any) {
             let node = astPath.node;
             let args = node.arguments;
             let callee = node.callee;
@@ -479,14 +487,14 @@ module.exports = {
                     args[1] = t.identifier('this');
                 }
                 //为callback添加参数
-                let params = args[0].params;
+                let params = (args[0] as any).params; // tsc todo
                 if (!params[0]) {
                     params[0] = t.identifier('j' + astPath.node.start);
                 }
                 if (!params[1]) {
                     params[1] = t.identifier('i' + astPath.node.start);
                 }
-                var indexName = args[0].params[1].name;
+                var indexName = (args[0] as any).params[1].name;
                 if (modules.indexArr) {
                     modules.indexArr.push(indexName);
                 } else {
@@ -495,7 +503,7 @@ module.exports = {
                 modules.indexName = indexName;
             }
         },
-        exit(astPath, state) {
+        exit(astPath: NodePath<t.CallExpression>, state: any) {
             let modules = utils.getAnu(state);
             if (utils.isLoopMap(astPath)) {
                 var indexArr = modules.indexArr;
@@ -513,20 +521,20 @@ module.exports = {
     },
 
     //＝＝＝＝＝＝＝＝＝＝＝＝＝＝处理JSX＝＝＝＝＝＝＝＝＝＝＝＝＝＝
-    JSXElement(astPath) {
+    JSXElement(astPath: NodePath<t.JSXElement>) {
         let node = astPath.node;
         let nodeName = utils.getNodeName(node);
         if (buildType == 'quick' && !node.closingElement) {
             node.openingElement.selfClosing = false;
-            node.closingElement = t.JSXClosingElement(
+            node.closingElement = t.jsxClosingElement(
                 // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
                 t.jsxIdentifier(nodeName)
             );
         }
     },
     JSXOpeningElement: {
-        enter: function (astPath, state) {
-            let nodeName = astPath.node.name.name;
+        enter: function (astPath: NodePath<t.JSXOpeningElement>, state: any) {
+            let nodeName = (astPath.node.name as t.JSXIdentifier).name;
             if (buildType === 'quick') {
                 ignorePrevAttri(astPath, nodeName);
             }
@@ -545,7 +553,7 @@ module.exports = {
 
             if (buildType !== 'quick' && nodeName === 'text') {
                 //  iconfont 各小程序匹配 去掉小程序下 <text>&#xf1f3;</text>
-                var children = astPath.parentPath.node.children;
+                var children = (astPath.parentPath.node as any).children;
                 if (children.length === 1) {
                     let iconValue = t.isJSXText(children[0]) ? children[0].extra.raw : '';
                     let iconReg = /\s*&#x/i;
@@ -586,19 +594,20 @@ module.exports = {
                     // eslint-disable-next-line
                 }
 
-                let useComponentsPath = calculateComponentsPath(bag, nodeName);
+                // let useComponentsPath = calculateComponentsPath(bag, nodeName); // tsc: 原来有两个参数 第二个参数有用吗？
+                let useComponentsPath = calculateComponentsPath(bag);
                 modules.usedComponents['anu-' + nodeName.toLowerCase()] = useComponentsPath;
-                astPath.node.name.name = 'React.useComponent';
+                (astPath.node.name as t.JSXIdentifier).name = 'React.useComponent';
 
                 // eslint-disable-next-line
                 var attrs = astPath.node.attributes;
                 // ?？？这个还有用吗
                 modules.is && modules.is.push(nodeName);
                 attrs.push(
-                    t.JSXAttribute(
+                    t.jsxAttribute(
                         // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
                         t.jsxIdentifier('is'),
-                        t.jSXExpressionContainer(t.stringLiteral(nodeName))
+                        t.jsxExpressionContainer(t.stringLiteral(nodeName))
                     )
                 );
 
@@ -619,12 +628,12 @@ module.exports = {
             }
         }
     },
-    JSXClosingElement: function (astPath) {
+    JSXClosingElement: function (astPath: NodePath<t.JSXClosingElement>) {
         var tagName = utils.getNodeName(astPath.parentPath.node);
-        astPath.node.name.name = tagName;
+        (astPath.node.name as t.JSXIdentifier).name = tagName;
     },
     JSXAttribute: {
-        enter: function (astPath, state) {
+        enter: function (astPath: NodePath<t.JSXAttribute>, state: any) {
             let attrName = astPath.node.name.name;
             let attrValue = astPath.node.value;
             let parentPath = astPath.parentPath;
@@ -644,7 +653,7 @@ module.exports = {
                         path.dirname(modules.sourcePath),
                         realAssetsPath
                     );
-                    astPath.node.value.value = relativePath;
+                    (astPath.node.value as any).value = relativePath; // tsc todo
                 }
                 // 快应用下 string类型的行内样式 rpx 会换算成px
                 if (attrName === 'style' && buildType == 'quick') {
@@ -652,9 +661,9 @@ module.exports = {
                     astPath.node.value = t.stringLiteral(value.slice(1, -1));
                 }
             } else if (t.isJSXExpressionContainer(attrValue)) {
-                let attrs = parentPath.node.attributes;
-                let expr = attrValue.expression;
-                let nodeName = parentPath.node.name.name;
+                let attrs = (parentPath.node as any).attributes;
+                let expr: any = (attrValue as t.JSXExpressionContainer).expression;
+                let nodeName = (parentPath.node as any).name.name;
 
                 if (attrName === 'style') {
                     //将动态样式封装到React.toStyle中
@@ -692,7 +701,7 @@ module.exports = {
                         attrs.push(
                             utils.createAttribute(
                                 'style',
-                                t.jSXExpressionContainer(
+                                t.jsxExpressionContainer(
                                     t.identifier(
                                         `React.toStyle(${styleName}, this.props, ${styleRandName})`
                                     )
@@ -712,12 +721,12 @@ module.exports = {
                         );
                     }
                 } else if (
-                    /^(?:on|catch)[A-Z]/.test(attrName) &&
+                    /^(?:on|catch)[A-Z]/.test(attrName as string) && // tsc TODO
                     !/[A-Z]/.test(nodeName)
                 ) {
                     //如果这是普通标签上的事件名
-                    var prefix = attrName.charAt(0) == 'o' ? 'on' : 'catch';
-                    var eventName = attrName.replace(prefix, '');
+                    var prefix = (attrName as string).charAt(0) == 'o' ? 'on' : 'catch';
+                    var eventName = (attrName as string).replace(prefix, '');
                     var otherEventName = utils.getEventName(
                         eventName,
                         nodeName,
@@ -744,7 +753,7 @@ module.exports = {
                     //data-beacon-uid是用于实现日志自动上传, 并用于ReactWX的updateAttribute 
                     if (
                         !attrs.setClassCode &&
-                        !attrs.some(function (el) {
+                        !attrs.some(function (el: any) {
                             return el.name.name == 'data-beacon-uid';
                         })
                     ) {
@@ -760,10 +769,10 @@ module.exports = {
         }
     },
 
-    JSXText(astPath) {
+    JSXText(astPath: NodePath<t.JSXText>) {
         //去掉内联元素内部的所有换行符
         if (astPath.parentPath.type == 'JSXElement') {
-            var textNode = astPath.node;
+            var textNode: any = astPath.node; // tsc todo
             var value = textNode.extra.raw = textNode.extra.rawValue.trim();
             if (value === '') {
                 astPath.remove();
@@ -778,7 +787,7 @@ module.exports = {
             }
         }
     },
-    JSXExpressionContainer(astPath) {
+    JSXExpressionContainer(astPath: NodePath<t.JSXExpressionContainer>) {
         var expr = astPath.node.expression; //充许在JSX这样使用注释 ｛/** comment **/｝
         if (expr && expr.type == 'JSXEmptyExpression') {
             if (expr.innerComments && expr.innerComments.length) {
@@ -787,3 +796,8 @@ module.exports = {
         }
     }
 };
+/**
+ * JS文件转译器
+ */
+export default visitor;
+module.exports = visitor;

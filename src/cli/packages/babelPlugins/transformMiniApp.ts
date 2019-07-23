@@ -1,15 +1,16 @@
-let visitor = require('./miniappVisitor');
-let config = require('../../config/config');
+import { PluginObj } from '@babel/core';
+import visitor from './miniappVisitor';
+import config from '../../config/config';
+import utils from '../utils';
 let quickFiles = require('../quickHelpers/quickFiles');
-let utils = require('../utils');
 let reg = utils.getComponentOrAppOrPageReg();
 
-let miniAppPlugin = function(){
+let miniAppPlugin = function(): PluginObj{
     return {
         visitor: visitor,
         manipulateOptions(opts) {
             //解析每个文件前执行一次
-            var modules = (opts.anu = {
+            var modules: any = (opts.anu = {
                // className: "",//组件的名字
                // parentName: "",//组件的父类的名字
                 thisMethods: [],
@@ -48,6 +49,6 @@ let miniAppPlugin = function(){
 };
 
 
-module.exports = (filePath)=>{
+module.exports = (filePath: string)=>{
     return reg.test(filePath) ? [miniAppPlugin] : [];
 };

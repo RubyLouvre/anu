@@ -1,19 +1,18 @@
-let fs = require('fs-extra');
-let path = require('path');
+import * as path from 'path';
+import nodeResolve from 'resolve';
+import * as t from '@babel/types';
+import utils from '../utils';
+import { NodePath, PluginObj } from '@babel/core';
+import config from '../../config/config';
 
-let nodeResolve = require('resolve');
-let t = require('@babel/types');
-
-let hackList = ['wx', 'bu', 'tt', 'quick', 'qq'];
-let utils = require('../utils');
-let config = require('../../config/config');
+let hackList: any = ['wx', 'bu', 'tt', 'quick', 'qq'];
 
 let copyFlag = false;
 let patchAsync = false;
 
 const pkgName = 'regenerator-runtime';
 
-function needInstall( pkgName ){
+function needInstall( pkgName: string ): boolean{
     try {
         nodeResolve.sync(pkgName, { 
             // TODO: 逻辑有问题
@@ -29,11 +28,11 @@ function needInstall( pkgName ){
 
 module.exports  = [
     require('@babel/plugin-transform-async-to-generator'),
-    function(){
+    function(): PluginObj{
         return {
             visitor: {
                 FunctionDeclaration: {
-                    exit(astPath) {
+                    exit(astPath: NodePath<t.FunctionDeclaration>) {
                       
                         let name = astPath.node.id.name;
                         if ( !(name === '_asyncToGenerator' && hackList.includes(config.buildType))  ) {
@@ -41,11 +40,10 @@ module.exports  = [
                         }
 
                         let root = astPath.findParent(t.isProgram);
-                        root.node.body.unshift(
-
+                        (root as NodePath<t.Program>).node.body.unshift(
                             t.importDeclaration(
                                 [
-                                    t.ImportDefaultSpecifier(
+                                    t.importDefaultSpecifier(
                                         t.identifier('regeneratorRuntime')
                                     )
                                 ],
