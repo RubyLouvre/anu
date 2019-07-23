@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-22T03
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-23T07
  * IE9+
  */
 
@@ -3885,41 +3885,35 @@
       };
       Modal.prototype.render = function render() {
         return React.createElement(
-          Fragment,
-          null,
+          'div',
+          { className: 'modal2019' },
           React.createElement(
             'div',
-            { className: 'modal' },
-            React.createElement(
-              'div',
-              { className: 'top' },
-              this.props.title
-            ),
-            React.createElement(
-              'div',
-              { className: 'center' },
-              this.props.content
-            ),
-            React.createElement(
-              'div',
-              { className: 'bottom' },
-              this.props.showCancel ? React.createElement(
-                'div',
-                { className: 'cancel', style: { color: this.props.cancelColor }, onClick: this.handleCancel.bind(this) },
-                this.props.cancelText
-              ) : null,
-              React.createElement(
-                'div',
-                { className: 'confirm', style: { color: this.props.confirmColor }, onClick: this.handleConfirm.bind(this) },
-                this.props.confirmText
-              )
-            )
+            { className: 'top' },
+            this.props.title
           ),
           React.createElement(
-            'style',
-            { jsx: true },
-            '\n          .modal { \n            display: flex;\n            flex-direction: column;\n            position: fixed;\n            width: 280px;\n            height: 150px;\n            background-color: #fff;\n            margin: auto;\n            left: 0;\n            top: 0;\n            bottom: 0;\n            right: 0;\n            border-radius: 5px;\n          }\n          .top {\n            height: 40px;\n            line-height: 40px;\n            text-align: center;\n          }\n          .center {\n            flex: 1;\n            font-size: 15px;\n            margin: 0 15px;\n            color: #888;\n            text-align: center;\n            word-break: break-all;\n            overflow: scroll;\n          }\n          .bottom {\n            height: 40px;\n            display: flex;\n            flex-direction: row;\n            border-top: solid 1px #f8f8f8;\n          }\n          .confirm {\n            flex: 1;\n            text-align: center;\n            height: 100%;\n            line-height: 40px;\n          }\n          .cancel {\n            flex: 1;\n            borderRight: solid 1px #f8f8f8;\n            text-align: center;\n            height: 100%;\n            line-height: 40px;\n          }\n        '
-          )
+            'div',
+            { className: 'center' },
+            this.props.content
+          ),
+          React.createElement(
+            'div',
+            { className: 'bottom' },
+            this.props.showCancel ? React.createElement(
+              'div',
+              { className: 'cancel', style: { color: this.props.cancelColor }, onClick: this.handleCancel.bind(this) },
+              this.props.cancelText
+            ) : null,
+            React.createElement(
+              'div',
+              { className: 'confirm', style: { color: this.props.confirmColor }, onClick: this.handleConfirm.bind(this) },
+              this.props.confirmText
+            )
+          ),
+          React.createElement('style', { ref: function ref(node) {
+              Object(node).textContent = '\n            .modal2019 { \n              display: flex;\n              flex-direction: column;\n              position: fixed;\n              width: 280px;\n              height: 150px;\n              background-color: #fff;\n              margin: auto;\n              left: 0;\n              top: 0;\n              bottom: 0;\n              right: 0;\n              border-radius: 5px;\n            }\n           .modal2019 .top {\n              height: 40px;\n              line-height: 40px;\n              text-align: center;\n            }\n            .modal2019 .center {\n              flex: 1;\n              font-size: 15px;\n              margin: 0 15px;\n              color: #888;\n              text-align: center;\n              word-break: break-all;\n              overflow: scroll;\n            }\n            .modal2019 .bottom {\n              height: 40px;\n              display: flex;\n              flex-direction: row;\n              border-top: solid 1px #f8f8f8;\n            }\n            .modal2019 .confirm {\n              flex: 1;\n              text-align: center;\n              height: 100%;\n              line-height: 40px;\n            }\n            .modal2019 .cancel {\n              flex: 1;\n              borderRight: solid 1px #f8f8f8;\n              text-align: center;\n              height: 100%;\n              line-height: 40px;\n            }';
+            } })
         );
       };
       return Modal;
@@ -3941,27 +3935,21 @@
       };
       Toast.prototype.render = function render() {
         return React.createElement(
-          Fragment,
-          null,
+          'div',
+          { className: 'toast2019' },
           React.createElement(
             'div',
-            { className: 'toast' },
-            React.createElement(
-              'div',
-              { className: 'icon' },
-              this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
-            ),
-            React.createElement(
-              'div',
-              { className: 'title' },
-              this.props.title
-            )
+            { className: 'icon' },
+            this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
           ),
           React.createElement(
-            'style',
-            { jsx: true },
-            '\n          .toast { \n            display: flex;\n            flex-direction: column;\n            position: fixed;\n            width: 120px;\n            height: 120px; \n            background-color: rgba(0, 0, 0, 0.4);\n            margin: auto;\n            left: 0;\n            top: 0;\n            bottom: 0;\n            right: 0;\n            border-radius: 5px;\n          }\n          .icon {\n            width: 90px;\n            height: 90px;\n            margin: 0 auto;\n            fill: #fff;\n            color: #fff;\n            text-align: center;\n            font-size: 30px;\n            line-height: 90px;\n          }\n          .title {\n            height: 30px;\n            text-align: center;\n            line-height: 30px;\n            color: #fff;\n            overflow: hidden;\n          }\n        '
-          )
+            'div',
+            { className: 'title' },
+            this.props.title
+          ),
+          React.createElement('style', { ref: function ref(node) {
+              Object(node).textContent = '\n             .toast2019 { \n              display: flex;\n              flex-direction: column;\n              position: fixed;\n              width: 120px;\n              height: 120px; \n              background-color: rgba(0, 0, 0, 0.4);\n              margin: auto;\n              left: 0;\n              top: 0;\n              bottom: 0;\n              right: 0;\n              border-radius: 5px;\n            }\n            .toast2019 .icon {\n              width: 90px;\n              height: 90px;\n              margin: 0 auto;\n              fill: #fff;\n              color: #fff;\n              text-align: center;\n              font-size: 30px;\n              line-height: 90px;\n            }\n            .toast2019 .title {\n              height: 30px;\n              text-align: center;\n              line-height: 30px;\n              color: #fff;\n              overflow: hidden;\n            } ';
+            } })
         );
       };
       return Toast;
@@ -3983,27 +3971,21 @@
       };
       Loading.prototype.render = function render() {
         return React.createElement(
-          Fragment,
-          null,
+          'div',
+          { className: 'loading' },
           React.createElement(
             'div',
-            { className: 'loading' },
-            React.createElement(
-              'div',
-              { className: 'icon' },
-              React.createElement('img', { style: { width: '1.5rem', height: '1.5rem' }, src: 'http://s.qunarzz.com/dev_test_2/loading4.gif' })
-            ),
-            React.createElement(
-              'div',
-              { className: 'title' },
-              this.props.title
-            )
+            { className: 'icon' },
+            React.createElement('img', { style: { width: '1.5rem', height: '1.5rem' }, src: 'http://s.qunarzz.com/dev_test_2/loading4.gif' })
           ),
           React.createElement(
-            'style',
-            { jsx: true },
-            '\n          .loading { \n            display: flex;\n            flex-direction: column;\n            position: fixed;\n            width: 120px;\n            height: 120px;\n            background-color: rgba(0, 0, 0, 0.4);\n            margin: auto;\n            left: 0; \n            top: 0;\n            bottom: 0;\n            right: 0;\n            border-radius: 5px;\n          }\n          .icon {\n            height: 90px;\n            color: #fff;\n            text-align: center;\n            font-size: 30px;\n            line-height: 90px;\n          }\n          .title {\n            height: 30px;\n            text-align: center;\n            line-height: 30px;\n            color: #fff;\n            overflow: hidden;\n          }\n        '
-          )
+            'div',
+            { className: 'title' },
+            this.props.title
+          ),
+          React.createElement('style', { ref: function ref(node) {
+              Object(node).textContent = '\n              .loading { \n                display: flex;\n                flex-direction: column;\n                position: fixed;\n                width: 120px;\n                height: 120px;\n                background-color: rgba(0, 0, 0, 0.4);\n                margin: auto;\n                left: 0; \n                top: 0;\n                bottom: 0;\n                right: 0;\n                border-radius: 5px;\n              }\n              .loading .icon {\n                height: 90px;\n                color: #fff;\n                text-align: center;\n                font-size: 30px;\n                line-height: 90px;\n              }\n              .loading .title {\n                height: 30px;\n                text-align: center;\n                line-height: 30px;\n                color: #fff;\n                overflow: hidden;\n              }\n              ';
+            } })
         );
       };
       return Loading;
@@ -4033,36 +4015,30 @@
         ActionSheet.prototype.render = function render() {
             var _this2 = this;
             return React.createElement(
-                Fragment,
-                null,
-                React.createElement(
-                    'div',
-                    { className: 'actionSheet' },
-                    this.props.itemList.map(function (item, index) {
-                        return React.createElement(
-                            'div',
-                            {
-                                className: 'item',
-                                onClick: _this2.handleSelect.bind(_this2, index),
-                                style: {
-                                    color: _this2.props.itemColor
-                                } },
-                            item
-                        );
-                    }),
-                    React.createElement(
+                'div',
+                { className: 'actionSheet2019' },
+                this.props.itemList.map(function (item, index) {
+                    return React.createElement(
                         'div',
                         {
-                            onClick: this.handleCancel.bind(this),
-                            className: 'cancel' },
-                        this.props.cancelButtonText
-                    )
-                ),
+                            className: 'item',
+                            onClick: _this2.handleSelect.bind(_this2, index),
+                            style: {
+                                color: _this2.props.itemColor
+                            } },
+                        item
+                    );
+                }),
                 React.createElement(
-                    'style',
-                    { jsx: true },
-                    '\n                  .actionSheet { \n                    display: flex;\n                    flex-direction: column;\n                    position: fixed;\n                    width: 100%;\n                    background-color: #f8f8f8;\n                    margin: auto;\n                    left: 0;\n                    bottom: 0;\n                    right: 0;\n                  }\n                  .cancel {\n                    height: .8rem;\n                    line-height: .8rem;\n                    text-align: center;\n                    background-color: #fff;\n                    margin-top: .2rem;\n                  }\n                  .item {\n                    height: .8rem;\n                    line-height: .8rem;\n                    text-align: center;\n                    background-color: #fff;\n                    border-top: solid #f8f8f8 1px;\n                  }\n                '
-                )
+                    'div',
+                    {
+                        onClick: this.handleCancel.bind(this),
+                        className: 'cancel' },
+                    this.props.cancelButtonText
+                ),
+                React.createElement('style', { ref: function ref(node) {
+                        Object(node).textContent = '\n                  .actionSheet2019 { \n                    display: flex;\n                    flex-direction: column;\n                    position: fixed;\n                    width: 100%;\n                    background-color: #f8f8f8;\n                    margin: auto;\n                    left: 0;\n                    bottom: 0;\n                    right: 0;\n                  }\n                  .actionSheet2019 .cancel {\n                    height: .8rem;\n                    line-height: .8rem;\n                    text-align: center;\n                    background-color: #fff;\n                    margin-top: .2rem;\n                  }\n                  .actionSheet2019 .item {\n                    height: .8rem;\n                    line-height: .8rem;\n                    text-align: center;\n                    background-color: #fff;\n                    border-top: solid #f8f8f8 1px;\n                  }\n                ';
+                    } })
             );
         };
         return ActionSheet;

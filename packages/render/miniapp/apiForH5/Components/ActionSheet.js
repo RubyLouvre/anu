@@ -19,8 +19,7 @@ export default class ActionSheet extends Component {
     
     render() {
         return (
-            <Fragment>
-                <div className='actionSheet'>
+                <div className='actionSheet2019'>
                     {this.props.itemList.map((item, index) => {
                         return (
                             <div 
@@ -38,9 +37,9 @@ export default class ActionSheet extends Component {
                         className='cancel'>
                         {this.props.cancelButtonText}
                     </div>
-                </div> 
-                <style jsx>{`
-                  .actionSheet { 
+                <style ref={(node) => {
+                    Object(node).textContent = `
+                  .actionSheet2019 { 
                     display: flex;
                     flex-direction: column;
                     position: fixed;
@@ -51,22 +50,22 @@ export default class ActionSheet extends Component {
                     bottom: 0;
                     right: 0;
                   }
-                  .cancel {
+                  .actionSheet2019 .cancel {
                     height: .8rem;
                     line-height: .8rem;
                     text-align: center;
                     background-color: #fff;
                     margin-top: .2rem;
                   }
-                  .item {
+                  .actionSheet2019 .item {
                     height: .8rem;
                     line-height: .8rem;
                     text-align: center;
                     background-color: #fff;
                     border-top: solid #f8f8f8 1px;
                   }
-                `}</style>
-            </Fragment>
+                `}}></style>
+          </div>
         );
     }
 }
