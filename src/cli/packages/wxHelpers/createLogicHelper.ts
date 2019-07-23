@@ -23,7 +23,7 @@ function wrapText(node: any) {
     return node;
 }
 
-module.exports = function createLogicHelper(prefix: string, keyName: string, hasDefaultKey: string){
+function createLogicHelper(prefix: string, keyName: string, hasDefaultKey: boolean){
     function logic(expr: any, modules: any, isText?: boolean): any {
         if (isText){
             return [wrapText(expr)];
@@ -126,3 +126,6 @@ module.exports = function createLogicHelper(prefix: string, keyName: string, has
     }
     return logic;    
 };
+
+module.exports = createLogicHelper;
+export default createLogicHelper;

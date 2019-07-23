@@ -21,7 +21,7 @@ declare enum Platforms {
     h5 = "h5"
 }
 export declare type validatePlatforms = 'wx' | 'qq' | 'ali' | 'bu' | 'tt' | 'quick' | 'h5';
-interface GlobalConfigMap {
+export interface GlobalConfigMap {
     buildType: validatePlatforms;
     buildDir: string;
     sourceDir: string;

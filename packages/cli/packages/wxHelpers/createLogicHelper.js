@@ -25,7 +25,7 @@ function wrapText(node) {
     }
     return node;
 }
-module.exports = function createLogicHelper(prefix, keyName, hasDefaultKey) {
+function createLogicHelper(prefix, keyName, hasDefaultKey) {
     function logic(expr, modules, isText) {
         if (isText) {
             return [wrapText(expr)];
@@ -95,4 +95,7 @@ module.exports = function createLogicHelper(prefix, keyName, hasDefaultKey) {
         }
     }
     return logic;
-};
+}
+;
+module.exports = createLogicHelper;
+exports.default = createLogicHelper;
