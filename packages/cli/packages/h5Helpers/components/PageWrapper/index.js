@@ -31,34 +31,6 @@ class PageWrapper extends React.Component{
                     </div>;
                 })}
                 <div className='__internal__Modal__'></div>
-                <style jsx>{`
-                        .__internal__Page__ {
-                            width: 100%;
-                            height: 100%;
-                            min-width: 320px;
-                            max-width: 480px;
-                            margin: 0 auto;
-                            overflow: hidden;
-                            position: relative;
-                        }
-                        .__internal__Page-container {
-                            width: 100%;
-                            height: 100%;
-                            -webkit-overflow-scrolling: touch;
-                        }
-                        .__hidden {
-                            display: none;
-                        }
-                        .__bottom {
-                            position: absolute;
-                            width: 100%;
-                        }
-                        .__backAnimation {
-                            transform: translateX(375px);
-                            transition: transform 500ms ease;
-                        }
-                    `}
-                </style>
             </div>
         );
     }

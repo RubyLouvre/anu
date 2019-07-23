@@ -199,7 +199,7 @@ function downloadFile({
 }
 
 export default {
-  request,
-  uploadFile,
-  downloadFile
+    request,
+    uploadFile,
+    downloadFile
 };

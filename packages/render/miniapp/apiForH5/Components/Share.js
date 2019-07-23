@@ -46,11 +46,11 @@ export default class Share extends Component {
         errMsg: '分享成功'
       }, this.props.success, this.props.complete, this.props.resolve)
     } catch(e) {
-      React.api.showModal({
-        title: '分享失败',
-        content: '浏览器不支持该类型分享',
-        showCancel: false
-      });
+      // React.api.showModal({
+      //   title: '分享失败',
+      //   content: '浏览器不支持该类型分享',
+      //   showCancel: false
+      // });
       handleFail({
         errMsg: '分享失败',
         reason: '浏览器不支持该类型分享'

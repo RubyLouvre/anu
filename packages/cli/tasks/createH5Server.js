@@ -33,6 +33,7 @@ function default_1(compiler) {
                         }]
                 },
                 disableHostCheck: true,
+                https: true,
                 hot: true,
                 stats: 'errors-only',
                 overlay: true,
