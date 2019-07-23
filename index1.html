@@ -4,14 +4,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-
-  <script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
-  <script src="https://cdn.bootcss.com/react-dom/16.7.0-alpha.2/umd/react-dom.development.js"></script>
-
-  <script src="./lib/ReactPropTypes.js"></script>
 <!--
- <script src="./dist/React.js"></script>
+
+ <script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
+ <script src="https://cdn.bootcss.com/react-dom/16.7.0-alpha.2/umd/react-dom.development.js"></script>
+  <script src="./lib/ReactPropTypes.js"></script>
 -->
+
+<script src="./dist/React.js"></script>
+
   <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
@@ -23,56 +24,31 @@
   </div>
   <script type='text/babel'>
 
-var container = document.getElementById('root');
-class A extends React.Component{
-  state = {
-    time: 19860219
-  }
-  getChildContext(){
-    return {
-      b: this.state.time
+function numSubarrayProductLessThanK(nums, k) {
+     var n = nums.length
+     var hash = {}, left = 0, right = 0, maxCount = 0,res = 0
+    for ( ; right < n; right++) {
+        var c = nums[right];
+        hash[c] = !hash[c] ? 1 : hash[c]+1;
+        
+        maxCount = Math.max(maxCount, hash[c]) //得到当前优势的字符
+        if(right - left + 1 - maxCount > k){
+          hash[nums[left]] --;
+          left++
+        }
+        res = Math.max(res, right - left+1)       
     }
-  }
-  static childContextTypes = {
-    b: ReactPropTypes.number
-  }
-  onClick(){
-    this.setState({
-      time: new Date - 0
-    })
-  }
-  render(){
-    console.log('a render')
-    return <div><B />
-      <button type="button" onClick={
-          this.onClick.bind(this)
-    }> change </button></div>
-  }
-
+    
+    return res;
 }
-class B extends React.Component{
-  static contextTypes = {
-     b: ReactPropTypes.number
-  }
-  shouldComponentUpdate(a, b){
-    return false
-  }
-  render(){
-    console.log('b render')
-    return <div>|{this.context.b}|<C /></div>
-  }
-
+function DynamicTag(props){
+  
+   return json.type === 'input' ? <input /> :
+          json.type === 'div' ?   <div><DynamicTag>{props.children}</DynamicTag></div> :
+          json.type === 'span' ?  <span><DynamicTag>{props.children}</DynamicTag></span> :
+          json.type === 'image' ?  <span><DynamicTag>{props.children}</DynamicTag></span> :
+          ""
 }
-class C extends React.Component{
-  static contextTypes = {
-     b: ReactPropTypes.number
-  }
-  render(){
-    console.log('c render')
-    return <strong>{this.context.b}</strong>
-  }
-}
-ReactDOM.render(<A />, container)
-	
     </script>
+  </body>
 </html>

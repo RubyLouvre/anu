@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-22T10
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-23T03
  * IE9+
  */
 
@@ -1693,11 +1693,6 @@
                     }
                 });
                 Renderer.currentOwner = instance;
-                if (type.render) {
-                    instance.render = function () {
-                        return type.render(this.props, this.ref);
-                    };
-                }
             } else {
                 instance = new type(props, context);
                 if (!(instance instanceof Component)) {

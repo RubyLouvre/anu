@@ -31,11 +31,11 @@ export function promisefyApis(ReactWX, facade, more) {
                     } else {
                         task = needWrapper.apply(facade, args);
                         if(task && options.getRawResult){
-                          options.getRawResult(task);
+                            options.getRawResult(task);
                         }
                     }
                 });
-            
+                
                 return p;
             };
         } else {

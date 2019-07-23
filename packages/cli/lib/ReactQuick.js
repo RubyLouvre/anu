@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-07-18
+ * 运行于快应用的React by 司徒正美 Copyright 2019-07-22
  */
 
 var arrayPush = Array.prototype.push;
@@ -1387,7 +1387,7 @@ function createRouter(name) {
                 }
             }
             uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
-            if (uri.charAt(0) !== '/') {
+            if (uri.charAt(0) !== '/' && !(uri.indexOf("hap://") === 0)) {
                 uri = '/' + uri;
             }
         }
@@ -1877,11 +1877,6 @@ function createInstance(fiber, context) {
                 }
             });
             Renderer.currentOwner = instance;
-            if (type.render) {
-                instance.render = function () {
-                    return type.render(this.props, this.ref);
-                };
-            }
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {

@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-07-18
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-07-22
  */
 
 var arrayPush = Array.prototype.push;
@@ -816,11 +816,6 @@ function createInstance(fiber, context) {
                 }
             });
             Renderer.currentOwner = instance;
-            if (type.render) {
-                instance.render = function () {
-                    return type.render(this.props, this.ref);
-                };
-            }
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
@@ -2419,6 +2414,13 @@ function registerAPIsQuick(ReactWX, facade, override) {
     }
 }
 
+function fixFilePath(api, name) {
+   return function (a) {
+      a.apFilePath = a.filePath;
+      api[name](a);
+   };
+}
+
 function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 var more = function more(api) {
     return {
@@ -2452,10 +2454,12 @@ var more = function more(api) {
             return api.setNavigationBar(a);
         },
         vibrateLong: function _(a) {
-            return api.vibrate(a);
+            var name = api.vibrateLong ? "vibrateLong" : "vibrate";
+            return api[name](a);
         },
         vibrateShort: function _(a) {
-            return api.vibrate(a);
+            var name = api.vibrateShort ? "vibrateShort" : "vibrate";
+            return api[name](a);
         },
         saveImageToPhotosAlbum: function _(a) {
             a.url = a.filePath;
@@ -2466,18 +2470,9 @@ var more = function more(api) {
             a.current = index;
             return api.previewImage(a);
         },
-        getFileInfo: function _(a) {
-            a.apFilePath = a.filePath;
-            return api.getFileInfo(a);
-        },
-        getSavedFileInfo: function _(a) {
-            a.apFilePath = a.filePath;
-            return api.getSavedFileInfo(a);
-        },
-        removeSavedFile: function _(a) {
-            a.apFilePath = a.filePath;
-            return api.removeSavedFile(a);
-        },
+        getFileInfo: fixFilePath(api, 'getFileInfo'),
+        getSavedFileInfo: fixFilePath(api, 'getSavedFileInfo'),
+        removeSavedFile: fixFilePath(api, 'removeSavedFile'),
         saveFile: function _(a) {
             a.apFilePath = a.tempFilePath;
             var fn = a['success'];
@@ -2519,8 +2514,8 @@ var more = function more(api) {
             return api.uploadFile(a);
         },
         downloadFile: function _(a) {
-            var fn = a['success'];
-            a['success'] = function (res) {
+            var fn = a.success;
+            a.success = function (res) {
                 res.tempFilePath = res.apFilePath;
                 fn && fn(res);
             };

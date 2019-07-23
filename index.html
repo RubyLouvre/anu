@@ -10,77 +10,27 @@
 <body>
 
   <script>
-     function a(str, k){
-       var hash = {}
-       for(var i = 0; i < str.length; i++){
-          var c = str[i]
-          hash[c] = !hash[c] ? 1: hash[c] +1
-       }
-     }
-function longestSubstring(str, k) {
-       var hash = {}
-       for(var i = 0; i < str.length; i++){
-          var c = str[i]
-          hash[c] = !hash[c] ? 1: hash[c] +1
-       }
-       console.log(hash)
-       var old = str
-       str += "钟"
 
-       hash['钟'] = 1
-       var children = '', lastChildren = '', max = 0, hasSplit = false
-       for(var i = 0; i < str.length; i++){
-          var c = str[i];
-          if(hash[c] < k){
-            if(children.length>=k){
+    var sum = [], min = [], max = []
+    function build(n, array){
+      for(var bit=1; bit<=n+1; bit<<=1){};
+console.log(bit)
+for(var i = bit+1; i < bit+n; i++){
+  sum[i] = array[i]
+}
 
-            }
-            hasSplit = true
-            if(children.length > lastChildren.length ){
-              max = children.length
-              console.log(children)
-              lastChildren = children
-            }
-             children = ""
-          }else{
-             children += c
-          }
-       }
-       if(!hasSplit){
-         return old.length >= k ? old.length: 0
-       }
-       return max
-};
+    }
+    function Node(left, right) {
+  this.left = left;
+  this.right = right;
+  this.leftChild = null;
+  this.rightChild = null;
+  this.sum = 0; //求区间和，还可以加min, max等区间极值。
+}
    
-  function longestSubstring( s,  k) {
-	    return longestSubstringSub(s, k, 0, s.length - 1);
-	}
- 
-	 function longestSubstringSub( s,  k,  start,  end){
-	    if(start > end) return 0;
-	    varcount = new Array(26).fill(0)
-	    for(var i = start; i <= end; i++){
-	        count[s.charCodeAt(i) - 97]++;
-	    }
-	    for(var i = 0; i < 26; i++){
-	        if(count[i] > 0 && count[i] < k){
-	            var pos = s.indexOf( String.fromCharCode(i+97), start);
-	            return Math.max(longestSubstringSub(s, k, start, pos - 1), longestSubstringSub(s, k, pos + 1, end));
-	        }
-	    }
-	    return end - start + 1;
-	}
-
-
-
-console.log(longestSubstring('ababacb',3))//SEM是付费的，IOS是越狱市场， 积分墙
-/*
-console.log(longestSubstring('aaabb',3))
-console.log(longestSubstring('ababbc',2))
-console.log(longestSubstring('ababbddcaaabbb',2))
-*/
-
-
+ //[10,18,12,5,7,11,4,15] //这样我们就可以在控制台中拿到这个数组
+var array = [10,18,12,5,7,11,4,15]
+build(array.length, array)
     </script>
   <div id='root'></div>
 </body>
