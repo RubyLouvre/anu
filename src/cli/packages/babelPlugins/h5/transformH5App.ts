@@ -1,6 +1,6 @@
 import template from '@babel/template';
 import * as t from '@babel/types';
-import { Node, NodePath } from '@babel/core';
+import { Node, NodePath, PluginObj } from '@babel/core';
 
 const importedPagesTemplatePrefixCode: any = template(`
 import ReactDOM from 'react-dom';
@@ -71,7 +71,7 @@ this.onLaunch();
 `;
 let registerTemplate = temp;
 
-module.exports = function () {
+module.exports = function(): PluginObj {
     const importedPages = t.arrayExpression();
     let pageIndex = 0;
     return {

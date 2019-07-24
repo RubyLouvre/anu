@@ -1,4 +1,4 @@
-import { NodePath, PluginObj, Node } from '@babel/core';
+import { NodePath, PluginObj } from '@babel/core';
 import * as t from '@babel/types';
 import globalConfig from '../../config/config';
 import traverse from '@babel/traverse';
@@ -15,7 +15,7 @@ let WebViewRules: any = {
     showTitleBar:  true
 }
 
-module.exports = ()=>{
+module.exports = (): PluginObj => {
     return {
         visitor: {
             ClassDeclaration(astPath: NodePath<t.ClassDeclaration>, state: any){
