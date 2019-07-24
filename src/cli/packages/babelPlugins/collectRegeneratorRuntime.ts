@@ -1,4 +1,4 @@
-import { NodePath, PluginObj, Node } from '@babel/core';
+import { NodePath, PluginObj } from '@babel/core';
 import * as t from '@babel/types';
 import config from '../../config/config';
 let hackList: any = ['wx', 'bu', 'tt', 'quick','qq'];//这些都不支持async/await

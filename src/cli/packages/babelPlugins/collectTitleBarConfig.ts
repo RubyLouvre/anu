@@ -1,10 +1,10 @@
 import config from '../../config/config';
-import { NodePath } from '@babel/core';
+import { NodePath, PluginObj } from '@babel/core';
 import * as t from '@babel/types';
 /**
  * 用于搜集快应用 titlebar 显示隐藏配置
  */
-module.exports = function(){
+module.exports = function(): PluginObj{
     return {
         visitor: {
             ObjectProperty(astPath: NodePath<t.ObjectProperty>, state: any){

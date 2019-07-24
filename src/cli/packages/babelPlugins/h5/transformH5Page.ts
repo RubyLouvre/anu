@@ -2,12 +2,12 @@
 
 import template from '@babel/template';
 import * as t from '@babel/types';
-import { NodePath } from '@babel/core';
+import { NodePath, PluginObj } from '@babel/core';
 const extraImportedPath: any = template(`
 import dynamicPage from '@internalComponents/HOC/dynamicPage';
 `)();
 
-module.exports = function(){
+module.exports = function(): PluginObj{
     return {
         visitor: {
             Program: {

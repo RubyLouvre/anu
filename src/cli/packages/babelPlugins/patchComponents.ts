@@ -3,7 +3,7 @@ import * as path from 'path';
 import utils from '../utils/index';
 import nodeResolve from 'resolve';
 import * as t from '@babel/types';
-import { NodePath } from '@babel/core';
+import { NodePath, PluginObj } from '@babel/core';
 const cwd = process.cwd();
 const pkgName = 'schnee-ui';
 
@@ -38,7 +38,7 @@ function getPatchComponentPath(name: string) {
     return path.join(cwd, `./node_modules/schnee-ui/components/${name}/index.js`);
 }
 
-module.exports = ()=>{
+module.exports = (): PluginObj => {
     return {
         visitor: {
             JSXOpeningElement: function(astPath: NodePath<t.JSXOpeningElement>, state: any){

@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { NodePath, PluginObj, Node } from '@babel/core';
+import { NodePath, PluginObj } from '@babel/core';
 import * as t from '@babel/types';
 const webComponentsMap: {
     [props: string]: string;
