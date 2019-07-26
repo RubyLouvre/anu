@@ -1,4 +1,5 @@
-/**
- * 用于收集 App Component Page 的类型与 xml
- */
-module.exports = {};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const quickFiles = {};
+module.exports = quickFiles;
+exports.default = quickFiles;

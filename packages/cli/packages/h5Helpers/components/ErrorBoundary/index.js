@@ -25,14 +25,17 @@ class ErrorBoundary extends Component {
           <div className="__internal__ErrorBoundary__">
             页面遇到了一点小问题，请稍候再试
           </div>
-          <style jsx>{`
-            .__internal__ErrorBoundary__ {
-              text-align: center;
-              font-size: 12px;
-              color: #666;
-              padding-top: 240px;
+          <style ref={(node) => {
+                Object(node).textContent = `
+                .__internal__ErrorBoundary__ {
+                  text-align: center;
+                  font-size: 12px;
+                  color: #666;
+                  padding-top: 240px;
+                }
+              `;
             }
-          `}</style>
+          }/>
         </Fragment>
       );
     return this.props.children;
@@ -40,3 +43,4 @@ class ErrorBoundary extends Component {
 }
 
 export default ErrorBoundary;
+

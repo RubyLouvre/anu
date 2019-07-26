@@ -1,29 +1,24 @@
-//条件import
-/**
- *  // if process.env.ANU_ENV === [wx|ali|bu|quick]
- *  import ...
- */
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const config_1 = __importDefault(require("../../config/config"));
 const envReg = /\s*if\s+process\.env\.ANU_ENV\s*={2,3}\s*'([\w|]*)';?/;
-let config = require('../../config/config');
 let visitor = {
     Program: {
-        // 必须enter时删除，在其他插件解析前就将无用的import语句删除
         enter(astPath) {
             const nodes = astPath.node.body;
-            // 此处不能使用visitor访问import节点，因为删除节点后可能会改变下一个import语句的leadingComments，必须使用遍历节点的方式实现按需打包
             astPath.node.body = nodes.filter((node) => {
                 const leadingComments = node.leadingComments;
                 if (node.type === 'ImportDeclaration' && leadingComments) {
-                    for (let i = 0; i < leadingComments.length; i++){
+                    for (let i = 0; i < leadingComments.length; i++) {
                         let commentValue = leadingComments[i].value;
                         const match = commentValue.match(envReg);
-                        if (
-                            leadingComments[i].type === 'CommentLine' //单行注释
-                            && match            //满足if语句
-                        ) { 
+                        if (leadingComments[i].type === 'CommentLine'
+                            && match) {
                             const targetEnvs = match[1] && match[1].split('|');
-                            //移除无法匹配ANU_ENV的import语句
-                            if (targetEnvs && !targetEnvs.includes(config.buildType)) {
+                            if (targetEnvs && !targetEnvs.includes(config_1.default.buildType)) {
                                 return false;
                             }
                         }
@@ -34,7 +29,7 @@ let visitor = {
         }
     }
 };
-module.exports = function(){
+module.exports = function () {
     return {
         visitor: visitor
     };
