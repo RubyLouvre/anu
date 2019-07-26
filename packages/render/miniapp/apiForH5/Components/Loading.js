@@ -9,7 +9,7 @@ export default class Loading extends Component {
   }
   render() {
     return (
-        <div className='loading'>
+        <div className='loading2019'>
           <div className='icon'>
             <img style={{width: '1.5rem', height: '1.5rem'}} src='http://s.qunarzz.com/dev_test_2/loading4.gif'/>
           </div>
@@ -18,7 +18,7 @@ export default class Loading extends Component {
           </div>
           <style ref={(node)=>{
               Object(node).textContent = `
-              .loading { 
+              .loading2019 { 
                 display: flex;
                 flex-direction: column;
                 position: fixed;
@@ -32,14 +32,14 @@ export default class Loading extends Component {
                 right: 0;
                 border-radius: 5px;
               }
-              .loading .icon {
+              .loading2019 .icon {
                 height: 90px;
                 color: #fff;
                 text-align: center;
                 font-size: 30px;
                 line-height: 90px;
               }
-              .loading .title {
+              .loading2019 .title {
                 height: 30px;
                 text-align: center;
                 line-height: 30px;

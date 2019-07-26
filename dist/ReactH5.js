@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-23T07
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-23T10
  * IE9+
  */
 
@@ -3972,7 +3972,7 @@
       Loading.prototype.render = function render() {
         return React.createElement(
           'div',
-          { className: 'loading' },
+          { className: 'loading2019' },
           React.createElement(
             'div',
             { className: 'icon' },
@@ -3984,7 +3984,7 @@
             this.props.title
           ),
           React.createElement('style', { ref: function ref(node) {
-              Object(node).textContent = '\n              .loading { \n                display: flex;\n                flex-direction: column;\n                position: fixed;\n                width: 120px;\n                height: 120px;\n                background-color: rgba(0, 0, 0, 0.4);\n                margin: auto;\n                left: 0; \n                top: 0;\n                bottom: 0;\n                right: 0;\n                border-radius: 5px;\n              }\n              .loading .icon {\n                height: 90px;\n                color: #fff;\n                text-align: center;\n                font-size: 30px;\n                line-height: 90px;\n              }\n              .loading .title {\n                height: 30px;\n                text-align: center;\n                line-height: 30px;\n                color: #fff;\n                overflow: hidden;\n              }\n              ';
+              Object(node).textContent = '\n              .loading2019 { \n                display: flex;\n                flex-direction: column;\n                position: fixed;\n                width: 120px;\n                height: 120px;\n                background-color: rgba(0, 0, 0, 0.4);\n                margin: auto;\n                left: 0; \n                top: 0;\n                bottom: 0;\n                right: 0;\n                border-radius: 5px;\n              }\n              .loading2019 .icon {\n                height: 90px;\n                color: #fff;\n                text-align: center;\n                font-size: 30px;\n                line-height: 90px;\n              }\n              .loading2019 .title {\n                height: 30px;\n                text-align: center;\n                line-height: 30px;\n                color: #fff;\n                overflow: hidden;\n              }\n              ';
             } })
         );
       };

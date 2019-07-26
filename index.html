@@ -11,84 +11,197 @@
 
   <script>
 
-    var sum = [], min = [], max = [], m = 0;
-    function build(n, array){
-      //构建一个满二叉树，因此我们不能直接让二根树的叶子节点数等于元素个数，m可能大于n
-      for( m=1; m<n; m<<=1){};
-      sum  = new Array(n >> 2).fill(0)
-      max  = new Array(n >> 2).fill(-Infinity)
-      min  = new Array(n >> 2).fill(Infinity)
-      //填充最底层的叶子节点
-      for(var i = m + 1; i <= m+n; i++){
-        min[i] =  max[i] = sum[i] = array.shift()
+    function Node(low, high) {
+        this.low = low;
+        this.high = high;
+        this.left = null;
+        this.right = null;
+        this.sum = 0; //求区间和，还可以加min, max等区间极值。
       }
-      for(var i = m; i ; i--){
-        console.log(i, sum[i<<1], sum[i<<1 |1])
-        sum[i] = (sum[i<<1] || 0) + (sum[i<<1 | 1] || 0)
-        max[i] = Math.max(max[i<<1] || -Infinity , (max[i<<1 | 1] || -Infinity))
-        min[i] = Math.min(min[i<<1] || Infinity , (min[i<<1 | 1] || Infinity))
-      }
-    }
-    var array = [10,18,12,5,7,11,4,15]
-    build(array.length, array)
-    function updateOne(k, value){
-      for(var i=k+m+1;i;i>>=1){
-        sum[i]+=value;
-      }
-    }
-    function queryOne(k, value){
-     return sum[k+m]
-    }
-    /*
-function queryOne(x){
-  x = x+1
-  var res = 0
-  while(x){
-    res+=sum[x]
-    x>>=1
-  }
-  return res;
-
-  //return sum[k+m+1]
-}
-*/
-console.log(sum.concat())
-console.log(queryOne(2)) //5 从零开始
-console.log(queryOne(1)) // 6从零开始
-
-
-
-function queryRangeMax( s, t){
-    var max = -Infinity;
-    // 如果s与t在同一个父亲节点以下，就说明我们已经累加到这棵树的根部了。
-    //当s与t在同一个父亲节点下时，t-s=1，那么s^t=1,s^t^1=0,此时就退出循环。
-    for(s+=m-1,t+=m+1;s^t^1;s>>=1,t>>=1) {
-        if(~s&1){
-          ans=Math.max(ans,max[s^1]); //max[s^1]是max[s]的兄弟 
+      class SegmentTree {
+        constructor(array) {
+          this.root = this.build(0, array.length - 1, function (node) {
+            if (node.low === node.high) {
+              node.sum = array[node.low]
+            } else {
+              node.sum = node.left.sum + node.right.sum
+            }
+          })
+          console.log(this.root)
         }
-        if(t&1){
-           ans= Math.max(ans,max[t^1]); //max[t^1]是max[t]的兄弟 
-        }
-          
-    }
-    return ans;
-}
-  function queryRangeSum(s, t) {
-    var rangeSum = 0
-    // 如果s与t在同一个父亲节点以下，就说明我们已经累加到这棵树的根部了。
-    //当s与t在同一个父亲节点下时，t-s=1，那么s^t=1,s^t^1=0,此时就退出循环。
-    for (s += m - 1, t += m + 1; s ^ t ^ 1; s >>= 1, t >>= 1) {
-      if (s % 2 === 0) {
-        rangeSum += (sum[s ^ 1] || 0) //max[s^1]是max[s]的兄弟 
-      }
-      if (t % 2 !== 0) {
-        rangeSum += (sum[t ^ 1] || 0) //max[t^1]是max[t]的兄弟 
-      }
+        build(low, high, cb) {
+          var node = new Node(low, high)
+          if (low != high) { // 1+2 > 2
+            var mid = low + ((high - low) >> 1)
+            node.left = this.build(low, mid, cb)
+            node.right = this.build(mid + 1, high, cb)
 
-    }
-    return rangeSum;
-  }
-console.log(queryRangeSum(2,5))
+          }
+          cb(node)
+          return node;
+        }
+        inOrder(callback) {
+          //左中右
+          var stack = [];
+          var node = this.root;
+          while (node != null || stack.length) {
+            //将所有孩子压栈
+            if (node != null) {
+              stack.push(node);
+              node = node.left;
+            } else {
+              node = stack.pop();
+              callback(node); //先于right前访问
+              node = node.right;
+            }
+          }
+        }
+        printNodeByLevel(callback) {
+          var queue = [];
+          var node = this.root;
+          if (node) {
+            queue.push(node);
+            queue.push(0);
+          }
+          while (queue.length) {
+            node = queue.shift(); //先进先出
+            if (node) {
+              callback(node);
+              if (node.left) {
+                node.left.parent = node
+                queue.push(node.left);
+              }
+              if (node.right) {
+                node.right.parent = node
+                queue.push(node.right);
+              }
+            } else if (queue.length) {
+              callback(0);
+              queue.push(0); //用于分隔当前层
+            }
+          }
+        }
+        toString(cb) {
+          const brickLen = 6,
+            SW = ' ',
+            LINE = '_';
+          //辅助方法，让数据居中对齐
+          var showData = cb || function (node) {
+            return '(' + node.data + ')'
+          }
+          function displayData(node) {
+            var right = true,
+              isLeaf = !node.left && !node.right;
+            var s = showData(node)
+            for (var i = s.length; i < brickLen; i++) {
+              if (right) {
+                s = s + SW;
+              } else {
+                s = SW + s;
+              }
+              right = !right;
+            }
+            return s;
+          }
+          //创建4个字符的空白或下划线
+          function createPadding(s, n) {
+            var ret = '';
+            n = n || brickLen;
+            for (var i = 0; i < n; i++) {
+              ret += s;
+            }
+            return ret;
+          }
+          //====================================
+          //添加索引值
+          var index = 0;
+          this.inOrder(function (el) {
+            el.index = index++;
+          });
+          // 收集每一层的结点
+          var allLevelNodes = [];
+          var array = [];
+          this.printNodeByLevel(function (node) {
+            if (node !== 0) {
+              array.push(node);
+            } else {
+              allLevelNodes.push(array);
+              array = [];
+            }
+          });
+          if (array.length) {
+            allLevelNodes.push(array);
+          }
+          //brickes中有数据的层，branches只是用来放斜线的层,都是二维数组
+          var brickes = [];
+          var branches = [];
+          for (var i = 0, n = allLevelNodes.length; i < n; i++) {
+            if (!brickes[i]) {
+              brickes[i] = [];
+              branches[i] = [];
+            }
+            var cbrick = brickes[i];
+            var cbranch = branches[i];
+            var level = allLevelNodes[i];
+            while (level.length) {
+              var el = level.shift();
+              var j = el.index;
+              cbrick[j] = displayData(el);
+              cbranch[j] = createPadding(' ', cbrick[j].length);
+
+              if (el.parent) {
+                var pbrick = brickes[i - 1];
+                var pbranch = branches[i - 1];
+                var pindex = el.parent.index;
+                if (el == el.parent.left) {
+                  //左子树
+                  for (var k = j + 1; k < pindex; k++) {
+                    pbrick[k] = createPadding(LINE);
+                  }
+                  for (var k = j + 1; k < pindex; k++) {
+                    pbranch[k] = createPadding(SW);
+                  }
+                  pbranch[j] = createPadding(SW, brickLen - 1) + '/';
+                } else {
+                  //右子树
+                  for (var k = pindex + 1; k < j; k++) {
+                    pbrick[k] = createPadding(LINE);
+                  }
+                  for (var k = pindex + 1; k < j; k++) {
+                    pbranch[k] = createPadding(SW);
+                  }
+                  pbranch[j] = '\\' + createPadding(SW, brickLen - 1);
+                }
+              }
+              j--;
+              inner: while (j > -1) {
+                //添加空白
+                if (cbrick[j] == null) {
+                  cbrick[j] = createPadding(SW);
+                  cbranch[j] = createPadding(SW);
+                } else {
+                  break inner;
+                }
+                j--;
+              }
+            }
+          }
+          return brickes
+            .map(function (el, i) {
+              return el.join('') + '\n' + branches[i].join('');
+            })
+            .join('\n');
+        }
+      }
+    var t =  new SegmentTree([10,18,12,5,7,11,4,15])
+  
+         console.log( t.toString(function(node){
+               return '['+node.low+","+node.sum+","+ node.high+"]"
+            }) )
+
+
+            
+ 
     </script>
   <div id='root'></div>
 </body>
