@@ -1,0 +1,192 @@
+@import '../../common/style/common.scss';
+
+#plist-header {
+	position: relative;
+	overflow: hidden;
+}
+
+#plh-filterbg {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-size:cover;
+	background-position:center center;
+	background-repeat:no-repeat;
+}
+
+.blurbg {
+    filter: blur(30px) brightness(0.8);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    position: absolute;top:0;right:0;left: 0;bottom:0;z-index:-2;display:block
+  }
+
+#plh-main {
+	position: relative;
+	z-index: 3;
+	overflow: hidden;
+	display: flex;
+	flex-direction: row;
+}
+
+#plh-cover {
+	width:280rpx;
+	height:280rpx;
+	margin: 30rpx;
+	position: relative;
+	margin-bottom: 10rpx;
+}
+
+#plh-cover image {
+	width:280rpx;
+	height:280rpx;
+}
+
+#plh-playinfo {
+	position: absolute;
+	z-index: 3;
+	right: 10rpx;
+	bottom: 10rpx;
+}
+
+#plh-playinfo image {
+	width: 46rpx;
+	height: 46rpx;
+	vertical-align: top;
+	background-color: rgba(0, 0, 0, .2);
+	border-radius: 50%;
+}
+
+#user_ava {
+	width: 60rpx;
+	height: 60rpx;
+	border-radius: 50%;
+	margin-right: 20rpx;
+	vertical-align: middle;
+}
+
+#plh-cnt {
+	color: #fff;
+	font-size: 24rpx;
+	line-height: 50rpx;
+}
+
+#music_h_name {
+	font-size: 32rpx;
+	padding: 60rpx 20rpx 40rpx 0;
+	display: block
+}
+
+#plh_action {
+	display: flex;
+	position: relative;
+	z-index: 3;
+	clear: both;
+	width: 100%;
+	line-height: 2;
+	justify-content: space-around;
+}
+
+#plh_action view {
+	text-align: center;
+	color: #fff;
+	border-bottom: none;
+	font-size: 24rpx;
+	flex: 1;
+}
+
+.action-item {
+	width: 140rpx;
+}
+
+#plh_action image {
+	width: 110rpx;
+	height: 110rpx;
+	display: block;
+}
+
+#plh_action text {
+	// display: block;
+	// padding-bottom: .5em;
+	// line-height: 2
+}
+
+.topindex {
+	color: red
+}
+
+.playingidx {
+	width: 38rpx;
+	height: 38rpx;
+}
+
+.ftp {
+	display: block;
+	color: #888;
+	font-size: 18rpx;
+	padding-top: 10rpx;
+}
+
+.ftp image {
+	width: 18rpx;
+	display: inline-block;
+	vertical-align: middle;
+	overflow: hidden;
+	margin-right: 5rpx;
+}
+
+.ftp image.tpnew {
+	width: 38rpx
+}
+
+.pld-mv image {
+	width: 78rpx;
+	height: 63rpx;
+}
+
+.borderBottom {
+	border-bottom: 1px solid #E5E5E5;
+}
+
+#playall {
+  padding: 20rpx;
+  line-height: 36rpx;
+}
+#playall image {
+  width: 36rpx;
+  height: 36rpx;
+  vertical-align: top;
+}
+#playall .flexnum {
+//   padding: 20rpx 0;
+}
+#pa-count text {
+  color: #888;
+  font-size: 24rpx;
+}
+
+.img_playcount {
+  position: absolute;
+  right: 0;
+  top: 0;
+  color: #fff;
+  z-index: 1;
+  font-size: 24rpx;
+  padding: 8rpx 15rpx 8rpx 40rpx;
+  background-image: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
+  max-width: 70%;
+  text-align: right;
+  min-width: 30%;
+}
+.img_playcount image {
+  vertical-align: baseline;
+  margin-right: 10rpx;
+  position: relative;
+  width: 24rpx;
+  height: 24rpx;
+}

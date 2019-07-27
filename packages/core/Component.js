@@ -1,4 +1,4 @@
-import { toWarnDev, returnFalse,returnTrue } from "./util";
+import { toWarnDev, returnFalse,returnTrue, get } from "./util";
 import { Renderer } from "./createRenderer";
 
 
@@ -35,10 +35,10 @@ Component.prototype = {
         return this.updater.isMounted(this);
     },
     setState(state, cb) {
-        this.updater.enqueueSetState(this, state, cb);
+        this.updater.enqueueSetState(get(this), state, cb);
     },
     forceUpdate(cb) {
-        this.updater.enqueueSetState(this, true, cb);
+        this.updater.enqueueSetState(get(this), true, cb);
     },
     render() {
         throw "must implement render";

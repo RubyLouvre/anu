@@ -1,0 +1,117 @@
+.col {
+  display:flex;
+  flex-direction: column;
+  
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.scenic {
+  
+  flex-direction: column;
+  display:flex;
+  width: 100%;
+  .input-wrapper {
+    width: 100%;
+    background-color: #1890ff;
+    padding: 20rpx 0;
+    padding-bottom: 35rpx;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    .input {
+      flex-grow: 1;
+      background-color: #ffffff;
+      margin-left: 20rpx;
+      margin-right: 20rpx;
+    }
+    .n-input {
+      height: 60rpx;
+      font-size: 22rpx;
+      padding-left: 30rpx;
+    }
+  }
+  .scenic-content {
+    .scenic-content-item {
+      background-color: #ffffff;
+      margin-bottom: 30rpx;
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+    .title-wrapper {
+      padding: 15rpx 20rpx;
+      font-size: 0;
+      .mark {
+        display: inline-block;
+        border-left: 2px solid #1890ff;
+        height: 20rpx;
+        margin-right: 20rpx;
+      }
+      .title {
+        display: inline-block;
+        font-size: 25rpx;
+      }
+    }
+    .scenic-item {
+      font-size: 0;
+      padding: 15rpx 20rpx;
+      background-color: #fff;
+      border-top: 1px solid #eee;
+      display: flex;
+      .left-content {
+        display: inline-block;
+        width: 200rpx;
+        height: 200rpx;
+        vertical-align: top;
+      }
+      .right-content {
+        display: inline-block;
+        height: 200rpx;
+        width: 490rpx;
+        margin-left: 20rpx;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        .scenic-name {
+          font-size: 30rpx;
+          margin-bottom: 15rpx;
+        }
+        .desc {
+          font-size: 22rpx;
+          margin-bottom: 10rpx;
+        }
+        .comment {
+          font-size: 20rpx;
+        }
+        .price-distance {
+          // position: absolute;
+          // width: 100%;
+          // bottom: 0;
+          // left: 0;
+          // display: flex;
+          justify-content: space-between;
+          align-items: center;
+          .price {
+            font-size: 28rpx;
+            color: rgb(250, 171, 68);
+          }
+          .distance {
+            // position: absolute;
+            // bottom: 0;
+            // right: 0;
+            font-size: 22rpx;
+            color: rgb(228, 227, 227);
+          }
+        }
+      }
+    }
+  }
+}

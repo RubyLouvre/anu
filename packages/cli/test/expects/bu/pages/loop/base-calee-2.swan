@@ -1,0 +1,7 @@
+<view>
+          <block s-if="{{state.array && state.array.length}}">
+            <block s-for="{{state.array}}" s-for-item="item" s-for-index="i150">
+              <view>{{item.item}}</view>
+            </block>
+          </block>
+        </view>

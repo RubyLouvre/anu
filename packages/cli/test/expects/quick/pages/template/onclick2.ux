@@ -1,0 +1,26 @@
+<import name="anu-page-wrapper" src="../../../../source/components/PageWrapper/index.ux">
+    </import>
+    <template>
+      <anu-page-wrapper>
+        <div onclick="dispatchEvent" data-click-uid="e3_20" data-beacon-uid="default">
+          <text>hello world</text>
+        </div>
+      </anu-page-wrapper>
+    </template>
+    <script>
+      function P() {}
+
+      P = React.toClass(P, React.Components, {
+      render: function() {
+      var h = React.createElement;
+      return h("div", {
+      catchClick: this.tap.bind(this),
+      "data-click-uid": "e3_20",
+      "data-beacon-uid": "default"
+      }, "hello world");;
+      },
+      classUid: "c127"
+      }, {});
+      P = React.registerPage(P, "pages/template/onclick2");
+      export default P;
+    </script>

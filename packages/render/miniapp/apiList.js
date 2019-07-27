@@ -1,4 +1,4 @@
-export const onAndSyncApis = {
+export var onAndSyncApis = {
     onSocketOpen: true,
     onSocketError: true,
     onSocketMessage: true,
@@ -27,8 +27,8 @@ export const onAndSyncApis = {
     getSystemInfoSync: true,
     getExtConfigSync: true,
     getLogManager: true
-  }
- export const noPromiseApis = {
+};
+export var noPromiseApis = {
     // 媒体
     stopRecord: true,
     getRecorderManager: true,
@@ -41,7 +41,7 @@ export const onAndSyncApis = {
     createInnerAudioContext: true,
     createVideoContext: true,
     createCameraContext: true,
-  
+    wxpayGetType:true,
     navigateBack: true,
   
     // 位置
@@ -73,9 +73,18 @@ export const onAndSyncApis = {
     base64ToArrayBuffer: true,
   
     getUpdateManager: true,
-    createWorker: true
-  }
-  export const otherApis = {
+    createWorker: true,
+
+    // 快应用部分接口
+    getPushProvider: true,
+    getProvider: true,
+
+    // 特殊功能API
+    canvasToTempFilePath: true,
+    // h5 蒙层api
+    createModal: true
+};
+export var otherApis = {
     // 网络
     uploadFile: true,
     downloadFile: true,
@@ -181,13 +190,14 @@ export const onAndSyncApis = {
     hideTabBar: true,
     setTopBarText: true,
     startPullDownRefresh: true,
-    canvasToTempFilePath: true,
+    
     canvasGetImageData: true,
     canvasPutImageData: true,
   
     // 第三方平台
     getExtConfig: true,
-  
+    //远程请求
+    request: true,
     // 开放接口
     login: true,
     checkSession: true,
@@ -210,6 +220,4 @@ export const onAndSyncApis = {
     checkIsSupportSoterAuthentication: true,
     startSoterAuthentication: true,
     checkIsSoterEnrolledInDevice: true
-    //
-  }
-  
+};

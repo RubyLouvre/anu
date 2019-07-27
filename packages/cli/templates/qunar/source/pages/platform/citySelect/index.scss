@@ -1,0 +1,83 @@
+page{
+    background-color: rgb(240, 240, 240);
+}
+.city-select {
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    align-items: stretch;
+    flex-direction: column;
+    .search-wrapper {
+        padding: 20rpx 30rpx;
+        background-color: #fff;
+        font-size: 0;
+        .input {
+            width: 100%;
+            padding: 0 60rpx;
+            box-sizing: border-box;
+            margin-right: 20rpx;
+            height: 50rpx;
+            line-height: 50rpx;
+            font-size: 22rpx;
+            text-align: center;
+            color: #6c6e6e;
+            border-radius: 25rpx;
+            background-color: rgb(241, 241, 241);
+            transition: width 300ms ease;
+        }
+        .image {
+            position: absolute;
+            top: 30rpx;
+            left: 50rpx;
+            width: 32rpx;
+            height: 32rpx;
+        }
+    }
+    .city-wrapper {
+        font-size: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+        .city-item-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
+            .title{
+                display: block;
+                padding: 5rpx 30rpx;
+                font-size: 22rpx;
+                color: #69c0ff;
+            }
+        }
+        .city-item {
+            width: 100%;
+            padding: 0 30rpx;
+            padding-top: 30rpx;
+            background-color: #fff;
+            display: flex;
+            flex-wrap: wrap;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: space-around;
+            .item {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                box-sizing: border-box;
+                border-radius: 5rpx;
+                border: 1px solid rgb(230, 230, 230);
+                font-size: 27rpx;
+                margin-right: 20rpx;
+                margin-bottom: 20rpx;
+                padding: 20rpx 40rpx;
+                &:active {
+                    background-color: #40a9ff;
+                    color: #fff;
+                }
+            }
+        }
+    }
+}

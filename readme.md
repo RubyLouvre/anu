@@ -5,6 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/anujs.svg?style=flat)](https://www.npmjs.com/package/anujs)
 [![CircleCI](https://circleci.com/gh/RubyLouvre/anu/tree/master.svg?style=svg)](https://circleci.com/gh/RubyLouvre/anu/tree/master)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/RubyLouvre/anu/pulls)
+[![Qunar.com](https://user-images.githubusercontent.com/190846/48761333-5b66df80-ece3-11e8-80e4-5df19b912dd5.png)](https://github.com/qunarcorp)
 
 
 ```bash
@@ -20,7 +21,8 @@ source： https://bundlephobia.com/
 
 ### advantage：
 
-1. Support various new features of **React16**, Fragment, componentDidCatch, creactContext, createRef, forwardRef...
+1. Support various new features of **React16**, Fragment, componentDidCatch, creactContext, createRef, forwardRef, React Hooks(useRef, useContext, useState, useEffect, useReducer, useCallback,
+useMemo, useEffect, useLayoutEffect, useImperativeHandle)...
 2. The size is very small (only 3000 lines, gzip only 13kb, one third of React+ReactDOM)
 3. Pass more than 700 official unit tests  (other mini libraries can not run the official test)
 4. Share the huge ecology of React（React-router-dom, react-router-redux, react-lazy-load, react-hot-loader...）
@@ -36,6 +38,7 @@ source： https://bundlephobia.com/
 * https://github.com/magicapple/anujs-webpack4-ie7-8
 * https://gitee.com/menhal/React_IE8_boilerplate
 * https://github.com/meeteason/react-webpack-ie6-boilerplate
+* https://github.com/ambit-tsai/reactie (React Stack in IE8)
 
 ### License
 
@@ -48,6 +51,7 @@ resolve: {
     alias: {
        'react': 'anujs',
        'react-dom': 'anujs',
+        'react-dom/server': 'anujs/dist/React/server',//在dist下面有一个Reac目录
          // For compatibility with IE please use the following configuration
          // 'react': 'anujs/dist/ReactIE',
          // 'react-dom': 'anujs/dist/ReactIE',

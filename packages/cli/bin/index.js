@@ -1,95 +1,47 @@
 #!/usr/bin/env node
-'use strict';
-const chalk = require('chalk');
-const semver = require('semver');
-const program = require('commander');
-
-if (semver.lt(process.version, '8.0.0')) {
-    // eslint-disable-next-line
-    console.log(
-        chalk`mpreact only support {green.bold v8.0.0} or later (current v{green.bold ${
-            process.version
-        }}) of Node.js`
-    );
-    process.exit(1);
-}
-
-program
-    .name('mpreact')
-    .usage('<command>')
-    .version(require('../package.json').version, '-v, --version');
-
-program.command('init <project-name>').description('初始化项目');
-
-program
-    .command('watch:[wx|ali|bu|quick]')
-    .description('监听[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用]');
-
-program
-    .command('build:[wx|ali|bu|quick]')
-    .description('构建[ 微信小程序 | 支付宝小程序 | 百度只能小程序 | 快应用]');
-
-program.parse(process.argv);
-if (program.args.length === 0) program.help();
-
-const config = require('../packages/config');
-const args = program.args;
-function getBuildType(args) {
-    let type = args[0].split(':')[1];
-    type = !type ? 'wx' : type.toLowerCase();
-    return type;
-}
-
-/* eslint-disable */
-if (args[0] === 'init' && typeof args[1] === 'undefined') {
-    console.error('请指定项目名称');
-    console.log(
-        `  ${chalk.cyan(program.name())} init ${chalk.green(
-            '<project-name>'
-        )}\n`
-    );
-    console.log('例如:\n');
-    console.log(
-        `  ${chalk.cyan(program.name())} init ${chalk.green('mpreact-app')}`
-    );
-    process.exit(1);
-}
-
-let buildType = getBuildType(args);
-/* eslint-disable */
-if (!config[buildType]) {
-    let type = args[0].split(':');
-    console.log(chalk.red('请检查命令是否正确'));
-    console.log(chalk.green(`1.微信小程序:        mpreact ${type[0]}`));
-    console.log(chalk.green(`2.百度智能小程序:    mpreact ${type[0]}:bu`));
-    console.log(chalk.green(`3.支付宝小程序:      mpreact ${type[0]}:ali`));
-    console.log(chalk.green(`4.快应用:            mpreact ${type[0]}:quick`));
-    process.exit(1);
-}
-
-process.env.ANU_ENV = buildType;
-
-if (!config[buildType].support) {
-    console.log(chalk.red(config[buildType].notSupportResText));
-    process.exit(1);
-}
-config['buildType'] = buildType;
-
-let command = args[0];
-if (/\:/.test(command)) {
-    //<watch|build>:
-    command = command.split(':')[0];
-}
-switch (command) {
-    case 'watch':
-        require('../packages/index')('watch', buildType);
-        break;
-    case 'build':
-        require('../packages/index')('build', buildType);
-        break;
-    case 'init':
-        require('../packages/init')(args[1]);
-        break;
-    default:
-        console.log(chalk.green('初始化项目: mpreact init <project-name>'));
-}
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const package_json_1 = require("../package.json");
+const platforms_1 = __importDefault(require("../consts/platforms"));
+const buildOptions_1 = __importDefault(require("../consts/buildOptions"));
+const cliBuilder_1 = __importDefault(require("./cliBuilder"));
+const init_1 = __importDefault(require("./commands/init"));
+const createPage_1 = __importDefault(require("./commands/createPage"));
+const build_1 = __importDefault(require("./commands/build"));
+const install_1 = __importDefault(require("./commands/install"));
+require("../tasks/chaikaMergeTask/injectChaikaEnv");
+const cli = new cliBuilder_1.default();
+cli.checkNodeVersion('8.6.0');
+cli.version = package_json_1.version;
+cli.addCommand('init <app-name>', null, 'description: 初始化项目', {}, (appName) => {
+    init_1.default(appName);
+});
+cli.addCommand('install [name]', null, 'description: 安装拆库模块. 文档: https://rubylouvre.github.io/nanachi/documents/chaika.html', {
+    'branch': {
+        desc: '指定分支',
+        alias: 'b'
+    }
+}, function (name, opts) {
+    install_1.default(name, opts);
+});
+['page', 'component'].forEach(type => {
+    cli.addCommand(`${type} <page-name>`, null, `description: 创建${type}s/<${type}-name>/index.js模版`, {}, (name) => {
+        createPage_1.default({ name, isPage: type === 'page' });
+    });
+});
+platforms_1.default.forEach(function (el) {
+    const { buildType, des, isDefault } = el;
+    ['build', 'watch'].forEach(function (compileType) {
+        cli.addCommand(`${compileType}:${buildType}`, isDefault ? compileType : null, des, buildOptions_1.default, (options) => {
+            const args = {};
+            Object.keys(options).forEach(key => {
+                args[key] = options.key;
+            });
+            build_1.default(Object.assign({}, args, { watch: compileType === 'watch', buildType }));
+        });
+    });
+});
+cli.run();

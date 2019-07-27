@@ -1,0 +1,9 @@
+<view>
+      <block wx:for="{{state.multiArr}}" wx:for-item="item" wx:for-index="i90">
+        <view>
+          <block wx:for="{{item.list}}" wx:for-item="item2" wx:for-index="i189">
+            <text>{{item2}}</text>
+          </block>
+        </view>
+      </block>
+    </view>

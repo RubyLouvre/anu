@@ -1,0 +1,29 @@
+$main-primary-color:   #ff9800;
+$main-secondary-color: #00bcd4;
+
+$main-success-color:   #52c41a;
+$main-info-color:      #1890ff;
+$main-warn-color:      #fa8c16;
+$main-error-color:     #f5222d;
+
+$main-gray-color:      #eee;
+
+$text-primary-color:   #fff;
+$text-secondary-color: #fff;
+
+$text-success-color:   #fff;
+$text-info-color:      #fff;
+$text-warn-color:      #fff;
+$text-error-color:     #fff;
+
+$text-color-theme-light:    rgba(0, 0, 0, .95);
+$text-color-theme-light-l:  rgba(0, 0, 0, .8);
+$text-color-theme-light-xl: rgba(0, 0, 0, .6);
+
+$text-color-theme-dark:     rgba(255, 255, 255, .9);
+$text-color-theme-dark-l:   rgba(255, 255, 255, .8);
+$text-color-theme-dark-l:   rgba(255, 255, 255, .6);
+
+$text-color:            $text-color-theme-light;
+$text-color-l:          $text-color-theme-light-l;
+$text-color-xl:         $text-color-theme-light-xl;

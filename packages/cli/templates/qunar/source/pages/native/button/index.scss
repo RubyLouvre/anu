@@ -1,0 +1,107 @@
+@import '@assets/global.scss';
+
+$defaultcolor: #F8F8F8;
+$primarycolor: #1AAD19;
+$warningcolor: #E64340;
+$fontcolor: #000000;
+
+.quick-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.quick-button {
+    padding-left:14px;
+    padding-right:14px;
+    box-sizing:border-box;
+    font-size:18px;
+    text-align:center;
+    text-decoration:none;
+    line-height: 46px;
+    border-radius:5px;
+    -webkit-tap-highlight-color:transparent;
+    color:#000000;
+    background-color: $defaultcolor;
+    margin-top: 12px;
+
+
+
+}
+
+.primary {
+    color:#FFFFFF;
+    background-color: $primarycolor;
+    &:active {
+        color:#FFFFFF;
+        background-color: darken($primarycolor, 5%);
+    }
+    &:disabled {
+        color:#FFFFFF;
+        background-color: lighten($primarycolor, 50%);
+    }
+
+    &-plain {
+        color:$primarycolor;
+        border:1rpx solid $primarycolor;
+        background-color:transparent;
+        &:active {
+            color:lighten($primarycolor, 15%);
+            border:1rpx solid lighten($primarycolor, 15%);
+        }
+        &:disabled {
+            color:lighten($fontcolor, 50%);
+            border:1rpx solid lighten($fontcolor, 50%);
+        }
+    }
+}
+
+
+.warning {
+    color:#FFFFFF;
+    background-color: $warningcolor;
+    &:active {
+        color:#FFFFFF;
+        background-color: darken($warningcolor, 5%);
+    }
+    &:disabled {
+        color:#FFFFFF;
+        background-color: lighten($warningcolor, 20%);
+    }
+
+    &-plain {
+        color:$warningcolor;
+        border:1rpx solid $warningcolor;
+        background-color:transparent;
+        &:active {
+            color:lighten($warningcolor, 15%);
+            border:1rpx solid lighten($warningcolor, 15%);
+        }
+        &:disabled {
+            color:lighten($fontcolor, 50%);
+            border:1rpx solid lighten($fontcolor, 50%);
+        }
+    }
+}
+
+
+
+.default {
+    &:active {
+        background-color: darken($defaultcolor, 5%);
+    }
+
+    &-plain {
+        color:$fontcolor;
+        border:1rpx solid $fontcolor;
+        background-color:transparent;
+        &:active {
+            color:lighten($fontcolor, 30%);
+            border:1rpx solid lighten($fontcolor, 30%);
+        }
+        &:disabled {
+            color:lighten($fontcolor, 50%);
+            border:1rpx solid lighten($fontcolor, 50%);
+        }
+    }
+
+}

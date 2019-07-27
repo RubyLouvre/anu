@@ -1,5 +1,5 @@
-import { pushError } from "./ErrorBoundary";
-import { typeNumber } from "react-core/util";
+import { pushError } from './ErrorBoundary';
+import { typeNumber } from 'react-core/util';
 
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 
@@ -18,13 +18,13 @@ export let Refs = {
         try {
             let number = typeNumber(ref);
             refStrategy[number](owner, ref, dom);
-            if(owner && owner.__isStateless ){
+            if (owner && owner.__isStateless ){
                 delete fiber.ref;
                 fiber.deleteRef = true;
             }
          
         } catch (e) {
-            pushError(fiber, "ref", e);
+            pushError(fiber, 'ref', e);
         }
     },
 };

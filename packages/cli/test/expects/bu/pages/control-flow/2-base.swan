@@ -1,0 +1,5 @@
+<view>
+        <block s-if="{{state.show}}">
+          <view>hello word</view>
+        </block>
+      </view>

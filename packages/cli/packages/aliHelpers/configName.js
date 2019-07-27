@@ -1,6 +1,7 @@
 const navNames = {
     navigationBarBackgroundColor: 'titleBarColor',
-    navigationBarTitleText: 'defaultTitle'
+    navigationBarTitleText: 'defaultTitle',
+    enablePullDownRefresh: 'pullRefresh'
 };
 const barNames = {
     color: 'textColor',
@@ -45,6 +46,9 @@ activeIcon	String	否	高亮图标路径
 */
 
 module.exports = function mapConfigName(config) {
+    if (config.window){
+        swapProperty(config.window, navNames);
+    }
     swapProperty(config, navNames);
     var tabBar = config.tabBar;
     if (tabBar) {

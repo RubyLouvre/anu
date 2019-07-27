@@ -1,64 +1,78 @@
-import { returnFalse , toLowerCase} from 'react-core/util';
-import { classCached } from './utils';
+import { returnFalse, toLowerCase } from 'react-core/util';
 import { Renderer } from 'react-core/createRenderer';
-export var webview = {};
-export var eventSystem = {
-    dispatchEvent: function(e) {
-      if (e.type == 'message') {
+import { _getApp } from './utils';
+export let webview = {};
+
+var rbeaconType = /click|tap|change|blur|input/i;
+export function dispatchEvent(e) {
+    const eventType = toLowerCase(e.type);
+    if (eventType == 'message') { //处理支付宝web-view组件的dataset为空的BUG
         if (webview.instance && webview.cb) {
-          webview.cb.call(webview.instance, e);
+            webview.cb.call(webview.instance, e);
         }
         return;
-      }
-        var target = e.currentTarget;
-        var dataset = target.dataset || {};
-        var eventUid = dataset[toLowerCase(e.type) + 'Uid']; //函数名
-        var classUid = dataset.classUid; //类ID
-        var componentClass = classCached[classUid]; //类
-        var instanceUid = dataset.instanceUid; //实例ID
-        var instance = componentClass[instanceUid];
-        var fiber = instance.$$eventCached[eventUid + 'Fiber'];
-        if (e.type == 'change' && fiber && fiber.type === 'input') {
-            //微信的change会误触发
-            if (fiber.props.value + '' == e.detail.value) {
-                return;
-            }
-        }
-        var key = dataset['key'];
-        eventUid += key != null ? '-' + key : '';
-        if (instance) {
-            Renderer.batchedUpdates(function() {
-                try {
-                    var fn = instance.$$eventCached[eventUid];
-                    fn && fn.call(instance, createEvent(e, target));
-                } catch (err) {
-                    // eslint-disable-next-line
-                    console.log(err.stack);
-                }
-            }, e);
+    }
+    const instance = this.reactInstance;
+    if (!instance || !instance.$$eventCached) {
+        console.log(eventType, '没有实例');
+        return;
+    }
+    const app = _getApp();
+    const target = e.currentTarget;
+    const dataset = target.dataset || {};
+    const eventUid = dataset[eventType + 'Uid'];
+    const fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
+        props: {},
+        type: 'unknown'
+    };
+    const value = Object(e.detail).value;
+    if (eventType == 'change') {
+        if (fiber.props.value + '' == value) {
+            return;
         }
     }
-};
+    let safeTarget = {
+        dataset: dataset,
+        nodeName: target.tagName || fiber.type,
+        value: value
+    };
+
+    if (app && app.onCollectLogs && rbeaconType.test(eventType)) {
+        app.onCollectLogs(dataset, eventType, fiber.stateNode);
+    }
+
+
+    Renderer.batchedUpdates(function () {
+        try {
+            var fn = instance.$$eventCached[eventUid];
+            fn && fn.call(instance, createEvent(e, safeTarget));
+        } catch (err) {
+            console.log(err.stack); // eslint-disable-line
+        }
+    }, e);
+
+}
 
 
 //创建事件对象
 function createEvent(e, target) {
-    var event = {};
+    let event = Object.assign({}, e);
     if (e.detail) {
-        event.detail = e.detail;
         Object.assign(event, e.detail);
-        Object.assign(target, e.detail);
     }
-    event.stopPropagation = function() {
+    //需要重写的属性或方法
+    event.stopPropagation = function () {
         // eslint-disable-next-line
         console.warn("小程序不支持这方法，请使用catchXXX");
     };
+    event.nativeEvent = e;
     event.preventDefault = returnFalse;
-    event.type = e.type;
-    event.currentTarget = event.target = target;
-    event.touches = e.touches;
-    event.timeStamp = new Date() - 0;
+    event.target = target;
+    event.timeStamp = Date.now();
+    let touch = e.touches && e.touches[0];
+    if (touch) {
+        event.pageX = touch.pageX;
+        event.pageY = touch.pageY;
+    }
     return event;
 }
-
-

@@ -8,12 +8,13 @@ export const DETACH = 13; //移出DOM树 componentWillUnmount
 export const HOOK = 17; //componentDidMount/Update/
 export const REF = 19; // ref 总在钩子之后
 export const CALLBACK = 23; //回调
-export const CAPTURE = 29; //出错
+export const PASSIVE = 29; //useEffect
+export const CAPTURE = 31; //出错
 
 //上面的副作用的功能与位置可能变化频繁，我们需确保它们从小到大排列
 // PLACE, CONTENT, ATTR,
 export const effectNames = [  DUPLEX, HOOK,
-    REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
+    REF, DETACH, CALLBACK, PASSIVE,CAPTURE].sort(function (a, b) {
     return a - b;
 });
 export const effectLength = effectNames.length;

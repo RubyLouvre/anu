@@ -1,12 +1,14 @@
-const generate = require('babel-generator').default;
-const t = require('babel-types');
+/* eslint no-console: 0 */
+const t = require('@babel/types');
 const wxmlHelper = require('./wxml');
-const babel = require('babel-core');
-const queue = require('../queue');
+const babel = require('@babel/core');
 const path = require('path');
+const generate = require('@babel/generator').default;
+const quickFiles = require('./quickFiles');
+const config = require('../../config/config');
 const utils = require('../utils');
-const templateExt = '.ux';
 
+var wrapperPath = path.join(process.cwd(), config.sourceDir, 'components', 'PageWrapper', 'index.ux');
 /**
  * 将return后面的内容进行转换，再变成wxml
  *
@@ -14,34 +16,34 @@ const templateExt = '.ux';
  * @param {String} type 有状态组件｜无状态组件
  * @param {String} componentName 组件名
  */
-const deps = [];
-exports.exit = function(astPath, type, componentName, modules) {
+
+exports.exit = function (astPath, type, componentName, modules) {
     const body = astPath.node.body.body;
     let expr;
 
     if (!body.length) return;
-    for (let i  = 0, n = body.length; i < n; i++){
+    for (let i = 0, n = body.length; i < n; i++) {
         expr = body[i];
-        if (t.isReturnStatement(expr)){
+        if (t.isReturnStatement(expr)) {
             break;
         }
     }
-
-    //  const expr = body[0];
-    //  console.log(body);
 
     switch (true) {
         case t.isReturnStatement(expr):
             var needWrap = expr.argument.type !== 'JSXElement';
             var jsx = generate(expr.argument).code;
+            /**
+             * [babel 6 to 7]
+             * babel -> Options
+             * babel7 default ast:false
+             */
             var jsxAst = babel.transform(jsx, {
+                configFile: false,
+                comments: false,
                 babelrc: false,
-                plugins: [
-                    [
-                        'transform-react-jsx',
-                        { pragma: 'h' }
-                    ]
-                ]
+                plugins: [[require('@babel/plugin-transform-react-jsx'), { pragma: 'h' }]],
+                ast: true
             });
 
             expr.argument = jsxAst.ast.program.body[0];
@@ -55,63 +57,52 @@ exports.exit = function(astPath, type, componentName, modules) {
                 wxml = wxml.slice(0, -1); //去掉最后的;
             }
 
-            if (modules.componentType === 'Component') {
-                wxml = `<template name="${componentName}">${wxml}</template>`;
-                deps[componentName] = deps[componentName] || {
-                    set: new Set()
-                };
-            }
-
             //如果这个JSX的主体是一个组件，那么它肯定在deps里面
-            var dep = deps[componentName];
             //添加import语句产生的显式依赖
-            for (var i in modules.importComponents) {
+            for (let i in modules.importComponents) {
                 if (modules.usedComponents[i]) {
-                    wxml = `<import src="${
-                        modules.importComponents[i]
-                    }.axml" />\n${wxml}`;
+                    wxml = `<import src="${ modules.importComponents[i]}.ux" />\n${wxml}`;
                 }
             }
-            var enqueueData = {
-                type: 'wxml',
-                path: modules.sourcePath
-                    .replace(/\/src\//, '/dist/')
-                    .replace(/\.js$/, templateExt),
-                code: wxml //prettifyXml(wxml, { indent: 2 })
-            };
-            //添加组件标签包含其他标签时（如<Dialog><p>xxx</p></Dialog>）产生的隐式依赖
-            if (dep && !dep.addImportTag) {
-                dep.data = enqueueData; //表明它已经放入列队，不要重复添加
-                dep.addImportTag = addImportTag;
-                dep.dirPath = path.dirname(modules.sourcePath);
-                dep.set.forEach(function(fragmentUid) {
-                    dep.set.delete(fragmentUid);
-                    dep.addImportTag(fragmentUid);
-                });
+            var quickFile = quickFiles[utils.fixWinPath(modules.sourcePath)];
+            if (quickFile) {
+                if (modules.componentType === 'Page') {
+                    let pageWraperPath = path.relative(path.dirname(modules.sourcePath), wrapperPath);
+                    if (utils.isWin()) {
+                        pageWraperPath = utils.fixWinPath(pageWraperPath);
+                    }
+                    quickFile.template = `
+<import name="anu-page-wrapper" src="${pageWraperPath}"></import>
+<template>
+   <anu-page-wrapper>
+     ${wxml}
+   </anu-page-wrapper>
+</template>`;
+                    if (config.huawei) {
+                        quickFile.template = `
+<import name="anu-page-wrapper" src="${pageWraperPath}"></import>
+<template>
+   <div>
+   <anu-page-wrapper>
+     ${wxml}
+   </anu-page-wrapper>
+   </div>
+</template>`;
+                    }
+                } else {
+                    quickFile.template = `
+<template>
+${wxml}
+</template>`;
+                }
             }
-            queue.push(enqueueData);
-            utils.emit('build');
             break;
         default:
             break;
     }
 };
 
-function addImportTag(fragmentUid) {
-    var src = path.relative(
-        this.dirPath,
-        path.join(
-            process.cwd(),
-            'src',
-            'components',
-            'Fragments',
-            fragmentUid + templateExt
-        )
-    );
-    src = process.platform === 'win32' ? src.replace(/\\/g, '/') : src;
-    var wxml = `<import src="${src}" />\n${this.data.code}`;
-    return (this.data.code = wxml);
-}
+
 function transformIfStatementToConditionalExpression(node) {
     const { test, consequent, alternate } = node;
     return t.conditionalExpression(
@@ -145,7 +136,7 @@ function transformAlternate(node) {
     return transformNonNullConsequentOrAlternate(node);
 }
 
-exports.enter = function(astPath) {
+exports.enter = function (astPath) {
     if (astPath.node.key.name === 'render') {
         astPath.traverse({
             IfStatement: {

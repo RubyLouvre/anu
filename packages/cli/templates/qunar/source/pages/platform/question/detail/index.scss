@@ -1,0 +1,188 @@
+page{
+    background-color: #fff;
+}
+
+.detail-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    .question-detail{
+        padding: 20rpx 0rpx;
+        border-bottom: 10rpx solid rgb(240, 240, 240);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        width: 100%;
+        .title {
+            font-size: 30rpx;
+            font-weight: 700;
+            letter-spacing: 1rpx;
+            color: #000;
+            margin-left: 30rpx;
+            margin-right: 30rpx;
+        }
+        .city {
+            display: inline-block;
+            margin-left: 30rpx;
+            margin-bottom: 20rpx;
+            margin-top: 20rpx;
+            padding: 2rpx 10rpx;
+            line-height: 30rpx;
+            border-radius: 18rpx;
+            border: 1px solid rgb(211, 210, 210);
+            font-size: 22rpx;
+            color: rgb(105, 105, 105);
+        }
+        .other-infortion {
+            align-self: stretch;
+            margin-left: 30rpx;
+            margin-right: 30rpx;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0;
+            .image {
+                vertical-align: top;
+                display: inline-block;
+                margin-right: 15rpx;
+                width: 40rpx;
+                height: 40rpx;
+                border-radius: 20rpx;
+            }
+            .userName {
+                display: inline-block;
+                margin-right: 15rpx;
+                line-height: 40rpx;
+                font-size: 22rpx;
+                color: rgb(105, 105, 105);
+            }
+            .post-date {
+                display: inline-block;
+                line-height: 40rpx;
+                font-size: 22rpx;
+                color: rgb(180, 179, 179);
+            }
+            .eye-wrapper {
+                font-size: 0;
+                .image {
+                    vertical-align: top;
+                    display: inline-block;
+                    margin-right: 10rpx;
+                    width: 32rpx;
+                    height: 32rpx;
+                    
+                }
+                .eye-num {
+                    display: inline-block;
+                    line-height: 32rpx;
+                    font-size: 22rpx;
+                    color: rgb(180, 179, 179);
+                }
+            }
+        }
+    }
+    .question-prompt {
+        align-self: stretch;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 30rpx;
+        padding-top: 5px;
+        margin-bottom: 37rpx;
+        font-size: 23rpx;
+        color: rgb(180, 179, 179);
+        &>.text {
+            float: left;
+            &::before{
+                visibility: hidden;
+                content: '';
+                clear: both;
+
+            }
+        }
+        .sort-wrapper {
+            float: right;
+            &::after{
+                visibility: hidden;
+                content: '';
+                clear: both;
+
+            }
+            color: rgb(105, 105, 105);
+            .image {
+                vertical-align: top;
+                display: inline-block;
+                margin-right: 7rpx;
+                width: 32rpx;
+                height: 32rpx;
+            }
+            .text {
+                line-height: 32rpx;
+            }
+        }
+    }
+    .answer-wrapper {
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-content: flex-start;
+        padding: 20rpx 30rpx;
+        border-top: 1px solid rgb(240, 240, 240);
+        .user-wrapper {
+            margin-bottom: 20rpx;
+            .image {
+                vertical-align: top;
+                margin-right: 20rpx;
+                display: inline-block;
+                width: 80rpx;
+                height: 80rpx;
+                border-radius: 40rpx;
+            }
+            .name-time{
+                display: inline-block;
+                .text-name {
+                    display: block;
+                    line-height: 50rpx;
+                    font-size: 25rpx;
+                    color: rgb(105, 105, 105);
+                }
+                .time{
+                    display: block;
+                    line-height: 30rpx;
+                    font-size: 22rpx;
+                    color: rgb(180, 179, 179);
+                }
+            }
+
+        }
+        .answer-desc {
+            font-size: 25rpx;
+            color: #000;
+            margin-bottom: 20rpx;
+        }
+        .agree-with-wrapper {
+            align-self: flex-end;
+            padding: 0 12rpx;
+            padding-top: 5rpx;
+            border-radius: 25rpx;
+            font-size: 0;
+            border: 1rpx solid  rgb(211, 210, 210);
+            .image {
+                vertical-align: top;
+                display: inline-block;
+                margin-right: 7rpx;
+                width: 28rpx;
+                height: 28rpx;
+            }
+            .text {
+                font-size: 24rpx;
+                color: rgb(180, 179, 179);
+            }
+        }
+    }
+}

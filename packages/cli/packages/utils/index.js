@@ -1,24 +1,26 @@
 /* eslint no-console: 0 */
-
+/* eslint-disable*/
 const execSync = require('child_process').execSync;
-const t = require('babel-types');
-const fs = require('fs-extra');
+const t = require('@babel/types');
 const path = require('path');
 const cwd = process.cwd();
 const chalk = require('chalk');
 const spawn = require('cross-spawn');
 const nodeResolve = require('resolve');
-const config = require('../config');
-const template = require('babel-template');
-const axios = require('axios');
+const template = require('@babel/template').default;
 const ora = require('ora');
 const EventEmitter = require('events').EventEmitter;
+const config = require('../../config/config');
+const isWindow = require('./isWindow');
+const isNpm = require('./isNpmModule');
+const toUpperCamel = require('./toUpperCamel');
 const Event = new EventEmitter();
-process.on('unhandledRejection', error => {
-    // eslint-disable-next-line
-    console.error('unhandledRejection', error);
-    process.exit(1); // To exit with a 'failure' code
-});
+const pkg = require(path.join(cwd, 'package.json'));
+const userConfig = pkg.nanachi || pkg.mpreact || {};
+const mergeWith = require('lodash.mergewith');
+const crypto = require('crypto');
+const cachedUsingComponents = {}
+// 这里只处理多个平台会用的方法， 只处理某一个平台放到各自的helpers中
 let utils = {
     on() {
         Event.on.apply(global, arguments);
@@ -26,99 +28,124 @@ let utils = {
     emit() {
         Event.emit.apply(global, arguments);
     },
-    createChineseHack: require('./chinese'),
-    getNodeVersion() {
-        return Number(process.version.match(/v(\d+)/)[1]);
-    },
-    spinner(text) {
+    spinner(text) { //在控制台显示进度条
         return ora(text);
     },
-    getStyleValue: require('./getStyleValue'),
+    getStyleValue: require('./calculateStyleString'),
     useYarn() {
         if (config['useYarn'] != undefined) {
             return config['useYarn'];
         }
         try {
-            execSync('yarn --version', { stdio: 'ignore' });
+            execSync('yarn --version', {
+                stdio: 'ignore'
+            });
             config['useYarn'] = true;
         } catch (e) {
             config['useYarn'] = false;
         }
         return config['useYarn'];
     },
-    useCnpm() {
-        if (config['useCnpm'] != undefined) {
-            return config['useCnpm'];
-        }
-        try {
-            execSync('cnpm -v', { stdio: 'ignore' });
-            config['useCnpm'] = true;
-        } catch (e) {
-            config['useCnpm'] = false;
-        }
-        return config['useCnpm'];
-    },
     shortcutOfCreateElement() {
         return 'var h = React.createElement;';
     },
+    //传入path.node, 得到标签名
+    getNodeName(node) {
+        var openTag = node.openingElement
+        return openTag && Object(openTag.name).name
+    },
     getEventName(eventName, nodeName, buildType) {
         if (eventName == 'Click' || eventName == 'Tap') {
-            if (
-                buildType === 'ali' ||
-                buildType === 'wx' ||
-                buildType === 'bu'
-            ) {
-                return 'Tap';
-            } else {
+            //如果是点击事件，PC端与快应用 使用quick
+            if (buildType === 'quick' || buildType === 'h5') {
                 return 'Click';
+            } else {
+                return 'Tap';
             }
         }
-        if (nodeName == 'input' && eventName == 'Change') {
-            if (buildType === 'ali') {
-                return 'Input';
-            } else if (buildType === 'wx') {
-                return 'Change';
+        if (buildType === 'quick' && nodeName === 'list') {
+            if (eventName === 'ScrollToLower') {
+                return 'ScrollBottom' //快应用的list标签的事件
+            } else if (eventName === 'ScrollToUpper') {
+                return 'ScrollTop'
+            }
+        }
+
+        if (eventName === 'Change') {
+            if (nodeName === 'input' || nodeName === 'textarea') {
+                if (buildType !== 'quick') {
+                    return 'Input';
+                }
             }
         }
         return eventName;
     },
-
     createElement(nodeName, attrs, children) {
         return t.JSXElement(
-            t.JSXOpeningElement(t.JSXIdentifier(nodeName), attrs, false),
-            t.jSXClosingElement(t.JSXIdentifier(nodeName)),
+            t.JSXOpeningElement(
+                // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+                t.jsxIdentifier(nodeName),
+                attrs,
+                config.buildType === 'quick' ? false : !children.length
+            ),
+            // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+            t.jSXClosingElement(t.jsxIdentifier(nodeName)),
             children
         );
     },
+    createNodeName(map, backup) {
+        //这用于wxHelpers/nodeName.js, quickHelpers/nodeName.js
+        return (astPath, modules) => {
+            // 在回调函数中取patchNode，在外层取会比babel插件逻辑先执行，导致一直为{}
+            const pagesNeedPatchComponents = config[config.buildType].patchPages || {};
+           
+            var orig = astPath.node.name.name;
+            //组件名肯定大写开头
+            if (/^[A-Z]/.test(orig)) {
+                return orig;
+            }
+            var pagePath = modules.sourcePath;
+            var currentPage = pagesNeedPatchComponents[pagePath];
+            
+            //schnee-ui补丁
+            if (currentPage && currentPage[orig]) {
+                var patchName = toUpperCamel( 'x-' + orig );
+                return patchName;
+            }
+            return (astPath.node.name.name = map[orig] || backup);
+        }
+    },
     createAttribute(name, value) {
         return t.JSXAttribute(
-            t.JSXIdentifier(name),
+            // [babel 6 to 7] The case has been changed: jsx and ts are now in lowercase.
+            t.jsxIdentifier(name),
             typeof value == 'object' ? value : t.stringLiteral(value)
         );
     },
-    isRenderProps(attrValue) {
-        if (
-            attrValue.expression &&
-            attrValue.type == 'JSXExpressionContainer'
-        ) {
-            var type = attrValue.expression.type;
-            return (
-                type == 'FunctionExpression' ||
-                type === 'ArrowFunctionExpression'
-            );
-        }
-        return false;
-    },
-    
     createUUID(astPath) {
         return astPath.node.start + astPath.node.end;
     },
+    createDynamicAttributeValue(prefix, astPath, indexes) {
+        var start = astPath.node.loc.start;
+        var name = prefix + start.line + '_' + start.column;
+        if (Array.isArray(indexes) && indexes.length) {
+            var more = indexes.join("+'-'+");
+            return t.jSXExpressionContainer(t.identifier(`'${name}_'+${more}`));
+        } else {
+            return name;
+        }
+    },
     genKey(key) {
         key = key + '';
-        if (/\{\{/.test(key)) {
-            key = key.slice(2, -2);
+        let keyPathAry = key.split('.')
+        if( keyPathAry.length > 2) {
+            // item.a.b =>  "{{a.b}}"
+            key = '{{' + keyPathAry.slice(1).join('.') + '}}';
+        } else {
+            // item.a => "a"
+            key = keyPathAry.slice(1).join('')
         }
-        return key.indexOf('.') > 0 ? key.split('.').pop() : '{{index}}';
+        return keyPathAry.length > 1 ? key : '*this';
     },
     getAnu(state) {
         return state.file.opts.anu;
@@ -126,13 +153,11 @@ let utils = {
     isLoopMap(astPath) {
         if (
             t.isJSXExpressionContainer(astPath.parentPath) ||
-            t.isConditionalExpression(astPath.parentPath)
+            t.isConditionalExpression(astPath.parentPath) ||
+            t.isLogicalExpression(astPath.parentPath)
         ) {
             var callee = astPath.node.callee;
-            return (
-                callee.type == 'MemberExpression' &&
-                callee.property.name === 'map'
-            );
+            return callee.type == 'MemberExpression' && callee.property.name === 'map';
         }
     },
     createMethod(path, methodName) {
@@ -156,250 +181,164 @@ let utils = {
             return template(`module.exports["${name}"] = ${name};`)();
         }
     },
-    copyCustomComponents(config, modules) {
-        Object.keys(config).forEach(componentName => {
-            //对usingComponents直接copy目录
-            let componentDir = path.dirname(config[componentName]);
-            let src = path.join(cwd, 'src', componentDir);
-            let dest = path.join(cwd, 'dist', componentDir);
-            let list = modules.customComponents;
-            fs.ensureDirSync(dest);
-            fs.copySync(src, dest);
-            if (!list.includes(componentName)) list.push(componentName);
-        });
-    },
-    isNpm(name) {
-        if (!name || typeof name !== 'string') return false;
-        return !/^\/|\./.test(name);
-    },
+
+    isNpm: isNpm,
     createRegisterStatement(className, path, isPage) {
-        var templateString = isPage
-            ? 'Page(React.toPage(className,astPath))'
-            : 'Number(className,astPath)';
+        /**
+         * placeholderPattern
+         * Type: RegExp | false Default: /^[_$A-Z0-9]+$/
+         * 
+         * A pattern to search for when looking for Identifier and StringLiteral nodes
+         * that should be considered placeholders. 'false' will disable placeholder searching
+         * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
+         */
+        var templateString = isPage ?
+            'Page(React.registerPage(CLASSNAME,ASTPATH))' :
+            'Component(React.registerComponent(CLASSNAME,ASTPATH))';
         return template(templateString)({
-            className: t.identifier(className),
-            astPath: t.stringLiteral(path)
+            CLASSNAME: t.identifier(className),
+            ASTPATH: t.stringLiteral(path)
         });
     },
-    isBuildInLibs(name) {
-        let libs = new Set(require('repl')._builtinLibs);
-        if (libs.has(name)){
-            //如果是内置模块，先查找本地node_modules是否有对应重名模块
-            let isLocalBuildInLib = /\/node_modules\//.test(nodeResolve.sync(name, {basedir: cwd}));
-            if (isLocalBuildInLib){
-                return false;
-            } else {
-                return true;
-            }
-        }
-    },
-    installer(npmName) {
+    installer(npmName, dev, needModuleEntryPath) {
+        needModuleEntryPath = needModuleEntryPath || false;
         return new Promise(resolve => {
-            console.log(
-                chalk.red(`缺少依赖: ${npmName}, 正在自动安装中, 请稍候`)
-            );
             let bin = '';
             let options = [];
             if (this.useYarn()) {
                 bin = 'yarn';
-                options.push('add', npmName, '--save');
-            } else if (this.useCnpm()) {
-                bin = 'cnpm';
-                options.push('install', npmName, '--save');
+                options.push('add', npmName, dev === 'dev' ? '--dev' : '--save');
             } else {
                 bin = 'npm';
-                options.push('install', npmName, '--save');
+                options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
             }
 
-            let result = spawn.sync(bin, options, { stdio: 'inherit' });
+            let result = spawn.sync(bin, options, {
+                stdio: 'inherit'
+            });
             if (result.error) {
                 console.log(result.error);
                 process.exit(1);
             }
-            console.log(chalk.green(`${npmName}安装成功\n`));
 
-            //获得自动安装的npm依赖模块路径
-            let npmPath = nodeResolve.sync(npmName, {
-                basedir: cwd,
-                moduleDirectory: path.join(cwd, 'node_modules'),
-                packageFilter: pkg => {
-                    if (pkg.module) {
-                        pkg.main = pkg.module;
+            let npmPath = '';
+            npmName = npmName.split('@')[0];
+            if (needModuleEntryPath) {
+                //获得自动安装的npm依赖模块路径
+                npmPath = nodeResolve.sync(npmName, {
+                    basedir: cwd,
+                    moduleDirectory: path.join(cwd, 'node_modules'),
+                    packageFilter: pkg => {
+                        if (pkg.module) {
+                            pkg.main = pkg.module;
+                        }
+                        return pkg;
                     }
-                    return pkg;
-                }
-            });
+                });
+            }
+
             resolve(npmPath);
         });
     },
-    installDeps(missModules) {
-        /**
-         * installMap: { npmName: importerPath }
-         */
-        return Promise.all(
-            missModules.map(async item => {
-                let npmPath = await this.installer(item.resolveName);
-                return {
-                    id: npmPath, //缺失npm模块绝对路径
-                    npmName: item.resolveName, //缺失模块名
-                    importerPath: item.id, //依赖该缺失模块的文件路径
-                    originalCode: fs.readFileSync(npmPath).toString()
-                };
-            })
-        );
+    getDistName(buildType) {
+        return buildType === 'quick' ? 'src' : (userConfig && userConfig.buildDir || 'dist');
     },
-    async getReactLibPath() {
-        let reactPath = '';
-        let React = this.getReactLibName();
-        let srcPath = path.join(cwd, 'src', React);
+    getDeps(messages = []) {
+        return messages.filter((item) => {
+            return item.plugin === 'postcss-import' && item.type === 'dependency';
+        });
+    },
+    getComponentOrAppOrPageReg() {
+        return new RegExp(this.sepForRegex + '(?:pages|app|components)');
+    },
+    hasNpm(npmName) {
+        let flag = false;
         try {
-            reactPath = nodeResolve.sync(srcPath, {
-                basedir: cwd,
-                moduleDirectory: path.join(cwd, 'src')
+            nodeResolve.sync(
+                npmName, {
+                    moduleDirectory: path.join(cwd, 'node_modules'),
+                }
+            );
+            flag = true;
+        } catch (err) {
+            // eslint-disable-next-line
+        }
+        return flag;
+    },
+    decodeChinise: require('./decodeChinese'),
+    isWebView(fileId) {
+        
+        if (config.buildType != 'quick') {
+            return false;
+        }
+
+        let rules = config.WebViewRules && config.WebViewRules.pages || [];
+        
+        if ( !rules.length ) {
+            return false;
+        }
+       
+       
+        let isWebView =
+        rules.includes(fileId) ||
+        rules.some((rule) => {
+                //如果是webview设置成true, 则用增则匹配
+                return Object.prototype.toString.call(rule) === '[object RegExp]' && rule.test(fileId);
             });
-        } catch (err) {
-            let spinner = this.spinner(`正在下载最新的${React}`);
-            spinner.start();
-            let remoteUrl = `https://raw.githubusercontent.com/RubyLouvre/anu/master/dist/${React}`;
-            let ReactLib = await axios.get(remoteUrl);
-            fs.ensureFileSync(srcPath);
-            fs.writeFileSync(srcPath, ReactLib.data);
-            spinner.succeed(`下载${React}成功`);
-            reactPath = path.join(cwd, 'src', React);
+       
+        return isWebView;
+
+    },
+    parseCamel: toUpperCamel,//转换为大驼峰风格
+    uniquefilter(arr, key = '') {
+        const map = {};
+        return arr.filter(item => {
+            if (!item[key]) {
+                return true;
+            }
+            if (!map[item[key]]) {
+                map[item[key]] = 1;
+                return true;
+            }
+            return false;
+        });
+    },
+    isWin: function(){
+        return isWindow
+    },
+    sepForRegex: isWindow ? `\\${path.win32.sep}` : path.sep,
+    fixWinPath(p) {
+        return p.replace(/\\/g, '/');
+    },
+    isMportalEnv() {
+        return ['prod', 'rc', 'beta'].includes((process.env.NODE_ENV && process.env.NODE_ENV.toLowerCase()))
+    },
+    cleanLog(log) {
+        // 清理eslint stylelint错误日志内容
+        const reg = /[\s\S]*Module (Error|Warning)\s*\(.*?(es|style)lint.*?\):\n+/gm;
+        if (reg.test(log)) {
+            return log.replace(/^\s*@[\s\S]*$/gm, '').replace(reg, '');
         }
-        return reactPath;
+        return log;
     },
-
-    async asyncReact() {
-        await this.getReactLibPath();
-
-        let ReactLibName = this.getReactLibName();
-        let map = this.getReactMap();
-        Object.keys(map).forEach(key => {
-            let ReactName = map[key];
-            if (ReactName != ReactLibName) {
-                fs.remove(path.join(cwd, 'src', ReactName), err => {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-                fs.remove(path.join(cwd, 'dist', ReactName), err => {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-            }
+    validatePlatform(platform, platforms) {
+        return platforms.some((p) => {
+            return p.buildType === platform;
         });
     },
-    getReactMap() {
-        return {
-            wx: 'ReactWX.js',
-            ali: 'ReactAli.js',
-            bu: 'ReactBu.js'
-        };
+    customizer(objValue, srcValue) {
+      if (Array.isArray(objValue)) {
+        return objValue.concat(srcValue);
+      }
     },
-    getReactLibName() {
-        let buildType = config.buildType;
-        return this.getReactMap()[buildType];
+    deepMerge(...args) {
+        return mergeWith(...args, this.customizer);
     },
-    getCustomAliasConfig() {
-        let React = this.getReactLibName();
-        let defaultAlias = {
-            '@react': path.resolve(cwd, `src/${React}`),
-            react: path.resolve(cwd, `src/${React}`),
-            '@components': path.resolve(cwd, 'src/components')
-        };
-        return defaultAlias;
-    },
-    resolveNpmAliasPath(id, depFile) {
-        let distJs = id.replace(/\/src\//, '/dist/');
-        let distNpm = depFile.replace(/\/node_modules\//, '/dist/npm/');
-
-        //根据被依赖文件和依赖文件，求相对路径
-        let aliasPath = path.relative(path.dirname(distJs), distNpm);
-
-        return aliasPath;
-    },
-    resolveCustomAliasPath(file, depFile) {
-        let aliasPath = path.relative(path.dirname(file), depFile);
-        return aliasPath;
-    },
-    resolveComponentStyle(styleFiles) {
-        let result = [];
-        let componentsStyle = [];
-        let appStyleId = ''; //app全局样式只有一个
-        styleFiles.forEach(item => {
-            let { id, originalCode } = item;
-            if (/components/.test(id)) {
-                id = path.relative(path.join(cwd, 'src'), id);
-                if (/^\w/.test(id)) {
-                    id = `./${id}`;
-                }
-                let importKey = `@import '${id}';`;
-                if (!componentsStyle.includes(importKey)) {
-                    componentsStyle.push(importKey);
-                }
-            } else if (/app/.test(id)) {
-                appStyleId = id;
-            } else {
-                result.push({
-                    id: item.id,
-                    originalCode: originalCode
-                });
-            }
-        });
-
-        let appStyleContent = '';
-        try {
-            appStyleContent = fs.readFileSync(appStyleId);
-        } catch (err) {
-            console.log(chalk.red('需配置全局app样式, 请检查...'));
-            process.exit(1);
-        }
-
-        appStyleContent = componentsStyle.join('\n') + '\n' + appStyleContent;
-        result.push({
-            id: appStyleId,
-            originalCode: appStyleContent
-        });
-
-        return result;
-    },
-    updateNpmAlias(id, deps) {
-        //依赖的npm模块也当alias处理
-        let result = {};
-        Object.keys(deps).forEach(depKey => {
-            if (
-                !this.isBuildInLibs(depKey) &&
-                this.isNpm(depKey) &&
-                !/^(@react|@components)/.test(depKey)
-            ) {
-                result[depKey] = this.resolveNpmAliasPath(id, deps[depKey]);
-            }
-        });
-        return result;
-    },
-    updateCustomAlias(id, deps) {
-        //自定义alias是以@react和@components开头
-        let customAliasReg = /^(@react|@components)/;
-        let result = {};
-        Object.keys(deps).forEach(depKey => {
-            if (customAliasReg.test(depKey)) {
-                result[depKey] = this.resolveCustomAliasPath(id, deps[depKey]);
-            }
-        });
-        return result;
-    },
-    shortNameAlias: {
-        h: {
-            variableDeclarator: 'h',
-            init: 'var h = React.createElement;'
-        }
-    },
-    getComponentOrAppOrPageReg(){
-        return new RegExp( this.sepForRegex  + '(?:pages|app|components)'  );
-    },
-    sepForRegex: process.platform === 'win32' ? `\\${path.win32.sep}` : path.sep
+    getStyleNamespace(dirname) {
+        const s = crypto.createHash('md5');
+        s.update(dirname);
+        return `anu-style-${s.digest('hex').substr(0, 6)}`;
+    }
 };
 
-module.exports = Object.assign(module.exports, utils);
+module.exports = utils;

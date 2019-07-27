@@ -1,0 +1,5 @@
+<view>
+        <block a:for="{{state.array}}" a:for-item="item" a:for-index="index" a:key="*this">
+          <view>{{item.item}}</view>
+        </block>
+      </view>

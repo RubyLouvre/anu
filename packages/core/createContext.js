@@ -1,136 +1,81 @@
-import { miniCreateClass, isFn, noop } from './util';
+import { miniCreateClass, isFn, get } from './util';
 import { Component } from './Component';
-import { PropTypes } from './PropTypes';
+import { Renderer } from './createRenderer';
 
-let uuid = 1;
-
-function gud() {
-    return uuid++;
-}
 
 const MAX_NUMBER = 1073741823;
-
-function createEventEmitter(value) {
-    let handlers = [];
-    return {
-        on(handler) {
-            handlers.push(handler);
-        },
-
-        off(handler) {
-            handlers = handlers.filter(h => h !== handler);
-        },
-
-        get() {
-            return value;
-        },
-
-        set(newValue, changedBits) {
-            value = newValue;
-            handlers.forEach(handler => handler(value, changedBits));
-        },
-    };
-}
-
 export function createContext(defaultValue, calculateChangedBits) {
-    const contextProp = '__create-react-context-' + gud() + '__';
-
-    function create(obj, value) {
-        obj[contextProp] = value;
-        return obj;
+    if (calculateChangedBits == void 0) {
+        calculateChangedBits = null;
     }
-    const backup = {
-        get() {
-            return defaultValue;
-        },
-        on: noop,
-        off: noop,
+    var instance = {
+        value: defaultValue,
+        subscribers: []
     };
-    let Provider = miniCreateClass(
-        function Provider(props) {
-            this.emitter = createEventEmitter(props.value);
+    var Provider = miniCreateClass(function Provider(props) {
+        this.value = props.value;
+        getContext.subscribers = this.subscribers = [];
+        instance = this;
+    }, Component, {
+        componentWillUnmount: function componentWillUnmount() {
+            this.subscribers.length = 0;
         },
-        Component,
-        {
-            getChildContext() {
-                return create({}, this.emitter);
-            },
-            UNSAFE_componentWillReceiveProps(nextProps) {
-                if (this.props.value !== nextProps.value) {
-                    let oldValue = this.props.value;
-                    let newValue = nextProps.value;
-                    let changedBits;
-                    if (Object.is(oldValue, newValue)) {
-                        changedBits = 0; // No change
-                    } else {
-                        changedBits = isFn(calculateChangedBits)
-                            ? calculateChangedBits(oldValue, newValue)
-                            : MAX_NUMBER;
+        UNSAFE_componentWillReceiveProps: function UNSAFE_componentWillReceiveProps(nextProps) {
+            if (this.props.value !== nextProps.value) {
+                var oldValue = this.props.value;
+                var newValue = nextProps.value;
+                var changedBits = void 0;
+                if (Object.is(oldValue, newValue)) {
+                    changedBits = 0;
+                } else {
+                    this.value = newValue;
+                    changedBits = isFn(calculateChangedBits) ? calculateChangedBits(oldValue, newValue) : MAX_NUMBER;
+                    changedBits |= 0;
+                    if (changedBits !== 0) {
+                        instance.subscribers.forEach(function (fiber) {
+                            if (fiber.setState){
+                                fiber.setState( {value: newValue} );
+                                fiber = get(fiber);
+                            }
+                            Renderer.updateComponent(fiber, true);
 
-                        changedBits |= 0;
-
-                        if (changedBits !== 0) {
-                            this.emitter.set(nextProps.value, changedBits);
-                        }
+                        });
                     }
                 }
-            },
-            render() {
-                return this.props.children;
-            },
+            }
         },
-        {
-            childContextTypes: create({}, PropTypes.object.isRequired),
+        render: function render() {
+            return this.props.children;
         }
-    );
-
-    function connect(instance) {
-        return instance.context[contextProp] || backup;
+    });
+    var Consumer = miniCreateClass(function Consumer() {
+        instance.subscribers.push(this);
+        this.observedBits = 0;
+        this.state = {
+            value: instance.value
+        };
+    }, Component, {
+        componentWillUnmount: function componentWillUnmount() {
+            var i = instance.subscribers.indexOf(this);
+            instance.subscribers.splice(i, 1);
+        },
+        render: function render() {
+            return this.props.children(getContext(get(this)));
+        }
+    });
+    function getContext(fiber){
+        while (fiber.return){
+            if (fiber.type == Provider){
+                return instance.value;
+            }
+            fiber = fiber.return;
+        }
+        return defaultValue;
     }
-    let Consumer = miniCreateClass(
-        function Consumer() {
-            this.observedBits = 0;
-            this.state = {
-                value: this.getValue(),
-            };
-            this.onUpdate = (newValue, changedBits) => {
-                const observedBits = this.observedBits | 0;
-                if ((observedBits & changedBits) !== 0) {
-                    this.setState({
-                        value: this.getValue(),
-                    });
-                }
-            };
-        },
-        Component,
-        {
-            UNSAFE_componentWillReceiveProps(nextProps) {
-                let { observedBits } = nextProps;
-                this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
-            },
-            getValue() {
-                return connect(this).get();
-            },
-            componentDidMount() {
-                connect(this).on(this.onUpdate);
-                let { observedBits } = this.props;
-                // Subscribe to all changes by default
-                this.observedBits = observedBits == null ? MAX_NUMBER : observedBits;
-            },
-            componentWillUnmount() {
-                connect(this).off(this.onUpdate);
-            },
-            render() {
-                return this.props.children(this.state.value);
-            },
-        },
-        {
-            contextTypes: create({}, PropTypes.object),
-        }
-    );
-
-    return {
-        Provider,
-        Consumer,
-    };
+    getContext.subscribers = [];
+    getContext.Provider = Provider;
+    getContext.Consumer = Consumer;
+    return getContext;
 }
+
+

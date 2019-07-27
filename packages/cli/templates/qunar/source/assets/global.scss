@@ -1,0 +1,48 @@
+.anu-line {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.anu-block {
+    display:flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.anu-item {
+    padding: 10px 20px;
+    background-color: #eee;
+    margin: 2px 0px;
+    display: flex;
+    flex-direction: column;
+
+    // text {
+    //   display: flex;
+    //   flex-direction: row;
+    //   justify-content: center;
+    // }
+}
+.anu-black-title{
+    color: black;
+    font-weight: 700;
+    font-size: 24px;
+ }
+
+.anu-center {
+    align-items: center;
+}
+
+.anu-page-header {
+    // display: flex;
+    // justify-content: center;
+    text-align: center;
+    padding: 10rpx;
+    font-size: 34rpx;
+    font-weight: bold;
+}
+
+.column-layout {
+    display: flex;
+    flex-direction: column;
+}

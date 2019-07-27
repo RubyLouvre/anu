@@ -1,0 +1,120 @@
+.col {
+  display:flex;
+  flex-direction: column;
+}
+
+page {
+  background-color: #3399ff
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.font-38 {
+  font-size: 38rpx;
+}
+
+.font-22 {
+  font-size: 22rpx;
+}
+.boat {
+  align-self: flex-start;
+  width: 100%;
+  margin-top: 180rpx;
+  .boat-content {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    padding: 30rpx 25rpx;
+    padding-bottom: 50rpx;
+    margin: 0 20rpx;
+    border-radius: 20rpx;
+    .city-select-container {
+      // position: relative;
+      margin-bottom: 40rpx;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items:center;
+      .dot {
+        display: inline-block;
+        width: 12rpx;
+        height: 12rpx;
+        border-radius: 6rpx;
+        margin-right: 8rpx;
+      }
+      .orgin-city-wrapper {
+        width: 250rpx;
+        font-size: 38rpx;
+        border-bottom-style: solid;
+        border-bottom-color: rgb(189, 188, 188);
+        border-bottom-width: 1px;
+
+        padding-bottom: 10rpx;
+        .tip-wrapper {
+          .dot {
+            background-color: rgb(68, 248, 122);
+          }
+          font-size: 22rpx;
+          color: rgb(182, 182, 182);
+        }
+      }
+      .target-city-wrapper {
+        width: 250rpx;
+        font-size: 38rpx;
+        border-bottom-style: solid;
+        border-bottom-color: rgb(189, 188, 188);
+        border-bottom-width: 1px;
+        align-items: flex-end;
+        padding-bottom: 10rpx;
+        .tip-wrapper {
+          .dot {
+            background-color: rgb(228, 93, 93);
+          }
+          font-size: 22rpx;
+          color: rgb(182, 182, 182);
+        }
+      }
+      .switch-logo {
+        width: 70rpx;
+        height: 70rpx;
+        border-radius: 36rpx;
+        border: 1px solid #000;
+        .image {
+          // transform: translate(-50%, -50%);
+          // transform: translate(-35rpx, -35rpx);
+          width: 46rpx;
+          height: 32rpx;
+          // margin: 35rpx 0 0 35rpx;
+          margin-top: 18rpx;
+          margin-left: 10rpx;
+        }
+      }
+    }
+    .date-select-container {
+      margin-bottom: 40rpx;
+      .title {
+        font-size: 24rpx;
+        color: rgb(182, 182, 182);
+      }
+      .date {
+        font-size: 38rpx;
+      }
+    }
+    .search-btn {
+      width: 100%;
+      border-radius: 37rpx;
+      line-height: 74rpx;
+      text-align: center;
+      background-color: rgb(243, 142, 60);
+      color: #fff;
+      width: 100%;
+      font-size: 38rpx;
+      
+    }
+  }
+}

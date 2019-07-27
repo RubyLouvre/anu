@@ -1,7 +1,7 @@
-import { document, modern, contains } from "./browser";
-import { isFn, noop, toLowerCase } from "react-core/util";
-import { Renderer } from "react-core/createRenderer";
-import { enqueueDuplex } from "./duplex";
+import { document, modern, contains } from './browser';
+import { isFn, noop, toLowerCase } from 'react-core/util';
+import { Renderer } from 'react-core/createRenderer';
+import { enqueueDuplex } from './duplex';
 export let rform = /textarea|input|select|option/i;
 let globalEvents = {};
 export let eventPropHooks = {}; //用于在事件回调里对事件对象进行
@@ -9,9 +9,9 @@ export let eventHooks = {}; //用于在元素上绑定特定的事件
 //根据onXXX得到其全小写的事件名, onClick --> click, onClickCapture --> click,
 // onMouseMove --> mousemove
 let eventLowerCache = {
-    onClick: "click",
-    onChange: "change",
-    onWheel: "wheel"
+    onClick: 'click',
+    onChange: 'change',
+    onWheel: 'wheel'
 };
 
 export function eventAction(dom, name, val, lastProps, fiber) {
@@ -35,7 +35,7 @@ export function eventAction(dom, name, val, lastProps, fiber) {
     }
 }
 
-let isTouch = "ontouchstart" in document;
+let isTouch = 'ontouchstart' in document;
 
 export function dispatchEvent(e, type, endpoint) {
     //__type__ 在injectTapEventPlugin里用到
@@ -52,7 +52,7 @@ export function dispatchEvent(e, type, endpoint) {
 
     Renderer.batchedUpdates(function() {
         let paths = collectPaths(e.target, terminal, {});
-        let captured = bubble + "capture";
+        let captured = bubble + 'capture';
         triggerEventFlow(paths, captured, e);
 
         if (!e._stopPropagation) {
@@ -122,7 +122,7 @@ export function addEvent(el, type, fn, bool) {
     if (el.addEventListener) {
         el.addEventListener(type, fn, bool || false);
     } else if (el.attachEvent) {
-        el.attachEvent("on" + type, fn);
+        el.attachEvent('on' + type, fn);
     }
 }
 
@@ -132,7 +132,7 @@ export function getBrowserName(onStr) {
     if (lower) {
         return lower;
     }
-    let camel = onStr.slice(2).replace(rcapture, "");
+    let camel = onStr.slice(2).replace(rcapture, '');
     lower = camel.toLowerCase();
     eventLowerCache[onStr] = lower;
     return lower;
@@ -147,16 +147,16 @@ DOM通过event对象的relatedTarget属性提供了相关元素的信息。这�
  */
 function getRelatedTarget(e) {
     if (!e.timeStamp) {
-        e.relatedTarget = e.type === "mouseover" ? e.fromElement : e.toElement;
+        e.relatedTarget = e.type === 'mouseover' ? e.fromElement : e.toElement;
     }
     return e.relatedTarget;
 }
 function getTarget(e) {
     return e.target || e.srcElement;
 }
-String("load,error").replace(/\w+/g, function(name) {
+String('load,error').replace(/\w+/g, function(name) {
     eventHooks[name] = function(dom, type) {
-        let mark = "__" + type;
+        let mark = '__' + type;
 
         if (!dom[mark]) {
             dom[mark] = true;
@@ -165,12 +165,12 @@ String("load,error").replace(/\w+/g, function(name) {
     };
 });
 
-String("mouseenter,mouseleave").replace(/\w+/g, function(name) {
+String('mouseenter,mouseleave').replace(/\w+/g, function(name) {
     eventHooks[name] = function(dom, type) {
-        let mark = "__" + type;
+        let mark = '__' + type;
         if (!dom[mark]) {
             dom[mark] = true;
-            let mask = type === "mouseenter" ? "mouseover" : "mouseout";
+            let mask = type === 'mouseenter' ? 'mouseover' : 'mouseout';
             addEvent(dom, mask, function(e) {
                 let t = getRelatedTarget(e);
                 if (!t || (t !== dom && !contains(dom, t))) {
@@ -203,15 +203,15 @@ function onCompositionEnd(e) {
 const input2change = /text|password|search|url|email/i;
 //react中，text,textarea,password元素的change事件实质上是input事件
 //https://segmentfault.com/a/1190000008023476
-if (!document["__input"]) {
-    globalEvents.input = document["__input"] = true;
-    addEvent(document, "compositionstart", onCompositionStart);
-    addEvent(document, "compositionend", onCompositionEnd);
-    addEvent(document, "input", function(e) {
+if (!document['__input']) {
+    globalEvents.input = document['__input'] = true;
+    addEvent(document, 'compositionstart', onCompositionStart);
+    addEvent(document, 'compositionend', onCompositionEnd);
+    addEvent(document, 'input', function(e) {
         var dom = getTarget(e);
         if (input2change.test(dom.type)) {
             if (!dom.__onComposition) {
-                dispatchEvent(e, "change");
+                dispatchEvent(e, 'change');
             }
         }
         dispatchEvent(e);
@@ -256,9 +256,9 @@ eventPropHooks.change = function(e) {
     enqueueDuplex(e.target);
 };
 
-createHandle("doubleclick");
-createHandle("scroll");
-createHandle("wheel");
+createHandle('doubleclick');
+createHandle('scroll');
+createHandle('wheel');
 globalEvents.wheel = true;
 globalEvents.scroll = true;
 globalEvents.doubleclick = true;
@@ -275,44 +275,44 @@ eventPropHooks.click = function(e) {
 
 const fixWheelType =
     document.onwheel !== void 666
-        ? "wheel"
-        : "onmousewheel" in document
-            ? "mousewheel"
-            : "DOMMouseScroll";
+        ? 'wheel'
+        : 'onmousewheel' in document
+            ? 'mousewheel'
+            : 'DOMMouseScroll';
 eventHooks.wheel = function(dom) {
     addEvent(dom, fixWheelType, specialHandles.wheel);
 };
 
 eventPropHooks.wheel = function(event) {
     event.deltaX =
-        "deltaX" in event
+        'deltaX' in event
             ? event.deltaX
             : // Fallback to `wheelDeltaX` for Webkit and normalize (right is positive).
-              "wheelDeltaX" in event
+            'wheelDeltaX' in event
                 ? -event.wheelDeltaX
                 : 0;
     event.deltaY =
-        "deltaY" in event
+        'deltaY' in event
             ? event.deltaY
             : // Fallback to `wheelDeltaY` for Webkit and normalize (down is positive).
-              "wheelDeltaY" in event
+            'wheelDeltaY' in event
                 ? -event.wheelDeltaY
                 : // Fallback to `wheelDelta` for IE<9 and normalize (down is positive).
-                  "wheelDelta" in event
+                'wheelDelta' in event
                     ? -event.wheelDelta
                     : 0;
 };
 
 export let focusMap = {
-    focus: "focus",
-    blur: "blur"
+    focus: 'focus',
+    blur: 'blur'
 };
 let innerFocus;
 function blurFocus(e) {
     let dom = getTarget(e);
     let type = focusMap[e.type];
     if (Renderer.inserting) {
-        if (type === "blur") {
+        if (type === 'blur') {
             innerFocus = true;
             Renderer.inserting.focus();
             return;
@@ -335,10 +335,10 @@ function blurFocus(e) {
     } while ((dom = dom.parentNode));
 }
 
-"blur,focus".replace(/\w+/g, function(type) {
+'blur,focus'.replace(/\w+/g, function(type) {
     globalEvents[type] = true;
     if (modern) {
-        let mark = "__" + type;
+        let mark = '__' + type;
         if (!document[mark]) {
             document[mark] = true;
             addEvent(document, type, blurFocus, true);
@@ -355,7 +355,7 @@ eventHooks.scroll = function(dom, name) {
 };
 
 eventHooks.doubleclick = function(dom, name) {
-    addEvent(document, "dblclick", specialHandles[name]);
+    addEvent(document, 'dblclick', specialHandles[name]);
 };
 
 export function SyntheticEvent(event) {
@@ -384,6 +384,7 @@ let eventProto = (SyntheticEvent.prototype = {
         e.returnValue = this.returnValue = false;
         if (e.preventDefault) {
             e.preventDefault();
+            this.defaultPrevented = true;
         }
     },
     stopPropagation: function() {
@@ -398,7 +399,7 @@ let eventProto = (SyntheticEvent.prototype = {
         this.stopImmediate = true;
     },
     toString: function() {
-        return "[object Event]";
+        return '[object Event]';
     }
 });
 

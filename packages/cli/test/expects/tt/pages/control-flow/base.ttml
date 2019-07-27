@@ -1,0 +1,8 @@
+<block tt:if="{{state.tasks !== null}}">
+<view class="page-body">tasks</view>
+</block>
+<block tt:elif="true">
+<view class="page-body">
+<text>Hello world!</text>
+</view>
+</block>

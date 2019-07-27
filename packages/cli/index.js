@@ -1,85 +1,201 @@
-#!/usr/bin/env node
-'use strict';
-const utils = require('./utils/index');
-const chalk = require('chalk');
-if (utils.getNodeVersion() < 8) {
-    // eslint-disable-next-line
-    console.log( `当前nodejs版本为 ${chalk.red(process.version)}, 请保证 >= ${chalk.bold(7)}`);
-    process.exit(1);
-}
-//const commonds = ['mpreact', 'nanachi'];
-
-const supportBuildConfig = {
-    'wx': {
-        support: true,
-        text: ''
-    },
-    'baidu': {
-        support: false,
-        text: '百度小程序正在努力支持中, 请静候佳音'
-    },
-    'ali': {
-        support: false,
-        text: '支付宝小程序正在努力支持中, 请静候佳音'
-    },
-    'quick': {
-        support: false,
-        text: '快应用正在努力支持中, 请静候佳音'
-    }
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
-
-const program = require('commander');
-const VERSION = require('../package').version;
-function getBuildType(args){
-    let argList = args[0].split(':');
-    //let commond = argList[0];
-    let type = argList[1];
-    type = !type ? 'wx' : type.toLowerCase();
-    return type;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const webpack_1 = __importDefault(require("webpack"));
+const path = __importStar(require("path"));
+const platforms_1 = __importDefault(require("./consts/platforms"));
+const queue_1 = require("./packages/utils/logger/queue");
+const index_1 = require("./packages/utils/logger/index");
+const chalk_1 = __importDefault(require("chalk"));
+const webpackConfig_1 = __importDefault(require("./config/webpackConfig"));
+const babel = __importStar(require("@babel/core"));
+const child_process_1 = require("child_process");
+const utils = require('./packages/utils/index');
+const config_1 = __importDefault(require("./config/config"));
+const runBeforeParseTasks_1 = __importDefault(require("./tasks/runBeforeParseTasks"));
+const createH5Server_1 = __importDefault(require("./tasks/createH5Server"));
+function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, rules = [], prevLoaders = [], postLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = {}) {
+    return __awaiter(this, void 0, void 0, function* () {
+        function callback(err, stats) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            showLog();
+            const info = stats.toJson();
+            if (stats.hasErrors()) {
+                info.errors.forEach(e => {
+                    console.error(chalk_1.default.red('Error:\n'), utils.cleanLog(e));
+                    if (utils.isMportalEnv()) {
+                        process.exit();
+                    }
+                });
+            }
+            if (stats.hasWarnings() && !silent) {
+                info.warnings.forEach(warning => {
+                    if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
+                        console.log(chalk_1.default.yellow('Warning:\n'), utils.cleanLog(warning));
+                    }
+                });
+            }
+            if (platform === 'h5') {
+                const configPath = watch ? './config/h5/webpack.config.js' : './config/h5/webpack.config.prod.js';
+                const webpackH5Config = require(configPath);
+                const compilerH5 = webpack_1.default(webpackH5Config);
+                if (watch) {
+                    createH5Server_1.default(compilerH5);
+                }
+                else {
+                    compilerH5.run(function (err, stats) {
+                        if (err) {
+                            console.log(err);
+                            return;
+                        }
+                        const info = stats.toJson();
+                        if (stats.hasErrors()) {
+                            info.errors.forEach(e => {
+                                console.error(chalk_1.default.red('Error:\n'), utils.cleanLog(e));
+                                if (utils.isMportalEnv()) {
+                                    process.exit();
+                                }
+                            });
+                        }
+                        if (stats.hasWarnings() && !silent) {
+                            info.warnings.forEach(warning => {
+                                if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
+                                    console.log(chalk_1.default.yellow('Warning:\n'), utils.cleanLog(warning));
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+            complete(err, stats);
+        }
+        try {
+            if (!utils.validatePlatform(platform, platforms_1.default)) {
+                throw new Error(`不支持的platform：${platform}`);
+            }
+            injectBuildEnv({
+                platform,
+                compress,
+                huawei
+            });
+            getWebViewRules();
+            yield runBeforeParseTasks_1.default({ platform, beta, betaUi, compress });
+            if (compress) {
+                postLoaders.unshift('nanachi-compress-loader');
+            }
+            const webpackConfig = webpackConfig_1.default({
+                platform,
+                compress,
+                compressOption,
+                beta,
+                betaUi,
+                plugins,
+                analysis,
+                prevLoaders,
+                postLoaders,
+                rules,
+                huawei
+            });
+            const compiler = webpack_1.default(webpackConfig);
+            if (watch) {
+                compiler.watch({}, callback);
+            }
+            else {
+                compiler.run(callback);
+            }
+        }
+        catch (err) {
+            callback(err);
+        }
+    });
 }
-
-program
-    .name('mpreact')
-    .version(VERSION, '-v, --version')
-    .parse(process.argv);
-let args = program.args;
-
-
-/* eslint-disable */
-if (typeof args[0] === 'undefined') {
-    console.error('请指定项目名称');
-    console.log(
-        `  ${chalk.cyan(program.name())} ${chalk.green('<project-name>')}\n`
-    );
-    console.log('例如:\n');
-    console.log(
-        `  ${chalk.cyan(program.name())} ${chalk.green('mpreact-app')}`
-    );
-    process.exit(1);
+function injectBuildEnv({ platform, compress, huawei }) {
+    process.env.ANU_ENV = (platform === 'h5' ? 'web' : platform);
+    config_1.default['buildType'] = platform;
+    config_1.default['compress'] = compress;
+    if (platform === 'quick') {
+        config_1.default['huawei'] = huawei || false;
+    }
 }
-
-
-
-let buildType =  getBuildType(args);
-if( !supportBuildConfig(buildType).support ){
-    console.log(
-        chalk.red(supportBuildConfig(buildType).text)
-    )
-    process.exit(1);
+function showLog() {
+    if (utils.isMportalEnv()) {
+        let log = '';
+        while (queue_1.build.length) {
+            log += queue_1.build.shift() + (queue_1.build.length !== 0 ? '\n' : '');
+        }
+        console.log(log);
+    }
+    while (queue_1.warning.length) {
+        index_1.warningLog(queue_1.warning.shift());
+    }
+    if (queue_1.error.length) {
+        queue_1.error.forEach(function (error) {
+            index_1.errorLog(error);
+        });
+        if (utils.isMportalEnv()) {
+            process.exit(1);
+        }
+    }
 }
-
-
-switch(args[0]){
-    case 'start':
-        require('./bin/build');
-        break;
-    case 'build':
-        require('./bin/build');
-        break;
-    default:
-        require('./bin/init')
+function getWebViewRules() {
+    const cwd = process.cwd();
+    if (config_1.default.buildType != 'quick')
+        return;
+    let bin = 'grep';
+    let opts = ['-r', '-E', "pages:\\s*(\\btrue\\b|\\[.+\\])", path.join(cwd, 'source', 'pages')];
+    let ret = child_process_1.spawnSync(bin, opts).stdout.toString().trim();
+    let webViewRoutes = ret.split(/\s/)
+        .filter(function (el) {
+        return /\/pages\//.test(el);
+    }).map(function (el) {
+        return el.replace(/\:$/g, '');
+    });
+    webViewRoutes.forEach(function (pagePath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            babel.transformFileSync(pagePath, {
+                configFile: false,
+                babelrc: false,
+                comments: false,
+                ast: true,
+                presets: [
+                    require('@babel/preset-react')
+                ],
+                plugins: [
+                    [require('@babel/plugin-proposal-decorators'), { legacy: true }],
+                    [require('@babel/plugin-proposal-class-properties'), { loose: true }],
+                    require('@babel/plugin-proposal-object-rest-spread'),
+                    require('@babel/plugin-syntax-jsx'),
+                    require('./packages/babelPlugins/collectWebViewPage'),
+                ]
+            });
+        });
+    });
+    const WebViewRules = config_1.default.WebViewRules;
+    if (WebViewRules && WebViewRules.pages.length) {
+        process.env.ANU_WEBVIEW = 'need_require_webview_file';
+    }
+    else {
+        process.env.ANU_WEBVIEW = '';
+    }
 }
-//require('./')
-
-
-
+exports.default = nanachi;

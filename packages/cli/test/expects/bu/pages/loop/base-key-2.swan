@@ -1,0 +1,5 @@
+<view>
+        <block s-for="{{state.array}}" s-for-item="item" s-for-index="i103" s-key="*this">
+          <view>{{item.item}}</view>
+        </block>
+      </view>

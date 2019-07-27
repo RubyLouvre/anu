@@ -702,31 +702,7 @@ describe('ReactErrorBoundaries', () => {
 	});
 
 	it('renders an error state if module-style context provider throws in componentWillMount', () => {
-		function BrokenComponentWillMountWithContext() {//8
-			return {
-				getChildContext() {
-					return { foo: 42 };
-				},
-				render() {
-					return <div>{this.props.children}</div>;
-				},
-				UNSAFE_componentWillMount() {
-					throw new Error('Hello');
-				},
-			};
-		}
-		BrokenComponentWillMountWithContext.childContextTypes = {
-			foo: PropTypes.number,
-		};
-
-		const container = document.createElement('div');
-		ReactDOM.render(
-			<ErrorBoundary>
-				<BrokenComponentWillMountWithContext />
-			</ErrorBoundary>,
-			container
-		);
-		expect(container.firstChild.textContent).toBe('Caught an error: Hello.');
+		// no support
 	});
 
 	it('mounts the error message if mounting fails', () => {//9
@@ -2123,7 +2099,6 @@ var a = 1
 				log.push('BrokenRender componentWillUnmount');
 			}
 		};
-
  ReactDOM.render(
 			<ErrorBoundary>
 				<BrokenRender />
@@ -2160,6 +2135,5 @@ var a = 1
 		"BrokenRender componentWillUnmount",
 		"ErrorBoundary componentDidUpdate"
 		]);
-
 	  */
 });

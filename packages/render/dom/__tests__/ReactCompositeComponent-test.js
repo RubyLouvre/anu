@@ -62,11 +62,9 @@ describe("ReactCompositeComponent", () => {
 
     it("should support module pattern components", () => {
         function Child({ test }) {
-            return {
-                render() {
-                    return <div>{test}</div>;
-                }
-            };
+         
+             return <div>{test}</div>;
+
         }
 
         const el = document.createElement("div");

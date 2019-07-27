@@ -1,0 +1,93 @@
+$imgae-size: 150rpx;
+$menu-item-height: 90rpx;
+page {
+  background-color: rgb(245, 245, 245);
+}
+
+.font-27 {
+  font-size: 27rpx;
+}
+
+.anu-line {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.anu-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-center {
+  color: #000;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  .user-information {
+    background-color: #fff;
+    font-size: 0;
+    margin-bottom: 1px;
+    padding: 50rpx 0;
+    padding-left: 50rpx;
+
+    .user-image {
+      display: inline-block;
+      width: $imgae-size;
+      height: $imgae-size;
+      vertical-align: top;
+    }
+    .user-name {
+      display: inline-block;
+      height: $imgae-size;
+      margin-left: 20rpx;
+      font-size: 31rpx;
+    }
+  }
+  .qunar-information {
+    justify-content: space-between;
+    padding: 0 30rpx;
+    margin-bottom: 10rpx;
+    background-color: #fff;
+    height: $menu-item-height;
+    font-size: 27rpx;
+    .right-content {
+      align-items: center;
+      height: $menu-item-height;
+      .right-message {
+        display: inline-block;
+        margin-right: 15rpx;
+      }
+      .right-content-image {
+        display: inline-block;
+        width: 12rpx;
+        height: 21rpx;
+      }
+    }
+  }
+  .menu-item {
+    justify-content: space-between;
+    margin-bottom: 1px;
+    padding: 0 30rpx;
+    background-color: #fff;
+    height: $menu-item-height;
+    font-size: 27rpx;
+    letter-spacing: 1rpx;
+    align-items: center;
+    &:last-child {
+      margin-bottom: 0;
+    }
+    .menu-item-title {
+      display: inline-block;
+      font-size: 27rpx;
+    }
+    .high-light {
+      color: #40a9ff;
+    }
+    .menu-item-image {
+      width: 12rpx;
+      height: 21rpx;
+    }
+  }
+}

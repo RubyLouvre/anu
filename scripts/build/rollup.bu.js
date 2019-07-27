@@ -8,7 +8,7 @@ const json = require('../../package.json');
 //const importAlias = require('rollup-plugin-import-alias');
 
 export default {
-    input: './packages/render/miniapp/bu.js',
+    input: './packages/render/miniapp/index.bu.js',
     output: {
         strict: false,
         format: 'es',
@@ -46,7 +46,6 @@ export default {
             banner: `运行于支付宝小程序的React by 司徒正美 Copyright ${JSON.stringify(
                 new Date()
             ).replace(/T.*|"/g, '')}
-      IE9+
       `
         }),
         cleanup(),

@@ -1,0 +1,32 @@
+<import name="anu-page-wrapper" src="../../../../source/components/PageWrapper/index.ux">
+    </import>
+    <template>
+      <anu-page-wrapper>
+        <div>
+          <block if="{{state.array.length}}">
+            <block for="(index,item) in state.array">
+              <div>
+                <text>{{item.item}}</text>
+              </div>
+            </block>
+          </block>
+        </div>
+      </anu-page-wrapper>
+    </template>
+    <script>
+      function P() {}
+
+      P = React.toClass(P, React.Components, {
+      render: function() {
+      var h = React.createElement;
+      return h("div", null, this.state.array.length ? this.state.array.map(function(item, index) {
+      return h("div", {
+      key: index
+      }, item.item);
+      }, this) : null);;
+      },
+      classUid: "c294"
+      }, {});
+      P = React.registerPage(P, "pages/loop/base-calee-1");
+      export default P;
+    </script>

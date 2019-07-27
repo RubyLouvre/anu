@@ -1,0 +1,34 @@
+@import '../../common/style/common.scss';
+
+.displayFlex {
+    display: flex;
+    // flex: row;
+    flex-direction: row;
+    width: 100%;
+}
+
+.displayFlexLeft {
+    width: 10%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    color: #949494;
+}
+
+.displayFlexRight {
+    width: 90%;
+}
+
+.displayFlexRightTop {
+    color: #323232;
+    margin-top: 8px;
+}
+
+.displayFlexRightBottom {
+    font-size: 8px;
+    color: #808080;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #E5E5E5;
+}
+
