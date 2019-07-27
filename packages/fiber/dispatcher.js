@@ -3,6 +3,7 @@ import { get, isFn } from 'react-core/util';
 function setter(compute, cursor, value) {
     this.updateQueue[cursor] = compute(cursor, value);
     Renderer.updateComponent(this, true);
+    Renderer.batchedUpdates(function () { });
 }
 var hookCursor = 0;
 export function resetCursor() {
