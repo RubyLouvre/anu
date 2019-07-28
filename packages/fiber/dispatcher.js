@@ -58,8 +58,7 @@ export function useCallbackImpl(create, deps, isMemo) {//ok
         if (prevState) {
             let prevInputs = prevState[1];
             if (areHookInputsEqual(nextInputs, prevInputs)) {
-              //  return prevState[0];
-              return
+               return prevState[0];
             }
         }
 
@@ -78,14 +77,25 @@ export function useRef(initValue) {//ok
     }
 export function useEffectImpl(create, deps, EffectTag, createList, destroyList) {//ok
         let fiber = getCurrentFiber();
-        let cb = useCallbackImpl(create, deps);
+        let key = getCurrentKey();
+        let updateQueue = fiber.updateQueue;
+
+        let nextInputs = Array.isArray(deps) ? deps : [create];
+        let prevState = updateQueue[key];
+        if (prevState) {
+            let prevInputs = prevState[1];
+            if (areHookInputsEqual(nextInputs, prevInputs)) {
+              return
+            }
+        }
+    
+        updateQueue[key] = [value, nextInputs];
         if (fiber.effectTag % EffectTag) {
             fiber.effectTag *= EffectTag;
         }
-        let updateQueue = fiber.updateQueue;
         let list = updateQueue[createList] ||  (updateQueue[createList] = []);
         updateQueue[destroyList] ||  (updateQueue[destroyList] = []);
-        list.push(cb);
+        list.push(create);
     }
 export function useImperativeHandle(ref, create, deps) {
         const nextInputs = Array.isArray(deps) ? deps.concat([ref])
