@@ -3,7 +3,10 @@ import React from 'react';
 export default class Audio extends React.Component {
   constructor(props) {
     super(props);
-
+    // if(React.appType === 'h5' ){
+    // } else if(React.appType === 'quick') {
+    // }
+    
     this.onPlay = this.onPlay.bind(this);
     this.onPause = this.onPause.bind(this);
     this.onError = this.onError.bind(this);

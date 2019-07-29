@@ -9,7 +9,7 @@ export default class InternalImage extends React.Component {
       className,
       class: internalClass
     } = props;
-
+    
     this.state = {
       modeClassName: '',
       containerWidth: width,
@@ -17,12 +17,14 @@ export default class InternalImage extends React.Component {
       imageWidth: width,
       imageHeight: height
     };
+    
     this.originalContainerWidth = width;
     this.originalContainerHeight = height;
     this.naturalWidth = width;
     this.naturalHeight = height;
     this.className = className || internalClass;
     this.image = React.createRef();
+  
     this.onLoad = this.onLoad.bind(this);
   }
 
@@ -110,7 +112,7 @@ export default class InternalImage extends React.Component {
     const { width, height, className } = this;
     const { modeClassName } = this.state;
     const { mode } = this.props;
-
+    // console.log('modeClassName;;;;', modeClassName, 'className;;;;;', className);
     if (mode) {
       return (
         <div
@@ -162,6 +164,8 @@ export default class InternalImage extends React.Component {
                 height: auto;
               }
               .top img {
+                width: ${this.state.imageWidth}px;
+                height: ${this.state.imageHeight}px;
                 left: 50%;
                 transform: translate(-50%, 0);
               }
