@@ -31,15 +31,13 @@ export default class Audio extends React.Component {
 
   render() {
     return (
-      <div>
-        <audio
+      <audio
           {...this.props}
           onplay={this.onPlay}
           onended={this.onEnded}
           onpause={this.onPause}
           onerror={this.onError}
         />
-      </div>
     );
   }
 }

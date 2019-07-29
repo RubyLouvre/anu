@@ -78,6 +78,8 @@ export default class InternalImage extends React.Component {
       case 'bottom left':
       case 'bottom right':
         state.modeClassName = mode.replace(/\s/, '-');
+        state.imageWidth = '300%';
+        state.imageHeight = '450%';
 
         break;
 
@@ -87,6 +89,8 @@ export default class InternalImage extends React.Component {
       case 'right':
       case 'center':
         state.modeClassName = mode;
+        state.imageWidth = '300%';
+        state.imageHeight = '450%';
 
         break;
 
@@ -163,49 +167,69 @@ export default class InternalImage extends React.Component {
                 width: 100%;
                 height: auto;
               }
+              .top, left, bottom, right, center, top-left, top-right, bottom-left, bottom-right {
+                width: ${this.state.containerWidth}px;
+                height: ${this.state.containerHeight}px;
+              }
               .top img {
-                width: ${this.state.imageWidth}px;
-                height: ${this.state.imageHeight}px;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
                 left: 50%;
-                transform: translate(-50%, 0);
+                transform: translate(-50%, 0%);
               }
               .bottom img {
-                position: absolute;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
                 left: 50%;
-                bottom: 0;
-                transform: translate(-50%, 0);
+                bottom: -100%;
+                transform: translate(-50%, -100%)
               }
               .center img {
-                position: absolute;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
                 left: 50%;
                 top: 50%;
                 transform: translate(-50%, -50%);
               }
               .left img {
-                position: absolute;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
                 left: 0;
                 top: 50%;
                 transform: translate(0, -50%);
               }
               .right img {
-                position: absolute;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
                 right: 0;
                 top: 50%;
-                transform: translate(0, -50%);
+                transform: translate(-75%, -50%)
+              }
+              .top-left img {
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
+                transform: translate(0%, 0%);
               }
               .top-right img {
-                position: absolute;
-                right: 0;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
+                right: 50%;
+                top: 0%;
+                transform: translate(-50%, -0%);
               }
               .bottom-left img {
-                position: absolute;
-                bottom: 0;
-                left: 0;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
+                left: 0%;
+                top: 100%;
+                transform: translate(0%, -100%);
               }
               .bottom-right img {
-                position: absolute;
-                bottom: 0;
-                right: 0;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
+                right: 0%;
+                top: 100%;
+                transform: translate(-75%, -100%);
               }
             `;
           }}/>
