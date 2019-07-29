@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-07-19
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-07-29
  */
 
 (function (global, factory) {
@@ -1887,8 +1887,11 @@
     }
 
     function setter(compute, cursor, value) {
-        this.updateQueue[cursor] = compute(cursor, value);
-        Renderer.updateComponent(this, true);
+        var _this = this;
+        Renderer.batchedUpdates(function () {
+            _this.updateQueue[cursor] = compute(cursor, value);
+            Renderer.updateComponent(_this, true);
+        });
     }
     var hookCursor = 0;
     function resetCursor() {
@@ -1929,7 +1932,7 @@
         var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
     }
-    function useCallbackImpl(create, deps, isMemo) {
+    function useCallbackImpl(create, deps, isMemo, isEffect) {
         var fiber = getCurrentFiber();
         var key = getCurrentKey();
         var updateQueue = fiber.updateQueue;
@@ -1938,12 +1941,23 @@
         if (prevState) {
             var prevInputs = prevState[1];
             if (areHookInputsEqual(nextInputs, prevInputs)) {
-                return;
+                return isEffect ? null : prevState[0];
             }
         }
-        var value = isMemo ? create() : create;
-        updateQueue[key] = [value, nextInputs];
-        return value;
+        var fn = isMemo ? create() : create;
+        updateQueue[key] = [fn, nextInputs];
+        return fn;
+    }
+    function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
+        var fiber = getCurrentFiber();
+        if (useCallbackImpl(create, deps, false, true)) {
+            if (fiber.effectTag % EffectTag) {
+                fiber.effectTag *= EffectTag;
+            }
+            var list = updateQueue[createList] || (updateQueue[createList] = []);
+            updateQueue[destroyList] || (updateQueue[destroyList] = []);
+            list.push(create);
+        }
     }
     function useRef(initValue) {
         var fiber = getCurrentFiber();
@@ -1953,17 +1967,6 @@
             return updateQueue[key];
         }
         return updateQueue[key] = { current: initValue };
-    }
-    function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
-        var fiber = getCurrentFiber();
-        var cb = useCallbackImpl(create, deps);
-        if (fiber.effectTag % EffectTag) {
-            fiber.effectTag *= EffectTag;
-        }
-        var updateQueue = fiber.updateQueue;
-        var list = updateQueue[createList] || (updateQueue[createList] = []);
-        updateQueue[destroyList] || (updateQueue[destroyList] = []);
-        list.push(cb);
     }
     function useImperativeHandle(ref, create, deps) {
         var nextInputs = Array.isArray(deps) ? deps.concat([ref]) : [ref, create];

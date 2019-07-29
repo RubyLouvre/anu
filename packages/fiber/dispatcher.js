@@ -1,8 +1,11 @@
 import { Renderer } from 'react-core/createRenderer';
 import { get, isFn } from 'react-core/util';
 function setter(compute, cursor, value) {
-    this.updateQueue[cursor] = compute(cursor, value);
-    Renderer.updateComponent(this, true);
+    
+    Renderer.batchedUpdates(() => { //解决钩子useXXX放在setTimeout不更新的问题
+        this.updateQueue[cursor] = compute(cursor, value);
+        Renderer.updateComponent(this, true);
+    })
 }
 var hookCursor = 0;
 export function resetCursor() {
@@ -47,8 +50,8 @@ export function useReducerImpl(reducer, initValue, initAction) {//ok
         let value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
     }
-    //useCallbackOrMemo
-export function useCallbackImpl(create, deps, isMemo) {//ok
+    //useCallbackOrMemo, 用来存放 方法与参数
+export function useCallbackImpl(create, deps, isMemo, isEffect) {//ok
         let fiber = getCurrentFiber();
         let key = getCurrentKey();
         let updateQueue = fiber.updateQueue;
@@ -58,14 +61,24 @@ export function useCallbackImpl(create, deps, isMemo) {//ok
         if (prevState) {
             let prevInputs = prevState[1];
             if (areHookInputsEqual(nextInputs, prevInputs)) {
-              //  return prevState[0];
-              return
+               return isEffect ? null: prevState[0];
             }
         }
 
-        let value = isMemo ? create() : create;
-        updateQueue[key] = [value, nextInputs];
-        return value;
+        let fn = isMemo ? create() : create;
+        updateQueue[key] = [fn, nextInputs];
+        return fn;
+    }
+    export function useEffectImpl(create, deps, EffectTag, createList, destroyList) {//ok
+        let fiber = getCurrentFiber();
+        if(useCallbackImpl(create, deps, false, true)){//防止重复添加
+            if (fiber.effectTag % EffectTag) {
+                fiber.effectTag *= EffectTag;
+            }
+            let list = updateQueue[createList] ||  (updateQueue[createList] = []);
+            updateQueue[destroyList] ||  (updateQueue[destroyList] = []);
+            list.push(create);
+        }
     }
 export function useRef(initValue) {//ok
         let fiber = getCurrentFiber();
@@ -76,17 +89,7 @@ export function useRef(initValue) {//ok
         }
         return updateQueue[key] = { current: initValue };
     }
-export function useEffectImpl(create, deps, EffectTag, createList, destroyList) {//ok
-        let fiber = getCurrentFiber();
-        let cb = useCallbackImpl(create, deps);
-        if (fiber.effectTag % EffectTag) {
-            fiber.effectTag *= EffectTag;
-        }
-        let updateQueue = fiber.updateQueue;
-        let list = updateQueue[createList] ||  (updateQueue[createList] = []);
-        updateQueue[destroyList] ||  (updateQueue[destroyList] = []);
-        list.push(cb);
-    }
+
 export function useImperativeHandle(ref, create, deps) {
         const nextInputs = Array.isArray(deps) ? deps.concat([ref])
             : [ref, create];

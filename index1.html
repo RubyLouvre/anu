@@ -4,16 +4,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-<!--
-
+<!---
  <script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
  <script src="https://cdn.bootcss.com/react-dom/16.7.0-alpha.2/umd/react-dom.development.js"></script>
-  <script src="./lib/ReactPropTypes.js"></script>
 -->
-
 <script src="./dist/React.js"></script>
 
-  <script type='text/javascript' src="./lib/babel.js"></script>
+  <script src="./lib/babel.js"></script>
 
 </head>
 
@@ -22,46 +19,24 @@
   <div id='root' class="root">
 
   </div>
-  <script>
-var minWindow = function(s, t) {
-	var hash = {}
-	for(var i = 0; i < t.length; i++){
-		hash[t[i]] = 0;
-	}
-	var count = 0, error = 0
+  <script type='text/babel'>
+  if(!window.React){
+	window.ReactDOM =React
+  }
+const App = () => {
+	const [count, up] = React.useState(1);
+  const fn = React.useCallback(() => count + 10, []);
+  const onClick = () => up(count + 1);
+  
+  return (
+    <React.Fragment>
+      <button onClick={onClick}>click me</button>
+      <div>{`count value：${count}，count value after plus：${fn()}`}</div>
+    </React.Fragment>
+  );
+}
 
-	for(var left = 0, right = 0; right < s.length; right++){
-
-			if(s[right] in hash){
-				hash[s[right]]++
-				var match = true
-                for(var r in hash){
-					if(!hash[r]){
-						match = false
-					}
-				}
-if(match){
-			
-			    console.log(s.slice(left, right+1), Object.assign({}, hash))
-			    console.log("=====")
-}	
-			}else{
-				error++
-				
-				if(error == t.length){
-					if(hash[s[left]] > 0 ){
-						hash[s[left]]--
-					}
-					
-				}
-				left++
-			}
-		
-	}
-    
-};
-minWindow('ADOBECODEBANC','ABC')
- //[0, 10, 36, 29, 22, 25, 22, 30, 41]
+ReactDOM.render(<App />, document.getElementById('root'));
     </script>
   </body>
 </html>
