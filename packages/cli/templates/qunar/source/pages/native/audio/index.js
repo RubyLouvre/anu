@@ -59,10 +59,10 @@ class P extends React.Component {
                         poster={this.state.audio.poster}
                         name={this.state.audio.name}
                         author={this.state.audio.author}
-                        onPlay={this.onPlay}
-                        onEnd={this.onEnded}
-                        onPause={this.onPause}
-                        onError={this.onError}
+                        onPlay={this.onPlay.bind(this)}
+                        onEnd={this.onEnded.bind(this)}
+                        onPause={this.onPause.bind(this)}
+                        onError={this.onError.bind(this)}
                     />
                 </div>
                 <div style="font-size: 32rpx;">
