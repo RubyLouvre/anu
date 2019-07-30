@@ -26,6 +26,7 @@ export default class InternalImage extends React.Component {
     this.image = React.createRef();
   
     this.onLoad = this.onLoad.bind(this);
+    this.randomClassName = 'r' + Math.floor(Math.random()*100000);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -120,14 +121,14 @@ export default class InternalImage extends React.Component {
     if (mode) {
       return (
         <div
-          className={['__internal__image__', modeClassName, className].join(
+          className={['__internal__image__', modeClassName, className, this.randomClassName].join(
             ' '
           )}
         >
           <img ref={this.image} {...this.props} onLoad={this.onLoad} />
           <style ref={(node) => {
               Object(node).textContent = `
-              .__internal__image__ {
+              ${this.randomClassName}.__internal__image__ {
                 display: inline-block;
                 vertical-align: top;
                 overflow: hidden;
@@ -135,70 +136,70 @@ export default class InternalImage extends React.Component {
                 width: ${this.state.containerWidth}px;
                 height: ${this.state.containerHeight}px;
               }
-              .__internal__image__ img {
+              ${this.randomClassName}.__internal__image__ img {
                 position: relative;
                 margin: 0;
               }
-              .scale-to-fill {
+              ${this.randomClassName}.scale-to-fill {
                 width: 100%;
               }
-              .scale-to-fill img {
+              ${this.randomClassName}.scale-to-fill img {
                 width: 100%;
                 height: 100%;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
               }
-              .aspect-fit img {
+              ${this.randomClassName}.aspect-fit img {
                 width: ${this.state.imageWidth};
                 height: ${this.state.imageHeight};
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
               }
-              .aspect-fill img {
+              ${this.randomClassName}.aspect-fill img {
                 width: ${this.state.imageWidth}px;
                 height: ${this.state.imageHeight}px;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
               }
-              .width-fix img {
+              ${this.randomClassName}.width-fix img {
                 width: 100%;
                 height: auto;
               }
-              .top, left, bottom, right, center, top-left, top-right, bottom-left, bottom-right {
+              ${this.randomClassName}.top, left, bottom, right, center, top-left, top-right, bottom-left, bottom-right {
                 width: ${this.state.containerWidth}px;
                 height: ${this.state.containerHeight}px;
               }
-              .top img {
+              ${this.randomClassName}.top img {
                 width: ${this.state.imageWidth};
                 height: ${this.state.imageHeight};
                 left: 50%;
                 transform: translate(-50%, 0%);
               }
-              .bottom img {
+              ${this.randomClassName}.bottom img {
                 width: ${this.state.imageWidth};
                 height: ${this.state.imageHeight};
                 left: 50%;
                 bottom: -100%;
                 transform: translate(-50%, -100%)
               }
-              .center img {
+              ${this.randomClassName}.center img {
                 width: ${this.state.imageWidth};
                 height: ${this.state.imageHeight};
                 left: 50%;
                 top: 50%;
                 transform: translate(-50%, -50%);
               }
-              .left img {
+              ${this.randomClassName}.left img {
                 width: ${this.state.imageWidth};
                 height: ${this.state.imageHeight};
                 left: 0;
                 top: 50%;
                 transform: translate(0, -50%);
               }
-              .right img {
+              ${this.randomClassName}.right img {
                 width: ${this.state.imageWidth};
                 height: ${this.state.imageHeight};
                 right: 0;
@@ -210,21 +211,21 @@ export default class InternalImage extends React.Component {
                 height: ${this.state.imageHeight};
                 transform: translate(0%, 0%);
               }
-              .top-right img {
+              ${this.randomClassName}.top-right img {
                 width: ${this.state.imageWidth};
                 height: ${this.state.imageHeight};
                 right: 50%;
                 top: 0%;
                 transform: translate(-50%, -0%);
               }
-              .bottom-left img {
+              ${this.randomClassName}.bottom-left img {
                 width: ${this.state.imageWidth};
                 height: ${this.state.imageHeight};
                 left: 0%;
                 top: 100%;
                 transform: translate(0%, -100%);
               }
-              .bottom-right img {
+              ${this.randomClassName}.bottom-right img {
                 width: ${this.state.imageWidth};
                 height: ${this.state.imageHeight};
                 right: 0%;

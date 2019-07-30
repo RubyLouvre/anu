@@ -5,7 +5,6 @@ import './index.scss';
 export default function cssTransitionWrapper(Comp) {
     return class Wrapper extends React.Component {
         render() {
-            console.log(this.props.isTabPage);
             return (
                 <CSSTransition
                     classNames={this.props.isTabPage ? 'tab' : 'page'}
