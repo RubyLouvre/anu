@@ -1,13 +1,13 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-26T02
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-30T09
  * IE9+
  */
 
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
     typeof define === 'function' && define.amd ? define(['clipboard', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
-    (global.React = factory(global.Clipboard,global.axios,global.qs,global.MobileDetect,global.io));
-}(this, (function (Clipboard,axios,qs,MobileDetect,io) {
+    (global = global || self, global.React = factory(global.Clipboard, global.axios, global.qs, global.MobileDetect, global.io));
+}(this, function (Clipboard, axios, qs, MobileDetect, io) {
     Clipboard = Clipboard && Clipboard.hasOwnProperty('default') ? Clipboard['default'] : Clipboard;
     axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
     qs = qs && qs.hasOwnProperty('default') ? qs['default'] : qs;
@@ -207,7 +207,7 @@
             toWarnDev("replaceState", true);
         },
         isReactComponent: returnTrue,
-        isMounted: function isMounted$$1() {
+        isMounted: function isMounted() {
             toWarnDev("isMounted", true);
             return this.updater.isMounted(this);
         },
@@ -477,7 +477,7 @@
         forEach: function forEach(children, func, context) {
             return proxyIt(children, func, null, context);
         },
-        toArray: function toArray$$1(children) {
+        toArray: function toArray(children) {
             return proxyIt(children, K, []);
         }
     };
@@ -1841,18 +1841,21 @@
             arr.splice(index, 1);
         }
     }
-    function detachFiber(fiber, effects$$1) {
+    function detachFiber(fiber, effects) {
         fiber.effectTag = DETACH;
-        effects$$1.push(fiber);
+        effects.push(fiber);
         fiber.disposed = true;
         for (var child = fiber.child; child; child = child.sibling) {
-            detachFiber(child, effects$$1);
+            detachFiber(child, effects);
         }
     }
 
     function setter(compute, cursor, value) {
-        this.updateQueue[cursor] = compute(cursor, value);
-        Renderer.updateComponent(this, true);
+        var _this = this;
+        Renderer.batchedUpdates(function () {
+            _this.updateQueue[cursor] = compute(cursor, value);
+            Renderer.updateComponent(_this, true);
+        });
     }
     var hookCursor = 0;
     function resetCursor() {
@@ -1893,7 +1896,7 @@
         var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
     }
-    function useCallbackImpl(create, deps, isMemo) {
+    function useCallbackImpl(create, deps, isMemo, isEffect) {
         var fiber = getCurrentFiber();
         var key = getCurrentKey();
         var updateQueue = fiber.updateQueue;
@@ -1902,23 +1905,23 @@
         if (prevState) {
             var prevInputs = prevState[1];
             if (areHookInputsEqual(nextInputs, prevInputs)) {
-                return;
+                return isEffect ? null : prevState[0];
             }
         }
-        var value = isMemo ? create() : create;
-        updateQueue[key] = [value, nextInputs];
-        return value;
+        var fn = isMemo ? create() : create;
+        updateQueue[key] = [fn, nextInputs];
+        return fn;
     }
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
-        var cb = useCallbackImpl(create, deps);
-        if (fiber.effectTag % EffectTag) {
-            fiber.effectTag *= EffectTag;
+        if (useCallbackImpl(create, deps, false, true)) {
+            if (fiber.effectTag % EffectTag) {
+                fiber.effectTag *= EffectTag;
+            }
+            var list = updateQueue[createList] || (updateQueue[createList] = []);
+            updateQueue[destroyList] || (updateQueue[destroyList] = []);
+            list.push(create);
         }
-        var updateQueue = fiber.updateQueue;
-        var list = updateQueue[createList] || (updateQueue[createList] = []);
-        updateQueue[destroyList] || (updateQueue[destroyList] = []);
-        list.push(cb);
     }
     function getCurrentFiber() {
         return get(Renderer.currentOwner);
@@ -2315,7 +2318,7 @@
             oldFibers = {};
         }
         var newFibers = fiberizeChildren(children, parentFiber);
-        var effects$$1 = parentFiber.effects || (parentFiber.effects = []);
+        var effects = parentFiber.effects || (parentFiber.effects = []);
         var matchFibers = new Object();
         delete parentFiber.child;
         for (var i in oldFibers) {
@@ -2328,7 +2331,7 @@
                 }
                 continue;
             }
-            detachFiber(oldFiber, effects$$1);
+            detachFiber(oldFiber, effects);
         }
         var prevFiber = void 0,
             index = 0;
@@ -2348,13 +2351,13 @@
                         delete _newFiber.deleteRef;
                     }
                     if (oldRef && oldRef !== _newFiber.ref) {
-                        effects$$1.push(alternate);
+                        effects.push(alternate);
                     }
                     if (_newFiber.tag === 5) {
                         _newFiber.lastProps = alternate.props;
                     }
                 } else {
-                    detachFiber(_oldFiber, effects$$1);
+                    detachFiber(_oldFiber, effects);
                 }
             } else {
                 _newFiber = new Fiber(_newFiber);
@@ -2470,10 +2473,10 @@
             }
         }
     }
-    function commitDFS(effects$$1) {
+    function commitDFS(effects) {
         Renderer.batchedUpdates(function () {
             var el;
-            while (el = effects$$1.shift()) {
+            while (el = effects.shift()) {
                 if (el.effectTag === DETACH && el.caughtError) {
                     disposeFiber(el);
                 } else {
@@ -2581,7 +2584,7 @@
     }
     function safeInvokeHooks(upateQueue, create, destory) {
         var uneffects = upateQueue[destory],
-            effects$$1 = upateQueue[create],
+            effects = upateQueue[create],
             fn;
         if (!uneffects) {
             return;
@@ -2591,7 +2594,7 @@
                 fn();
             } catch (e) {      }
         }
-        while (fn = effects$$1.shift()) {
+        while (fn = effects.shift()) {
             try {
                 var f = fn();
                 if (typeof f === 'function') {
@@ -3070,6 +3073,7 @@
         dom._reactInternalFiber = null;
     }
 
+    var noop$1 = function noop() {};
     var fakeApp = {
         app: {
             globalData: {}
@@ -3145,12 +3149,18 @@
         }
         return createElement(clazz, props);
     }
-    function handleSuccess(options, success, complete, resolve) {
+    function handleSuccess(options) {
+        var success = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop$1;
+        var complete = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : noop$1;
+        var resolve = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : noop$1;
         success(options);
         complete(options);
         resolve(options);
     }
-    function handleFail(options, fail, complete, reject) {
+    function handleFail(options) {
+        var fail = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop$1;
+        var complete = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : noop$1;
+        var reject = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : noop$1;
         fail(options);
         complete(options);
         reject(options);
@@ -3478,275 +3488,275 @@
     'hideKeyboard',
     'setKeepScreenOn', 'getScreenBrightness', 'setScreenBrightness '];
     function canIUse(api) {
-      var apis = Object.keys(apiData).map(function (k) {
-        return k;
-      });
-      return apis.indexOf(api) >= 0 && NOTSUPPORTAPI.indexOf(api) < 0;
+        var apis = Object.keys(apiData).map(function (k) {
+            return k;
+        });
+        return apis.indexOf(api) >= 0 && NOTSUPPORTAPI.indexOf(api) < 0;
     }
     var canIUse$1 = {
-      canIUse: canIUse
+        canIUse: canIUse
     };
 
     var CanvasContext = function CanvasContext(canvasId) {
-      var canvasDom = document.getElementById(canvasId);
-      if (!canvasDom || !canvasDom.getContext) {
-        console.error('canvasId错误，或浏览器不支持canvas');
-      } else {
-        this.canvasDom = canvasDom;
-        this.width = canvasDom.width;
-        this.height = canvasDom.height;
-        this.ctx = canvasDom.getContext('2d');
-      }
-      this.missions = [];
+        var canvasDom = document.getElementById(canvasId);
+        if (!canvasDom || !canvasDom.getContext) {
+            console.error('canvasId错误，或浏览器不支持canvas');
+        } else {
+            this.canvasDom = canvasDom;
+            this.width = canvasDom.width;
+            this.height = canvasDom.height;
+            this.ctx = canvasDom.getContext('2d');
+        }
+        this.missions = [];
     };
     CanvasContext.prototype.setTextAlign = function (align) {
-      var _this = this;
-      this.missions.push(function () {
-        _this.ctx.textAlign = align;
-      });
+        var _this = this;
+        this.missions.push(function () {
+            _this.ctx.textAlign = align;
+        });
     };
     CanvasContext.prototype.setTextBaseline = function (textBaseline) {
-      var _this2 = this;
-      this.missions.push(function () {
-        _this2.ctx.textBaseline = textBaseline;
-      });
+        var _this2 = this;
+        this.missions.push(function () {
+            _this2.ctx.textBaseline = textBaseline;
+        });
     };
     CanvasContext.prototype.setFillStyle = function () {
-      var _this3 = this;
-      var color = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'black';
-      this.missions.push(function () {
-        _this3.ctx.fillStyle = color;
-      });
+        var _this3 = this;
+        var color = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'black';
+        this.missions.push(function () {
+            _this3.ctx.fillStyle = color;
+        });
     };
     CanvasContext.prototype.setStrokeStyle = function () {
-      var _this4 = this;
-      var color = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'black';
-      this.missions.push(function () {
-        _this4.ctx.strokeStyle = color;
-      });
+        var _this4 = this;
+        var color = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'black';
+        this.missions.push(function () {
+            _this4.ctx.strokeStyle = color;
+        });
     };
     CanvasContext.prototype.setShadow = function () {
-      var offsetX = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-      var offsetY = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-      var _this5 = this;
-      var blur = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-      var color = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'black';
-      this.missions.push(function () {
-        _this5.ctx.shadowOffsetX = offsetX;
-        _this5.ctx.shadowOffsetY = offsetY;
-        _this5.ctx.shadowBlur = blur;
-        _this5.ctx.shadowColor = color;
-      });
+        var offsetX = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+        var offsetY = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+        var _this5 = this;
+        var blur = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+        var color = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'black';
+        this.missions.push(function () {
+            _this5.ctx.shadowOffsetX = offsetX;
+            _this5.ctx.shadowOffsetY = offsetY;
+            _this5.ctx.shadowBlur = blur;
+            _this5.ctx.shadowColor = color;
+        });
     };
     CanvasContext.prototype.createLinearGradient = function (x0, y0, x1, y1) {
-      return this.ctx.createLinearGradient(x0, y0, x1, y1);
+        return this.ctx.createLinearGradient(x0, y0, x1, y1);
     };
     CanvasContext.prototype.createCircularGradient = function (x, y, r) {
-      return this.ctx.createRadialGradient(x, y, 0, x, y, r);
+        return this.ctx.createRadialGradient(x, y, 0, x, y, r);
     };
     CanvasContext.prototype.setLineWidth = function (lineWidth) {
-      var _this6 = this;
-      this.missions.push(function () {
-        _this6.ctx.lineWidth = lineWidth;
-      });
+        var _this6 = this;
+        this.missions.push(function () {
+            _this6.ctx.lineWidth = lineWidth;
+        });
     };
     CanvasContext.prototype.setLineCap = function (lineCap) {
-      var _this7 = this;
-      this.missions.push(function () {
-        _this7.ctx.lineCap = lineCap;
-      });
+        var _this7 = this;
+        this.missions.push(function () {
+            _this7.ctx.lineCap = lineCap;
+        });
     };
     CanvasContext.prototype.setLineJoin = function (lineJoin) {
-      var _this8 = this;
-      this.missions.push(function () {
-        _this8.ctx.lineJoin = lineJoin;
-      });
+        var _this8 = this;
+        this.missions.push(function () {
+            _this8.ctx.lineJoin = lineJoin;
+        });
     };
     CanvasContext.prototype.setMiterLimit = function (miterLimit) {
-      var _this9 = this;
-      this.missions.push(function () {
-        _this9.ctx.miterLimit = miterLimit;
-      });
+        var _this9 = this;
+        this.missions.push(function () {
+            _this9.ctx.miterLimit = miterLimit;
+        });
     };
     CanvasContext.prototype.rect = function (x, y, width, height) {
-      var _this10 = this;
-      this.missions.push(function () {
-        _this10.ctx.rect(x, y, width, height);
-      });
+        var _this10 = this;
+        this.missions.push(function () {
+            _this10.ctx.rect(x, y, width, height);
+        });
     };
     CanvasContext.prototype.fillRect = function (x, y, width, height) {
-      var _this11 = this;
-      this.missions.push(function () {
-        _this11.ctx.fillRect(x, y, width, height);
-      });
+        var _this11 = this;
+        this.missions.push(function () {
+            _this11.ctx.fillRect(x, y, width, height);
+        });
     };
     CanvasContext.prototype.strokeRect = function (x, y, width, height) {
-      var _this12 = this;
-      this.missions.push(function () {
-        _this12.ctx.strokeRect(x, y, width, height);
-      });
+        var _this12 = this;
+        this.missions.push(function () {
+            _this12.ctx.strokeRect(x, y, width, height);
+        });
     };
     CanvasContext.prototype.clearRect = function (x, y, width, height) {
-      var _this13 = this;
-      this.missions.push(function () {
-        _this13.ctx.clearRect(x, y, width, height);
-      });
+        var _this13 = this;
+        this.missions.push(function () {
+            _this13.ctx.clearRect(x, y, width, height);
+        });
     };
     CanvasContext.prototype.fill = function () {
-      var _this14 = this;
-      this.missions.push(function () {
-        _this14.ctx.fill();
-      });
+        var _this14 = this;
+        this.missions.push(function () {
+            _this14.ctx.fill();
+        });
     };
     CanvasContext.prototype.stroke = function () {
-      var _this15 = this;
-      this.missions.push(function () {
-        _this15.ctx.stroke();
-      });
+        var _this15 = this;
+        this.missions.push(function () {
+            _this15.ctx.stroke();
+        });
     };
     CanvasContext.prototype.beginPath = function () {
-      var _this16 = this;
-      this.missions.push(function () {
-        _this16.ctx.beginPath();
-      });
+        var _this16 = this;
+        this.missions.push(function () {
+            _this16.ctx.beginPath();
+        });
     };
     CanvasContext.prototype.closePath = function () {
-      var _this17 = this;
-      this.missions.push(function () {
-        _this17.ctx.closePath();
-      });
+        var _this17 = this;
+        this.missions.push(function () {
+            _this17.ctx.closePath();
+        });
     };
     CanvasContext.prototype.moveTo = function (x, y) {
-      var _this18 = this;
-      this.missions.push(function () {
-        _this18.ctx.moveTo(x, y);
-      });
+        var _this18 = this;
+        this.missions.push(function () {
+            _this18.ctx.moveTo(x, y);
+        });
     };
     CanvasContext.prototype.lineTo = function (x, y) {
-      var _this19 = this;
-      this.missions.push(function () {
-        _this19.ctx.lineTo(x, y);
-      });
+        var _this19 = this;
+        this.missions.push(function () {
+            _this19.ctx.lineTo(x, y);
+        });
     };
     CanvasContext.prototype.arc = function (x, y, r, sAngle, eAngle, counterclockwise) {
-      var _this20 = this;
-      this.missions.push(function () {
-        _this20.ctx.arc(x, y, r, sAngle, eAngle, counterclockwise);
-      });
+        var _this20 = this;
+        this.missions.push(function () {
+            _this20.ctx.arc(x, y, r, sAngle, eAngle, counterclockwise);
+        });
     };
     CanvasContext.prototype.bezierCurveTo = function (cp1x, cp1y, cp2x, cp2y, x, y) {
-      var _this21 = this;
-      this.missions.push(function () {
-        _this21.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
-      });
+        var _this21 = this;
+        this.missions.push(function () {
+            _this21.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+        });
     };
     CanvasContext.prototype.clip = function () {
-      var _this22 = this;
-      this.missions.push(function () {
-        _this22.ctx.clip();
-      });
+        var _this22 = this;
+        this.missions.push(function () {
+            _this22.ctx.clip();
+        });
     };
     CanvasContext.prototype.quadraticCurveTo = function (cpx, cpy, x, y) {
-      var _this23 = this;
-      this.missions.push(function () {
-        _this23.ctx.quadraticCurveTo(cpx, cpy, x, y);
-      });
+        var _this23 = this;
+        this.missions.push(function () {
+            _this23.ctx.quadraticCurveTo(cpx, cpy, x, y);
+        });
     };
     CanvasContext.prototype.scale = function (scaleWidth, scaleHeight) {
-      var _this24 = this;
-      this.missions.push(function () {
-        _this24.ctx.scale(scaleWidth, scaleHeight);
-      });
+        var _this24 = this;
+        this.missions.push(function () {
+            _this24.ctx.scale(scaleWidth, scaleHeight);
+        });
     };
     CanvasContext.prototype.rotate = function (rotate) {
-      var _this25 = this;
-      this.missions.push(function () {
-        _this25.ctx.rotate(rotate);
-      });
+        var _this25 = this;
+        this.missions.push(function () {
+            _this25.ctx.rotate(rotate);
+        });
     };
     CanvasContext.prototype.translate = function (x, y) {
-      var _this26 = this;
-      this.missions.push(function () {
-        _this26.ctx.translate(x, y);
-      });
+        var _this26 = this;
+        this.missions.push(function () {
+            _this26.ctx.translate(x, y);
+        });
     };
     CanvasContext.prototype.setFontSize = function (fontSize) {
-      var _this27 = this;
-      this.missions.push(function () {
-        _this27.ctx.font = fontSize;
-      });
+        var _this27 = this;
+        this.missions.push(function () {
+            _this27.ctx.font = fontSize;
+        });
     };
     CanvasContext.prototype.fillText = function (text, x, y, maxWidth) {
-      var _this28 = this;
-      this.missions.push(function () {
-        _this28.ctx.fillText(text, x, y, maxWidth);
-      });
+        var _this28 = this;
+        this.missions.push(function () {
+            _this28.ctx.fillText(text, x, y, maxWidth);
+        });
     };
     CanvasContext.prototype.drawImage = function (imageResource, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight) {
-      var _this29 = this;
-      this.missions.push(function () {
-        _this29.ctx.drawImage(imageResource, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight);
-      });
+        var _this29 = this;
+        this.missions.push(function () {
+            _this29.ctx.drawImage(imageResource, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight);
+        });
     };
     CanvasContext.prototype.setGlobalAlpha = function (alpha) {
-      var _this30 = this;
-      this.missions.push(function () {
-        _this30.ctx.globalAlpha = alpha;
-      });
+        var _this30 = this;
+        this.missions.push(function () {
+            _this30.ctx.globalAlpha = alpha;
+        });
     };
     CanvasContext.prototype.setLineDash = function (segments, offset) {
-      var _this31 = this;
-      this.missions.push(function () {
-        _this31.ctx.setLineDash(segments, offset);
-      });
+        var _this31 = this;
+        this.missions.push(function () {
+            _this31.ctx.setLineDash(segments, offset);
+        });
     };
     CanvasContext.prototype.transform = function (scaleX, skewX, skewY, scaleY, translateX, translateY) {
-      var _this32 = this;
-      this.missions.push(function () {
-        _this32.ctx.transform(scaleX, skewX, skewY, scaleY, translateX, translateY);
-      });
+        var _this32 = this;
+        this.missions.push(function () {
+            _this32.ctx.transform(scaleX, skewX, skewY, scaleY, translateX, translateY);
+        });
     };
     CanvasContext.prototype.setTransform = function (scaleX, skewX, skewY, scaleY, translateX, translateY) {
-      var _this33 = this;
-      this.missions.push(function () {
-        _this33.ctx.setTransform(scaleX, skewX, skewY, scaleY, translateX, translateY);
-      });
+        var _this33 = this;
+        this.missions.push(function () {
+            _this33.ctx.setTransform(scaleX, skewX, skewY, scaleY, translateX, translateY);
+        });
     };
     CanvasContext.prototype.save = function () {
-      var _this34 = this;
-      this.missions.push(function () {
-        _this34.ctx.save();
-      });
+        var _this34 = this;
+        this.missions.push(function () {
+            _this34.ctx.save();
+        });
     };
     CanvasContext.prototype.restore = function () {
-      var _this35 = this;
-      this.missions.push(function () {
-        _this35.ctx.restore();
-      });
+        var _this35 = this;
+        this.missions.push(function () {
+            _this35.ctx.restore();
+        });
     };
     CanvasContext.prototype.draw = function () {
-      var reserve = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
-      if (!reserve) {
-        this.height = this.height;
-      }
-      this.missions.forEach(function (mission) {
-        mission();
-      });
-      callback();
+        var reserve = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+        if (!reserve) {
+            this.height = this.height;
+        }
+        this.missions.forEach(function (mission) {
+            mission();
+        });
+        callback();
     };
     CanvasContext.prototype.measureText = function (text) {
-      return this.ctx.measureText(text);
+        return this.ctx.measureText(text);
     };
     function createCanvasContext(canvasId) {
-      return new CanvasContext(canvasId);
+        return new CanvasContext(canvasId);
     }
     function canvasToTempFilePath() {
-      console.warn('暂未实现');
+        console.warn('暂未实现');
     }
     var canvas = {
-      createCanvasContext: createCanvasContext,
-      canvasToTempFilePath: canvasToTempFilePath
+        createCanvasContext: createCanvasContext,
+        canvasToTempFilePath: canvasToTempFilePath
     };
 
     function setClipboardData() {
@@ -4285,225 +4295,334 @@
     var that = null;
     var container = null;
     var PreviewImage = function (_Component) {
-      _inherits$4(PreviewImage, _Component);
-      function PreviewImage(props) {
-        _classCallCheck$4(this, PreviewImage);
-        var _this = _possibleConstructorReturn$4(this, _Component.call(this, props));
-        _this.state = {
-          visible: false,
-          urls: [],
-          current: 0
+        _inherits$4(PreviewImage, _Component);
+        function PreviewImage(props) {
+            _classCallCheck$4(this, PreviewImage);
+            var _this = _possibleConstructorReturn$4(this, _Component.call(this, props));
+            _this.state = {
+                visible: false,
+                urls: [],
+                current: 0
+            };
+            _this.close = _this.close.bind(_this);
+            _this.gotoPrevious = _this.gotoPrevious.bind(_this);
+            _this.gotoNext = _this.gotoNext.bind(_this);
+            _this.gotoImage = _this.gotoImage.bind(_this);
+            that = _this;
+            return _this;
+        }
+        PreviewImage.prototype.componentDidMount = function componentDidMount() {
+            handleSuccess({
+                errMsg: 'previewImage:ok'
+            }, this.props.success, this.props.complete, this.props.resolve);
         };
-        _this.close = _this.close.bind(_this);
-        _this.gotoPrevious = _this.gotoPrevious.bind(_this);
-        _this.gotoNext = _this.gotoNext.bind(_this);
-        _this.gotoImage = _this.gotoImage.bind(_this);
-        that = _this;
-        return _this;
-      }
-      PreviewImage.prototype.componentDidMount = function componentDidMount() {
-        handleSuccess({
-          errMsg: 'previewImage:ok'
-        }, this.props.success, this.props.complete, this.props.resolve);
-      };
-      PreviewImage.prototype.componentWillUnmount = function componentWillUnmount() {
-        document.removeChild(container);
-      };
-      PreviewImage.prototype.gotoPrevious = function gotoPrevious() {
-        this.setState({
-          current: this.state.current - 1
-        });
-      };
-      PreviewImage.prototype.gotoNext = function gotoNext() {
-        this.setState({
-          current: this.state.current + 1
-        });
-      };
-      PreviewImage.prototype.gotoImage = function gotoImage(index) {
-        this.setState({
-          current: index
-        });
-      };
-      PreviewImage.prototype.close = function close() {
-        this.setState({
-          visible: false
-        });
-      };
-      PreviewImage.prototype.render = function render() {
-        var _state = this.state,
-            visible = _state.visible,
-            urls = _state.urls,
-            current = _state.current;
-        container.style = visible ? 'width: 100%;height: 100%;position: fixed;' : 'none';
-        return React.createElement('div', null);
-      };
-      return PreviewImage;
+        PreviewImage.prototype.componentWillUnmount = function componentWillUnmount() {
+            document.removeChild(container);
+        };
+        PreviewImage.prototype.gotoPrevious = function gotoPrevious() {
+            this.setState({
+                current: this.state.current - 1
+            });
+        };
+        PreviewImage.prototype.gotoNext = function gotoNext() {
+            this.setState({
+                current: this.state.current + 1
+            });
+        };
+        PreviewImage.prototype.gotoImage = function gotoImage(index) {
+            this.setState({
+                current: index
+            });
+        };
+        PreviewImage.prototype.close = function close() {
+            this.setState({
+                visible: false
+            });
+        };
+        PreviewImage.prototype.render = function render() {
+            var _state = this.state,
+                visible = _state.visible,
+                urls = _state.urls,
+                current = _state.current;
+            container.style = visible ? 'width: 100%;height: 100%;position: fixed;' : 'none';
+            return React.createElement('div', null);
+        };
+        return PreviewImage;
     }(Component);
     function previewImage() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return new Promise(function (resolve, reject) {
-        var urls = options.urls,
-            current = options.current,
-            _options$success = options.success,
-            success = _options$success === undefined ? function () {} : _options$success,
-            _options$fail = options.fail,
-            fail = _options$fail === undefined ? function () {} : _options$fail,
-            _options$complete = options.complete,
-            complete = _options$complete === undefined ? function () {} : _options$complete;
-        container = document.createElement('div');
-        document.body.appendChild(container);
-        DOMRenderer.render(React.createElement(PreviewImage, {
-          success: success,
-          fail: fail,
-          complete: complete,
-          resolve: resolve,
-          reject: reject
-        }), container);
-        that.setState({
-          visible: true,
-          urls: urls,
-          current: current
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        return new Promise(function (resolve, reject) {
+            var urls = options.urls,
+                current = options.current,
+                _options$success = options.success,
+                success = _options$success === undefined ? function () {} : _options$success,
+                _options$fail = options.fail,
+                fail = _options$fail === undefined ? function () {} : _options$fail,
+                _options$complete = options.complete,
+                complete = _options$complete === undefined ? function () {} : _options$complete;
+            container = document.createElement('div');
+            document.body.appendChild(container);
+            DOMRenderer.render(React.createElement(PreviewImage, {
+                success: success,
+                fail: fail,
+                complete: complete,
+                resolve: resolve,
+                reject: reject
+            }), container);
+            that.setState({
+                visible: true,
+                urls: urls,
+                current: current
+            });
         });
-      });
     }
     var previewImage$1 = {
-      previewImage: previewImage
+        previewImage: previewImage
     };
 
-    axios.defaults.headers = {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    };
+    function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+    function _possibleConstructorReturn$5(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+    function _inherits$5(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+    function _classCallCheck$5(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
     var CancelToken = axios.CancelToken;
-    axios.interceptors.response.use(function (response) {
-      return response.status === 200 ? Promise.resolve(response) : Promise.reject(response);
-    }, function (error) {
-      if (error && error.response) {
-        switch (error.response.status) {
-          case 404:
-            error.message = '请求错误,未找到该资源';
-            break;
-          case 500:
-            error.message = '服务器端出错';
-            break;
-          default:
-            error.message = '\u672A\u77E5\u9519\u8BEF: ' + error.response.status;
+    var contentTypeMap = {
+        'jpg': 'application/x-jpg',
+        'jpeg': 'image/jpeg',
+        'png': 'application/x-png',
+        'gif': 'image/gif'
+    };
+    var BaseTask = function () {
+        function BaseTask(fileType) {
+            _classCallCheck$5(this, BaseTask);
+            this._headerReceivedCallbacks = [];
+            this._progressUpdateCallbacks = [];
+            this._source = CancelToken.source();
+            axios.defaults.headers = {
+                'Content-Type': fileType && contentTypeMap[fileType] || 'application/x-www-form-urlencoded'
+            };
         }
-      }
-      return Promise.resolve(error);
+        BaseTask.prototype.abort = function abort() {
+            this._source.cancel();
+        };
+        BaseTask.prototype.offHeadersReceived = function offHeadersReceived(callback) {};
+        BaseTask.prototype.onHeadersReceived = function onHeadersReceived(callback) {
+            if (typeof callback !== 'function') {
+                throw new Error('Callback must be a function!');
+            }
+            this._headerReceivedCallbacks.push(callback);
+        };
+        return BaseTask;
+    }();
+    var RequestTask = function (_BaseTask) {
+        _inherits$5(RequestTask, _BaseTask);
+        function RequestTask(_ref) {
+            var _ref$url = _ref.url,
+                url = _ref$url === undefined ? '' : _ref$url,
+                _ref$method = _ref.method,
+                method = _ref$method === undefined ? 'get' : _ref$method,
+                _ref$data = _ref.data,
+                data = _ref$data === undefined ? {} : _ref$data,
+                _ref$header = _ref.header,
+                header = _ref$header === undefined ? {} : _ref$header,
+                _ref$responseType = _ref.responseType,
+                responseType = _ref$responseType === undefined ? 'text' : _ref$responseType,
+                _ref$success = _ref.success,
+                success = _ref$success === undefined ? function () {} : _ref$success,
+                _ref$fail = _ref.fail,
+                fail = _ref$fail === undefined ? function () {} : _ref$fail,
+                _ref$complete = _ref.complete,
+                complete = _ref$complete === undefined ? function () {} : _ref$complete;
+            _classCallCheck$5(this, RequestTask);
+            var _this = _possibleConstructorReturn$5(this, _BaseTask.call(this));
+            method = method.toLowerCase();
+            Object.keys(data).forEach(function (key) {
+                if (data[key] === '' || data[key] == null) delete data[key];
+            });
+            if (method === 'get') data = { params: data };
+            if (method === 'post') data = qs.stringify(data);
+            axios({
+                method: method,
+                url: url,
+                data: data,
+                headers: header,
+                responseType: responseType,
+                cancelToken: _this._source.token
+            }).then(function (res) {
+                if (axios.isCancel(res)) {
+                    handleFail(res.message || 'request abort!', fail, complete);
+                    return;
+                }
+                _this._headerReceivedCallbacks.forEach(function (cb) {
+                    cb({
+                        header: res.headers
+                    });
+                });
+                handleSuccess(res, success, complete);
+            }).catch(function (err) {
+                handleFail(err, fail, complete);
+            });
+            return _this;
+        }
+        return RequestTask;
+    }(BaseTask);
+    var DownloadTask = function (_BaseTask2) {
+        _inherits$5(DownloadTask, _BaseTask2);
+        function DownloadTask(_ref2) {
+            var _ref2$url = _ref2.url,
+                url = _ref2$url === undefined ? '' : _ref2$url,
+                _ref2$header = _ref2.header,
+                header = _ref2$header === undefined ? '' : _ref2$header,
+                _ref2$formData = _ref2.formData,
+                formData = _ref2$formData === undefined ? {} : _ref2$formData,
+                _ref2$success = _ref2.success,
+                success = _ref2$success === undefined ? function () {} : _ref2$success,
+                _ref2$fail = _ref2.fail,
+                fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
+                _ref2$complete = _ref2.complete,
+                complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
+            _classCallCheck$5(this, DownloadTask);
+            var fileType = '';
+            url.replace(/\.(\w+)$/, function (match, type) {
+                fileType = type;
+            });
+            var _this2 = _possibleConstructorReturn$5(this, _BaseTask2.call(this, fileType));
+            var reg = /\/([\w.]+?)$/;
+            var name = url.match(reg) && url.match(reg)[1] || 'temp';
+            axios({
+                url: url,
+                method: 'GET',
+                responseType: 'blob',
+                headers: header,
+                data: getFormData(formData),
+                onDownloadProgress: function onDownloadProgress(progressEvent) {
+                    _this2._progressUpdateCallbacks.forEach(function (cb) {
+                        cb(getProcessEventData(progressEvent));
+                    });
+                }
+            }).then(function (response) {
+                if (response && response.status === 200) {
+                    var _url = window.URL.createObjectURL(new Blob([response.data]));
+                    var link = document.createElement('a');
+                    link.href = _url;
+                    link.setAttribute('download', name);
+                    document.body.appendChild(link);
+                    link.click();
+                    handleSuccess(response, success, complete);
+                } else {
+                    handleFail(response, fail, complete);
+                }
+            }).catch(function (err) {
+                handleFail(err, fail, complete);
+            });
+            return _this2;
+        }
+        DownloadTask.prototype.offProgressUpdate = function offProgressUpdate() {};
+        DownloadTask.prototype.onProgressUpdate = function onProgressUpdate(callback) {
+            if (typeof callback !== 'function') {
+                throw new Error('Callback must be a function!');
+            }
+            this._progressUpdateCallbacks.push(callback);
+        };
+        return DownloadTask;
+    }(BaseTask);
+    var UploadeTask = function (_BaseTask3) {
+        _inherits$5(UploadeTask, _BaseTask3);
+        function UploadeTask(_ref3) {
+            var _ref3$url = _ref3.url,
+                url = _ref3$url === undefined ? '' : _ref3$url,
+                _ref3$formData = _ref3.formData,
+                formData = _ref3$formData === undefined ? {} : _ref3$formData,
+                _ref3$header = _ref3.header,
+                header = _ref3$header === undefined ? {} : _ref3$header,
+                _ref3$filePath = _ref3.filePath,
+                filePath = _ref3$filePath === undefined ? new File() : _ref3$filePath,
+                _ref3$name = _ref3.name,
+                name = _ref3$name === undefined ? 'file' : _ref3$name,
+                _ref3$success = _ref3.success,
+                success = _ref3$success === undefined ? function () {} : _ref3$success,
+                _ref3$fail = _ref3.fail,
+                fail = _ref3$fail === undefined ? function () {} : _ref3$fail,
+                _ref3$complete = _ref3.complete,
+                complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
+            _classCallCheck$5(this, UploadeTask);
+            var _this3 = _possibleConstructorReturn$5(this, _BaseTask3.call(this));
+            Object.assign(formData, _defineProperty({}, name, filePath));
+            axios({
+                method: 'post',
+                url: url,
+                data: getFormData(formData),
+                headers: Object.assign({}, { 'content-type': 'multipart/form-data' }, header),
+                onUploadProgress: function onUploadProgress(progressEvent) {
+                    _this3._progressUpdateCallbacks.forEach(function (cb) {
+                        cb(getProcessEventData(progressEvent));
+                    });
+                }
+            }).then(function (res) {
+                handleSuccess(res, success, complete);
+            }).catch(function (err) {
+                handleFail(err, fail, complete);
+            });
+            return _this3;
+        }
+        UploadeTask.prototype.offProgressUpdate = function offProgressUpdate() {};
+        UploadeTask.prototype.onProgressUpdate = function onProgressUpdate(callback) {
+            if (typeof callback !== 'function') {
+                throw new Error('Callback must be a function!');
+            }
+            this._progressUpdateCallbacks.push(callback);
+        };
+        return UploadeTask;
+    }(BaseTask);
+    axios.interceptors.response.use(function (response) {
+        return response.status === 200 ? Promise.resolve(response) : Promise.reject(response);
+    }, function (error) {
+        if (error && error.response) {
+            switch (error.response.status) {
+                case 404:
+                    error.message = '请求错误,未找到该资源';
+                    break;
+                case 500:
+                    error.message = '服务器端出错';
+                    break;
+                default:
+                    error.message = '\u672A\u77E5\u9519\u8BEF: ' + error.response.status;
+            }
+        }
+        return Promise.resolve(error);
     });
     function getFormData(formData) {
-      var data = new FormData();
-      Object.keys(formData).forEach(function (k) {
-        data.append(k, formData[k]);
-      });
-      return data;
+        var data = new FormData();
+        Object.keys(formData).forEach(function (k) {
+            data.append(k, formData[k]);
+        });
+        return data;
+    }
+    function getProcessEventData(nativeEvent) {
+        var totalBytesWritten = nativeEvent.loaded;
+        var totalBytesExpectedToWrite = nativeEvent.total;
+        var progress = Math.floor(totalBytesWritten / totalBytesExpectedToWrite * 100);
+        return {
+            progress: progress,
+            totalBytesWritten: totalBytesWritten,
+            totalBytesExpectedToWrite: totalBytesExpectedToWrite
+        };
     }
     function request() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref$url = _ref.url,
-          url = _ref$url === undefined ? '' : _ref$url,
-          _ref$method = _ref.method,
-          method = _ref$method === undefined ? 'get' : _ref$method,
-          _ref$data = _ref.data,
-          data = _ref$data === undefined ? {} : _ref$data,
-          _ref$header = _ref.header,
-          header = _ref$header === undefined ? {} : _ref$header,
-          _ref$responseType = _ref.responseType,
-          responseType = _ref$responseType === undefined ? 'text' : _ref$responseType,
-          _ref$success = _ref.success,
-          success = _ref$success === undefined ? function () {} : _ref$success,
-          _ref$fail = _ref.fail,
-          fail = _ref$fail === undefined ? function () {} : _ref$fail,
-          _ref$complete = _ref.complete,
-          complete = _ref$complete === undefined ? function () {} : _ref$complete;
-      return new Promise(function (resolve, reject) {
-        method = method.toLowerCase();
-        Object.keys(data).forEach(function (key) {
-          if (data[key] === '' || data[key] == null) delete data[key];
-        });
-        if (method === 'get') data = { params: data };
-        if (method === 'post') data = qs.stringify(data);
-        axios({
-          method: method,
-          url: url,
-          data: data,
-          headers: header,
-          responseType: responseType,
-          cancelToken: new CancelToken(function (c) {
-          })
-        }).then(function (res) {
-          handleSuccess(res, success, complete, resolve);
-        }).catch(function (err) {
-          handleFail(err, fail, complete, reject);
-        });
-      });
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        return new RequestTask(options);
     }
     function uploadFile() {
-      var url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-      var formData = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var header = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      var success = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : function () {};
-      var fail = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : function () {};
-      var complete = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : function () {};
-      return new Promise(function (resolve, reject) {
-        axios({
-          method: 'post',
-          url: url,
-          data: getFormData(formData),
-          headers: Object.assign({}, { 'content-type': 'multipart/form-data' }, header)
-        }).then(function (res) {
-          handleSuccess(res, success, complete, resolve);
-        }).catch(function (err) {
-          handleFail(err, fail, complete, reject);
-        });
-      });
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        return new UploadeTask(options);
     }
     function downloadFile() {
-      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref2$url = _ref2.url,
-          url = _ref2$url === undefined ? '' : _ref2$url,
-          _ref2$name = _ref2.name,
-          name = _ref2$name === undefined ? '' : _ref2$name,
-          _ref2$header = _ref2.header,
-          header = _ref2$header === undefined ? '' : _ref2$header,
-          _ref2$formData = _ref2.formData,
-          formData = _ref2$formData === undefined ? {} : _ref2$formData,
-          _ref2$success = _ref2.success,
-          success = _ref2$success === undefined ? function () {} : _ref2$success,
-          _ref2$fail = _ref2.fail,
-          fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
-          _ref2$complete = _ref2.complete,
-          complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
-      return new Promise(function (resolve, reject) {
-        var reg = /\.(\w+)$/;
-        name += url.match(reg) ? '.' + url.match(reg)[1] : '';
-        axios({
-          url: url,
-          method: 'GET',
-          responseType: 'blob',
-          headers: header,
-          data: getFormData(formData)
-        }).then(function (response) {
-          if (response && response.status === 200) {
-            var _url = window.URL.createObjectURL(new Blob([response.data]));
-            var link = document.createElement('a');
-            link.href = _url;
-            link.setAttribute('download', name);
-            document.body.appendChild(link);
-            link.click();
-            handleSuccess(response, success, complete, resolve);
-          } else {
-            handleFail(response, fail, complete, reject);
-          }
-        }).catch(function (err) {
-          handleFail(err, fail, complete, reject);
-        });
-      });
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        return new DownloadTask(options);
     }
     var request$1 = {
-      request: request,
-      uploadFile: uploadFile,
-      downloadFile: downloadFile
+        request: request,
+        uploadFile: uploadFile,
+        downloadFile: downloadFile
     };
 
     function pageScrollTo() {
@@ -5184,7 +5303,7 @@
     }
 
     var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-    function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+    function _defineProperty$1(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
     var render$2 = DOMRenderer.render;
     var __currentPages = [];
     var MAX_PAGE_STACK_NUM = 10;
@@ -5205,7 +5324,7 @@
         isValidElement: isValidElement,
         toClass: miniCreateClass,
         registerComponent: registerComponent,
-        getCurrentPage: function getCurrentPage$$1() {
+        getCurrentPage: function getCurrentPage() {
             return __currentPages[__currentPages.length - 1];
         },
         getCurrentPages: function getCurrentPages() {
@@ -5362,7 +5481,7 @@
         setNavigationBarColor: function setNavigationBarColor(options) {
             var processedOptions = Object.keys(options).reduce(function (accr, curr) {
                 var key = titleBarColorMap[curr];
-                return Object.assign({}, accr, _defineProperty({}, key || curr, options[curr]));
+                return Object.assign({}, accr, _defineProperty$1({}, key || curr, options[curr]));
             }, {});
             var currentPage = __currentPages.pop();
             __currentPages.push(cloneElement(currentPage, {
@@ -5374,7 +5493,7 @@
         setNavigationBarTitle: function setNavigationBarTitle(options) {
             var processedOptions = Object.keys(options).reduce(function (accr, curr) {
                 var key = titleBarTitleMap[curr];
-                return Object.assign({}, accr, _defineProperty({}, key || curr, options[curr]));
+                return Object.assign({}, accr, _defineProperty$1({}, key || curr, options[curr]));
             }, {});
             var currentPage = __currentPages.pop();
             __currentPages.push(cloneElement(currentPage, {
@@ -5426,4 +5545,4 @@
 
     return React$1;
 
-})));
+}));

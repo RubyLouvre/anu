@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-07-26T02
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-07-30T07
  * IE9+
  */
 
@@ -171,7 +171,7 @@ Component.prototype = {
         toWarnDev("replaceState", true);
     },
     isReactComponent: returnTrue,
-    isMounted: function isMounted$$1() {
+    isMounted: function isMounted() {
         toWarnDev("isMounted", true);
         return this.updater.isMounted(this);
     },
@@ -418,7 +418,7 @@ var Children = {
     forEach: function forEach(children, func, context) {
         return proxyIt(children, func, null, context);
     },
-    toArray: function toArray$$1(children) {
+    toArray: function toArray(children) {
         return proxyIt(children, K, []);
     }
 };
@@ -866,7 +866,7 @@ var RequestQueue = {
     queue: [],
     request: function request(options) {
         this.push(options);
-        this.run();
+        return this.run();
     },
     push: function push(options) {
         this.queue.push(options);
@@ -883,7 +883,7 @@ var RequestQueue = {
                 completeFn && completeFn.apply(null, arguments);
                 self.run();
             };
-            this.facade.request(options);
+            return this.facade.request(options);
         }
     }
 };
@@ -1306,18 +1306,21 @@ function removeFormBoundaries(fiber) {
         arr.splice(index, 1);
     }
 }
-function detachFiber(fiber, effects$$1) {
+function detachFiber(fiber, effects) {
     fiber.effectTag = DETACH;
-    effects$$1.push(fiber);
+    effects.push(fiber);
     fiber.disposed = true;
     for (var child = fiber.child; child; child = child.sibling) {
-        detachFiber(child, effects$$1);
+        detachFiber(child, effects);
     }
 }
 
 function setter(compute, cursor, value) {
-    this.updateQueue[cursor] = compute(cursor, value);
-    Renderer.updateComponent(this, true);
+    var _this = this;
+    Renderer.batchedUpdates(function () {
+        _this.updateQueue[cursor] = compute(cursor, value);
+        Renderer.updateComponent(_this, true);
+    });
 }
 var hookCursor = 0;
 function resetCursor() {
@@ -1358,7 +1361,7 @@ function useReducerImpl(reducer, initValue, initAction) {
     var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
     return [value, dispatch];
 }
-function useCallbackImpl(create, deps, isMemo) {
+function useCallbackImpl(create, deps, isMemo, isEffect) {
     var fiber = getCurrentFiber();
     var key = getCurrentKey();
     var updateQueue = fiber.updateQueue;
@@ -1367,23 +1370,23 @@ function useCallbackImpl(create, deps, isMemo) {
     if (prevState) {
         var prevInputs = prevState[1];
         if (areHookInputsEqual(nextInputs, prevInputs)) {
-            return;
+            return isEffect ? null : prevState[0];
         }
     }
-    var value = isMemo ? create() : create;
-    updateQueue[key] = [value, nextInputs];
-    return value;
+    var fn = isMemo ? create() : create;
+    updateQueue[key] = [fn, nextInputs];
+    return fn;
 }
 function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
     var fiber = getCurrentFiber();
-    var cb = useCallbackImpl(create, deps);
-    if (fiber.effectTag % EffectTag) {
-        fiber.effectTag *= EffectTag;
+    if (useCallbackImpl(create, deps, false, true)) {
+        if (fiber.effectTag % EffectTag) {
+            fiber.effectTag *= EffectTag;
+        }
+        var list = updateQueue[createList] || (updateQueue[createList] = []);
+        updateQueue[destroyList] || (updateQueue[destroyList] = []);
+        list.push(create);
     }
-    var updateQueue = fiber.updateQueue;
-    var list = updateQueue[createList] || (updateQueue[createList] = []);
-    updateQueue[destroyList] || (updateQueue[destroyList] = []);
-    list.push(cb);
 }
 function getCurrentFiber() {
     return get(Renderer.currentOwner);
@@ -1780,7 +1783,7 @@ function diffChildren(parentFiber, children) {
         oldFibers = {};
     }
     var newFibers = fiberizeChildren(children, parentFiber);
-    var effects$$1 = parentFiber.effects || (parentFiber.effects = []);
+    var effects = parentFiber.effects || (parentFiber.effects = []);
     var matchFibers = new Object();
     delete parentFiber.child;
     for (var i in oldFibers) {
@@ -1793,7 +1796,7 @@ function diffChildren(parentFiber, children) {
             }
             continue;
         }
-        detachFiber(oldFiber, effects$$1);
+        detachFiber(oldFiber, effects);
     }
     var prevFiber = void 0,
         index = 0;
@@ -1813,13 +1816,13 @@ function diffChildren(parentFiber, children) {
                     delete _newFiber.deleteRef;
                 }
                 if (oldRef && oldRef !== _newFiber.ref) {
-                    effects$$1.push(alternate);
+                    effects.push(alternate);
                 }
                 if (_newFiber.tag === 5) {
                     _newFiber.lastProps = alternate.props;
                 }
             } else {
-                detachFiber(_oldFiber, effects$$1);
+                detachFiber(_oldFiber, effects);
             }
         } else {
             _newFiber = new Fiber(_newFiber);
@@ -1935,10 +1938,10 @@ function commitDFSImpl(fiber) {
         }
     }
 }
-function commitDFS(effects$$1) {
+function commitDFS(effects) {
     Renderer.batchedUpdates(function () {
         var el;
-        while (el = effects$$1.shift()) {
+        while (el = effects.shift()) {
             if (el.effectTag === DETACH && el.caughtError) {
                 disposeFiber(el);
             } else {
@@ -2046,7 +2049,7 @@ function disposeFibers(fiber) {
 }
 function safeInvokeHooks(upateQueue, create, destory) {
     var uneffects = upateQueue[destory],
-        effects$$1 = upateQueue[create],
+        effects = upateQueue[create],
         fn;
     if (!uneffects) {
         return;
@@ -2056,7 +2059,7 @@ function safeInvokeHooks(upateQueue, create, destory) {
             fn();
         } catch (e) {      }
     }
-    while (fn = effects$$1.shift()) {
+    while (fn = effects.shift()) {
         try {
             var f = fn();
             if (typeof f === 'function') {
@@ -2558,7 +2561,7 @@ function registerPage(PageClass, path, testObject) {
     var config = {
         data: {},
         dispatchEvent: dispatchEvent,
-        onLoad: function onLoad$$1(query) {
+        onLoad: function onLoad$1(query) {
             onLoad.call(this, PageClass, path, query);
         },
         onReady: onReady,
@@ -2698,4 +2701,4 @@ if (typeof wx != 'undefined') {
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component };
+export { Children, Component, createElement };

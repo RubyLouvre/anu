@@ -57,21 +57,21 @@ async function nanachi({
        
         showLog();
         const info = stats.toJson();
-        if (stats.hasErrors()) {
-            info.errors.forEach(e => {
-                // eslint-disable-next-line
-                console.error(chalk.red('Error:\n'), utils.cleanLog(e));
-                if (utils.isMportalEnv()) {
-                    process.exit();
-                }
-            });
-        }
         if (stats.hasWarnings() && !silent) {
             info.warnings.forEach(warning => {
                 // webpack require语句中包含变量会报warning: Critical dependency，此处过滤掉这个warning
                 if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
                     // eslint-disable-next-line
                     console.log(chalk.yellow('Warning:\n'), utils.cleanLog(warning));
+                }
+            });
+        }
+        if (stats.hasErrors()) {
+            info.errors.forEach(e => {
+                // eslint-disable-next-line
+                console.error(chalk.red('Error:\n'), utils.cleanLog(e));
+                if (utils.isMportalEnv()) {
+                    process.exit();
                 }
             });
         }
@@ -89,21 +89,21 @@ async function nanachi({
                         return;
                     }
                     const info = stats.toJson();
-                    if (stats.hasErrors()) {
-                        info.errors.forEach(e => {
-                            // eslint-disable-next-line
-                            console.error(chalk.red('Error:\n'), utils.cleanLog(e));
-                            if (utils.isMportalEnv()) {
-                                process.exit();
-                            }
-                        });
-                    }
                     if (stats.hasWarnings() && !silent) {
                         info.warnings.forEach(warning => {
                             // webpack require语句中包含变量会报warning: Critical dependency，此处过滤掉这个warning
                             if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
                                 // eslint-disable-next-line
                                 console.log(chalk.yellow('Warning:\n'), utils.cleanLog(warning));
+                            }
+                        });
+                    }
+                    if (stats.hasErrors()) {
+                        info.errors.forEach(e => {
+                            // eslint-disable-next-line
+                            console.error(chalk.red('Error:\n'), utils.cleanLog(e));
+                            if (utils.isMportalEnv()) {
+                                process.exit();
                             }
                         });
                     }
