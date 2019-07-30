@@ -4,16 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-<!--
-  <script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
-  <script src="https://cdn.bootcss.com/react-dom/16.7.0-alpha.2/umd/react-dom.development.js"></script>
--->
-<script src="./dist/React.js"></script>
-  <script src="./lib/ReactPropTypes.js"></script>
-<!--
- <script src="./dist/React.js"></script>
--->
-  <script type='text/javascript' src="./lib/babel.js"></script>
+
 
 </head>
 
@@ -22,54 +13,117 @@
   <div id='root' class="root">
 
   </div>
-  <script type='text/babel'>
+  <script>
+  class BinaryIndexedTree {
+    /**
+     * 为了统一下标，所以tree[0]不被使用，数组有效范围1~length。
+     * */
+            constructor(array) {
+                var n = array.length;
+                this.length = n;
+                this._sum = new Array(n + 1).fill(0)
+                console.log(this._sum.concat(), '---')
+                for (var i = 0; i < n; i++) {
+                 //   console.log(i+1, array[i])
+                    this.add(i+1, array[i], i+1)
+                    console.log('=======')
+                }
+                console.log(this._sum.concat(), '---')
+            }
+            /**
+             * 计算1~index范围内和
+             * index一直减去lowBit(index)，直到index为0
+             * */
+            sum(index) {
+                if (index < 1 && index > this.length) {
+                    throw new RangeError("Out of Range!");
+                }
+                var sum = 0;
+                while (index > 0) {
+                    sum += this._sum[index];
+                    index -= lowBit(index);
+                }
+                return sum;
+            }
+              /**
+             * index一直减去lowBit(index)，直到index为length。这些位置的值都加上value
+             * */
+             get(index) {
+                if (index < 1 && index > this.length) {
+                    throw new IllegalArgumentException("Out of Range!");
+                }
+                var sum = this._sum[index];
+                var z = index - lowBit(index);
+                index--;
+                while (index != z) {
+                    sum -= this._sum[index];
+                    index -= lowBit(index);
+                }
+                return sum;
+            }
+            /**
+             * 计算start~end范围内和
+             * */
+            queryRangeSum(start, end) {
+                return this.querySum(end) - this.querySum(start - 1);
+            }
+            /**
+             * index一直加上lowBit(index)，直到index为length。这些位置的值都加上value
+             * */
+            add(index, value, breakIndex) {
+                if (index < 1 && index > this.length) {
+                    throw new IllegalArgumentException("Out of Range!");
+                }
+             
+                while (index <= this.length ) {
+                    this._sum[index] += value;
+                    index += lowBit(index);//找到其父节点的索引
+                }
+            }
+          
 
-var container = document.getElementById('root');
-  if (!window.ReactDOM) {
-      window.ReactDOM = React;
-  }
-var newContext = React.createContext("xxxx")
-class A extends React.Component{
-  state = {
-    time: 19860219
-  }
-  onClick(){
-    this.setState({
-      time: new Date - 0
-    })
-  }
-  render(){
-    console.log('a render')
-    return <div>
-      <newContext.Provider value={this.state.time} >
-            <B />
-            <button type="button" onClick={this.onClick.bind(this) }> change </button>
-      </newContext.Provider>
-    </div>
-  }
+        }
+        // 保留k的二进制最低位1的值。例如，1110保留最低位1即0010.
+        function lowBit(k) {
+            return k & -k;
+        }
 
-}
-class B extends React.Component{
-  static contextType = newContext;
-  shouldComponentUpdate(a, b){
-    return false
-  }
-  render(){
-    console.log('b render')
-    return <div>|{this.context}|<C /></div>
-  }
+        var t = new BinaryIndexedTree([10, 18, 12, 5, 7, 11, 4, 15])
+        /**
+         *  10
+         *  28 = 10+18
+         *  12
+         *  45 = 28+12+5
+         *  7
+         *  18 = 7+11
+         *  4
+         *  82 = 45+18+4+15
+         */
+     console.log(t)
+       //
 
+       function prefixSum(x, c){
+            var nodes = [], res = 0
+            if( x === lowbit(x)){
+                x = x - 1;
+            }
+            while(x){
+                res + c[x]
+                var child = lowbit(x);
+                if(child === x){
+                    break
+                }
+                x = x - child
+            }
+            return res
+       }
+       
+    
+function lowbit(x){
+    return x & (-x)
 }
-class C extends React.Component{
-  render(){
-      console.log('c render')
-      return <newContext.Consumer>
-          { 
-          (b)=><strong>{b}</strong>
-          }</newContext.Consumer>
-  }
-}
-ReactDOM.render(<A />, container)
-	
+
+
     </script>
+    </body>
 </html>

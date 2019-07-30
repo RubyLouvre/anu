@@ -4,16 +4,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-<!--
-
+<!---
  <script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
  <script src="https://cdn.bootcss.com/react-dom/16.7.0-alpha.2/umd/react-dom.development.js"></script>
-  <script src="./lib/ReactPropTypes.js"></script>
 -->
-
 <script src="./dist/React.js"></script>
 
-  <script type='text/javascript' src="./lib/babel.js"></script>
+  <script src="./lib/babel.js"></script>
 
 </head>
 
@@ -22,84 +19,24 @@
   <div id='root' class="root">
 
   </div>
-  <script>
- var sum = [], min = [], max = [], m = 0, p = 1e9
-
-    function build(n, array){
-      //构建一个满二叉树，确保最后一行能放下原数组所有元素
-
-      for( m=1; m<n; m<<=1){};
-       var k = m >= n ? 4 * m -1: 2 * n;
-      sum  = new Array(k).fill(0)
-      max  = new Array(k).fill(-Infinity)
-      min  = new Array(k).fill(Infinity)
-      //填充最底层的叶子节点
-      console.log(m, n)
-      for(var i = 0; i < array.length; i++){
-        var v = i + m - 1
-        min[v] =  max[v] = sum[v] = array[i]
-      }
-    console.log(m)
-      for(var i = m; i >= 0; i--){
-        console.log(i, i<<1, i<<1 |1)
-        sum[i] = sum[i<<1]  + sum[i<<1 |1] 
-        max[i] = Math.max(max[i<<1]  , max[i<<1 | 1] )
-        min[i] = Math.min(min[i<<1] ,  min[i<<1 | 1] )
-      }
-    }
-    // 1*2+1  (7 *2 +1)
-    // 1+2+4+8
-    var array = [10,18,12,5,7,11,4,15]
-    console.log("原数组 "+array)
-    build(array.length, array)
-    function updateOne(k, value){
-      for(var i=k+m+1;i;i>>=1){
-        sum[i]+=value;
-      }
-    }
-    function queryOne(k, value){
-     return sum[k+m]
-    }
-
-console.log(sum.concat())
-console.log(sum.concat().lastIndexOf(15))
-
-console.log(queryOne(2)) //5 从零开始
-console.log(queryOne(1)) // 6从零开始
-
-
-
-function queryRangeMax( s, t){
-    var ans = -Infinity;
-    for(s+=m-1,t+=m+1;s^t^1;s>>=1,t>>=1) {
-        if(~s&1){
-          ans=Math.max(ans,max[s^1]); //max[s^1]是max[s]的兄弟 
-        }
-        if(t&1){
-           ans= Math.max(ans,max[t^1]); //max[t^1]是max[t]的兄弟 
-        }
-          
-    }
-    return ans;
-}
-  function queryRangeSum(s, t) {
-    var rangeSum = 0
-    // 如果s与t在同一个父亲节点以下，就说明我们已经累加到这棵树的根部了。
-    //当s与t在同一个父亲节点下时，t-s=1，那么s^t=1,s^t^1=0,此时就退出循环。
-    for (s += m - 1, t += m + 1; s ^ t ^ 1; s >>= 1, t >>= 1) {
-      if (s % 2 === 0) {
-        rangeSum += (sum[s ^ 1] || 0) //max[s^1]是max[s]的兄弟 
-      }
-      if (t % 2 !== 0) {
-        rangeSum += (sum[t ^ 1] || 0) //max[t^1]是max[t]的兄弟 
-      }
-
-    }
-    return rangeSum;
+  <script type='text/babel'>
+  if(!window.React){
+	window.ReactDOM =React
   }
-   console.log(queryRangeSum(2,5))
-   console.log('===')
-   console.log(queryRangeMax(2,5))
+const App = () => {
+	const [count, up] = React.useState(1);
+  const fn = React.useCallback(() => count + 10, []);
+  const onClick = () => up(count + 1);
+  
+  return (
+    <React.Fragment>
+      <button onClick={onClick}>click me</button>
+      <div>{`count value：${count}，count value after plus：${fn()}`}</div>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
     </script>
   </body>
 </html>

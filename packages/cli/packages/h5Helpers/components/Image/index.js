@@ -9,7 +9,7 @@ export default class InternalImage extends React.Component {
       className,
       class: internalClass
     } = props;
-
+    
     this.state = {
       modeClassName: '',
       containerWidth: width,
@@ -17,12 +17,14 @@ export default class InternalImage extends React.Component {
       imageWidth: width,
       imageHeight: height
     };
+    
     this.originalContainerWidth = width;
     this.originalContainerHeight = height;
     this.naturalWidth = width;
     this.naturalHeight = height;
     this.className = className || internalClass;
     this.image = React.createRef();
+  
     this.onLoad = this.onLoad.bind(this);
     this.randomClassName = 'r' + Math.floor(Math.random()*100000);
   }
@@ -77,6 +79,8 @@ export default class InternalImage extends React.Component {
       case 'bottom left':
       case 'bottom right':
         state.modeClassName = mode.replace(/\s/, '-');
+        state.imageWidth = '300%';
+        state.imageHeight = '450%';
 
         break;
 
@@ -86,6 +90,8 @@ export default class InternalImage extends React.Component {
       case 'right':
       case 'center':
         state.modeClassName = mode;
+        state.imageWidth = '300%';
+        state.imageHeight = '450%';
 
         break;
 
@@ -111,7 +117,7 @@ export default class InternalImage extends React.Component {
     const { width, height, className } = this;
     const { modeClassName } = this.state;
     const { mode } = this.props;
-
+    // console.log('modeClassName;;;;', modeClassName, 'className;;;;;', className);
     if (mode) {
       return (
         <div
@@ -162,47 +168,69 @@ export default class InternalImage extends React.Component {
                 width: 100%;
                 height: auto;
               }
+              ${this.randomClassName}.top, left, bottom, right, center, top-left, top-right, bottom-left, bottom-right {
+                width: ${this.state.containerWidth}px;
+                height: ${this.state.containerHeight}px;
+              }
               ${this.randomClassName}.top img {
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
                 left: 50%;
-                transform: translate(-50%, 0);
+                transform: translate(-50%, 0%);
               }
               ${this.randomClassName}.bottom img {
-                position: absolute;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
                 left: 50%;
-                bottom: 0;
-                transform: translate(-50%, 0);
+                bottom: -100%;
+                transform: translate(-50%, -100%)
               }
               ${this.randomClassName}.center img {
-                position: absolute;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
                 left: 50%;
                 top: 50%;
                 transform: translate(-50%, -50%);
               }
               ${this.randomClassName}.left img {
-                position: absolute;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
                 left: 0;
                 top: 50%;
                 transform: translate(0, -50%);
               }
               ${this.randomClassName}.right img {
-                position: absolute;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
                 right: 0;
                 top: 50%;
-                transform: translate(0, -50%);
+                transform: translate(-75%, -50%)
+              }
+              .top-left img {
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
+                transform: translate(0%, 0%);
               }
               ${this.randomClassName}.top-right img {
-                position: absolute;
-                right: 0;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
+                right: 50%;
+                top: 0%;
+                transform: translate(-50%, -0%);
               }
               ${this.randomClassName}.bottom-left img {
-                position: absolute;
-                bottom: 0;
-                left: 0;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
+                left: 0%;
+                top: 100%;
+                transform: translate(0%, -100%);
               }
               ${this.randomClassName}.bottom-right img {
-                position: absolute;
-                bottom: 0;
-                right: 0;
+                width: ${this.state.imageWidth};
+                height: ${this.state.imageHeight};
+                right: 0%;
+                top: 100%;
+                transform: translate(-75%, -100%);
               }
             `;
           }}/>

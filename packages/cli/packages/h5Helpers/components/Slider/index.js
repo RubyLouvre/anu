@@ -69,7 +69,7 @@ export default class Slider extends React.Component {
 
   checkDefaultValue(props) {
     const { value, min, max } = props;
-    return value < min ? min : value > max ? max : value;
+    return value < +min ? +min : value > +max ? +max : value;
   }
 
   checkPropsMinMaxStep(props) {

@@ -7,91 +7,109 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
 </head>
+
 <body>
 
   <script>
-
-    var sum = [], min = [], max = [], m = 0;
-    function build(n, array){
-      //构建一个满二叉树，因此我们不能直接让二根树的叶子节点数等于元素个数，m可能大于n
-      for( m=1; m<n; m<<=1){};
-      sum  = new Array(n >> 2).fill(0)
-      max  = new Array(n >> 2).fill(-Infinity)
-      min  = new Array(n >> 2).fill(Infinity)
-      //填充最底层的叶子节点
-      for(var i = m + 1; i <= m+n; i++){
-        min[i] =  max[i] = sum[i] = array.shift()
+    class SuffixNode {
+      constructor(s) {
+        this.children = [];
+        this.value = s;
       }
-      for(var i = m; i ; i--){
-        console.log(i, sum[i<<1], sum[i<<1 |1])
-        sum[i] = (sum[i<<1] || 0) + (sum[i<<1 | 1] || 0)
-        max[i] = Math.max(max[i<<1] || -Infinity , (max[i<<1 | 1] || -Infinity))
-        min[i] = Math.min(min[i<<1] || Infinity , (min[i<<1 | 1] || Infinity))
+
+    }
+
+    class SuffixTree {
+      constructor() {
+        this.root = new SuffixNode('');
+
       }
-    }
-    var array = [10,18,12,5,7,11,4,15]
-    build(array.length, array)
-    function updateOne(k, value){
-      for(var i=k+m+1;i;i>>=1){
-        sum[i]+=value;
-      }
-    }
-    function queryOne(k, value){
-     return sum[k+m]
-    }
-    /*
-function queryOne(x){
-  x = x+1
-  var res = 0
-  while(x){
-    res+=sum[x]
-    x>>=1
-  }
-  return res;
-
-  //return sum[k+m+1]
-}
-*/
-console.log(sum.concat())
-console.log(queryOne(2)) //5 从零开始
-console.log(queryOne(1)) // 6从零开始
-
-
-
-function queryRangeMax( s, t){
-    var max = -Infinity;
-    // 如果s与t在同一个父亲节点以下，就说明我们已经累加到这棵树的根部了。
-    //当s与t在同一个父亲节点下时，t-s=1，那么s^t=1,s^t^1=0,此时就退出循环。
-    for(s+=m-1,t+=m+1;s^t^1;s>>=1,t>>=1) {
-        if(~s&1){
-          ans=Math.max(ans,max[s^1]); //max[s^1]是max[s]的兄弟 
+      insert(word, sign) {
+        sign = sign || '#'
+        var nodes = this.root.children;
+        while (word) {
+          this.addNodeByPrefix(nodes, word, sign)
+          word = word.slice(1)
         }
-        if(t&1){
-           ans= Math.max(ans,max[t^1]); //max[t^1]是max[t]的兄弟 
-        }
-          
-    }
-    return ans;
-}
-  function queryRangeSum(s, t) {
-    var rangeSum = 0
-    // 如果s与t在同一个父亲节点以下，就说明我们已经累加到这棵树的根部了。
-    //当s与t在同一个父亲节点下时，t-s=1，那么s^t=1,s^t^1=0,此时就退出循环。
-    for (s += m - 1, t += m + 1; s ^ t ^ 1; s >>= 1, t >>= 1) {
-      if (s % 2 === 0) {
-        rangeSum += (sum[s ^ 1] || 0) //max[s^1]是max[s]的兄弟 
       }
-      if (t % 2 !== 0) {
-        rangeSum += (sum[t ^ 1] || 0) //max[t^1]是max[t]的兄弟 
-      }
+      addNodeByPrefix(nodes, word, sign) {
+        var add = true
+        for (var i = 0; i < nodes.length; i++) {
+          var node = nodes[i]
+          if (node.value[0] == word[0]) { //如果存在共同前缀
+            var prefix = ''
+            add = false
+            for (var j = 0; j < word.length; j++) {
+              if (node.value[j] != word[j]) {
+                break
+              }
+            }
+            console.log("比较的两个字符为", node.value, word)
+            prefix = word.slice(0, j)
+            var valueLen = node.value.length - 1 //去掉 #
 
+            if (prefix === word) {
+
+              var cur = new SuffixNode(prefix + sign); //创建新节点
+              nodes[i] = cur; //反客为主
+              console.log('创建节点的value', prefix + sign)
+              console.log('修改节点的value', node.value, '为', node.value.slice(j));
+              node.value = node.value.slice(j);
+              cur.children.push(node);
+
+            } else if (j === valueLen && word.length > valueLen) {
+              //ab 与 abcd， 节点的value比word短，并且命中word所有字符
+              console.log('修改节点的value', node.value, '为', prefix + sign)
+              node.value = prefix + sign
+
+              this.addNodeByPrefix(node.children, word.slice(j), sign)
+
+            } else {
+              //abcabxabcd 与 abxabcd， 原父节点的value比word长，只有局部前缀命中
+              var cur = new SuffixNode(prefix + sign); //创建新节点
+              console.log('创建节点的value', prefix + sign)
+              nodes[i] = cur; //反客为主
+              console.log('修改节点的value', node.value, '为', node.value.slice(j));
+              node.value = node.value.slice(j);
+              cur.children.push(node);
+              console.log('添加另一个子节点', word.slice(j) + sign)
+              cur.children.push(new SuffixNode(word.slice(j) + sign));
+
+            }
+          }
+        }
+        if (add) {
+          console.log("没有前缀，添加新节点", word)
+          nodes.push(new SuffixNode(word + sign))
+        }
+      }
     }
-    return rangeSum;
-  }
-console.log(queryRangeSum(2,5))
-    </script>
+
+    var tree = new SuffixTree();
+    //tree.insert("banana");
+    tree.insert("abcabxabcd"); //con
+    //banana
+    // anana
+    //  nana
+    //   ana
+    //    na
+    //     a
+    //======
+    //abcabxabcd
+    // bcabxabcd
+    //  cabxabcd
+    //   abxabcd
+    //    bxabcd
+    //     xabcd
+    //      abcd
+    //       bcd
+    //        cd
+    //         d
+    console.log(tree);
+
+
+  </script>
   <div id='root'></div>
 </body>
 
 </html>
-
