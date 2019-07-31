@@ -12,75 +12,67 @@
 
   <script>
     class SuffixNode {
-      constructor(s) {
-        this.children = [];
-        this.value = s;
+      constructor(value) {
+        this.value = value
+        this.splitLength = 0;
+        this.isActive = false;
+        this.children = []
+        this.hidden = false;
       }
-
     }
 
     class SuffixTree {
       constructor() {
         this.root = new SuffixNode('');
-
       }
       insert(word, sign) {
         sign = sign || '#'
         var nodes = this.root.children;
-        while (word) {
-          this.addNodeByPrefix(nodes, word, sign)
-          word = word.slice(1)
+        word += sign;
+        for (var i = 0; i < word.length; i++) {
+          this.addNodeByChar(nodes, word[i], false)
         }
       }
-      addNodeByPrefix(nodes, word, sign) {
-        var add = true
+
+      addNodeByChar(nodes, ch, isChild) {
+        var add = true;
+        if (isChild) {
+          add = false
+        }
         for (var i = 0; i < nodes.length; i++) {
           var node = nodes[i]
-          if (node.value[0] == word[0]) { //如果存在共同前缀
-            var prefix = ''
-            add = false
-            for (var j = 0; j < word.length; j++) {
-              if (node.value[j] != word[j]) {
-                break
-              }
+          var isMatch = node.value[node.splitLength] === ch
+          //没有命中，没有隐藏
+          if (!node.hidden) {
+            node.value += ch;
+          }
+          if (!isMatch) {
+            if (node.isActive) {//处于激活狀态
+              node.isActive = false;
+              node.hidden = true; //进行分叉
+              var value = node.value;
+              node.value = value.slice(0, node.splitLength)//变成父节点
+              node.children.push(
+                new SuffixNode(value.slice(node.splitLength, -1)),
+                new SuffixNode(''),
+              )
+              node.splitLength = 0;
             }
-            console.log("比较的两个字符为", node.value, word)
-            prefix = word.slice(0, j)
-            var valueLen = node.value.length - 1 //去掉 #
-
-            if (prefix === word) {
-
-              var cur = new SuffixNode(prefix + sign); //创建新节点
-              nodes[i] = cur; //反客为主
-              console.log('创建节点的value', prefix + sign)
-              console.log('修改节点的value', node.value, '为', node.value.slice(j));
-              node.value = node.value.slice(j);
-              cur.children.push(node);
-
-            } else if (j === valueLen && word.length > valueLen) {
-              //ab 与 abcd， 节点的value比word短，并且命中word所有字符
-              console.log('修改节点的value', node.value, '为', prefix + sign)
-              node.value = prefix + sign
-
-              this.addNodeByPrefix(node.children, word.slice(j), sign)
-
-            } else {
-              //abcabxabcd 与 abxabcd， 原父节点的value比word长，只有局部前缀命中
-              var cur = new SuffixNode(prefix + sign); //创建新节点
-              console.log('创建节点的value', prefix + sign)
-              nodes[i] = cur; //反客为主
-              console.log('修改节点的value', node.value, '为', node.value.slice(j));
-              node.value = node.value.slice(j);
-              cur.children.push(node);
-              console.log('添加另一个子节点', word.slice(j) + sign)
-              cur.children.push(new SuffixNode(word.slice(j) + sign));
-
+          } else { //命中了，就不用在根节点中添加新节点
+            add = false;
+            node.splitLength++
+            if (!node.hidden) { //没有分叉过
+              node.isActive = true;
             }
           }
+          //如果有孩子，可以继续传递ch
+          if (node.children.length) {
+            this.addNodeByChar(node.children, ch, true)
+          }
         }
-        if (add) {
-          console.log("没有前缀，添加新节点", word)
-          nodes.push(new SuffixNode(word + sign))
+
+        if (add && ch !== '#') {
+          nodes.push(new SuffixNode(ch))
         }
       }
     }
@@ -88,13 +80,8 @@
     var tree = new SuffixTree();
     //tree.insert("banana");
     tree.insert("abcabxabcd"); //con
-    //banana
-    // anana
-    //  nana
-    //   ana
-    //    na
-    //     a
-    //======
+    console.log(tree)
+
     //abcabxabcd
     // bcabxabcd
     //  cabxabcd
@@ -105,7 +92,6 @@
     //       bcd
     //        cd
     //         d
-    console.log(tree);
 
 
   </script>
