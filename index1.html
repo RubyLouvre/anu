@@ -1,42 +1,160 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Document</title>
+    </head>
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-<!---
- <script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
- <script src="https://cdn.bootcss.com/react-dom/16.7.0-alpha.2/umd/react-dom.development.js"></script>
--->
-<script src="./dist/React.js"></script>
+    <body>
+        <script>
+        const INACTIVE = 0; //待激活状态，这时可以对节点做任何修改
+        const ACTIVE = 1;   //激活状态, 节点准备进行分叉
+        const FORK = 2;     //已经分叉了，我们无法修改它的value, 但是能访问其后代，修改它们的value
+        const FREEZE = 3;   //冻结这整条分支，无法修改它与后代的修改
 
-  <script src="./lib/babel.js"></script>
+   class SuffixNode {
+      constructor(value){
+        this.value = value
+        this.splitLength = 0;
+        this.status = INACTIVE;
+        this.children = []
+      }
+    }
+    class SuffixLink {
+      constructor(node){
+        this.node = node;
+        this.status = FREEZE
+      }
+      get children(){
+        return this.node.children
+      }
+      get splitLength(){
+        return this.node.splitLength
+      }
+      get value(){
+        return this.node.value
+      }
+    }
+    class SuffixTree {
+      constructor() {
+        this.root = new SuffixNode('');
+      }
+      insert(word, sign) {
+        sign = sign || '#'
+        var nodes = this.root.children;
+        word += sign;
+        for (var i = 0; i < word.length; i++) {
+          var multipleActive = []
+          this.addNodeByChar(nodes, word[i], false,multipleActive)
+          multipleActive.length = 0
+        }
+      }
 
-</head>
+       addNodeByChar(nodes, ch, isChild, multipleActive) {
+        var add = true;
+        if (isChild) {
+          add = false
+        }
+        //inactive, active,  fork,  unfork
+        for (var i = 0; i < nodes.length; i++) {
+          var node = nodes[i]
+          if(node.status === FREEZE){
+            continue
+          }
+          var isMatch = node.value[node.splitLength] === ch
+          //没有隐藏
+          if (node.status !== FORK ) {
+            node.value += ch;
+          }
+          if (!isMatch) {
+            if (node.status == ACTIVE) {//如果被激活
+              node.status = FORK;//准备分叉
+              var value = node.value;
+              node.value = value.slice(0, node.splitLength)//变成父节点
+              node.children.push(
+                new SuffixNode(value.slice(node.splitLength, -1)),
+                new SuffixNode(''),
+              )
+              node.splitLength = 0;
+            }
+          } else { //命中了，就不用在根节点中添加新节点
+            add = false;
+            node.splitLength++
+            if (node.status !== FORK) { //没有分叉过
+              node.status = ACTIVE
 
-<body>
+              if(multipleActive.length){
+                 var prev = multipleActive[0];
+                 if( prev.value.length > node.value.length){
+                    prev.value = prev.value.slice(0, node.value.length * -1)
+                    prev.status = FREEZE
+                    prev.children = [new SuffixLink(node)];
+                    multipleActive[0] = node;
+                    continue
+                 }else {
+                    nodes[i] = new SuffixLink(prev);
+                 }
+        
+              }else {
+                multipleActive.push(node)
+              }
+            }
+          }
+          //如果有孩子，可以继续传递ch
+          if (node.children.length ) {
+            this.addNodeByChar(node.children, ch, true, multipleActive)
+          }
+        }
+        if (add && ch !== '#') {
+          nodes.push(new SuffixNode(ch))
+        }
+      }
+    }
+    var tree = new SuffixTree();
+    //tree.insert("banana");
+    tree.insert("javajfiewjavajfiowfjavagkljjava"); //con
+    console.log(tree)
 
-  <div id='root' class="root">
 
-  </div>
-  <script type='text/babel'>
-  if(!window.React){
-	window.ReactDOM =React
-  }
-const App = () => {
-	const [count, up] = React.useState(1);
-  const fn = React.useCallback(() => count + 10, []);
-  const onClick = () => up(count + 1);
-  
-  return (
-    <React.Fragment>
-      <button onClick={onClick}>click me</button>
-      <div>{`count value：${count}，count value after plus：${fn()}`}</div>
-    </React.Fragment>
-  );
-}
+    function find(node, target){
+      var prev = ''
+      while(true){
+        var nodes = node.children
+        var match = false
+        for(var i = 0 ; i < nodes.length; i++ ){
+           var cur = nodes[i];
+           var value = prev + cur.value
+          //如果value
+          if(value.length < target.length){
+            if(value == target.substr(0, value.length) ){ //ja java
+              node = cur
+              prev = value;
+              match = true
+              //  find(node.children, target, value)
+             // break
+            }
+          }else{
+             
+            if(value.indexOf(target) >= 0){
+               return Math.max(cur.children.length, 1)
+            }
+          }
+        }
+        if(!match){
+          return 0
+        }
+      }
+    }
+   var max = find(tree.root, 'java')
+console.log(max, 'xxx')
+   // javajfiewjavajfiowfjavagkljjava";
+//var flagStr="java";
+//1,2,2,3,3,5,5
 
-ReactDOM.render(<App />, document.getElementById('root'));
-    </script>
-  </body>
+
+        </script>
+        <div id="root"></div>
+    </body>
 </html>

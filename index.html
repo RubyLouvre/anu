@@ -1,115 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Document</title>
+    </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
-</head>
-
-<body>
-
-  <script>
-    class SuffixNode {
-      constructor(s) {
-        this.children = [];
-        this.value = s;
-      }
-
-    }
-
-    class SuffixTree {
-      constructor() {
-        this.root = new SuffixNode('');
-
-      }
-      insert(word, sign) {
-        sign = sign || '#'
-        var nodes = this.root.children;
-        while (word) {
-          this.addNodeByPrefix(nodes, word, sign)
-          word = word.slice(1)
-        }
-      }
-      addNodeByPrefix(nodes, word, sign) {
-        var add = true
-        for (var i = 0; i < nodes.length; i++) {
-          var node = nodes[i]
-          if (node.value[0] == word[0]) { //如果存在共同前缀
-            var prefix = ''
-            add = false
-            for (var j = 0; j < word.length; j++) {
-              if (node.value[j] != word[j]) {
-                break
-              }
+    <body>
+        <script>
+            class SuffixNode {
+                constructor(value) {
+                    this.value = value;
+                    this.splitLength = 0;
+                    this.isActive = false;
+                    this.children = [];
+                    this.unfork = false;
+                    this.hidden = false;
+                }
             }
-            console.log("比较的两个字符为", node.value, word)
-            prefix = word.slice(0, j)
-            var valueLen = node.value.length - 1 //去掉 #
-
-            if (prefix === word) {
-
-              var cur = new SuffixNode(prefix + sign); //创建新节点
-              nodes[i] = cur; //反客为主
-              console.log('创建节点的value', prefix + sign)
-              console.log('修改节点的value', node.value, '为', node.value.slice(j));
-              node.value = node.value.slice(j);
-              cur.children.push(node);
-
-            } else if (j === valueLen && word.length > valueLen) {
-              //ab 与 abcd， 节点的value比word短，并且命中word所有字符
-              console.log('修改节点的value', node.value, '为', prefix + sign)
-              node.value = prefix + sign
-
-              this.addNodeByPrefix(node.children, word.slice(j), sign)
-
-            } else {
-              //abcabxabcd 与 abxabcd， 原父节点的value比word长，只有局部前缀命中
-              var cur = new SuffixNode(prefix + sign); //创建新节点
-              console.log('创建节点的value', prefix + sign)
-              nodes[i] = cur; //反客为主
-              console.log('修改节点的value', node.value, '为', node.value.slice(j));
-              node.value = node.value.slice(j);
-              cur.children.push(node);
-              console.log('添加另一个子节点', word.slice(j) + sign)
-              cur.children.push(new SuffixNode(word.slice(j) + sign));
-
+            class SuffixLink {
+                constructor(node) {
+                    this.node = node;
+                    this.unfork = true;
+                    this.isActive = false;
+                }
+                get children() {
+                    return this.node.children;
+                }
+                get splitLength() {
+                    return this.node.splitLength;
+                }
+                get value() {
+                    return this.node.value;
+                }
             }
-          }
-        }
-        if (add) {
-          console.log("没有前缀，添加新节点", word)
-          nodes.push(new SuffixNode(word + sign))
-        }
-      }
-    }
+            class SuffixTree {
+                constructor() {
+                    this.root = new SuffixNode("");
+                }
+                insert(word, sign) {
+                    sign = sign || "#";
+                    var nodes = this.root.children;
+                    word += sign;
+                    for (var i = 0; i < word.length; i++) {
+                        var multipleActive = [];
+                        this.addNodeByChar(
+                            nodes,
+                            word[i],
+                            false,
+                            multipleActive
+                        );
+                    }
+                }
 
-    var tree = new SuffixTree();
-    //tree.insert("banana");
-    tree.insert("abcabxabcd"); //con
-    //banana
-    // anana
-    //  nana
-    //   ana
-    //    na
-    //     a
-    //======
-    //abcabxabcd
-    // bcabxabcd
-    //  cabxabcd
-    //   abxabcd
-    //    bxabcd
-    //     xabcd
-    //      abcd
-    //       bcd
-    //        cd
-    //         d
-    console.log(tree);
+                addNodeByChar(nodes, ch, isChild, multipleActive) {
+                    var add = true;
+                    if (isChild) {
+                        add = false;
+                    }
+                    for (var i = 0; i < nodes.length; i++) {
+                        var node = nodes[i];
+                        if (node.unfork) {
+                            //unfork用于忽略遍历
+                            continue;
+                        }
+                        if (!node.hidden) {
+                            //hidden用于忽略修改value
+                            node.value += ch;
+                        }
+                        var isMatch = node.value[node.splitLength] === ch;
 
+                        if (!isMatch) {
+                            if (node.isActive) {
+                                //处于激活狀态
+                                node.isActive = false;
+                                node.hidden = true; //进行分叉
+                                var value = node.value;
+                                node.value = value.slice(0, node.splitLength); //变成父节点
+                                node.children.push(
+                                    new SuffixNode(
+                                        value.slice(node.splitLength, -1)
+                                    ),
+                                    new SuffixNode("")
+                                );
+                                node.splitLength = 0;
+                            }
+                        } else {
+                            //命中了，就不用在根节点中添加新节点
+                            add = false;
+                            node.splitLength++;
+                            if (!node.hidden) {
+                                //没有分叉过
+                                node.isActive = true;
+                                if (multipleActive.length) {
+                                    //如果存在多个激活节点，那么将它们链接起来，减少更新的数量
+                                    var prev = multipleActive[0];
+                                    if (prev.value.length > node.value.length) {
+                                        prev.value = prev.value.slice(
+                                            0,
+                                            node.value.length * -1
+                                        );
+                                        multipleActive[0] = node;
+                                        //为了防止重复添加子节点，带有suffixLink的父节点也带上link
+                                        prev.unfork = true;
+                                        //重置它的属性
+                                        prev.isActive = false;
+                                        prev.splitLength = 0;
+                                        prev.children = [new SuffixLink(node)];
+                                    } else {
+                                        nodes[i] = new SuffixLink(prev);
+                                    }
+                                } else {
+                                    multipleActive.push(node);
+                                }
+                            }
+                        }
+                        //如果有孩子，可以继续传递ch
+                        if (node.children.length ) {
+                            this.addNodeByChar(node.children, ch, true, multipleActive);
+                        }
+                    }
 
-  </script>
-  <div id='root'></div>
-</body>
+                    if (add && ch !== "#") {
+                        nodes.push(new SuffixNode(ch));
+                    }
+                }
+            }
 
+            var tree = new SuffixTree();
+            //tree.insert("banana");
+            tree.insert("abcabxabcd"); //con
+            console.log(tree);
+        </script>
+        <div id="root"></div>
+    </body>
 </html>
