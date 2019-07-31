@@ -1,36 +1,78 @@
-
 import io from 'socket.io-client';
 import { handleSuccess, handleFail } from '../utils';
 const Err = 'ws不存在';
-let socket = null;
 /**
  * 创建一个 WebSocket 连接 只支持单个socket，如果当前已存在一个 WebSocket 连接，会自动关闭该连接，并重新创建一个 WebSocket 连接。
  * @param {String} url 开发者服务器接口地址，必须是 wss 协议，且域名必须是后台配置的合法域名。
  * @param {Array} protocols 子协议数组
  * @param {Object} header HTTP 请求 Header，Header 中不能设置 Referer
  */
+const sockets = [];
+const MAX_SOCKET = 5;
 
-function connectSocket({ 
-  url = '', 
-  protocols, 
-  header = {},
-  success = () => {},
-  fail = () => {},
-  complete = () => {}
-} = {}) {
-  return new Promise(async function(resolve, reject) {
-    try {
-      if (socket) {
-        await closeSocket();
-      }
-      socket = io(url, {
-        extraHeaders: header
-      });
-      handleSuccess('socket created!', success, complete, resolve);
-    } catch(e) {
-      handleFail(e, fail, complete, reject);
+class SocketTask {
+    constructor({
+        url = '',
+        protocols,
+        header = {},
+        success = () => {},
+        fail = () => {},
+        complete = () => {}
+    }) {
+        if (sockets.length >= MAX_SOCKET) {
+            handleFail(`当前最大socket连接数不能超过${MAX_SOCKET}`, fail, complete);
+            return null;
+        }
+        this._socket = io(url, {
+            transportOptions: {
+                polling: {
+                    extraHeaders: header
+                }
+            },
+            protocols
+        });
+        handleSuccess('websocket connect success!', success, complete);
+        sockets.push(this._socket);
     }
-  });
+    send({
+        data = {},
+        success = () => {},
+        fail = () => {},
+        complete = () => {}
+    }) {
+        if (typeof data !== 'object') {
+            throw new Error('type error!');
+        }
+        const args = Object.keys(data).map(key => data[key]);
+        this._socket.send(args);
+        handleSuccess('message send success!', success, complete);
+    }
+    close({
+        code = 1000,
+        reason = '',
+        success = () => {},
+        fail = () => {},
+        complete = () => {}
+    }) {
+        this._socket.close();
+        handleSuccess(`${code}: socket closed.${reason ? ('reason: ' + reason) : ''}`, success, complete);
+    }
+    onOpen(callback) {
+        this._socket.on('connect', callback);
+    }
+    onClose(callback) {
+        this._socket.on('disconnect', callback);
+    }
+    onError(callback) {
+        this._socket.on('error', callback);
+    }
+    onMessage(callback) {
+        this._socket.on('message', callback);
+    }
+}
+
+function connectSocket(options = {}) {
+    return new SocketTask(options);
 }
 
 /**
@@ -39,9 +81,9 @@ function connectSocket({
  * @param {Function} fail 连接打开事件的回调函数
  */
 function onSocketOpen(callback = () => {}) {
-  if (!socket) return callback(Err);
+    if (!sockets.length) return callback(Err);
 
-  socket.on('connect', () => callback(socket.id));
+    socket.on('connect', () => callback(socket.id));
 }
 
 /**
@@ -53,18 +95,16 @@ function onSocketOpen(callback = () => {}) {
  * @param {Function} complete 接口调用结束的回调函数（调用成功、失败都会执行）
  */
 function closeSocket({
-  success = () => {},
-  fail = () => {},
-  complete = () => {}
+    success = () => {},
+    fail = () => {},
+    complete = () => {}
 } = {}) {
-  return new Promise(function (resolve, reject){
-    if (!socket) return handleFail(Err, fail, complete, reject);
-
-    socket.close();
-    socket = null;
-    handleSuccess('socket closed.', success, complete, resolve);
-  });
-  
+    if (!sockets.length) return handleFail(Err, fail, complete);
+    while (sockets.length) {
+        const socket = sockets.pop();
+        socket.close();
+    }
+    handleSuccess('socket closed.', success, complete);
 }
 
 /**
@@ -76,18 +116,17 @@ function closeSocket({
  * @param {Function} complete 接口调用结束的回调函数（调用成功、失败都会执行）
  */
 function sendSocketMessage({
-  data,
-  success = () => {},
-  fail = () => {},
-  complete = () => {}
+    data,
+    success = () => {},
+    fail = () => {},
+    complete = () => {}
 } = {}) {
-  return new Promise(function (resolve, reject){
-    if (!socket) return handleFail(Err, fail, complete, reject);
-
-    socket.send(data, res => {
-      handleSuccess(res, success, complete, resolve);
+    if (!sockets.length) return handleFail(Err, fail, complete);
+    sockets.forEach(socket => {
+        socket.send(data, res => {
+            handleSuccess(res, success, complete, resolve);
+        });
     });
-  });
 }
 
 /**
@@ -96,9 +135,10 @@ function sendSocketMessage({
  * @param {Function} fail 接口调用失败的回调函数
  */
 function onSocketMessage(callback = () => {}) {
-  if (!socket) return callback(Err);
-
-  socket.on('message', res => callback(res));
+    if (!sockets.length) return callback(Err);
+    sockets.forEach(socket => {
+        socket.on('message', res => callback(res));
+    });
 }
 
 /**
@@ -107,9 +147,10 @@ function onSocketMessage(callback = () => {}) {
  * @param {Function} fail 接口调用失败的回调函数
  */
 function onSocketError(callback = () => {}) {
-  if (!socket) return callback(Err);
-
-  socket.on('error', res => callback(res));
+    if (!sockets.length) return callback(Err);
+    sockets.forEach(socket => {
+        socket.on('error', res => callback(res));
+    });
 }
 
 /**
@@ -118,17 +159,18 @@ function onSocketError(callback = () => {}) {
  * @param {Function} fail 接口调用失败的回调函数
  */
 function onSocketClose(callback = () => {}) {
-  if (!socket) return callback(Err);
-
-  socket.on('disconnect', res => callback(res));
+    if (!sockets.length) return callback(Err);
+    sockets.forEach(socket => {
+        socket.on('disconnect', res => callback(res));
+    });
 }
 
 export default {
-  connectSocket,
-  onSocketOpen,
-  closeSocket,
-  sendSocketMessage,
-  onSocketMessage,
-  onSocketError,
-  onSocketClose
+    connectSocket,
+    onSocketOpen,
+    closeSocket,
+    sendSocketMessage,
+    onSocketMessage,
+    onSocketError,
+    onSocketClose
 };

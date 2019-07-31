@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-30T09
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-31T03
  * IE9+
  */
 
@@ -4726,206 +4726,234 @@
 
     var ERROR_MESSAGE = '不支持 localStorage !';
     function isSupportStorage() {
-      if (!window.localStorage) {
-        console.log(ERROR_MESSAGE);
-        return false;
-      }
-      return true;
+        if (!window.localStorage) {
+            console.log(ERROR_MESSAGE);
+            return false;
+        }
+        return true;
     }
     function setStorage() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          key = _ref.key,
-          data = _ref.data,
-          _ref$success = _ref.success,
-          success = _ref$success === undefined ? function () {} : _ref$success,
-          _ref$fail = _ref.fail,
-          fail = _ref$fail === undefined ? function () {} : _ref$fail,
-          _ref$complete = _ref.complete,
-          complete = _ref$complete === undefined ? function () {} : _ref$complete;
-      return new Promise(function (resolve, reject) {
-        if (!isSupportStorage()) {
-          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
-        } else {
-          localStorage.setItem(key, JSON.stringify(data));
-          handleSuccess({ key: key, data: data }, success, complete, resolve);
-        }
-      });
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            key = _ref.key,
+            data = _ref.data,
+            _ref$success = _ref.success,
+            success = _ref$success === undefined ? function () {} : _ref$success,
+            _ref$fail = _ref.fail,
+            fail = _ref$fail === undefined ? function () {} : _ref$fail,
+            _ref$complete = _ref.complete,
+            complete = _ref$complete === undefined ? function () {} : _ref$complete;
+        return new Promise(function (resolve, reject) {
+            if (!isSupportStorage()) {
+                handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+            } else {
+                localStorage.setItem(key, JSON.stringify(data));
+                handleSuccess({ key: key, data: data }, success, complete, resolve);
+            }
+        });
     }
     function setStorageSync(key, data) {
-      if (!isSupportStorage()) {
-        return;
-      }
-      localStorage.setItem(key, JSON.stringify(data));
+        if (!isSupportStorage()) {
+            return;
+        }
+        localStorage.setItem(key, JSON.stringify(data));
     }
     function getStorage() {
-      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          key = _ref2.key,
-          _ref2$success = _ref2.success,
-          success = _ref2$success === undefined ? function () {} : _ref2$success,
-          _ref2$fail = _ref2.fail,
-          fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
-          _ref2$complete = _ref2.complete,
-          complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
-      return new Promise(function (resolve, reject) {
-        if (!isSupportStorage()) {
-          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
-        } else {
-          handleSuccess({ data: JSON.parse(localStorage.getItem(key)) }, success, complete, resolve);
-        }
-      });
+        var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            key = _ref2.key,
+            _ref2$success = _ref2.success,
+            success = _ref2$success === undefined ? function () {} : _ref2$success,
+            _ref2$fail = _ref2.fail,
+            fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
+            _ref2$complete = _ref2.complete,
+            complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
+        return new Promise(function (resolve, reject) {
+            if (!isSupportStorage()) {
+                handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+            } else {
+                handleSuccess({ data: JSON.parse(localStorage.getItem(key)) }, success, complete, resolve);
+            }
+        });
     }
     function getStorageSync(key) {
-      if (!isSupportStorage()) {
-        return;
-      }
-      return JSON.parse(localStorage.getItem(key));
+        if (!isSupportStorage()) {
+            return;
+        }
+        return JSON.parse(localStorage.getItem(key));
     }
     function removeStorage() {
-      var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          key = _ref3.key,
-          _ref3$success = _ref3.success,
-          success = _ref3$success === undefined ? function () {} : _ref3$success,
-          _ref3$fail = _ref3.fail,
-          fail = _ref3$fail === undefined ? function () {} : _ref3$fail,
-          _ref3$complete = _ref3.complete,
-          complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
-      return new Promise(function (resolve, reject) {
-        if (!isSupportStorage()) {
-          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
-        } else {
-          localStorage.removeItem(key);
-          handleSuccess(null, success, complete, resolve);
-        }
-      });
+        var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            key = _ref3.key,
+            _ref3$success = _ref3.success,
+            success = _ref3$success === undefined ? function () {} : _ref3$success,
+            _ref3$fail = _ref3.fail,
+            fail = _ref3$fail === undefined ? function () {} : _ref3$fail,
+            _ref3$complete = _ref3.complete,
+            complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
+        return new Promise(function (resolve, reject) {
+            if (!isSupportStorage()) {
+                handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+            } else {
+                localStorage.removeItem(key);
+                handleSuccess(null, success, complete, resolve);
+            }
+        });
     }
     function removeStorageSync(key) {
-      if (!isSupportStorage()) {
-        return;
-      }
-      localStorage.removeItem(key);
+        if (!isSupportStorage()) {
+            return;
+        }
+        localStorage.removeItem(key);
     }
     function clearStorage() {
-      var _ref4 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref4$success = _ref4.success,
-          success = _ref4$success === undefined ? function () {} : _ref4$success,
-          _ref4$fail = _ref4.fail,
-          fail = _ref4$fail === undefined ? function () {} : _ref4$fail,
-          _ref4$complete = _ref4.complete,
-          complete = _ref4$complete === undefined ? function () {} : _ref4$complete;
-      return new Promise(function (resolve, reject) {
-        if (!isSupportStorage()) {
-          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
-        } else {
-          localStorage.clear();
-          handleSuccess(null, success, complete, resolve);
-        }
-      });
+        var _ref4 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref4$success = _ref4.success,
+            success = _ref4$success === undefined ? function () {} : _ref4$success,
+            _ref4$fail = _ref4.fail,
+            fail = _ref4$fail === undefined ? function () {} : _ref4$fail,
+            _ref4$complete = _ref4.complete,
+            complete = _ref4$complete === undefined ? function () {} : _ref4$complete;
+        return new Promise(function (resolve, reject) {
+            if (!isSupportStorage()) {
+                handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+            } else {
+                localStorage.clear();
+                handleSuccess(null, success, complete, resolve);
+            }
+        });
     }
     function clearStorageSync() {
-      if (!isSupportStorage()) {
-        return;
-      }
-      localStorage.clear();
+        if (!isSupportStorage()) {
+            return;
+        }
+        localStorage.clear();
     }
     function get10KBStr() {
-      var str = '0123456789';
-      function add(s) {
-        s += str;
-        if (s.length === 10240) {
-          str = s;
-          return;
+        var str = '0123456789';
+        function add(s) {
+            s += str;
+            if (s.length === 10240) {
+                str = s;
+                return;
+            }
+            add(s);
         }
-        add(s);
-      }
-      add(str);
-      return str;
+        add(str);
+        return str;
     }
     var LIMIT_SIZE_CACHE = -1;
     function getStorageUnusedSize(cb) {
-      if (LIMIT_SIZE_CACHE !== -1) {
-        cb(LIMIT_SIZE_CACHE);
-      } else {
-        var _10KBStr = get10KBStr();
-        var sum = _10KBStr;
-        var id = setInterval(function () {
-          sum += _10KBStr;
-          try {
-            localStorage.removeItem('test');
-            localStorage.setItem('test', sum);
-          } catch (e) {
-            LIMIT_SIZE_CACHE = sum.length / 1024;
+        if (LIMIT_SIZE_CACHE !== -1) {
             cb(LIMIT_SIZE_CACHE);
-            clearInterval(id);
-          }
-        }, 1);
-      }
+        } else {
+            var _10KBStr = get10KBStr();
+            var sum = _10KBStr;
+            var id = setInterval(function () {
+                sum += _10KBStr;
+                try {
+                    localStorage.removeItem('test');
+                    localStorage.setItem('test', sum);
+                } catch (e) {
+                    LIMIT_SIZE_CACHE = sum.length / 1024;
+                    cb(LIMIT_SIZE_CACHE);
+                    clearInterval(id);
+                }
+            }, 1);
+        }
     }
     function getStorageUsedSize() {
-      var values = Object.values(localStorage.valueOf());
-      return values.reduce(function (size, value) {
-        return value.length;
-      }, 0) / 1024;
+        var values = Object.values(localStorage.valueOf());
+        return values.reduce(function (size, value) {
+            return value.length;
+        }, 0) / 1024;
     }
     async function getStorageInfoSync() {
-      var needLimitSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      var result = await getStorageInfo({ needLimitSize: needLimitSize });
-      return result;
+        var needLimitSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        var result = await getStorageInfo({ needLimitSize: needLimitSize });
+        return result;
     }
     function getStorageInfo() {
-      var _ref5 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref5$needLimitSize = _ref5.needLimitSize,
-          needLimitSize = _ref5$needLimitSize === undefined ? false : _ref5$needLimitSize,
-          _ref5$success = _ref5.success,
-          success = _ref5$success === undefined ? function () {} : _ref5$success,
-          _ref5$fail = _ref5.fail,
-          fail = _ref5$fail === undefined ? function () {} : _ref5$fail,
-          _ref5$complete = _ref5.complete,
-          complete = _ref5$complete === undefined ? function () {} : _ref5$complete;
-      return new Promise(function (resolve, reject) {
-        if (!isSupportStorage()) {
-          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
-          return;
-        }
-        var result = {
-          keys: Object.keys(localStorage),
-          currentSize: getStorageUsedSize()
-        };
-        if (needLimitSize) {
-          getStorageUnusedSize(function (unUsedSize) {
-            handleSuccess(Object.assign({}, result, {
-              limitSize: result.currentSize + unUsedSize
-            }), success, complete, resolve);
-          });
-        } else {
-          handleSuccess(result, success, complete, resolve);
-        }
-      });
+        var _ref5 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref5$needLimitSize = _ref5.needLimitSize,
+            needLimitSize = _ref5$needLimitSize === undefined ? false : _ref5$needLimitSize,
+            _ref5$success = _ref5.success,
+            success = _ref5$success === undefined ? function () {} : _ref5$success,
+            _ref5$fail = _ref5.fail,
+            fail = _ref5$fail === undefined ? function () {} : _ref5$fail,
+            _ref5$complete = _ref5.complete,
+            complete = _ref5$complete === undefined ? function () {} : _ref5$complete;
+        return new Promise(function (resolve, reject) {
+            if (!isSupportStorage()) {
+                handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+                return;
+            }
+            var result = {
+                keys: Object.keys(localStorage),
+                currentSize: getStorageUsedSize()
+            };
+            if (needLimitSize) {
+                getStorageUnusedSize(function (unUsedSize) {
+                    handleSuccess(Object.assign({}, result, {
+                        limitSize: result.currentSize + unUsedSize
+                    }), success, complete, resolve);
+                });
+            } else {
+                handleSuccess(result, success, complete, resolve);
+            }
+        });
     }
     var storage = {
-      setStorage: setStorage,
-      setStorageSync: setStorageSync,
-      getStorage: getStorage,
-      getStorageSync: getStorageSync,
-      removeStorage: removeStorage,
-      removeStorageSync: removeStorageSync,
-      clearStorage: clearStorage,
-      clearStorageSync: clearStorageSync,
-      getStorageInfo: getStorageInfo,
-      getStorageInfoSync: getStorageInfoSync
+        setStorage: setStorage,
+        setStorageSync: setStorageSync,
+        getStorage: getStorage,
+        getStorageSync: getStorageSync,
+        removeStorage: removeStorage,
+        removeStorageSync: removeStorageSync,
+        clearStorage: clearStorage,
+        clearStorageSync: clearStorageSync,
+        getStorageInfo: getStorageInfo,
+        getStorageInfoSync: getStorageInfoSync
     };
 
     function getSystemInfo() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref$success = _ref.success,
-          success = _ref$success === undefined ? function () {} : _ref$success,
-          _ref$fail = _ref.fail,
-          fail = _ref$fail === undefined ? function () {} : _ref$fail,
-          _ref$complete = _ref.complete,
-          complete = _ref$complete === undefined ? function () {} : _ref$complete;
-      return new Promise(function (resolve, reject) {
-        try {
-          var md = new MobileDetect(navigator.userAgent || navigator.vendor || window.opera, window.screen.width);
-          var res = {
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref$success = _ref.success,
+            success = _ref$success === undefined ? function () {} : _ref$success,
+            _ref$fail = _ref.fail,
+            fail = _ref$fail === undefined ? function () {} : _ref$fail,
+            _ref$complete = _ref.complete,
+            complete = _ref$complete === undefined ? function () {} : _ref$complete;
+        return new Promise(function (resolve, reject) {
+            try {
+                var md = new MobileDetect(navigator.userAgent || navigator.vendor || window.opera, window.screen.width);
+                var res = {
+                    brand: md.mobile(),
+                    model: md.phone(),
+                    pixelRatio: '',
+                    screenWidth: window.screen.width,
+                    screenHeight: window.screen.height,
+                    windowWidth: window.screen.width,
+                    windowHeight: window.screen.height,
+                    statusBarHeight: '',
+                    language: navigator.language || '',
+                    version: md.version('Webkit'),
+                    system: md.os(),
+                    platform: md.os(),
+                    fontSizeSetting: '',
+                    SDKVersion: '',
+                    storage: '',
+                    currentBattery: '',
+                    app: '',
+                    benchmarkLevel: ''
+                };
+                handleSuccess(res, success, complete, resolve);
+            } catch (e) {
+                handleFail({ errMsg: e }, fail, complete, reject);
+            }
+        });
+    }
+    function getSystemInfoSync() {
+        var md = new MobileDetect(navigator.userAgent || navigator.vendor || window.opera, window.screen.width);
+        return {
             brand: md.mobile(),
             model: md.phone(),
             pixelRatio: '',
@@ -4944,39 +4972,11 @@
             currentBattery: '',
             app: '',
             benchmarkLevel: ''
-          };
-          handleSuccess(res, success, complete, resolve);
-        } catch (e) {
-          handleFail({ errMsg: e }, fail, complete, reject);
-        }
-      });
-    }
-    function getSystemInfoSync() {
-      var md = new MobileDetect(navigator.userAgent || navigator.vendor || window.opera, window.screen.width);
-      return {
-        brand: md.mobile(),
-        model: md.phone(),
-        pixelRatio: '',
-        screenWidth: window.screen.width,
-        screenHeight: window.screen.height,
-        windowWidth: window.screen.width,
-        windowHeight: window.screen.height,
-        statusBarHeight: '',
-        language: navigator.language || '',
-        version: md.version('Webkit'),
-        system: md.os(),
-        platform: md.os(),
-        fontSizeSetting: '',
-        SDKVersion: '',
-        storage: '',
-        currentBattery: '',
-        app: '',
-        benchmarkLevel: ''
-      };
+        };
     }
     var systemInfo = {
-      getSystemInfo: getSystemInfo,
-      getSystemInfoSync: getSystemInfoSync
+        getSystemInfo: getSystemInfo,
+        getSystemInfoSync: getSystemInfoSync
     };
 
     function vibrateLong() {
@@ -5018,102 +5018,161 @@
       vibrateShort: vibrateShort
     };
 
+    var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+    function _classCallCheck$6(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
     var Err = 'ws不存在';
-    var socket = null;
-    function connectSocket() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref$url = _ref.url,
-          url = _ref$url === undefined ? '' : _ref$url,
-          protocols = _ref.protocols,
-          _ref$header = _ref.header,
-          header = _ref$header === undefined ? {} : _ref$header,
-          _ref$success = _ref.success,
-          success = _ref$success === undefined ? function () {} : _ref$success,
-          _ref$fail = _ref.fail,
-          fail = _ref$fail === undefined ? function () {} : _ref$fail,
-          _ref$complete = _ref.complete,
-          complete = _ref$complete === undefined ? function () {} : _ref$complete;
-      return new Promise(async function (resolve, reject) {
-        try {
-          if (socket) {
-            await closeSocket();
-          }
-          socket = io(url, {
-            extraHeaders: header
-          });
-          handleSuccess('socket created!', success, complete, resolve);
-        } catch (e) {
-          handleFail(e, fail, complete, reject);
+    var sockets = [];
+    var MAX_SOCKET = 5;
+    var SocketTask = function () {
+        function SocketTask(_ref) {
+            var _ref$url = _ref.url,
+                url = _ref$url === undefined ? '' : _ref$url,
+                protocols = _ref.protocols,
+                _ref$header = _ref.header,
+                header = _ref$header === undefined ? {} : _ref$header,
+                _ref$success = _ref.success,
+                success = _ref$success === undefined ? function () {} : _ref$success,
+                _ref$fail = _ref.fail,
+                fail = _ref$fail === undefined ? function () {} : _ref$fail,
+                _ref$complete = _ref.complete,
+                complete = _ref$complete === undefined ? function () {} : _ref$complete;
+            _classCallCheck$6(this, SocketTask);
+            if (sockets.length >= MAX_SOCKET) {
+                handleFail('\u5F53\u524D\u6700\u5927socket\u8FDE\u63A5\u6570\u4E0D\u80FD\u8D85\u8FC7' + MAX_SOCKET, fail, complete);
+                return null;
+            }
+            this._socket = io(url, {
+                transportOptions: {
+                    polling: {
+                        extraHeaders: header
+                    }
+                },
+                protocols: protocols
+            });
+            handleSuccess('websocket connect success!', success, complete);
+            sockets.push(this._socket);
         }
-      });
+        SocketTask.prototype.send = function send(_ref2) {
+            var _ref2$data = _ref2.data,
+                data = _ref2$data === undefined ? {} : _ref2$data,
+                _ref2$success = _ref2.success,
+                success = _ref2$success === undefined ? function () {} : _ref2$success,
+                _ref2$fail = _ref2.fail,
+                _ref2$complete = _ref2.complete,
+                complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
+            if ((typeof data === 'undefined' ? 'undefined' : _typeof$1(data)) !== 'object') {
+                throw new Error('type error!');
+            }
+            var args = Object.keys(data).map(function (key) {
+                return data[key];
+            });
+            this._socket.send(args);
+            handleSuccess('message send success!', success, complete);
+        };
+        SocketTask.prototype.close = function close(_ref3) {
+            var _ref3$code = _ref3.code,
+                code = _ref3$code === undefined ? 1000 : _ref3$code,
+                _ref3$reason = _ref3.reason,
+                reason = _ref3$reason === undefined ? '' : _ref3$reason,
+                _ref3$success = _ref3.success,
+                success = _ref3$success === undefined ? function () {} : _ref3$success,
+                _ref3$fail = _ref3.fail,
+                _ref3$complete = _ref3.complete,
+                complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
+            this._socket.close();
+            handleSuccess(code + ': socket closed.' + (reason ? 'reason: ' + reason : ''), success, complete);
+        };
+        SocketTask.prototype.onOpen = function onOpen(callback) {
+            this._socket.on('connect', callback);
+        };
+        SocketTask.prototype.onClose = function onClose(callback) {
+            this._socket.on('disconnect', callback);
+        };
+        SocketTask.prototype.onError = function onError(callback) {
+            this._socket.on('error', callback);
+        };
+        SocketTask.prototype.onMessage = function onMessage(callback) {
+            this._socket.on('message', callback);
+        };
+        return SocketTask;
+    }();
+    function connectSocket() {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        return new SocketTask(options);
     }
     function onSocketOpen() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-      if (!socket) return callback(Err);
-      socket.on('connect', function () {
-        return callback(socket.id);
-      });
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        if (!sockets.length) return callback(Err);
+        socket.on('connect', function () {
+            return callback(socket.id);
+        });
     }
     function closeSocket() {
-      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref2$success = _ref2.success,
-          success = _ref2$success === undefined ? function () {} : _ref2$success,
-          _ref2$fail = _ref2.fail,
-          fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
-          _ref2$complete = _ref2.complete,
-          complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
-      return new Promise(function (resolve, reject) {
-        if (!socket) return handleFail(Err, fail, complete, reject);
-        socket.close();
-        socket = null;
-        handleSuccess('socket closed.', success, complete, resolve);
-      });
+        var _ref4 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref4$success = _ref4.success,
+            success = _ref4$success === undefined ? function () {} : _ref4$success,
+            _ref4$fail = _ref4.fail,
+            fail = _ref4$fail === undefined ? function () {} : _ref4$fail,
+            _ref4$complete = _ref4.complete,
+            complete = _ref4$complete === undefined ? function () {} : _ref4$complete;
+        if (!sockets.length) return handleFail(Err, fail, complete);
+        while (sockets.length) {
+            var _socket = sockets.pop();
+            _socket.close();
+        }
+        handleSuccess('socket closed.', success, complete);
     }
     function sendSocketMessage() {
-      var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          data = _ref3.data,
-          _ref3$success = _ref3.success,
-          success = _ref3$success === undefined ? function () {} : _ref3$success,
-          _ref3$fail = _ref3.fail,
-          fail = _ref3$fail === undefined ? function () {} : _ref3$fail,
-          _ref3$complete = _ref3.complete,
-          complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
-      return new Promise(function (resolve, reject) {
-        if (!socket) return handleFail(Err, fail, complete, reject);
-        socket.send(data, function (res) {
-          handleSuccess(res, success, complete, resolve);
+        var _ref5 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            data = _ref5.data,
+            _ref5$success = _ref5.success,
+            success = _ref5$success === undefined ? function () {} : _ref5$success,
+            _ref5$fail = _ref5.fail,
+            fail = _ref5$fail === undefined ? function () {} : _ref5$fail,
+            _ref5$complete = _ref5.complete,
+            complete = _ref5$complete === undefined ? function () {} : _ref5$complete;
+        if (!sockets.length) return handleFail(Err, fail, complete);
+        sockets.forEach(function (socket) {
+            socket.send(data, function (res) {
+                handleSuccess(res, success, complete, resolve);
+            });
         });
-      });
     }
     function onSocketMessage() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-      if (!socket) return callback(Err);
-      socket.on('message', function (res) {
-        return callback(res);
-      });
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        if (!sockets.length) return callback(Err);
+        sockets.forEach(function (socket) {
+            socket.on('message', function (res) {
+                return callback(res);
+            });
+        });
     }
     function onSocketError() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-      if (!socket) return callback(Err);
-      socket.on('error', function (res) {
-        return callback(res);
-      });
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        if (!sockets.length) return callback(Err);
+        sockets.forEach(function (socket) {
+            socket.on('error', function (res) {
+                return callback(res);
+            });
+        });
     }
     function onSocketClose() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-      if (!socket) return callback(Err);
-      socket.on('disconnect', function (res) {
-        return callback(res);
-      });
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        if (!sockets.length) return callback(Err);
+        sockets.forEach(function (socket) {
+            socket.on('disconnect', function (res) {
+                return callback(res);
+            });
+        });
     }
     var ws = {
-      connectSocket: connectSocket,
-      onSocketOpen: onSocketOpen,
-      closeSocket: closeSocket,
-      sendSocketMessage: sendSocketMessage,
-      onSocketMessage: onSocketMessage,
-      onSocketError: onSocketError,
-      onSocketClose: onSocketClose
+        connectSocket: connectSocket,
+        onSocketOpen: onSocketOpen,
+        closeSocket: closeSocket,
+        sendSocketMessage: sendSocketMessage,
+        onSocketMessage: onSocketMessage,
+        onSocketError: onSocketError,
+        onSocketClose: onSocketClose
     };
 
     var share = {
