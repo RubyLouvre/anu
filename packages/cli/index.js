@@ -40,18 +40,18 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
             }
             showLog();
             const info = stats.toJson();
+            if (stats.hasWarnings() && !silent) {
+                info.warnings.forEach(warning => {
+                    if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
+                        console.log(chalk_1.default.yellow('Warning:\n'), index_2.default.cleanLog(warning));
+                    }
+                });
+            }
             if (stats.hasErrors()) {
                 info.errors.forEach(e => {
                     console.error(chalk_1.default.red('Error:\n'), index_2.default.cleanLog(e));
                     if (index_2.default.isMportalEnv()) {
                         process.exit();
-                    }
-                });
-            }
-            if (stats.hasWarnings() && !silent) {
-                info.warnings.forEach(warning => {
-                    if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
-                        console.log(chalk_1.default.yellow('Warning:\n'), index_2.default.cleanLog(warning));
                     }
                 });
             }
@@ -69,18 +69,18 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
                             return;
                         }
                         const info = stats.toJson();
+                        if (stats.hasWarnings() && !silent) {
+                            info.warnings.forEach(warning => {
+                                if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
+                                    console.log(chalk_1.default.yellow('Warning:\n'), index_2.default.cleanLog(warning));
+                                }
+                            });
+                        }
                         if (stats.hasErrors()) {
                             info.errors.forEach(e => {
                                 console.error(chalk_1.default.red('Error:\n'), index_2.default.cleanLog(e));
                                 if (index_2.default.isMportalEnv()) {
                                     process.exit();
-                                }
-                            });
-                        }
-                        if (stats.hasWarnings() && !silent) {
-                            info.warnings.forEach(warning => {
-                                if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
-                                    console.log(chalk_1.default.yellow('Warning:\n'), index_2.default.cleanLog(warning));
                                 }
                             });
                         }
