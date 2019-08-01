@@ -31,10 +31,9 @@ class TabBar extends Component {
             <style ref={(node) => {
                 Object(node).textContent = `
                 .__internal__TabBar {
-                    position: fixed;
+                    position: absolute;
                     bottom: 0;
                     width: 100%;
-                    max-width: 480px;
                     height: 60px;
                     display: flex;
                     justify-content: space-around;
