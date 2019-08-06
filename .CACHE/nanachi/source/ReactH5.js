@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-06T12
+ * 运行于webview的React by 司徒正美 Copyright 2019-07-26T02
  * IE9+
  */
 
@@ -1851,11 +1851,8 @@
     }
 
     function setter(compute, cursor, value) {
-        var _this = this;
-        Renderer.batchedUpdates(function () {
-            _this.updateQueue[cursor] = compute(cursor, value);
-            Renderer.updateComponent(_this, true);
-        });
+        this.updateQueue[cursor] = compute(cursor, value);
+        Renderer.updateComponent(this, true);
     }
     var hookCursor = 0;
     function resetCursor() {
@@ -1896,7 +1893,7 @@
         var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
     }
-    function useCallbackImpl(create, deps, isMemo, isEffect) {
+    function useCallbackImpl(create, deps, isMemo) {
         var fiber = getCurrentFiber();
         var key = getCurrentKey();
         var updateQueue = fiber.updateQueue;
@@ -1905,23 +1902,23 @@
         if (prevState) {
             var prevInputs = prevState[1];
             if (areHookInputsEqual(nextInputs, prevInputs)) {
-                return isEffect ? null : prevState[0];
+                return;
             }
         }
-        var fn = isMemo ? create() : create;
-        updateQueue[key] = [fn, nextInputs];
-        return fn;
+        var value = isMemo ? create() : create;
+        updateQueue[key] = [value, nextInputs];
+        return value;
     }
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
-        if (useCallbackImpl(create, deps, false, true)) {
-            if (fiber.effectTag % EffectTag) {
-                fiber.effectTag *= EffectTag;
-            }
-            var list = updateQueue[createList] || (updateQueue[createList] = []);
-            updateQueue[destroyList] || (updateQueue[destroyList] = []);
-            list.push(create);
+        var cb = useCallbackImpl(create, deps);
+        if (fiber.effectTag % EffectTag) {
+            fiber.effectTag *= EffectTag;
         }
+        var updateQueue = fiber.updateQueue;
+        var list = updateQueue[createList] || (updateQueue[createList] = []);
+        updateQueue[destroyList] || (updateQueue[destroyList] = []);
+        list.push(cb);
     }
     function getCurrentFiber() {
         return get(Renderer.currentOwner);
@@ -3939,39 +3936,19 @@
       Toast.prototype.render = function render() {
         return React.createElement(
           'div',
-          null,
-          React.appType === 'h5' ? React.createElement(
-            'dialog',
-            { open: true, className: 'toast2019' },
-            React.createElement(
-              'div',
-              { className: 'icon' },
-              this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
-            ),
-            React.createElement(
-              'div',
-              { className: 'title' },
-              this.props.title
-            )
-          ) : React.createElement(
+          { className: 'toast2019' },
+          React.createElement(
             'div',
-            { className: 'toast2019' },
-            React.createElement(
-              'div',
-              { className: 'icon' },
-              this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
-            ),
-            React.createElement(
-              'div',
-              { className: 'title' },
-              this.props.title
-            )
+            { className: 'icon' },
+            this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
+          ),
+          React.createElement(
+            'div',
+            { className: 'title' },
+            this.props.title
           ),
           React.createElement('style', { ref: function ref(node) {
-              var other = 'display: flex;\n                          flex-direction: column;\n                          position: fixed;\n                          width: 120px;\n                          height: 120px; \n                          background-color: rgba(0, 0, 0, 0.4);\n                          margin: auto;\n                          left: 0;\n                          top: 0;\n                          bottom: 0;\n                          right: 0;\n                          border-radius: 5px;';
-              var h5 = 'display: flex;\n                      flex-direction: column;\n                      align-items:center;\n                      width: 120px;\n                      height: 120px; \n                      background-color: rgba(0, 0, 0, 0.4);\n                      text-align: center;\n                      line-height:120px; \n                      border:none;\n                      border-radius: 5px;';
-              var context = React.appType === 'h5' ? h5 : other;
-              Object(node).textContent = '\n             .toast2019 { \n              ' + context + '\n            }\n            .toast2019 .icon {\n              width: 90px;\n              height: 90px;\n              margin: 0 auto;\n              fill: #fff;\n              color: #fff;\n              text-align: center;\n              font-size: 30px;\n              line-height: 90px;\n            }\n            .toast2019 .title {\n              height: 30px;\n              text-align: center;\n              line-height: 30px;\n              color: #fff;\n              overflow: hidden;\n            } ';
+              Object(node).textContent = '\n             .toast2019 { \n              display: flex;\n              flex-direction: column;\n              position: fixed;\n              width: 120px;\n              height: 120px; \n              background-color: rgba(0, 0, 0, 0.4);\n              margin: auto;\n              left: 0;\n              top: 0;\n              bottom: 0;\n              right: 0;\n              border-radius: 5px;\n            }\n            .toast2019 .icon {\n              width: 90px;\n              height: 90px;\n              margin: 0 auto;\n              fill: #fff;\n              color: #fff;\n              text-align: center;\n              font-size: 30px;\n              line-height: 90px;\n            }\n            .toast2019 .title {\n              height: 30px;\n              text-align: center;\n              line-height: 30px;\n              color: #fff;\n              overflow: hidden;\n            } ';
             } })
         );
       };
