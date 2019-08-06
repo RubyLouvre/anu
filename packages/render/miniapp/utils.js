@@ -2,6 +2,8 @@ import { hasOwnProperty, typeNumber, isFn, get } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 import { Renderer } from 'react-core/createRenderer';
 
+const noop = () => {};
+
 var fakeApp = {
     app: {
         globalData: {}
@@ -128,13 +130,13 @@ export function useComponent(props) {
     return createElement(clazz, props);
 }
 
-export function handleSuccess(options, success, complete, resolve) {
+export function handleSuccess(options, success = noop, complete = noop, resolve = noop) {
     success(options);
     complete(options);
     resolve(options);
 }
   
-export function handleFail(options, fail, complete, reject) {
+export function handleFail(options, fail = noop, complete = noop, reject = noop) {
     fail(options);
     complete(options);
     reject(options);
