@@ -1,138 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-        <title>Document</title>
-    </head>
 
-    <body>
-        <script>
-            class SuffixNode {
-                constructor(value) {
-                    this.value = value;
-                    this.splitLength = 0;
-                    this.isActive = false;
-                    this.children = [];
-                    this.unfork = false;
-                    this.hidden = false;
-                }
-            }
-            class SuffixLink {
-                constructor(node) {
-                    this.node = node;
-                    this.unfork = true;
-                    this.isActive = false;
-                }
-                get children() {
-                    return this.node.children;
-                }
-                get splitLength() {
-                    return this.node.splitLength;
-                }
-                get value() {
-                    return this.node.value;
-                }
-            }
-            class SuffixTree {
-                constructor() {
-                    this.root = new SuffixNode("");
-                }
-                insert(word, sign) {
-                    sign = sign || "#";
-                    var nodes = this.root.children;
-                    word += sign;
-                    for (var i = 0; i < word.length; i++) {
-                        var multipleActive = [];
-                        this.addNodeByChar(
-                            nodes,
-                            word[i],
-                            false,
-                            multipleActive
-                        );
-                    }
-                }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Document</title>
+</head>
 
-                addNodeByChar(nodes, ch, isChild, multipleActive) {
-                    var add = true;
-                    if (isChild) {
-                        add = false;
-                    }
-                    for (var i = 0; i < nodes.length; i++) {
-                        var node = nodes[i];
-                        if (node.unfork) {
-                            //unfork用于忽略遍历
-                            continue;
-                        }
-                        if (!node.hidden) {
-                            //hidden用于忽略修改value
-                            node.value += ch;
-                        }
-                        var isMatch = node.value[node.splitLength] === ch;
+<body>
+  <script>
+    function maxSlidingWindow(nums, k) {
+      //有点坑，题目里都说了数组不为空，且 k > 0。但是看了一下，测试用例里面还是有nums = [], k = 0，所以只好加上这个判断
+      if (nums == null || nums.length < k || k == 0) {
+        return []
+      }
 
-                        if (!isMatch) {
-                            if (node.isActive) {
-                                //处于激活狀态
-                                node.isActive = false;
-                                node.hidden = true; //进行分叉
-                                var value = node.value;
-                                node.value = value.slice(0, node.splitLength); //变成父节点
-                                node.children.push(
-                                    new SuffixNode(
-                                        value.slice(node.splitLength, -1)
-                                    ),
-                                    new SuffixNode("")
-                                );
-                                node.splitLength = 0;
-                            }
-                        } else {
-                            //命中了，就不用在根节点中添加新节点
-                            add = false;
-                            node.splitLength++;
-                            if (!node.hidden) {
-                                //没有分叉过
-                                node.isActive = true;
-                                if (multipleActive.length) {
-                                    //如果存在多个激活节点，那么将它们链接起来，减少更新的数量
-                                    var prev = multipleActive[0];
-                                    if (prev.value.length > node.value.length) {
-                                        prev.value = prev.value.slice(
-                                            0,
-                                            node.value.length * -1
-                                        );
-                                        multipleActive[0] = node;
-                                        //为了防止重复添加子节点，带有suffixLink的父节点也带上link
-                                        prev.unfork = true;
-                                        //重置它的属性
-                                        prev.isActive = false;
-                                        prev.splitLength = 0;
-                                        prev.children = [new SuffixLink(node)];
-                                    } else {
-                                        nodes[i] = new SuffixLink(prev);
-                                    }
-                                } else {
-                                    multipleActive.push(node);
-                                }
-                            }
-                        }
-                        //如果有孩子，可以继续传递ch
-                        if (node.children.length ) {
-                            this.addNodeByChar(node.children, ch, true, multipleActive);
-                        }
-                    }
+      var res = []
+      //双端队列
+      var deque = []
+      for (var i = 0; i < nums.length; i++) {
+        //在尾部添加元素，并保证左边元素都比尾部大
+        while (deque.length && nums[deque[deque.length - 1]] < nums[i]) {
+          deque.pop();
+        }
+        deque.push(i);
+        //在头部移除元素
+        if (deque[0] == i - k) {
+          deque.shift();
+        }
+        //输出结果
+        if (i >= k - 1) {
+          res.push(nums[deque[0]]);
+        }
+      }
+      return res;
+    }
+    var ret = maxSlidingWindow([1, 3, -1, -3, 5, 3, 6, 7], 3)
+    console.log(ret)
+  </script>
+  <div id="root"></div>
+</body>
 
-                    if (add && ch !== "#") {
-                        nodes.push(new SuffixNode(ch));
-                    }
-                }
-            }
-
-            var tree = new SuffixTree();
-            //tree.insert("banana");
-            tree.insert("abcabxabcd"); //con
-            console.log(tree);
-        </script>
-        <div id="root"></div>
-    </body>
 </html>

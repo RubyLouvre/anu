@@ -1,160 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-        <title>Document</title>
-    </head>
 
-    <body>
-        <script>
-        const INACTIVE = 0; //待激活状态，这时可以对节点做任何修改
-        const ACTIVE = 1;   //激活状态, 节点准备进行分叉
-        const FORK = 2;     //已经分叉了，我们无法修改它的value, 但是能访问其后代，修改它们的value
-        const FREEZE = 3;   //冻结这整条分支，无法修改它与后代的修改
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Document</title>
+</head>
 
-   class SuffixNode {
-      constructor(value){
-        this.value = value
-        this.splitLength = 0;
-        this.status = INACTIVE;
-        this.children = []
+<body>
+  <script>
+
+    class Node {
+      constructor(node) {
+        this.suffix = node
+        this.children = {}
       }
     }
-    class SuffixLink {
-      constructor(node){
-        this.node = node;
-        this.status = FREEZE
-      }
-      get children(){
-        return this.node.children
-      }
-      get splitLength(){
-        return this.node.splitLength
-      }
-      get value(){
-        return this.node.value
-      }
-    }
-    class SuffixTree {
-      constructor() {
-        this.root = new SuffixNode('');
-      }
-      insert(word, sign) {
-        sign = sign || '#'
-        var nodes = this.root.children;
-        word += sign;
-        for (var i = 0; i < word.length; i++) {
-          var multipleActive = []
-          this.addNodeByChar(nodes, word[i], false,multipleActive)
-          multipleActive.length = 0
-        }
-      }
+    class STree {
 
-       addNodeByChar(nodes, ch, isChild, multipleActive) {
-        var add = true;
-        if (isChild) {
-          add = false
+      insert(str) {
+        this.str = str
+        this.len = str.length + 1000
+        this.root = new Node(null)
+        var node = t.root, n = 0;
+        for (var i = 0; i < str.length; i++) {
+          [node, n] = this.update(node, n, i);
+          [node, n] = this.canonize(node, n, i)
         }
-        //inactive, active,  fork,  unfork
-        for (var i = 0; i < nodes.length; i++) {
-          var node = nodes[i]
-          if(node.status === FREEZE){
-            continue
-          }
-          var isMatch = node.value[node.splitLength] === ch
-          //没有隐藏
-          if (node.status !== FORK ) {
-            node.value += ch;
-          }
-          if (!isMatch) {
-            if (node.status == ACTIVE) {//如果被激活
-              node.status = FORK;//准备分叉
-              var value = node.value;
-              node.value = value.slice(0, node.splitLength)//变成父节点
-              node.children.push(
-                new SuffixNode(value.slice(node.splitLength, -1)),
-                new SuffixNode(''),
-              )
-              node.splitLength = 0;
-            }
-          } else { //命中了，就不用在根节点中添加新节点
-            add = false;
-            node.splitLength++
-            if (node.status !== FORK) { //没有分叉过
-              node.status = ACTIVE
 
-              if(multipleActive.length){
-                 var prev = multipleActive[0];
-                 if( prev.value.length > node.value.length){
-                    prev.value = prev.value.slice(0, node.value.length * -1)
-                    prev.status = FREEZE
-                    prev.children = [new SuffixLink(node)];
-                    multipleActive[0] = node;
-                    continue
-                 }else {
-                    nodes[i] = new SuffixLink(prev);
-                 }
-        
-              }else {
-                multipleActive.push(node)
-              }
-            }
+      }
+      update(node, left, right) {
+        var c = this.str[right] //当前字符
+        var prev = new Node;
+        while (true) {
+          var [finish, p] = this.branch(node, left, right - 1, c);
+          if (finish) {
+            break
           }
-          //如果有孩子，可以继续传递ch
-          if (node.children.length ) {
-            this.addNodeByChar(node.children, ch, true, multipleActive)
+          p.children[c] = [right, t.len, new Node]
+          prev.suffix = p;
+          prev = p;
+          [node, left] = this.canonize(node.suffix, left, right - 1);
+        }
+        prev.suffix = node;
+        return [node, left]
+      }
+      branch(node, left, right, ch) {
+        if (right - left + 1 <= 0) {
+          if (!node) {
+            return [true, this.root]
+          } else {
+            return [ch in node.children, node]
+          }
+        } else {
+          // console.log(this.str, left, 'xxx')
+          var [ll, rr, child] = node.children[this.str[left]];
+          var pos = ll + right - left + 1;
+          if (this.str[pos] == ch) {
+            return [true, node]
+          } else {
+            var branchNode = new Node;
+            node.children[this.str[ll]] = [ll, pos - 1, branchNode];
+            branchNode.children[this.str[pos]] = [pos, rr, child];
+            return [false, branchNode]
           }
         }
-        if (add && ch !== '#') {
-          nodes.push(new SuffixNode(ch))
-        }
       }
-    }
-    var tree = new SuffixTree();
-    //tree.insert("banana");
-    tree.insert("javajfiewjavajfiowfjavagkljjava"); //con
-    console.log(tree)
+      canonize(node, left, right) {
 
+        if (!node) {
+          if (right - left + 1 <= 0) {
+            return [null, left]
+          } else {
+            // console.log(this.root, left+1, right, 'end')
+            return this.canonize(this.root, left + 1, right)
+          }
+        }
+        while (left <= right) {
+          // console.log(this.str, left, 'xxx')
+          var [ll, rr, child] = node.children[this.str[left]]
+          if (right - left >= rr - ll) {
+            left += rr - ll + 1;
+            node = child
+          } else {
+            break
+          }
+        }
+        return [node, left]
+      }
+      findPatten(s) {
+        var node = this.root;
+        while (1) {
+          var match = false;
+          for (var i in node.children) {
+            var [ll, rr, child] = node.children[i];
+            console.log(ll, rr, i, child)
+            var edge = this.str.slice(ll, rr + 1);
+            console.log(edge, child)
 
-    function find(node, target){
-      var prev = ''
-      while(true){
-        var nodes = node.children
-        var match = false
-        for(var i = 0 ; i < nodes.length; i++ ){
-           var cur = nodes[i];
-           var value = prev + cur.value
-          //如果value
-          if(value.length < target.length){
-            if(value == target.substr(0, value.length) ){ //ja java
-              node = cur
-              prev = value;
+            if (edge.indexOf(s) === 0) {
+              return Math.max(Object.keys(child.children).length, 1)
+            } else if (s.indexOf(edge) === 0) {
               match = true
-              //  find(node.children, target, value)
-             // break
-            }
-          }else{
-             
-            if(value.indexOf(target) >= 0){
-               return Math.max(cur.children.length, 1)
+              node = child;
+              s = s.slice(edge.length)
             }
           }
+          if (!match) {
+            return 0
+          }
         }
-        if(!match){
-          return 0
-        }
+        return 0
       }
     }
-   var max = find(tree.root, 'java')
-console.log(max, 'xxx')
-   // javajfiewjavajfiowfjavagkljjava";
-//var flagStr="java";
-//1,2,2,3,3,5,5
+    var t = new STree;
+    t.insert('javaxjava')
+    console.log(t)
+    console.log(t.findPatten('java'))
+  </script>
+  <div id="root"></div>
+</body>
 
-
-        </script>
-        <div id="root"></div>
-    </body>
 </html>
