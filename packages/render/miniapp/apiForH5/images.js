@@ -6,24 +6,25 @@
 import { handleSuccess, handleFail } from '../utils';
 
 // TODO 需要确定要不要传给服务器
-function chooseImage({
-  files = []
-}) {
-  const result = [];
-
-  for (let i = 0; i < 9; i++) {
-    const f = files[i];
-    if (!f) break;
-    result.push(
-      new Promise(res => {
-        const reader = new FileReader();
-        reader.readAsDataURL(f);
-        reader.onload = () => res(reader.result);
-      })
-    );
-  }
-
-  return Promise.all(result);
+function chooseImage({ 
+    count = 9,
+    sizeType = ['original', 'compressed'],
+    sourceType = ['album', 'camera'],
+    success = function() {},
+    fail = function() {},
+    complete = function() {},
+} = {}) {
+    const tempInput = document.createElement('input');
+    tempInput.type = 'file';
+    tempInput.accept = 'image/*';
+    tempInput.multiple = true;
+    tempInput.onchange = function(e) {
+        const files = e.path[0].files;
+        handleSuccess({
+            tempFiles: files
+        }, success, complete);
+    };
+    tempInput.click();
 }
 
 /**
@@ -31,8 +32,8 @@ function chooseImage({
  * @param {String} filePath 图片文件路径，可以是临时文件路径或永久文件路径，不支持网络图片路径
  */
 function saveImageToPhotosAlbum(filePath) {
-  // 暂时实现不了
-  console.log(filePath);
+    // 暂时实现不了
+    console.log(filePath);
 }
 
 /**
@@ -40,53 +41,63 @@ function saveImageToPhotosAlbum(filePath) {
  * @param {String} src 图片文件路径，可以是临时文件路径或永久文件路径，不支持网络图片路径
  */
 function getImageInfo(options = {}) {
-  const img = new Image();
-  const {
-    src,
-    success = () => {},
-    fail = () => {},
-    complete = () => {}
-  } = options;
-  img.src = src;
-  let result = {
-    width: 1,
-    height: 1,
-    path: '',
-    orientation: '',
-    type: ''
-  };
+    const img = new Image();
+    const {
+        src,
+        success = () => {},
+        fail = () => {},
+        complete = () => {}
+    } = options;
+    img.src = src;
+    let result = {
+        width: 1,
+        height: 1,
+        path: '',
+        orientation: '',
+        type: ''
+    };
 
-  return new Promise((resolve, reject) => {
-    try {
-      if (!src) {
-        handleFail({
-          errMsg: 'getImageInfo 参数错误'
-        }, fail, complete, reject);
-        return;
-      }
-      if (img.complete) {
-        result.width = img.width;
-        result.height = img.height;
-        result.path = img.src;
-        handleSuccess(result, success, complete, resolve);
-      } else {
-        img.onload = () => {
-          result.width = img.width;
-          result.height = img.height;
-          result.path = img.src;
-          handleSuccess(result, success, complete, resolve);
-        };
-      }
-    } catch(e) {
-      handleFail({
-        errMsg: e
-      }, fail, complete, reject);
-    }
-  });
+    return new Promise((resolve, reject) => {
+        try {
+            if (!src) {
+                handleFail(
+                    {
+                        errMsg: 'getImageInfo 参数错误'
+                    },
+                    fail,
+                    complete,
+                    reject
+                );
+                return;
+            }
+            if (img.complete) {
+                result.width = img.width;
+                result.height = img.height;
+                result.path = img.src;
+                handleSuccess(result, success, complete, resolve);
+            } else {
+                img.onload = () => {
+                    result.width = img.width;
+                    result.height = img.height;
+                    result.path = img.src;
+                    handleSuccess(result, success, complete, resolve);
+                };
+            }
+        } catch (e) {
+            handleFail(
+                {
+                    errMsg: e
+                },
+                fail,
+                complete,
+                reject
+            );
+        }
+    });
 }
 
 export default {
-  chooseImage,
-  saveImageToPhotosAlbum,
-  getImageInfo
+    chooseImage,
+    saveImageToPhotosAlbum,
+    getImageInfo
 };
