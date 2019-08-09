@@ -1,0 +1,21 @@
+.__internal__TabBar {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    justify-content: space-around;
+}
+.__internal__TabBarItem {
+    text-align: center;
+    height: 32px;
+    flex-grow: 1;
+}
+img {
+    width: 32px;
+}
+.__internal__TabBarItem-title {
+    height: 20px;
+    font-size: 14px;
+    justify-content: center;
+}

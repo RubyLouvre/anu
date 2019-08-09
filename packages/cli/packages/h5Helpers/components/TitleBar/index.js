@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
+import './index.scss';
 
 class TitleBar extends Component {
+    constructor(props) {
+        super(props);
+        this.randomClassName = 'r' + Math.floor(Math.random()*100000);
+    }
     get page() {
         return this.props.page;
     }
@@ -23,7 +28,14 @@ class TitleBar extends Component {
             // animation: { duration, timingFunc }
         } = this.props;
         return (
-            <header className="__internal__Header">
+            <header className="__internal__Header" style={
+                {
+                    height: `${titleBarHeight}px`,
+                    lineHeight: `${titleBarHeight}px`,
+                    backgroundColor: `${navigationBarBackgroundColor}`,
+                    color: `${navigationBarTextStyle}`
+                }
+            }>
                 {backButton ? (
                     <div
                         className="__internal__Header-back"
@@ -37,41 +49,6 @@ class TitleBar extends Component {
                         {navigationBarTitleText}
                     </div>
                 </div>
-                <style ref={(node) => {
-                    Object(node).textContent = `
-                    .__internal__Header {
-                        width: 100%;
-                        height: ${titleBarHeight}px;
-                        line-height: ${titleBarHeight}px;
-                        background-color: ${navigationBarBackgroundColor};
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        text-align: center;
-                        color: ${navigationBarTextStyle};
-                    }
-                    .__internal__Header-title {
-                        flex-grow: 1;
-                        padding: 0 48px;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                    }
-                    .__internal__Header-title {
-                        margin-left: 6px;
-                    }
-                    .__internal__Header-back {
-                        width: 48px;
-                        height: 100%;
-                        font-size: 14px;
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                    }
-                    .__internal__Header-back:active {
-                        background-color: rgba(255, 255, 255, 0.15);
-                    }`;
-                }}/>
             </header>
         );
     }

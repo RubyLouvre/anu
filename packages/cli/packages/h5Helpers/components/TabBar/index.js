@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import './index.scss';
 
 class TabBar extends Component {
     get borderStyle() {
@@ -29,32 +30,6 @@ class TabBar extends Component {
                 </div>)
                 }
             </main>
-            <style ref={(node) => {
-                Object(node).textContent = `
-                .__internal__TabBar {
-                    position: absolute;
-                    bottom: 0;
-                    width: 100%;
-                    height: 60px;
-                    display: flex;
-                    justify-content: space-around;
-                    border-top: 1px solid ${this.borderStyle};
-                    background-color: ${this.backgroundColor};
-                }
-                .__internal__TabBarItem {
-                    text-align: center;
-                    height: 32px;
-                    flex-grow: 1;
-                }
-                img {
-                    width: 32px;
-                }
-                .__internal__TabBarItem-title {
-                    height: 20px;
-                    font-size: 14px;
-                    justify-content: center;
-                }`;
-            }}/>
         </React.Fragment>;
     }
 }
