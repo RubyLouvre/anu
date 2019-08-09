@@ -314,11 +314,11 @@ export default function dynamicPage(Comp) {
                     };
                             overflow-x: hidden;
                             overflow-y: auto;
-                            transform: translateY(${
+                            padding-top: ${
                     this.state.showTitleBar
                         ? 48 + this.state.containerOffsetTop
                         : this.state.containerOffsetTop
-                    }px);
+                    }px;
                             ${
                     this.state.onPullRefreshRelease
                         ? 'transition: all .3s ease;'
