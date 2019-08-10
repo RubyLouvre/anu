@@ -3947,19 +3947,39 @@
       Toast.prototype.render = function render() {
         return React.createElement(
           'div',
-          { className: 'toast2019' },
-          React.createElement(
+          null,
+          React.appType === 'h5' ? React.createElement(
+            'dialog',
+            { open: true, className: 'toast2019' },
+            React.createElement(
+              'div',
+              { className: 'icon' },
+              this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
+            ),
+            React.createElement(
+              'div',
+              { className: 'title' },
+              this.props.title
+            )
+          ) : React.createElement(
             'div',
-            { className: 'icon' },
-            this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
-          ),
-          React.createElement(
-            'div',
-            { className: 'title' },
-            this.props.title
+            { className: 'toast2019' },
+            React.createElement(
+              'div',
+              { className: 'icon' },
+              this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
+            ),
+            React.createElement(
+              'div',
+              { className: 'title' },
+              this.props.title
+            )
           ),
           React.createElement('style', { ref: function ref(node) {
-              Object(node).textContent = '\n             .toast2019 { \n              display: flex;\n              flex-direction: column;\n              position: fixed;\n              width: 120px;\n              height: 120px; \n              background-color: rgba(0, 0, 0, 0.4);\n              margin: auto;\n              left: 0;\n              top: 0;\n              bottom: 0;\n              right: 0;\n              border-radius: 5px;\n            }\n            .toast2019 .icon {\n              width: 90px;\n              height: 90px;\n              margin: 0 auto;\n              fill: #fff;\n              color: #fff;\n              text-align: center;\n              font-size: 30px;\n              line-height: 90px;\n            }\n            .toast2019 .title {\n              height: 30px;\n              text-align: center;\n              line-height: 30px;\n              color: #fff;\n              overflow: hidden;\n            } ';
+              var other = 'display: flex;\n                          flex-direction: column;\n                          position: fixed;\n                          width: 120px;\n                          height: 120px; \n                          background-color: rgba(0, 0, 0, 0.4);\n                          margin: auto;\n                          left: 0;\n                          top: 0;\n                          bottom: 0;\n                          right: 0;\n                          border-radius: 5px;';
+              var h5 = 'display: flex;\n                      flex-direction: column;\n                      align-items:center;\n                      width: 120px;\n                      height: 120px; \n                      background-color: rgba(0, 0, 0, 0.4);\n                      text-align: center;\n                      line-height:120px; \n                      border:none;\n                      border-radius: 5px;';
+              var context = React.appType === 'h5' ? h5 : other;
+              Object(node).textContent = '\n             .toast2019 { \n              ' + context + '\n            }\n            .toast2019 .icon {\n              width: 90px;\n              height: 90px;\n              margin: 0 auto;\n              fill: #fff;\n              color: #fff;\n              text-align: center;\n              font-size: 30px;\n              line-height: 90px;\n            }\n            .toast2019 .title {\n              height: 30px;\n              text-align: center;\n              line-height: 30px;\n              color: #fff;\n              overflow: hidden;\n            } ';
             } })
         );
       };
