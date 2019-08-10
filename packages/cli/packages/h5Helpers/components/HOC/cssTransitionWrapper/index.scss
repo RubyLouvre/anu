@@ -6,15 +6,6 @@
     transition: transform 300ms ease;
     height: 100%;
 }
-.page-exit {
-    transform: translateX(0);
-    height: 100%;
-}
-.page-exit-done {
-    transform: translateX(500px);
-    transition: transform 300ms ease;
-    height: 100%;
-}
 .tab-appear {
     opacity: 0;
 }
