@@ -1950,7 +1950,6 @@
     }
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
-        var updateQueue = fiber.updateQueue;
         if (useCallbackImpl(create, deps, false, true)) {
             if (fiber.effectTag % EffectTag) {
                 fiber.effectTag *= EffectTag;
@@ -3342,7 +3341,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.5.0',
+            version: '1.5.8',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,
