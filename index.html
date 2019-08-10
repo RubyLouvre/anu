@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    class Node {
+      constructor(data) {
+        this.data = data;
+        this.left = null;
+        this.right = null;
+        this.parent = null;
+        this.size = 1;
+        this.count = 1;
+      }
+      maintain() {
+        this.size = this.count;
+        if (this.left) {
+          this.size += this.left.size;
+        }
+        if (this.right) {
+          this.size += this.right.size;
+        }
+      }
+    }
+
+    function rotateImpl(tree, node, dir, setParent) {
+      var other = dir == "left" ? "right" : "left";
+      if (!node[other]) {
+        return;
+      }
+      var top = node[other]; //会上浮的子节点
+      node[other] = top[dir]; //过继孩子
+
+      if (setParent) {
+        if (!node.parent) {
+          tree.root = top;
+        } else if (node == node.parent.left) {
+          node.parent.left = top;
+        } else {
+          node.parent.right = top;
+        }
+        Object(top[dir]).parent = node; //父属性修正1
+        top.parent = node.parent; //父属性修正2
+        node.parent = top; //父属性修正3
+      }
+      top[dir] = node; //旋转
+      node.maintain(); //先处理下面的再处理上面的
+      top.maintain();
+      return top;
+    }
+    class SBT {
+      //参考 https://github.com/pallab-gain/Sized-Balanced-Tree/tree/master/src/sbts
+      constructor() {
+        this.root = null;
+      }
+      leftRotate(node) {
+        return rotateImpl(this, node, "left", true);
+      }
+      rightRotate(node) {
+        return rotateImpl(this, node, "right", true);
+      }
+      getSize(node) {
+        return node ? node.size : 0
+      }
+
+      maxNode(node) {
+        var cur = node || this.root;
+        while (cur.right) {
+          cur = cur.right
+        }
+        return cur;
+      }
+      minNode(node) {
+        var cur = node || this.root;
+        while (cur.left) {
+          cur = cur.left
+        }
+        return cur;
+      }
+      getMax() {
+        var node = this.maxNode()
+        return node ? node.data : null
+      }
+      getMin() {
+        var node = this.minNode()
+        return node ? node.data : null
+      }
+      getPrev(value) {
+        var node = this.find(value)
+      }
+      _insert(node, value) {
+        if (!node) {
+          return new Node(value)
+        }
+        node.size++
+        if (value < node.data) {
+          node.left = this._insert(node.left, value)
+        } else {
+          node.right = this._insert(node.right, value)
+        }
+
+        node = this.maintain(node, value >= node.data)
+        return node;
+      }
+      insert(value) {
+        this.root = this._insert(this.root, value)
+        console.log(this.keys() + "")
+      }
+      remove(value) {
+        this.root = this._remove(this.root, value)
+
+      }
+      _remove(node, value) {
+        if (!node) {
+          return null;
+        }
+        let cmp = value - node.data
+        if (cmp < 0) {
+          node.left = this._remove(node.left, value);
+        } else if (cmp > 0) {
+          node.right = this._remove(node.right, value);
+        } else {
+          if (!node.left) {
+            return node.right;
+          } else if (!node.right) {
+            return node.left;
+          } else {
+            let successor = this.minNode(node.right);
+            let tempKey = node.data;
+            node.data = successor.data;
+            successor.data = tempKey;
+            node.right = this._remove(node.right, tempKey);
+          }
+        }
+        this.maintain(node);
+        node.maintain()
+        return node;
+
+      }
+      find(value) {
+        var node = this.root;
+        while (node) {
+          var diff = value - node.data;
+          if (diff == 0) {
+            break;
+          } else if (diff < 0) {
+            node = node.left;
+          } else {
+            node = node.right;
+          }
+        }
+        return node;
+      }
+      getRank(value) {
+        var node = this.find(value);
+        if (node) {
+          return this.getSize(node.left) + 1;
+        } else {
+          return 0;
+        }
+      }
+      getKth(k) {
+        var node = this.root;
+        while (node) {
+          if (k <= this.getSize(node.left)) {
+            node = node.left;
+          } else if (k > this.getSize(node.left) + node.count) {
+            k -= this.getSize(node.left) + node.count;
+            node = node.right;
+          } else {
+            return node.data;
+          }
+        }
+        return null;
+      }
+      getPrev(value) {//找x的前驱{
+        var node = this.find(value)
+        if (node) {
+
+          var right = node.right;
+          while (right.left) {
+            right = right.left
+          }
+          return right
+        }
+      }
+      getSuss(value) {//找x的后继
+        var node = this.find(value)
+        if (node) {
+
+          var left = node.left;
+          while (left.right) {
+            left = left.right
+          }
+          return left
+        }
+      }
+
+
+      /*
+            remove(value) {
+              if (!this.root) {
+                return false
+              }
+              var node = this.find(value);
+              if (node) {
+                if (node.count > 1) {
+                  node.count--
+                  return;
+                }
+                if (value == this.root.data) {
+                  if (node.left && node.right) {
+                    var succ = this.maxNode(node.left);//求后继
+      
+                    this.remove(succ.data)
+                    node.data = succ.data;
+                  } else {
+                    var child = node.left || node.right || null;
+                    var parent = node.parent;
+                    if (parent.left == node) {
+                      node.left = child
+                    } else {
+                      node.right = child
+                    }
+                    parent.maintain()
+                    if (child) {
+                      child.parent = parent;//parent的size发生变化
+                      this.maintain(parent, false);
+                      this.maintain(parent, true);
+                    }
+                  }
+                }
+              }
+            }
+      */
+      maintain(node, rightDeeper) {
+        if (!node) {
+          return
+        }
+        var left = node.left;
+        var right = node.right;
+        if (!rightDeeper) {
+          if (!left) {
+            return;
+          }
+          var rightSize = this.getSize(right)
+          var llSize = this.getSize(left && left.left)
+          var lrSize = this.getSize(left && left.right)
+          if (llSize > rightSize) {
+            this.rightRotate(node);
+          } else if (lrSize > rightSize) {
+            this.leftRotate(left);
+            this.rightRotate(node);
+          } else {
+            // 1 === 1
+            return;
+          }
+        } else {
+          if (!right) {
+            return;
+          }
+          var leftSize = this.getSize(left)
+          var rrSize = this.getSize(right.right)
+          var rlSize = this.getSize(right.left)
+          if (rrSize > leftSize) {
+            this.leftRotate(node);
+          } else if (rlSize > leftSize) {
+            this.rightRotate(right);
+            this.leftRotate(node);
+          } else {
+            // 1 === 1
+            return;
+          }
+        }
+        this.maintain(node.left, false);
+        this.maintain(node.right, true);
+        this.maintain(node, false);
+        this.maintain(node, true);
+
+      }
+      maintain(node, rightDeeper) {
+        if (!node) {
+          return null;
+        }
+        var left = node.left;
+        var right = node.right;
+        if (!rightDeeper) {
+          if (!left) {
+            return node
+          }
+          if (this.getSize(left.left) > this.getSize(right)) {
+            node = this.rotateRight(node);
+          } else if (this.getSize(left.right) > this.getSize(right)) {
+            node.left = this.rotateLeft(left);
+            node = this.rotateRight(node);
+          }
+        } else {
+          if (!right) {
+            return node;
+          }
+          if (this.getSize(right.right) > this.getSize(left)) {
+            node = this.rotateLeft(node);
+          } else if (this.getSize(right.left) > this.getSize(left)) {
+            node.right = this.rotateRight(right);
+            node = this.rotateLeft(node);
+          }
+        }
+        node.left = this.maintain(node.left, false);
+        node.right = this.maintain(node.right, true);
+        node = this.maintain(node, false);
+        node = this.maintain(node, true);
+        return node;
+      };
+      inOrder(cb) {
+        function recursion(node) {
+          if (node) {
+            recursion(node.left);
+            cb(node);
+            recursion(node.right);
+          }
+        }
+        recursion(this.root);
+      }
+      keys() {
+        var ret = [];
+        this.inOrder(function (p) {
+          ret.push(p.data);
+        });
+        return ret;
+      }
+    }
+    var array = [7, 11, 13, 8, 44, 78, 15, 9, 77, 89, 1, 2]  //[11,7,14,3,9,18,16,15]
+    var t = new SBT();
+    array.forEach(function (el) {
+      t.insert(el)
+    })
+
+
+    var rank = t.find(44)
+    console.log('t.find(44)', rank, t)
+    var a = t.getRank(44)
+    console.log('t.getRank(44)', a);
+    var b = t.getKth(a)
+    console.log(`t.getKth(${a})`, b);
+
+    t.remove(11);
+    t.remove(44);
+    t.remove(77);
+    console.log("移除11,44,77后");
+    console.log(t.keys(1) + "");
+    t.insert(11)
+    t.insert(43)
+    t.insert(76)
+    t.insert(77)
+
+
+
+  //  https://blog.csdn.net/u011327397/article/details/53783700#splayto%E6%8C%89%E5%BA%8F%E5%8F%B7%E4%BC%B8%E5%B1%95
+
+  </script>
+  <div id="root"></div>
+</body>
+
+</html>

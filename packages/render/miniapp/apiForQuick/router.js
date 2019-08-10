@@ -58,7 +58,8 @@ function createRouter(name) {
                 }
             }
             uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
-            if (uri.charAt(0) !== '/') {
+            //以hap://, https?开头，是跳到其他快应用
+            if (uri.charAt(0) !== '/' && !uri.test(/^(hap|https?)\:/)) {
                 uri = '/' + uri;
             }
         }

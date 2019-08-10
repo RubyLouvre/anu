@@ -19,7 +19,7 @@
              "react-fiber": "./packages/fiber",
              "prop-types": "./lib/ReactPropTypes",
              "create-react-class": "./lib/createClass",
-             "react-server-renderer":"./dist/React/server",
+             "react-server-renderer":"./dist/ReactDOMServer",
              "react-noop-renderer": "./dist/ReactNoop",
              "react": "./dist/React",
              "lib": "./lib",

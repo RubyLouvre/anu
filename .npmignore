@@ -3,10 +3,9 @@
 /md/*
 /coverage/
 /test/*
-/aaa/*
 /benchmarks/*
 package-lock.json
-node_modules/*
+node_modules/
 index*.html
 version.md
 .travis.yml
@@ -15,9 +14,6 @@ chromedriver
 react.js
 react-dom.js
 selenium-server-*
-ts/*
-packages/*
-/packages/*
 /.vscode/*
 /.history/*
 yarn.lock

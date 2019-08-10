@@ -1,12 +1,14 @@
-const ignoreCss = require('./ignoreCss');
-const generate = require('@babel/generator').default;
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const generator_1 = __importDefault(require("@babel/generator"));
+const ignoreCss_1 = __importDefault(require("./ignoreCss"));
 module.exports = function huaWeiStyleTransform(expr, isString) {
     if (isString) {
-        
-        return transform(generate(expr).code);
+        return transform(generator_1.default(expr).code);
     }
-    // 华为1040之前不支持style={ props.style123 },需要特殊处理
     var obj = expr.properties;
     var str = '';
     for (let i in obj) {
@@ -15,39 +17,38 @@ module.exports = function huaWeiStyleTransform(expr, isString) {
         var attrType = attrValue.type;
         var value;
         switch (attrType) {
-            case 'MemberExpression': // style={{backgroundColor: this.state.color}}
-            case 'ConditionalExpression': // style={{ height: this.state.arr && this.state.arr.length > 0 ? '100%' : 'auto' }}
-                value = transform(generate(attrValue).code);
+            case 'MemberExpression':
+            case 'ConditionalExpression':
+                value = transform(generator_1.default(attrValue).code);
                 break;
-            case 'BinaryExpression': // 形如 style= {{height: this.state.height + 'px'}}
-                let left = generate(attrValue.left).code;
-                let right = generate(attrValue.right).code;
+            case 'BinaryExpression':
+                let left = generator_1.default(attrValue.left).code;
+                let right = generator_1.default(attrValue.right).code;
                 if (/rpx/gi.test(right)) {
                     value = replaceWithExpr(left) + 'px';
-                } else {
+                }
+                else {
                     value = replaceWithExpr(left + '*2') + 'px';
                 }
                 break;
             default:
                 value = transform(attrValue.value);
                 break;
-
         }
-        if (ignoreCss[attrName]) {
-            if (ignoreCss[attrName] === true) {
+        if (ignoreCss_1.default[attrName]) {
+            if (ignoreCss_1.default[attrName] === true) {
                 continue;
-            } else if (!ignoreCss[attrName](value)) {
+            }
+            else if (!ignoreCss_1.default[attrName](value)) {
                 continue;
             }
         }
-        str += attrName + ':'+ value + ';';
+        str += attrName + ':' + value + ';';
     }
     return str;
 };
-
 var rpx = /(\d[\d\.]*)(r?px)/gi;
 var rhyphen = /([a-z\d])([A-Z]+)/g;
-
 function transform(val) {
     val = val + '';
     val = val.replace(rpx, (str, match, unit) => {
@@ -56,15 +57,11 @@ function transform(val) {
         }
         return match + 'px';
     });
-
     return replaceWithExpr(val);
 }
-
 function hyphen(target) {
-    //转换为连字符风格
     return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
-// 将形如 this.state.value 变成 {{state.value}}
 function replaceWithExpr(value) {
     if (value.indexOf('this.') >= 0) {
         value = `{{${value.replace(/this\.(\s*)/gi, '$1')}}}`;

@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-07-05
+ * 运行于快应用的React by 司徒正美 Copyright 2019-08-06
  */
 
 var arrayPush = Array.prototype.push;
@@ -576,7 +576,7 @@ function createContext(defaultValue, calculateChangedBits) {
             instance.subscribers.splice(i, 1);
         },
         render: function render() {
-            return this.props.children(this.state.value);
+            return this.props.children(getContext(get(this)));
         }
     });
     function getContext(fiber) {
@@ -1387,7 +1387,7 @@ function createRouter(name) {
                 }
             }
             uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
-            if (uri.charAt(0) !== '/') {
+            if (uri.charAt(0) !== '/' && !uri.test(/^(hap|https?)\:/)) {
                 uri = '/' + uri;
             }
         }
@@ -1658,7 +1658,8 @@ var noPromiseApis = {
   createWorker: true,
   getPushProvider: true,
   getProvider: true,
-  canvasToTempFilePath: true
+  canvasToTempFilePath: true,
+  createModal: true
 };
 var otherApis = {
   uploadFile: true,
@@ -1806,19 +1807,11 @@ function promisefyApis(ReactWX, facade, more) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
                         task = needWrapper.apply(facade, args);
+                        if (task && options.getRawResult) {
+                            options.getRawResult(task);
+                        }
                     }
                 });
-                if (key === 'uploadFile' || key === 'downloadFile') {
-                    p.progress = function (cb) {
-                        task.onProgressUpdate(cb);
-                        return p;
-                    };
-                    p.abort = function (cb) {
-                        cb && cb();
-                        task.abort();
-                        return p;
-                    };
-                }
                 return p;
             };
         } else {
@@ -1884,11 +1877,6 @@ function createInstance(fiber, context) {
                 }
             });
             Renderer.currentOwner = instance;
-            if (type.render) {
-                instance.render = function () {
-                    return type.render(this.props, this.ref);
-                };
-            }
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
@@ -2064,8 +2052,11 @@ function detachFiber(fiber, effects$$1) {
 }
 
 function setter(compute, cursor, value) {
-    this.updateQueue[cursor] = compute(cursor, value);
-    Renderer.updateComponent(this, true);
+    var _this = this;
+    Renderer.batchedUpdates(function () {
+        _this.updateQueue[cursor] = compute(cursor, value);
+        Renderer.updateComponent(_this, true);
+    });
 }
 var hookCursor = 0;
 function resetCursor() {
@@ -2106,7 +2097,7 @@ function useReducerImpl(reducer, initValue, initAction) {
     var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
     return [value, dispatch];
 }
-function useCallbackImpl(create, deps, isMemo) {
+function useCallbackImpl(create, deps, isMemo, isEffect) {
     var fiber = getCurrentFiber();
     var key = getCurrentKey();
     var updateQueue = fiber.updateQueue;
@@ -2115,23 +2106,23 @@ function useCallbackImpl(create, deps, isMemo) {
     if (prevState) {
         var prevInputs = prevState[1];
         if (areHookInputsEqual(nextInputs, prevInputs)) {
-            return prevState[0];
+            return isEffect ? null : prevState[0];
         }
     }
-    var value = isMemo ? create() : create;
-    updateQueue[key] = [value, nextInputs];
-    return value;
+    var fn = isMemo ? create() : create;
+    updateQueue[key] = [fn, nextInputs];
+    return fn;
 }
 function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
     var fiber = getCurrentFiber();
-    var cb = useCallbackImpl(create, deps);
-    if (fiber.effectTag % EffectTag) {
-        fiber.effectTag *= EffectTag;
+    if (useCallbackImpl(create, deps, false, true)) {
+        if (fiber.effectTag % EffectTag) {
+            fiber.effectTag *= EffectTag;
+        }
+        var list = updateQueue[createList] || (updateQueue[createList] = []);
+        updateQueue[destroyList] || (updateQueue[destroyList] = []);
+        list.push(create);
     }
-    var updateQueue = fiber.updateQueue;
-    var list = updateQueue[createList] || (updateQueue[createList] = []);
-    updateQueue[destroyList] || (updateQueue[destroyList] = []);
-    list.push(cb);
 }
 function getCurrentFiber() {
     return get(Renderer.currentOwner);

@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-07-15
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-06
  */
 
 var arrayPush = Array.prototype.push;
@@ -816,11 +816,6 @@ function createInstance(fiber, context) {
                 }
             });
             Renderer.currentOwner = instance;
-            if (type.render) {
-                instance.render = function () {
-                    return type.render(this.props, this.ref);
-                };
-            }
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
@@ -996,8 +991,11 @@ function detachFiber(fiber, effects$$1) {
 }
 
 function setter(compute, cursor, value) {
-    this.updateQueue[cursor] = compute(cursor, value);
-    Renderer.updateComponent(this, true);
+    var _this = this;
+    Renderer.batchedUpdates(function () {
+        _this.updateQueue[cursor] = compute(cursor, value);
+        Renderer.updateComponent(_this, true);
+    });
 }
 var hookCursor = 0;
 function resetCursor() {
@@ -1038,7 +1036,7 @@ function useReducerImpl(reducer, initValue, initAction) {
     var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
     return [value, dispatch];
 }
-function useCallbackImpl(create, deps, isMemo) {
+function useCallbackImpl(create, deps, isMemo, isEffect) {
     var fiber = getCurrentFiber();
     var key = getCurrentKey();
     var updateQueue = fiber.updateQueue;
@@ -1047,23 +1045,23 @@ function useCallbackImpl(create, deps, isMemo) {
     if (prevState) {
         var prevInputs = prevState[1];
         if (areHookInputsEqual(nextInputs, prevInputs)) {
-            return;
+            return isEffect ? null : prevState[0];
         }
     }
-    var value = isMemo ? create() : create;
-    updateQueue[key] = [value, nextInputs];
-    return value;
+    var fn = isMemo ? create() : create;
+    updateQueue[key] = [fn, nextInputs];
+    return fn;
 }
 function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
     var fiber = getCurrentFiber();
-    var cb = useCallbackImpl(create, deps);
-    if (fiber.effectTag % EffectTag) {
-        fiber.effectTag *= EffectTag;
+    if (useCallbackImpl(create, deps, false, true)) {
+        if (fiber.effectTag % EffectTag) {
+            fiber.effectTag *= EffectTag;
+        }
+        var list = updateQueue[createList] || (updateQueue[createList] = []);
+        updateQueue[destroyList] || (updateQueue[destroyList] = []);
+        list.push(create);
     }
-    var updateQueue = fiber.updateQueue;
-    var list = updateQueue[createList] || (updateQueue[createList] = []);
-    updateQueue[destroyList] || (updateQueue[destroyList] = []);
-    list.push(cb);
 }
 function getCurrentFiber() {
     return get(Renderer.currentOwner);
@@ -2370,19 +2368,11 @@ function promisefyApis(ReactWX, facade, more) {
                         console.warn('平台未不支持', key, '方法');
                     } else {
                         task = needWrapper.apply(facade, args);
+                        if (task && options.getRawResult) {
+                            options.getRawResult(task);
+                        }
                     }
                 });
-                if (key === 'uploadFile' || key === 'downloadFile') {
-                    p.progress = function (cb) {
-                        task.onProgressUpdate(cb);
-                        return p;
-                    };
-                    p.abort = function (cb) {
-                        cb && cb();
-                        task.abort();
-                        return p;
-                    };
-                }
                 return p;
             };
         } else {
@@ -2427,6 +2417,13 @@ function registerAPIsQuick(ReactWX, facade, override) {
     }
 }
 
+function fixFilePath(api, name) {
+   return function (a) {
+      a.apFilePath = a.filePath;
+      api[name](a);
+   };
+}
+
 function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 var more = function more(api) {
     return {
@@ -2460,10 +2457,12 @@ var more = function more(api) {
             return api.setNavigationBar(a);
         },
         vibrateLong: function _(a) {
-            return api.vibrate(a);
+            var name = api.vibrateLong ? "vibrateLong" : "vibrate";
+            return api[name](a);
         },
         vibrateShort: function _(a) {
-            return api.vibrate(a);
+            var name = api.vibrateShort ? "vibrateShort" : "vibrate";
+            return api[name](a);
         },
         saveImageToPhotosAlbum: function _(a) {
             a.url = a.filePath;
@@ -2474,18 +2473,9 @@ var more = function more(api) {
             a.current = index;
             return api.previewImage(a);
         },
-        getFileInfo: function _(a) {
-            a.apFilePath = a.filePath;
-            return api.getFileInfo(a);
-        },
-        getSavedFileInfo: function _(a) {
-            a.apFilePath = a.filePath;
-            return api.getSavedFileInfo(a);
-        },
-        removeSavedFile: function _(a) {
-            a.apFilePath = a.filePath;
-            return api.removeSavedFile(a);
-        },
+        getFileInfo: fixFilePath(api, 'getFileInfo'),
+        getSavedFileInfo: fixFilePath(api, 'getSavedFileInfo'),
+        removeSavedFile: fixFilePath(api, 'removeSavedFile'),
         saveFile: function _(a) {
             a.apFilePath = a.tempFilePath;
             var fn = a['success'];
@@ -2514,11 +2504,21 @@ var more = function more(api) {
         },
         uploadFile: function _(a) {
             a.fileName = a.name;
+            var cb = a.success || Number;
+            if (!('fileType' in a)) {
+                throw '支付宝小程序上传时配置对象需要加fileType属性';
+            }
+            a.success = function (res) {
+                if (res.data + '' === res.data) {
+                    res.data = JSON.parse(res.data);
+                }
+                cb(res);
+            };
             return api.uploadFile(a);
         },
         downloadFile: function _(a) {
-            var fn = a['success'];
-            a['success'] = function (res) {
+            var fn = a.success;
+            a.success = function (res) {
                 res.tempFilePath = res.apFilePath;
                 fn && fn(res);
             };

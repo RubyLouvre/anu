@@ -108,48 +108,31 @@ let React = (getWindow().React = {
             )
         ) return true;
         return false;
-    },
-    __navigateBack
+    }
 });
-function __navigateBack({delta = 1, success, fail, complete} = {}) {
-    var appInstance = React.__app;
-    appInstance.setState({
-        showBackAnimation: true
-    });
-    setTimeout(() => {
-        while (delta && __currentPages.length) {
-            __currentPages.pop();
-            delta--;
-        }
-        let { path, query } = __currentPages[__currentPages.length - 1].props;
-        React.api.redirectTo({url: path + parseObj2Query(query), success, fail, complete});
-    }, 300);
-}
+
 function router({url, success, fail, complete}) {
-    var [path, query] = getQuery(url);
-    var appInstance = React.__app;
-    var appConfig = appInstance.constructor.config;
+    const [path, query] = getQuery(url);
+    const appInstance = React.__app;
+    const appConfig = appInstance.constructor.config;
     if (appConfig.pages.indexOf(path) === -1){
         throw "没有注册该页面: "+ path;
     }
     if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
-    var pageClass = React.__pages[path];
+    const pageClass = React.__pages[path];
     __currentPages.forEach((page, index, self) => {
-        const pageClass = React.__pages[page.props.path];
-        self[index] = React.createElement(pageClass, Object.assign(
-            page.props,
-            {
-                show: false
-            }
-        ));
+        self[index] = React.cloneElement(self[index], {
+            show: false
+        });
     });
-    var pageInstance = React.createElement(pageClass, {
-        isTabPage: false,
+    const pageInstance = React.createElement(pageClass, {
+        isTabPage: React.__isTab(path),
         path,
         query,
         url,
         app: React.__app,
-        show: true
+        show: true,
+        needBackButton: __currentPages.length > 0 ? true : false
     });
     __currentPages.push(pageInstance);
     appInstance.setState({
@@ -184,12 +167,23 @@ let apiContainer = {
         history.pushState({url: options.url}, null, prefix + options.url);
     },
     navigateBack: function(options = {}) {
-        const {delta = 1} = options;
+        let { delta = 1, success, fail, complete } = options;
         __currentPages.slice(0, -delta).forEach(page => {
             const url = page.props.url;
             history.pushState({url: url}, null, prefix + url);
         });
-        React.__navigateBack(options);
+        const appInstance = React.__app;
+        appInstance.setState({
+            showBackAnimation: true
+        });
+        setTimeout(() => {
+            while (delta && __currentPages.length) {
+                __currentPages.pop();
+                delta--;
+            }
+            const { path, query } = __currentPages[__currentPages.length - 1].props;
+            React.api.redirectTo({url: path + parseObj2Query(query), success, fail, complete});
+        }, 300);
     },
     switchTab: function({url, success, fail, complete}) {
         var [path, query] = getQuery(url);
@@ -216,20 +210,24 @@ let apiContainer = {
             let key = titleBarColorMap[curr];
             return Object.assign({}, accr, { [key || curr]: options[curr] });
         }, {}) ;
-        var appInstance = React.__app;
-        appInstance.setState({
+        const currentPage = __currentPages.pop();
+        __currentPages.push(cloneElement(currentPage, {
             config: processedOptions
-        });
+        }));
+        var appInstance = React.__app;
+        appInstance.setState({});
     },
     setNavigationBarTitle: function(options) {
         const processedOptions = Object.keys(options).reduce(function(accr, curr) {
             let key = titleBarTitleMap[curr];
             return Object.assign({}, accr, { [key || curr]: options[curr] });
         }, {}) ;
-        var appInstance = React.__app;
-        appInstance.setState({
+        const currentPage = __currentPages.pop();
+        __currentPages.push(cloneElement(currentPage, {
             config: processedOptions
-        });
+        }));
+        var appInstance = React.__app;
+        appInstance.setState({});
     },
     stopPullDownRefresh: function() {
         const pageInstance = React.getCurrentPages().pop();

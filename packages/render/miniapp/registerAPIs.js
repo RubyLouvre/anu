@@ -30,19 +30,12 @@ export function promisefyApis(ReactWX, facade, more) {
                         console.warn('平台未不支持',key, '方法');//eslint-disable-line
                     } else {
                         task = needWrapper.apply(facade, args);
+                        if(task && options.getRawResult){
+                            options.getRawResult(task);
+                        }
                     }
                 });
-                if (key === 'uploadFile' || key === 'downloadFile') {
-                    p.progress = cb => {
-                        task.onProgressUpdate(cb);
-                        return p;
-                    };
-                    p.abort = cb => {
-                        cb && cb();
-                        task.abort();
-                        return p;
-                    };
-                }
+                
                 return p;
             };
         } else {

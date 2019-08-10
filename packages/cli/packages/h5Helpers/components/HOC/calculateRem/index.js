@@ -1,6 +1,6 @@
 import React from 'react';
 import * as R from 'ramda';
-import { MAX_VIEWPORT_WIDTH } from '@internalConsts/runtime/index';
+import { MAX_VIEWPORT_WIDTH, MIN_VIEWPORT_WIDTH } from '@internalConsts/runtime/index';
 
 export default function calculateRem(App) {
     return class RootRemAutoCalculated extends React.Component {
@@ -12,9 +12,9 @@ export default function calculateRem(App) {
         }
 
         calculateRem() {
-            const { clientWidth = 320 } = this.rootElement;
+            const { clientWidth = MIN_VIEWPORT_WIDTH } = this.rootElement;
             const normalizeWidth =
-            (R.clamp(320, MAX_VIEWPORT_WIDTH, clientWidth) * 100) / 750;
+            (R.clamp(MIN_VIEWPORT_WIDTH, MAX_VIEWPORT_WIDTH, clientWidth) * 100) / 750;
             this.rootElement.style.fontSize = normalizeWidth + 'px';
         }
 

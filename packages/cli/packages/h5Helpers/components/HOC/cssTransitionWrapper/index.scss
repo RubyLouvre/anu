@@ -1,19 +1,16 @@
 .page-appear {
-    transform: translate(500px);
+    transform: translateX(500px);
     height: 100%;
 }
 .page-appear-done {
-    transform: translate(0);
     transition: transform 300ms ease;
     height: 100%;
 }
-.page-exit {
-    transform: translate(0);
-    height: 100%;
+.tab-appear {
+    opacity: 0;
 }
-.page-exit-done {
-    transform: translate(500px);
-    transition: transform 300ms ease;
+.tab-appear-done {
     height: 100%;
+    transition: opacity 300ms ease;
 }
   

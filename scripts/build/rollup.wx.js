@@ -9,13 +9,19 @@ const json = require('../../package.json');
 
 export default {
     input: './packages/render/miniapp/index.wx.js',
-    output: {
+    output: [{
         strict: false,
         format: 'es',
         // exports: 'default',
         file: './dist/ReactWX.js',
         name: 'React'
-    },
+    }, {
+        strict: false,
+        format: 'es',
+        // exports: 'default',
+        file: './packages/cli/lib/ReactWX.js',
+        name: 'React'
+    }],
     plugins: [
         babel({
        
@@ -45,7 +51,7 @@ export default {
         license({
             banner: `运行于微信小程序的React by 司徒正美 Copyright ${JSON.stringify(
                 new Date()
-            ).replace(/T.*|"/g, '')}
+            ).replace(/:.*|"/g, '')}
       IE9+
       `
         }),

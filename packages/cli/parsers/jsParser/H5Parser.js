@@ -47,8 +47,11 @@ class H5Parser extends JavascriptParser_1.default {
         }
     }
     parse() {
+        const _super = Object.create(null, {
+            parse: { get: () => super.parse }
+        });
         return __awaiter(this, void 0, void 0, function* () {
-            const res = yield this._parse();
+            const res = yield _super.parse.call(this);
             this.parsedCode = this.getCodeForWebpack();
             this.queues.push({
                 type: 'js',
@@ -57,6 +60,7 @@ class H5Parser extends JavascriptParser_1.default {
                 ast: this.ast,
                 extraModules: this.extraModules
             });
+            return res;
         });
     }
 }

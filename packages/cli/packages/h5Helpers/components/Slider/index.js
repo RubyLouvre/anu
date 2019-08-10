@@ -69,7 +69,7 @@ export default class Slider extends React.Component {
 
   checkDefaultValue(props) {
     const { value, min, max } = props;
-    return value < min ? min : value > max ? max : value;
+    return value < +min ? +min : value > +max ? +max : value;
   }
 
   checkPropsMinMaxStep(props) {
@@ -195,15 +195,31 @@ export default class Slider extends React.Component {
       <div className="h5-slider-container">
         <div className="h5-slider-content" ref={dom => (this.sliderDom = dom)}>
           <div className="h5-slider-track">
-            <div className="track-bg" />
+            <div className="track-bg" style={{
+              margin: `${radius}px`,
+              backgroundColor: `${backgroundColor}`
+            }} />
           </div>
           <div className="h5-slider-track">
-            <div className="track-active" />
+            <div style={{
+              margin: `${radius}px`,
+              backgroundColor: `${activeColor}`,
+              width: `${distance}px`
+            }} className="track-active">
+            </div>
           </div>
 
           <div className="h5-slider-track">
             <div
               className="handler"
+              style={{
+                width: `${blockSize}px`,
+                height: `${blockSize}px`,
+                backgroundColor: `${blockColor}`,
+                borderRadius: `${radius}px`,
+                boxShadow: '0 0 4px rgba(0, 0, 0, 0.2)',
+                transform: `translateX(${distance}px)`
+              }}
               onTouchStart={this.handleTouchStart}
               onTouchMove={this.handleTouchMove}
               onTouchEnd={this.handleTouchEnd}
@@ -212,25 +228,6 @@ export default class Slider extends React.Component {
         </div>
 
         {showValue && <div className="h5-slider-show-value">{value}</div>}
-        <style jsx>{`
-          .track-bg {
-            margin: ${radius}px;
-            background-color: ${backgroundColor};
-          }
-          .track-active {
-            margin: ${radius}px;
-            background-color: ${activeColor};
-            width: ${distance}px;
-          }
-          .handler {
-            width: ${blockSize}px;
-            height: ${blockSize}px;
-            background-color: ${blockColor};
-            border-radius: ${radius}px;
-            box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-            transform: translateX(${distance}px);
-          }
-        `}</style>
       </div>
     );
   }

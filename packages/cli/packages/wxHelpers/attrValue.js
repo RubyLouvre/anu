@@ -1,91 +1,81 @@
-//将<view aaa={this.state.xxx}> 转换成 <view aaa="{{xxx}}">
-
-const t = require('@babel/types');
-const generate = require('@babel/generator').default;
-const buildType = require('../../config/config').buildType;
-const calculateStyleString = require('../utils/calculateStyleString');
-
+"use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const t = __importStar(require("@babel/types"));
+const generator_1 = __importDefault(require("@babel/generator"));
+const config_1 = __importDefault(require("../../config/config"));
+const calculateStyleString_1 = __importDefault(require("../utils/calculateStyleString"));
+const buildType = config_1.default.buildType;
 module.exports = function (astPath) {
-  
     let expr = astPath.node.expression;
     let attrName = astPath.parent.name.name;
-    let isEventRegex =
-        buildType == 'ali' || buildType == 'quick'
-            ? /^(on|catch)/
-            : /^(bind|catch)/;
+    let isEventRegex = buildType == 'ali' || buildType == 'quick'
+        ? /^(on|catch)/
+        : /^(bind|catch)/;
     let isEvent = isEventRegex.test(attrName);
-    if (isEvent) { //处理事件
+    if (isEvent) {
         return bindEvent(astPath, attrName, expr);
     }
-    //去掉里面所有this
     astPath.traverse({
         ThisExpression(nodePath) {
             if (t.isMemberExpression(nodePath.parentPath)) {
-                nodePath.parentPath.replaceWith(
-                    t.identifier(nodePath.parent.property.name)
-                );
+                nodePath.parentPath.replaceWith(t.identifier(nodePath.parent.property.name));
             }
         }
     });
-
-    var attrValue = generate(expr).code;//没有this.
-    
+    var attrValue = generator_1.default(expr).code;
     switch (expr.type) {
-        case 'ArrayExpression': //[]
-        case 'NumericLiteral': //11
-        case 'StringLiteral': // "string"
-        case 'Identifier': // kkk undefined
-        case 'NullLiteral': // null
-        case 'BooleanLiteral':// false, true
-        case 'LogicalExpression':// a && b
-        case 'UnaryExpression':  // !a
-        case 'ConditionalExpression':// a ? b: c
-        case 'MemberExpression': // aa.bbb
+        case 'ArrayExpression':
+        case 'NumericLiteral':
+        case 'StringLiteral':
+        case 'Identifier':
+        case 'NullLiteral':
+        case 'BooleanLiteral':
+        case 'LogicalExpression':
+        case 'UnaryExpression':
+        case 'ConditionalExpression':
+        case 'MemberExpression':
             replaceWithExpr(astPath, attrValue);
             break;
-        case 'CallExpression': // fn(a)
-            if (
-                attrName === 'style' &&
-                attrValue.indexOf('React.toStyle') > -1
-            ) {
-                //通过style={React.toStyle(this.state.color, this.props, 'style4338')}
-                //变成style="{{props.style4338}}"
+        case 'CallExpression':
+            if (attrName === 'style' &&
+                attrValue.indexOf('React.toStyle') > -1) {
                 let start = attrValue.indexOf('\'style');
                 let end = attrValue.lastIndexOf(')');
                 let styleID = attrValue.slice(start, end);
                 replaceWithExpr(astPath, `props[${styleID}] `);
-            } else {
+            }
+            else {
                 replaceWithExpr(astPath, attrValue);
             }
             break;
         case 'ObjectExpression':
-            //通过style={{a:1,b:1}}
-            //变成style="{{props.style4338}}"
             if (attrName === 'style') {
-                replaceWithExpr(astPath, calculateStyleString(expr), true);
+                replaceWithExpr(astPath, calculateStyleString_1.default(expr), true);
             }
-
-            //不转译 Spread 运算。{{...a}} 
             if (['wx', 'qq', 'tt'].includes(buildType)) {
-                if (
-                    expr.properties.every(function(prop){
-                        return prop.type === 'SpreadElement' || prop.type === 'ObjectProperty'
-                    })
-                ) {
-                    // {...a} => '{{...a}}'
-                    let value = '{' +  attrValue.replace(/\n/g, '') + '}';
+                if (expr.properties.every(function (prop) {
+                    return prop.type === 'SpreadElement' || prop.type === 'ObjectProperty';
+                })) {
+                    let value = '{' + attrValue.replace(/\n/g, '') + '}';
                     astPath.replaceWith(t.stringLiteral(value));
                 }
             }
-
             break;
-        case 'BinaryExpression': { // a + b
+        case 'BinaryExpression': {
             if (attrName === 'class' || attrName === 'className') {
                 let { left, right } = expr;
                 if (t.isStringLiteral(left) || t.isStringLiteral(right)) {
-                    let className = `${toString(
-                        expr.left
-                    )}${toString(expr.right)}`;
+                    let className = `${toString(expr.left)}${toString(expr.right)}`;
                     astPath.replaceWith(t.stringLiteral(className));
                     return;
                 }
@@ -95,22 +85,20 @@ module.exports = function (astPath) {
         }
     }
 };
-
 function throwEventValue(attrName, attrValue) {
     throw `${attrName}的值必须是一个函数名，如 this.xxx 或 this.xxx.bind(this),
     但现在的值是${attrValue}`;
 }
-
 function replaceWithExpr(astPath, value, noBracket) {
     let v = noBracket ? value : '{{' + value + '}}';
     astPath.replaceWith(t.stringLiteral(v));
 }
-
 function bindEvent(astPath, attrName, expr) {
-    if(expr.type === 'ArrowFunctionExpression'){
+    if (expr.type === 'ArrowFunctionExpression') {
         replaceWithExpr(astPath, 'dispatchEvent', true);
-    }else{
-        let eventHandle = generate(expr).code;
+    }
+    else {
+        let eventHandle = generator_1.default(expr).code;
         if (!/^\s*\w+\./.test(eventHandle)) {
             throwEventValue(attrName, eventHandle);
         }
@@ -122,6 +110,8 @@ function bindEvent(astPath, attrName, expr) {
     }
 }
 function toString(node) {
-    if (t.isStringLiteral(node)) return node.value;
-    if (t.isMemberExpression) return `{{${generate(node).code}}}`;
+    if (t.isStringLiteral(node))
+        return node.value;
+    if (t.isMemberExpression)
+        return `{{${generator_1.default(node).code}}}`;
 }

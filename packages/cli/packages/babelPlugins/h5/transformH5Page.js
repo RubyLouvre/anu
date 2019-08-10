@@ -1,13 +1,21 @@
-
-const path = require('path');
-const pageConfig = require('../../h5Helpers/pageConfig');
-
-const template = require('@babel/template').default;
-const extraImportedPath = template(`
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const template_1 = __importDefault(require("@babel/template"));
+const t = __importStar(require("@babel/types"));
+const extraImportedPath = template_1.default(`
 import dynamicPage from '@internalComponents/HOC/dynamicPage';
 `)();
-
-module.exports = function({types: t}){
+module.exports = function () {
     return {
         visitor: {
             Program: {
@@ -18,18 +26,7 @@ module.exports = function({types: t}){
             ExportDefaultDeclaration(astPath) {
                 const declaration = astPath.node.declaration;
                 astPath.node.declaration = t.callExpression(t.identifier('dynamicPage'), [declaration]);
-            },
-            ClassProperty(astPath, state) {
-                const { cwd, filename } = state;
-                if (astPath.get('key').isIdentifier({
-                    name: 'config'
-                }) && astPath.get('value').isObjectExpression()) {
-                    const node = astPath.get('value').node;
-                    const pagePath = '/' + path.relative(path.join(cwd, 'source'), filename).replace(/\.js$/, '');
-                    pageConfig.properties.push(t.objectProperty(t.stringLiteral(pagePath), node));
-                }
-            },
+            }
         }
     };
 };
-    

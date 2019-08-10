@@ -50,8 +50,11 @@ class WxParser extends JavascriptParser_1.default {
         };
     }
     parse() {
+        const _super = Object.create(null, {
+            parse: { get: () => super.parse }
+        });
         return __awaiter(this, void 0, void 0, function* () {
-            const res = yield this._parse();
+            const res = yield _super.parse.call(this);
             this.queues = res.options.anu && res.options.anu.queue || this.queues;
             this.extraModules = res.options.anu && res.options.anu.extraModules || this.extraModules;
             this.queues.push({
@@ -61,6 +64,7 @@ class WxParser extends JavascriptParser_1.default {
                 ast: this.ast,
                 extraModules: this.extraModules
             });
+            return res;
         });
     }
 }
