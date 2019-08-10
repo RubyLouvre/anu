@@ -1,125 +1,305 @@
 <!DOCTYPE html>
-<html lang="en">
+<htmleft lang="en">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-  <title>Document</title>
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
 
-<body>
-  <script>
-
-    class Node {
-      constructor(node) {
-        this.suffix = node
-        this.children = {}
-      }
-    }
-    class STree {
-
-      insert(str) {
-        this.str = str
-        this.len = str.length + 1000
-        this.root = new Node(null)
-        var node = t.root, n = 0;
-        for (var i = 0; i < str.length; i++) {
-          [node, n] = this.update(node, n, i);
-          [node, n] = this.canonize(node, n, i)
+  <body>
+    <script>
+      class Node {
+        constructor(data) {
+          this.data = data;
+          this.size = 1
+          this.left = null;
+          this.right = null;
+          this.count = 1;
+          this.parent = null;
         }
-
-      }
-      update(node, left, right) {
-        var c = this.str[right] //当前字符
-        var prev = new Node;
-        while (true) {
-          var [finish, p] = this.branch(node, left, right - 1, c);
-          if (finish) {
-            break
+        maintain() {
+          this.size = this.count;
+          if (this.left) {
+            this.size += this.left.size;
           }
-          p.children[c] = [right, t.len, new Node]
-          prev.suffix = p;
-          prev = p;
-          [node, left] = this.canonize(node.suffix, left, right - 1);
+          if (this.right) {
+            this.size += this.right.size;
+          }
         }
-        prev.suffix = node;
-        return [node, left]
+      };
+      function rotateImpl(tree, node, dir, setParent) {
+        var other = dir == "left" ? "right" : "left";
+        if (!node[other]) {
+          return;
+        }
+        var top = node[other]; //会上浮的子节点
+        node[other] = top[dir]; //过继孩子
+
+        if (setParent) {
+          if (!node.parent) {
+            tree.root = top;
+          } else if (node == node.parent.left) {
+            node.parent.left = top;
+          } else {
+            node.parent.right = top;
+          }
+          Object(top[dir]).parent = node; //父属性修正1
+          top.parent = node.parent; //父属性修正2
+          node.parent = top; //父属性修正3
+        }
+        top[dir] = node; //旋转
+        node.maintain(); //先处理下面的再处理上面的
+        top.maintain();
+        return top;
       }
-      branch(node, left, right, ch) {
-        if (right - left + 1 <= 0) {
+      class SBT {
+        constructor() {
+          this.root = null;
+
+        }
+
+        leftRotate(node) {
+          return rotateImpl(this, node, "left", true);
+        }
+        rightRotate(node) {
+          return rotateImpl(this, node, "right", true);
+        }
+        getSize(node) {
+          return node ? node.size : 0
+        }
+        maintain(node, rightDeeper) {
           if (!node) {
-            return [true, this.root]
-          } else {
-            return [ch in node.children, node]
+            return
           }
-        } else {
-          // console.log(this.str, left, 'xxx')
-          var [ll, rr, child] = node.children[this.str[left]];
-          var pos = ll + right - left + 1;
-          if (this.str[pos] == ch) {
-            return [true, node]
-          } else {
-            var branchNode = new Node;
-            node.children[this.str[ll]] = [ll, pos - 1, branchNode];
-            branchNode.children[this.str[pos]] = [pos, rr, child];
-            return [false, branchNode]
-          }
-        }
-      }
-      canonize(node, left, right) {
+          var left = node.left;
+          var right = node.right;
+          if (!rightDeeper) {
+            if (!left) {
+              return
+            }
+            var rightSize = this.getSize(right)
+            var llSize = this.getSize(left.left)
+            var lrSize = this.getSize(left.right)
+            if (llSize > rightSize) {
+              this.rightRotate(node);
+            } else if (lrSize > rightSize) {
+              this.leftRotate(left);
+              this.rightRotate(node);
+            } else {
+              return;
+            }
 
-        if (!node) {
-          if (right - left + 1 <= 0) {
-            return [null, left]
           } else {
-            // console.log(this.root, left+1, right, 'end')
-            return this.canonize(this.root, left + 1, right)
-          }
-        }
-        while (left <= right) {
-          // console.log(this.str, left, 'xxx')
-          var [ll, rr, child] = node.children[this.str[left]]
-          if (right - left >= rr - ll) {
-            left += rr - ll + 1;
-            node = child
-          } else {
-            break
-          }
-        }
-        return [node, left]
-      }
-      findPatten(s) {
-        var node = this.root;
-        while (1) {
-          var match = false;
-          for (var i in node.children) {
-            var [ll, rr, child] = node.children[i];
-            console.log(ll, rr, i, child)
-            var edge = this.str.slice(ll, rr + 1);
-            console.log(edge, child)
-
-            if (edge.indexOf(s) === 0) {
-              return Math.max(Object.keys(child.children).length, 1)
-            } else if (s.indexOf(edge) === 0) {
-              match = true
-              node = child;
-              s = s.slice(edge.length)
+            if (!right) {
+              return
+            }
+            var leftSize = this.getSize(left)
+            var rrSize = this.getSize(right.right)
+            var rlSize = this.getSize(right.left)
+            if (rrSize > leftSize) {
+              this.leftRotate(node);
+            } else if (rlSize > leftSize) {
+              this.rightRotate(right);
+              this.leftRotate(node);
+            } else {
+              return;
             }
           }
-          if (!match) {
-            return 0
+          this.maintain(left, false);
+          this.maintain(right, true);
+          this.maintain(node, false);
+          this.maintain(node, true);
+        }
+        find(data) {
+          var node = this.root;
+          while (node) {
+            var diff = data - node.data
+            if (diff == 0) {
+              break
+            } else if (diff < 0) {
+              node = node.left;
+            } else {
+              node = node.right;
+            }
+          }
+          if (node) {
+            return node
+          }
+          return null
+        }
+        insert(data) {
+          if (!this.root) {
+            this.root = new Node(data);
+            return true;
+          }
+          var node = this.root,
+            parent
+          while (node) {
+            var diff = data - node.data;
+            parent = node;
+            if (diff == 0) {
+              return false;
+            } else if (diff < 0) {
+              node = node.left;
+            } else {
+              node = node.right;
+            }
+          }
+          var node = new Node(data);
+          node.parent = parent
+
+          if (diff < 0) {
+            parent.left = node;
+          } else {
+            parent.right = node;
+          }
+          while (parent) {
+            parent.size++;
+            this.maintain(parent, data >= parent.data);
+            parent = parent.parent;
+          }
+          return true;
+        }
+        remove(data) {
+          if (!this.root) {
+            return false
+          }
+          var node = this.find(data);
+          if (node) {
+            //两个孩子的情况
+            if (node.left && node.right) {
+              var succ = this.maxNode(node.left); //求后继
+              node.data = succ.data;
+              node = succ; //转为一个孩子的情况
+            }
+            //一个或零个孩子的情况
+            var child = node.left || node.right || null;
+            var parent = node.parent;
+            if (parent.left == node) {
+              parent.left = child
+            } else {
+              parent.right = child
+            }
+            if (child) {
+              child.parent = parent; //parent的size发生变化
+            }
+            while (parent) {
+              parent.size--
+              this.maintain(parent, data >= parent.data);
+              parent = parent.parent
+            }
           }
         }
-        return 0
-      }
-    }
-    var t = new STree;
-    t.insert('javaxjava')
-    console.log(t)
-    console.log(t.findPatten('java'))
-  </script>
-  <div id="root"></div>
-</body>
+        maxNode(node) {
+          var current = node || this.root;
+          while (current.right) {
+            current = node.right
+          }
+          return current;
+        }
+        getRank(value) {
+          var node = this.find(value);
+          if (node) {
+            return this.getSize(node.left) + 1;
+          } else {
+            return 0;
+          }
+        }
+        getKth(k) {
+          var node = this.root;
+          while (node) {
+            if (k <= this.getSize(node.left)) {
+              node = node.left;
+            } else if (k > this.getSize(node.left) + node.count) {
+              k -= this.getSize(node.left) + node.count;
+              node = node.right;
+            } else {
+              return node.data;
+            }
+          }
+          return null;
+        }
+        inOrder(cb) {
+          function recursion(node) {
+            if (node) {
+              recursion(node.left);
+              cb(node);
+              recursion(node.right);
+            }
+          }
+          recursion(this.root);
+        }
+        keys() {
+          var ret = [];
+          this.inOrder(function (p) {
+            ret.push(p.data);
+          });
+          return ret;
+        }
+        toString(printNode) {
+          if (printNode === void 0) printNode = function (n) {
+            return n.data;
+          };
 
-</html>
+          var out = [];
+          printRow(this.root, '', true, function (v) {
+            return out.push(v);
+          }, printNode);
+          return out.join('');
+        };
+      }
+
+      function printRow(root, prefix, isTail, out, printNode) {
+        if (root) {
+          out(("" + prefix + (isTail ? '└── ' : '├── ') + (printNode(root)) + "\n"));
+          var indent = prefix + (isTail ? '    ' : '│   ');
+          if (root.left) {
+            printRow(root.left, indent, false, out, printNode);
+          }
+          if (root.right) {
+            printRow(root.right, indent, true, out, printNode);
+          }
+        }
+      }
+
+      var array = [7, 11, 13, 8, 44, 78, 15, 9, 77, 89, 1, 2]  //[11,7,14,3,9,18,16,15]
+      var t = new SBT();
+      array.forEach(function (el) {
+        t.insert(el)
+      })
+      var rank = t.find(44)
+      console.log('t.find(44)', rank, t)
+      var a = t.getRank(44)
+      console.log('t.getRank(44)', a);
+      var b = t.getKth(a)
+      console.log(`t.getKth(${a})`, b);
+
+      t.remove(11);
+      t.remove(44);
+      t.remove(77);
+      console.log("移除11,44,77后");
+      console.log(t.keys(1) + "");
+      t.insert(11)
+      t.insert(43)
+      t.insert(76)
+      t.insert(77)
+
+
+      var tree = new SBT();
+      [7, 11, 13, 8, 44, 78, 15, 9, 77, 89, 1, 2, 52, 51, 56].forEach(function (el, i) {
+        tree.insert(el)
+        console.log(tree + "")
+      })
+      console.log("delete...")
+      tree.remove(60)
+      console.log(tree + "")
+
+      console.log(tree)
+
+    </script>
+    <div id="root"></div>
+  </body>
+
+  </html>
