@@ -99,9 +99,9 @@ function previewImage(options = {}) {
             complete = () => {}
         } = options;
         var instance = React.api.previewImageSingleton;
-        var el = document.querySelector('#h5-api-previewImage');  // 获取页面中的div节点
+        var el = document.querySelector('#h5-api-previewMask');  // 获取页面中的div节点
         if (!el){  // 判断当前是否创建了元素节点，若没有创建。则进行创建
-            var id = 'h5-api-previewImage';
+            var id = 'h5-api-previewMask';
             var imgModal = document.querySelector('.__internal__Page-container');
             var container = document.createElement('div');
             container.id = id;
