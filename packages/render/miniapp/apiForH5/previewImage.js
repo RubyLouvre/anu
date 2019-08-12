@@ -8,7 +8,6 @@ class PreviewImage extends Component {
         super(props);
         this.state = {
             visible: false,
-            urls: [],
             current: 0
         };
         this.container = this.props.container;  // 创建的容器
@@ -106,7 +105,7 @@ function previewImage(options = {}) {
             var imgModal = document.querySelector('.__internal__Page-container');
             var container = document.createElement('div');
             container.id = id;
-            container.style.position = 'fixed';// fixed absolute
+            container.style.position = 'fixed';
             container.style.top = 0;
             container.style.width = '100%';
             container.style.height = '100%';
@@ -114,7 +113,6 @@ function previewImage(options = {}) {
             container.style.display = 'flex';
             container.style.justifyContent = 'center';
             container.style.alignItems = 'center';
-            // container.style.pointerEvents = 'auto';
             imgModal.appendChild(container);
     
             var startX, startTimeX = 0;
@@ -128,10 +126,11 @@ function previewImage(options = {}) {
                 if (!instance || !e.changedTouches[0]){
                     return;
                 }
-                //  console.log(endX-startX, 'Math.abs(endX-startX)<10', Math.abs(endX-startX),';;;;;;;;;;', endStartTime - startTimeX);
-                if (endStartTime - startTimeX <= 200 || Math.abs(endX-startX)<10){  //  用这个&& 长按不关闭
+                if (endStartTime - startTimeX <= 200 || Math.abs(endX-startX)<10){
                     //点击事件
-                    instance.close();
+                    setTimeout(function(){
+                        instance.close();
+                    }, 0);
                     startTimeX = 0;
                     return;
                 }
