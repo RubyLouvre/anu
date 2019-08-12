@@ -9,6 +9,6 @@ export interface parserOptions {
     platform: string;
 }
 declare class JavascriptParserFactory {
-    static create(options: parserOptions): QuickParser | WxParser | H5Parser;
+    static create(options: parserOptions): WxParser | QuickParser | H5Parser;
 }
 export default JavascriptParserFactory;

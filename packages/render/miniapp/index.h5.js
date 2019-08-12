@@ -96,6 +96,7 @@ let React = (getWindow().React = {
     useContext,
     useComponent,
     createRef,
+    forwardRef,
     cloneElement,
     appType: 'h5',
     __app: {},
