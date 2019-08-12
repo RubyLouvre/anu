@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-31T03
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-07T03
  * IE9+
  */
 
@@ -3792,80 +3792,81 @@
 
     var file = {};
 
-    function chooseImage(_ref) {
-      var _ref$files = _ref.files,
-          files = _ref$files === undefined ? [] : _ref$files;
-      var result = [];
-      var _loop = function _loop(i) {
-        var f = files[i];
-        if (!f) return 'break';
-        result.push(new Promise(function (res) {
-          var reader = new FileReader();
-          reader.readAsDataURL(f);
-          reader.onload = function () {
-            return res(reader.result);
-          };
-        }));
-      };
-      for (var i = 0; i < 9; i++) {
-        var _ret = _loop(i);
-        if (_ret === 'break') break;
-      }
-      return Promise.all(result);
+    function chooseImage() {
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref$count = _ref.count,
+            _ref$sizeType = _ref.sizeType,
+            _ref$sourceType = _ref.sourceType,
+            _ref$success = _ref.success,
+            success = _ref$success === undefined ? function () {} : _ref$success,
+            _ref$fail = _ref.fail,
+            _ref$complete = _ref.complete,
+            complete = _ref$complete === undefined ? function () {} : _ref$complete;
+        var tempInput = document.createElement('input');
+        tempInput.type = 'file';
+        tempInput.accept = 'image/*';
+        tempInput.multiple = true;
+        tempInput.onchange = function (e) {
+            var files = e.path[0].files;
+            handleSuccess({
+                tempFiles: files
+            }, success, complete);
+        };
+        tempInput.click();
     }
     function saveImageToPhotosAlbum(filePath) {
-      console.log(filePath);
+        console.log(filePath);
     }
     function getImageInfo() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var img = new Image();
-      var src = options.src,
-          _options$success = options.success,
-          success = _options$success === undefined ? function () {} : _options$success,
-          _options$fail = options.fail,
-          fail = _options$fail === undefined ? function () {} : _options$fail,
-          _options$complete = options.complete,
-          complete = _options$complete === undefined ? function () {} : _options$complete;
-      img.src = src;
-      var result = {
-        width: 1,
-        height: 1,
-        path: '',
-        orientation: '',
-        type: ''
-      };
-      return new Promise(function (resolve, reject) {
-        try {
-          if (!src) {
-            handleFail({
-              errMsg: 'getImageInfo 参数错误'
-            }, fail, complete, reject);
-            return;
-          }
-          if (img.complete) {
-            result.width = img.width;
-            result.height = img.height;
-            result.path = img.src;
-            handleSuccess(result, success, complete, resolve);
-          } else {
-            img.onload = function () {
-              result.width = img.width;
-              result.height = img.height;
-              result.path = img.src;
-              handleSuccess(result, success, complete, resolve);
-            };
-          }
-        } catch (e) {
-          handleFail({
-            errMsg: e
-          }, fail, complete, reject);
-        }
-      });
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var img = new Image();
+        var src = options.src,
+            _options$success = options.success,
+            success = _options$success === undefined ? function () {} : _options$success,
+            _options$fail = options.fail,
+            fail = _options$fail === undefined ? function () {} : _options$fail,
+            _options$complete = options.complete,
+            complete = _options$complete === undefined ? function () {} : _options$complete;
+        img.src = src;
+        var result = {
+            width: 1,
+            height: 1,
+            path: '',
+            orientation: '',
+            type: ''
+        };
+        return new Promise(function (resolve, reject) {
+            try {
+                if (!src) {
+                    handleFail({
+                        errMsg: 'getImageInfo 参数错误'
+                    }, fail, complete, reject);
+                    return;
+                }
+                if (img.complete) {
+                    result.width = img.width;
+                    result.height = img.height;
+                    result.path = img.src;
+                    handleSuccess(result, success, complete, resolve);
+                } else {
+                    img.onload = function () {
+                        result.width = img.width;
+                        result.height = img.height;
+                        result.path = img.src;
+                        handleSuccess(result, success, complete, resolve);
+                    };
+                }
+            } catch (e) {
+                handleFail({
+                    errMsg: e
+                }, fail, complete, reject);
+            }
+        });
     }
     var images = {
-      chooseImage: chooseImage,
-      saveImageToPhotosAlbum: saveImageToPhotosAlbum,
-      getImageInfo: getImageInfo
+        chooseImage: chooseImage,
+        saveImageToPhotosAlbum: saveImageToPhotosAlbum,
+        getImageInfo: getImageInfo
     };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -3946,19 +3947,39 @@
       Toast.prototype.render = function render() {
         return React.createElement(
           'div',
-          { className: 'toast2019' },
-          React.createElement(
+          null,
+          React.appType === 'h5' ? React.createElement(
+            'dialog',
+            { open: true, className: 'toast2019' },
+            React.createElement(
+              'div',
+              { className: 'icon' },
+              this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
+            ),
+            React.createElement(
+              'div',
+              { className: 'title' },
+              this.props.title
+            )
+          ) : React.createElement(
             'div',
-            { className: 'icon' },
-            this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
-          ),
-          React.createElement(
-            'div',
-            { className: 'title' },
-            this.props.title
+            { className: 'toast2019' },
+            React.createElement(
+              'div',
+              { className: 'icon' },
+              this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
+            ),
+            React.createElement(
+              'div',
+              { className: 'title' },
+              this.props.title
+            )
           ),
           React.createElement('style', { ref: function ref(node) {
-              Object(node).textContent = '\n             .toast2019 { \n              display: flex;\n              flex-direction: column;\n              position: fixed;\n              width: 120px;\n              height: 120px; \n              background-color: rgba(0, 0, 0, 0.4);\n              margin: auto;\n              left: 0;\n              top: 0;\n              bottom: 0;\n              right: 0;\n              border-radius: 5px;\n            }\n            .toast2019 .icon {\n              width: 90px;\n              height: 90px;\n              margin: 0 auto;\n              fill: #fff;\n              color: #fff;\n              text-align: center;\n              font-size: 30px;\n              line-height: 90px;\n            }\n            .toast2019 .title {\n              height: 30px;\n              text-align: center;\n              line-height: 30px;\n              color: #fff;\n              overflow: hidden;\n            } ';
+              var other = 'display: flex;\n                          flex-direction: column;\n                          position: fixed;\n                          width: 120px;\n                          height: 120px; \n                          background-color: rgba(0, 0, 0, 0.4);\n                          margin: auto;\n                          left: 0;\n                          top: 0;\n                          bottom: 0;\n                          right: 0;\n                          border-radius: 5px;';
+              var h5 = 'display: flex;\n                      flex-direction: column;\n                      align-items:center;\n                      width: 120px;\n                      height: 120px; \n                      background-color: rgba(0, 0, 0, 0.4);\n                      text-align: center;\n                      line-height:120px; \n                      border:none;\n                      border-radius: 5px;';
+              var context = React.appType === 'h5' ? h5 : other;
+              Object(node).textContent = '\n             .toast2019 { \n              ' + context + '\n            }\n            .toast2019 .icon {\n              width: 90px;\n              height: 90px;\n              margin: 0 auto;\n              fill: #fff;\n              color: #fff;\n              text-align: center;\n              font-size: 30px;\n              line-height: 90px;\n            }\n            .toast2019 .title {\n              height: 30px;\n              text-align: center;\n              line-height: 30px;\n              color: #fff;\n              overflow: hidden;\n            } ';
             } })
         );
       };

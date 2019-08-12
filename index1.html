@@ -1,126 +1,255 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-        <title>Document</title>
-    </head>
+<html>
 
-    <body>
-      <form>
-          <menu> 
-              <command onclick="alert('Hello World')"> Click Me!</command> 
-              </menu>
-      </form>
-        <script>
- class Node {
-    constructor(data) {
-      this.data = data;
-      this.right = null;
-      this.left = null;
-      this.fix = ~~(Math.random() + "").slice(2, 7);
-      this.size = 1;
-      this.count = 1;
-    }
-    maintain() {
-      var leftSize = this.left ? this.left.size : 0;
-      var rightSize = this.right ? this.right.size : 0;
-      this.size = leftSize + rightSize + this.count;
-    }
-  }
-  class Treap {
-      find(value) {
-        var node = this.root;
-        while (node) {
-          var diff = value - node.data;
-          if (value === 0) {
-            return node
-          } else if (value > 0) {
-            node = node.right;
-          } else {
-            node = node.left;
-          }
-        }
-        return null;
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+
+
+</head>
+
+<body>
+
+  <div id='root' class="root">
+
+  </div>
+  <script>
+    class Node {
+      constructor(data) {
+        this.size = 0
+        this.data = data;
+        this.left = null;
+        this.right = null;
+        this.parent = null;
+        this.count = 1
       }
-      insert(value) {
-        this.root = this._insert(this.root, value)
-        getOrder(this)
+      maintain() {
+        var leftSize = this.left ? this.left.size : 0
+        var rightSize = this.right ? this.right.size : 0
+        this.size = leftSize + rightSize + this.count;
       }
-      _insert(node, value) {
-        if (!node) {
-          return new Node(value)
-        }
-        if (node.data == value) {
-          node.count++;
-          node.maintain()
-          return node;
-        } else if (node.data > value) {
-          node.left = this._insert(node.left, value);
-          if (node.left.fix < node.fix) {
-            node = this.rotateRight(node)
-          }
+
+    };
+
+
+    function rotateImpl(tree, node, dir, setParent) {
+      var other = dir == 'left' ? 'right' : 'left';
+      if (!node[other]) {
+        return;
+      }
+      var top = node[other];//会上浮的子节点
+      node[other] = top[dir]; //过继孩子
+
+      if (setParent) {
+        if (!node.parent) {
+          tree.root = top;
+        } else if (node == node.parent.left) {
+          node.parent.left = top;
         } else {
-          node.right = this._insert(node.right, value);
-          if (node.right.fix < node.fix) {
-            node = this.rotateLeft(node)
-          }
+          node.parent.right = top;
         }
-        node.maintain()
-        return node;
+        Object(top[dir]).parent = node; //父属性修正1
+        top.parent = node.parent; //父属性修正2
+        node.parent = top; //父属性修正3
       }
-      rotateLeft(node) {
-        var top = node.right; //会上浮的子节点
-        // top.size = node.size;//外面会处理，这里就不重复
-        node.right = top.left;//过继
-        node.maintain()//维护size
-        top.left = node;//旋转
-        return top;
+      top[dir] = node; //旋转
+      node.maintain();//先处理下面的再处理上面的
+      top.maintain();
+      return top;
+    }
+    class SplayTree {
+      constructor() {
+        this.root = null;
+
+      }
+      leftRotate(node) {
+        return rotateImpl(this, node, 'left', true);
+      }
+      rightRotate(node) {
+        return rotateImpl(this, node, 'right', true);
       }
 
-      rotateRight(node) {
-        var top = node.left;//会上浮的子节点
-        // top.size = node.size;
-        node.left = top.right;//过继
-        node.maintain();//维护size
-        top.right = node;//旋转
-        return top;
+      splay(node, goal) {
+        goal = goal || this.root
+        var k = 1000
+        while (node !== goal) {
+          if (node == this.root) {
+            break
+          }
+          if(--k ==0){
+            console.log("爆栈了")
+            break
+          }
+          var parent = node.parent;
+          if (parent == goal) {
+            if (parent.left == node) {
+              // console.log("zig")
+              this.rightRotate(parent)
+            } else {
+              // console.log("zag")
+              this.leftRotate(parent)
+            }
+            break
+          } else {
+            var grandpa = parent.parent;
+            var case1 = grandpa.left === parent ? "zig-" : "zag-";
+            var case2 = parent.left === node ? "zig" : "zag";
+            switch (case1 + case2) {
+              case "zig-zig": // 一字型，先父后子，由于我们的旋转操作都是针对于根，
+                // 那么操作node，即操作parent
+                this.rightRotate(grandpa);
+                this.rightRotate(parent);
+                continue
+              case "zag-zag": // 一字型，先父后子
+                this.leftRotate(grandpa);
+                this.leftRotate(parent);
+                continue
+              case "zig-zag": // 之字型
+                this.leftRotate(parent);
+                this.rightRotate(grandpa);
+                continue;
+              case "zag-zig": // 之字型
+                this.rightRotate(parent);
+                this.leftRotate(grandpa);
+                continue;
+            }
+          }
+        }
+        node.maintain() //更新节点的数量
       }
 
-
-      inOrder(cb) {
-        function recursion(node) {
-          if (node) {
-            recursion(node.left)
-            cb(node)
-            recursion(node.right)
-          }
-        }
-        recursion(this.root)
-      }
-      preOrder(cb) {
-        function recursion(node) {
-          if (node) {
-            cb(node)
-            recursion(node.left)
-            recursion(node.right)
-          }
-        }
-        recursion(this.root)
-      }
-      postOrder(cb) {
-        function recursion(node) {
-          if (node) {
-            recursion(node.left)
-            recursion(node.right)
-            cb(node)
-          }
-        }
-        recursion(this.root)
-      }
       getSize(node) {
         return node ? node.size : 0
+      }
+      find(data) {
+        var node = this.root;
+        while (node) {
+          var diff = data - node.data
+          if (diff == 0) {
+            break
+          } else if (diff < 0) {
+            node = node.left;
+          } else {
+            node = node.right;
+          }
+        }
+        if (node) {
+          this.splay(node)
+          return node
+        }
+        return null
+      }
+      insert(data) {
+        if (!this.root) {
+          this.root = new Node(data);
+          getOrder(this)
+          return true
+        }
+
+        var node = this.root,
+          parent = null
+        while (node) {
+          parent = node; //保存要插入的父节点
+          var diff = data - node.data
+          if (diff == 0) {
+            node.count++
+            return false
+          } else if (diff < 0) {
+            node = node.left;
+          } else {
+            node = node.right;
+          }
+        }
+        var node = new Node(data);
+        node.parent = parent;
+        if (diff < 0) {
+          parent.left = node
+        } else {
+          parent.right = node
+        }
+        this.splay(node)
+        getOrder(this)
+        return true;
+      }
+      inOrder(cb) {
+        var a = 1000
+        function recursion(node) {
+          if(--a == 0){
+            throw '爆栈'
+          }
+          if (node) {
+            recursion(node.left)
+            cb(node)
+            recursion(node.right)
+          }
+        }
+        recursion(this.root)
+      }
+      remove(data) {
+        if (!this.root) {
+          return false
+        }
+        var node = this.find(data); //如果找到，内部会进行伸展
+        console.log('remove',data, node)
+        if (node) {
+          if (node.count > 1) {
+            node.count--
+            return true
+          }
+          if (data == this.root.data) {
+            if (!node.left) {
+              this.root = node.right;
+              this.root.parent = null;
+            } else if (!node.right) {
+             this.root = node.left;
+              this.root.parent = null;
+            } else {
+              
+              var succ = this.maxNode(node.left); 
+              console.log(succ.data, 'succ')
+              this.splay(succ);
+            
+              succ.right = node.right;
+              node.right = succ;
+              this.root = succ;
+              succ.parent = null;
+            }
+            
+          }
+        }
+        this.root.maintain()
+      }
+     
+     
+      /**
+       * 与伸展树tree2合并。其中tree1的所有元素都小于tree2的所有元素。
+       * 首先，找到伸展树tree1中的最大元素x，再通过Splay(x,tree1)将x调整为tree1的根。
+       * 然后将tree2作为x节点的右子树。这样，就得到了新伸展树tree。
+       */
+       merge(tree1, tree2){
+        if(!tree1){
+            return tree2
+        }
+        if(!tree2){
+            return tree1
+        }
+        var x = this.maxNode(tree1)
+        this.splay(x, tree1);
+        x.right = tree2
+        tree2.parent = x;
+        return x;
+      }
+      getSize(node){
+        return node ? node.size: 0
+      }
+      getRank(value) {
+        var node = this.find(value);
+        if (node) {
+          console.log(node.left.size)
+          return this.getSize(node.left) + 1
+        } else {
+          return 0
+        }
       }
       getKth(k) {
         var node = this.root
@@ -136,102 +265,73 @@
         }
         return null
       }
-      getRank(value) {
-        return this.getRankInner(this.root, value)
+      
+      maxNode(node) {
+        var current = node || this.root;
+        while (current.right) {
+          current = node.right
+        }
+        return current;
       }
+      toString(printNode) {
+        if (printNode === void 0) printNode = function (n) {
+          return n.data;
+        };
 
-      getRankInner(node, value) {
-        if (!node) {
-          return 0;
-        } else if (node.data == value) {
-          return this.getSize(node.left) + 1
-        } else if (node.data > value) {
-          return this.getRankInner(node.left, value);
-        } else {
-          return this.getRankInner(node.right, value) + this.getSize(node.left) + node.count
-        }
-      }
+        var out = [];
+        printRow(this.root, '', true, function (v) {
+          return out.push(v);
+        }, printNode);
+        return out.join('');
+      };
+    }
 
-      remove(value) {
-        var parents = [], node = this.root;
-        while (node) {
-          var diff = value - node.data;
-          if (diff === 0) {
-            break
-          }
-          parents.push(node)
-          if (diff > 0) {
-            node = node.right;
-          } else {
-            node = node.left;
-          }
+    // https://github.com/w8r/splay-tree/blob/master/dist/splay.js
+    function printRow(root, prefix, isTail, out, printNode) {
+      if (root) {
+        out(("" + prefix + (isTail ? '└── ' : '├── ') + (printNode(root)) + "\n"));
+        var indent = prefix + (isTail ? '    ' : '│   ');
+        if (root.left) {
+          printRow(root.left, indent, false, out, printNode);
         }
-        if (node) { //找到要删除的节点
-          console.log("找到要删除的节点", node)
-          if (node.count > 1) {
-            node.count--
-          } else {
-            var parent = parents[parents.length - 1], newParent
-            while (node.left && node.right) {
-              var dir = Object(parent).left == node ? 'left' : 'right'
-              if (node.left.fix < node.right.fix) {
-                //left上位
-                newParent = this.rotateRight(node)
-                console.log('右旋', newParent.data)
-              } else {
-                newParent = this.rotateLeft(node)
-                console.log('左旋', newParent.data)
-                //right上位
-              }
-              if (!parent) {
-                this.root = newParent
-              } else {
-                parent[dir] = newParent;
-              }
-              parent = newParent;
-              parents.push(parent)
-            }
-
-            var dir = Object(parent).left == node ? 'left' : 'right'
-            parent[dir] = node.left || node.right || null
-          }
-          console.log("找到要维护的父节点", parents.map(function (el) {
-            return el.data
-          }))
-          while (parents.length) {
-            var a = parents.pop()
-            a.maintain()
-          }
-          return true
+        if (root.right) {
+          printRow(root.right, indent, true, out, printNode);
         }
-        return false
       }
     }
     var array = [7, 11, 13, 8, 44, 78, 15, 9, 77, 1, 2]  //[11,7,14,3,9,18,16,15]
-    var t = new Treap(2);
+    var t = new SplayTree();
     array.forEach(function (el) {
       t.insert(el)
     })
+
     function getOrder(t) {
-      var array = []
+      var array = [], last = -Infinity, error
       t.inOrder(function (node) {
+        if (last > node.data) {
+          error = true
+        }
         array.push(node.data)
+        last = node.data
       })
-      console.log(array + "")
+      console.log(array + '')
+      if (error) {
+        // console.log(t.root)
+        // throw t
+      }
     }
+    var rank = t.find(44)
+    console.log('t.find(44)', rank, t)
     var a = t.getRank(44)
     console.log('t.getRank(44)', a);
     var b = t.getKth(a)
     console.log(`t.getKth(${a})`, b);
-
-    t.remove(11)
-    t.remove(3)
-    console.log("移除11,3后")
-    t.insert(23)
-
-        </script>
-        
-        <div id="root"></div>
+   t.remove(11)
+   t.remove(44)
+  // t.remove(44)
+   console.log("移除11,77后")
+  getOrder(t)
+  console.log(t)
+    </script>
     </body>
 </html>
-
