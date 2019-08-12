@@ -14,116 +14,324 @@
 
   </div>
   <script>
-  class BinaryIndexedTree {
-    /**
-     * 为了统一下标，所以tree[0]不被使用，数组有效范围1~length。
-     * */
-            constructor(array) {
-                var n = array.length;
-                this.length = n;
-                this._sum = new Array(n + 1).fill(0)
-                console.log(this._sum.concat(), '---')
-                for (var i = 0; i < n; i++) {
-                 //   console.log(i+1, array[i])
-                    this.add(i+1, array[i], i+1)
-                    console.log('=======')
-                }
-                console.log(this._sum.concat(), '---')
-            }
-            /**
-             * 计算1~index范围内和
-             * index一直减去lowBit(index)，直到index为0
-             * */
-            sum(index) {
-                if (index < 1 && index > this.length) {
-                    throw new RangeError("Out of Range!");
-                }
-                var sum = 0;
-                while (index > 0) {
-                    sum += this._sum[index];
-                    index -= lowBit(index);
-                }
-                return sum;
-            }
-              /**
-             * index一直减去lowBit(index)，直到index为length。这些位置的值都加上value
-             * */
-             get(index) {
-                if (index < 1 && index > this.length) {
-                    throw new IllegalArgumentException("Out of Range!");
-                }
-                var sum = this._sum[index];
-                var z = index - lowBit(index);
-                index--;
-                while (index != z) {
-                    sum -= this._sum[index];
-                    index -= lowBit(index);
-                }
-                return sum;
-            }
-            /**
-             * 计算start~end范围内和
-             * */
-            queryRangeSum(start, end) {
-                return this.querySum(end) - this.querySum(start - 1);
-            }
-            /**
-             * index一直加上lowBit(index)，直到index为length。这些位置的值都加上value
-             * */
-            add(index, value, breakIndex) {
-                if (index < 1 && index > this.length) {
-                    throw new IllegalArgumentException("Out of Range!");
-                }
-             
-                while (index <= this.length ) {
-                    this._sum[index] += value;
-                    index += lowBit(index);//找到其父节点的索引
-                }
-            }
-          
+    class Node {
+      constructor(data) {
+        this.size = 0
+        this.data = data;
+        this.left = null;
+        this.right = null;
+        this.parent = null;
+        this.count = 1
+      }
+      maintain() {
+        var leftSize = this.left ? this.left.size : 0
+        var rightSize = this.right ? this.right.size : 0
+        this.size = leftSize + rightSize + this.count;
+      }
 
+    };
+
+
+    function rotateImpl(tree, node, dir, setParent) {
+      var other = dir == 'left' ? 'right' : 'left';
+      if (!node[other]) {
+        return;
+      }
+      var top = node[other];//会上浮的子节点
+      node[other] = top[dir]; //过继孩子
+
+      if (setParent) {
+        if (!node.parent) {
+          tree.root = top;
+        } else if (node == node.parent.left) {
+          node.parent.left = top;
+        } else {
+          node.parent.right = top;
         }
-        // 保留k的二进制最低位1的值。例如，1110保留最低位1即0010.
-        function lowBit(k) {
-            return k & -k;
+        Object(top[dir]).parent = node; //父属性修正1
+        top.parent = node.parent; //父属性修正2
+        node.parent = top; //父属性修正3
+      }
+      top[dir] = node; //旋转
+      node.maintain();//先处理下面的再处理上面的
+      top.maintain();
+      return top;
+    }
+    class SplayTree {
+      constructor() {
+        this.root = null;
+
+      }
+      leftRotate(node) {
+        return rotateImpl(this, node, 'left', true);
+      }
+      rightRotate(node) {
+        return rotateImpl(this, node, 'right', true);
+      }
+
+      splay(node, goal) {
+        goal = goal || this.root
+        var k = 1000
+        while (node !== goal) {
+          if (node == this.root) {
+            break
+          }
+          if(--k ==0){
+            console.log("爆栈了")
+            break
+          }
+          var parent = node.parent;
+          if (parent == goal) {
+            if (parent.left == node) {
+              // console.log("zig")
+              this.rightRotate(parent)
+            } else {
+              // console.log("zag")
+              this.leftRotate(parent)
+            }
+            break
+          } else {
+            var grandpa = parent.parent;
+            var case1 = grandpa.left === parent ? "zig-" : "zag-";
+            var case2 = parent.left === node ? "zig" : "zag";
+            switch (case1 + case2) {
+              case "zig-zig": // 一字型，先父后子，由于我们的旋转操作都是针对于根，
+                // 那么操作node，即操作parent
+                this.rightRotate(grandpa);
+                this.rightRotate(parent);
+                continue
+              case "zag-zag": // 一字型，先父后子
+                this.leftRotate(grandpa);
+                this.leftRotate(parent);
+                continue
+              case "zig-zag": // 之字型
+                this.leftRotate(parent);
+                this.rightRotate(grandpa);
+                continue;
+              case "zag-zig": // 之字型
+                this.rightRotate(parent);
+                this.leftRotate(grandpa);
+                continue;
+            }
+          }
+        }
+        node.maintain() //更新节点的数量
+      }
+
+      getSize(node) {
+        return node ? node.size : 0
+      }
+      find(data) {
+        var node = this.root;
+        while (node) {
+          var diff = data - node.data
+          if (diff == 0) {
+            break
+          } else if (diff < 0) {
+            node = node.left;
+          } else {
+            node = node.right;
+          }
+        }
+        if (node) {
+          this.splay(node)
+          return node
+        }
+        return null
+      }
+      insert(data) {
+        if (!this.root) {
+          this.root = new Node(data);
+          getOrder(this)
+          return true
         }
 
-        var t = new BinaryIndexedTree([10, 18, 12, 5, 7, 11, 4, 15])
-        /**
-         *  10
-         *  28 = 10+18
-         *  12
-         *  45 = 28+12+5
-         *  7
-         *  18 = 7+11
-         *  4
-         *  82 = 45+18+4+15
-         */
-     console.log(t)
-       //
-
-       function prefixSum(x, c){
-            var nodes = [], res = 0
-            if( x === lowbit(x)){
-                x = x - 1;
+        var node = this.root,
+          parent = null
+        while (node) {
+          parent = node; //保存要插入的父节点
+          var diff = data - node.data
+          if (diff == 0) {
+            node.count++
+            return false
+          } else if (diff < 0) {
+            node = node.left;
+          } else {
+            node = node.right;
+          }
+        }
+        var node = new Node(data);
+        node.parent = parent;
+        if (diff < 0) {
+          parent.left = node
+        } else {
+          parent.right = node
+        }
+        this.splay(node)
+        getOrder(this)
+        return true;
+      }
+      inOrder(cb) {
+        var a = 1000
+        function recursion(node) {
+          if(--a == 0){
+            throw '爆栈'
+          }
+          if (node) {
+            recursion(node.left)
+            cb(node)
+            recursion(node.right)
+          }
+        }
+        recursion(this.root)
+      }
+      remove(data) {
+        if (!this.root) {
+          return false
+        }
+        var node = this.find(data); //如果找到，内部会进行伸展
+        console.log('remove',data, node)
+        if (node) {
+          if (node.count > 1) {
+            node.count--
+            return true
+          }
+          if (data == this.root.data) {
+            if (!node.left) {
+              this.root = node.right;
+              this.root.parent = null;
+            } else if (!node.right) {
+             this.root = node.left;
+              this.root.parent = null;
+            } else {
+              
+              var succ = this.maxNode(node.left); 
+              console.log(succ.data, 'succ')
+              this.splay(succ);
+            
+              succ.right = node.right;
+              node.right = succ;
+              this.root = succ;
+              succ.parent = null;
             }
-            while(x){
-                res + c[x]
-                var child = lowbit(x);
-                if(child === x){
-                    break
-                }
-                x = x - child
-            }
-            return res
-       }
-       
-    
-function lowbit(x){
-    return x & (-x)
-}
+            
+          }
+        }
+        this.root.maintain()
+      }
+     
+     
+      /**
+       * 与伸展树tree2合并。其中tree1的所有元素都小于tree2的所有元素。
+       * 首先，找到伸展树tree1中的最大元素x，再通过Splay(x,tree1)将x调整为tree1的根。
+       * 然后将tree2作为x节点的右子树。这样，就得到了新伸展树tree。
+       */
+       merge(tree1, tree2){
+        if(!tree1){
+            return tree2
+        }
+        if(!tree2){
+            return tree1
+        }
+        var x = this.maxNode(tree1)
+        this.splay(x, tree1);
+        x.right = tree2
+        tree2.parent = x;
+        return x;
+      }
+      getSize(node){
+        return node ? node.size: 0
+      }
+      getRank(value) {
+        var node = this.find(value);
+        if (node) {
+          console.log(node.left.size)
+          return this.getSize(node.left) + 1
+        } else {
+          return 0
+        }
+      }
+      getKth(k) {
+        var node = this.root
+        while (node) {
+          if (k <= this.getSize(node.left)) {
+            node = node.left
+          } else if (k > this.getSize(node.left) + node.count) {
+            k -= (this.getSize(node.left) + node.count)
+            node = node.right
+          } else {
+            return node.data
+          }
+        }
+        return null
+      }
+      
+      maxNode(node) {
+        var current = node || this.root;
+        while (current.right) {
+          current = node.right
+        }
+        return current;
+      }
+      toString(printNode) {
+        if (printNode === void 0) printNode = function (n) {
+          return n.data;
+        };
 
+        var out = [];
+        printRow(this.root, '', true, function (v) {
+          return out.push(v);
+        }, printNode);
+        return out.join('');
+      };
+    }
 
+    // https://github.com/w8r/splay-tree/blob/master/dist/splay.js
+    function printRow(root, prefix, isTail, out, printNode) {
+      if (root) {
+        out(("" + prefix + (isTail ? '└── ' : '├── ') + (printNode(root)) + "\n"));
+        var indent = prefix + (isTail ? '    ' : '│   ');
+        if (root.left) {
+          printRow(root.left, indent, false, out, printNode);
+        }
+        if (root.right) {
+          printRow(root.right, indent, true, out, printNode);
+        }
+      }
+    }
+    var array = [7, 11, 13, 8, 44, 78, 15, 9, 77, 1, 2]  //[11,7,14,3,9,18,16,15]
+    var t = new SplayTree();
+    array.forEach(function (el) {
+      t.insert(el)
+    })
+
+    function getOrder(t) {
+      var array = [], last = -Infinity, error
+      t.inOrder(function (node) {
+        if (last > node.data) {
+          error = true
+        }
+        array.push(node.data)
+        last = node.data
+      })
+      console.log(array + '')
+      if (error) {
+        // console.log(t.root)
+        // throw t
+      }
+    }
+    var rank = t.find(44)
+    console.log('t.find(44)', rank, t)
+    var a = t.getRank(44)
+    console.log('t.getRank(44)', a);
+    var b = t.getKth(a)
+    console.log(`t.getKth(${a})`, b);
+   t.remove(11)
+   t.remove(44)
+  // t.remove(44)
+   console.log("移除11,77后")
+  getOrder(t)
+  console.log(t)
     </script>
     </body>
 </html>

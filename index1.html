@@ -8,153 +8,230 @@
     </head>
 
     <body>
+      <form>
+          <menu> 
+              <command onclick="alert('Hello World')"> Click Me!</command> 
+              </menu>
+      </form>
         <script>
-        const INACTIVE = 0; //待激活状态，这时可以对节点做任何修改
-        const ACTIVE = 1;   //激活状态, 节点准备进行分叉
-        const FORK = 2;     //已经分叉了，我们无法修改它的value, 但是能访问其后代，修改它们的value
-        const FREEZE = 3;   //冻结这整条分支，无法修改它与后代的修改
+ class Node {
+    constructor(data) {
+      this.data = data;
+      this.right = null;
+      this.left = null;
+      this.fix = ~~(Math.random() + "").slice(2, 7);
+      this.size = 1;
+      this.count = 1;
+    }
+    maintain() {
+      var leftSize = this.left ? this.left.size : 0;
+      var rightSize = this.right ? this.right.size : 0;
+      this.size = leftSize + rightSize + this.count;
+    }
+  }
+  class Treap {
+      find(value) {
+        var node = this.root;
+        while (node) {
+          var diff = value - node.data;
+          if (value === 0) {
+            return node
+          } else if (value > 0) {
+            node = node.right;
+          } else {
+            node = node.left;
+          }
+        }
+        return null;
+      }
+      insert(value) {
+        this.root = this._insert(this.root, value)
+        getOrder(this)
+      }
+      _insert(node, value) {
+        if (!node) {
+          return new Node(value)
+        }
+        if (node.data == value) {
+          node.count++;
+          node.maintain()
+          return node;
+        } else if (node.data > value) {
+          node.left = this._insert(node.left, value);
+          if (node.left.fix < node.fix) {
+            node = this.rotateRight(node)
+          }
+        } else {
+          node.right = this._insert(node.right, value);
+          if (node.right.fix < node.fix) {
+            node = this.rotateLeft(node)
+          }
+        }
+        node.maintain()
+        return node;
+      }
+      rotateLeft(node) {
+        var top = node.right; //会上浮的子节点
+        // top.size = node.size;//外面会处理，这里就不重复
+        node.right = top.left;//过继
+        node.maintain()//维护size
+        top.left = node;//旋转
+        return top;
+      }
 
-   class SuffixNode {
-      constructor(value){
-        this.value = value
-        this.splitLength = 0;
-        this.status = INACTIVE;
-        this.children = []
+      rotateRight(node) {
+        var top = node.left;//会上浮的子节点
+        // top.size = node.size;
+        node.left = top.right;//过继
+        node.maintain();//维护size
+        top.right = node;//旋转
+        return top;
       }
-    }
-    class SuffixLink {
-      constructor(node){
-        this.node = node;
-        this.status = FREEZE
+
+
+      inOrder(cb) {
+        function recursion(node) {
+          if (node) {
+            recursion(node.left)
+            cb(node)
+            recursion(node.right)
+          }
+        }
+        recursion(this.root)
       }
-      get children(){
-        return this.node.children
+      preOrder(cb) {
+        function recursion(node) {
+          if (node) {
+            cb(node)
+            recursion(node.left)
+            recursion(node.right)
+          }
+        }
+        recursion(this.root)
       }
-      get splitLength(){
-        return this.node.splitLength
+      postOrder(cb) {
+        function recursion(node) {
+          if (node) {
+            recursion(node.left)
+            recursion(node.right)
+            cb(node)
+          }
+        }
+        recursion(this.root)
       }
-      get value(){
-        return this.node.value
+      getSize(node) {
+        return node ? node.size : 0
       }
-    }
-    class SuffixTree {
-      constructor() {
-        this.root = new SuffixNode('');
+      getKth(k) {
+        var node = this.root
+        while (node) {
+          if (k <= this.getSize(node.left)) {
+            node = node.left
+          } else if (k > this.getSize(node.left) + node.count) {
+            k -= (this.getSize(node.left) + node.count)
+            node = node.right
+          } else {
+            return node.data
+          }
+        }
+        return null
       }
-      insert(word, sign) {
-        sign = sign || '#'
-        var nodes = this.root.children;
-        word += sign;
-        for (var i = 0; i < word.length; i++) {
-          var multipleActive = []
-          this.addNodeByChar(nodes, word[i], false,multipleActive)
-          multipleActive.length = 0
+      getRank(value) {
+        return this.getRankInner(this.root, value)
+      }
+
+      getRankInner(node, value) {
+        if (!node) {
+          return 0;
+        } else if (node.data == value) {
+          return this.getSize(node.left) + 1
+        } else if (node.data > value) {
+          return this.getRankInner(node.left, value);
+        } else {
+          return this.getRankInner(node.right, value) + this.getSize(node.left) + node.count
         }
       }
 
-       addNodeByChar(nodes, ch, isChild, multipleActive) {
-        var add = true;
-        if (isChild) {
-          add = false
+      remove(value) {
+        var parents = [], node = this.root;
+        while (node) {
+          var diff = value - node.data;
+          if (diff === 0) {
+            break
+          }
+          parents.push(node)
+          if (diff > 0) {
+            node = node.right;
+          } else {
+            node = node.left;
+          }
         }
-        //inactive, active,  fork,  unfork
-        for (var i = 0; i < nodes.length; i++) {
-          var node = nodes[i]
-          if(node.status === FREEZE){
-            continue
-          }
-          var isMatch = node.value[node.splitLength] === ch
-          //没有隐藏
-          if (node.status !== FORK ) {
-            node.value += ch;
-          }
-          if (!isMatch) {
-            if (node.status == ACTIVE) {//如果被激活
-              node.status = FORK;//准备分叉
-              var value = node.value;
-              node.value = value.slice(0, node.splitLength)//变成父节点
-              node.children.push(
-                new SuffixNode(value.slice(node.splitLength, -1)),
-                new SuffixNode(''),
-              )
-              node.splitLength = 0;
-            }
-          } else { //命中了，就不用在根节点中添加新节点
-            add = false;
-            node.splitLength++
-            if (node.status !== FORK) { //没有分叉过
-              node.status = ACTIVE
-
-              if(multipleActive.length){
-                 var prev = multipleActive[0];
-                 if( prev.value.length > node.value.length){
-                    prev.value = prev.value.slice(0, node.value.length * -1)
-                    prev.status = FREEZE
-                    prev.children = [new SuffixLink(node)];
-                    multipleActive[0] = node;
-                    continue
-                 }else {
-                    nodes[i] = new SuffixLink(prev);
-                 }
-        
-              }else {
-                multipleActive.push(node)
+        if (node) { //找到要删除的节点
+          console.log("找到要删除的节点", node)
+          if (node.count > 1) {
+            node.count--
+          } else {
+            var parent = parents[parents.length - 1], newParent
+            while (node.left && node.right) {
+              var dir = Object(parent).left == node ? 'left' : 'right'
+              if (node.left.fix < node.right.fix) {
+                //left上位
+                newParent = this.rotateRight(node)
+                console.log('右旋', newParent.data)
+              } else {
+                newParent = this.rotateLeft(node)
+                console.log('左旋', newParent.data)
+                //right上位
               }
+              if (!parent) {
+                this.root = newParent
+              } else {
+                parent[dir] = newParent;
+              }
+              parent = newParent;
+              parents.push(parent)
             }
+
+            var dir = Object(parent).left == node ? 'left' : 'right'
+            parent[dir] = node.left || node.right || null
           }
-          //如果有孩子，可以继续传递ch
-          if (node.children.length ) {
-            this.addNodeByChar(node.children, ch, true, multipleActive)
+          console.log("找到要维护的父节点", parents.map(function (el) {
+            return el.data
+          }))
+          while (parents.length) {
+            var a = parents.pop()
+            a.maintain()
           }
+          return true
         }
-        if (add && ch !== '#') {
-          nodes.push(new SuffixNode(ch))
-        }
+        return false
       }
     }
-    var tree = new SuffixTree();
-    //tree.insert("banana");
-    tree.insert("javajfiewjavajfiowfjavagkljjava"); //con
-    console.log(tree)
-
-
-    function find(node, target){
-      var prev = ''
-      while(true){
-        var nodes = node.children
-        var match = false
-        for(var i = 0 ; i < nodes.length; i++ ){
-           var cur = nodes[i];
-           var value = prev + cur.value
-          //如果value
-          if(value.length < target.length){
-            if(value == target.substr(0, value.length) ){ //ja java
-              node = cur
-              prev = value;
-              match = true
-              //  find(node.children, target, value)
-             // break
-            }
-          }else{
-             
-            if(value.indexOf(target) >= 0){
-               return Math.max(cur.children.length, 1)
-            }
-          }
-        }
-        if(!match){
-          return 0
-        }
-      }
+    var array = [7, 11, 13, 8, 44, 78, 15, 9, 77, 1, 2]  //[11,7,14,3,9,18,16,15]
+    var t = new Treap(2);
+    array.forEach(function (el) {
+      t.insert(el)
+    })
+    function getOrder(t) {
+      var array = []
+      t.inOrder(function (node) {
+        array.push(node.data)
+      })
+      console.log(array + "")
     }
-   var max = find(tree.root, 'java')
-console.log(max, 'xxx')
-   // javajfiewjavajfiowfjavagkljjava";
-//var flagStr="java";
-//1,2,2,3,3,5,5
+    var a = t.getRank(44)
+    console.log('t.getRank(44)', a);
+    var b = t.getKth(a)
+    console.log(`t.getKth(${a})`, b);
 
+    t.remove(11)
+    t.remove(3)
+    console.log("移除11,3后")
+    t.insert(23)
 
         </script>
+        
         <div id="root"></div>
     </body>
 </html>
+

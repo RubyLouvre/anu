@@ -9,129 +9,276 @@
 
     <body>
         <script>
-            class SuffixNode {
-                constructor(value) {
-                    this.value = value;
-                    this.splitLength = 0;
-                    this.isActive = false;
-                    this.children = [];
-                    this.unfork = false;
-                    this.hidden = false;
-                }
+
+class Node {
+    constructor(data) {
+        this.data = data;
+        this.left = null;
+        this.right = null;
+        this.parent = null;
+        this.size = 1;
+        this.count = 1;
+    }
+    maintain() {
+        this.size = this.count;
+        if (this.left) {
+            this.size += this.left.size;
+        }
+        if (this.right) {
+            this.size += this.right.size;
+        }
+    }
+}
+
+function rotateImpl(tree, node, dir, setParent) {
+    var other = dir == "left" ? "right" : "left";
+    if (!node[other]) {
+        return;
+    }
+    var top = node[other]; //会上浮的子节点
+    node[other] = top[dir]; //过继孩子
+
+    if (setParent) {
+        if (!node.parent) {
+            tree.root = top;
+        } else if (node == node.parent.left) {
+            node.parent.left = top;
+        } else {
+            node.parent.right = top;
+        }
+        Object(top[dir]).parent = node; //父属性修正1
+        top.parent = node.parent; //父属性修正2
+        node.parent = top; //父属性修正3
+    }
+    top[dir] = node; //旋转
+    node.maintain(); //先处理下面的再处理上面的
+    top.maintain();
+    return top;
+}
+class SplayTree {
+    //参考 https://github.com/sisobus/SplayTree/blob/master/index.js
+    constructor() {
+        this.root = null;
+    }
+    leftRotate(node) {
+        return rotateImpl(this, node, "left", true);
+    }
+    rightRotate(node) {
+        return rotateImpl(this, node, "right", true);
+    }
+    rotate(x) {//rotate具有决定左旋或右旋的功能
+        let p = x.parent;
+        if (x === p.left) {
+            return this.rightRotate(p);
+        } else {
+            return this.leftRotate(p);
+        }
+    }
+    splay(x, a) {
+        while (x.parent != a) {
+            let p = x.parent;
+            let g = p.parent;
+            //x是父节点的left
+            if (g) {
+                //如果是有两个可以旋转的父级节点，
+                //那么判它们是否位于同一条线上，是就使用一字型旋转
+                //否则就是之字型旋转
+                this.rotate(
+                    (x === p.left) === (p === g.left) ? p : x
+                );
             }
-            class SuffixLink {
-                constructor(node) {
-                    this.node = node;
-                    this.unfork = true;
-                    this.isActive = false;
-                }
-                get children() {
-                    return this.node.children;
-                }
-                get splitLength() {
-                    return this.node.splitLength;
-                }
-                get value() {
-                    return this.node.value;
-                }
+            this.rotate(x);
+        }
+    }
+    getSize(node) {
+        return node ? node.size : 0;
+    }
+    inOrder(cb) {
+        function recursion(node) {
+            if (node) {
+                recursion(node.left);
+                cb(node);
+                recursion(node.right);
             }
-            class SuffixTree {
-                constructor() {
-                    this.root = new SuffixNode("");
-                }
-                insert(word, sign) {
-                    sign = sign || "#";
-                    var nodes = this.root.children;
-                    word += sign;
-                    for (var i = 0; i < word.length; i++) {
-                        var multipleActive = [];
-                        this.addNodeByChar(
-                            nodes,
-                            word[i],
-                            false,
-                            multipleActive
-                        );
-                    }
-                }
+        }
+        recursion(this.root);
+    }
 
-                addNodeByChar(nodes, ch, isChild, multipleActive) {
-                    var add = true;
-                    if (isChild) {
-                        add = false;
-                    }
-                    for (var i = 0; i < nodes.length; i++) {
-                        var node = nodes[i];
-                        if (node.unfork) {
-                            //unfork用于忽略遍历
-                            continue;
-                        }
-                        if (!node.hidden) {
-                            //hidden用于忽略修改value
-                            node.value += ch;
-                        }
-                        var isMatch = node.value[node.splitLength] === ch;
+    insert(data) {
+        if (!this.root) {
+            this.root = new Node(data);
+            console.log(this.keys() + "");
+            return true;
+        }
 
-                        if (!isMatch) {
-                            if (node.isActive) {
-                                //处于激活狀态
-                                node.isActive = false;
-                                node.hidden = true; //进行分叉
-                                var value = node.value;
-                                node.value = value.slice(0, node.splitLength); //变成父节点
-                                node.children.push(
-                                    new SuffixNode(
-                                        value.slice(node.splitLength, -1)
-                                    ),
-                                    new SuffixNode("")
-                                );
-                                node.splitLength = 0;
-                            }
-                        } else {
-                            //命中了，就不用在根节点中添加新节点
-                            add = false;
-                            node.splitLength++;
-                            if (!node.hidden) {
-                                //没有分叉过
-                                node.isActive = true;
-                                if (multipleActive.length) {
-                                    //如果存在多个激活节点，那么将它们链接起来，减少更新的数量
-                                    var prev = multipleActive[0];
-                                    if (prev.value.length > node.value.length) {
-                                        prev.value = prev.value.slice(
-                                            0,
-                                            node.value.length * -1
-                                        );
-                                        multipleActive[0] = node;
-                                        //为了防止重复添加子节点，带有suffixLink的父节点也带上link
-                                        prev.unfork = true;
-                                        //重置它的属性
-                                        prev.isActive = false;
-                                        prev.splitLength = 0;
-                                        prev.children = [new SuffixLink(node)];
-                                    } else {
-                                        nodes[i] = new SuffixLink(prev);
-                                    }
-                                } else {
-                                    multipleActive.push(node);
-                                }
-                            }
-                        }
-                        //如果有孩子，可以继续传递ch
-                        if (node.children.length ) {
-                            this.addNodeByChar(node.children, ch, true, multipleActive);
-                        }
-                    }
-
-                    if (add && ch !== "#") {
-                        nodes.push(new SuffixNode(ch));
-                    }
-                }
+        var node = this.root,
+            parent = null;
+        while (node) {
+            parent = node; //保存要插入的父节点
+            var diff = data - node.data;
+            if (diff == 0) {
+                node.count++;
+                return false;
+            } else if (diff < 0) {
+                node = node.left;
+            } else {
+                node = node.right;
             }
+        }
+        var node = new Node(data);
+        node.parent = parent;
+        if (diff < 0) {
+            parent.left = node;
+        } else {
+            parent.right = node;
+        }
+        this.splay(node);
+        console.log(this.keys() + "");
+        return true;
+    }
 
-            var tree = new SuffixTree();
-            //tree.insert("banana");
-            tree.insert("abcabxabcd"); //con
-            console.log(tree);
+    getMin(){
+        var node = this.root
+        if(node){
+            while(node.left)
+                node = node.left
+    
+            return this.splay(node);
+        }
+        return null;
+    }
+ 
+    getMax(){
+        var node = this.root
+        if(node){
+            while(node.right){
+                node = node.right
+            }
+            return this.splay(node);
+        }
+        return null;
+    }
+
+    maxNode(node) {
+        var current = node || this.root;
+        while (current.right) {
+          current = node.right
+        }
+        return current;
+      }
+    find(value) {
+        var node = this.root;
+        while (node) {
+            var diff = value - node.data;
+            if (diff == 0) {
+                break;
+            } else if (diff < 0) {
+                node = node.left;
+            } else {
+                node = node.right;
+            }
+        }
+        if (node) {
+            this.splay(node);
+            return node;
+        }
+        return null;
+    }
+    getRank(value) {
+        var node = this.find(value);
+        if (node) {
+            return this.getSize(node.left) + 1;
+        } else {
+            return 0;
+        }
+    }
+    getKth(k) {
+        var node = this.root;
+        while (node) {
+            if (k <= this.getSize(node.left)) {
+                node = node.left;
+            } else if (k > this.getSize(node.left) + node.count) {
+                k -= this.getSize(node.left) + node.count;
+                node = node.right;
+            } else {
+                return node.data;
+            }
+        }
+        return null;
+    }
+    remove(key) {
+        let p = this.find(key);
+        if (!p) {
+            return false;
+        } else {
+            if (p.count > 1) {
+                p.count--;
+                return true;
+            }
+        }
+        if (p.left) {
+            //新根有左右孩子
+            if (p.right) {
+                this.root = p.left;
+                this.root.parent = null;
+                let x = this.root;
+                while (x.right) x = x.right;//取得它的后继节点
+                x.right = p.right;
+                p.right.parent = x;
+                return true;
+            }
+            //新根只有左孩子
+            this.root = p.left;
+            this.root.parent = null;
+            return true;
+        }
+        if (p.right) {
+            //新根只有右孩子
+            this.root = p.right;
+            this.root.parent = null;
+            return true;
+        }
+        this.root = null; //新根节点没有孩子
+        return true;
+    }
+  erase (   l ,   r ) {
+      var lnd = this.find ( l - 1 ) ;
+       var rnd = this.find ( r + 1 ) ;
+       this. splay ( lnd ) ;
+       this. splay ( rnd , lnd ) ;
+        rnd.left.parent = null
+        rnd .left = null;
+        rnd.maintain()
+        lnd.maintain()
+  }
+    keys() {
+        var ret = [];
+        this.inOrder(function(p) {
+            ret.push(p.data);
+        });
+        return ret;
+    }
+}
+
+var array = [7, 11, 13, 8, 44, 78, 15, 9, 77, 1, 2]; //[11,7,14,3,9,18,16,15]
+var t = new SplayTree();
+array.forEach(function(el) {
+    t.insert(el);
+});
+var node = t.find(44);
+console.log("t.find(44)", node.data);
+var a = t.getRank(44);
+console.log("t.getRank(44)", a);
+var b = t.getKth(a);
+console.log(`t.getKth(${a})`, b);
+/*
+t.remove(11);
+t.remove(44);
+t.remove(77);
+*/
+t.erase(8, 77)
+console.log("移除11,44,77后");
+console.log(t.keys(1));
         </script>
         <div id="root"></div>
     </body>
