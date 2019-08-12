@@ -14,8 +14,7 @@ const webComponentsMap = {
     view: 'div',
     stack: 'div',
     block: 'div',
-    'web-view': 'iframe',
-    'scroll-view': 'div'
+    'web-view': 'iframe'
 };
 const nativeComponentsMap = {
     button: 'Button',
@@ -23,7 +22,6 @@ const nativeComponentsMap = {
     icon: 'Icon',
     progress: 'Progress',
     radio: 'Radio',
-    'scorll-view': 'ScorllView',
     switch: 'Switch',
     'checkbox-group': 'CheckboxGroup',
     label: 'Label',
@@ -36,6 +34,7 @@ const internalComponentsMap = {
     swiper: 'Swiper',
     'swiper-item': 'SwiperItem',
     'rich-text': 'RichText',
+    'scroll-view': 'ScrollView',
     audio: 'Audio',
     picker: 'Picker'
 };
