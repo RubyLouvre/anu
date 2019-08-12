@@ -25,7 +25,7 @@ export function onLoad(PageClass, path, query) {
             query: query,
             isPageComponent: true,
             ref: function(ins) {
-                pageInstance = ins;
+                pageInstance = ins.wrappedInstance;
             }
         })), container);
     } else {

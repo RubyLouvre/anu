@@ -716,6 +716,9 @@ function dispatchEvent(e) {
         return;
     }
     var instance = this.reactInstance;
+    if (instance.wrappedInstance) {
+        instance = instance.wrappedInstance;
+    }
     if (!instance || !instance.$$eventCached) {
         console.log(eventType, '没有实例');
         return;
@@ -2518,7 +2521,7 @@ function onLoad(PageClass, path, query) {
             query: query,
             isPageComponent: true,
             ref: function ref(ins) {
-                pageInstance = ins;
+                pageInstance = ins.wrappedInstance;
             }
         })), container);
     } else {

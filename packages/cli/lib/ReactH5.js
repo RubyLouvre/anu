@@ -1,14 +1,15 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-12T12
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-12T14
  * IE9+
  */
 
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
-    typeof define === 'function' && define.amd ? define(['clipboard', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
-    (global.React = factory(global.Clipboard,global.axios,global.qs,global.MobileDetect,global.io));
-}(this, (function (Clipboard,axios,qs,MobileDetect,io) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('@react'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
+    typeof define === 'function' && define.amd ? define(['clipboard', '@react', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
+    (global.React = factory(global.Clipboard,global.React$1,global.axios,global.qs,global.MobileDetect,global.io));
+}(this, (function (Clipboard,React$1,axios,qs,MobileDetect,io) {
     Clipboard = Clipboard && Clipboard.hasOwnProperty('default') ? Clipboard['default'] : Clipboard;
+    React$1 = React$1 && React$1.hasOwnProperty('default') ? React$1['default'] : React$1;
     axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
     qs = qs && qs.hasOwnProperty('default') ? qs['default'] : qs;
     MobileDetect = MobileDetect && MobileDetect.hasOwnProperty('default') ? MobileDetect['default'] : MobileDetect;
@@ -3952,19 +3953,39 @@
       Toast.prototype.render = function render() {
         return React.createElement(
           'div',
-          { className: 'toast2019' },
-          React.createElement(
+          null,
+          React.appType === 'h5' ? React.createElement(
+            'dialog',
+            { open: true, className: 'toast2019' },
+            React.createElement(
+              'div',
+              { className: 'icon' },
+              this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
+            ),
+            React.createElement(
+              'div',
+              { className: 'title' },
+              this.props.title
+            )
+          ) : React.createElement(
             'div',
-            { className: 'icon' },
-            this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
-          ),
-          React.createElement(
-            'div',
-            { className: 'title' },
-            this.props.title
+            { className: 'toast2019' },
+            React.createElement(
+              'div',
+              { className: 'icon' },
+              this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
+            ),
+            React.createElement(
+              'div',
+              { className: 'title' },
+              this.props.title
+            )
           ),
           React.createElement('style', { ref: function ref(node) {
-              Object(node).textContent = '\n             .toast2019 { \n              display: flex;\n              flex-direction: column;\n              position: fixed;\n              width: 120px;\n              height: 120px; \n              background-color: rgba(0, 0, 0, 0.4);\n              margin: auto;\n              left: 0;\n              top: 0;\n              bottom: 0;\n              right: 0;\n              border-radius: 5px;\n            }\n            .toast2019 .icon {\n              width: 90px;\n              height: 90px;\n              margin: 0 auto;\n              fill: #fff;\n              color: #fff;\n              text-align: center;\n              font-size: 30px;\n              line-height: 90px;\n            }\n            .toast2019 .title {\n              height: 30px;\n              text-align: center;\n              line-height: 30px;\n              color: #fff;\n              overflow: hidden;\n            } ';
+              var other = 'display: flex;\n                          flex-direction: column;\n                          position: fixed;\n                          width: 120px;\n                          height: 120px; \n                          background-color: rgba(0, 0, 0, 0.4);\n                          margin: auto;\n                          left: 0;\n                          top: 0;\n                          bottom: 0;\n                          right: 0;\n                          border-radius: 5px;';
+              var h5 = 'display: flex;\n                      flex-direction: column;\n                      align-items:center;\n                      width: 120px;\n                      height: 120px; \n                      background-color: rgba(0, 0, 0, 0.4);\n                      text-align: center;\n                      line-height:120px; \n                      border:none;\n                      border-radius: 5px;';
+              var context = React.appType === 'h5' ? h5 : other;
+              Object(node).textContent = '\n             .toast2019 { \n              ' + context + '\n            }\n            .toast2019 .icon {\n              width: 90px;\n              height: 90px;\n              margin: 0 auto;\n              fill: #fff;\n              color: #fff;\n              text-align: center;\n              font-size: 30px;\n              line-height: 90px;\n            }\n            .toast2019 .title {\n              height: 30px;\n              text-align: center;\n              line-height: 30px;\n              color: #fff;\n              overflow: hidden;\n            } ';
             } })
         );
       };
@@ -4298,8 +4319,6 @@
     function _classCallCheck$4(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
     function _possibleConstructorReturn$4(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
     function _inherits$4(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-    var that = null;
-    var container = null;
     var PreviewImage = function (_Component) {
         _inherits$4(PreviewImage, _Component);
         function PreviewImage(props) {
@@ -4310,11 +4329,11 @@
                 urls: [],
                 current: 0
             };
+            _this.container = _this.props.container;
             _this.close = _this.close.bind(_this);
             _this.gotoPrevious = _this.gotoPrevious.bind(_this);
             _this.gotoNext = _this.gotoNext.bind(_this);
             _this.gotoImage = _this.gotoImage.bind(_this);
-            that = _this;
             return _this;
         }
         PreviewImage.prototype.componentDidMount = function componentDidMount() {
@@ -4323,7 +4342,8 @@
             }, this.props.success, this.props.complete, this.props.resolve);
         };
         PreviewImage.prototype.componentWillUnmount = function componentWillUnmount() {
-            document.removeChild(container);
+            React$1.api.previewImageSingleton = null;
+            document.removeChild(this.container);
         };
         PreviewImage.prototype.gotoPrevious = function gotoPrevious() {
             this.setState({
@@ -4346,12 +4366,11 @@
             });
         };
         PreviewImage.prototype.render = function render() {
-            var _state = this.state,
-                visible = _state.visible,
-                urls = _state.urls,
-                current = _state.current;
-            container.style = visible ? 'width: 100%;height: 100%;position: fixed;' : 'none';
-            return React.createElement('div', null);
+            return React$1.createElement(
+                'div',
+                null,
+                React$1.createElement('image', { src: this.state.current })
+            );
         };
         return PreviewImage;
     }(Component);
@@ -4366,20 +4385,37 @@
                 fail = _options$fail === undefined ? function () {} : _options$fail,
                 _options$complete = options.complete,
                 complete = _options$complete === undefined ? function () {} : _options$complete;
-            container = document.createElement('div');
-            document.body.appendChild(container);
-            DOMRenderer.render(React.createElement(PreviewImage, {
-                success: success,
-                fail: fail,
-                complete: complete,
-                resolve: resolve,
-                reject: reject
-            }), container);
-            that.setState({
-                visible: true,
-                urls: urls,
-                current: current
-            });
+            var instance = React$1.api.previewImageSingleton;
+            if (!instance) {
+                var internalModal = document.getElementsByClassName('__internal__Modal__')[0];
+                var container = document.createElement('div');
+                internalModal.appendChild(container);
+                React$1.render(React$1.createElement(PreviewImage, {
+                    success: success,
+                    fail: fail,
+                    container: container,
+                    complete: complete,
+                    resolve: resolve,
+                    reject: reject,
+                    ref: function ref(refs) {
+                        if (refs) {
+                            instance = React$1.api.previewImageSingleton = refs;
+                        }
+                    }
+                }), container, function () {
+                    instance.setState({
+                        visible: true,
+                        urls: urls,
+                        current: current
+                    });
+                });
+            } else {
+                instance.setState({
+                    visible: true,
+                    urls: urls,
+                    current: current
+                });
+            }
         });
     }
     var previewImage$1 = {
@@ -5238,6 +5274,9 @@
             return;
         }
         var instance = this.reactInstance;
+        if (instance.wrappedInstance) {
+            instance = instance.wrappedInstance;
+        }
         if (!instance || !instance.$$eventCached) {
             console.log(eventType, '没有实例');
             return;
@@ -5372,7 +5411,7 @@
     var render$2 = DOMRenderer.render;
     var __currentPages = [];
     var MAX_PAGE_STACK_NUM = 10;
-    var React$1 = getWindow().React = {
+    var React$2 = getWindow().React = {
         findDOMNode: findDOMNode,
         version: '1.5.0',
         render: render$2,
@@ -5434,24 +5473,24 @@
             _getQuery2 = _slicedToArray(_getQuery, 2),
             path = _getQuery2[0],
             query = _getQuery2[1];
-        var appInstance = React$1.__app;
+        var appInstance = React$2.__app;
         var appConfig = appInstance.constructor.config;
         if (appConfig.pages.indexOf(path) === -1) {
             throw "没有注册该页面: " + path;
         }
         if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
-        var pageClass = React$1.__pages[path];
+        var pageClass = React$2.__pages[path];
         __currentPages.forEach(function (page, index, self) {
-            self[index] = React$1.cloneElement(self[index], {
+            self[index] = React$2.cloneElement(self[index], {
                 show: false
             });
         });
-        var pageInstance = React$1.createElement(pageClass, {
-            isTabPage: React$1.__isTab(path),
+        var pageInstance = React$2.createElement(pageClass, {
+            isTabPage: React$2.__isTab(path),
             path: path,
             query: query,
             url: url,
-            app: React$1.__app,
+            app: React$2.__app,
             show: true,
             needBackButton: __currentPages.length > 0 ? true : false
         });
@@ -5496,7 +5535,7 @@
                 var url = page.props.url;
                 history.pushState({ url: url }, null, prefix + url);
             });
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({
                 showBackAnimation: true
             });
@@ -5508,7 +5547,7 @@
                 var _currentPages$props = __currentPages[__currentPages.length - 1].props,
                     path = _currentPages$props.path,
                     query = _currentPages$props.query;
-                React$1.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
+                React$2.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
             }, 300);
         },
         switchTab: function switchTab(_ref2) {
@@ -5520,7 +5559,7 @@
                 _getQuery4 = _slicedToArray(_getQuery3, 2),
                 path = _getQuery4[0],
                 query = _getQuery4[1];
-            var config = React$1.__app.constructor.config;
+            var config = React$2.__app.constructor.config;
             if (config && config.tabBar && config.tabBar.list) {
                 if (config.tabBar.list.length < 2 || config.tabBar.list.length > 5) {
                     console.warn('tabBar数量非法，必须大于2且小于5个');
@@ -5553,7 +5592,7 @@
             __currentPages.push(cloneElement(currentPage, {
                 config: processedOptions
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         setNavigationBarTitle: function setNavigationBarTitle(options) {
@@ -5565,15 +5604,15 @@
             __currentPages.push(cloneElement(currentPage, {
                 config: processedOptions
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         stopPullDownRefresh: function stopPullDownRefresh() {
-            var pageInstance = React$1.getCurrentPages().pop();
-            React$1.getCurrentPages().push(cloneElement(pageInstance, {
+            var pageInstance = React$2.getCurrentPages().pop();
+            React$2.getCurrentPages().push(cloneElement(pageInstance, {
                 stopPullDownRefresh: true
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         createModal: function createModal(instance) {
@@ -5607,8 +5646,8 @@
             return key + '=' + obj[key];
         }).join('&');
     }
-    registerAPIs(React$1, apiContainer, more);
+    registerAPIs(React$2, apiContainer, more);
 
-    return React$1;
+    return React$2;
 
 })));

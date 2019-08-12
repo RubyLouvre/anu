@@ -648,9 +648,9 @@ function createEvent(e, target, type) {
             event[i] = e[i];
         }
     }
-    event.touches = e._touches;
+    var touches = event.touches = e._touches || e._changeTouches;
     event.changeTouches = e._changeTouches;
-    var touch = event.touches && event.touches[0];
+    var touch = touches && touches[0];
     if (touch) {
         event.pageX = touch.pageX;
         event.pageY = touch.pageY;
@@ -3274,7 +3274,7 @@ function onLoad(PageClass, path, query) {
             query: query,
             isPageComponent: true,
             ref: function ref(ins) {
-                pageInstance = ins;
+                pageInstance = ins.wrappedInstance;
             }
         })), container);
     } else {
