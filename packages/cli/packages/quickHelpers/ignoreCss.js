@@ -29,6 +29,7 @@ const ignoreCss = {
     'text-shadow': true,
     'appearance': true,
     'overflow-y': true,
+    'user-select': true,
     display: function (value) {
         return !(value === 'flex' || value === 'none');
     },
