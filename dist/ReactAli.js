@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-12
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-13
  */
 
 var arrayPush = Array.prototype.push;
@@ -716,9 +716,6 @@ function dispatchEvent(e) {
         return;
     }
     var instance = this.reactInstance;
-    if (instance.wrappedInstance) {
-        instance = instance.wrappedInstance;
-    }
     if (!instance || !instance.$$eventCached) {
         console.log(eventType, '没有实例');
         return;

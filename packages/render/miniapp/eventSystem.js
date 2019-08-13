@@ -13,9 +13,6 @@ export function dispatchEvent(e) {
         return;
     }
     let instance = this.reactInstance;
-    if (instance.wrappedInstance) {
-        instance = instance.wrappedInstance;
-    }
     if (!instance || !instance.$$eventCached) {
         console.log(eventType, '没有实例');
         return;
