@@ -72,6 +72,7 @@ export function useCallbackImpl(create, deps, isMemo, isEffect) {//ok
     export function useEffectImpl(create, deps, EffectTag, createList, destroyList) {//ok
         let fiber = getCurrentFiber();
         if(useCallbackImpl(create, deps, false, true)){//防止重复添加
+            let updateQueue = fiber.updateQueue;
             if (fiber.effectTag % EffectTag) {
                 fiber.effectTag *= EffectTag;
             }
