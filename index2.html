@@ -14,22 +14,21 @@
 
   </div>
   <script>
-    class Node {
-      constructor(data) {
-        this.size = 0
-        this.data = data;
-        this.left = null;
-        this.right = null;
-        this.parent = null;
-        this.count = 1
-      }
-      maintain() {
-        var leftSize = this.left ? this.left.size : 0
-        var rightSize = this.right ? this.right.size : 0
-        this.size = leftSize + rightSize + this.count;
-      }
-
-    };
+  class Node{
+   constructor(data){
+      this.data = data;
+      this.parent = parent;
+      this.height = 1;
+      this.count = 1;
+      this.left = null;
+      this.right = null;
+   }
+   maintain(){
+      var leftHeight = node.left ? node.left.height: 0
+      var rightHeight = node.right ? node.right.height: 0
+      return Math.max(leftHeight, rightHeight) + 1;
+   }
+}
 
 
     function rotateImpl(tree, node, dir, setParent) {
@@ -53,14 +52,14 @@
         node.parent = top; //父属性修正3
       }
       top[dir] = node; //旋转
-      node.maintain();//先处理下面的再处理上面的
-      top.maintain();
+      top.maintain()
+      
+      node.maintain();//先top.maintain();
       return top;
     }
-    class SplayTree {
+    class AVL {
       constructor() {
         this.root = null;
-
       }
       leftRotate(node) {
         return rotateImpl(this, node, 'left', true);
@@ -68,56 +67,8 @@
       rightRotate(node) {
         return rotateImpl(this, node, 'right', true);
       }
-
-      splay(node, goal) {
-        goal = goal || this.root
-        var k = 1000
-        while (node !== goal) {
-          if (node == this.root) {
-            break
-          }
-          if(--k ==0){
-            console.log("爆栈了")
-            break
-          }
-          var parent = node.parent;
-          if (parent == goal) {
-            if (parent.left == node) {
-              // console.log("zig")
-              this.rightRotate(parent)
-            } else {
-              // console.log("zag")
-              this.leftRotate(parent)
-            }
-            break
-          } else {
-            var grandpa = parent.parent;
-            var case1 = grandpa.left === parent ? "zig-" : "zag-";
-            var case2 = parent.left === node ? "zig" : "zag";
-            switch (case1 + case2) {
-              case "zig-zig": // 一字型，先父后子，由于我们的旋转操作都是针对于根，
-                // 那么操作node，即操作parent
-                this.rightRotate(grandpa);
-                this.rightRotate(parent);
-                continue
-              case "zag-zag": // 一字型，先父后子
-                this.leftRotate(grandpa);
-                this.leftRotate(parent);
-                continue
-              case "zig-zag": // 之字型
-                this.leftRotate(parent);
-                this.rightRotate(grandpa);
-                continue;
-              case "zag-zig": // 之字型
-                this.rightRotate(parent);
-                this.leftRotate(grandpa);
-                continue;
-            }
-          }
-        }
-        node.maintain() //更新节点的数量
-      }
-
+  
+    
       getSize(node) {
         return node ? node.size : 0
       }
@@ -142,7 +93,6 @@
       insert(data) {
         if (!this.root) {
           this.root = new Node(data);
-          getOrder(this)
           return true
         }
 
@@ -167,24 +117,32 @@
         } else {
           parent.right = node
         }
-        this.splay(node)
+        parent.maintain()
+       var node = this.rebalance(parent);
         getOrder(this)
         return true;
       }
-      inOrder(cb) {
-        var a = 1000
-        function recursion(node) {
-          if(--a == 0){
-            throw '爆栈'
-          }
-          if (node) {
-            recursion(node.left)
-            cb(node)
-            recursion(node.right)
-          }
+      rebalance(node) {
+        var bf = this.getBalanceFactor(node);
+        // 如果左子树过高
+        if (bf > 1) {
+            // 如果是在插左子树的右子树上
+            if (this.getBalanceFactor(node.left) < 0) {
+                node.left = this.leftRotate(node.left);
+            }
+            return this.rightRotate(node);
         }
-        recursion(this.root)
-      }
+
+       // 如果右子树过高
+        if (bf < -1) {
+            // 如果是插在右子树的左子树上
+            if (this.getBalanceFactor(node.right) > 0) {
+                node.right = this.rightRotate(node.right);
+            }
+            return this.leftRotate(node);
+        }
+        return node;
+    }
       remove(data) {
         if (!this.root) {
           return false

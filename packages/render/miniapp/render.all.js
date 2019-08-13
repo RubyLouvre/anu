@@ -47,6 +47,18 @@ export let Renderer = createRenderer({
         let type = fiber.type;
         let instance = fiber.stateNode;
         let app = _getApp();
+        var name = fiber.name //处理组件被高阶组件包裹的情况
+        if(registeredComponents[name] && !type.reactInstances){
+            var f = fiber.return
+            while(f){
+                if(f.name === name){
+                    f.stateNode.props = instance.props
+                    instance.wx = f.stateNode.wx
+                    break
+                }
+               f = f.return
+            }
+        }
         if (type.reactInstances) {
             let uuid = fiber.props['data-instance-uid'] || null;
             if (!instance.instanceUid) {
