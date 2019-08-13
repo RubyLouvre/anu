@@ -125,6 +125,9 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
                 path.join(process.cwd(), 'node_modules')
             ]
         },
+        watchOptions: {
+            ignored: /node_modules|dist/
+        },
         externals: platform === 'h5' ? ['react', '@react', 'react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/] : []
     };
 }

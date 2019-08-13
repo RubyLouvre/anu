@@ -16,6 +16,10 @@ const templates = [
     {
         name: '默认模板',
         value: 'helloNanachi'
+    },
+    {
+        name: 'mobx',
+        value: 'mobx'
     }
 ];
 exports.default = templates;

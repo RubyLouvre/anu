@@ -25,6 +25,7 @@ import {
 import { registerAPIs } from './registerAPIs';
 import { more } from './apiForBaidu/index';
 
+import { registerApp } from './registerApp.all';
 import { registerComponent } from './registerComponent.bu';
 import { registerPage } from './registerPage.wx';
 import { 
@@ -69,6 +70,7 @@ let React = (getWindow().React = {
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
+    registerApp,
     registerPage,
     toStyle,
     useState,

@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-06
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-13
  */
 
 var arrayPush = Array.prototype.push;
@@ -2597,6 +2597,14 @@ var more = function more(api) {
     };
 };
 
+var GlobalApp = void 0;
+function _getGlobalApp() {
+    return GlobalApp;
+}
+function registerApp(App) {
+    GlobalApp = App;
+}
+
 function registerComponent(type, name) {
     type.isMPComponent = true;
     registeredComponents[name] = type;
@@ -2632,6 +2640,7 @@ function registerComponent(type, name) {
 
 function onLoad(PageClass, path, query) {
     var app = _getApp();
+    var GlobalApp = _getGlobalApp();
     app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
@@ -2642,12 +2651,24 @@ function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
-    var pageInstance = render(
-    createElement(PageClass, {
-        path: path,
-        query: query,
-        isPageComponent: true
-    }), container);
+    var pageInstance;
+    if (typeof GlobalApp === 'function') {
+        render(createElement(GlobalApp, {}, createElement(PageClass, {
+            path: path,
+            query: query,
+            isPageComponent: true,
+            ref: function ref(ins) {
+                pageInstance = ins.wrappedInstance;
+            }
+        })), container);
+    } else {
+        pageInstance = render(
+        createElement(PageClass, {
+            path: path,
+            query: query,
+            isPageComponent: true
+        }), container);
+    }
     callGlobalHook('onGlobalLoad');
     this.reactContainer = container;
     this.reactInstance = pageInstance;
@@ -2797,6 +2818,7 @@ var React = getWindow().React = {
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
+    registerApp: registerApp,
     registerComponent: registerComponent,
     registerPage: registerPage,
     toStyle: toStyle,
