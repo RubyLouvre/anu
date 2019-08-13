@@ -3,10 +3,11 @@ import { topNodes, noop, topFibers } from 'react-core/util';
 import { delayMounts, usingComponents, _getApp, updateMiniApp, callGlobalHook } from './utils';
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
-
+import { _getGlobalApp } from './registerApp.all.js';
 
 export function onLoad(PageClass, path, query) {
     var app = _getApp();
+    let GlobalApp = _getGlobalApp();
     app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
@@ -17,14 +18,26 @@ export function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
-    var pageInstance = render(//生成页面的React对象
-        createElement(PageClass, {
+    var pageInstance;
+    if (typeof GlobalApp === 'function') {
+        render(createElement(GlobalApp, {}, createElement(PageClass, {
             path: path,
             query: query,
-            isPageComponent: true
-        }),
-        container
-    );
+            isPageComponent: true,
+            ref: function(ins) {
+                pageInstance = ins.wrappedInstance;
+            }
+        })), container);
+    } else {
+        pageInstance = render(//生成页面的React对象
+            createElement(PageClass, {
+                path: path,
+                query: query,
+                isPageComponent: true
+            }),
+            container
+        );
+    }
     callGlobalHook('onGlobalLoad');//调用全局onLoad方法
     this.reactContainer = container;
     this.reactInstance = pageInstance;

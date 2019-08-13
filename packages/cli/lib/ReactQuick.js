@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-08-06
+ * 运行于快应用的React by 司徒正美 Copyright 2019-08-13
  */
 
 var arrayPush = Array.prototype.push;
@@ -648,9 +648,9 @@ function createEvent(e, target, type) {
             event[i] = e[i];
         }
     }
-    event.touches = e._touches;
+    var touches = event.touches = e._touches || e._changeTouches;
     event.changeTouches = e._changeTouches;
-    var touch = event.touches && event.touches[0];
+    var touch = touches && touches[0];
     if (touch) {
         event.pageX = touch.pageX;
         event.pageY = touch.pageY;
@@ -3249,8 +3249,14 @@ function registerComponent(type, name) {
     };
 }
 
+var GlobalApp = void 0;
+function _getGlobalApp() {
+    return GlobalApp;
+}
+
 function onLoad(PageClass, path, query) {
     var app = _getApp();
+    var GlobalApp = _getGlobalApp();
     app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
@@ -3261,12 +3267,24 @@ function onLoad(PageClass, path, query) {
         root: true,
         appendChild: noop
     };
-    var pageInstance = render(
-    createElement(PageClass, {
-        path: path,
-        query: query,
-        isPageComponent: true
-    }), container);
+    var pageInstance;
+    if (typeof GlobalApp === 'function') {
+        render(createElement(GlobalApp, {}, createElement(PageClass, {
+            path: path,
+            query: query,
+            isPageComponent: true,
+            ref: function ref(ins) {
+                pageInstance = ins.wrappedInstance;
+            }
+        })), container);
+    } else {
+        pageInstance = render(
+        createElement(PageClass, {
+            path: path,
+            query: query,
+            isPageComponent: true
+        }), container);
+    }
     callGlobalHook('onGlobalLoad');
     this.reactContainer = container;
     this.reactInstance = pageInstance;

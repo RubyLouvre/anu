@@ -29,7 +29,23 @@ module.exports = {
                 B: modules.thisProperties
             });
         }
-        astPath.insertBefore(modules.ctorFn);
+        if (astPath.parent.type === 'Program') {
+            astPath.insertBefore(modules.ctorFn);
+        }
+        else {
+            let tempPath;
+            astPath.findParent(function (astPath) {
+                if (astPath.type !== 'Program') {
+                    tempPath = astPath;
+                    return false;
+                }
+                return true;
+            });
+            let tempExp = tempPath.get('declarations')[0];
+            let left = tempExp.get('id').node, right = tempExp.get('init').node;
+            tempPath.replaceWith(t.expressionStatement(t.assignmentExpression('=', left, right)));
+            tempPath.insertBefore(modules.ctorFn);
+        }
         modules.thisMethods.push(t.objectProperty(t.identifier('classUid'), t.stringLiteral(modules.classUid)));
         const classDeclarationAst = t.assignmentExpression('=', t.identifier(modules.className), t.callExpression(t.identifier('React.toClass'), [
             t.identifier(modules.className),
