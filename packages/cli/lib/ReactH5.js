@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-14T05
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-14T08
  * IE9+
  */
 
@@ -1702,7 +1702,9 @@
             } else {
                 instance = new type(props, context);
                 if (!(instance instanceof Component)) {
-                    throw type.name + ' doesn\'t extend React.Component';
+                    if (!instance.updater || !instance.updater.enqueueSetState) {
+                        throw type.name + ' doesn\'t extend React.Component';
+                    }
                 }
             }
         } finally {
@@ -3080,7 +3082,10 @@
         dom._reactInternalFiber = null;
     }
 
-    function registerAppRender(App) {
+    var GlobalApp = void 0;
+    function registerApp(app) {
+        GlobalApp = app.constructor;
+        return app;
     }
 
     var noop$1 = function noop$$1() {};
@@ -5412,11 +5417,12 @@
     }
 
     var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+    var _getWindow$React;
     function _defineProperty$1(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
     var render$2 = DOMRenderer.render;
     var __currentPages = [];
     var MAX_PAGE_STACK_NUM = 10;
-    var React$2 = getWindow().React = {
+    var React$2 = getWindow().React = (_getWindow$React = {
         findDOMNode: findDOMNode,
         version: '1.5.9',
         render: render$2,
@@ -5442,34 +5448,18 @@
         getApp: function getApp() {
             return this.__app;
         },
-        registerApp: function registerApp(app) {
+        registerApp: function registerApp$$1(app) {
             this.__app = app;
-        },
-        registerAppRender: registerAppRender,
-        registerPage: function registerPage(PageClass, path) {
-            this.__pages[path] = PageClass;
-            return PageClass;
-        },
-        useState: useState,
-        useReducer: useReducer,
-        useCallback: useCallback,
-        useMemo: useMemo,
-        useEffect: useEffect,
-        useContext: useContext,
-        useComponent: useComponent,
-        createRef: createRef,
-        forwardRef: forwardRef,
-        cloneElement: cloneElement,
-        appType: 'h5',
-        __app: {},
-        __pages: {},
-        __isTab: function __isTab(pathname) {
-            if (this.__app.constructor.config.tabBar && this.__app.constructor.config.tabBar.list && this.__app.constructor.config.tabBar.list.some(function (item) {
-                return item.pagePath.replace(/^\.\//, '') === pathname.replace(/^\//, '');
-            })) return true;
-            return false;
         }
-    };
+    }, _defineProperty$1(_getWindow$React, 'registerApp', registerApp), _defineProperty$1(_getWindow$React, 'registerPage', function registerPage(PageClass, path) {
+        this.__pages[path] = PageClass;
+        return PageClass;
+    }), _defineProperty$1(_getWindow$React, 'useState', useState), _defineProperty$1(_getWindow$React, 'useReducer', useReducer), _defineProperty$1(_getWindow$React, 'useCallback', useCallback), _defineProperty$1(_getWindow$React, 'useMemo', useMemo), _defineProperty$1(_getWindow$React, 'useEffect', useEffect), _defineProperty$1(_getWindow$React, 'useContext', useContext), _defineProperty$1(_getWindow$React, 'useComponent', useComponent), _defineProperty$1(_getWindow$React, 'createRef', createRef), _defineProperty$1(_getWindow$React, 'forwardRef', forwardRef), _defineProperty$1(_getWindow$React, 'cloneElement', cloneElement), _defineProperty$1(_getWindow$React, 'appType', 'h5'), _defineProperty$1(_getWindow$React, '__app', {}), _defineProperty$1(_getWindow$React, '__pages', {}), _defineProperty$1(_getWindow$React, '__isTab', function __isTab(pathname) {
+        if (this.__app.constructor.config.tabBar && this.__app.constructor.config.tabBar.list && this.__app.constructor.config.tabBar.list.some(function (item) {
+            return item.pagePath.replace(/^\.\//, '') === pathname.replace(/^\//, '');
+        })) return true;
+        return false;
+    }), _getWindow$React);
     function router(_ref) {
         var url = _ref.url,
             success = _ref.success,

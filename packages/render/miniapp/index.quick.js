@@ -23,7 +23,7 @@ import {
     _getApp , 
     getCurrentPage, 
     useComponent } from './utils';
-import { registerAppRender } from './registerApp.all';
+import { registerApp } from './registerApp.quick';
 import {getCurrentPages} from './getCurrentPages.quick';
 import { registerComponent } from './registerComponent.quick';
 import { registerPage } from './registerPage.quick';
@@ -35,10 +35,7 @@ import {
     useEffect, 
     useContext } from 'react-core/hooks';
 
-let appMethods = {
-    onLaunch: 'onCreate',
-    onHide: 'onDestroy'
-};
+
 let { render } = Renderer;
 let React = getWindow().React = {
     //平台相关API
@@ -79,25 +76,7 @@ let React = getWindow().React = {
     useContext,
     useComponent,
     appType: 'quick',
-    registerAppRender,
-    registerApp(demo){
-        var app = {};
-        for (let name in demo){
-            let value = demo[name];
-            name = appMethods[name] || name;
-            app[name] = value;
-        }
-        for (let name in demo.constructor){
-            let value = demo.constructor[name];
-            if( !app[name]){
-                app[name] = value;
-            }else{
-                throw 'app.js已经存在同名的静态属性与实例属性 '+name+' !'
-            }
-        }
-        delete app.constructor;//有这属性会报错
-        return app;
-    }   
+    registerApp  
 };
 
 if (typeof global !== 'undefined'){

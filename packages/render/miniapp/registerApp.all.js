@@ -1,9 +1,10 @@
 let GlobalApp;
 
-export function _getGlobalApp() {
-    return GlobalApp;
+export function _getGlobalApp(app) {
+    return GlobalApp || app.globalData._GlobalApp;
 }
 
-export function registerAppRender(App) {
-    GlobalApp = App;
+export function registerApp(app) {
+    GlobalApp = app.constructor;
+    return app;
 }
