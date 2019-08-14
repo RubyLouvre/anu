@@ -69,8 +69,13 @@ export function refreshComponent (reactInstances, wx, uuid) {
         let reactInstance = reactInstances[i];
         //处理组件A包含组件时B，当出现多个A组件，B组件会串的问题
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-            if(get(reactInstance).disposed){
+            var fiber = get(reactInstance)
+            if(fiber.disposed){
                continue;
+            }
+            //处理mobx
+            if(fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector'){
+                reactInstance = fiber.child.stateNode;
             }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;

@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-13T03
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-14T03
  * IE9+
  */
 
@@ -941,7 +941,7 @@ function callGlobalHook(method, e) {
 }
 var delayMounts = [];
 var usingComponents = [];
-var registeredComponents = {};
+var registeredComponents$1 = {};
 function getCurrentPage() {
     var app = _getApp();
     return app.$$page && app.$$page.reactInstance;
@@ -973,8 +973,12 @@ function refreshComponent(reactInstances, wx, uuid) {
     for (var i = 0, n = reactInstances.length; i < n; i++) {
         var reactInstance = reactInstances[i];
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-            if (get(reactInstance).disposed) {
+            var fiber = get(reactInstance);
+            if (fiber.disposed) {
                 continue;
+            }
+            if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
+                reactInstance = fiber.child.stateNode;
             }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
@@ -1000,7 +1004,7 @@ function isReferenceType(val) {
 }
 function useComponent(props) {
     var is = props.is;
-    var clazz = registeredComponents[is];
+    var clazz = registeredComponents$1[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
     clazz.displayName = is;
     if (this.ref !== null) {
@@ -1380,6 +1384,7 @@ function useCallbackImpl(create, deps, isMemo, isEffect) {
 function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
     var fiber = getCurrentFiber();
     if (useCallbackImpl(create, deps, false, true)) {
+        var updateQueue = fiber.updateQueue;
         if (fiber.effectTag % EffectTag) {
             fiber.effectTag *= EffectTag;
         }
@@ -2407,6 +2412,18 @@ var Renderer$1 = createRenderer({
         var type = fiber.type;
         var instance = fiber.stateNode;
         var app = _getApp();
+        var name = fiber.name;
+        if (registeredComponents[name] && !type.reactInstances) {
+            var f = fiber.return;
+            while (f) {
+                if (f.name === name) {
+                    f.stateNode.props = instance.props;
+                    instance.wx = f.stateNode.wx;
+                    break;
+                }
+                f = f.return;
+            }
+        }
         if (type.reactInstances) {
             var uuid = fiber.props['data-instance-uid'] || null;
             if (!instance.instanceUid) {
@@ -2627,7 +2644,7 @@ function registerPage(PageClass, path, testObject) {
 var defer = Promise.resolve().then.bind(Promise.resolve());
 function registerComponent(type, name) {
     type.isMPComponent = true;
-    registeredComponents[name] = type;
+    registeredComponents$1[name] = type;
     type.reactInstances = [];
     var config = {
         data: {
