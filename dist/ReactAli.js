@@ -2603,7 +2603,7 @@ var GlobalApp = void 0;
 function _getGlobalApp() {
     return GlobalApp;
 }
-function registerApp(App) {
+function registerAppRender(App) {
     GlobalApp = App;
 }
 
@@ -2820,7 +2820,7 @@ var React = getWindow().React = {
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
-    registerApp: registerApp,
+    registerAppRender: registerAppRender,
     registerComponent: registerComponent,
     registerPage: registerPage,
     toStyle: toStyle,
