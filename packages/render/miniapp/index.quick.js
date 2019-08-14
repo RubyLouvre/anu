@@ -23,6 +23,7 @@ import {
     _getApp , 
     getCurrentPage, 
     useComponent } from './utils';
+import { registerAppRender } from './registerApp.all';
 import {getCurrentPages} from './getCurrentPages.quick';
 import { registerComponent } from './registerComponent.quick';
 import { registerPage } from './registerPage.quick';
@@ -78,6 +79,7 @@ let React = getWindow().React = {
     useContext,
     useComponent,
     appType: 'quick',
+    registerAppRender,
     registerApp(demo){
         var app = {};
         for (let name in demo){

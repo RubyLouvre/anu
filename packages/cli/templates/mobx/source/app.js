@@ -33,6 +33,6 @@ class Global extends React.Component {
         return <React.Provider store={store}>{this.props.children}</React.Provider>
     }
 }
-React.registerApp(Global);
+React.registerAppRender(Global);
 // eslint-disable-next-line
 export default App(new Global());

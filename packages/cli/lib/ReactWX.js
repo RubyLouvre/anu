@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-14T03
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-14T05
  * IE9+
  */
 
@@ -941,7 +941,7 @@ function callGlobalHook(method, e) {
 }
 var delayMounts = [];
 var usingComponents = [];
-var registeredComponents$1 = {};
+var registeredComponents = {};
 function getCurrentPage() {
     var app = _getApp();
     return app.$$page && app.$$page.reactInstance;
@@ -1004,7 +1004,7 @@ function isReferenceType(val) {
 }
 function useComponent(props) {
     var is = props.is;
-    var clazz = registeredComponents$1[is];
+    var clazz = registeredComponents[is];
     props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
     clazz.displayName = is;
     if (this.ref !== null) {
@@ -2412,18 +2412,6 @@ var Renderer$1 = createRenderer({
         var type = fiber.type;
         var instance = fiber.stateNode;
         var app = _getApp();
-        var name = fiber.name;
-        if (registeredComponents[name] && !type.reactInstances) {
-            var f = fiber.return;
-            while (f) {
-                if (f.name === name) {
-                    f.stateNode.props = instance.props;
-                    instance.wx = f.stateNode.wx;
-                    break;
-                }
-                f = f.return;
-            }
-        }
         if (type.reactInstances) {
             var uuid = fiber.props['data-instance-uid'] || null;
             if (!instance.instanceUid) {
@@ -2497,7 +2485,7 @@ var GlobalApp = void 0;
 function _getGlobalApp() {
     return GlobalApp;
 }
-function registerApp(App) {
+function registerAppRender(App) {
     GlobalApp = App;
 }
 
@@ -2644,7 +2632,7 @@ function registerPage(PageClass, path, testObject) {
 var defer = Promise.resolve().then.bind(Promise.resolve());
 function registerComponent(type, name) {
     type.isMPComponent = true;
-    registeredComponents$1[name] = type;
+    registeredComponents[name] = type;
     type.reactInstances = [];
     var config = {
         data: {
@@ -2715,7 +2703,7 @@ var React = getWindow().React = {
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
-    registerApp: registerApp,
+    registerAppRender: registerAppRender,
     registerPage: registerPage,
     toStyle: toStyle,
     useState: useState,
