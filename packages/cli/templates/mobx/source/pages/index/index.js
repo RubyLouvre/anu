@@ -1,5 +1,7 @@
 import React, {Component} from '@react';
 import Compute from '@components/Compute/index';
+import Timer from '@components/Timer/index';
+
 import { observer, inject } from 'mobx-react';
 import './index.scss';
 
@@ -17,7 +19,8 @@ class P extends Component {
                 <text>{this.props.num}</text>
                 <button onClick={()=> {this.props.add()}}>+</button>
                 <button onClick={()=> {this.props.minus()}}>-</button>
-                <Compute></Compute>
+                <div><Compute></Compute></div> 
+                <div><Timer></Timer></div>
         </div>
         );
     }
