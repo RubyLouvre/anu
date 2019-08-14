@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-14T03
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-14T05
  * IE9+
  */
 
@@ -3080,6 +3080,9 @@
         dom._reactInternalFiber = null;
     }
 
+    function registerAppRender(App) {
+    }
+
     var noop$1 = function noop$$1() {};
     var fakeApp = {
         app: {
@@ -5442,6 +5445,7 @@
         registerApp: function registerApp(app) {
             this.__app = app;
         },
+        registerAppRender: registerAppRender,
         registerPage: function registerPage(PageClass, path) {
             this.__pages[path] = PageClass;
             return PageClass;

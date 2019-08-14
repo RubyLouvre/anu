@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-14T03
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-14T05
  * IE9+
  */
 
@@ -2482,7 +2482,7 @@ var GlobalApp = void 0;
 function _getGlobalApp() {
     return GlobalApp;
 }
-function registerApp(App) {
+function registerAppRender(App) {
     GlobalApp = App;
 }
 
@@ -2700,7 +2700,7 @@ var React = getWindow().React = {
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
-    registerApp: registerApp,
+    registerAppRender: registerAppRender,
     registerPage: registerPage,
     toStyle: toStyle,
     useState: useState,

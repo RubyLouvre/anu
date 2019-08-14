@@ -3229,6 +3229,14 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
+var GlobalApp = void 0;
+function _getGlobalApp() {
+    return GlobalApp;
+}
+function registerAppRender(App) {
+    GlobalApp = App;
+}
+
 function registerComponent(type, name) {
     type.isMPComponent = true;
     registeredComponents[name] = type;
@@ -3249,11 +3257,6 @@ function registerComponent(type, name) {
         onDestroy: detachComponent,
         dispatchEvent: dispatchEvent
     };
-}
-
-var GlobalApp = void 0;
-function _getGlobalApp() {
-    return GlobalApp;
 }
 
 function onLoad(PageClass, path, query) {
@@ -3497,6 +3500,7 @@ var React = getWindow().React = {
     useContext: useContext,
     useComponent: useComponent,
     appType: 'quick',
+    registerAppRender: registerAppRender,
     registerApp: function registerApp(demo) {
         var app = {};
         for (var name in demo) {

@@ -24,7 +24,7 @@ import {
     getCurrentPage, 
     _getCurrentPages, 
     useComponent } from './utils';
-import { registerApp } from './registerApp.all';
+import { registerAppRender } from './registerApp.all';
 import { registerPage } from './registerPage.wx';
 import { registerComponent } from './registerComponent.wx';
 import { 
@@ -68,7 +68,7 @@ let React = getWindow().React =  {
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
-    registerApp,
+    registerAppRender,
     registerPage,
     toStyle,
     useState,

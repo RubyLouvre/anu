@@ -4,6 +4,6 @@ export function _getGlobalApp() {
     return GlobalApp;
 }
 
-export function registerApp(App) {
+export function registerAppRender(App) {
     GlobalApp = App;
 }
