@@ -47,25 +47,12 @@ export let Renderer = createRenderer({
         let type = fiber.type;
         let instance = fiber.stateNode;
         let app = _getApp();
-        var name = fiber.name //处理组件被高阶组件包裹的情况
-        if(registeredComponents[name] && !type.reactInstances){
-            var f = fiber.return
-            while(f){
-                if(f.name === name){
-                    f.stateNode.props = instance.props
-                    instance.wx = f.stateNode.wx
-                    break
-                }
-               f = f.return
-            }
-        }
         if (type.reactInstances) {
             let uuid = fiber.props['data-instance-uid'] || null;
             if (!instance.instanceUid) {
                 instance.instanceUid = uuid;
             }
-            //只处理component目录下的组件
-            // let wxInstances = type.wxInstances;
+            // 只处理component目录下的组件
             if (type.isMPComponent) {
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
@@ -95,47 +82,13 @@ export let Renderer = createRenderer({
             props: fiber.props
         };
     },
-    insertElement(fiber) {
-        /*         let dom = fiber.stateNode,
-                    parentNode = fiber.parent,
-                    forwardFiber = fiber.forwardFiber,
-                    before = forwardFiber ? forwardFiber.stateNode : null,
-                    children = parentNode.children;
+    insertElement() {
 
-                try {
-                    if (before == null) {
-                        //要插入最前面
-                        if (dom !== children[0]) {
-                            remove(children, dom);
-                            dom.parentNode = parentNode;
-                            children.unshift(dom);
-                        }
-                    } else {
-                        if (dom !== children[children.length - 1]) {
-                            remove(children, dom);
-                            dom.parentNode = parentNode;
-                            var i = children.indexOf(before);
-                            children.splice(i + 1, 0, dom);
-                        }
-                    }
-                } catch (e) {
-                    throw e;
-                } */
     },
-    emptyElement(fiber) {
-        /*  let dom = fiber.stateNode;
-         let children = dom && dom.children;
-         if (dom && Array.isArray(children)) {
-             children.forEach(Renderer.removeElement);
-         } */
+    emptyElement() {
+
     },
-    removeElement(fiber) {
-        /*         if (fiber.parent) {
-                    var parent = fiber.parent;
-                    var node = fiber.stateNode;
-                    node.parentNode = null;
-                    remove(parent.children, node);
-                } */
+    removeElement() {
     }
 });
 

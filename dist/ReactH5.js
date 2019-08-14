@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-13T03
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-14T03
  * IE9+
  */
 
@@ -1921,6 +1921,7 @@
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
         if (useCallbackImpl(create, deps, false, true)) {
+            var updateQueue = fiber.updateQueue;
             if (fiber.effectTag % EffectTag) {
                 fiber.effectTag *= EffectTag;
             }
@@ -3116,8 +3117,12 @@
         for (var i = 0, n = reactInstances.length; i < n; i++) {
             var reactInstance = reactInstances[i];
             if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-                if (get(reactInstance).disposed) {
+                var fiber = get(reactInstance);
+                if (fiber.disposed) {
                     continue;
+                }
+                if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
+                    reactInstance = fiber.child.stateNode;
                 }
                 reactInstance.wx = wx;
                 wx.reactInstance = reactInstance;
@@ -5410,7 +5415,7 @@
     var MAX_PAGE_STACK_NUM = 10;
     var React$2 = getWindow().React = {
         findDOMNode: findDOMNode,
-        version: '1.5.0',
+        version: '1.5.9',
         render: render$2,
         hydrate: render$2,
         Fragment: Fragment,
