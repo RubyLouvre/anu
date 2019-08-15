@@ -1,15 +1,15 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-14T08
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-15T04
  * IE9+
  */
 
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('@react'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
     typeof define === 'function' && define.amd ? define(['clipboard', '@react', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
-    (global.React = factory(global.Clipboard,global.React$1,global.axios,global.qs,global.MobileDetect,global.io));
-}(this, (function (Clipboard,React$1,axios,qs,MobileDetect,io) {
+    (global = global || self, global.React = factory(global.Clipboard, global.React$2, global.axios, global.qs, global.MobileDetect, global.io));
+}(this, function (Clipboard, React$2, axios, qs, MobileDetect, io) {
     Clipboard = Clipboard && Clipboard.hasOwnProperty('default') ? Clipboard['default'] : Clipboard;
-    React$1 = React$1 && React$1.hasOwnProperty('default') ? React$1['default'] : React$1;
+    React$2 = React$2 && React$2.hasOwnProperty('default') ? React$2['default'] : React$2;
     axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
     qs = qs && qs.hasOwnProperty('default') ? qs['default'] : qs;
     MobileDetect = MobileDetect && MobileDetect.hasOwnProperty('default') ? MobileDetect['default'] : MobileDetect;
@@ -208,7 +208,7 @@
             toWarnDev("replaceState", true);
         },
         isReactComponent: returnTrue,
-        isMounted: function isMounted$$1() {
+        isMounted: function isMounted() {
             toWarnDev("isMounted", true);
             return this.updater.isMounted(this);
         },
@@ -478,7 +478,7 @@
         forEach: function forEach(children, func, context) {
             return proxyIt(children, func, null, context);
         },
-        toArray: function toArray$$1(children) {
+        toArray: function toArray(children) {
             return proxyIt(children, K, []);
         }
     };
@@ -1849,12 +1849,12 @@
             arr.splice(index, 1);
         }
     }
-    function detachFiber(fiber, effects$$1) {
+    function detachFiber(fiber, effects) {
         fiber.effectTag = DETACH;
-        effects$$1.push(fiber);
+        effects.push(fiber);
         fiber.disposed = true;
         for (var child = fiber.child; child; child = child.sibling) {
-            detachFiber(child, effects$$1);
+            detachFiber(child, effects);
         }
     }
 
@@ -2327,7 +2327,7 @@
             oldFibers = {};
         }
         var newFibers = fiberizeChildren(children, parentFiber);
-        var effects$$1 = parentFiber.effects || (parentFiber.effects = []);
+        var effects = parentFiber.effects || (parentFiber.effects = []);
         var matchFibers = new Object();
         delete parentFiber.child;
         for (var i in oldFibers) {
@@ -2340,7 +2340,7 @@
                 }
                 continue;
             }
-            detachFiber(oldFiber, effects$$1);
+            detachFiber(oldFiber, effects);
         }
         var prevFiber = void 0,
             index = 0;
@@ -2360,13 +2360,13 @@
                         delete _newFiber.deleteRef;
                     }
                     if (oldRef && oldRef !== _newFiber.ref) {
-                        effects$$1.push(alternate);
+                        effects.push(alternate);
                     }
                     if (_newFiber.tag === 5) {
                         _newFiber.lastProps = alternate.props;
                     }
                 } else {
-                    detachFiber(_oldFiber, effects$$1);
+                    detachFiber(_oldFiber, effects);
                 }
             } else {
                 _newFiber = new Fiber(_newFiber);
@@ -2482,10 +2482,10 @@
             }
         }
     }
-    function commitDFS(effects$$1) {
+    function commitDFS(effects) {
         Renderer.batchedUpdates(function () {
             var el;
-            while (el = effects$$1.shift()) {
+            while (el = effects.shift()) {
                 if (el.effectTag === DETACH && el.caughtError) {
                     disposeFiber(el);
                 } else {
@@ -2593,7 +2593,7 @@
     }
     function safeInvokeHooks(upateQueue, create, destory) {
         var uneffects = upateQueue[destory],
-            effects$$1 = upateQueue[create],
+            effects = upateQueue[create],
             fn;
         if (!uneffects) {
             return;
@@ -2603,7 +2603,7 @@
                 fn();
             } catch (e) {      }
         }
-        while (fn = effects$$1.shift()) {
+        while (fn = effects.shift()) {
             try {
                 var f = fn();
                 if (typeof f === 'function') {
@@ -3082,13 +3082,7 @@
         dom._reactInternalFiber = null;
     }
 
-    var GlobalApp = void 0;
-    function registerApp(app) {
-        GlobalApp = app.constructor;
-        return app;
-    }
-
-    var noop$1 = function noop$$1() {};
+    var noop$1 = function noop() {};
     var fakeApp = {
         app: {
             globalData: {}
@@ -4355,7 +4349,7 @@
             }, this.props.success, this.props.complete, this.props.resolve);
         };
         PreviewImage.prototype.componentWillUnmount = function componentWillUnmount() {
-            React$1.api.previewImageSingleton = null;
+            React$2.api.previewImageSingleton = null;
             document.removeChild(this.container);
         };
         PreviewImage.prototype.gotoPrevious = function gotoPrevious() {
@@ -4379,10 +4373,10 @@
             });
         };
         PreviewImage.prototype.render = function render() {
-            return React$1.createElement(
+            return React$2.createElement(
                 'div',
                 null,
-                React$1.createElement('image', { src: this.state.current })
+                React$2.createElement('image', { src: this.state.current })
             );
         };
         return PreviewImage;
@@ -4398,12 +4392,12 @@
                 fail = _options$fail === undefined ? function () {} : _options$fail,
                 _options$complete = options.complete,
                 complete = _options$complete === undefined ? function () {} : _options$complete;
-            var instance = React$1.api.previewImageSingleton;
+            var instance = React$2.api.previewImageSingleton;
             if (!instance) {
                 var internalModal = document.getElementsByClassName('__internal__Modal__')[0];
                 var container = document.createElement('div');
                 internalModal.appendChild(container);
-                React$1.render(React$1.createElement(PreviewImage, {
+                React$2.render(React$2.createElement(PreviewImage, {
                     success: success,
                     fail: fail,
                     container: container,
@@ -4412,7 +4406,7 @@
                     reject: reject,
                     ref: function ref(refs) {
                         if (refs) {
-                            instance = React$1.api.previewImageSingleton = refs;
+                            instance = React$2.api.previewImageSingleton = refs;
                         }
                     }
                 }), container, function () {
@@ -5417,12 +5411,11 @@
     }
 
     var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-    var _getWindow$React;
     function _defineProperty$1(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
     var render$2 = DOMRenderer.render;
     var __currentPages = [];
     var MAX_PAGE_STACK_NUM = 10;
-    var React$2 = getWindow().React = (_getWindow$React = {
+    var React$1 = getWindow().React = {
         findDOMNode: findDOMNode,
         version: '1.5.9',
         render: render$2,
@@ -5439,7 +5432,7 @@
         isValidElement: isValidElement,
         toClass: miniCreateClass,
         registerComponent: registerComponent,
-        getCurrentPage: function getCurrentPage$$1() {
+        getCurrentPage: function getCurrentPage() {
             return __currentPages[__currentPages.length - 1];
         },
         getCurrentPages: function getCurrentPages() {
@@ -5448,18 +5441,33 @@
         getApp: function getApp() {
             return this.__app;
         },
-        registerApp: function registerApp$$1(app) {
+        registerApp: function registerApp(app) {
             this.__app = app;
+        },
+        registerPage: function registerPage(PageClass, path) {
+            this.__pages[path] = PageClass;
+            return PageClass;
+        },
+        useState: useState,
+        useReducer: useReducer,
+        useCallback: useCallback,
+        useMemo: useMemo,
+        useEffect: useEffect,
+        useContext: useContext,
+        useComponent: useComponent,
+        createRef: createRef,
+        forwardRef: forwardRef,
+        cloneElement: cloneElement,
+        appType: 'h5',
+        __app: {},
+        __pages: {},
+        __isTab: function __isTab(pathname) {
+            if (this.__app.constructor.config.tabBar && this.__app.constructor.config.tabBar.list && this.__app.constructor.config.tabBar.list.some(function (item) {
+                return item.pagePath.replace(/^\.\//, '') === pathname.replace(/^\//, '');
+            })) return true;
+            return false;
         }
-    }, _defineProperty$1(_getWindow$React, 'registerApp', registerApp), _defineProperty$1(_getWindow$React, 'registerPage', function registerPage(PageClass, path) {
-        this.__pages[path] = PageClass;
-        return PageClass;
-    }), _defineProperty$1(_getWindow$React, 'useState', useState), _defineProperty$1(_getWindow$React, 'useReducer', useReducer), _defineProperty$1(_getWindow$React, 'useCallback', useCallback), _defineProperty$1(_getWindow$React, 'useMemo', useMemo), _defineProperty$1(_getWindow$React, 'useEffect', useEffect), _defineProperty$1(_getWindow$React, 'useContext', useContext), _defineProperty$1(_getWindow$React, 'useComponent', useComponent), _defineProperty$1(_getWindow$React, 'createRef', createRef), _defineProperty$1(_getWindow$React, 'forwardRef', forwardRef), _defineProperty$1(_getWindow$React, 'cloneElement', cloneElement), _defineProperty$1(_getWindow$React, 'appType', 'h5'), _defineProperty$1(_getWindow$React, '__app', {}), _defineProperty$1(_getWindow$React, '__pages', {}), _defineProperty$1(_getWindow$React, '__isTab', function __isTab(pathname) {
-        if (this.__app.constructor.config.tabBar && this.__app.constructor.config.tabBar.list && this.__app.constructor.config.tabBar.list.some(function (item) {
-            return item.pagePath.replace(/^\.\//, '') === pathname.replace(/^\//, '');
-        })) return true;
-        return false;
-    }), _getWindow$React);
+    };
     function router(_ref) {
         var url = _ref.url,
             success = _ref.success,
@@ -5469,24 +5477,24 @@
             _getQuery2 = _slicedToArray(_getQuery, 2),
             path = _getQuery2[0],
             query = _getQuery2[1];
-        var appInstance = React$2.__app;
+        var appInstance = React$1.__app;
         var appConfig = appInstance.constructor.config;
         if (appConfig.pages.indexOf(path) === -1) {
             throw "没有注册该页面: " + path;
         }
         if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
-        var pageClass = React$2.__pages[path];
+        var pageClass = React$1.__pages[path];
         __currentPages.forEach(function (page, index, self) {
-            self[index] = React$2.cloneElement(self[index], {
+            self[index] = React$1.cloneElement(self[index], {
                 show: false
             });
         });
-        var pageInstance = React$2.createElement(pageClass, {
-            isTabPage: React$2.__isTab(path),
+        var pageInstance = React$1.createElement(pageClass, {
+            isTabPage: React$1.__isTab(path),
             path: path,
             query: query,
             url: url,
-            app: React$2.__app,
+            app: React$1.__app,
             show: true,
             needBackButton: __currentPages.length > 0 ? true : false
         });
@@ -5531,7 +5539,7 @@
                 var url = page.props.url;
                 history.pushState({ url: url }, null, prefix + url);
             });
-            var appInstance = React$2.__app;
+            var appInstance = React$1.__app;
             appInstance.setState({
                 showBackAnimation: true
             });
@@ -5543,7 +5551,7 @@
                 var _currentPages$props = __currentPages[__currentPages.length - 1].props,
                     path = _currentPages$props.path,
                     query = _currentPages$props.query;
-                React$2.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
+                React$1.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
             }, 300);
         },
         switchTab: function switchTab(_ref2) {
@@ -5555,7 +5563,7 @@
                 _getQuery4 = _slicedToArray(_getQuery3, 2),
                 path = _getQuery4[0],
                 query = _getQuery4[1];
-            var config = React$2.__app.constructor.config;
+            var config = React$1.__app.constructor.config;
             if (config && config.tabBar && config.tabBar.list) {
                 if (config.tabBar.list.length < 2 || config.tabBar.list.length > 5) {
                     console.warn('tabBar数量非法，必须大于2且小于5个');
@@ -5588,7 +5596,7 @@
             __currentPages.push(cloneElement(currentPage, {
                 config: processedOptions
             }));
-            var appInstance = React$2.__app;
+            var appInstance = React$1.__app;
             appInstance.setState({});
         },
         setNavigationBarTitle: function setNavigationBarTitle(options) {
@@ -5600,15 +5608,15 @@
             __currentPages.push(cloneElement(currentPage, {
                 config: processedOptions
             }));
-            var appInstance = React$2.__app;
+            var appInstance = React$1.__app;
             appInstance.setState({});
         },
         stopPullDownRefresh: function stopPullDownRefresh() {
-            var pageInstance = React$2.getCurrentPages().pop();
-            React$2.getCurrentPages().push(cloneElement(pageInstance, {
+            var pageInstance = React$1.getCurrentPages().pop();
+            React$1.getCurrentPages().push(cloneElement(pageInstance, {
                 stopPullDownRefresh: true
             }));
-            var appInstance = React$2.__app;
+            var appInstance = React$1.__app;
             appInstance.setState({});
         },
         createModal: function createModal(instance) {
@@ -5642,8 +5650,8 @@
             return key + '=' + obj[key];
         }).join('&');
     }
-    registerAPIs(React$2, apiContainer, more);
+    registerAPIs(React$1, apiContainer, more);
 
-    return React$2;
+    return React$1;
 
-})));
+}));

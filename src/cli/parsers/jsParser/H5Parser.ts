@@ -10,6 +10,7 @@ class H5Parser extends JavascriptParser{
             comments: false,
             ast: true,
             plugins: [
+                [require('@babel/plugin-proposal-decorators'), { legacy: true }],
                 [
                     require('@babel/plugin-syntax-class-properties'),
                     { loose: true }

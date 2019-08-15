@@ -19,7 +19,6 @@ import { Fragment, getWindow, miniCreateClass, noop } from 'react-core/util';
 //import { dispatchEvent, webview } from './eventSystem';
 import { DOMRenderer} from '../dom/DOMRenderer';
 
-import { registerApp } from './registerApp.all';
 // import { toStyle } from './toStyle';
 import { 
     _getApp , 
@@ -83,7 +82,6 @@ let React = (getWindow().React = {
     registerApp: function(app){
         this.__app = app;
     },
-    registerApp,
     registerPage: function(PageClass, path) {
         this.__pages[path] = PageClass;
         return PageClass;
