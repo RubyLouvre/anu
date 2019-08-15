@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-14
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-15
  */
 
 var arrayPush = Array.prototype.push;
@@ -119,6 +119,14 @@ function typeNumber(data) {
     }
     var a = numberMap[__type.call(data)];
     return a || 8;
+}
+function getWrappedFiber(fiber) {
+    while (fiber) {
+        if (fiber.stateNode.$$eventCached) {
+            return fiber;
+        }
+        fiber = fiber.child;
+    }
 }
 
 function createRenderer(methods) {
@@ -654,6 +662,8 @@ function refreshComponent(reactInstances, wx, uuid) {
             }
             if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
                 reactInstance = fiber.child.stateNode;
+            } else {
+                reactInstance = getWrappedFiber(fiber).stateNode;
             }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
@@ -2663,7 +2673,7 @@ function onLoad(PageClass, path, query) {
             query: query,
             isPageComponent: true,
             ref: function ref(ins) {
-                if (ins) pageInstance = ins.wrappedInstance;
+                if (ins) pageInstance = ins.wrappedInstance || getWrappedFiber(ins._reactInternalFiber).stateNode;
             }
         })), container);
     } else {
@@ -2843,4 +2853,4 @@ if (typeof my != 'undefined') {
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component };
+export { Children, createElement, Component, PureComponent };

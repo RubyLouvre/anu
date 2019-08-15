@@ -86,4 +86,4 @@ if (typeof global !== 'undefined'){
 registerAPIsQuick(React, facade, more); 
 
 export default React;
-export { Children, createElement, Component };
+export { Children, createElement, Component, PureComponent };

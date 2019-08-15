@@ -1,4 +1,4 @@
-import { hasOwnProperty, typeNumber, isFn, get } from 'react-core/util';
+import { hasOwnProperty, typeNumber, isFn, get, getWrappedFiber } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 import { Renderer } from 'react-core/createRenderer';
 
@@ -76,6 +76,9 @@ export function refreshComponent (reactInstances, wx, uuid) {
             //处理mobx
             if(fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector'){
                 reactInstance = fiber.child.stateNode;
+            } else {
+                // 处理redux
+                reactInstance = getWrappedFiber(fiber).stateNode;
             }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
@@ -146,7 +149,7 @@ export function handleFail(options, fail = noop, complete = noop, reject = noop)
     complete(options);
     reject(options);
 }
-  
+ 
 
 function safeClone (originVal) {
     let temp = originVal instanceof Array ? [] : {};
