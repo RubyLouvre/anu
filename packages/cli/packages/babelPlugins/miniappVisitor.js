@@ -37,6 +37,7 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
+let needRegisterApp = false;
 let cache = {};
 if (buildType == 'quick') {
     utils_1.default.createRegisterStatement = function (className, path, isPage) {
@@ -107,6 +108,9 @@ const visitor = {
             let methodName = astPath.node.key.name;
             if (methodName === 'render') {
                 let modules = utils_1.default.getAnu(state);
+                if (modules.componentType === 'App') {
+                    needRegisterApp = true;
+                }
                 helpers.render.exit(astPath, '有状态组件', modules.className, modules);
                 astPath.node.body.body.unshift(template_1.default(utils_1.default.shortcutOfCreateElement())());
             }
@@ -250,6 +254,12 @@ const visitor = {
                     name = declaration.id.name;
                 }
                 registerPageOrComponent(name, astPath, modules);
+            }
+            if (modules.componentType === 'App' && buildType !== 'quick' && needRegisterApp) {
+                const args = astPath.get('declaration').node.arguments;
+                astPath.get('declaration').node.arguments = [
+                    t.callExpression(t.memberExpression(t.identifier('React'), t.identifier('registerApp')), args)
+                ];
             }
         }
     },

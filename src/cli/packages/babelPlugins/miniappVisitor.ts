@@ -33,6 +33,8 @@ const inlineElement: {
     q: 1
 };
 
+let needRegisterApp: boolean = false;
+
 let cache: {
     [props: string]: boolean;
 } = {};
@@ -141,6 +143,10 @@ const visitor = {
             let methodName = (astPath.node.key as t.Identifier).name;
             if (methodName === 'render') {
                 let modules = utils.getAnu(state);
+                if (modules.componentType === 'App') {
+                    needRegisterApp = true;
+                }
+                
                 //当render域里有赋值时, BlockStatement下面有的不是returnStatement,
                 //而是VariableDeclaration
                 helpers.render.exit(
@@ -350,6 +356,19 @@ const visitor = {
                 }
                 //延后插入createPage语句在其同名的export语句前
                 registerPageOrComponent(name, astPath, modules);
+            }
+
+            // 非快应用在export default 添加React.registerApp方法
+            if (modules.componentType === 'App' && buildType !== 'quick' && needRegisterApp) {
+                const args = (astPath.get('declaration').node as any).arguments;
+                (astPath.get('declaration').node as any).arguments = [
+                    t.callExpression(
+                        t.memberExpression(
+                            t.identifier('React'), t.identifier('registerApp')
+                        ),
+                        args
+                    )
+                ];
             }
         }
     },
