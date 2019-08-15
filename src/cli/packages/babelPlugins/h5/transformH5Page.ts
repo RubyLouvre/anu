@@ -13,18 +13,6 @@ module.exports = function(): PluginObj{
         visitor: {
             Program: {
                 exit(astPath: NodePath<t.Program>) {
-                    // if (pageConfig) {
-                    //     astPath.node.body.push(t.expressionStatement(
-                    //         t.assignmentExpression(
-                    //             '=',
-                    //             t.memberExpression(
-                    //                 t.identifier('P'),
-                    //                 t.identifier('config')
-                    //             ),
-                    //             pageConfig
-                    //         )
-                    //     ));
-                    // }
                     astPath.node.body.unshift(extraImportedPath);
                 }
             },
@@ -66,24 +54,7 @@ module.exports = function(): PluginObj{
                         )
                     ));
                 }
-            },
-            // ClassMethod(astPath) {
-            //     if (astPath.node.kind === 'constructor') {
-            //         astPath.traverse({
-            //             AssignmentExpression(path) {
-            //                 const left = path.get('left');
-            //                 const right = path.get('right');
-            //                 if (left.type === 'MemberExpression' && 
-            //                     (left.get('object') as any).node.type === 'ThisExpression' &&
-            //                     (left.get('property') as any).node.name === 'config' &&
-            //                     right.type === 'ObjectExpression'
-            //                 ) {
-            //                     pageConfig = right.node;
-            //                 }
-            //             }
-            //         });
-            //     }
-            // }
+            }
         }
     };
 };

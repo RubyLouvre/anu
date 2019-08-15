@@ -52,7 +52,7 @@ module.exports = function () {
                 if (pageConfig) {
                     classPath.insertAfter(t.expressionStatement(t.assignmentExpression('=', t.memberExpression(t.identifier(pageName), t.identifier('config')), pageConfig)));
                 }
-            },
+            }
         }
     };
 };
