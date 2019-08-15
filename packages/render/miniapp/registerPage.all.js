@@ -1,5 +1,5 @@
 import { Renderer } from 'react-core/createRenderer';
-import { topNodes, noop, topFibers } from 'react-core/util';
+import { topNodes, noop, topFibers, getWrappedFiber } from 'react-core/util';
 import { delayMounts, usingComponents, _getApp, updateMiniApp, callGlobalHook } from './utils';
 import { render } from 'react-fiber/scheduleWork';
 import { createElement } from 'react-core/createElement';
@@ -26,7 +26,7 @@ export function onLoad(PageClass, path, query) {
             query: query,
             isPageComponent: true,
             ref: function(ins) {
-                if (ins) pageInstance = ins.wrappedInstance;
+                if (ins) pageInstance = ins.wrappedInstance || getWrappedFiber(ins._reactInternalFiber).stateNode;
             }
         })), container);
     } else {

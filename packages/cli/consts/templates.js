@@ -18,6 +18,10 @@ const templates = [
         value: 'helloNanachi'
     },
     {
+        name: 'redux',
+        value: 'redux'
+    },
+    {
         name: 'mobx',
         value: 'mobx'
     }

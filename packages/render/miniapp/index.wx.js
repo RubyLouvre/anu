@@ -94,4 +94,4 @@ if (typeof wx != 'undefined'){
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component };
+export { Children, createElement, Component, PureComponent };
