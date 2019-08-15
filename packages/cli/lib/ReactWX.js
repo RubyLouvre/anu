@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-14T05
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-14T08
  * IE9+
  */
 
@@ -1148,7 +1148,9 @@ function createInstance(fiber, context) {
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
-                throw type.name + ' doesn\'t extend React.Component';
+                if (!instance.updater || !instance.updater.enqueueSetState) {
+                    throw type.name + ' doesn\'t extend React.Component';
+                }
             }
         }
     } finally {
@@ -2479,16 +2481,17 @@ function toStyle(obj, props, key) {
 }
 
 var GlobalApp = void 0;
-function _getGlobalApp() {
-    return GlobalApp;
+function _getGlobalApp(app) {
+    return GlobalApp || app.globalData._GlobalApp;
 }
-function registerAppRender(App) {
-    GlobalApp = App;
+function registerApp(app) {
+    GlobalApp = app.constructor;
+    return app;
 }
 
 function onLoad(PageClass, path, query) {
     var app = _getApp();
-    var GlobalApp = _getGlobalApp();
+    var GlobalApp = _getGlobalApp(app);
     app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
@@ -2506,7 +2509,7 @@ function onLoad(PageClass, path, query) {
             query: query,
             isPageComponent: true,
             ref: function ref(ins) {
-                pageInstance = ins.wrappedInstance;
+                if (ins) pageInstance = ins.wrappedInstance;
             }
         })), container);
     } else {
@@ -2700,7 +2703,7 @@ var React = getWindow().React = {
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
-    registerAppRender: registerAppRender,
+    registerApp: registerApp,
     registerPage: registerPage,
     toStyle: toStyle,
     useState: useState,

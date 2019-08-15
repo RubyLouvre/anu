@@ -71,6 +71,13 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
     }, {
         test: /\.(s[ca]ss|less|css)$/,
         use: [].concat(fileLoader, postLoaders, platform !== 'h5' ? aliasLoader : [], nanachiStyleLoader, prevLoaders)
+    }, {
+        test: /\.(jpg|png|gif)$/,
+        loader: require.resolve('file-loader'),
+        options: {
+            outputPath: 'assets',
+            name: '[name].[hash:10].[ext]'
+        }
     }, rules);
     if (platform === 'quick') {
         mergePlugins.push(new quickPlugin_1.default());

@@ -7,7 +7,8 @@ import { _getGlobalApp } from './registerApp.all.js';
 
 export function onLoad(PageClass, path, query) {
     var app = _getApp();
-    let GlobalApp = _getGlobalApp();
+    // 快应用拿不到全局数据，从globalData中取
+    let GlobalApp = _getGlobalApp(app);
     app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
@@ -25,7 +26,7 @@ export function onLoad(PageClass, path, query) {
             query: query,
             isPageComponent: true,
             ref: function(ins) {
-                pageInstance = ins.wrappedInstance;
+                if (ins) pageInstance = ins.wrappedInstance;
             }
         })), container);
     } else {

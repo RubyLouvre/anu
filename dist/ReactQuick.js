@@ -1884,7 +1884,9 @@ function createInstance(fiber, context) {
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
-                throw type.name + ' doesn\'t extend React.Component';
+                if (!instance.updater || !instance.updater.enqueueSetState) {
+                    throw type.name + ' doesn\'t extend React.Component';
+                }
             }
         }
     } finally {
@@ -3229,12 +3231,28 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
-var GlobalApp = void 0;
-function _getGlobalApp() {
-    return GlobalApp;
-}
-function registerAppRender(App) {
-    GlobalApp = App;
+var appMethods = {
+    onLaunch: 'onCreate',
+    onHide: 'onDestroy'
+};
+function registerApp(demo) {
+    var app = {};
+    demo.globalData._GlobalApp = demo.constructor;
+    for (var name in demo) {
+        var value = demo[name];
+        name = appMethods[name] || name;
+        app[name] = value;
+    }
+    for (var _name in demo.constructor) {
+        var _value = demo.constructor[_name];
+        if (!app[_name]) {
+            app[_name] = _value;
+        } else {
+            throw 'app.js已经存在同名的静态属性与实例属性 ' + _name + ' !';
+        }
+    }
+    delete app.constructor;
+    return app;
 }
 
 function registerComponent(type, name) {
@@ -3259,9 +3277,14 @@ function registerComponent(type, name) {
     };
 }
 
+var GlobalApp = void 0;
+function _getGlobalApp(app) {
+    return GlobalApp || app.globalData._GlobalApp;
+}
+
 function onLoad(PageClass, path, query) {
     var app = _getApp();
-    var GlobalApp = _getGlobalApp();
+    var GlobalApp = _getGlobalApp(app);
     app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
@@ -3279,7 +3302,7 @@ function onLoad(PageClass, path, query) {
             query: query,
             isPageComponent: true,
             ref: function ref(ins) {
-                pageInstance = ins.wrappedInstance;
+                if (ins) pageInstance = ins.wrappedInstance;
             }
         })), container);
     } else {
@@ -3462,10 +3485,6 @@ function useMemo(create, deps) {
     return useCallbackImpl(create, deps, true);
 }
 
-var appMethods = {
-    onLaunch: 'onCreate',
-    onHide: 'onDestroy'
-};
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {
@@ -3500,25 +3519,7 @@ var React = getWindow().React = {
     useContext: useContext,
     useComponent: useComponent,
     appType: 'quick',
-    registerAppRender: registerAppRender,
-    registerApp: function registerApp(demo) {
-        var app = {};
-        for (var name in demo) {
-            var value = demo[name];
-            name = appMethods[name] || name;
-            app[name] = value;
-        }
-        for (var _name in demo.constructor) {
-            var _value = demo.constructor[_name];
-            if (!app[_name]) {
-                app[_name] = _value;
-            } else {
-                throw 'app.js已经存在同名的静态属性与实例属性 ' + _name + ' !';
-            }
-        }
-        delete app.constructor;
-        return app;
-    }
+    registerApp: registerApp
 };
 if (typeof global !== 'undefined') {
     var ref = Object.getPrototypeOf(global) || global;

@@ -122,6 +122,14 @@ export default function({
                 nanachiStyleLoader,
                 prevLoaders)
         },
+        {
+            test: /\.(jpg|png|gif)$/,
+            loader: require.resolve('file-loader'),
+            options: {
+                outputPath: 'assets',
+                name: '[name].[hash:10].[ext]'
+            }
+        },
         rules);
     
     if (platform === 'quick') {
