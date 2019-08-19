@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-19T03
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-19T09
  * IE9+
  */
 
@@ -159,12 +159,14 @@
         return a || 8;
     }
     function getWrappedFiber(fiber) {
+        var originFiber = fiber;
         while (fiber) {
             if (fiber.stateNode.$$eventCached) {
                 return fiber;
             }
             fiber = fiber.child;
         }
+        return originFiber;
     }
 
     function createRenderer(methods) {
