@@ -121,12 +121,14 @@ function typeNumber(data) {
     return a || 8;
 }
 function getWrappedFiber(fiber) {
+    var originFiber = fiber;
     while (fiber) {
         if (fiber.stateNode.$$eventCached) {
             return fiber;
         }
         fiber = fiber.child;
     }
+    return originFiber;
 }
 
 function createRenderer(methods) {
