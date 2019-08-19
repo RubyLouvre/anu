@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-08-15
+ * 运行于快应用的React by 司徒正美 Copyright 2019-08-19
  */
 
 var arrayPush = Array.prototype.push;
@@ -3245,9 +3245,11 @@ var appMethods = {
     onLaunch: 'onCreate',
     onHide: 'onDestroy'
 };
-function registerApp(demo) {
+function registerApp(demo, containProvider) {
     var app = {};
-    demo.globalData._GlobalApp = demo.constructor;
+    if (containProvider) {
+        demo.globalData._GlobalApp = demo.constructor;
+    }
     for (var name in demo) {
         var value = demo[name];
         name = appMethods[name] || name;

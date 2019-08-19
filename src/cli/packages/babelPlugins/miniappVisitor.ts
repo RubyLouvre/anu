@@ -497,6 +497,10 @@ const visitor = {
                 callee.name === 'App'
             ) {
                 callee.name = 'React.registerApp';
+                // 有app Provider的情况下传registerApp方法第二个参数，表明要全局存下App类
+                if (needRegisterApp) {
+                    node.arguments.push(t.booleanLiteral(true));
+                }
                 return;
             }
             //处理循环语
