@@ -8,207 +8,276 @@
     <body>
         <div id="root" class="root"></div>
         <script>
-            class Node {
-                constructor(data) {
-                    this.size = 1;
-                    this.data = data;
-                    this.left = null;
-                    this.right = null;
-                    this.parent = null;
-                    this.disposed = false;
+var RED = "red";
+var BLACK = "black";
+class Node {
+    constructor(data) {
+        this.data = data;
+        this.left = null;
+        this.parent = null;
+        this.right = null;
+        this.color = RED;
+    }
+    maintain(){}
+}
+function rotateImpl(tree, node, dir, setParent) {
+    var other = dir == 'left' ? 'right' : 'left';
+    if (!node[other]) {
+      return;
+    }
+    var top = node[other];//会上浮的子节点
+    node[other] = top[dir]; //过继孩子
+
+    if (setParent) {
+      if (!node.parent) {
+        tree.root = top;
+      } else if (node == node.parent.left) {
+        node.parent.left = top;
+      } else {
+        node.parent.right = top;
+      }
+      Object(top[dir]).parent = node; //父属性修正1
+      top.parent = node.parent; //父属性修正2
+      node.parent = top; //父属性修正3
+    }
+    top[dir] = node; //旋转
+    node.maintain();//先处理下面的再处理上面的
+    top.maintain();
+    return top;
+}
+class RBTree {
+    constructor() {
+        this.root = null;
+    }
+    insert(data) {
+        if (!this.root) {
+            this.root = new Node(data);
+            this.root.color = BLACK;
+            return;
+        }
+        var node = this.root, parent = null,
+            diff;
+        while (node) {
+            diff = data - node.data;
+            parent = node;
+            //找到适合的位置
+            if(diff === 0){
+               node.count++
+               return true
+            }
+            if (diff < 0) {
+               node = node.left;
+            } else if (diff > 0) {
+               node = node.right;
+            } 
+        }
+        node = new Node(data);
+        node.parent = parent;
+        if (diff < 0) {
+            parent.left = node;
+        } else {
+            parent.right = node;
+        }
+        this.insertFixup(node);
+    }
+
+    leftRotate(node) {
+      return rotateImpl(this, node, 'left', true)
+    }
+    rightRotate(node) {
+      return rotateImpl(this, node, 'right', true)
+    }
+    fixAfterInsertion(node) {
+        //忽略情况1,2
+        while (node && node != this.root && node.parent.color == RED) {
+            if (node.parent == node.parent.parent.left) {
+                var uncle = node.parent.parent.right;
+                //如果父亲与叔叔节点是红色，自己默认是红色，
+                //符合情况3， 将父亲，叔叔变黑，祖父变红，然后将处置节点变成祖父
+                if (uncle && uncle.color == RED) {
+                    node.parent.color = BLACK;//情况3
+                    uncle.color = BLACK;
+                    node.parent.parent.color = RED;
+                    node = node.parent.parent;
+                } else {
+                    //没有叔叔或叔叔是黑色， 都当成它是黑色， 
+                    //父亲是祖先的左孩子，新节点是父亲的右孩子，不在一条线上
+                    //将处置节点变成父亲，对它左旋， 那么新节点就旋到父节点的位置
+                    if (node == node.parent.right) { 
+                        node = node.parent;
+                        this.leftRotate(node);
+                    }
+                    //根据红黑相间的原则，新节点没变色，那么父亲要变黑，祖先要变红
+                    node.parent.color = BLACK;
+                    node.parent.parent.color = RED;
+                    //父亲是左孩子，因此要对祖先反向旋转（右旋），让父节上位，降低树高
+                    this.rightRotate(node.parent.parent);
                 }
-                maintain() {
-                  this.size = this.disposed ? 0 : 1
-                  if(this.left){
-                    this.size += this.left.size
-                  }
-                  if(this.right){
-                    this.size += this.right.size
-                  }
+            } else {
+                //与上面流程一样
+                uncle = node.parent.parent.left;
+                if (uncle && uncle.color == RED) {
+                    node.parent.color = BLACK;
+                    uncle.color = BLACK;
+                    node.parent.parent.color = RED;
+                    node = node.parent.parent;
+                } else {
+                    if (node == node.parent.left) {
+                        node = node.parent;
+                        this.rightRotate(node);
+                    }
+                    node.parent.color = BLACK;
+                    node.parent.parent.color = RED;
+                    this.leftRotate(node.parent.parent);
                 }
             }
-
-            class Scapegoat {
-                constructor() {
-                    this.root = null;
-                }
-
-                find(data) {
-                    var node = this.root;
-                    while (node) {
-                        var diff = data - node.data;
-                        if (diff == 0) {
-                            break;
-                        } else if (diff < 0) {
-                            node = node.left;
-                        } else {
-                            node = node.right;
-                        }
-                    }
-                    if (node && !node.disposed) {
-                        return node;
-                    }
-                    return null;
-                }
-                insert(data) {
-                    if (!this.root) {
-                        this.root = new Node(data);
-                        this._size = 1;
-                    } else {
-                        var node = this.root,
-                            parent = null;
-                        while (node) {
-                            parent = node;
-                            var diff = data - node.data;
-                            if (diff == 0) {
-                                return;
-                            } else if (diff < 0) {
-                                node = node.left;
-                            } else {
-                                node = node.right;
-                            }
-                        }
-                        var node = new Node(data);
-                        node.parent = parent;
-                        if (diff < 0) {
-                            parent.left = node;
-                        } else {
-                            parent.right = node;
-                        }
-                        var badNode;
-                        while (parent) {
-                            parent.size++;
-                            if (!this.isBalance(parent)) {
-                                badNode = parent;
-                                break;
-                            }
-                            parent = parent.parent;
-                        }
-                        if (badNode) {
-                            this.rebuild(badNode);
-                        }
-                    }
-                    return true;
-                }
-
-                rebuild(node) {
-                    var parent = node.parent;
-                    var array = [];
-                    function inOrder(node) {
-                        //中序遍历
-                        if (node) {
-                            inOrder(node.left);
-                            if (!node.disposed) {
-                                array.push(node); // 构建序列
-                            }
-                            inOrder(node.right);
-                            node.left = node.right = null; //清空孩子!!!
-                        }
-                    }
-                    inOrder(node);
-                    var child = this.divide(array, 0, array.length);
-                    //设置新子树的根的属性
-                    child.parent = parent;
-                    if (!parent) {
-                        this.root = child;
-                    } else {
-                        if (parent.left == node) {
-                            parent.left = child;
-                        } else {
-                            parent.right = child;
-                        }
-                    }
-                }
-                divide(array, l, r) {
-                    if (l >= r) return null;
-                    var mid = (l + r) >> 1;
-                    var node = array[mid];
-                    var child = this.divide(array, l, mid);
-                    if (child) {
-                        child.parent = node;
-                        node.left = child;
-                    }
-                    child = this.divide(array, mid + 1, r);
-                    if (child) {
-                        child.parent = node;
-                        node.right = child;
-                    }
-                    node.maintain(); // 自底向上维护，先维护子树
-                    return node;
-                }
-                isBalance(node) {
-                    // 左子树大小 < alpha * 根大小 并且 右子树大小 < alpha * 根大小
-                    // alpha越小，树越稠密，插入效率低，查询效率高；
-                    // alpha越大，树越稀疏，插入效率高，查询效率低；
-                    var alpha = 0.65;
-                    var size = node.size * alpha;
-                    var leftSize = (node.left && node.left.size) || 0;
-                    var rightSize = (node.right && node.right.size) || 0;
-                    return leftSize < size && rightSize < size;
-                }
-                remove(data) {
-                    var node = this.find(data);
-                    if (node && !node.disposed) {
-                        node.disposed = true;
-                        node.size--;
-                        var p = node.parent;
-                        while (p) {
-                            p.maintain();
-                            p = p.parent;
-                        }
-                    }
-                }
-                toString(printNode) {
-                    printNode =
-                        printNode ||
-                        function(n) {
-                            return n.data;
-                        };
-                    var out = [];
-                    printRow(
-                        this.root,
-                        "",
-                        true,
-                        function(v) {
-                            return out.push(v);
-                        },
-                        printNode
-                    );
-                    return out.join("");
-                }
+        }
+        this.root.color = BLACK;//保证根节点是黑的
+    }
+    find(data) {
+      var node = this.root;
+      while (node) {
+          var diff = data - node.data;
+          if (diff == 0) {
+              break;
+          } else if (diff < 0) {
+              node = node.left;
+          } else {
+              node = node.right;
+          }
+      }
+      return null;
+    }
+    remove(data) { //与insert的结构很相似
+    if (!this.root) {
+        return false
+      }
+      var node = this.find(data);
+      if (node) {
+        if (node.count > 1) {
+          node.count--
+          return
+        }
+        if (node.left && node.right) {
+          var succ = this.maxNode(node.left); //求后继
+          node.data = succ.data;
+          node = succ; //转为一个孩子的情况
+        }
+        //一个或零个孩子的情况
+        var child = node.left || node.right || null;
+        var parent = node.parent;
+        if (parent.left == node) {
+          parent.left = child
+        } else {
+          parent.right = child
+        }
+        if (child) {
+          child.parent = parent; //parent的size发生变化
+        }
+        if (node.color == BLACK && child) {
+          this.fixAfterDeletion(child);
+        }
+      }
+   }
+    fixAfterDeletion(node) {//node为顶替被删除节点的节点
+    
+    while (node !== this.root && node.color == BLACK) {
+        //处理左孩子的情况
+        if (node = node.parent.left) {
+            var sib = node.parent.right;
+            //情况1，nodeborder为红色则 brother涂黑，parent涂红，parent左旋，replace的兄弟改变了，变成了黑兄的情况
+            if (sib && sib.color === RED) { 
+                sib.color = BLACK;
+                node.parent.color = RED;
+                this.leftRotate(node.parent)
+                sib = node.parent.right;
             }
-
-            function printRow(root, prefix, isTail, out, printNode) {
-                if (root) {
-                    out(
-                        "" +
-                            prefix +
-                            (isTail ? "└── " : "├── ") +
-                            printNode(root) +
-                            "\n"
-                    );
-                    var indent = prefix + (isTail ? "    " : "│   ");
-                    if (root.left) {
-                        printRow(root.left, indent, false, out, printNode);
-                    }
-                    if (root.right) {
-                        printRow(root.right, indent, true, out, printNode);
-                    }
+            //kq 
+            if (colorOf(sib.left) === BLACK && colorOf(sib.right) === BLACK) { //情况2
+                sib.color = RED;
+                node = node.parent;
+            } else {
+                if (colorOf(sib.right) === BLACK) { //情况3
+                    sib.left.color = BLACK;
+                    sib.color = BLACK;
+                    this.rightRotate(sib);
+                    sib = node.parent.right;
                 }
+                sib.color = node.parent.color; //情况4
+                node.parent.color = BLACK;
+                sib.right = BLACK;
+                this.leftRotate(node.parent)
+                node = this.root;
             }
-            var tree = new Scapegoat(); // 30, 20, 60, 55, 54, 53, 52, 51, 56
-            [10, 50, 40, 30, 20, 60, 55, 54, 53, 52, 51, 56].forEach(function(
-                el,
-                i
+        } else {
+            sib = node.parent.left;
+            if (sib && sib.color == RED) {
+                sib.color = BLACK;
+                node.parent.color = RED;
+                this.rightRotate(node.parent);
+                sib = node.parent.left;
+            }
+            if (colorOf(sib.right) == BLACK &&
+                colorOf(sib.left) == BLACK
             ) {
-                tree.insert(el);
-                console.log(tree + "");
-            });
-            console.log("delete...");
-            tree.remove(60);
-            console.log(tree + "");
+                sib.color = RED;
+                node = node.parent;
+            } else {
+                if (colorOf(sib.left) === BLACK) { //情况3
+                    sib.right.color = BLACK;
+                    sib.color = BLACK;
+                    this.leftRotate(sib);
+                    sib = node.parent.left;
+                }
+                sib.color = node.parent.color; //情况4
+                node.parent.color = BLACK;
+                sib.left = BLACK;
+                this.rightRotate(node.parent)
+                node = this.root;
+            }
+        }
+    }
+    node.color = BLACK;
+}
+    toString(printNode) {
+        printNode =
+            printNode ||
+            function(n) {
+                return n.data;
+            };
+        var out = [];
+        printRow(
+            this.root,
+            "",
+            true,
+            function(v) {
+                return out.push(v);
+            },
+            printNode
+        );
+        return out.join("");
+    }
+  }
 
-            console.log(tree);
+  function printRow(root, prefix, isTail, out, printNode) {
+    if (root) {
+        out(("" + prefix + (isTail ? '└── ' : '├── ') + (printNode(root)) + "\n"));
+        var indent = prefix + (isTail ? '    ' : '│   ');
+        if (root.left) {
+            printRow(root.left, indent, false, out, printNode);
+        }
+        if (root.right) {
+            printRow(root.right, indent, true, out, printNode);
+        }
+    }
+}
+
+var t = new RBTree(); // 30, 20, 60, 55, 54, 53, 52, 51, 56
+Array(10, 50, 40, 30, 20, 60, 55, 54, 53, 52, 51, 56).forEach(function (el) {
+   t.insert(el);
+   console.log(t + "");
+});
+            console.log(t+"")
         </script>
     </body>
 </html>
