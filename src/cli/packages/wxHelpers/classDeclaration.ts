@@ -31,7 +31,27 @@ module.exports = {
             });
            
         }
-        astPath.insertBefore(modules.ctorFn);
+
+        if (astPath.parent.type === 'Program') {
+            astPath.insertBefore(modules.ctorFn);
+        } else {
+            let tempPath: any;
+            astPath.findParent(function(astPath) {
+                if (astPath.type !== 'Program') {
+                    tempPath = astPath;
+                    return false;
+                }
+                return true;
+            });
+            let tempExp = tempPath.get('declarations')[0];
+            let left = tempExp.get('id').node, right = tempExp.get('init').node;
+            tempPath.replaceWith(t.expressionStatement(t.assignmentExpression('=', left, right)));
+            tempPath.insertBefore(modules.ctorFn);
+        }
+        // console.log(astPath.findParent(function(astPath) {
+        //     return astPath.parent.type === 'Program' || astPath.type === 'Program'
+        // }).type);
+        // astPath.insertBefore(modules.ctorFn);
         //用于绑定事件
         modules.thisMethods.push(
             t.objectProperty(

@@ -64,16 +64,14 @@ export function useCallbackImpl(create, deps, isMemo, isEffect) {//ok
             return isEffect ? null : prevState[0];
         }
     }
-
-    let fn = isMemo ? create() : create;
+    var fn = isMemo ? create() : create;
     updateQueue[key] = [fn, nextInputs];
     return fn;
 }
 export function useEffectImpl(create, deps, EffectTag, createList, destroyList) {//ok
     let fiber = getCurrentFiber();
-
-    if (useCallbackImpl(create, deps, false, true)) {//防止重复添加
-        let updateQueue = fiber.updateQueue;
+    let updateQueue = fiber.updateQueue;
+    if (useCallbackImpl(create, deps, false, true)) {//防止重复添加  
         if (fiber.effectTag % EffectTag) {
             fiber.effectTag *= EffectTag;
         }

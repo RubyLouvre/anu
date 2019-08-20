@@ -12,7 +12,7 @@ export function dispatchEvent(e) {
         }
         return;
     }
-    const instance = this.reactInstance;
+    let instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
         console.log(eventType, '没有实例');
         return;

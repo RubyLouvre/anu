@@ -19,7 +19,6 @@ import { Fragment, getWindow, miniCreateClass, noop } from 'react-core/util';
 //import { dispatchEvent, webview } from './eventSystem';
 import { DOMRenderer} from '../dom/DOMRenderer';
 
-
 // import { toStyle } from './toStyle';
 import { 
     _getApp , 
@@ -96,6 +95,7 @@ let React = (getWindow().React = {
     useContext,
     useComponent,
     createRef,
+    forwardRef,
     cloneElement,
     appType: 'h5',
     __app: {},
