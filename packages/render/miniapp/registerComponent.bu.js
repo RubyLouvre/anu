@@ -1,10 +1,21 @@
-import { registeredComponents, usingComponents, refreshComponent, detachComponent } from './utils';
-import { dispatchEvent } from './eventSystem';
+import {
+    registeredComponents,
+    usingComponents,
+    refreshComponent,
+    detachComponent
+} from "./utils";
+import { dispatchEvent } from "./eventSystem";
+const defer =
+    typeof swan == "object" && swan.canIUse("lifecycle-2-0")
+        ? Promise.resolve().then.bind(Promise.resolve())
+        : function(fn) {
+              fn();
+          };
 
-export function registerComponent (type, name) {
+export function registerComponent(type, name) {
     type.isMPComponent = true;
     registeredComponents[name] = type;
-    let reactInstances = type.reactInstances = [];
+    let reactInstances = (type.reactInstances = []);
     return {
         data: {
             props: {},

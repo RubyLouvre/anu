@@ -497,6 +497,11 @@ const visitor = {
                     let relativePath = path.relative(path.dirname(modules.sourcePath), realAssetsPath);
                     astPath.node.value.value = relativePath;
                 }
+                if (attrName === 'open-type' && srcValue === 'getUserInfo' && buildType == 'ali') {
+                    astPath.node.value.value = "getAuthorize";
+                    let attrs = parentPath.node.attributes;
+                    attrs.push(utils_1.default.createAttribute('scope', t.stringLiteral('userInfo')));
+                }
                 if (attrName === 'style' && buildType == 'quick') {
                     let value = quickhuaweiStyle(attrValue, true);
                     astPath.node.value = t.stringLiteral(value.slice(1, -1));

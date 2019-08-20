@@ -678,6 +678,16 @@ const visitor = {
                     );
                     (astPath.node.value as any).value = relativePath; // tsc todo
                 }
+                if (attrName === 'open-type' && srcValue === 'getUserInfo' && buildType == 'ali' ) {
+                    (astPath.node.value as any).value = "getAuthorize"; // tsc todo
+                    let attrs = (parentPath.node as any).attributes;
+                    attrs.push(
+                        utils.createAttribute(
+                            'scope',
+                            t.stringLiteral('userInfo')
+                        )
+                    );
+                }
                 // 快应用下 string类型的行内样式 rpx 会换算成px
                 if (attrName === 'style' && buildType == 'quick') {
                     let value = quickhuaweiStyle(attrValue, true);

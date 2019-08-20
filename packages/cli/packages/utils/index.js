@@ -82,6 +82,11 @@ let utils = {
                 return 'ScrollTop';
             }
         }
+        if (buildType === 'ali' && nodeName === 'button') {
+            if (eventName === 'GetUserInfo') {
+                return 'GetAuthorize';
+            }
+        }
         if (eventName === 'Change') {
             if (nodeName === 'input' || nodeName === 'textarea') {
                 if (buildType !== 'quick') {

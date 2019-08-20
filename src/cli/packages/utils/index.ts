@@ -76,7 +76,11 @@ let utils = {
                 return 'ScrollTop'
             }
         }
-
+        if (buildType === 'ali' && nodeName === 'button') {
+            if (eventName === 'GetUserInfo') {
+                return 'GetAuthorize' //支付宝下登录验证事件 https://docs.alipay.com/mini/component/button
+            }
+        }
         if (eventName === 'Change') {
             if (nodeName === 'input' || nodeName === 'textarea') {
                 if (buildType !== 'quick') {
