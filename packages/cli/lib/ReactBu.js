@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-19
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-20
  */
 
 var arrayPush = Array.prototype.push;
@@ -2506,9 +2506,12 @@ function registerComponent(type, name) {
         },
         options: type.options,
         attached: function attached() {
-            usingComponents[name] = type;
-            var uuid = this.dataset.instanceUid || null;
-            refreshComponent(reactInstances, this, uuid);
+            var wx = this;
+            defer(function () {
+                usingComponents[name] = type;
+                var uuid = wx.dataset.instanceUid || null;
+                refreshComponent(reactInstances, wx, uuid);
+            });
         },
         detached: detachComponent,
         dispatchEvent: dispatchEvent

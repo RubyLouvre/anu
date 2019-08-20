@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-19T09
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-20T04
  * IE9+
  */
 
@@ -5406,9 +5406,12 @@
             },
             options: type.options,
             attached: function attached() {
-                usingComponents[name] = type;
-                var uuid = this.dataset.instanceUid || null;
-                refreshComponent(reactInstances, this, uuid);
+                var wx = this;
+                defer(function () {
+                    usingComponents[name] = type;
+                    var uuid = wx.dataset.instanceUid || null;
+                    refreshComponent(reactInstances, wx, uuid);
+                });
             },
             detached: detachComponent,
             dispatchEvent: dispatchEvent$1

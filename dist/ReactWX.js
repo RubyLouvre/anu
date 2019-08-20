@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-19T09
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-20T04
  * IE9+
  */
 
