@@ -60,7 +60,7 @@ class JavascriptParser {
             this.componentType = 'App';
         }
     }
-    _parse() {
+    parse() {
         return __awaiter(this, void 0, void 0, function* () {
             const res = yield babel.transformFileAsync(this.filepath, this._babelPlugin);
             this.extraModules = res.options.anu && res.options.anu.extraModules || this.extraModules;

@@ -1,10 +1,9 @@
-// import NativeShare from 'nativeshare';
-// import ReactDOM from 'react-dom';
+// import { DOMRenderer } from '../../dom/DOMRenderer';
 // import Share from './Components/Share';
 // import { handleSuccess, handleFail } from '../utils';
 
-// // const shareTypes = ['default', 'wechatTimeline', 'wechatFriend', 'qqFriend', 'qZone', 'weibo'];
-// // let shareIndex = 0;
+// const shareTypes = ['default', 'wechatTimeline', 'wechatFriend', 'qqFriend', 'qZone', 'weibo'];
+// let shareIndex = 0;
 
 // function browserShare({ title, path, imageUrl, type = 'default', desc }) {
 //   var nativeShare = new NativeShare();
@@ -22,13 +21,13 @@
 //     });
 //   }
   
-//   // TODO: 是否需要降级处理
-//   // shareIndex++;
-//   // if (shareIndex >= shareTypes.length) {
-//   //   console.log(e);
-//   // } else {
-//   //   browserShare(title, path, imageUrl, shareTypes[shareIndex]);
-//   // }
+  // TODO: 是否需要降级处理
+  // shareIndex++;
+  // if (shareIndex >= shareTypes.length) {
+  //   console.log(e);
+  // } else {
+  //   browserShare(title, path, imageUrl, shareTypes[shareIndex]);
+  // }
 // }
 
 // function share({
@@ -56,7 +55,7 @@
 //         }
 //       });
 //       document.body.appendChild(container);
-//       ReactDOM.render(
+//       DOMRenderer.render(
 //         <Share
 //           title={title}
 //           path={path}

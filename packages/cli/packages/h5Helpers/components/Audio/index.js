@@ -3,7 +3,10 @@ import React from 'react';
 export default class Audio extends React.Component {
   constructor(props) {
     super(props);
-
+    // if(React.appType === 'h5' ){
+    // } else if(React.appType === 'quick') {
+    // }
+    
     this.onPlay = this.onPlay.bind(this);
     this.onPause = this.onPause.bind(this);
     this.onError = this.onError.bind(this);
@@ -28,15 +31,13 @@ export default class Audio extends React.Component {
 
   render() {
     return (
-      <div>
-        <audio
+      <audio
           {...this.props}
           onplay={this.onPlay}
           onended={this.onEnded}
           onpause={this.onPause}
           onerror={this.onError}
         />
-      </div>
     );
   }
 }

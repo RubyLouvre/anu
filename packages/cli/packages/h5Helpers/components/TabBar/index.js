@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
+import './index.scss';
 
 class TabBar extends Component {
     get borderStyle() {
         return this.props.borderStyle === 'black' ? '#ccc' : '#eee';
     }
-    onSelected({pagePath} = {}) {
+    onSelected(item) {
+        const { pagePath } = item;
+        this.props.onChange && this.props.onChange(item);
         React.api.switchTab({
             url: '/' + pagePath
         });
@@ -15,7 +18,7 @@ class TabBar extends Component {
                 backgroundColor: this.props.backgroundColor,
                 borderTop: `1px solid ${this.borderStyle}`
             }}>
-                { this.props.list.map(item => <div className="__internal__TabBarItem" onClick={ this.onSelected.bind(this,item)}>
+                { this.props.list.map((item, index) => <div className="__internal__TabBarItem" onClick={ this.onSelected.bind(this, {index, ...item})}>
                     <div>
                         <img src={ item.selected ? item.selectedIconPath : item.iconPath } />
                     </div>
@@ -26,37 +29,7 @@ class TabBar extends Component {
                     </span>
                 </div>)
                 }
-                
             </main>
-            <style jsx>{
-                `
-                    .__internal__TabBar {
-                        position: fixed;
-                        bottom: 0;
-                        width: 100%;
-                        max-width: 480px;
-                        height: 60px;
-                        display: flex;
-                        justify-content: space-around;
-                        border-top: 1px solid ${this.borderStyle};
-                        background-color: ${this.backgroundColor};
-                    }
-                    .__internal__TabBarItem {
-                        text-align: center;
-                        height: 32px;
-                        flex-grow: 1;
-                    }
-                    img {
-                        width: 32px;
-                    }
-                    .__internal__TabBarItem-title {
-                        height: 20px;
-                        font-size: 14px;
-                        justify-content: center;
-                    }
-                `
-            }
-            </style>
         </React.Fragment>;
     }
 }

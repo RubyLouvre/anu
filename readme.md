@@ -8,6 +8,7 @@
 [![Qunar.com](https://user-images.githubusercontent.com/190846/48761333-5b66df80-ece3-11e8-80e4-5df19b912dd5.png)](https://github.com/qunarcorp)
 
 
+
 ```bash
 npm install anujs
 ```
@@ -21,15 +22,16 @@ source： https://bundlephobia.com/
 
 ### advantage：
 
-1. Support various new features of **React16**, Fragment, componentDidCatch, creactContext, createRef, forwardRef, React Hooks(useRef, useContext, useState, useEffect, useReducer, useCallback,
-useMemo, useEffect, useLayoutEffect, useImperativeHandle)...
+1. Support various new features of **React16**, Fragment, componentDidCatch, creactContext, createRef, forwardRef...
 2. The size is very small (only 3000 lines, gzip only 13kb, one third of React+ReactDOM)
 3. Pass more than 700 official unit tests  (other mini libraries can not run the official test)
 4. Share the huge ecology of React（React-router-dom, react-router-redux, react-lazy-load, react-hot-loader...）
 5. Supports 99% antd components (`antd`is an enterprise-class UI components in China).
 6. Excellent browser compatibility, easy to handle all kinds of business under IE6-8.
 7. It comes with a painless state manager **Rematch** and a handy router **Reach**.
-8. Support wechat miniapp(微信小程序) https://rubylouvre.github.io/nanachi/
+8. Support miniapp(微信小程序, 支付宝，快应用) https://rubylouvre.github.io/nanachi/
+
+
 
 ### boilerplate 
 
@@ -38,7 +40,6 @@ useMemo, useEffect, useLayoutEffect, useImperativeHandle)...
 * https://github.com/magicapple/anujs-webpack4-ie7-8
 * https://gitee.com/menhal/React_IE8_boilerplate
 * https://github.com/meeteason/react-webpack-ie6-boilerplate
-* https://github.com/ambit-tsai/reactie (React Stack in IE8)
 
 ### License
 
@@ -51,7 +52,6 @@ resolve: {
     alias: {
        'react': 'anujs',
        'react-dom': 'anujs',
-        'react-dom/server': 'anujs/dist/React/server',//在dist下面有一个Reac目录
          // For compatibility with IE please use the following configuration
          // 'react': 'anujs/dist/ReactIE',
          // 'react-dom': 'anujs/dist/ReactIE',

@@ -18,7 +18,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = __importStar(require("path"));
 const babel = __importStar(require("@babel/core"));
 const isReact = function (sourcePath) {
-    return /React\w+\.js$/.test(path.basename(sourcePath));
+    return /\/source\/React\w+\.js$/.test(sourcePath);
 };
 module.exports = function (code, map, meta) {
     return __awaiter(this, void 0, void 0, function* () {

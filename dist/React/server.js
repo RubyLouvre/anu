@@ -202,39 +202,39 @@
             t = void 0,
             iterator = void 0;
         switch (iterableType) {
-        case 0:
-            if (Object(children) === children && !children.call && !children.type) {
-                throw 'children中存在非法的对象';
-            }
-            key = prefix || (children && children.key ? '$' + children.key : '0');
-            callback(children, key);
-            break;
-        case 1:
-            children.forEach(function (el, i) {
-                operateChildren(el, computeName(el, i, prefix, isTop), callback, isIterable(el), false);
-            });
-            break;
-        case 2:
-            key = children && children.key ? '$' + children.key : '';
-            key = isTop ? key : prefix ? prefix + ':0' : key || '0';
-            el = children.props.children;
-            t = isIterable(el);
-            if (!t) {
-                el = [el];
-                t = 1;
-            }
-            operateChildren(el, key, callback, t, false);
-            break;
-        default:
-            iterator = iterableType.call(children);
-            var ii = 0,
-                step;
-            while (!(step = iterator.next()).done) {
-                el = step.value;
-                operateChildren(el, computeName(el, ii, prefix, isTop), callback, isIterable(el), false);
-                ii++;
-            }
-            break;
+            case 0:
+                if (Object(children) === children && !children.call && !children.type) {
+                    throw 'children中存在非法的对象';
+                }
+                key = prefix || (children && children.key ? '$' + children.key : '0');
+                callback(children, key);
+                break;
+            case 1:
+                children.forEach(function (el, i) {
+                    operateChildren(el, computeName(el, i, prefix, isTop), callback, isIterable(el), false);
+                });
+                break;
+            case 2:
+                key = children && children.key ? '$' + children.key : '';
+                key = isTop ? key : prefix ? prefix + ':0' : key || '0';
+                el = children.props.children;
+                t = isIterable(el);
+                if (!t) {
+                    el = [el];
+                    t = 1;
+                }
+                operateChildren(el, key, callback, t, false);
+                break;
+            default:
+                iterator = iterableType.call(children);
+                var ii = 0,
+                    step;
+                while (!(step = iterator.next()).done) {
+                    el = step.value;
+                    operateChildren(el, computeName(el, ii, prefix, isTop), callback, isIterable(el), false);
+                    ii++;
+                }
+                break;
         }
     }
     var REAL_SYMBOL = hasSymbol && Symbol.iterator;
@@ -335,23 +335,23 @@
         var lastIndex = 0;
         for (index = match.index; index < str.length; index++) {
             switch (str.charCodeAt(index)) {
-            case 34:
-                escape = '&quot;';
-                break;
-            case 38:
-                escape = '&amp;';
-                break;
-            case 39:
-                escape = '&#x27;';
-                break;
-            case 60:
-                escape = '&lt;';
-                break;
-            case 62:
-                escape = '&gt;';
-                break;
-            default:
-                continue;
+                case 34:
+                    escape = '&quot;';
+                    break;
+                case 38:
+                    escape = '&amp;';
+                    break;
+                case 39:
+                    escape = '&#x27;';
+                    break;
+                case 60:
+                    escape = '&lt;';
+                    break;
+                case 62:
+                    escape = '&gt;';
+                    break;
+                default:
+                    continue;
             }
             if (lastIndex !== index) {
                 html += str.substring(lastIndex, index);
@@ -479,84 +479,84 @@
     };
     var _marked = regeneratorRuntime.mark(renderVNodeGen);
     function renderVNode(vnode, context) {
-        if(!vnode) return '';
+        if (!vnode) return '';
         var _vnode = vnode,
             tag = _vnode.tag,
             type = _vnode.type,
             props = _vnode.props;
         switch (type) {
-        case '#text':
-            return encodeEntities(vnode.text);
-        case '#comment':
-            return '<!--' + vnode.text + '-->';
-        default:
-            var innerHTML$$1 = props && props.dangerouslySetInnerHTML;
-            innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
-            if (tag === 5) {
-                if (type === 'option') {
-                    for (var p = vnode.return; p && p.type !== 'select'; p = p.return) {
-                    }
-                    if (p && p.valuesSet) {
-                        var curValue = getOptionValue(vnode);
-                        if (p.valuesSet['&' + curValue]) {
-                            props = Object.assign({ selected: '' }, props);
+            case '#text':
+                return encodeEntities(vnode.text);
+            case '#comment':
+                return '<!--' + vnode.text + '-->';
+            default:
+                var innerHTML$$1 = props && props.dangerouslySetInnerHTML;
+                innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
+                if (tag === 5) {
+                    if (type === 'option') {
+                        for (var p = vnode.return; p && p.type !== 'select'; p = p.return) {
+                        }
+                        if (p && p.valuesSet) {
+                            var curValue = getOptionValue(vnode);
+                            if (p.valuesSet['&' + curValue]) {
+                                props = Object.assign({ selected: '' }, props);
+                            }
+                        }
+                    } else if (type === 'select') {
+                        var selectValue = vnode.props.value || vnode.props.defaultValue;
+                        if (selectValue != null) {
+                            var values = [].concat(selectValue),
+                                valuesSet = {};
+                            values.forEach(function (el) {
+                                valuesSet['&' + el] = true;
+                            });
+                            vnode.valuesSet = valuesSet;
                         }
                     }
-                } else if (type === 'select') {
-                    var selectValue = vnode.props.value || vnode.props.defaultValue;
-                    if (selectValue != null) {
-                        var values = [].concat(selectValue),
-                            valuesSet = {};
-                        values.forEach(function (el) {
-                            valuesSet['&' + el] = true;
-                        });
-                        vnode.valuesSet = valuesSet;
+                    var str = '<' + type + stringifyAttributes(props, type);
+                    if (voidTags[type]) {
+                        return str + '/>\n';
                     }
-                }
-                var str = '<' + type + stringifyAttributes(props, type);
-                if (voidTags[type]) {
-                    return str + '/>\n';
-                }
-                str += '>';
+                    str += '>';
 
-                var cstr = '';
-                if (innerHTML$$1) {
+                    var cstr = '';
+                    if (innerHTML$$1) {
 
-                    str += innerHTML$$1;
-                } else {
-                    var fakeUpdater = {
-                        _reactInternalFiber: vnode
+                        str += innerHTML$$1;
+                    } else {
+                        var fakeUpdater = {
+                            _reactInternalFiber: vnode
+                        };
+                        var children = fiberizeChildren(props.children, fakeUpdater);
+                        for (var i in children) {
+                            var child = children[i];
+                            child.return = vnode;
+                            cstr += renderVNode(child, context);
+                        }
+                        vnode.updater = fakeUpdater;
+                    }
+                    if (vnode.type === 'textarea' && !cstr) {
+                        str += vnode.props.value || vnode.props.defaultValue || '';
+                    } else {
+                        str += cstr;
+                    }
+                    return str + '</' + type + '>\n';
+                } else if (tag < 3) {
+                    var data = {
+                        context: context
                     };
-                    var children = fiberizeChildren(props.children, fakeUpdater);
-                    for (var i in children) {
-                        var child = children[i];
-                        child.return = vnode;
-                        cstr += renderVNode(child, context);
-                    }
-                    vnode.updater = fakeUpdater;
-                }
-                if (vnode.type === 'textarea' && !cstr) {
-                    str += vnode.props.value || vnode.props.defaultValue || '';
+                    vnode = toVnode(vnode, data);
+                    context = data.context;
+                    return renderVNode(vnode, context);
+                } else if (Array.isArray(vnode)) {
+                    var multiChild = '';
+                    vnode.forEach(function (el) {
+                        multiChild += renderVNode(el, context);
+                    });
+                    return multiChild;
                 } else {
-                    str += cstr;
+                    throw '数据不合法';
                 }
-                return str + '</' + type + '>\n';
-            } else if (tag < 3) {
-                var data = {
-                    context: context
-                };
-                vnode = toVnode(vnode, data);
-                context = data.context;
-                return renderVNode(vnode, context);
-            } else if (Array.isArray(vnode)) {
-                var multiChild = '';
-                vnode.forEach(function (el) {
-                    multiChild += renderVNode(el, context);
-                });
-                return multiChild;
-            } else {
-                throw '数据不合法';
-            }
         }
     }
     function renderVNodeGen(vnode, context) {
@@ -564,109 +564,109 @@
         return regeneratorRuntime.wrap(function renderVNodeGen$(_context) {
             while (1) {
                 switch (_context.prev = _context.next) {
-                case 0:
-                    _vnode2 = vnode, tag = _vnode2.tag, type = _vnode2.type, props = _vnode2.props;
-                    _context.t0 = type;
-                    _context.next = _context.t0 === '#text' ? 4 : _context.t0 === '#comment' ? 7 : 10;
-                    break;
-                case 4:
-                    _context.next = 6;
-                    return encodeEntities(vnode.text);
-                case 6:
-                    return _context.abrupt('break', 40);
-                case 7:
-                    _context.next = 9;
-                    return '<!--' + vnode.text + '-->';
-                case 9:
-                    return _context.abrupt('break', 40);
-                case 10:
-                    innerHTML$$1 = props && props.dangerouslySetInnerHTML;
-                    innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
-                    if (!(tag === 5)) {
-                        _context.next = 24;
+                    case 0:
+                        _vnode2 = vnode, tag = _vnode2.tag, type = _vnode2.type, props = _vnode2.props;
+                        _context.t0 = type;
+                        _context.next = _context.t0 === '#text' ? 4 : _context.t0 === '#comment' ? 7 : 10;
                         break;
-                    }
-                    if (type === 'option') {
-                        for (p = vnode.return; p && p.type !== 'select'; p = p.return) {
+                    case 4:
+                        _context.next = 6;
+                        return encodeEntities(vnode.text);
+                    case 6:
+                        return _context.abrupt('break', 40);
+                    case 7:
+                        _context.next = 9;
+                        return '<!--' + vnode.text + '-->';
+                    case 9:
+                        return _context.abrupt('break', 40);
+                    case 10:
+                        innerHTML$$1 = props && props.dangerouslySetInnerHTML;
+                        innerHTML$$1 = innerHTML$$1 && innerHTML$$1.__html;
+                        if (!(tag === 5)) {
+                            _context.next = 24;
+                            break;
                         }
-                        if (p && p.valuesSet) {
-                            curValue = getOptionValue(vnode);
-                            if (p.valuesSet['&' + curValue]) {
-                                props = Object.assign({ selected: '' }, props);
+                        if (type === 'option') {
+                            for (p = vnode.return; p && p.type !== 'select'; p = p.return) {
+                            }
+                            if (p && p.valuesSet) {
+                                curValue = getOptionValue(vnode);
+                                if (p.valuesSet['&' + curValue]) {
+                                    props = Object.assign({ selected: '' }, props);
+                                }
+                            }
+                        } else if (type === 'select') {
+                            selectValue = vnode.props.value || vnode.props.defaultValue;
+                            if (selectValue != null) {
+                                values = [].concat(selectValue), valuesSet = {};
+                                values.forEach(function (el) {
+                                    valuesSet['&' + el] = true;
+                                });
+                                vnode.valuesSet = valuesSet;
                             }
                         }
-                    } else if (type === 'select') {
-                        selectValue = vnode.props.value || vnode.props.defaultValue;
-                        if (selectValue != null) {
-                            values = [].concat(selectValue), valuesSet = {};
-                            values.forEach(function (el) {
-                                valuesSet['&' + el] = true;
-                            });
-                            vnode.valuesSet = valuesSet;
+                        str = '<' + type + stringifyAttributes(props, type);
+                        if (!voidTags[type]) {
+                            _context.next = 18;
+                            break;
                         }
-                    }
-                    str = '<' + type + stringifyAttributes(props, type);
-                    if (!voidTags[type]) {
                         _context.next = 18;
-                        break;
-                    }
-                    _context.next = 18;
-                    return str + '/>\n';
-                case 18:
-                    str += '>';
-                    if (innerHTML$$1) {
-                        str += innerHTML$$1;
-                    } else {
-                        fakeUpdater = {
-                            vnode: vnode
-                        };
-                        children = fiberizeChildren(props.children, fakeUpdater);
-                        for (i in children) {
-                            child = children[i];
-                            child.return = vnode;
-                            str += renderVNode(child, context);
+                        return str + '/>\n';
+                    case 18:
+                        str += '>';
+                        if (innerHTML$$1) {
+                            str += innerHTML$$1;
+                        } else {
+                            fakeUpdater = {
+                                vnode: vnode
+                            };
+                            children = fiberizeChildren(props.children, fakeUpdater);
+                            for (i in children) {
+                                child = children[i];
+                                child.return = vnode;
+                                str += renderVNode(child, context);
+                            }
+                            vnode.updater = fakeUpdater;
                         }
-                        vnode.updater = fakeUpdater;
-                    }
-                    _context.next = 22;
-                    return str + '</' + type + '>\n';
-                case 22:
-                    _context.next = 40;
-                    break;
-                case 24:
-                    if (!(tag < 3)) {
-                        _context.next = 32;
+                        _context.next = 22;
+                        return str + '</' + type + '>\n';
+                    case 22:
+                        _context.next = 40;
                         break;
-                    }
-                    data = {
-                        context: context
-                    };
-                    vnode = toVnode(vnode, data);
-                    context = data.context;
-                    _context.next = 30;
-                    return renderVNode(vnode, context);
-                case 30:
-                    _context.next = 40;
-                    break;
-                case 32:
-                    if (!Array.isArray(vnode)) {
-                        _context.next = 39;
+                    case 24:
+                        if (!(tag < 3)) {
+                            _context.next = 32;
+                            break;
+                        }
+                        data = {
+                            context: context
+                        };
+                        vnode = toVnode(vnode, data);
+                        context = data.context;
+                        _context.next = 30;
+                        return renderVNode(vnode, context);
+                    case 30:
+                        _context.next = 40;
                         break;
-                    }
-                    multiChild = '';
-                    vnode.forEach(function (el) {
-                        multiChild += renderVNode(el, context);
-                    });
-                    _context.next = 37;
-                    return multiChild;
-                case 37:
-                    _context.next = 40;
-                    break;
-                case 39:
-                    throw '数据不合法';
-                case 40:
-                case 'end':
-                    return _context.stop();
+                    case 32:
+                        if (!Array.isArray(vnode)) {
+                            _context.next = 39;
+                            break;
+                        }
+                        multiChild = '';
+                        vnode.forEach(function (el) {
+                            multiChild += renderVNode(el, context);
+                        });
+                        _context.next = 37;
+                        return multiChild;
+                    case 37:
+                        _context.next = 40;
+                        break;
+                    case 39:
+                        throw '数据不合法';
+                    case 40:
+                    case 'end':
+                        return _context.stop();
                 }
             }
         }, _marked, this);

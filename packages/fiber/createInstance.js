@@ -34,22 +34,19 @@ export function createInstance(fiber, context) {
             extend(instance, {
                 __isStateless: true,
                 renderImpl: type,
-                render: function f() {
+                render: function f1() {
                     return this.renderImpl(this.props, this.context);
                 }
             });
             Renderer.currentOwner = instance;
-            if (type.render) {
-                //forwardRef函数形式只会执行一次，对象形式执行多次
-                instance.render = function() {
-                    return type.render(this.props, this.ref);
-                };
-            }
         } else {
             // 有狀态组件
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
-                throw `${type.name} doesn't extend React.Component`;
+                //这一行处理快应用instanceof BUG， 应该是与跨域iframe中 [] instance Array的行为相似
+                if(!instance.updater || !instance.updater.enqueueSetState){
+                  throw `${type.name} doesn't extend React.Component`;
+                }
             }
         }
     } finally {

@@ -1,0 +1,12 @@
+{
+  "version": "independent",
+  "packages": [
+    "packages/cli"
+  ],
+  "command": {
+    "publish": {
+      "message": "release: publish %s"
+    }
+  },
+  "npmClient": "npm"
+}

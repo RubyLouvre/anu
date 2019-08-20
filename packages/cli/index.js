@@ -27,7 +27,7 @@ const chalk_1 = __importDefault(require("chalk"));
 const webpackConfig_1 = __importDefault(require("./config/webpackConfig"));
 const babel = __importStar(require("@babel/core"));
 const child_process_1 = require("child_process");
-const utils = require('./packages/utils/index');
+const index_2 = __importDefault(require("./packages/utils/index"));
 const config_1 = __importDefault(require("./config/config"));
 const runBeforeParseTasks_1 = __importDefault(require("./tasks/runBeforeParseTasks"));
 const createH5Server_1 = __importDefault(require("./tasks/createH5Server"));
@@ -40,18 +40,18 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
             }
             showLog();
             const info = stats.toJson();
-            if (stats.hasErrors()) {
-                info.errors.forEach(e => {
-                    console.error(chalk_1.default.red('Error:\n'), utils.cleanLog(e));
-                    if (utils.isMportalEnv()) {
-                        process.exit();
-                    }
-                });
-            }
             if (stats.hasWarnings() && !silent) {
                 info.warnings.forEach(warning => {
                     if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
-                        console.log(chalk_1.default.yellow('Warning:\n'), utils.cleanLog(warning));
+                        console.log(chalk_1.default.yellow('Warning:\n'), index_2.default.cleanLog(warning));
+                    }
+                });
+            }
+            if (stats.hasErrors()) {
+                info.errors.forEach(e => {
+                    console.error(chalk_1.default.red('Error:\n'), index_2.default.cleanLog(e));
+                    if (index_2.default.isMportalEnv()) {
+                        process.exit();
                     }
                 });
             }
@@ -69,18 +69,18 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
                             return;
                         }
                         const info = stats.toJson();
-                        if (stats.hasErrors()) {
-                            info.errors.forEach(e => {
-                                console.error(chalk_1.default.red('Error:\n'), utils.cleanLog(e));
-                                if (utils.isMportalEnv()) {
-                                    process.exit();
-                                }
-                            });
-                        }
                         if (stats.hasWarnings() && !silent) {
                             info.warnings.forEach(warning => {
                                 if (!/Critical dependency: the request of a dependency is an expression/.test(warning)) {
-                                    console.log(chalk_1.default.yellow('Warning:\n'), utils.cleanLog(warning));
+                                    console.log(chalk_1.default.yellow('Warning:\n'), index_2.default.cleanLog(warning));
+                                }
+                            });
+                        }
+                        if (stats.hasErrors()) {
+                            info.errors.forEach(e => {
+                                console.error(chalk_1.default.red('Error:\n'), index_2.default.cleanLog(e));
+                                if (index_2.default.isMportalEnv()) {
+                                    process.exit();
                                 }
                             });
                         }
@@ -90,7 +90,7 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
             complete(err, stats);
         }
         try {
-            if (!utils.validatePlatform(platform, platforms_1.default)) {
+            if (!index_2.default.validatePlatform(platform, platforms_1.default)) {
                 throw new Error(`不支持的platform：${platform}`);
             }
             injectBuildEnv({
@@ -138,7 +138,7 @@ function injectBuildEnv({ platform, compress, huawei }) {
     }
 }
 function showLog() {
-    if (utils.isMportalEnv()) {
+    if (index_2.default.isMportalEnv()) {
         let log = '';
         while (queue_1.build.length) {
             log += queue_1.build.shift() + (queue_1.build.length !== 0 ? '\n' : '');
@@ -152,7 +152,7 @@ function showLog() {
         queue_1.error.forEach(function (error) {
             index_1.errorLog(error);
         });
-        if (utils.isMportalEnv()) {
+        if (index_2.default.isMportalEnv()) {
             process.exit(1);
         }
     }

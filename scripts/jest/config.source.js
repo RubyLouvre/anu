@@ -8,7 +8,7 @@ module.exports = {
         '<rootDir>/scripts/rollup/shims/',
         '<rootDir>/scripts/bench/',
     ],
-    testURL:'http://localhost/',
+    testURL: 'http://localhost/',
     // 'testEnvironment': 'node',   
     setupFiles: [require.resolve('./setupEnvironment.js')],
     setupTestFrameworkScriptFile: require.resolve('./setupTests.js'),

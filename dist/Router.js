@@ -4,8 +4,8 @@
 
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (global.ReachRouter = factory());
+        typeof define === 'function' && define.amd ? define(factory) :
+            (global.ReachRouter = factory());
 }(this, (function () {
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var fakeWindow = {};
@@ -14,12 +14,12 @@
             if (window) {
                 return window;
             }
-        } catch (e) {        }
+        } catch (e) { }
         try {
             if (global) {
                 return global;
             }
-        } catch (e) {        }
+        } catch (e) { }
         return fakeWindow;
     }
     function extend(obj, props) {
@@ -31,7 +31,7 @@
         return obj;
     }
     function inherit(SubClass, SupClass) {
-        function Bridge() {}
+        function Bridge() { }
         var orig = SubClass.prototype;
         Bridge.prototype = SupClass.prototype;
         var fn = SubClass.prototype = new Bridge();
@@ -41,7 +41,7 @@
     }
     try {
         var supportEval = Function('a', 'return a + 1')(2) == 3;
-    } catch (e) {}
+    } catch (e) { }
     var rname = /function\s+(\w+)/;
     function miniCreateClass(ctor, superClass, methods, statics) {
         var className = ctor.name || (ctor.toString().match(rname) || ['', 'Anonymous'])[1];
@@ -233,7 +233,7 @@
     function createHistory(source) {
         var listeners = [];
         var transitioning = false;
-        var resolveTransition = function resolveTransition() {};
+        var resolveTransition = function resolveTransition() { };
         var target = {
             location: getLocation(source),
             transitioning: transitioning,
@@ -317,10 +317,10 @@
             search: ''
         }];
         var target = {
-            addEventListener: function addEventListener(name, fn) {},
-            removeEventListener: function removeEventListener(name, fn) {},
+            addEventListener: function addEventListener(name, fn) { },
+            removeEventListener: function removeEventListener(name, fn) { },
             history: {
-                back: function back() {},
+                back: function back() { },
                 pushState: function pushState(state, _, uri) {
                     index++;
                     stack.push(uri2obj(uri));
@@ -407,60 +407,60 @@
             refs: { unlisten: null }
         };
     }, Component, {
-        getContext: function getContext() {
-            var _props$history = this.props.history,
-                navigate$$1 = _props$history.navigate,
-                location = _props$history.location;
-            return { navigate: navigate$$1, location: location };
-        },
-        componentDidCatch: function componentDidCatch(error, info) {
-            if (isRedirect(error)) {
-                var _navigate = this.props.history.navigate;
-                _navigate(error.uri, { replace: true });
-            } else {
-                throw error;
-            }
-        },
-        componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
-            if (prevState.context.location !== this.state.context.location) {
-                this.props.history._onTransitionComplete();
-            }
-        },
-        componentDidMount: function componentDidMount() {
-            var _this = this;
-            var refs = this.state.refs,
-                history = this.props.history;
-            refs.unlisten = history.listen(function () {
-                Promise.resolve().then(function () {
-                    unstable_deferredUpdates(function () {
-                        if (!_this.unmounted) {
-                            _this.setState(function () {
-                                return { context: _this.getContext() };
-                            });
-                        }
+            getContext: function getContext() {
+                var _props$history = this.props.history,
+                    navigate$$1 = _props$history.navigate,
+                    location = _props$history.location;
+                return { navigate: navigate$$1, location: location };
+            },
+            componentDidCatch: function componentDidCatch(error, info) {
+                if (isRedirect(error)) {
+                    var _navigate = this.props.history.navigate;
+                    _navigate(error.uri, { replace: true });
+                } else {
+                    throw error;
+                }
+            },
+            componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+                if (prevState.context.location !== this.state.context.location) {
+                    this.props.history._onTransitionComplete();
+                }
+            },
+            componentDidMount: function componentDidMount() {
+                var _this = this;
+                var refs = this.state.refs,
+                    history = this.props.history;
+                refs.unlisten = history.listen(function () {
+                    Promise.resolve().then(function () {
+                        unstable_deferredUpdates(function () {
+                            if (!_this.unmounted) {
+                                _this.setState(function () {
+                                    return { context: _this.getContext() };
+                                });
+                            }
+                        });
                     });
                 });
-            });
-        },
-        componentWillUnmount: function componentWillUnmount() {
-            var refs = this.state.refs;
-            this.unmounted = true;
-            refs.unlisten();
-        },
-        render: function render() {
-            var context = this.state.context,
-                children = this.props.children;
-            return React.createElement(
-                LocationContext.Provider,
-                { value: context },
-                typeof children === "function" ? children(context) : children || null
-            );
-        }
-    }, {
-        defaultProps: {
-            history: globalHistory
-        }
-    });
+            },
+            componentWillUnmount: function componentWillUnmount() {
+                var refs = this.state.refs;
+                this.unmounted = true;
+                refs.unlisten();
+            },
+            render: function render() {
+                var context = this.state.context,
+                    children = this.props.children;
+                return React.createElement(
+                    LocationContext.Provider,
+                    { value: context },
+                    typeof children === "function" ? children(context) : children || null
+                );
+            }
+        }, {
+            defaultProps: {
+                history: globalHistory
+            }
+        });
     var ServerLocation = function ServerLocation(_ref2) {
         var url = _ref2.url,
             children = _ref2.children;
@@ -494,7 +494,7 @@
             }
         );
     }
-    var RouterImpl = miniCreateClass(function RouterImpl() {}, PureComponent, {
+    var RouterImpl = miniCreateClass(function RouterImpl() { }, PureComponent, {
         render: function render() {
             var _props = this.props,
                 location = _props.location,
@@ -544,10 +544,10 @@
             }
         }
     }, {
-        defaultProps: {
-            primary: true
-        }
-    });
+            defaultProps: {
+                primary: true
+            }
+        });
     var FocusContext = createNamedContext("Focus");
     var FocusHandler = function FocusHandler(_ref3) {
         var uri = _ref3.uri,
@@ -576,84 +576,84 @@
             }
         };
     }, Component, {
-        componentDidMount: function componentDidMount() {
-            focusHandlerCount++;
-            this.focus();
-        },
-        componentWillUnmount: function componentWillUnmount() {
-            focusHandlerCount--;
-            if (focusHandlerCount === 0) {
-                initialRender = true;
-            }
-        },
-        componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
-            if (prevProps.location !== this.props.location && this.state.shouldFocus) {
+            componentDidMount: function componentDidMount() {
+                focusHandlerCount++;
                 this.focus();
-            }
-        },
-        focus: function focus() {
-            if (getWindow().process) {
-                return;
-            }
-            var requestFocus = this.props.requestFocus;
-            if (requestFocus) {
-                requestFocus(this.node);
-            } else {
-                if (initialRender) {
-                    initialRender = false;
+            },
+            componentWillUnmount: function componentWillUnmount() {
+                focusHandlerCount--;
+                if (focusHandlerCount === 0) {
+                    initialRender = true;
+                }
+            },
+            componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+                if (prevProps.location !== this.props.location && this.state.shouldFocus) {
+                    this.focus();
+                }
+            },
+            focus: function focus() {
+                if (getWindow().process) {
+                    return;
+                }
+                var requestFocus = this.props.requestFocus;
+                if (requestFocus) {
+                    requestFocus(this.node);
                 } else {
-                    this.node.focus();
+                    if (initialRender) {
+                        initialRender = false;
+                    } else {
+                        this.node.focus();
+                    }
+                }
+            },
+            render: function render() {
+                var _this3 = this;
+                var _props2 = this.props,
+                    children = _props2.children,
+                    style = _props2.style,
+                    requestFocus = _props2.requestFocus,
+                    _props2$role = _props2.role,
+                    role = _props2$role === undefined ? "group" : _props2$role,
+                    _props2$component = _props2.component,
+                    Comp = _props2$component === undefined ? "div" : _props2$component,
+                    uri = _props2.uri,
+                    location = _props2.location,
+                    domProps = _objectWithoutProperties(_props2, ["children", "style", "requestFocus", "role", "component", "uri", "location"]);
+                return React.createElement(
+                    Comp,
+                    _extends({
+                        style: Object.assign({ outline: "none" }, style),
+                        tabIndex: "-1",
+                        role: role,
+                        ref: function ref(n) {
+                            return _this3.node = n;
+                        }
+                    }, domProps),
+                    React.createElement(
+                        FocusContext.Provider,
+                        { value: this.requestFocus },
+                        this.props.children
+                    )
+                );
+            }
+        }, {
+            getDerivedStateFromProps: function getDerivedStateFromProps(nextProps, prevState) {
+                var initial = prevState.uri == null;
+                if (initial) {
+                    return Object.assign({
+                        shouldFocus: true
+                    }, nextProps);
+                } else {
+                    var myURIChanged = nextProps.uri !== prevState.uri;
+                    var nextPath = nextProps.location.getPath();
+                    var navigatedUpToMe = prevState.location.getPath() !== nextPath && nextPath === nextProps.uri;
+                    return Object.assign({
+                        shouldFocus: myURIChanged || navigatedUpToMe
+                    }, nextProps);
                 }
             }
-        },
-        render: function render() {
-            var _this3 = this;
-            var _props2 = this.props,
-                children = _props2.children,
-                style = _props2.style,
-                requestFocus = _props2.requestFocus,
-                _props2$role = _props2.role,
-                role = _props2$role === undefined ? "group" : _props2$role,
-                _props2$component = _props2.component,
-                Comp = _props2$component === undefined ? "div" : _props2$component,
-                uri = _props2.uri,
-                location = _props2.location,
-                domProps = _objectWithoutProperties(_props2, ["children", "style", "requestFocus", "role", "component", "uri", "location"]);
-            return React.createElement(
-                Comp,
-                _extends({
-                    style: Object.assign({ outline: "none" }, style),
-                    tabIndex: "-1",
-                    role: role,
-                    ref: function ref(n) {
-                        return _this3.node = n;
-                    }
-                }, domProps),
-                React.createElement(
-                    FocusContext.Provider,
-                    { value: this.requestFocus },
-                    this.props.children
-                )
-            );
-        }
-    }, {
-        getDerivedStateFromProps: function getDerivedStateFromProps(nextProps, prevState) {
-            var initial = prevState.uri == null;
-            if (initial) {
-                return Object.assign({
-                    shouldFocus: true
-                }, nextProps);
-            } else {
-                var myURIChanged = nextProps.uri !== prevState.uri;
-                var nextPath = nextProps.location.getPath();
-                var navigatedUpToMe = prevState.location.getPath() !== nextPath && nextPath === nextProps.uri;
-                return Object.assign({
-                    shouldFocus: myURIChanged || navigatedUpToMe
-                }, nextProps);
-            }
-        }
-    });
-    function noop$1() {}
+        });
+    function noop$1() { }
     var Link = function Link(props) {
         return React.createElement(
             BaseContext.Consumer,
@@ -719,7 +719,7 @@
     var redirectTo = function redirectTo(to) {
         throw new RedirectRequest(to);
     };
-    var RedirectImpl = miniCreateClass(function RedirectImpl() {}, Component, {
+    var RedirectImpl = miniCreateClass(function RedirectImpl() { }, Component, {
         componentDidMount: function componentDidMount() {
             var _props3 = this.props,
                 navigate$$1 = _props3.navigate,

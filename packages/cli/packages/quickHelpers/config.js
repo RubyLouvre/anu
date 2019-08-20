@@ -1,12 +1,17 @@
-/*!
-快应用不支持 类属性， 只好将它抽出来放到类名后面
-并且针对app要做一些转换
-
-*/
-const path = require('path');
-const platConfig = require('../../config/config');
-
-//默认manifest.json
+"use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const path = __importStar(require("path"));
+const config_1 = __importDefault(require("../../config/config"));
 var manifest = {
     package: 'org.hapjs.demo.sample',
     name: 'nanachi转快应用',
@@ -45,9 +50,9 @@ var manifest = {
         { name: 'system.wifi' },
         { name: 'service.stats' },
         { name: 'service.account' },
-        { name: 'system.contact'},
+        { name: 'system.contact' },
         { name: 'service.app' },
-        { name: 'service.share', 'params': {'appSign': '', 'wxKey': ''} },
+        { name: 'service.share', 'params': { 'appSign': '', 'wxKey': '' } },
         { name: 'service.pay' },
         { name: 'service.alipay' },
         {
@@ -76,10 +81,10 @@ var manifest = {
         {
             name: 'service.qqaccount',
             'params': {
-                'package':'',
+                'package': '',
                 'appId': '',
                 'sign': '',
-                'clientId':''
+                'clientId': ''
             }
         },
         {
@@ -101,206 +106,145 @@ var manifest = {
     },
     router: {
         entry: 'pages/index',
-        pages: {
-           
-        }
+        pages: {}
     },
     display: {
         menu: true,
         titleBar: true
     },
     subpackages: []
-      
 };
-
-
-//配置页面路由
 function setRouter(config) {
-
-
-    config.pages.forEach(function(el ,index){
-        
+    config.pages.forEach(function (el, index) {
         var routePath = el.slice(0, -6);
         manifest.router.pages[routePath] = {
             component: 'index'
         };
-        //设置首页
-        if (index === 0){
+        if (index === 0) {
             manifest.router.entry = routePath;
-        } 
+        }
     });
-  
-    //webview路由跳转
     var globalConfig = require('../../config/config');
     if (globalConfig.webview && globalConfig.webview.pages.length) {
         let routePath = 'pages/__web__view__';
         manifest.router.pages[routePath] = {
             component: 'index'
-        }
+        };
     }
-
     let userConfig = {};
     try {
         userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
-        
-    } catch (err) {
-        // eslint-disable-next-line
     }
-
-    if (
-        userConfig.router 
-        && Object.prototype.toString.call(userConfig.router) === '[object Object]'
-    ) 
-    {
+    catch (err) {
+    }
+    if (userConfig.router
+        && Object.prototype.toString.call(userConfig.router) === '[object Object]') {
         let pages = {};
         if (userConfig.router.entry) {
-            // 不允许用户配置router.entry
             delete userConfig.router.entry;
         }
-        if (platConfig.huawei && userConfig.router.pages && Object.prototype.toString.call(userConfig.router.pages) === '[object Object]') {
-            // 合并router.pages
+        if (config_1.default.huawei && userConfig.router.pages && Object.prototype.toString.call(userConfig.router.pages) === '[object Object]') {
             pages = Object.assign({}, manifest.router && manifest.router.pages, userConfig.router.pages);
-        } else {
-            // 如果不是华为，删除用户自己配置的router.pages字段
+        }
+        else {
             delete userConfig.router.pages;
         }
         Object.assign(manifest.router, userConfig.router);
         Object.assign(manifest.router.pages, pages);
     }
-    if (
-        platConfig.huawei
-        && userConfig.widgets 
-        && Object.prototype.toString.call(userConfig.widgets) === '[object Array]'
-    ) 
-    {
-        manifest.widgets = userConfig.widgets
+    if (config_1.default.huawei
+        && userConfig.widgets
+        && Object.prototype.toString.call(userConfig.widgets) === '[object Array]') {
+        manifest.widgets = userConfig.widgets;
     }
-
 }
-
-
-//为app.js的config对象配置titlebar
 function setTitleBar(config) {
     var display = manifest.display;
     let userConfig = {};
     try {
         userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
-    } catch (err) {
-        // eslint-disable-next-line
     }
-
-    //webview配置titlebar
+    catch (err) {
+    }
     var globalConfig = require('../../config/config');
-
-    if ( globalConfig.webview 
+    if (globalConfig.webview
         && /true|false/.test(globalConfig.webview.showTitleBar)
-        && !globalConfig.webview.showTitleBar ) {
+        && !globalConfig.webview.showTitleBar) {
         let routePath = 'pages/__web__view__';
         display['pages'] = display['pages'] || {};
         display['pages'][routePath] = {
             titleBar: false
-        }
+        };
     }
-    
-    if (
-        userConfig.display 
+    if (userConfig.display
         && /true|false/.test(userConfig.display.titleBar)
-        && !userConfig.display.titleBar
-    ) 
-    {
+        && !userConfig.display.titleBar) {
         display.titleBar = false;
         return;
     }
-
-    
-    //这里取得 app.js 类的config.window 得值，但是 pageWrapper又是取得config的值。造成必须两者都要写
     var win = config.window || {};
-    //从config
-    var disabledTitleBarPages = globalConfig.quick.disabledTitleBarPages || []
-    disabledTitleBarPages.forEach(function(el){
-        // userPath/titledemo/source/pages/index/index.js => pages/index/index
-        let route = path.relative( path.join(process.cwd(), platConfig.sourceDir),  path.dirname(el) );
+    var disabledTitleBarPages = globalConfig.quick.disabledTitleBarPages || [];
+    disabledTitleBarPages.forEach(function (el) {
+        let route = path.relative(path.join(process.cwd(), config_1.default.sourceDir), path.dirname(el));
         display.pages = display.pages || {};
         display['pages'][route] = display['pages'][route] || {};
         display['pages'][route]['titleBar'] = false;
     });
-    
     display.titleBarText = win.navigationBarTitleText || 'nanachi';
     display.titleBarTextColor = win.navigationBarTextStyle || 'black';
-    //快应用的display.backgroundColor 颜色又是取得win.navigationBarBackgroundColor导航栏背景的颜色，
-    //应该取win.backgroundColor窗口背景的颜色
-    //如果少了个display.titleBarBackgroundColor 会导致页面切换出现黑色闪屏
     display.titleBarBackground = win.navigationBarBackgroundColor || '#ffffff';
     display.backgroundColor = win.backgroundColor || '#ffffff';
-
 }
-
-//配置name, permissions, config, subpackages, 各支付签名
 function setOtherConfig() {
     let userConfig = {};
     try {
         userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
-    } catch (err) {
-        // eslint-disable-next-line
     }
-
-    if (
-        userConfig.display 
+    catch (err) {
+    }
+    if (userConfig.display
         && /true|false/.test(userConfig.display.menu)
-        && !userConfig.display.menu
-    ) 
-    {
+        && !userConfig.display.menu) {
         manifest.display.menu = false;
     }
-   
-    //配置各支付签名
     let userFeatures = userConfig.features || [];
-    let features = manifest.features.map(function(el){
-        let userFeat = userFeatures.find(function(userFeat){
+    let features = manifest.features.map(function (el) {
+        let userFeat = userFeatures.find(function (userFeat) {
             return userFeat.name === el.name;
         });
         return userFeat ? userFeat : el;
     });
-    
     manifest.features = features;
     [
-        'name', 
+        'name',
         'versionName',
         'versionCode',
-        'permissions', 
-        'config', 
+        'permissions',
+        'config',
         'subpackages',
         'package',
         'minPlatformVersion',
         'icon'
-    ].forEach(function(el){
+    ].forEach(function (el) {
         if (userConfig[el]) {
             manifest[el] = userConfig[el];
         }
     });
 }
-
-
-module.exports = function quickConfig(config, modules){
-    if (modules.componentType !== 'App') return;
-   
-    //配置页面路由
+module.exports = function quickConfig(config, modules) {
+    if (modules.componentType !== 'App')
+        return;
     setRouter(config);
-
-    //配置titlebar
     setTitleBar(config);
-    if (platConfig.huawei){
+    if (config_1.default.huawei) {
         manifest.minPlatformVersion = 1040;
     }
-    //配置name, permissions, config, subpackages, 各支付签名
     setOtherConfig();
-    //manifest要序列化的对象
     modules.queue.push({
         path: 'manifest.json',
         code: JSON.stringify(manifest, null, 4),
         type: 'json'
     });
-
     var win = config.window;
     delete config.window;
     delete config.pages;
