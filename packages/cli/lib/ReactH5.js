@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-20T09
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-20T12
  * IE9+
  */
 
@@ -815,7 +815,7 @@
                     syncValue(node, "checked", !!props.checked);
                 }
                 var isActive = node === node.ownerDocument.activeElement;
-                var value = isActive ? node.value : getSafeValue(props.value);
+                var value = getSafeValue(props.value);
                 if (value != null) {
                     if (props.type === "number") {
                         if (value === 0 && node.value === "" ||
@@ -1694,7 +1694,7 @@
                 extend(instance, {
                     __isStateless: true,
                     renderImpl: type,
-                    render: function f() {
+                    render: function f1() {
                         return this.renderImpl(this.props, this.context);
                     }
                 });
@@ -1922,8 +1922,8 @@
     }
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
+        var updateQueue = fiber.updateQueue;
         if (useCallbackImpl(create, deps, false, true)) {
-            var updateQueue = fiber.updateQueue;
             if (fiber.effectTag % EffectTag) {
                 fiber.effectTag *= EffectTag;
             }
@@ -2649,7 +2649,7 @@
             child: props.child
         };
     }, Component, {
-        render: function render() {
+        render: function f3() {
             return this.state.child;
         }
     });

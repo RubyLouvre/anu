@@ -824,7 +824,7 @@ function createInstance(fiber, context) {
             extend(instance, {
                 __isStateless: true,
                 renderImpl: type,
-                render: function f() {
+                render: function f1() {
                     return this.renderImpl(this.props, this.context);
                 }
             });
@@ -1069,8 +1069,8 @@ function useCallbackImpl(create, deps, isMemo, isEffect) {
 }
 function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
     var fiber = getCurrentFiber();
+    var updateQueue = fiber.updateQueue;
     if (useCallbackImpl(create, deps, false, true)) {
-        var updateQueue = fiber.updateQueue;
         if (fiber.effectTag % EffectTag) {
             fiber.effectTag *= EffectTag;
         }
@@ -1796,7 +1796,7 @@ var Unbatch = miniCreateClass(function Unbatch(props) {
         child: props.child
     };
 }, Component, {
-    render: function render() {
+    render: function f3() {
         return this.state.child;
     }
 });
