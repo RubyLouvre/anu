@@ -178,16 +178,6 @@ export function typeNumber(data) {
     return a || 8;
 }
 
-export function getWrappedFiber(fiber) {
-    const originFiber = fiber;
-    while (fiber) {
-        if (fiber.stateNode.$$eventCached) {
-            return fiber;
-        }
-        fiber = fiber.child;
-    }
-    return originFiber;
-}
 
 export let toArray =
     Array.from ||

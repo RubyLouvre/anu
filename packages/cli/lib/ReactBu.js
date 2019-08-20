@@ -120,16 +120,6 @@ function typeNumber(data) {
     var a = numberMap[__type.call(data)];
     return a || 8;
 }
-function getWrappedFiber(fiber) {
-    var originFiber = fiber;
-    while (fiber) {
-        if (fiber.stateNode.$$eventCached) {
-            return fiber;
-        }
-        fiber = fiber.child;
-    }
-    return originFiber;
-}
 
 function createRenderer(methods) {
     return extend(Renderer, methods);
@@ -615,6 +605,13 @@ function _getApp() {
     }
     return fakeApp;
 }
+function getWrappedComponent(fiber, instance) {
+    if (instance.isPureComponent && instance.constructor.WrappedComponent) {
+        return fiber.child.child.stateNode;
+    } else {
+        return instance;
+    }
+}
 if (typeof getApp === 'function') {
     _getApp = getApp;
 }
@@ -665,7 +662,7 @@ function refreshComponent(reactInstances, wx, uuid) {
             if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
                 reactInstance = fiber.child.stateNode;
             } else {
-                reactInstance = getWrappedFiber(fiber).stateNode;
+                reactInstance = getWrappedComponent(fiber, reactInstance);
             }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
@@ -2494,6 +2491,7 @@ function registerApp(app) {
     return app;
 }
 
+var defer = Promise.resolve().then.bind(Promise.resolve());
 function registerComponent(type, name) {
     type.isMPComponent = true;
     registeredComponents[name] = type;
@@ -2525,20 +2523,20 @@ function onLoad(PageClass, path, query) {
     app.$$page = this;
     app.$$pagePath = path;
     var container = {
-        type: 'page',
+        type: "page",
         props: {},
         children: [],
         root: true,
         appendChild: noop
     };
     var pageInstance;
-    if (typeof GlobalApp === 'function') {
+    if (typeof GlobalApp === "function") {
         render(createElement(GlobalApp, {}, createElement(PageClass, {
             path: path,
             query: query,
             isPageComponent: true,
             ref: function ref(ins) {
-                if (ins) pageInstance = ins.wrappedInstance || getWrappedFiber(ins._reactInternalFiber).stateNode;
+                if (ins) pageInstance = ins.wrappedInstance || getWrappedComponent(get(ins), ins);
             }
         })), container);
     } else {
@@ -2549,7 +2547,7 @@ function onLoad(PageClass, path, query) {
             isPageComponent: true
         }), container);
     }
-    callGlobalHook('onGlobalLoad');
+    callGlobalHook("onGlobalLoad");
     this.reactContainer = container;
     this.reactInstance = pageInstance;
     pageInstance.wx = this;
@@ -2564,7 +2562,7 @@ function onReady() {
         el.fn.call(el.instance);
         el.instance.componentDidMount = el.fn;
     }
-    callGlobalHook('onGlobalReady');
+    callGlobalHook("onGlobalReady");
 }
 function onUnload() {
     for (var i in usingComponents) {
@@ -2588,7 +2586,7 @@ function onUnload() {
             }
         }, true);
     }
-    callGlobalHook('onGlobalUnload');
+    callGlobalHook("onGlobalUnload");
 }
 
 function registerPageHook(appHooks, pageHook, app, instance, args) {

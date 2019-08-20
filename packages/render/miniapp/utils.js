@@ -1,4 +1,4 @@
-import { hasOwnProperty, typeNumber, isFn, get, getWrappedFiber } from 'react-core/util';
+import { hasOwnProperty, typeNumber, isFn, get } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 import { Renderer } from 'react-core/createRenderer';
 
@@ -14,6 +14,18 @@ function _getApp () {
         return getApp();
     }
     return fakeApp;
+}
+//获取redux-react中的connect包裹下的原始实例对象 相同点Connect.WrappedComponent
+//  https://cdn.bootcss.com/react-redux/7.1.0-alpha.1/react-redux.js
+//  https://cdn.bootcss.com/react-redux/6.0.1/react-redux.js 
+//  https://cdn.bootcss.com/react-redux/5.1.1/react-redux.js
+//  https://cdn.bootcss.com/react-redux/4.4.5/react-redux.js
+export function getWrappedComponent(fiber, instance) {
+    if(instance.isPureComponent && instance.constructor.WrappedComponent){
+       return fiber.child.child.stateNode
+    }else{
+       return instance
+    }
 }
 
 if (typeof getApp === 'function') {
@@ -77,8 +89,8 @@ export function refreshComponent (reactInstances, wx, uuid) {
             if(fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector'){
                 reactInstance = fiber.child.stateNode;
             } else {
-                // 处理redux
-                reactInstance = getWrappedFiber(fiber).stateNode;
+                // 处理redux与普通情况
+                reactInstance = getWrappedComponent(fiber, reactInstance);
             }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;

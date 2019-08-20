@@ -5,12 +5,10 @@ import {
     detachComponent
 } from "./utils";
 import { dispatchEvent } from "./eventSystem";
-const defer =
-    typeof swan == "object" && swan.canIUse("lifecycle-2-0")
-        ? Promise.resolve().then.bind(Promise.resolve())
-        : function(fn) {
-              fn();
-          };
+const defer = Promise.resolve().then.bind(Promise.resolve())
+   // typeof swan == "object" && swan.canIUse("lifecycle-2-0")
+   //     ? Promise.resolve().then.bind(Promise.resolve())
+   //     : function(fn) {  fn(); };
 
 export function registerComponent(type, name) {
     type.isMPComponent = true;

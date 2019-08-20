@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-20T04
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-20T09
  * IE9+
  */
 
@@ -157,16 +157,6 @@
         }
         var a = numberMap[__type.call(data)];
         return a || 8;
-    }
-    function getWrappedFiber(fiber) {
-        var originFiber = fiber;
-        while (fiber) {
-            if (fiber.stateNode.$$eventCached) {
-                return fiber;
-            }
-            fiber = fiber.child;
-        }
-        return originFiber;
     }
 
     function createRenderer(methods) {
@@ -3104,6 +3094,13 @@
         }
         return fakeApp;
     }
+    function getWrappedComponent(fiber, instance) {
+        if (instance.isPureComponent && instance.constructor.WrappedComponent) {
+            return fiber.child.child.stateNode;
+        } else {
+            return instance;
+        }
+    }
     if (typeof getApp === 'function') {
         _getApp = getApp;
     }
@@ -3136,7 +3133,7 @@
                 if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
                     reactInstance = fiber.child.stateNode;
                 } else {
-                    reactInstance = getWrappedFiber(fiber).stateNode;
+                    reactInstance = getWrappedComponent(fiber, reactInstance);
                 }
                 reactInstance.wx = wx;
                 wx.reactInstance = reactInstance;
@@ -4733,27 +4730,66 @@
     };
 
     function pageScrollTo() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          scrollTop = _ref.scrollTop,
-          _ref$duration = _ref.duration,
-          _ref$success = _ref.success,
-          success = _ref$success === undefined ? function () {} : _ref$success,
-          _ref$fail = _ref.fail,
-          fail = _ref$fail === undefined ? function () {} : _ref$fail,
-          _ref$complete = _ref.complete,
-          complete = _ref$complete === undefined ? function () {} : _ref$complete;
-      return new Promise(function (resolve, reject) {
-        var container = document.getElementsByClassName('__internal__DynamicPage-container');
-        if (container.length > 0) {
-          container[container.length - 1].scrollTo(0, scrollTop);
-          handleSuccess({ scrollTop: scrollTop }, success, complete, resolve);
-        } else {
-          handleFail({ errMsg: 'pageScrollTo fail' }, fail, complete, reject);
-        }
-      });
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            scrollTop = _ref.scrollTop,
+            _ref$duration = _ref.duration,
+            duration = _ref$duration === undefined ? 300 : _ref$duration,
+            _ref$success = _ref.success,
+            success = _ref$success === undefined ? function () {} : _ref$success,
+            _ref$fail = _ref.fail,
+            fail = _ref$fail === undefined ? function () {} : _ref$fail,
+            _ref$complete = _ref.complete,
+            complete = _ref$complete === undefined ? function () {} : _ref$complete;
+        return new Promise(function (resolve, reject) {
+            var bounce = function bounce(per) {
+                if (per < 1 / 2.75) {
+                    return 7.5625 * per * per;
+                } else if (per < 2 / 2.75) {
+                    return 7.5625 * (per -= 1.5 / 2.75) * per + .75;
+                } else if (per < 2.5 / 2.75) {
+                    return 7.5625 * (per -= 2.25 / 2.75) * per + .9375;
+                } else {
+                    return 7.5625 * (per -= 2.25 / 2.75) * per + .984375;
+                }
+            };
+            var container = document.getElementsByClassName('__internal__DynamicPage-container');
+            if (container.length > 0) {
+                var page = container[container.length - 1];
+                var begin = page.scrollTop;
+                var distance = begin + scrollTop;
+                var fps = 60;
+                var internal = 1000 / fps;
+                var times = duration / 1000 * fps;
+                var step = distance / times;
+                var beginTime = new Date();
+                var id = setInterval(function () {
+                    var per = (new Date() - beginTime) / duration;
+                    if (scrollTop > 0) {
+                        if (begin >= distance) {
+                            clearInterval(id);
+                            handleSuccess({ scrollTop: scrollTop }, success, complete, resolve);
+                        } else {
+                            page.style.top = begin + bounce(per) * scrollTop + 'px';
+                            begin += step;
+                        }
+                    } else if (scrollTop < 0) {
+                        if (begin < distance) {
+                            clearInterval(id);
+                            handleSuccess({ scrollTop: scrollTop }, success, complete, resolve);
+                        } else {
+                            page.style.top = begin + bounce(per) * scrollTop + 'px';
+                            begin += step;
+                        }
+                    }
+                    page.scrollTop = begin;
+                }, internal);
+            } else {
+                handleFail({ errMsg: 'pageScrollTo fail' }, fail, complete, reject);
+            }
+        });
     }
     var scroll = {
-      pageScrollTo: pageScrollTo
+        pageScrollTo: pageScrollTo
     };
 
     var SelectorQuery = function SelectorQuery() {
@@ -5394,6 +5430,7 @@
         return event;
     }
 
+    var defer = Promise.resolve().then.bind(Promise.resolve());
     function registerComponent(type, name) {
         type.isMPComponent = true;
         registeredComponents[name] = type;
