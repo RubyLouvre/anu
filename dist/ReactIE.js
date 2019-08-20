@@ -3345,7 +3345,7 @@
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
             miniCreateClass: miniCreateClass,
-            version: '1.5.9',
+            version: '1.5.10',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,
