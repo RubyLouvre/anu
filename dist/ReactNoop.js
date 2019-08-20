@@ -1,14 +1,15 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-08-12
+ * 此个版本专门用于测试
+ * by 司徒正美 Copyright 2019-08-10
+ * IE9+
  */
 
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
-    (global.React = factory());
+    (global.ReactNoop = factory());
 }(this, (function () {
     var arrayPush = Array.prototype.push;
-    var innerHTML = 'dangerouslySetInnerHTML';
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var gSBU = 'getSnapshotBeforeUpdate';
     var gDSFP = 'getDerivedStateFromProps';
@@ -101,37 +102,8 @@
         }
         return Ctor;
     }
-    var lowerCache = {};
-    function toLowerCase(s) {
-        return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
-    }
     function isFn(obj) {
         return __type.call(obj) === '[object Function]';
-    }
-    var rword = /[^, ]+/g;
-    function oneObject(array, val) {
-        if (array + '' === array) {
-            array = array.match(rword) || [];
-        }
-        var result = {},
-        value = val !== void 666 ? val : 1;
-        for (var i = 0, n = array.length; i < n; i++) {
-            result[array[i]] = value;
-        }
-        return result;
-    }
-    var rcamelize = /[-_][^-_]/g;
-    function camelize(target) {
-        if (!target || target.indexOf('-') < 0 && target.indexOf('_') < 0) {
-            return target;
-        }
-        var str = target.replace(rcamelize, function (match) {
-            return match.charAt(1).toUpperCase();
-        });
-        return firstLetterLower(str);
-    }
-    function firstLetterLower(str) {
-        return str.charAt(0).toLowerCase() + str.slice(1);
     }
     var numberMap = {
         '[object Boolean]': 2,
@@ -668,1026 +640,6 @@
         return getContext;
     }
 
-    function findHostInstance(fiber) {
-        if (!fiber) {
-            return null;
-        } else if (fiber.nodeType) {
-            return fiber;
-        } else if (fiber.tag > 3) {
-            return fiber.stateNode;
-        } else if (fiber.tag < 3) {
-            return findHostInstance(fiber.stateNode);
-        } else if (fiber.refs && fiber.render) {
-            fiber = get(fiber);
-            var childrenMap = fiber.children;
-            if (childrenMap) {
-                for (var i in childrenMap) {
-                    var dom = findHostInstance(childrenMap[i]);
-                    if (dom) {
-                        return dom;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    function findDOMNode(fiber) {
-        if (fiber == null) {
-            return null;
-        }
-        if (fiber.nodeType === 1) {
-            return fiber;
-        }
-        if (!fiber.render) {
-            throw "findDOMNode:invalid type";
-        }
-        return findHostInstance(fiber);
-    }
-
-    function DOMElement(type) {
-        this.nodeName = type;
-        this.style = {};
-        this.children = [];
-    }
-    var NAMESPACE = {
-        svg: 'http://www.w3.org/2000/svg',
-        xmlns: 'http://www.w3.org/2000/xmlns/',
-        xlink: 'http://www.w3.org/1999/xlink',
-        xhtml: 'http://www.w3.org/1999/xhtml',
-        math: 'http://www.w3.org/1998/Math/MathML'
-    };
-    var fn = DOMElement.prototype = {
-        contains: Boolean
-    };
-    String('replaceChild,appendChild,removeAttributeNS,setAttributeNS,removeAttribute,setAttribute' + ',getAttribute,insertBefore,removeChild,addEventListener,removeEventListener,attachEvent' + ',detachEvent').replace(/\w+/g, function (name) {
-        fn[name] = noop;
-    });
-    var fakeDoc = new DOMElement();
-    fakeDoc.createElement = fakeDoc.createElementNS = fakeDoc.createDocumentFragment = function (type) {
-        return new DOMElement(type);
-    };
-    fakeDoc.createTextNode = fakeDoc.createComment = Boolean;
-    fakeDoc.documentElement = new DOMElement('html');
-    fakeDoc.body = new DOMElement('body');
-    fakeDoc.nodeName = '#document';
-    fakeDoc.textContent = '';
-    var win = getWindow();
-    var inBrowser = !!win.alert;
-    if (!inBrowser) {
-        win.document = fakeDoc;
-    }
-    var document = win.document;
-    var versions = {
-        88: 7,
-        80: 6,
-        '00': NaN,
-        '08': NaN
-    };
-    var msie = document.documentMode || versions[typeNumber(document.all) + '' + typeNumber(win.XMLHttpRequest)];
-    var modern = /NaN|undefined/.test(msie) || msie > 8;
-    function contains(a, b) {
-        if (b) {
-            while (b = b.parentNode) {
-                if (b === a) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    var rnumber = /^-?\d+(\.\d+)?$/;
-    function patchStyle(dom, lastStyle, nextStyle) {
-        if (lastStyle === nextStyle) {
-            return;
-        }
-        for (var name in nextStyle) {
-            var val = nextStyle[name];
-            if (lastStyle[name] !== val) {
-                name = cssName(name, dom);
-                if (val !== 0 && !val) {
-                    val = "";
-                } else if (rnumber.test(val) && !cssNumber[name]) {
-                    val = val + "px";
-                }
-                try {
-                    dom.style[name] = val;
-                } catch (e) {
-                    console.log("dom.style[" + name + "] = " + val + "throw error");
-                }
-            }
-        }
-        for (var _name in lastStyle) {
-            if (!(_name in nextStyle)) {
-                _name = cssName(_name, dom);
-                dom.style[_name] = "";
-            }
-        }
-    }
-    var cssNumber = oneObject("animationIterationCount,columnCount,order,flex,flexGrow,flexShrink,fillOpacity,fontWeight,lineHeight,opacity,orphans,widows,zIndex,zoom");
-    var prefixes = ["", "-webkit-", "-o-", "-moz-", "-ms-"];
-    var cssMap = oneObject("float", "cssFloat");
-    function cssName(name, dom) {
-        if (cssMap[name]) {
-            return cssMap[name];
-        }
-        var host = dom && dom.style || {};
-        for (var i = 0, n = prefixes.length; i < n; i++) {
-            var camelCase = camelize(prefixes[i] + name);
-            if (camelCase in host) {
-                return cssMap[name] = camelCase;
-            }
-        }
-        return null;
-    }
-
-    function getSafeValue(value) {
-        switch (typeNumber(value)) {
-            case 2:
-            case 3:
-            case 8:
-            case 4:
-            case 0:
-                return value;
-            default:
-                return "";
-        }
-    }
-    var duplexMap = {
-        input: {
-            init: function init(node, props) {
-                var defaultValue = props.defaultValue == null ? "" : props.defaultValue;
-                return node._wrapperState = {
-                    initialValue: getSafeValue(props.value != null ? props.value : defaultValue)
-                };
-            },
-            mount: function mount(node, props, state) {
-                if (props.hasOwnProperty("value") || props.hasOwnProperty("defaultValue")) {
-                    var stateValue = "" + state.initialValue;
-                    if (node.value === "" && node.value !== stateValue) {
-                        syncValue(node, "value", stateValue);
-                    }
-                    node.defaultValue = stateValue;
-                }
-                var name = node.name;
-                if (name !== "") {
-                    node.name = "";
-                }
-                node.defaultChecked = !node.defaultChecked;
-                node.defaultChecked = !node.defaultChecked;
-                if (name !== "") {
-                    node.name = name;
-                }
-            },
-            update: function update(node, props) {
-                if (props.checked != null) {
-                    syncValue(node, "checked", !!props.checked);
-                }
-                var isActive = node === node.ownerDocument.activeElement;
-                var value = isActive ? node.value : getSafeValue(props.value);
-                if (value != null) {
-                    if (props.type === "number") {
-                        if (value === 0 && node.value === "" ||
-                        node.value != value) {
-                            syncValue(node, "value", "" + value);
-                        }
-                    } else if (node.value !== "" + value) {
-                        syncValue(node, "value", "" + value);
-                    }
-                }
-                if (props.hasOwnProperty("value")) {
-                    setDefaultValue(node, props.type, value, isActive);
-                } else if (props.hasOwnProperty("defaultValue")) {
-                    setDefaultValue(node, props.type, getSafeValue(props.defaultValue), isActive);
-                }
-                if (props.checked == null && props.defaultChecked != null) {
-                    node.defaultChecked = !!props.defaultChecked;
-                }
-            }
-        },
-        select: {
-            init: function init(node, props) {
-                var value = props.value;
-                return node._wrapperState = {
-                    initialValue: value != null ? value : props.defaultValue,
-                    wasMultiple: !!props.multiple
-                };
-            },
-            mount: function mount(node, props) {
-                var multiple = node.multiple = !!props.multiple;
-                var value = props.value;
-                if (value != null) {
-                    updateOptions(node, multiple, value, false);
-                } else if (props.defaultValue != null) {
-                    updateOptions(node, multiple, props.defaultValue, true);
-                }
-            },
-            update: function update(node, props) {
-                node._wrapperState.initialValue = void 666;
-                var wasMultiple = node._wrapperState.wasMultiple;
-                var multiple = node._wrapperState.wasMultiple = !!props.multiple;
-                var value = props.value;
-                if (value != null) {
-                    updateOptions(node, multiple, value, false);
-                } else if (wasMultiple !== multiple) {
-                    if (props.defaultValue != null) {
-                        updateOptions(node, multiple, props.defaultValue, true);
-                    } else {
-                        updateOptions(node, multiple, multiple ? [] : "", false);
-                    }
-                }
-            }
-        },
-        textarea: {
-            init: function init(node, props) {
-                var initialValue = props.value;
-                if (initialValue == null) {
-                    var defaultValue = props.defaultValue;
-                    var children = props.children;
-                    if (children != null) {
-                        defaultValue = textContent(node);
-                        node.innerHTML = "";
-                    }
-                    if (defaultValue == null) {
-                        defaultValue = "";
-                    }
-                    initialValue = defaultValue;
-                }
-                return node._wrapperState = {
-                    initialValue: "" + initialValue
-                };
-            },
-            mount: function mount(node, props, state) {
-                var text = textContent(node);
-                var stateValue = "" + state.initialValue;
-                if (text !== stateValue) {
-                    syncValue(node, "value", stateValue);
-                }
-            },
-            update: function update(node, props) {
-                var value = props.value;
-                if (value != null) {
-                    var newValue = "" + value;
-                    if (newValue !== node.value) {
-                        syncValue(node, "value", newValue);
-                    }
-                    if (props.defaultValue == null) {
-                        node.defaultValue = newValue;
-                    }
-                }
-                if (props.defaultValue != null) {
-                    node.defaultValue = props.defaultValue;
-                }
-            }
-        },
-        option: {
-            init: function init() {},
-            update: function update(node, props) {
-                duplexMap.option.mount(node, props);
-            },
-            mount: function mount(node, props) {
-                var elems = node.getElementsByTagName("*");
-                var n = elems.length,
-                    el = void 0;
-                if (n) {
-                    for (n = n - 1, el; el = elems[n--];) {
-                        node.removeChild(el);
-                    }
-                }
-                if ("value" in props) {
-                    node.duplexValue = node.value = props.value;
-                } else {
-                    node.duplexValue = node.text;
-                }
-            }
-        }
-    };
-    function textContent(node) {
-        return node.textContent || node.innerText;
-    }
-    function setDefaultValue(node, type, value, isActive) {
-        if (
-        type !== "number" || !isActive) {
-            if (value == null) {
-                node.defaultValue = "" + node._wrapperState.initialValue;
-            } else if (node.defaultValue !== "" + value) {
-                node.defaultValue = "" + value;
-            }
-        }
-    }
-    function updateOptions(node, multiple, propValue, setDefaultSelected) {
-        var options = node.options;
-        if (multiple) {
-            var selectedValues = propValue;
-            var selectedValue = {};
-            for (var i = 0; i < selectedValues.length; i++) {
-                selectedValue["$" + selectedValues[i]] = true;
-            }
-            for (var _i = 0; _i < options.length; _i++) {
-                var selected = selectedValue.hasOwnProperty("$" + options[_i].duplexValue);
-                if (options[_i].selected !== selected) {
-                    options[_i].selected = selected;
-                }
-                if (selected && setDefaultSelected) {
-                    options[_i].defaultSelected = true;
-                }
-            }
-        } else {
-            var _selectedValue = "" + propValue;
-            var defaultSelected = null;
-            for (var _i2 = 0; _i2 < options.length; _i2++) {
-                if (options[_i2].duplexValue === _selectedValue) {
-                    options[_i2].selected = true;
-                    if (setDefaultSelected) {
-                        options[_i2].defaultSelected = true;
-                    }
-                    return;
-                }
-                if (defaultSelected === null && !options[_i2].disabled) {
-                    defaultSelected = options[_i2];
-                }
-            }
-            if (defaultSelected !== null) {
-                defaultSelected.selected = true;
-            }
-        }
-    }
-    function syncValue(dom, name, value) {
-        dom.__anuSetValue = true;
-        dom[name] = value;
-        dom.__anuSetValue = false;
-    }
-    function duplexAction(fiber) {
-        var dom = fiber.stateNode,
-            name = fiber.name,
-            props = fiber.props,
-            lastProps = fiber.lastProps;
-        var fns = duplexMap[name];
-        if (name !== "option") {
-            enqueueDuplex(dom);
-        }
-        if (!lastProps || lastProps == emptyObject) {
-            var state = fns.init(dom, props);
-            fns.mount(dom, props, state);
-        } else {
-            fns.update(dom, props);
-        }
-    }
-    var duplexNodes = [];
-    function enqueueDuplex(dom) {
-        if (duplexNodes.indexOf(dom) == -1) {
-            duplexNodes.push(dom);
-        }
-    }
-    function fireDuplex() {
-        var radioMap = {};
-        if (duplexNodes.length) {
-            do {
-                var dom = duplexNodes.shift();
-                var e = dom.__events;
-                var fiber = e && e.vnode;
-                if (fiber && !fiber.disposed) {
-                    var props = fiber.props;
-                    var tag = fiber.name;
-                    if (name === "select") {
-                        var value = props.value;
-                        if (value != null) {
-                            updateOptions(dom, !!props.multiple, value, false);
-                        }
-                    } else {
-                        duplexMap[tag].update(dom, props);
-                        var _name = props.name;
-                        if (props.type === "radio" && _name != null && !radioMap[_name]) {
-                            radioMap[_name] = 1;
-                            collectNamedCousins(dom, _name);
-                        }
-                    }
-                }
-            } while (duplexNodes.length);
-        }
-    }
-    function collectNamedCousins(rootNode, name) {
-        var queryRoot = rootNode;
-        while (queryRoot.parentNode) {
-            queryRoot = queryRoot.parentNode;
-        }
-        var group = queryRoot.getElementsByTagName("input");
-        for (var i = 0; i < group.length; i++) {
-            var otherNode = group[i];
-            if (otherNode === rootNode || otherNode.name !== name || otherNode.type !== "radio" || otherNode.form !== rootNode.form) {
-                continue;
-            }
-            enqueueDuplex(otherNode);
-        }
-    }
-
-    var rform = /textarea|input|select|option/i;
-    var globalEvents = {};
-    var eventPropHooks = {};
-    var eventHooks = {};
-    var eventLowerCache = {
-        onClick: 'click',
-        onChange: 'change',
-        onWheel: 'wheel'
-    };
-    function eventAction(dom, name, val, lastProps, fiber) {
-        var events = dom.__events || (dom.__events = {});
-        events.vnode = fiber;
-        var refName = toLowerCase(name.slice(2));
-        if (val === false) {
-            delete events[refName];
-        } else {
-            if (!lastProps[name]) {
-                var eventName = getBrowserName(name);
-                var hook = eventHooks[eventName];
-                if (hook) {
-                    hook(dom, eventName);
-                }
-                addGlobalEvent(eventName);
-            }
-            events[refName] = val;
-        }
-    }
-    var isTouch = 'ontouchstart' in document;
-    function dispatchEvent(e, type, endpoint) {
-        e = new SyntheticEvent(e);
-        if (type) {
-            e.type = type;
-        }
-        var bubble = e.type,
-            terminal = endpoint || document,
-            hook = eventPropHooks[e.type];
-        if (hook && false === hook(e)) {
-            return;
-        }
-        Renderer.batchedUpdates(function () {
-            var paths = collectPaths(e.target, terminal, {});
-            var captured = bubble + 'capture';
-            triggerEventFlow(paths, captured, e);
-            if (!e._stopPropagation) {
-                triggerEventFlow(paths.reverse(), bubble, e);
-            }
-        }, e);
-    }
-    var nodeID = 1;
-    function collectPaths(begin, end, unique) {
-        var paths = [];
-        var node = begin;
-        while (node && node.nodeType == 1) {
-            var checkChange = node;
-            if (node.__events) {
-                var vnode = node.__events.vnode;
-                inner: while (vnode.return) {
-                    if (vnode.tag === 5) {
-                        node = vnode.stateNode;
-                        if (node === end) {
-                            return paths;
-                        }
-                        if (!node) {
-                            break inner;
-                        }
-                        var uid = node.uniqueID || (node.uniqueID = ++nodeID);
-                        if (node.__events && !unique[uid]) {
-                            unique[uid] = 1;
-                            paths.push({ node: node, events: node.__events });
-                        }
-                    }
-                    vnode = vnode.return;
-                }
-            }
-            if (node === checkChange) {
-                node = node.parentNode;
-            }
-        }
-        return paths;
-    }
-    function triggerEventFlow(paths, prop, e) {
-        for (var i = paths.length; i--;) {
-            var path = paths[i];
-            var fn = path.events[prop];
-            if (isFn(fn)) {
-                e.currentTarget = path.node;
-                fn.call(void 666, e);
-                if (e._stopPropagation) {
-                    break;
-                }
-            }
-        }
-    }
-    function addGlobalEvent(name, capture) {
-        if (!globalEvents[name]) {
-            globalEvents[name] = true;
-            addEvent(document, name, dispatchEvent, capture);
-        }
-    }
-    function addEvent(el, type, fn, bool) {
-        if (el.addEventListener) {
-            el.addEventListener(type, fn, bool || false);
-        } else if (el.attachEvent) {
-            el.attachEvent('on' + type, fn);
-        }
-    }
-    var rcapture = /Capture$/;
-    function getBrowserName(onStr) {
-        var lower = eventLowerCache[onStr];
-        if (lower) {
-            return lower;
-        }
-        var camel = onStr.slice(2).replace(rcapture, '');
-        lower = camel.toLowerCase();
-        eventLowerCache[onStr] = lower;
-        return lower;
-    }
-    function getRelatedTarget(e) {
-        if (!e.timeStamp) {
-            e.relatedTarget = e.type === 'mouseover' ? e.fromElement : e.toElement;
-        }
-        return e.relatedTarget;
-    }
-    function getTarget(e) {
-        return e.target || e.srcElement;
-    }
-    String('load,error').replace(/\w+/g, function (name) {
-        eventHooks[name] = function (dom, type) {
-            var mark = '__' + type;
-            if (!dom[mark]) {
-                dom[mark] = true;
-                addEvent(dom, type, dispatchEvent);
-            }
-        };
-    });
-    String('mouseenter,mouseleave').replace(/\w+/g, function (name) {
-        eventHooks[name] = function (dom, type) {
-            var mark = '__' + type;
-            if (!dom[mark]) {
-                dom[mark] = true;
-                var mask = type === 'mouseenter' ? 'mouseover' : 'mouseout';
-                addEvent(dom, mask, function (e) {
-                    var t = getRelatedTarget(e);
-                    if (!t || t !== dom && !contains(dom, t)) {
-                        var common = getLowestCommonAncestor(dom, t);
-                        dispatchEvent(e, type, common);
-                    }
-                });
-            }
-        };
-    });
-    var specialHandles = {};
-    function createHandle(name, fn) {
-        return specialHandles[name] = function (e) {
-            if (fn && fn(e) === false) {
-                return;
-            }
-            dispatchEvent(e, name);
-        };
-    }
-    function onCompositionStart(e) {
-        e.target.__onComposition = true;
-    }
-    function onCompositionEnd(e) {
-        e.target.__onComposition = false;
-    }
-    var input2change = /text|password|search|url|email/i;
-    if (!document['__input']) {
-        globalEvents.input = document['__input'] = true;
-        addEvent(document, 'compositionstart', onCompositionStart);
-        addEvent(document, 'compositionend', onCompositionEnd);
-        addEvent(document, 'input', function (e) {
-            var dom = getTarget(e);
-            if (input2change.test(dom.type)) {
-                if (!dom.__onComposition) {
-                    dispatchEvent(e, 'change');
-                }
-            }
-            dispatchEvent(e);
-        });
-    }
-    function getLowestCommonAncestor(instA, instB) {
-        var depthA = 0;
-        for (var tempA = instA; tempA; tempA = tempA.parentNode) {
-            depthA++;
-        }
-        var depthB = 0;
-        for (var tempB = instB; tempB; tempB = tempB.parentNode) {
-            depthB++;
-        }
-        while (depthA - depthB > 0) {
-            instA = instA.parentNode;
-            depthA--;
-        }
-        while (depthB - depthA > 0) {
-            instB = instB.parentNode;
-            depthB--;
-        }
-        var depth = depthA;
-        while (depth--) {
-            if (instA === instB) {
-                return instA;
-            }
-            instA = instA.parentNode;
-            instB = instB.parentNode;
-        }
-        return null;
-    }
-    eventPropHooks.change = function (e) {
-        enqueueDuplex(e.target);
-    };
-    createHandle('doubleclick');
-    createHandle('scroll');
-    createHandle('wheel');
-    globalEvents.wheel = true;
-    globalEvents.scroll = true;
-    globalEvents.doubleclick = true;
-    if (isTouch) {
-        eventHooks.click = eventHooks.clickcapture = function (dom) {
-            dom.onclick = dom.onclick || noop;
-        };
-    }
-    eventPropHooks.click = function (e) {
-        return !e.target.disabled;
-    };
-    var fixWheelType = document.onwheel !== void 666 ? 'wheel' : 'onmousewheel' in document ? 'mousewheel' : 'DOMMouseScroll';
-    eventHooks.wheel = function (dom) {
-        addEvent(dom, fixWheelType, specialHandles.wheel);
-    };
-    eventPropHooks.wheel = function (event) {
-        event.deltaX = 'deltaX' in event ? event.deltaX :
-        'wheelDeltaX' in event ? -event.wheelDeltaX : 0;
-        event.deltaY = 'deltaY' in event ? event.deltaY :
-        'wheelDeltaY' in event ? -event.wheelDeltaY :
-        'wheelDelta' in event ? -event.wheelDelta : 0;
-    };
-    var focusMap = {
-        focus: 'focus',
-        blur: 'blur'
-    };
-    var innerFocus = void 0;
-    function blurFocus(e) {
-        var dom = getTarget(e);
-        var type = focusMap[e.type];
-        if (Renderer.inserting) {
-            if (type === 'blur') {
-                innerFocus = true;
-                Renderer.inserting.focus();
-                return;
-            }
-        }
-        if (innerFocus) {
-            innerFocus = false;
-            return;
-        }
-        do {
-            if (dom.nodeType === 1) {
-                if (dom.__events && dom.__events[type]) {
-                    dispatchEvent(e, type);
-                    break;
-                }
-            } else {
-                break;
-            }
-        } while (dom = dom.parentNode);
-    }
-    'blur,focus'.replace(/\w+/g, function (type) {
-        globalEvents[type] = true;
-        if (modern) {
-            var mark = '__' + type;
-            if (!document[mark]) {
-                document[mark] = true;
-                addEvent(document, type, blurFocus, true);
-            }
-        } else {
-            eventHooks[type] = function (dom, name) {
-                addEvent(dom, focusMap[name], blurFocus);
-            };
-        }
-    });
-    eventHooks.scroll = function (dom, name) {
-        addEvent(dom, name, specialHandles[name]);
-    };
-    eventHooks.doubleclick = function (dom, name) {
-        addEvent(document, 'dblclick', specialHandles[name]);
-    };
-    function SyntheticEvent(event) {
-        if (event.nativeEvent) {
-            return event;
-        }
-        for (var i in event) {
-            if (!eventProto[i]) {
-                this[i] = event[i];
-            }
-        }
-        if (!this.target) {
-            this.target = event.srcElement;
-        }
-        this.fixEvent();
-        this.timeStamp = new Date() - 0;
-        this.nativeEvent = event;
-    }
-    var eventProto = SyntheticEvent.prototype = {
-        fixEvent: noop,
-        fixHooks: noop,
-        persist: noop,
-        preventDefault: function preventDefault() {
-            var e = this.nativeEvent || {};
-            e.returnValue = this.returnValue = false;
-            if (e.preventDefault) {
-                e.preventDefault();
-                this.defaultPrevented = true;
-            }
-        },
-        stopPropagation: function stopPropagation() {
-            var e = this.nativeEvent || {};
-            e.cancelBubble = this._stopPropagation = true;
-            if (e.stopPropagation) {
-                e.stopPropagation();
-            }
-        },
-        stopImmediatePropagation: function stopImmediatePropagation() {
-            this.stopPropagation();
-            this.stopImmediate = true;
-        },
-        toString: function toString() {
-            return '[object Event]';
-        }
-    };
-    Renderer.eventSystem = {
-        eventPropHooks: eventPropHooks,
-        addEvent: addEvent,
-        dispatchEvent: dispatchEvent,
-        SyntheticEvent: SyntheticEvent
-    };
-
-    var NOWORK = 1;
-    var WORKING = 2;
-    var PLACE = 3;
-    var CONTENT = 5;
-    var ATTR = 7;
-    var DUPLEX = 11;
-    var DETACH = 13;
-    var HOOK = 17;
-    var REF = 19;
-    var CALLBACK = 23;
-    var PASSIVE = 29;
-    var CAPTURE = 31;
-    var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, PASSIVE, CAPTURE].sort(function (a, b) {
-        return a - b;
-    });
-    var effectLength = effectNames.length;
-
-    var isSpecialAttr = {
-        style: 1,
-        autoFocus: 1,
-        innerHTML: 1,
-        dangerouslySetInnerHTML: 1
-    };
-    var svgCache = {};
-    var strategyCache = {};
-    var svgCamelCase = {
-        w: { r: 1, b: 1, t: 1 },
-        e: { n: 1, t: 1, f: 1, p: 1, c: 1, m: 1, a: 2, u: 1, s: 1, v: 1 },
-        o: { r: 1 },
-        c: { m: 1 },
-        p: { p: 1 },
-        t: { s: 2, t: 1, u: 1, c: 1, d: 1, o: 1, x: 1, y: 1, l: 1 },
-        l: { r: 1, m: 1, u: 1, b: -1, l: -1, s: -1 },
-        r: { r: 1, u: 2, h: 1, w: 1, c: 1, e: 1 },
-        h: { r: 1, a: 1, l: 1, t: 1 },
-        y: { p: 1, s: 1, t: 1, c: 1 },
-        g: { c: 1 },
-        k: { a: -1, h: -1, r: -1, s: -1, t: -1, c: 1, u: 1 },
-        m: { o: 1, l: 1, a: 1 },
-        n: { c: 1, t: 1, u: 1 },
-        s: { a: 3 },
-        f: { x: 1, y: 1 },
-        d: { e: 1, f: 1, m: 1, d: 1 },
-        x: { c: 1 }
-    };
-    var specialSVGPropertyName = {
-        "overline-thickness": 2,
-        "underline-thickness": 2,
-        "overline-position": 2,
-        "underline-position": 2,
-        "stroke-miterlimit": 2,
-        "baseline-shift": 2,
-        "clip-path": 2,
-        "font-size": 2,
-        "font-size-adjust": 2,
-        "font-stretch": 2,
-        "font-style": 2,
-        "text-decoration": 2,
-        "vert-origin-x": 2,
-        "vert-origin-y": 2,
-        "paint-order": 2,
-        "fill-rule": 2,
-        "color-rendering": 2,
-        "marker-end": 2,
-        "pointer-events": 2,
-        "units-per-em": 2,
-        "strikethrough-thickness": 2,
-        "lighting-color": 2
-    };
-    var repeatedKey = ["et", "ep", "em", "es", "pp", "ts", "td", "to", "lr", "rr", "re", "ht", "gc"];
-    function createRepaceFn(split) {
-        return function (match) {
-            return match.slice(0, 1) + split + match.slice(1).toLowerCase();
-        };
-    }
-    var rhump = /([a-z])([A-Z])/;
-    var toHyphen = createRepaceFn("-");
-    var toColon = createRepaceFn(":");
-    function getSVGAttributeName(name) {
-        if (svgCache[name]) {
-            return svgCache[name];
-        }
-        var match = name.match(rhump);
-        if (!match) {
-            return svgCache[name] = name;
-        }
-        var prefix = match[1];
-        var postfix = match[2].toLowerCase();
-        var orig = name;
-        var count = svgCamelCase[prefix] && svgCamelCase[prefix][postfix];
-        if (count) {
-            if (count === -1) {
-                return svgCache[orig] = {
-                    name: name.replace(rhump, toColon),
-                    ifSpecial: true
-                };
-            }
-            if (~repeatedKey.indexOf(prefix + postfix)) {
-                var dashName = name.replace(rhump, toHyphen);
-                if (specialSVGPropertyName[dashName]) {
-                    name = dashName;
-                }
-            }
-        } else {
-            name = name.replace(rhump, toHyphen);
-        }
-        return svgCache[orig] = name;
-    }
-    function diffProps(dom, lastProps, nextProps, fiber) {
-        var isSVG = fiber.namespaceURI === NAMESPACE.svg;
-        var tag = fiber.type;
-        var continueProps = skipProps;
-        if (!isSVG && rform.test(fiber.type)) {
-            continueProps = duplexProps;
-            if (!("onChange" in nextProps)) {
-                eventAction(dom, "onChange", noop, lastProps, fiber);
-            }
-            fiber.effectTag *= DUPLEX;
-            fiber.onDuplex = continueProps.onDuplex;
-        }
-        for (var name in nextProps) {
-            if (continueProps[name]) {
-                continue;
-            }
-            var val = nextProps[name];
-            if (val !== lastProps[name]) {
-                var which = tag + isSVG + name;
-                var action = strategyCache[which];
-                if (!action) {
-                    action = strategyCache[which] = getPropAction(dom, name, isSVG);
-                }
-                actionStrategy[action](dom, name, val, lastProps, fiber);
-            }
-        }
-        for (var _name in lastProps) {
-            if (continueProps[_name]) {
-                continue;
-            }
-            if (!nextProps.hasOwnProperty(_name)) {
-                var _which = tag + isSVG + _name;
-                var _action = strategyCache[_which];
-                if (!_action) {
-                    continue;
-                }
-                actionStrategy[_action](dom, _name, false, lastProps, fiber);
-            }
-        }
-    }
-    function isBooleanAttr(dom, name) {
-        var val = dom[name];
-        return val === true || val === false;
-    }
-    function isEventName(name) {
-        return (/^on[A-Z]/.test(name)
-        );
-    }
-    function getPropAction(dom, name, isSVG) {
-        if (isSVG && name === "className") {
-            return "svgClass";
-        }
-        if (isSpecialAttr[name]) {
-            return name;
-        }
-        if (isEventName(name)) {
-            return "event";
-        }
-        if (isSVG) {
-            return "svgAttr";
-        }
-        if (name === "width" || name === "height") {
-            return "attribute";
-        }
-        if (isBooleanAttr(dom, name)) {
-            return "booleanAttr";
-        }
-        return name.indexOf("data-") === 0 || dom[name] === void 666 ? "attribute" : "property";
-    }
-    var builtinStringProps = {
-        className: 1,
-        title: 1,
-        name: 1,
-        type: 1,
-        alt: 1,
-        lang: 1
-    };
-    var skipProps = {
-        innerHTML: 1,
-        children: 1,
-        onDuplex: noop
-    };
-    var duplexProps = {
-        value: 1,
-        defaultValue: 1,
-        checked: 1,
-        innerHTML: 1,
-        children: 1
-    };
-    var actionStrategy = {
-        style: function style(dom, _, val, lastProps) {
-            patchStyle(dom, lastProps.style || emptyObject, val || emptyObject);
-        },
-        autoFocus: function autoFocus(dom) {
-            if (/input|text/i.test(dom.nodeName) || dom.contentEditable === "true") {
-                dom.focus();
-            }
-        },
-        svgClass: function svgClass(dom, name, val) {
-            if (!val) {
-                dom.removeAttribute("class");
-            } else {
-                dom.setAttribute("class", val);
-            }
-        },
-        svgAttr: function svgAttr(dom, name, val) {
-            var method = typeNumber(val) < 3 && !val ? "removeAttribute" : "setAttribute";
-            var nameRes = getSVGAttributeName(name);
-            if (nameRes.ifSpecial) {
-                var prefix = nameRes.name.split(":")[0];
-                dom[method + "NS"](NAMESPACE[prefix], nameRes.name, val || "");
-            } else {
-                dom[method](nameRes, typeNumber(val) !== 3 && !val ? "" : val);
-            }
-        },
-        booleanAttr: function booleanAttr(dom, name, val) {
-            dom[name] = !!val;
-            if (dom[name] === false) {
-                dom.removeAttribute(name);
-            } else if (dom[name] === "false") {
-                dom[name] = "";
-            }
-        },
-        attribute: function attribute(dom, name, val) {
-            if (val == null || val === false) {
-                return dom.removeAttribute(name);
-            }
-            try {
-                dom.setAttribute(name, val);
-            } catch (e) {
-                console.warn("setAttribute error", name, val);
-            }
-        },
-        property: function property(dom, name, val) {
-            try {
-                if (!val && val !== 0) {
-                    if (builtinStringProps[name]) {
-                        dom[name] = "";
-                    } else {
-                        dom.removeAttribute(name);
-                    }
-                } else {
-                    dom[name] = val;
-                }
-            } catch (e) {
-                try {
-                    dom.setAttribute(name, val);
-                } catch (e) {
-                }
-            }
-        },
-        event: eventAction,
-        dangerouslySetInnerHTML: function dangerouslySetInnerHTML(dom, name, val, lastProps) {
-            var oldhtml = lastProps[name] && lastProps[name].__html;
-            var html = val && val.__html;
-            html = html == null ? "" : html;
-            if (html !== oldhtml) {
-                dom.innerHTML = html;
-            }
-        }
-    };
-
     function UpdateQueue() {
         return {
             pendingStates: [],
@@ -1755,6 +707,23 @@
         this.name = type.displayName || type.name || type;
         this.effectTag = 1;
     }
+
+    var NOWORK = 1;
+    var WORKING = 2;
+    var PLACE = 3;
+    var CONTENT = 5;
+    var ATTR = 7;
+    var DUPLEX = 11;
+    var DETACH = 13;
+    var HOOK = 17;
+    var REF = 19;
+    var CALLBACK = 23;
+    var PASSIVE = 29;
+    var CAPTURE = 31;
+    var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, PASSIVE, CAPTURE].sort(function (a, b) {
+        return a - b;
+    });
+    var effectLength = effectNames.length;
 
     function pushError(fiber, hook, error) {
         var names = [];
@@ -1884,122 +853,6 @@
         for (var child = fiber.child; child; child = child.sibling) {
             detachFiber(child, effects$$1);
         }
-    }
-
-    function setter(compute, cursor, value) {
-        var _this = this;
-        Renderer.batchedUpdates(function () {
-            _this.updateQueue[cursor] = compute(cursor, value);
-            Renderer.updateComponent(_this, true);
-        });
-    }
-    var hookCursor = 0;
-    function resetCursor() {
-        hookCursor = 0;
-    }
-    function getCurrentKey() {
-        var key = hookCursor + 'Hook';
-        hookCursor++;
-        return key;
-    }
-    function useContext(getContext) {
-        if (isFn(getContext)) {
-            var fiber = getCurrentFiber();
-            var context = getContext(fiber);
-            var list = getContext.subscribers;
-            if (list.indexOf(fiber) === -1) {
-                list.push(fiber);
-            }
-            return context;
-        }
-        return null;
-    }
-    function useReducerImpl(reducer, initValue, initAction) {
-        var fiber = getCurrentFiber();
-        var key = getCurrentKey();
-        var updateQueue = fiber.updateQueue;
-        var compute = reducer ? function (cursor, action) {
-            return reducer(updateQueue[cursor], action || { type: Math.random() });
-        } : function (cursor, value) {
-            var novel = updateQueue[cursor];
-            return typeof value == 'function' ? value(novel) : value;
-        };
-        var dispatch = setter.bind(fiber, compute, key);
-        if (key in updateQueue) {
-            delete updateQueue.isForced;
-            return [updateQueue[key], dispatch];
-        }
-        var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
-        return [value, dispatch];
-    }
-    function useCallbackImpl(create, deps, isMemo, isEffect) {
-        var fiber = getCurrentFiber();
-        var key = getCurrentKey();
-        var updateQueue = fiber.updateQueue;
-        var nextInputs = Array.isArray(deps) ? deps : [create];
-        var prevState = updateQueue[key];
-        if (prevState) {
-            var prevInputs = prevState[1];
-            if (areHookInputsEqual(nextInputs, prevInputs)) {
-                return isEffect ? null : prevState[0];
-            }
-        }
-        var fn = isMemo ? create() : create;
-        updateQueue[key] = [fn, nextInputs];
-        return fn;
-    }
-    function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
-        var fiber = getCurrentFiber();
-       var updateQueue = fiber.updateQueue;
-        if (useCallbackImpl(create, deps, false, true)) {
-            if (fiber.effectTag % EffectTag) {
-                fiber.effectTag *= EffectTag;
-            }
-            var list = updateQueue[createList] || (updateQueue[createList] = []);
-            updateQueue[destroyList] || (updateQueue[destroyList] = []);
-            list.push(create);
-        }
-    }
-    function useRef(initValue) {
-        var fiber = getCurrentFiber();
-        var key = getCurrentKey();
-        var updateQueue = fiber.updateQueue;
-        if (key in updateQueue) {
-            return updateQueue[key];
-        }
-        return updateQueue[key] = { current: initValue };
-    }
-    function useImperativeHandle(ref, create, deps) {
-        var nextInputs = Array.isArray(deps) ? deps.concat([ref]) : [ref, create];
-        useEffectImpl(function () {
-            if (typeof ref === 'function') {
-                var refCallback = ref;
-                var inst = create();
-                refCallback(inst);
-                return function () {
-                    return refCallback(null);
-                };
-            } else if (ref !== null && ref !== undefined) {
-                var refObject = ref;
-                var _inst = create();
-                refObject.current = _inst;
-                return function () {
-                    refObject.current = null;
-                };
-            }
-        }, nextInputs);
-    }
-    function getCurrentFiber() {
-        return get(Renderer.currentOwner);
-    }
-    function areHookInputsEqual(arr1, arr2) {
-        for (var i = 0; i < arr1.length; i++) {
-            if (Object.is(arr1[i], arr2[i])) {
-                continue;
-            }
-            return false;
-        }
-        return true;
     }
 
     function getInsertPoint(fiber) {
@@ -2263,7 +1116,6 @@
         fiber._hydrating = true;
         Renderer.currentOwner = instance;
         var rendered = applyCallback(instance, 'render', []);
-        resetCursor();
         diffChildren(fiber, rendered);
         Renderer.onAfterRender(fiber);
     }
@@ -2968,403 +1820,144 @@
         }
     }
 
-    var reuseTextNodes = [];
-    function createElement$1(vnode) {
-        var p = vnode.return;
-        var type = vnode.type,
-            props = vnode.props,
-            ns = vnode.ns;
-        switch (type) {
-            case '#text':
-                var node = reuseTextNodes.pop();
-                if (node) {
-                    node.nodeValue = props;
-                    return node;
-                }
-                return document.createTextNode(props);
-            case '#comment':
-                return document.createComment(props);
-            case 'svg':
-                ns = NAMESPACE.svg;
-                break;
-            case 'math':
-                ns = NAMESPACE.math;
-                break;
-            default:
-                do {
-                    var s = p.name == 'AnuPortal' ? p.props.parent : p.tag === 5 ? p.stateNode : null;
-                    if (s) {
-                        ns = s.namespaceURI;
-                        if (p.type === 'foreignObject' || ns === NAMESPACE.xhtml) {
-                            ns = '';
-                        }
-                        break;
-                    }
-                } while (p = p.return);
-                break;
+    function cleanChildren(array) {
+        if (!Array.isArray(array)) {
+            return array;
         }
-        try {
-            if (ns) {
-                vnode.namespaceURI = ns;
-                return document.createElementNS(ns, type);
+        return array.map(function (el) {
+            if (el.type == "#text") {
+                return el.children;
+            } else {
+                return {
+                    type: el.type,
+                    props: el.props,
+                    children: cleanChildren(el.children)
+                };
             }
-        } catch (e1) {
-        }
-        var elem = document.createElement(type);
-        var inputType = props && props.type;
-        if (inputType && elem.uniqueID) {
-            try {
-                elem = document.createElement('<' + type + ' type=\'' + inputType + '\'/>');
-            } catch (e2) {
-            }
-        }
-        return elem;
+        });
     }
-    var hyperspace = document.createElement('div');
-    function _emptyElement(node) {
-        while (node.firstChild) {
-            node.removeChild(node.firstChild);
-        }
-    }
-    Renderer.middleware({
-        begin: noop,
-        end: fireDuplex
-    });
-    function _removeElement(node) {
-        if (!node) {
-            return;
-        }
-        var nodeType = node.nodeType;
-        if (nodeType === 1 && node.__events) {
-            node.__events = null;
-        } else if (nodeType === 3 && reuseTextNodes.length < 100) {
-            reuseTextNodes.push(node);
-        }
-        hyperspace.appendChild(node);
-        hyperspace.removeChild(node);
-    }
-    function safeActiveElement() {
-        try {
-            return document.activeElement;
-        } catch (e) {}
-    }
-    function insertElement(fiber) {
-        var dom = fiber.stateNode,
-            parent = fiber.parent;
-        try {
-            var insertPoint = fiber.forwardFiber ? fiber.forwardFiber.stateNode : null;
-            var after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
-            if (after == dom) {
-                return;
-            }
-            if (after === null && dom === parent.lastChild) {
-                return;
-            }
-            Renderer.inserting = fiber.tag === 5 && safeActiveElement();
-            parent.insertBefore(dom, after);
-            Renderer.inserting = null;
-        } catch (e) {
-            throw e;
-        }
-    }
-    render.Render = Renderer;
-    function mergeContext(container, context) {
-        container.contextStack[0] = Object.assign({}, context);
-    }
-    var DOMRenderer = createRenderer({
-        render: render,
-        updateAttribute: function updateAttribute(fiber) {
-            var props = fiber.props,
-                lastProps = fiber.lastProps,
-                stateNode = fiber.stateNode;
-            diffProps(stateNode, lastProps || emptyObject, props, fiber);
+    var autoContainer = {
+        type: "root",
+        appendChild: noop,
+        props: null,
+        children: []
+    };
+    var yieldData = [];
+    var NoopRenderer = createRenderer({
+        render: function render$$1(vnode) {
+            return render(vnode, autoContainer);
         },
+        updateAttribute: function updateAttribute() {},
         updateContent: function updateContent(fiber) {
-            fiber.stateNode.nodeValue = fiber.props;
+            fiber.stateNode.children = fiber.props.children;
         },
-        updateControlled: duplexAction,
-        createElement: createElement$1,
-        insertElement: insertElement,
-        emptyElement: function emptyElement(fiber) {
-            _emptyElement(fiber.stateNode);
+        reset: function reset() {
+            var index = topNodes.indexOf(autoContainer);
+            if (index !== -1) {
+                topNodes.splice(index, 1);
+                topFibers.splice(index, 1);
+            }
+            autoContainer = {
+                type: "root",
+                appendChild: noop,
+                props: null,
+                children: []
+            };
         },
-        unstable_renderSubtreeIntoContainer: function unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
-            var container = createContainer(root),
-                fiber = get(instance),
-                backup = void 0;
-            do {
-                var inst = fiber.stateNode;
-                if (inst && inst.getChildContext) {
-                    backup = mergeContext(container, inst.getChildContext());
-                    break;
+        getRoot: function getRoot() {
+            return autoContainer;
+        },
+        getChildren: function getChildren() {
+            return cleanChildren(autoContainer.children || []);
+        },
+        yield: function _yield(a) {
+            yieldData.push(a);
+        },
+        flush: function flush() {
+            var ret = yieldData.concat();
+            yieldData.length = 0;
+            return ret;
+        },
+        createElement: function createElement(fiber) {
+            return {
+                type: fiber.type,
+                props: null,
+                children: fiber.tag === 6 ? fiber.props : []
+            };
+        },
+        insertElement: function insertElement(fiber) {
+            var dom = fiber.stateNode,
+                parentNode = fiber.parent,
+                forwardFiber = fiber.forwardFiber,
+                before = forwardFiber ? forwardFiber.stateNode : null,
+                children = parentNode.children;
+            try {
+                if (before == null) {
+                    if (dom !== children[0]) {
+                        remove(children, dom);
+                        children.unshift(dom);
+                    }
                 } else {
-                    backup = fiber;
+                    if (dom !== children[children.length - 1]) {
+                        remove(children, dom);
+                        var i = children.indexOf(before);
+                        children.splice(i + 1, 0, dom);
+                    }
                 }
-            } while (fiber = fiber.return);
-            if (backup && backup.contextStack) {
-                mergeContext(container, backup.contextStack[0]);
+            } catch (e) {
+                throw e;
             }
-            return Renderer.render(vnode, root, callback);
         },
-        unmountComponentAtNode: function unmountComponentAtNode(root) {
-            var container = createContainer(root, true);
-            var fiber = Object(container).child;
-            if (fiber) {
-                Renderer.updateComponent(fiber, {
-                    child: null
-                }, function () {
-                    removeTop(root);
-                }, true);
-                return true;
+        emptyElement: function emptyElement(fiber) {
+            var dom = fiber.stateNode;
+            var children = dom && dom.children;
+            if (dom && Array.isArray(children)) {
+                children.forEach(NoopRenderer.removeElement);
             }
-            return false;
         },
         removeElement: function removeElement(fiber) {
-            var dom = fiber.stateNode;
-            if (dom) {
-                _removeElement(dom);
-                delete fiber.stateNode;
-                if (dom._reactInternalFiber) {
-                    removeTop(dom);
-                }
+            if (fiber.parent) {
+                var parent = fiber.parent;
+                var node = fiber.stateNode;
+                remove(parent.children, node);
             }
         }
     });
-    function removeTop(dom) {
-        var j = topNodes.indexOf(dom);
-        if (j !== -1) {
-            topFibers.splice(j, 1);
-            topNodes.splice(j, 1);
-        }
-        dom._reactInternalFiber = null;
-    }
-
-    function useState(initValue) {
-        return useReducerImpl(null, initValue);
-    }
-    function useReducer(reducer, initValue, initAction) {
-        return useReducerImpl(reducer, initValue, initAction);
-    }
-    function useEffect(create, deps) {
-        return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
-    }
-    function useLayoutEffect(create, deps) {
-        return useEffectImpl(create, deps, HOOK, 'layout', 'unlayout');
-    }
-    function useCallback(create, deps) {
-        return useCallbackImpl(create, deps);
-    }
-    function useMemo(create, deps) {
-        return useCallbackImpl(create, deps, true);
-    }
-
-    function Suspense(props) {
-        return props.children;
-    }
-
-    var LazyComponent = miniCreateClass(function LazyComponent(props, context) {
-        var _this = this;
-        this.props = props;
-        this.context = context;
-        this.state = {
-            component: null,
-            resolved: false
-        };
-        var promise = props.render();
-        if (!promise || !isFn(promise.then)) {
-            throw "lazy必须返回一个thenable对象";
-        }
-        promise.then(function (value) {
-            return _this.setState({
-                component: value.default,
-                resolved: true
-            });
-        });
-    }, Component, {
-        fallback: function fallback() {
-            var parent = Object(get(this)).return;
-            while (parent) {
-                if (parent.type === Suspense) {
-                    return parent.props.fallback;
-                }
-                parent = parent.return;
-            }
-            throw "lazy组件必须包一个Suspense组件";
-        },
-        render: function render() {
-            return this.state.resolved ? createElement(this.state.component) : this.fallback();
-        }
-    });
-    function lazy(fn) {
-        return function () {
-            return createElement(LazyComponent, {
-                render: fn
-            });
-        };
-    }
-
-    var noCheck = false;
-    function setSelectValue(e) {
-        if (e.propertyName === "value" && !noCheck) {
-            syncValueByOptionValue(e.srcElement);
-        }
-    }
-    function syncValueByOptionValue(dom) {
-        var idx = dom.selectedIndex,
-            option = void 0,
-            attr = void 0;
-        if (idx > -1) {
-            option = dom.options[idx];
-            attr = option.attributes.value;
-            dom.value = attr && attr.specified ? option.value : option.text;
-        }
-    }
-    var fixIEChangeHandle = createHandle("change", function (e) {
-        var dom = e.srcElement;
-        if (dom.type === "select-one") {
-            if (!dom.__bindFixValueFn) {
-                addEvent(dom, "propertychange", setSelectValue);
-                dom.__bindFixValueFn = true;
-            }
-            noCheck = true;
-            syncValueByOptionValue(dom);
-            noCheck = false;
-            return true;
-        }
-        if (e.type === "propertychange") {
-            return e.propertyName === "value" && !dom.__anuSetValue;
-        }
-    });
-    var fixIEInputHandle = createHandle("input", function (e) {
-        return e.propertyName === "value";
-    });
-    var IEHandleFix = {
-        input: function input(dom) {
-            addEvent(dom, "propertychange", fixIEInputHandle);
-        },
-        change: function change(dom) {
-            var mask = /radio|check/.test(dom.type) ? "click" : /text|password/.test(dom.type) ? "propertychange" : "change";
-            addEvent(dom, mask, fixIEChangeHandle);
-        },
-        submit: function submit(dom) {
-            if (dom.nodeName === "FORM") {
-                addEvent(dom, "submit", dispatchEvent);
-            }
-        }
-    };
-    if (msie < 9) {
-        actionStrategy[innerHTML] = function (dom, name, val, lastProps) {
-            var oldhtml = lastProps[name] && lastProps[name].__html;
-            var html = val && val.__html;
-            if (html !== oldhtml) {
-                dom.innerHTML = String.fromCharCode(0xfeff) + html;
-                var textNode = dom.firstChild;
-                if (textNode.data.length === 1) {
-                    dom.removeChild(textNode);
-                } else {
-                    textNode.deleteData(0, 1);
-                }
-            }
-        };
-        focusMap.focus = "focusin";
-        focusMap.blur = "focusout";
-        focusMap.focusin = "focus";
-        focusMap.focusout = "blur";
-        extend(eventPropHooks, oneObject("mousemove, mouseout,mouseenter, mouseleave, mouseout,mousewheel, mousewheel, whe" + "el, click", function (event) {
-            if (!("pageX" in event)) {
-                var doc = event.target.ownerDocument || document;
-                var box = doc.compatMode === "BackCompat" ? doc.body : doc.documentElement;
-                event.pageX = event.clientX + (box.scrollLeft >> 0) - (box.clientLeft >> 0);
-                event.pageY = event.clientY + (box.scrollTop >> 0) - (box.clientTop >> 0);
-            }
-        }));
-        var translateToKey = {
-            "8": "Backspace",
-            "9": "Tab",
-            "12": "Clear",
-            "13": "Enter",
-            "16": "Shift",
-            "17": "Control",
-            "18": "Alt",
-            "19": "Pause",
-            "20": "CapsLock",
-            "27": "Escape",
-            "32": " ",
-            "33": "PageUp",
-            "34": "PageDown",
-            "35": "End",
-            "36": "Home",
-            "37": "ArrowLeft",
-            "38": "ArrowUp",
-            "39": "ArrowRight",
-            "40": "ArrowDown",
-            "45": "Insert",
-            "46": "Delete",
-            "112": "F1",
-            "113": "F2",
-            "114": "F3",
-            "115": "F4",
-            "116": "F5",
-            "117": "F6",
-            "118": "F7",
-            "119": "F8",
-            "120": "F9",
-            "121": "F10",
-            "122": "F11",
-            "123": "F12",
-            "144": "NumLock",
-            "145": "ScrollLock",
-            "224": "Meta"
-        };
-        extend(eventPropHooks, oneObject("keyup, keydown, keypress", function (event) {
-            if (!event.which && event.type.indexOf("key") === 0) {
-                event.key = translateToKey[event.keyCode];
-                event.which = event.charCode != null ? event.charCode : event.keyCode;
-            }
-        }));
-        for (var i in IEHandleFix) {
-            eventHooks[i] = eventHooks[i + "capture"] = IEHandleFix[i];
+    function remove(children, node) {
+        var index = children.indexOf(node);
+        if (index !== -1) {
+            children.splice(index, 1);
         }
     }
 
-    var win$1 = getWindow();
-    var prevReact = win$1.React;
-    var React = void 0;
-    if (prevReact && prevReact.eventSystem) {
-        React = prevReact;
+    var win = getWindow();
+    var prevReact = win.ReactNoop;
+    var ReactNoop = void 0;
+    if (prevReact && prevReact.isReactNoop) {
+        ReactNoop = prevReact;
     } else {
-        var render$1 = DOMRenderer.render,
-            eventSystem = DOMRenderer.eventSystem,
-            unstable_renderSubtreeIntoContainer = DOMRenderer.unstable_renderSubtreeIntoContainer,
-            unmountComponentAtNode = DOMRenderer.unmountComponentAtNode;
-        React = win$1.React = win$1.ReactDOM = {
-            eventSystem: eventSystem,
-            findDOMNode: findDOMNode,
-            unmountComponentAtNode: unmountComponentAtNode,
-            unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.5.9',
+        var render$1 = NoopRenderer.render,
+            flush = NoopRenderer.flush,
+            reset = NoopRenderer.reset,
+            getRoot = NoopRenderer.getRoot,
+            getChildren = NoopRenderer.getChildren;
+        ReactNoop = win.ReactNoop = {
+            yield: NoopRenderer.yield,
+            flush: flush,
+            reset: reset,
+            getRoot: getRoot,
+            getChildren: getChildren,
+            isReactNoop: true,
+            version: '1.5.0',
             render: render$1,
-            hydrate: render$1,
-            unstable_batchedUpdates: DOMRenderer.batchedUpdates,
             Fragment: Fragment,
             PropTypes: PropTypes,
             Children: Children,
             createPortal: createPortal,
             createContext: createContext,
             Component: Component,
-            lazy: lazy,
-            Suspense: Suspense,
             createRef: createRef,
             forwardRef: forwardRef,
-            useState: useState,
-            useReducer: useReducer,
-            useEffect: useEffect,
-            useLayoutEffect: useLayoutEffect,
-            useContext: useContext,
-            useCallback: useCallback,
-            useMemo: useMemo,
-            useRef: useRef,
-            useImperativeHandle: useImperativeHandle,
             createElement: createElement,
             cloneElement: cloneElement,
             PureComponent: PureComponent,
@@ -3372,8 +1965,8 @@
             createFactory: createFactory
         };
     }
-    var React$1 = React;
+    var ReactNoop$1 = ReactNoop;
 
-    return React$1;
+    return ReactNoop$1;
 
 })));

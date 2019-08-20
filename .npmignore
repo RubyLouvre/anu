@@ -6,6 +6,7 @@
 /benchmarks/*
 package-lock.json
 node_modules/
+.CACHE/*
 index*.html
 version.md
 .travis.yml
