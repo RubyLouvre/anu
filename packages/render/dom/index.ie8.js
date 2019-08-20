@@ -11,7 +11,7 @@ import {
     isValidElement,
     createFactory
 } from 'react-core/createElement';
-import { Fragment, getWindow } from 'react-core/util';
+import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
 
 import { findDOMNode } from './findDOMNode';
 import { DOMRenderer } from './DOMRenderer';
@@ -39,6 +39,7 @@ if (prevReact && prevReact.eventSystem) {
         unmountComponentAtNode,
         unstable_renderSubtreeIntoContainer,
         //fiber底层API
+        miniCreateClass,
         version: 'VERSION',
         render: render,
         hydrate: render,

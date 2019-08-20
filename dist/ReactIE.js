@@ -3344,6 +3344,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
+            miniCreateClass: miniCreateClass,
             version: '1.5.9',
             render: render$1,
             hydrate: render$1,
