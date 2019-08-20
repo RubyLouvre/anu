@@ -34,7 +34,7 @@ var LazyComponent = miniCreateClass(function LazyComponent(props, context) {
         }
         throw "lazy组件必须包一个Suspense组件"
     },
-    render(){
+    render: function f2(){
         return this.state.resolved ? createElement(this.state.component) : this.fallback()
     }
 });

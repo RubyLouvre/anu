@@ -1724,7 +1724,7 @@
                 extend(instance, {
                     __isStateless: true,
                     renderImpl: type,
-                    render: function f() {
+                    render: function f1() {
                         return this.renderImpl(this.props, this.context);
                     }
                 });
@@ -2708,7 +2708,7 @@
             child: props.child
         };
     }, Component, {
-        render: function render() {
+        render: function f3() {
             return this.state.child;
         }
     });
@@ -3193,7 +3193,7 @@
             }
             throw "lazy组件必须包一个Suspense组件";
         },
-        render: function render() {
+        render: function f2() {
             return this.state.resolved ? createElement(this.state.component) : this.fallback();
         }
     });
