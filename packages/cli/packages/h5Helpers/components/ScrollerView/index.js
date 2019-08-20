@@ -272,6 +272,7 @@ class ScrollView extends React.Component {
             if (this.props.style) {
                 outerDivStyle = {
                    ...this.props.style,
+                   overflowY: 'auto',
                    webkitOverflowScrolling: 'touch'
                 };
             }
@@ -279,6 +280,7 @@ class ScrollView extends React.Component {
             if (this.props.style) {
                 outerDivStyle = {
                    ...this.props.style,
+                   overflowX: 'auto',
                    webkitOverflowScrolling: 'touch'
                 };
             }
