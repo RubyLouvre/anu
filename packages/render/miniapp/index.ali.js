@@ -22,6 +22,7 @@ import {
 //小程序的API注入
 import { registerAPIs } from './registerAPIs';
 import { more } from './apiForAlipay/index';
+import { registerApp } from './registerApp.all';
 import { registerComponent } from './registerComponent.ali';
 import { registerPage } from './registerPage.wx';
 import { 
@@ -63,6 +64,7 @@ let React = (getWindow().React = {
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
+    registerApp,
     registerComponent,
     registerPage,
     toStyle,
@@ -83,4 +85,4 @@ if (typeof my != 'undefined') {
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component };
+export { Children, createElement, Component, PureComponent };

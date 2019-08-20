@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2019-07-29
+ * by 司徒正美 Copyright 2019-08-11
  * IE9+
  */
 
@@ -733,6 +733,7 @@
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
         if (useCallbackImpl(create, deps, false, true)) {
+            var updateQueue = fiber.updateQueue;
             if (fiber.effectTag % EffectTag) {
                 fiber.effectTag *= EffectTag;
             }
@@ -3217,7 +3218,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.5.0',
+            version: '1.5.9',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,

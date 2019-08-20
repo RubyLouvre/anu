@@ -24,6 +24,7 @@ import {
     getCurrentPage, 
     _getCurrentPages, 
     useComponent } from './utils';
+import { registerApp } from './registerApp.all';
 import { registerPage } from './registerPage.wx';
 import { registerComponent } from './registerComponent.wx';
 import { 
@@ -67,6 +68,7 @@ let React = getWindow().React =  {
     getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
+    registerApp,
     registerPage,
     toStyle,
     useState,
@@ -92,4 +94,4 @@ if (typeof wx != 'undefined'){
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component };
+export { Children, createElement, Component, PureComponent };

@@ -1,125 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <title>Document</title>
-</head>
-
-<body>
+  <!--<script src="https://unpkg.com/anujs@1.5.6/dist/React.js"></script>-->
+  <script src="./dist/React.js"></script>
+  <!--<script src="./dist/React1.44.js"></script>-->
+  <!--<script src="https://unpkg.com/anujs@1.4.4/dist/React.js"></script>
+ <script src="https://cdn.bootcss.com/react/16.9.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.bootcss.com/react-dom/16.8.6/umd/react-dom.production.min.js"></script>-->
   <script>
+      window.onload = function(){
+        let h = React.createElement
 
-    class Node {
-      constructor(node) {
-        this.suffix = node
-        this.children = {}
-      }
-    }
-    class STree {
+class App extends React.Component{
+  
+  state = {
+    value: ""
+  }
+  
+  onChange = (evt) => {
+    console.log("======", evt.type)
+    const value = evt.target.value;
+    this.setState({value})
+  }
+  
+  render(){
+    return h("div", null, h("input", {value: this.state.value.toUpperCase(), onChange: this.onChange}), this.state.value.toUpperCase())
+  }
+}
 
-      insert(str) {
-        this.str = str
-        this.len = str.length + 1000
-        this.root = new Node(null)
-        var node = t.root, n = 0;
-        for (var i = 0; i < str.length; i++) {
-          [node, n] = this.update(node, n, i);
-          [node, n] = this.canonize(node, n, i)
-        }
-
+ReactDOM.render(h(App), document.querySelector('#root'))
       }
-      update(node, left, right) {
-        var c = this.str[right] //当前字符
-        var prev = new Node;
-        while (true) {
-          var [finish, p] = this.branch(node, left, right - 1, c);
-          if (finish) {
-            break
-          }
-          p.children[c] = [right, t.len, new Node]
-          prev.suffix = p;
-          prev = p;
-          [node, left] = this.canonize(node.suffix, left, right - 1);
-        }
-        prev.suffix = node;
-        return [node, left]
-      }
-      branch(node, left, right, ch) {
-        if (right - left + 1 <= 0) {
-          if (!node) {
-            return [true, this.root]
-          } else {
-            return [ch in node.children, node]
-          }
-        } else {
-          // console.log(this.str, left, 'xxx')
-          var [ll, rr, child] = node.children[this.str[left]];
-          var pos = ll + right - left + 1;
-          if (this.str[pos] == ch) {
-            return [true, node]
-          } else {
-            var branchNode = new Node;
-            node.children[this.str[ll]] = [ll, pos - 1, branchNode];
-            branchNode.children[this.str[pos]] = [pos, rr, child];
-            return [false, branchNode]
-          }
-        }
-      }
-      canonize(node, left, right) {
-
-        if (!node) {
-          if (right - left + 1 <= 0) {
-            return [null, left]
-          } else {
-            // console.log(this.root, left+1, right, 'end')
-            return this.canonize(this.root, left + 1, right)
-          }
-        }
-        while (left <= right) {
-          // console.log(this.str, left, 'xxx')
-          var [ll, rr, child] = node.children[this.str[left]]
-          if (right - left >= rr - ll) {
-            left += rr - ll + 1;
-            node = child
-          } else {
-            break
-          }
-        }
-        return [node, left]
-      }
-      findPatten(s) {
-        var node = this.root;
-        while (1) {
-          var match = false;
-          for (var i in node.children) {
-            var [ll, rr, child] = node.children[i];
-            console.log(ll, rr, i, child)
-            var edge = this.str.slice(ll, rr + 1);
-            console.log(edge, child)
-
-            if (edge.indexOf(s) === 0) {
-              return Math.max(Object.keys(child.children).length, 1)
-            } else if (s.indexOf(edge) === 0) {
-              match = true
-              node = child;
-              s = s.slice(edge.length)
-            }
-          }
-          if (!match) {
-            return 0
-          }
-        }
-        return 0
-      }
-    }
-    var t = new STree;
-    t.insert('javaxjava')
-    console.log(t)
-    console.log(t.findPatten('java'))
+ 
   </script>
+</head>
+<body>
   <div id="root"></div>
 </body>
-
 </html>
