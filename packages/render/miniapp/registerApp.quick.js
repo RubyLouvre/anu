@@ -2,10 +2,12 @@ let appMethods = {
     onLaunch: 'onCreate',
     onHide: 'onDestroy'
 };
-export function registerApp(demo) {
+export function registerApp(demo, containProvider) {
     var app = {};
     // 将App构造函数存到全局中供mobx使用
-    demo.globalData._GlobalApp = demo.constructor;
+    if (containProvider) {
+        demo.globalData._GlobalApp = demo.constructor;
+    }
     for (let name in demo){
         let value = demo[name];
         name = appMethods[name] || name;

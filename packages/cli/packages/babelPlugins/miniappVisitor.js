@@ -363,6 +363,9 @@ const visitor = {
                 callee.type === 'Identifier' &&
                 callee.name === 'App') {
                 callee.name = 'React.registerApp';
+                if (needRegisterApp) {
+                    node.arguments.push(t.booleanLiteral(true));
+                }
                 return;
             }
             if (utils_1.default.isLoopMap(astPath)) {

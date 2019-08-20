@@ -202,7 +202,7 @@ export default function dynamicPage(Comp) {
             this.setState({
                 showTitleBar:
                     mixin.navigationStyle !== 'custom' &&
-                    mixin.navigationBarTitleText !== 'custom',
+                    (mixin.navigationBarTitleText !== ''),
                 backgroundColor: mixin.backgroundColor || '#ffffff',
                 titleBar: deepMerge({}, this.state.titleBar, {
                     text: mixin.navigationBarTitleText,
