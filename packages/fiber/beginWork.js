@@ -259,8 +259,8 @@ export function updateClassComponent(fiber, info) {
     Renderer.onBeforeRender(fiber);
     fiber._hydrating = true;
     Renderer.currentOwner = instance;
-    let rendered = applyCallback(instance, 'render', []);
     resetCursor();
+    let rendered = applyCallback(instance, 'render', []);
     diffChildren(fiber, rendered);
     Renderer.onAfterRender(fiber);
 }
