@@ -35,10 +35,10 @@ window.onload = function (){
     plugins: ['jsx']
 });
 const pageWrapper = template_1.default(`
-    return <PageWrapper app={this} path={this.state.path}  query={this.state.query} config={this.state.config} showBackAnimation={this.state.showBackAnimation}/>
+    <PageWrapper app={this} path={this.state.path}  query={this.state.query} config={this.state.config} showBackAnimation={this.state.showBackAnimation}/>
 `, {
     plugins: ['jsx']
-});
+})();
 let CLASS_NAME = 'Global';
 const temp = `window.addEventListener('popstate', function ({
     state
@@ -72,6 +72,7 @@ React.registerApp(this);
 this.onLaunch();
 `;
 let registerTemplate = temp;
+let renderDeclared = false;
 module.exports = function () {
     const importedPages = t.arrayExpression();
     let pageIndex = 0;
@@ -110,11 +111,68 @@ module.exports = function () {
                 }));
             },
             ClassProperty(astPath) {
-                if (astPath.get('key').isIdentifier({
-                    name: 'config'
-                })
-                    && astPath.get('value').isObjectExpression()) {
+            },
+            ClassBody: {
+                exit(astPath) {
+                    registerTemplate += `const pathname = location.pathname.replace(/^\\/web/, '');
+                    const search = location.search;
+                    if (React.__isTab(pathname)) {
+                      React.api.redirectTo({
+                        url: pathname + search
+                      });
+                    } else {
+                      React.api.redirectTo({
+                        url: CLASS_NAME.config.pages[0]
+                      });
+                  
+                      if (CLASS_NAME.config.pages.some(page => page === pathname)) {
+                        if (pathname !== CLASS_NAME.config.pages[0]) {
+                          React.api.navigateTo({
+                            url: pathname + search
+                          });
+                        }
+                      }
+                    }`;
+                    const registerApp = template_1.default(registerTemplate, {
+                        placeholderPattern: /^CLASS_NAME$/
+                    })({
+                        CLASS_NAME: t.identifier(CLASS_NAME)
+                    });
+                    let find = false;
+                    astPath.get('body').forEach((p) => {
+                        if (p.type === 'ClassMethod' && p.node.key.name === 'componentWillMount') {
+                            find = true;
+                            p.node.body.body.push(...registerApp);
+                        }
+                    });
+                    if (!find) {
+                        astPath.node.body.push(t.classMethod('method', t.identifier('componentWillMount'), [], t.blockStatement(registerApp)));
+                    }
+                    if (!renderDeclared) {
+                        astPath.node.body.push(t.classMethod('method', t.identifier('render'), [], t.blockStatement([
+                            t.returnStatement(pageWrapper.expression)
+                        ])));
+                    }
+                }
+            },
+            ExportDefaultDeclaration(astPath) {
+                astPath.remove();
+            },
+            ClassMethod(astPath) {
+                if (astPath.get('key').node.name === 'render') {
+                    renderDeclared = true;
                     astPath.traverse({
+                        ReturnStatement(returnPath) {
+                            returnPath.get('argument').node.children = [pageWrapper.expression];
+                        }
+                    });
+                }
+            },
+            MemberExpression(astPath) {
+                if (astPath.get('object').node.name === CLASS_NAME &&
+                    astPath.get('property').node.name === 'config' &&
+                    astPath.parent.right.type === 'ObjectExpression') {
+                    astPath.parentPath.traverse({
                         ObjectProperty: (property) => {
                             const { key, value } = property.node;
                             let name;
@@ -133,50 +191,8 @@ module.exports = function () {
                             }
                         }
                     });
-                    astPath.get('value').node.properties.push(t.objectProperty(t.identifier('pages'), importedPages));
+                    astPath.parentPath.get('right').node.properties.push(t.objectProperty(t.identifier('pages'), importedPages));
                 }
-            },
-            ClassBody(astPath) {
-                registerTemplate += `const pathname = location.pathname.replace(/^\\/web/, '');
-                const search = location.search;
-                if (React.__isTab(pathname)) {
-                  React.api.redirectTo({
-                    url: pathname + search
-                  });
-                } else {
-                  React.api.redirectTo({
-                    url: CLASS_NAME.config.pages[0]
-                  });
-              
-                  if (CLASS_NAME.config.pages.some(page => page === pathname)) {
-                    if (pathname !== CLASS_NAME.config.pages[0]) {
-                      React.api.navigateTo({
-                        url: pathname + search
-                      });
-                    }
-                  }
-                }`;
-                const registerApp = template_1.default(registerTemplate, {
-                    placeholderPattern: /^CLASS_NAME$/
-                })({
-                    CLASS_NAME: t.identifier(CLASS_NAME)
-                });
-                let find = false;
-                astPath.get('body').forEach((p) => {
-                    if (p.type === 'ClassMethod' && p.node.key.name === 'componentWillMount') {
-                        find = true;
-                        p.node.body.body.push(...registerApp);
-                    }
-                });
-                if (!find) {
-                    astPath.node.body.push(t.classMethod('method', t.identifier('componentWillMount'), [], t.blockStatement(registerApp)));
-                }
-                astPath.node.body.push(t.classMethod('method', t.identifier('render'), [], t.blockStatement([
-                    pageWrapper()
-                ])));
-            },
-            ExportDefaultDeclaration(astPath) {
-                astPath.remove();
             }
         },
         post: function () {

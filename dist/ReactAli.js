@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-06
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-20
  */
 
 var arrayPush = Array.prototype.push;
@@ -605,6 +605,13 @@ function _getApp() {
     }
     return fakeApp;
 }
+function getWrappedComponent(fiber, instance) {
+    if (instance.isPureComponent && instance.constructor.WrappedComponent) {
+        return fiber.child.child.stateNode;
+    } else {
+        return instance;
+    }
+}
 if (typeof getApp === 'function') {
     _getApp = getApp;
 }
@@ -648,8 +655,14 @@ function refreshComponent(reactInstances, wx, uuid) {
     for (var i = 0, n = reactInstances.length; i < n; i++) {
         var reactInstance = reactInstances[i];
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-            if (get(reactInstance).disposed) {
+            var fiber = get(reactInstance);
+            if (fiber.disposed) {
                 continue;
+            }
+            if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
+                reactInstance = fiber.child.stateNode;
+            } else {
+                reactInstance = getWrappedComponent(fiber, reactInstance);
             }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
@@ -819,7 +832,9 @@ function createInstance(fiber, context) {
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
-                throw type.name + ' doesn\'t extend React.Component';
+                if (!instance.updater || !instance.updater.enqueueSetState) {
+                    throw type.name + ' doesn\'t extend React.Component';
+                }
             }
         }
     } finally {
@@ -1055,6 +1070,7 @@ function useCallbackImpl(create, deps, isMemo, isEffect) {
 function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
     var fiber = getCurrentFiber();
     if (useCallbackImpl(create, deps, false, true)) {
+        var updateQueue = fiber.updateQueue;
         if (fiber.effectTag % EffectTag) {
             fiber.effectTag *= EffectTag;
         }
@@ -2115,12 +2131,9 @@ var Renderer$1 = createRenderer({
             props: fiber.props
         };
     },
-    insertElement: function insertElement(fiber) {
-    },
-    emptyElement: function emptyElement(fiber) {
-    },
-    removeElement: function removeElement(fiber) {
-    }
+    insertElement: function insertElement() {},
+    emptyElement: function emptyElement() {},
+    removeElement: function removeElement() {}
 });
 
 var rhyphen = /([a-z\d])([A-Z]+)/g;
@@ -2597,6 +2610,15 @@ var more = function more(api) {
     };
 };
 
+var GlobalApp = void 0;
+function _getGlobalApp(app) {
+    return GlobalApp || app.globalData._GlobalApp;
+}
+function registerApp(app) {
+    GlobalApp = app.constructor;
+    return app;
+}
+
 function registerComponent(type, name) {
     type.isMPComponent = true;
     registeredComponents[name] = type;
@@ -2632,23 +2654,36 @@ function registerComponent(type, name) {
 
 function onLoad(PageClass, path, query) {
     var app = _getApp();
+    var GlobalApp = _getGlobalApp(app);
     app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
     var container = {
-        type: 'page',
+        type: "page",
         props: {},
         children: [],
         root: true,
         appendChild: noop
     };
-    var pageInstance = render(
-    createElement(PageClass, {
-        path: path,
-        query: query,
-        isPageComponent: true
-    }), container);
-    callGlobalHook('onGlobalLoad');
+    var pageInstance;
+    if (typeof GlobalApp === "function") {
+        render(createElement(GlobalApp, {}, createElement(PageClass, {
+            path: path,
+            query: query,
+            isPageComponent: true,
+            ref: function ref(ins) {
+                if (ins) pageInstance = ins.wrappedInstance || getWrappedComponent(get(ins), ins);
+            }
+        })), container);
+    } else {
+        pageInstance = render(
+        createElement(PageClass, {
+            path: path,
+            query: query,
+            isPageComponent: true
+        }), container);
+    }
+    callGlobalHook("onGlobalLoad");
     this.reactContainer = container;
     this.reactInstance = pageInstance;
     pageInstance.wx = this;
@@ -2663,7 +2698,7 @@ function onReady() {
         el.fn.call(el.instance);
         el.instance.componentDidMount = el.fn;
     }
-    callGlobalHook('onGlobalReady');
+    callGlobalHook("onGlobalReady");
 }
 function onUnload() {
     for (var i in usingComponents) {
@@ -2687,7 +2722,7 @@ function onUnload() {
             }
         }, true);
     }
-    callGlobalHook('onGlobalUnload');
+    callGlobalHook("onGlobalUnload");
 }
 
 function registerPageHook(appHooks, pageHook, app, instance, args) {
@@ -2781,7 +2816,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.5.0',
+    version: '1.5.9',
     render: render$1,
     hydrate: render$1,
     webview: webview,
@@ -2797,6 +2832,7 @@ var React = getWindow().React = {
     getCurrentPage: getCurrentPage,
     getCurrentPages: _getCurrentPages,
     getApp: _getApp,
+    registerApp: registerApp,
     registerComponent: registerComponent,
     registerPage: registerPage,
     toStyle: toStyle,
@@ -2816,4 +2852,4 @@ if (typeof my != 'undefined') {
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component };
+export { Children, createElement, Component, PureComponent };

@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-08-11
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-08-12
  */
 
 (function (global, factory) {
@@ -1950,8 +1950,8 @@
     }
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
+       var updateQueue = fiber.updateQueue;
         if (useCallbackImpl(create, deps, false, true)) {
-            var updateQueue = fiber.updateQueue;
             if (fiber.effectTag % EffectTag) {
                 fiber.effectTag *= EffectTag;
             }

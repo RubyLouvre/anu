@@ -37,6 +37,7 @@ const inlineElement = {
     bdo: 1,
     q: 1
 };
+let needRegisterApp = false;
 let cache = {};
 if (buildType == 'quick') {
     utils_1.default.createRegisterStatement = function (className, path, isPage) {
@@ -107,6 +108,9 @@ const visitor = {
             let methodName = astPath.node.key.name;
             if (methodName === 'render') {
                 let modules = utils_1.default.getAnu(state);
+                if (modules.componentType === 'App') {
+                    needRegisterApp = true;
+                }
                 helpers.render.exit(astPath, '有状态组件', modules.className, modules);
                 astPath.node.body.body.unshift(template_1.default(utils_1.default.shortcutOfCreateElement())());
             }
@@ -251,6 +255,12 @@ const visitor = {
                 }
                 registerPageOrComponent(name, astPath, modules);
             }
+            if (modules.componentType === 'App' && buildType !== 'quick' && needRegisterApp) {
+                const args = astPath.get('declaration').node.arguments;
+                astPath.get('declaration').node.arguments = [
+                    t.callExpression(t.memberExpression(t.identifier('React'), t.identifier('registerApp')), args)
+                ];
+            }
         }
     },
     ExportNamedDeclaration: {
@@ -353,6 +363,9 @@ const visitor = {
                 callee.type === 'Identifier' &&
                 callee.name === 'App') {
                 callee.name = 'React.registerApp';
+                if (needRegisterApp) {
+                    node.arguments.push(t.booleanLiteral(true));
+                }
                 return;
             }
             if (utils_1.default.isLoopMap(astPath)) {
@@ -483,6 +496,11 @@ const visitor = {
                     let realAssetsPath = path.join(process.cwd(), 'source', srcValue.replace(/@/, ''));
                     let relativePath = path.relative(path.dirname(modules.sourcePath), realAssetsPath);
                     astPath.node.value.value = relativePath;
+                }
+                if (attrName === 'open-type' && srcValue === 'getUserInfo' && buildType == 'ali') {
+                    astPath.node.value.value = "getAuthorize";
+                    let attrs = parentPath.node.attributes;
+                    attrs.push(utils_1.default.createAttribute('scope', t.stringLiteral('userInfo')));
                 }
                 if (attrName === 'style' && buildType == 'quick') {
                     let value = quickhuaweiStyle(attrValue, true);

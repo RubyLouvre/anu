@@ -1,14 +1,15 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-07T03
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-20T09
  * IE9+
  */
 
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
-    typeof define === 'function' && define.amd ? define(['clipboard', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
-    (global = global || self, global.React = factory(global.Clipboard, global.axios, global.qs, global.MobileDetect, global.io));
-}(this, function (Clipboard, axios, qs, MobileDetect, io) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('@react'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
+    typeof define === 'function' && define.amd ? define(['clipboard', '@react', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
+    (global.React = factory(global.Clipboard,global.React$1,global.axios,global.qs,global.MobileDetect,global.io));
+}(this, (function (Clipboard,React$1,axios,qs,MobileDetect,io) {
     Clipboard = Clipboard && Clipboard.hasOwnProperty('default') ? Clipboard['default'] : Clipboard;
+    React$1 = React$1 && React$1.hasOwnProperty('default') ? React$1['default'] : React$1;
     axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
     qs = qs && qs.hasOwnProperty('default') ? qs['default'] : qs;
     MobileDetect = MobileDetect && MobileDetect.hasOwnProperty('default') ? MobileDetect['default'] : MobileDetect;
@@ -207,7 +208,7 @@
             toWarnDev("replaceState", true);
         },
         isReactComponent: returnTrue,
-        isMounted: function isMounted() {
+        isMounted: function isMounted$$1() {
             toWarnDev("isMounted", true);
             return this.updater.isMounted(this);
         },
@@ -477,7 +478,7 @@
         forEach: function forEach(children, func, context) {
             return proxyIt(children, func, null, context);
         },
-        toArray: function toArray(children) {
+        toArray: function toArray$$1(children) {
             return proxyIt(children, K, []);
         }
     };
@@ -583,6 +584,11 @@
     function createRef() {
         return {
             current: null
+        };
+    }
+    function forwardRef(fn) {
+        return function ForwardRefComponent(props) {
+            return fn(props, this.ref);
         };
     }
 
@@ -1696,7 +1702,9 @@
             } else {
                 instance = new type(props, context);
                 if (!(instance instanceof Component)) {
-                    throw type.name + ' doesn\'t extend React.Component';
+                    if (!instance.updater || !instance.updater.enqueueSetState) {
+                        throw type.name + ' doesn\'t extend React.Component';
+                    }
                 }
             }
         } finally {
@@ -1841,12 +1849,12 @@
             arr.splice(index, 1);
         }
     }
-    function detachFiber(fiber, effects) {
+    function detachFiber(fiber, effects$$1) {
         fiber.effectTag = DETACH;
-        effects.push(fiber);
+        effects$$1.push(fiber);
         fiber.disposed = true;
         for (var child = fiber.child; child; child = child.sibling) {
-            detachFiber(child, effects);
+            detachFiber(child, effects$$1);
         }
     }
 
@@ -1915,6 +1923,7 @@
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
         if (useCallbackImpl(create, deps, false, true)) {
+            var updateQueue = fiber.updateQueue;
             if (fiber.effectTag % EffectTag) {
                 fiber.effectTag *= EffectTag;
             }
@@ -2318,7 +2327,7 @@
             oldFibers = {};
         }
         var newFibers = fiberizeChildren(children, parentFiber);
-        var effects = parentFiber.effects || (parentFiber.effects = []);
+        var effects$$1 = parentFiber.effects || (parentFiber.effects = []);
         var matchFibers = new Object();
         delete parentFiber.child;
         for (var i in oldFibers) {
@@ -2331,7 +2340,7 @@
                 }
                 continue;
             }
-            detachFiber(oldFiber, effects);
+            detachFiber(oldFiber, effects$$1);
         }
         var prevFiber = void 0,
             index = 0;
@@ -2351,13 +2360,13 @@
                         delete _newFiber.deleteRef;
                     }
                     if (oldRef && oldRef !== _newFiber.ref) {
-                        effects.push(alternate);
+                        effects$$1.push(alternate);
                     }
                     if (_newFiber.tag === 5) {
                         _newFiber.lastProps = alternate.props;
                     }
                 } else {
-                    detachFiber(_oldFiber, effects);
+                    detachFiber(_oldFiber, effects$$1);
                 }
             } else {
                 _newFiber = new Fiber(_newFiber);
@@ -2473,10 +2482,10 @@
             }
         }
     }
-    function commitDFS(effects) {
+    function commitDFS(effects$$1) {
         Renderer.batchedUpdates(function () {
             var el;
-            while (el = effects.shift()) {
+            while (el = effects$$1.shift()) {
                 if (el.effectTag === DETACH && el.caughtError) {
                     disposeFiber(el);
                 } else {
@@ -2584,7 +2593,7 @@
     }
     function safeInvokeHooks(upateQueue, create, destory) {
         var uneffects = upateQueue[destory],
-            effects = upateQueue[create],
+            effects$$1 = upateQueue[create],
             fn;
         if (!uneffects) {
             return;
@@ -2594,7 +2603,7 @@
                 fn();
             } catch (e) {      }
         }
-        while (fn = effects.shift()) {
+        while (fn = effects$$1.shift()) {
             try {
                 var f = fn();
                 if (typeof f === 'function') {
@@ -3073,7 +3082,7 @@
         dom._reactInternalFiber = null;
     }
 
-    var noop$1 = function noop() {};
+    var noop$1 = function noop$$1() {};
     var fakeApp = {
         app: {
             globalData: {}
@@ -3084,6 +3093,13 @@
             return getApp();
         }
         return fakeApp;
+    }
+    function getWrappedComponent(fiber, instance) {
+        if (instance.isPureComponent && instance.constructor.WrappedComponent) {
+            return fiber.child.child.stateNode;
+        } else {
+            return instance;
+        }
     }
     if (typeof getApp === 'function') {
         _getApp = getApp;
@@ -3110,8 +3126,14 @@
         for (var i = 0, n = reactInstances.length; i < n; i++) {
             var reactInstance = reactInstances[i];
             if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-                if (get(reactInstance).disposed) {
+                var fiber = get(reactInstance);
+                if (fiber.disposed) {
                     continue;
+                }
+                if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
+                    reactInstance = fiber.child.stateNode;
+                } else {
+                    reactInstance = getWrappedComponent(fiber, reactInstance);
                 }
                 reactInstance.wx = wx;
                 wx.reactInstance = reactInstance;
@@ -4313,8 +4335,6 @@
     function _classCallCheck$4(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
     function _possibleConstructorReturn$4(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
     function _inherits$4(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-    var that = null;
-    var container = null;
     var PreviewImage = function (_Component) {
         _inherits$4(PreviewImage, _Component);
         function PreviewImage(props) {
@@ -4322,14 +4342,12 @@
             var _this = _possibleConstructorReturn$4(this, _Component.call(this, props));
             _this.state = {
                 visible: false,
-                urls: [],
                 current: 0
             };
+            _this.container = _this.props.container;
             _this.close = _this.close.bind(_this);
             _this.gotoPrevious = _this.gotoPrevious.bind(_this);
             _this.gotoNext = _this.gotoNext.bind(_this);
-            _this.gotoImage = _this.gotoImage.bind(_this);
-            that = _this;
             return _this;
         }
         PreviewImage.prototype.componentDidMount = function componentDidMount() {
@@ -4338,35 +4356,44 @@
             }, this.props.success, this.props.complete, this.props.resolve);
         };
         PreviewImage.prototype.componentWillUnmount = function componentWillUnmount() {
-            document.removeChild(container);
+            React$1.api.previewImageSingleton = null;
+            var el = this.container;
+            if (el && el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
         };
         PreviewImage.prototype.gotoPrevious = function gotoPrevious() {
+            var urls = this.props.urls;
+            var index = urls.indexOf(this.state.current) - 1;
+            if (index < 0) {
+                index = urls.length - 1;
+            }
             this.setState({
-                current: this.state.current - 1
+                current: urls[index]
             });
         };
         PreviewImage.prototype.gotoNext = function gotoNext() {
+            var urls = this.props.urls;
+            var index = urls.indexOf(this.state.current) + 1;
+            if (index === urls.length) {
+                index = 0;
+            }
             this.setState({
-                current: this.state.current + 1
-            });
-        };
-        PreviewImage.prototype.gotoImage = function gotoImage(index) {
-            this.setState({
-                current: index
+                current: urls[index]
             });
         };
         PreviewImage.prototype.close = function close() {
-            this.setState({
-                visible: false
-            });
+            this.componentWillUnmount();
         };
         PreviewImage.prototype.render = function render() {
-            var _state = this.state,
-                visible = _state.visible,
-                urls = _state.urls,
-                current = _state.current;
-            container.style = visible ? 'width: 100%;height: 100%;position: fixed;' : 'none';
-            return React.createElement('div', null);
+            return React$1.createElement(
+                'div',
+                { className: 'showImg2019' },
+                React$1.createElement('image', { src: this.state.current }),
+                React$1.createElement('style', { ref: function ref(node) {
+                        Object(node).textContent = '\n                    .showImg2019{\n                        display: flex;\n                        flex-direction: column;\n                        align-items: center;\n                        justify-content: center;\n                        position: fixed;\n                        width:100%;\n                    }\n                    .showImg2019 img{\n                        width:100%;\n                    }';
+                    } })
+            );
         };
         return PreviewImage;
     }(Component);
@@ -4381,20 +4408,76 @@
                 fail = _options$fail === undefined ? function () {} : _options$fail,
                 _options$complete = options.complete,
                 complete = _options$complete === undefined ? function () {} : _options$complete;
-            container = document.createElement('div');
-            document.body.appendChild(container);
-            DOMRenderer.render(React.createElement(PreviewImage, {
-                success: success,
-                fail: fail,
-                complete: complete,
-                resolve: resolve,
-                reject: reject
-            }), container);
-            that.setState({
-                visible: true,
-                urls: urls,
-                current: current
-            });
+            var instance = React$1.api.previewImageSingleton;
+            var el = document.querySelector('#h5-api-previewMask');
+            if (!el) {
+                var id = 'h5-api-previewMask';
+                var imgModal = document.querySelector('.__internal__Page-container');
+                var container = document.createElement('div');
+                container.id = id;
+                container.style.position = 'fixed';
+                container.style.top = 0;
+                container.style.width = '100%';
+                container.style.height = '100%';
+                container.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                container.style.display = 'flex';
+                container.style.justifyContent = 'center';
+                container.style.alignItems = 'center';
+                imgModal.appendChild(container);
+                var startX,
+                    startTimeX = 0;
+                container.ontouchstart = function (e) {
+                    startX = e.touches[0].pageX;
+                    startTimeX = e.timeStamp;
+                };
+                container.ontouchend = function (e) {
+                    var endX = e.changedTouches[0].pageX;
+                    var endStartTime = e.timeStamp;
+                    if (!instance || !e.changedTouches[0]) {
+                        return;
+                    }
+                    if (endStartTime - startTimeX <= 200 || Math.abs(endX - startX) < 10) {
+                        setTimeout(function () {
+                            instance.close();
+                        }, 0);
+                        startTimeX = 0;
+                        return;
+                    }
+                    if (startX != null) {
+                        if (endX - startX > 0) {
+                            instance.gotoPrevious();
+                            startX = null;
+                        } else {
+                            instance.gotoNext();
+                            startX = null;
+                        }
+                    }
+                };
+                React$1.render(React$1.createElement(PreviewImage, {
+                    success: success,
+                    fail: fail,
+                    urls: urls,
+                    container: container,
+                    complete: complete,
+                    resolve: resolve,
+                    reject: reject,
+                    ref: function ref(refs) {
+                        if (refs) {
+                            instance = React$1.api.previewImageSingleton = refs;
+                        }
+                    }
+                }), container, function () {
+                    instance.setState({
+                        visible: true,
+                        current: current
+                    });
+                });
+            } else {
+                instance.setState({
+                    visible: true,
+                    current: current
+                });
+            }
         });
     }
     var previewImage$1 = {
@@ -4647,27 +4730,66 @@
     };
 
     function pageScrollTo() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          scrollTop = _ref.scrollTop,
-          _ref$duration = _ref.duration,
-          _ref$success = _ref.success,
-          success = _ref$success === undefined ? function () {} : _ref$success,
-          _ref$fail = _ref.fail,
-          fail = _ref$fail === undefined ? function () {} : _ref$fail,
-          _ref$complete = _ref.complete,
-          complete = _ref$complete === undefined ? function () {} : _ref$complete;
-      return new Promise(function (resolve, reject) {
-        var container = document.getElementsByClassName('__internal__DynamicPage-container');
-        if (container.length > 0) {
-          container[container.length - 1].scrollTo(0, scrollTop);
-          handleSuccess({ scrollTop: scrollTop }, success, complete, resolve);
-        } else {
-          handleFail({ errMsg: 'pageScrollTo fail' }, fail, complete, reject);
-        }
-      });
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            scrollTop = _ref.scrollTop,
+            _ref$duration = _ref.duration,
+            duration = _ref$duration === undefined ? 300 : _ref$duration,
+            _ref$success = _ref.success,
+            success = _ref$success === undefined ? function () {} : _ref$success,
+            _ref$fail = _ref.fail,
+            fail = _ref$fail === undefined ? function () {} : _ref$fail,
+            _ref$complete = _ref.complete,
+            complete = _ref$complete === undefined ? function () {} : _ref$complete;
+        return new Promise(function (resolve, reject) {
+            var bounce = function bounce(per) {
+                if (per < 1 / 2.75) {
+                    return 7.5625 * per * per;
+                } else if (per < 2 / 2.75) {
+                    return 7.5625 * (per -= 1.5 / 2.75) * per + .75;
+                } else if (per < 2.5 / 2.75) {
+                    return 7.5625 * (per -= 2.25 / 2.75) * per + .9375;
+                } else {
+                    return 7.5625 * (per -= 2.25 / 2.75) * per + .984375;
+                }
+            };
+            var container = document.getElementsByClassName('__internal__DynamicPage-container');
+            if (container.length > 0) {
+                var page = container[container.length - 1];
+                var begin = page.scrollTop;
+                var distance = begin + scrollTop;
+                var fps = 60;
+                var internal = 1000 / fps;
+                var times = duration / 1000 * fps;
+                var step = distance / times;
+                var beginTime = new Date();
+                var id = setInterval(function () {
+                    var per = (new Date() - beginTime) / duration;
+                    if (scrollTop > 0) {
+                        if (begin >= distance) {
+                            clearInterval(id);
+                            handleSuccess({ scrollTop: scrollTop }, success, complete, resolve);
+                        } else {
+                            page.style.top = begin + bounce(per) * scrollTop + 'px';
+                            begin += step;
+                        }
+                    } else if (scrollTop < 0) {
+                        if (begin < distance) {
+                            clearInterval(id);
+                            handleSuccess({ scrollTop: scrollTop }, success, complete, resolve);
+                        } else {
+                            page.style.top = begin + bounce(per) * scrollTop + 'px';
+                            begin += step;
+                        }
+                    }
+                    page.scrollTop = begin;
+                }, internal);
+            } else {
+                handleFail({ errMsg: 'pageScrollTo fail' }, fail, complete, reject);
+            }
+        });
     }
     var scroll = {
-      pageScrollTo: pageScrollTo
+        pageScrollTo: pageScrollTo
     };
 
     var SelectorQuery = function SelectorQuery() {
@@ -5308,6 +5430,7 @@
         return event;
     }
 
+    var defer = Promise.resolve().then.bind(Promise.resolve());
     function registerComponent(type, name) {
         type.isMPComponent = true;
         registeredComponents[name] = type;
@@ -5320,9 +5443,12 @@
             },
             options: type.options,
             attached: function attached() {
-                usingComponents[name] = type;
-                var uuid = this.dataset.instanceUid || null;
-                refreshComponent(reactInstances, this, uuid);
+                var wx = this;
+                defer(function () {
+                    usingComponents[name] = type;
+                    var uuid = wx.dataset.instanceUid || null;
+                    refreshComponent(reactInstances, wx, uuid);
+                });
             },
             detached: detachComponent,
             dispatchEvent: dispatchEvent$1
@@ -5387,9 +5513,9 @@
     var render$2 = DOMRenderer.render;
     var __currentPages = [];
     var MAX_PAGE_STACK_NUM = 10;
-    var React$1 = getWindow().React = {
+    var React$2 = getWindow().React = {
         findDOMNode: findDOMNode,
-        version: '1.5.0',
+        version: '1.5.9',
         render: render$2,
         hydrate: render$2,
         Fragment: Fragment,
@@ -5404,7 +5530,7 @@
         isValidElement: isValidElement,
         toClass: miniCreateClass,
         registerComponent: registerComponent,
-        getCurrentPage: function getCurrentPage() {
+        getCurrentPage: function getCurrentPage$$1() {
             return __currentPages[__currentPages.length - 1];
         },
         getCurrentPages: function getCurrentPages() {
@@ -5428,6 +5554,7 @@
         useContext: useContext,
         useComponent: useComponent,
         createRef: createRef,
+        forwardRef: forwardRef,
         cloneElement: cloneElement,
         appType: 'h5',
         __app: {},
@@ -5448,24 +5575,24 @@
             _getQuery2 = _slicedToArray(_getQuery, 2),
             path = _getQuery2[0],
             query = _getQuery2[1];
-        var appInstance = React$1.__app;
+        var appInstance = React$2.__app;
         var appConfig = appInstance.constructor.config;
         if (appConfig.pages.indexOf(path) === -1) {
             throw "没有注册该页面: " + path;
         }
         if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
-        var pageClass = React$1.__pages[path];
+        var pageClass = React$2.__pages[path];
         __currentPages.forEach(function (page, index, self) {
-            self[index] = React$1.cloneElement(self[index], {
+            self[index] = React$2.cloneElement(self[index], {
                 show: false
             });
         });
-        var pageInstance = React$1.createElement(pageClass, {
-            isTabPage: React$1.__isTab(path),
+        var pageInstance = React$2.createElement(pageClass, {
+            isTabPage: React$2.__isTab(path),
             path: path,
             query: query,
             url: url,
-            app: React$1.__app,
+            app: React$2.__app,
             show: true,
             needBackButton: __currentPages.length > 0 ? true : false
         });
@@ -5510,7 +5637,7 @@
                 var url = page.props.url;
                 history.pushState({ url: url }, null, prefix + url);
             });
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({
                 showBackAnimation: true
             });
@@ -5522,7 +5649,7 @@
                 var _currentPages$props = __currentPages[__currentPages.length - 1].props,
                     path = _currentPages$props.path,
                     query = _currentPages$props.query;
-                React$1.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
+                React$2.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
             }, 300);
         },
         switchTab: function switchTab(_ref2) {
@@ -5534,7 +5661,7 @@
                 _getQuery4 = _slicedToArray(_getQuery3, 2),
                 path = _getQuery4[0],
                 query = _getQuery4[1];
-            var config = React$1.__app.constructor.config;
+            var config = React$2.__app.constructor.config;
             if (config && config.tabBar && config.tabBar.list) {
                 if (config.tabBar.list.length < 2 || config.tabBar.list.length > 5) {
                     console.warn('tabBar数量非法，必须大于2且小于5个');
@@ -5567,7 +5694,7 @@
             __currentPages.push(cloneElement(currentPage, {
                 config: processedOptions
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         setNavigationBarTitle: function setNavigationBarTitle(options) {
@@ -5579,15 +5706,15 @@
             __currentPages.push(cloneElement(currentPage, {
                 config: processedOptions
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         stopPullDownRefresh: function stopPullDownRefresh() {
-            var pageInstance = React$1.getCurrentPages().pop();
-            React$1.getCurrentPages().push(cloneElement(pageInstance, {
+            var pageInstance = React$2.getCurrentPages().pop();
+            React$2.getCurrentPages().push(cloneElement(pageInstance, {
                 stopPullDownRefresh: true
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         createModal: function createModal(instance) {
@@ -5621,8 +5748,8 @@
             return key + '=' + obj[key];
         }).join('&');
     }
-    registerAPIs(React$1, apiContainer, more);
+    registerAPIs(React$2, apiContainer, more);
 
-    return React$1;
+    return React$2;
 
-}));
+})));
