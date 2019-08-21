@@ -19,7 +19,12 @@ export default {
     },
     plugins: [
 
-        babel(),
+        babel({
+            plugins: [
+                "transform-es3-property-literals",
+                "transform-es3-member-expression-literals",
+            ]
+        }),
 
         license({
             banner: `IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright ${JSON.stringify(

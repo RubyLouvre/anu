@@ -9,7 +9,7 @@ export var Unbatch = miniCreateClass(
     },
     Component,
     {
-        render() {
+        render: function f3() {
             return this.state.child;
         }
     }

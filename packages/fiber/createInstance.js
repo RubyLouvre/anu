@@ -34,7 +34,7 @@ export function createInstance(fiber, context) {
             extend(instance, {
                 __isStateless: true,
                 renderImpl: type,
-                render: function f() {
+                render: function f1() {
                     return this.renderImpl(this.props, this.context);
                 }
             });

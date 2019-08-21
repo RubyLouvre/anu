@@ -4,33 +4,33 @@
   <meta charset="UTF-8" />
   <title>Document</title>
   <!--<script src="https://unpkg.com/anujs@1.5.6/dist/React.js"></script>-->
-  <script src="./dist/React.js"></script>
-  <!--<script src="./dist/React1.44.js"></script>-->
-  <!--<script src="https://unpkg.com/anujs@1.4.4/dist/React.js"></script>
- <script src="https://cdn.bootcss.com/react/16.9.0/umd/react.production.min.js"></script>
-  <script src="https://cdn.bootcss.com/react-dom/16.8.6/umd/react-dom.production.min.js"></script>-->
+  <script src="./dist/ReactIE.js"></script>
   <script>
+      console.log('...............')
       window.onload = function(){
-        let h = React.createElement
+/*
+     
+        function App(){
+            this.state = {
+                value: ""
+            }
+            console.log("xxxx")
+            var that = this
+            this.onChange = function(e) {
+                var value = e.target.value;
+                thast.setState({value: value})
+            }
+        }
+        var h = React.createElement;
+         App =  React.miniCreateClass(App,{     
+            render: function(){
+                return h("div", null, h("input", {type: 'number',value: this.state.value.toUpperCase(), onChange: this.onChange}), this.state.value.toUpperCase())
+            }
+        },{})
+console.log(App)
 
-class App extends React.Component{
-  
-  state = {
-    value: ""
-  }
-  
-  onChange = (evt) => {
-    console.log("======", evt.type)
-    const value = evt.target.value;
-    this.setState({value})
-  }
-  
-  render(){
-    return h("div", null, h("input", {value: this.state.value.toUpperCase(), onChange: this.onChange}), this.state.value.toUpperCase())
-  }
-}
-
-ReactDOM.render(h(App), document.querySelector('#root'))
+ReactDOM.render(h(App), document.getElementById('root'))
+*/
       }
  
   </script>
