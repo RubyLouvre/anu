@@ -171,13 +171,15 @@ const visitor = {
                 }
             }
         }
-        specifiers.forEach(item => {
-            modules.importComponents[item.local.name] = {
-                astPath: astPath,
-                source: source,
-                sourcePath: modules.sourcePath
-            };
-        });
+        if (modules.componentType !== 'App') {
+            specifiers.forEach(item => {
+                modules.importComponents[item.local.name] = {
+                    astPath: astPath,
+                    source: source,
+                    sourcePath: modules.sourcePath
+                };
+            });
+        }
     },
     Program: {
         exit(astPath, state) {
