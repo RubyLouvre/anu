@@ -239,15 +239,17 @@ const visitor = {
             }
 
         }
-        specifiers.forEach(item => {
-            //重点，保持所有引入的组件名及它们的路径，用于<import />
-
-            modules.importComponents[item.local.name] = {
-                astPath: astPath,
-                source: source,
-                sourcePath: modules.sourcePath
-            };
-        });
+        if (modules.componentType !== 'App') {
+            specifiers.forEach(item => {
+                //重点，保持所有引入的组件名及它们的路径，用于<import />
+    
+                modules.importComponents[item.local.name] = {
+                    astPath: astPath,
+                    source: source,
+                    sourcePath: modules.sourcePath
+                };
+            });
+        }
     },
 
     Program: {
