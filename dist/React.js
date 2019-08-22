@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2019-08-11
+ * by 司徒正美 Copyright 2019-08-20
  * IE9+
  */
 
@@ -732,8 +732,8 @@
     }
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
+        var updateQueue = fiber.updateQueue;
         if (useCallbackImpl(create, deps, false, true)) {
-            var updateQueue = fiber.updateQueue;
             if (fiber.effectTag % EffectTag) {
                 fiber.effectTag *= EffectTag;
             }
@@ -853,7 +853,7 @@
             }
             throw "lazy组件必须包一个Suspense组件";
         },
-        render: function render() {
+        render: function f2() {
             return this.state.resolved ? createElement(this.state.component) : this.fallback();
         }
     });
@@ -1042,7 +1042,7 @@
                     syncValue(node, "checked", !!props.checked);
                 }
                 var isActive = node === node.ownerDocument.activeElement;
-                var value = isActive ? node.value : getSafeValue(props.value);
+                var value = getSafeValue(props.value);
                 if (value != null) {
                     if (props.type === "number") {
                         if (value === 0 && node.value === "" ||
@@ -1904,7 +1904,7 @@
                 extend(instance, {
                     __isStateless: true,
                     renderImpl: type,
-                    render: function f() {
+                    render: function f1() {
                         return this.renderImpl(this.props, this.context);
                     }
                 });
@@ -1912,7 +1912,9 @@
             } else {
                 instance = new type(props, context);
                 if (!(instance instanceof Component)) {
-                    throw type.name + ' doesn\'t extend React.Component';
+                    if (!instance.updater || !instance.updater.enqueueSetState) {
+                        throw type.name + ' doesn\'t extend React.Component';
+                    }
                 }
             }
         } finally {
@@ -2770,7 +2772,7 @@
             child: props.child
         };
     }, Component, {
-        render: function render() {
+        render: function f3() {
             return this.state.child;
         }
     });
@@ -3218,7 +3220,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.5.9',
+            version: '1.5.10',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,

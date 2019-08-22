@@ -64,7 +64,10 @@ export function useCallbackImpl(create, deps, isMemo, isEffect) {//ok
             return isEffect ? null : prevState[0];
         }
     }
-
+    var fn = isMemo ? create() : create;
+    updateQueue[key] = [fn, nextInputs];
+    return fn;
+}
 export function useEffectImpl(create, deps, EffectTag, createList, destroyList) {//ok
     let fiber = getCurrentFiber();
     let updateQueue = fiber.updateQueue;

@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-08-12
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-08-20
  */
 
 (function (global, factory) {
@@ -654,11 +654,11 @@
             }
         });
         function getContext(fiber) {
-            while (fiber.return) {
+            while (fiber['return']) {
                 if (fiber.type == Provider) {
                     return instance.value;
                 }
-                fiber = fiber.return;
+                fiber = fiber['return'];
             }
             return defaultValue;
         }
@@ -845,7 +845,7 @@
                     syncValue(node, "checked", !!props.checked);
                 }
                 var isActive = node === node.ownerDocument.activeElement;
-                var value = isActive ? node.value : getSafeValue(props.value);
+                var value = getSafeValue(props.value);
                 if (value != null) {
                     if (props.type === "number") {
                         if (value === 0 && node.value === "" ||
@@ -1138,7 +1138,7 @@
             var checkChange = node;
             if (node.__events) {
                 var vnode = node.__events.vnode;
-                inner: while (vnode.return) {
+                inner: while (vnode['return']) {
                     if (vnode.tag === 5) {
                         node = vnode.stateNode;
                         if (node === end) {
@@ -1153,7 +1153,7 @@
                             paths.push({ node: node, events: node.__events });
                         }
                     }
-                    vnode = vnode.return;
+                    vnode = vnode['return'];
                 }
             }
             if (node === checkChange) {
@@ -1724,7 +1724,7 @@
                 extend(instance, {
                     __isStateless: true,
                     renderImpl: type,
-                    render: function f() {
+                    render: function f1() {
                         return this.renderImpl(this.props, this.context);
                     }
                 });
@@ -1732,7 +1732,9 @@
             } else {
                 instance = new type(props, context);
                 if (!(instance instanceof Component)) {
-                    throw type.name + ' doesn\'t extend React.Component';
+                    if (!instance.updater || !instance.updater.enqueueSetState) {
+                        throw type.name + ' doesn\'t extend React.Component';
+                    }
                 }
             }
         } finally {
@@ -1772,7 +1774,7 @@
                 componentStack: stack
             });
         } else {
-            var p = fiber.return;
+            var p = fiber["return"];
             for (var i in p.children) {
                 if (p.children[i] == fiber) {
                     fiber.type = noop;
@@ -1780,7 +1782,7 @@
             }
             while (p) {
                 p._hydrating = false;
-                p = p.return;
+                p = p["return"];
             }
             if (!Renderer.catchError) {
                 Renderer.catchStack = stack;
@@ -1837,7 +1839,7 @@
             } else if (fiber.tag === 5) {
                 names.push(name);
             }
-            fiber = fiber.return;
+            fiber = fiber["return"];
             if (boundary) {
                 var boundaries = Renderer.boundaries;
                 if (!retry || retry !== boundary) {
@@ -1846,8 +1848,8 @@
                     if (f && !f.catchError) {
                         f.forward = boundary.forward;
                         f.sibling = boundary.sibling;
-                        if (boundary.return.child == boundary) {
-                            boundary.return.child = f;
+                        if (boundary["return"].child == boundary) {
+                            boundary["return"].child = f;
                         }
                         boundary = f;
                     }
@@ -1950,7 +1952,7 @@
     }
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
-       var updateQueue = fiber.updateQueue;
+        var updateQueue = fiber.updateQueue;
         if (useCallbackImpl(create, deps, false, true)) {
             if (fiber.effectTag % EffectTag) {
                 fiber.effectTag *= EffectTag;
@@ -2012,7 +2014,7 @@
             if (found) {
                 return found;
             }
-            fiber = fiber.return;
+            fiber = fiber['return'];
         }
     }
     function setInsertPoints(children) {
@@ -2026,7 +2028,7 @@
                 child.effectTag = PLACE;
                 child.forwardFiber = p.insertPoint;
                 p.insertPoint = child;
-                for (var pp = child.return; pp && pp.effectTag === NOWORK; pp = pp.return) {
+                for (var pp = child['return']; pp && pp.effectTag === NOWORK; pp = pp['return']) {
                     pp.effectTag = WORKING;
                 }
             } else {
@@ -2125,7 +2127,7 @@
                     fiber = f.sibling;
                     continue outerLoop;
                 }
-                f = f.return;
+                f = f['return'];
             }
         }
     }
@@ -2344,7 +2346,7 @@
             fiber.lastChild = prev.lastChild;
             for (var i in pc) {
                 var a = pc[i];
-                a.return = fiber;
+                a['return'] = fiber;
                 cc[i] = a;
             }
             setInsertPoints(cc);
@@ -2430,7 +2432,7 @@
             }
             newFibers[_i] = _newFiber;
             _newFiber.index = index++;
-            _newFiber.return = parentFiber;
+            _newFiber['return'] = parentFiber;
             if (prevFiber) {
                 prevFiber.sibling = _newFiber;
                 _newFiber.forward = prevFiber;
@@ -2535,7 +2537,7 @@
                     fiber = f.sibling;
                     continue outerLoop;
                 }
-                f = f.return;
+                f = f['return'];
             }
         }
     }
@@ -2706,7 +2708,7 @@
             child: props.child
         };
     }, Component, {
-        render: function render() {
+        render: function f3() {
             return this.state.child;
         }
     });
@@ -2724,7 +2726,7 @@
                 props: {},
                 hasMounted: true,
                 memoizedState: {},
-                return: container
+                'return': container
             });
             fiber.index = 0;
             container.child = fiber;
@@ -2804,7 +2806,7 @@
             info = void 0;
         if (fiber) {
             if (fiber.type === Unbatch) {
-                info = fiber.return;
+                info = fiber['return'];
             } else {
                 var dom = getContainer(fiber);
                 info = {
@@ -2848,11 +2850,11 @@
         }
     }
     function fiberContains(p, son) {
-        while (son.return) {
-            if (son.return === p) {
+        while (son['return']) {
+            if (son['return'] === p) {
                 return true;
             }
-            son = son.return;
+            son = son['return'];
         }
     }
     function getQueue(fiber) {
@@ -2860,7 +2862,7 @@
             if (fiber.microtasks) {
                 return fiber.microtasks;
             }
-            fiber = fiber.return;
+            fiber = fiber['return'];
         }
     }
     function pushChildQueue(fiber, queue) {
@@ -2878,8 +2880,8 @@
         var enqueue = true,
             p = fiber,
             hackSCU = [];
-        while (p.return) {
-            p = p.return;
+        while (p['return']) {
+            p = p['return'];
             var instance = p.stateNode;
             if (instance.refs && !instance.__isStateless && p.type !== Unbatch) {
                 hackSCU.push(p);
@@ -2961,7 +2963,7 @@
         if (p.parent) {
             return p.parent;
         }
-        while (p = p.return) {
+        while (p = p['return']) {
             if (p.tag === 5) {
                 return p.stateNode;
             }
@@ -2970,7 +2972,7 @@
 
     var reuseTextNodes = [];
     function createElement$1(vnode) {
-        var p = vnode.return;
+        var p = vnode['return'];
         var type = vnode.type,
             props = vnode.props,
             ns = vnode.ns;
@@ -3000,7 +3002,7 @@
                         }
                         break;
                     }
-                } while (p = p.return);
+                } while (p = p['return']);
                 break;
         }
         try {
@@ -3100,7 +3102,7 @@
                 } else {
                     backup = fiber;
                 }
-            } while (fiber = fiber.return);
+            } while (fiber = fiber['return']);
             if (backup && backup.contextStack) {
                 mergeContext(container, backup.contextStack[0]);
             }
@@ -3176,22 +3178,22 @@
         }
         promise.then(function (value) {
             return _this.setState({
-                component: value.default,
+                component: value["default"],
                 resolved: true
             });
         });
     }, Component, {
         fallback: function fallback() {
-            var parent = Object(get(this)).return;
+            var parent = Object(get(this))["return"];
             while (parent) {
                 if (parent.type === Suspense) {
                     return parent.props.fallback;
                 }
-                parent = parent.return;
+                parent = parent["return"];
             }
             throw "lazy组件必须包一个Suspense组件";
         },
-        render: function render() {
+        render: function f2() {
             return this.state.resolved ? createElement(this.state.component) : this.fallback();
         }
     });
@@ -3342,7 +3344,8 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.5.9',
+            miniCreateClass: miniCreateClass,
+            version: '1.5.10',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,
