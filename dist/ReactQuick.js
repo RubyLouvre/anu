@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-08-20
+ * 运行于快应用的React by 司徒正美 Copyright 2019-08-23
  */
 
 var arrayPush = Array.prototype.push;
@@ -1400,7 +1400,7 @@ function createRouter(name) {
                 }
             }
             uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
-            if (uri.charAt(0) !== '/' && !uri.test(/^(hap|https?)\:/)) {
+            if (uri.charAt(0) !== '/' && !uri.match(/^(hap|https?)\:/)) {
                 uri = '/' + uri;
             }
         }
@@ -3504,7 +3504,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.5.9',
+    version: '1.5.10',
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,

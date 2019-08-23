@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-20
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-23
  */
 
 var arrayPush = Array.prototype.push;
@@ -2680,7 +2680,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.5.9',
+    version: '1.5.10',
     render: render$1,
     hydrate: render$1,
     webview: webview,

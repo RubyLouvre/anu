@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-20T12
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-23T09
  * IE9+
  */
 
@@ -5515,7 +5515,7 @@
     var MAX_PAGE_STACK_NUM = 10;
     var React$2 = getWindow().React = {
         findDOMNode: findDOMNode,
-        version: '1.5.9',
+        version: '1.5.10',
         render: render$2,
         hydrate: render$2,
         Fragment: Fragment,
