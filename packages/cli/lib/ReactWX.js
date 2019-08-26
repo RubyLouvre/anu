@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-23T09
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-26T03
  * IE9+
  */
 
@@ -976,12 +976,16 @@ function updateMiniApp(instance) {
     }
 }
 function refreshComponent(reactInstances, wx, uuid) {
+    if (wx.disposed) {
+        return;
+    }
     var pagePath = Object(_getApp()).$$pagePath;
     for (var i = 0, n = reactInstances.length; i < n; i++) {
         var reactInstance = reactInstances[i];
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
             var fiber = get(reactInstance);
             if (fiber.disposed) {
+                console.log("fiber.disposed by nanachi");
                 continue;
             }
             if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
@@ -998,6 +1002,7 @@ function refreshComponent(reactInstances, wx, uuid) {
 }
 function detachComponent() {
     var t = this.reactInstance;
+    this.disposed = true;
     if (t) {
         t.wx = null;
         this.reactInstance = null;

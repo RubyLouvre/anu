@@ -76,6 +76,9 @@ export function updateMiniApp (instance) {
     }
 }
 export function refreshComponent (reactInstances, wx, uuid) {
+    if(wx.disposed){
+        return 
+    }
     let pagePath = Object(_getApp()).$$pagePath;
     for (let i = 0, n = reactInstances.length ;i < n; i++) {
         let reactInstance = reactInstances[i];
@@ -83,6 +86,7 @@ export function refreshComponent (reactInstances, wx, uuid) {
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
             var fiber = get(reactInstance)
             if(fiber.disposed){
+               console.log("fiber.disposed by nanachi");
                continue;
             }
             //处理mobx
@@ -101,6 +105,7 @@ export function refreshComponent (reactInstances, wx, uuid) {
 }
 export function detachComponent () {
     let t = this.reactInstance;
+    this.disposed = true;
     if (t) {
         t.wx = null;
         this.reactInstance = null;
