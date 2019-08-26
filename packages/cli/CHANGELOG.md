@@ -1,5 +1,27 @@
 # Changelog
 
+# 1.3.4 (待定)
+
+## 核心库
+#### Feature
+
+- 全平台支持Redux、Mobx。
+
+#### Bug fix
+
+- 修复useCallback useEffect useState bug。
+
+## CLI
+#### Feature
+
+- H5添加scroll-view组件。
+- 新增Redux、Mobx模板。
+- CLI迁移至Typescript。
+
+#### Bug fix
+
+- 修复H5组件、api的一些bug。
+
 # 1.3.3 (2019-07-11)
 
 ## 核心库
