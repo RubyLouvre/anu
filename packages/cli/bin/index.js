@@ -36,11 +36,7 @@ platforms_1.default.forEach(function (el) {
     const { buildType, des, isDefault } = el;
     ['build', 'watch'].forEach(function (compileType) {
         cli.addCommand(`${compileType}:${buildType}`, isDefault ? compileType : null, des, buildOptions_1.default, (options) => {
-            const args = {};
-            Object.keys(options).forEach(key => {
-                args[key] = options.key;
-            });
-            build_1.default(Object.assign({}, args, { watch: compileType === 'watch', buildType }));
+            build_1.default(Object.assign({}, options, { watch: compileType === 'watch', buildType }));
         });
     });
 });
