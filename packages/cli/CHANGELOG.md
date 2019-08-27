@@ -1,6 +1,6 @@
 # Changelog
 
-# 1.3.4 (待定)
+# 1.3.4 (2019-08-27)
 
 ## 核心库
 #### Feature
@@ -10,6 +10,8 @@
 #### Bug fix
 
 - 修复useCallback useEffect useState bug。
+- 修复快应用路由bug。
+- 修复小程序三目运算中的组件渲染错乱bug。
 
 ## CLI
 #### Feature
