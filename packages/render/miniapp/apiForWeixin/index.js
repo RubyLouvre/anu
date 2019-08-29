@@ -37,9 +37,9 @@ export var more = function(api) {
         uploadFile: function _(a) {
             var cb = a.success || Number;
             a.success = function(res) {
-                if (res.data + '' === res.data) {
-                    res.data = JSON.parse(res.data);
-                }
+                // if (res.data + '' === res.data) {
+                //     res.data = JSON.parse(res.data);
+                // }
                 cb(res);
             };
             return api.uploadFile(a);
