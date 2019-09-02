@@ -1,52 +1,42 @@
-import Clipboard from 'clipboard';
-import { handleSuccess, handleFail } from '../utils';
-
-/**
- * 获取系统剪贴板的内容
- */
-function getClipboardData() {
-  // 暂时无法实现
-}
+import { handleSuccess, handleFail } from "../utils";
 
 /**
  * 设置系统剪贴板的内容
+ * https://w3c.github.io/clipboard-apis/#dom-clipboard-writetext
  */
-function setClipboardData(options = {}) {
-  return new Promise(function(resolve, reject) {
-    const {
-      data = '',
-      success = () => {},
-      fail = () => {},
-      complete = () => {}
-    } = options;
-    try {
-      const aux = document.createElement('input');
-      aux.setAttribute('data-clipboard-text', data);
-      new Clipboard(aux);
-      aux.click();
-      handleSuccess(
-        {
-          errMsg: 'setClipboardData success',
-          data
-        },
-        success,
-        complete,
-        resolve
-      );
-    } catch (e) {
-      handleFail(
-        {
-          errMsg: e
-        },
-        fail,
-        complete,
-        reject
-      );
-    }
-  });
+function setClipboardData({ data, success, fail, complete }) {
+    return navigator.clipboard
+        .writeText(data)
+        .then(function() {
+            var ok = {
+                errMsg: "setClipboardData success",
+                data
+            };
+            handleSuccess(ok, success, complete);
+        })
+        .catch(function(e) {
+            var ng = { data: null, errMsg: e };
+            handleFail(ng, fail, complete);
+        });
+}
+
+function getClipboardData({ success, fail, complete }) {
+   return navigator.clipboard
+        .readText()
+        .then(function(data) {
+            var ok = {
+                errMsg: "getClipboardData success",
+                data
+            };
+            handleSuccess(ok, success, complete);
+        })
+        .catch(function(e) {
+            var ng = { data: null, errMsg: e };
+            handleFail(ng, fail, complete);
+        });
 }
 
 export default {
-    // getClipboardData,
+    getClipboardData,
     setClipboardData
 };
