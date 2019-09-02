@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-26T03
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-29T06
  * IE9+
  */
 
@@ -896,9 +896,6 @@ var more = function more(api) {
         uploadFile: function _(a) {
             var cb = a.success || Number;
             a.success = function (res) {
-                if (res.data + '' === res.data) {
-                    res.data = JSON.parse(res.data);
-                }
                 cb(res);
             };
             return api.uploadFile(a);
