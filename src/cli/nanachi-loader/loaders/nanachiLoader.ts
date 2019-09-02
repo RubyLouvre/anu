@@ -1,5 +1,6 @@
 import JavascriptParserFactory from '../../parsers/jsParser/JavascriptParserFactory';
-const utils = require('../../packages/utils/index');
+import utils from '../../packages/utils/index';
+import { error } from '../../packages/utils/logger/queue';
 
 export interface NanachiQueue {
     code: string;
@@ -34,7 +35,10 @@ module.exports = async function(code: string, map: any, meta: any) {
                 console.log(err);
                 process.exit(1);
             }
-            console.log(this.resourcePath, '\n', err);
+            error.push({
+                id: this.resourcePath,
+                msg: err
+            });
         }
        
         let result = {
