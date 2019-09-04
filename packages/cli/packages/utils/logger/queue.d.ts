@@ -1,8 +1,8 @@
 export interface Log {
     id: string;
-    level: string;
+    level?: string;
     msg: string;
-    loc: {
+    loc?: {
         line: string;
         column: string;
     };

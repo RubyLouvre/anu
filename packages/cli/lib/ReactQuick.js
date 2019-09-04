@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-07-17
+ * 运行于快应用的React by 司徒正美 Copyright 2019-08-29
  */
 
 var arrayPush = Array.prototype.push;
@@ -648,9 +648,9 @@ function createEvent(e, target, type) {
             event[i] = e[i];
         }
     }
-    event.touches = e._touches;
+    var touches = event.touches = e._touches || e._changeTouches;
     event.changeTouches = e._changeTouches;
-    var touch = event.touches && event.touches[0];
+    var touch = touches && touches[0];
     if (touch) {
         event.pageX = touch.pageX;
         event.pageY = touch.pageY;
@@ -678,6 +678,13 @@ function _getApp() {
         return getApp();
     }
     return fakeApp;
+}
+function getWrappedComponent(fiber, instance) {
+    if (instance.isPureComponent && instance.constructor.WrappedComponent) {
+        return fiber.child.child.stateNode;
+    } else {
+        return instance;
+    }
 }
 if (typeof getApp === 'function') {
     _getApp = getApp;
@@ -711,12 +718,22 @@ function updateMiniApp(instance) {
     }
 }
 function refreshComponent(reactInstances, wx, uuid) {
+    if (wx.disposed) {
+        return;
+    }
     var pagePath = Object(_getApp()).$$pagePath;
     for (var i = 0, n = reactInstances.length; i < n; i++) {
         var reactInstance = reactInstances[i];
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-            if (get(reactInstance).disposed) {
+            var fiber = get(reactInstance);
+            if (fiber.disposed) {
+                console.log("fiber.disposed by nanachi");
                 continue;
+            }
+            if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
+                reactInstance = fiber.child.stateNode;
+            } else {
+                reactInstance = getWrappedComponent(fiber, reactInstance);
             }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
@@ -727,6 +744,7 @@ function refreshComponent(reactInstances, wx, uuid) {
 }
 function detachComponent() {
     var t = this.reactInstance;
+    this.disposed = true;
     if (t) {
         t.wx = null;
         this.reactInstance = null;
@@ -1387,7 +1405,7 @@ function createRouter(name) {
                 }
             }
             uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
-            if (uri.charAt(0) !== '/') {
+            if (uri.charAt(0) !== '/' && !uri.match(/^(hap|https?)\:/)) {
                 uri = '/' + uri;
             }
         }
@@ -1872,20 +1890,17 @@ function createInstance(fiber, context) {
             extend(instance, {
                 __isStateless: true,
                 renderImpl: type,
-                render: function f() {
+                render: function f1() {
                     return this.renderImpl(this.props, this.context);
                 }
             });
             Renderer.currentOwner = instance;
-            if (type.render) {
-                instance.render = function () {
-                    return type.render(this.props, this.ref);
-                };
-            }
         } else {
             instance = new type(props, context);
             if (!(instance instanceof Component)) {
-                throw type.name + ' doesn\'t extend React.Component';
+                if (!instance.updater || !instance.updater.enqueueSetState) {
+                    throw type.name + ' doesn\'t extend React.Component';
+                }
             }
         }
     } finally {
@@ -2057,8 +2072,11 @@ function detachFiber(fiber, effects$$1) {
 }
 
 function setter(compute, cursor, value) {
-    this.updateQueue[cursor] = compute(cursor, value);
-    Renderer.updateComponent(this, true);
+    var _this = this;
+    Renderer.batchedUpdates(function () {
+        _this.updateQueue[cursor] = compute(cursor, value);
+        Renderer.updateComponent(_this, true);
+    });
 }
 var hookCursor = 0;
 function resetCursor() {
@@ -2099,7 +2117,7 @@ function useReducerImpl(reducer, initValue, initAction) {
     var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
     return [value, dispatch];
 }
-function useCallbackImpl(create, deps, isMemo) {
+function useCallbackImpl(create, deps, isMemo, isEffect) {
     var fiber = getCurrentFiber();
     var key = getCurrentKey();
     var updateQueue = fiber.updateQueue;
@@ -2108,23 +2126,24 @@ function useCallbackImpl(create, deps, isMemo) {
     if (prevState) {
         var prevInputs = prevState[1];
         if (areHookInputsEqual(nextInputs, prevInputs)) {
-            return;
+            return isEffect ? null : prevState[0];
         }
     }
-    var value = isMemo ? create() : create;
-    updateQueue[key] = [value, nextInputs];
-    return value;
+    var fn = isMemo ? create() : create;
+    updateQueue[key] = [fn, nextInputs];
+    return fn;
 }
 function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
     var fiber = getCurrentFiber();
-    var cb = useCallbackImpl(create, deps);
-    if (fiber.effectTag % EffectTag) {
-        fiber.effectTag *= EffectTag;
-    }
     var updateQueue = fiber.updateQueue;
-    var list = updateQueue[createList] || (updateQueue[createList] = []);
-    updateQueue[destroyList] || (updateQueue[destroyList] = []);
-    list.push(cb);
+    if (useCallbackImpl(create, deps, false, true)) {
+        if (fiber.effectTag % EffectTag) {
+            fiber.effectTag *= EffectTag;
+        }
+        var list = updateQueue[createList] || (updateQueue[createList] = []);
+        updateQueue[destroyList] || (updateQueue[destroyList] = []);
+        list.push(create);
+    }
 }
 function getCurrentFiber() {
     return get(Renderer.currentOwner);
@@ -2843,7 +2862,7 @@ var Unbatch = miniCreateClass(function Unbatch(props) {
         child: props.child
     };
 }, Component, {
-    render: function render() {
+    render: function f3() {
         return this.state.child;
     }
 });
@@ -3178,12 +3197,9 @@ var Renderer$1 = createRenderer({
             props: fiber.props
         };
     },
-    insertElement: function insertElement(fiber) {
-    },
-    emptyElement: function emptyElement(fiber) {
-    },
-    removeElement: function removeElement(fiber) {
-    }
+    insertElement: function insertElement() {},
+    emptyElement: function emptyElement() {},
+    removeElement: function removeElement() {}
 });
 
 var rcamel = /-(\w)/g;
@@ -3229,6 +3245,32 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
+var appMethods = {
+    onLaunch: 'onCreate',
+    onHide: 'onDestroy'
+};
+function registerApp(demo, containProvider) {
+    var app = {};
+    if (containProvider) {
+        demo.globalData._GlobalApp = demo.constructor;
+    }
+    for (var name in demo) {
+        var value = demo[name];
+        name = appMethods[name] || name;
+        app[name] = value;
+    }
+    for (var _name in demo.constructor) {
+        var _value = demo.constructor[_name];
+        if (!app[_name]) {
+            app[_name] = _value;
+        } else {
+            throw 'app.js已经存在同名的静态属性与实例属性 ' + _name + ' !';
+        }
+    }
+    delete app.constructor;
+    return app;
+}
+
 function registerComponent(type, name) {
     type.isMPComponent = true;
     registeredComponents[name] = type;
@@ -3251,25 +3293,43 @@ function registerComponent(type, name) {
     };
 }
 
+var GlobalApp = void 0;
+function _getGlobalApp(app) {
+    return GlobalApp || app.globalData._GlobalApp;
+}
+
 function onLoad(PageClass, path, query) {
     var app = _getApp();
+    var GlobalApp = _getGlobalApp(app);
     app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
     var container = {
-        type: 'page',
+        type: "page",
         props: {},
         children: [],
         root: true,
         appendChild: noop
     };
-    var pageInstance = render(
-    createElement(PageClass, {
-        path: path,
-        query: query,
-        isPageComponent: true
-    }), container);
-    callGlobalHook('onGlobalLoad');
+    var pageInstance;
+    if (typeof GlobalApp === "function") {
+        render(createElement(GlobalApp, {}, createElement(PageClass, {
+            path: path,
+            query: query,
+            isPageComponent: true,
+            ref: function ref(ins) {
+                if (ins) pageInstance = ins.wrappedInstance || getWrappedComponent(get(ins), ins);
+            }
+        })), container);
+    } else {
+        pageInstance = render(
+        createElement(PageClass, {
+            path: path,
+            query: query,
+            isPageComponent: true
+        }), container);
+    }
+    callGlobalHook("onGlobalLoad");
     this.reactContainer = container;
     this.reactInstance = pageInstance;
     pageInstance.wx = this;
@@ -3284,7 +3344,7 @@ function onReady() {
         el.fn.call(el.instance);
         el.instance.componentDidMount = el.fn;
     }
-    callGlobalHook('onGlobalReady');
+    callGlobalHook("onGlobalReady");
 }
 function onUnload() {
     for (var i in usingComponents) {
@@ -3308,7 +3368,7 @@ function onUnload() {
             }
         }, true);
     }
-    callGlobalHook('onGlobalUnload');
+    callGlobalHook("onGlobalUnload");
 }
 
 function registerPageHook(appHooks, pageHook, app, instance, args) {
@@ -3441,10 +3501,6 @@ function useMemo(create, deps) {
     return useCallbackImpl(create, deps, true);
 }
 
-var appMethods = {
-    onLaunch: 'onCreate',
-    onHide: 'onDestroy'
-};
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {
@@ -3453,7 +3509,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.5.0',
+    version: '1.5.10',
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,
@@ -3479,24 +3535,7 @@ var React = getWindow().React = {
     useContext: useContext,
     useComponent: useComponent,
     appType: 'quick',
-    registerApp: function registerApp(demo) {
-        var app = {};
-        for (var name in demo) {
-            var value = demo[name];
-            name = appMethods[name] || name;
-            app[name] = value;
-        }
-        for (var _name in demo.constructor) {
-            var _value = demo.constructor[_name];
-            if (!app[_name]) {
-                app[_name] = _value;
-            } else {
-                throw 'app.js已经存在同名的静态属性与实例属性 ' + _name + ' !';
-            }
-        }
-        delete app.constructor;
-        return app;
-    }
+    registerApp: registerApp
 };
 if (typeof global !== 'undefined') {
     var ref = Object.getPrototypeOf(global) || global;
@@ -3505,4 +3544,4 @@ if (typeof global !== 'undefined') {
 registerAPIsQuick(React, facade, more);
 
 export default React;
-export { Children, createElement, Component };
+export { Children, createElement, Component, PureComponent };

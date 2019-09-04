@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { version } from '../package.json';
 import platforms from '../consts/platforms';
 import BUILD_OPTIONS from '../consts/buildOptions';
 import CliBuilder from './cliBuilder';
@@ -8,6 +7,7 @@ import createPage from './commands/createPage';
 import build from './commands/build';
 import install from './commands/install';
 import '../tasks/chaikaMergeTask/injectChaikaEnv';
+const { version } = require('../package.json');
 
 const cli: CliBuilder = new CliBuilder();
 cli.checkNodeVersion('8.6.0');
@@ -53,14 +53,8 @@ platforms.forEach(function(el){
             des, 
             BUILD_OPTIONS,
             (options) => {
-                const args: {
-                    [propName: string]: any
-                } = {};
-                Object.keys(options).forEach(key => {
-                    args[key] = options.key;
-                });
                 build({
-                    ...args,
+                    ...options,
                     watch: compileType === 'watch',
                     buildType
                 });

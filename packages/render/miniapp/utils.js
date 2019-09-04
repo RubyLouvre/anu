@@ -2,6 +2,8 @@ import { hasOwnProperty, typeNumber, isFn, get } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 import { Renderer } from 'react-core/createRenderer';
 
+const noop = () => {};
+
 var fakeApp = {
     app: {
         globalData: {}
@@ -12,6 +14,18 @@ function _getApp () {
         return getApp();
     }
     return fakeApp;
+}
+//获取redux-react中的connect包裹下的原始实例对象 相同点Connect.WrappedComponent
+//  https://cdn.bootcss.com/react-redux/7.1.0-alpha.1/react-redux.js
+//  https://cdn.bootcss.com/react-redux/6.0.1/react-redux.js 
+//  https://cdn.bootcss.com/react-redux/5.1.1/react-redux.js
+//  https://cdn.bootcss.com/react-redux/4.4.5/react-redux.js
+export function getWrappedComponent(fiber, instance) {
+    if(instance.isPureComponent && instance.constructor.WrappedComponent){
+       return fiber.child.child.stateNode
+    }else{
+       return instance
+    }
 }
 
 if (typeof getApp === 'function') {
@@ -62,13 +76,25 @@ export function updateMiniApp (instance) {
     }
 }
 export function refreshComponent (reactInstances, wx, uuid) {
+    if(wx.disposed){
+        return 
+    }
     let pagePath = Object(_getApp()).$$pagePath;
     for (let i = 0, n = reactInstances.length ;i < n; i++) {
         let reactInstance = reactInstances[i];
         //处理组件A包含组件时B，当出现多个A组件，B组件会串的问题
         if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-            if(get(reactInstance).disposed){
+            var fiber = get(reactInstance)
+            if(fiber.disposed){
+               console.log("fiber.disposed by nanachi");
                continue;
+            }
+            //处理mobx
+            if(fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector'){
+                reactInstance = fiber.child.stateNode;
+            } else {
+                // 处理redux与普通情况
+                reactInstance = getWrappedComponent(fiber, reactInstance);
             }
             reactInstance.wx = wx;
             wx.reactInstance = reactInstance;
@@ -79,6 +105,7 @@ export function refreshComponent (reactInstances, wx, uuid) {
 }
 export function detachComponent () {
     let t = this.reactInstance;
+    this.disposed = true;
     if (t) {
         t.wx = null;
         this.reactInstance = null;
@@ -128,18 +155,18 @@ export function useComponent(props) {
     return createElement(clazz, props);
 }
 
-export function handleSuccess(options, success, complete, resolve) {
+export function handleSuccess(options, success = noop, complete = noop, resolve = noop) {
     success(options);
     complete(options);
     resolve(options);
 }
   
-export function handleFail(options, fail, complete, reject) {
+export function handleFail(options, fail = noop, complete = noop, reject = noop) {
     fail(options);
     complete(options);
     reject(options);
 }
-  
+ 
 
 function safeClone (originVal) {
     let temp = originVal instanceof Array ? [] : {};

@@ -1,6 +1,6 @@
 /**
  * 此个版本专门用于测试
- * by 司徒正美 Copyright 2019-07-15
+ * by 司徒正美 Copyright 2019-08-10
  * IE9+
  */
 
@@ -552,8 +552,9 @@
         };
     }
     function forwardRef(fn) {
-        createRef.render = fn;
-        return createRef;
+        return function ForwardRefComponent(props) {
+            return fn(props, this.ref);
+        };
     }
 
     function AnuPortal(props) {
@@ -680,11 +681,6 @@
                     }
                 });
                 Renderer.currentOwner = instance;
-                if (type.render) {
-                    instance.render = function () {
-                        return type.render(this.props, this.ref);
-                    };
-                }
             } else {
                 instance = new type(props, context);
                 if (!(instance instanceof Component)) {

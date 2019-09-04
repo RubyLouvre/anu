@@ -1,14 +1,15 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-07-17T03
+ * 运行于webview的React by 司徒正美 Copyright 2019-08-29T06
  * IE9+
  */
 
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
-    typeof define === 'function' && define.amd ? define(['clipboard', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
-    (global.React = factory(global.Clipboard,global.axios,global.qs,global.MobileDetect,global.io));
-}(this, (function (Clipboard,axios,qs,MobileDetect,io) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('@react'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
+    typeof define === 'function' && define.amd ? define(['clipboard', '@react', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
+    (global.React = factory(global.Clipboard,global.React$1,global.axios,global.qs,global.MobileDetect,global.io));
+}(this, (function (Clipboard,React$1,axios,qs,MobileDetect,io) {
     Clipboard = Clipboard && Clipboard.hasOwnProperty('default') ? Clipboard['default'] : Clipboard;
+    React$1 = React$1 && React$1.hasOwnProperty('default') ? React$1['default'] : React$1;
     axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
     qs = qs && qs.hasOwnProperty('default') ? qs['default'] : qs;
     MobileDetect = MobileDetect && MobileDetect.hasOwnProperty('default') ? MobileDetect['default'] : MobileDetect;
@@ -585,6 +586,11 @@
             current: null
         };
     }
+    function forwardRef(fn) {
+        return function ForwardRefComponent(props) {
+            return fn(props, this.ref);
+        };
+    }
 
     function AnuPortal(props) {
         return props.children;
@@ -809,7 +815,7 @@
                     syncValue(node, "checked", !!props.checked);
                 }
                 var isActive = node === node.ownerDocument.activeElement;
-                var value = isActive ? node.value : getSafeValue(props.value);
+                var value = getSafeValue(props.value);
                 if (value != null) {
                     if (props.type === "number") {
                         if (value === 0 && node.value === "" ||
@@ -1688,20 +1694,17 @@
                 extend(instance, {
                     __isStateless: true,
                     renderImpl: type,
-                    render: function f() {
+                    render: function f1() {
                         return this.renderImpl(this.props, this.context);
                     }
                 });
                 Renderer.currentOwner = instance;
-                if (type.render) {
-                    instance.render = function () {
-                        return type.render(this.props, this.ref);
-                    };
-                }
             } else {
                 instance = new type(props, context);
                 if (!(instance instanceof Component)) {
-                    throw type.name + ' doesn\'t extend React.Component';
+                    if (!instance.updater || !instance.updater.enqueueSetState) {
+                        throw type.name + ' doesn\'t extend React.Component';
+                    }
                 }
             }
         } finally {
@@ -1856,8 +1859,11 @@
     }
 
     function setter(compute, cursor, value) {
-        this.updateQueue[cursor] = compute(cursor, value);
-        Renderer.updateComponent(this, true);
+        var _this = this;
+        Renderer.batchedUpdates(function () {
+            _this.updateQueue[cursor] = compute(cursor, value);
+            Renderer.updateComponent(_this, true);
+        });
     }
     var hookCursor = 0;
     function resetCursor() {
@@ -1898,7 +1904,7 @@
         var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
     }
-    function useCallbackImpl(create, deps, isMemo) {
+    function useCallbackImpl(create, deps, isMemo, isEffect) {
         var fiber = getCurrentFiber();
         var key = getCurrentKey();
         var updateQueue = fiber.updateQueue;
@@ -1907,23 +1913,24 @@
         if (prevState) {
             var prevInputs = prevState[1];
             if (areHookInputsEqual(nextInputs, prevInputs)) {
-                return;
+                return isEffect ? null : prevState[0];
             }
         }
-        var value = isMemo ? create() : create;
-        updateQueue[key] = [value, nextInputs];
-        return value;
+        var fn = isMemo ? create() : create;
+        updateQueue[key] = [fn, nextInputs];
+        return fn;
     }
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
-        var cb = useCallbackImpl(create, deps);
-        if (fiber.effectTag % EffectTag) {
-            fiber.effectTag *= EffectTag;
-        }
         var updateQueue = fiber.updateQueue;
-        var list = updateQueue[createList] || (updateQueue[createList] = []);
-        updateQueue[destroyList] || (updateQueue[destroyList] = []);
-        list.push(cb);
+        if (useCallbackImpl(create, deps, false, true)) {
+            if (fiber.effectTag % EffectTag) {
+                fiber.effectTag *= EffectTag;
+            }
+            var list = updateQueue[createList] || (updateQueue[createList] = []);
+            updateQueue[destroyList] || (updateQueue[destroyList] = []);
+            list.push(create);
+        }
     }
     function getCurrentFiber() {
         return get(Renderer.currentOwner);
@@ -2642,7 +2649,7 @@
             child: props.child
         };
     }, Component, {
-        render: function render() {
+        render: function f3() {
             return this.state.child;
         }
     });
@@ -3075,6 +3082,7 @@
         dom._reactInternalFiber = null;
     }
 
+    var noop$1 = function noop$$1() {};
     var fakeApp = {
         app: {
             globalData: {}
@@ -3085,6 +3093,13 @@
             return getApp();
         }
         return fakeApp;
+    }
+    function getWrappedComponent(fiber, instance) {
+        if (instance.isPureComponent && instance.constructor.WrappedComponent) {
+            return fiber.child.child.stateNode;
+        } else {
+            return instance;
+        }
     }
     if (typeof getApp === 'function') {
         _getApp = getApp;
@@ -3107,12 +3122,22 @@
         }
     }
     function refreshComponent(reactInstances, wx, uuid) {
+        if (wx.disposed) {
+            return;
+        }
         var pagePath = Object(_getApp()).$$pagePath;
         for (var i = 0, n = reactInstances.length; i < n; i++) {
             var reactInstance = reactInstances[i];
             if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-                if (get(reactInstance).disposed) {
+                var fiber = get(reactInstance);
+                if (fiber.disposed) {
+                    console.log("fiber.disposed by nanachi");
                     continue;
+                }
+                if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
+                    reactInstance = fiber.child.stateNode;
+                } else {
+                    reactInstance = getWrappedComponent(fiber, reactInstance);
                 }
                 reactInstance.wx = wx;
                 wx.reactInstance = reactInstance;
@@ -3123,6 +3148,7 @@
     }
     function detachComponent() {
         var t = this.reactInstance;
+        this.disposed = true;
         if (t) {
             t.wx = null;
             this.reactInstance = null;
@@ -3150,12 +3176,18 @@
         }
         return createElement(clazz, props);
     }
-    function handleSuccess(options, success, complete, resolve) {
+    function handleSuccess(options) {
+        var success = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop$1;
+        var complete = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : noop$1;
+        var resolve = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : noop$1;
         success(options);
         complete(options);
         resolve(options);
     }
-    function handleFail(options, fail, complete, reject) {
+    function handleFail(options) {
+        var fail = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop$1;
+        var complete = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : noop$1;
+        var reject = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : noop$1;
         fail(options);
         complete(options);
         reject(options);
@@ -3445,33 +3477,33 @@
     }
 
     function makePhoneCall() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return new Promise(function (resolve, reject) {
-        var _options$phoneNumber = options.phoneNumber,
-            phoneNumber = _options$phoneNumber === undefined ? '' : _options$phoneNumber,
-            _options$success = options.success,
-            success = _options$success === undefined ? function () {} : _options$success,
-            _options$fail = options.fail,
-            fail = _options$fail === undefined ? function () {} : _options$fail,
-            _options$complete = options.complete,
-            complete = _options$complete === undefined ? function () {} : _options$complete;
-        phoneNumber = String(phoneNumber);
-        if (/^\d+$/.test(phoneNumber)) {
-          window.location.href = 'tel:' + phoneNumber;
-          handleSuccess({
-            errMsg: 'makePhoneCall: success',
-            phoneNumber: phoneNumber
-          }, success, complete, resolve);
-        } else {
-          handleFail({
-            errMsg: 'phoneNumber格式错误',
-            phoneNumber: phoneNumber
-          }, fail, complete, reject);
-        }
-      });
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        return new Promise(function (resolve, reject) {
+            var _options$phoneNumber = options.phoneNumber,
+                phoneNumber = _options$phoneNumber === undefined ? '' : _options$phoneNumber,
+                _options$success = options.success,
+                success = _options$success === undefined ? function () {} : _options$success,
+                _options$fail = options.fail,
+                fail = _options$fail === undefined ? function () {} : _options$fail,
+                _options$complete = options.complete,
+                complete = _options$complete === undefined ? function () {} : _options$complete;
+            phoneNumber = String(phoneNumber);
+            if (/^\d+$/.test(phoneNumber)) {
+                window.location.href = 'tel:' + phoneNumber;
+                handleSuccess({
+                    errMsg: 'makePhoneCall: success',
+                    phoneNumber: phoneNumber
+                }, success, complete, resolve);
+            } else {
+                handleFail({
+                    errMsg: 'phoneNumber格式错误',
+                    phoneNumber: phoneNumber
+                }, fail, complete, reject);
+            }
+        });
     }
     var call = {
-      makePhoneCall: makePhoneCall
+        makePhoneCall: makePhoneCall
     };
 
     var NOTSUPPORTAPI = [
@@ -3483,275 +3515,275 @@
     'hideKeyboard',
     'setKeepScreenOn', 'getScreenBrightness', 'setScreenBrightness '];
     function canIUse(api) {
-      var apis = Object.keys(apiData).map(function (k) {
-        return k;
-      });
-      return apis.indexOf(api) >= 0 && NOTSUPPORTAPI.indexOf(api) < 0;
+        var apis = Object.keys(apiData).map(function (k) {
+            return k;
+        });
+        return apis.indexOf(api) >= 0 && NOTSUPPORTAPI.indexOf(api) < 0;
     }
     var canIUse$1 = {
-      canIUse: canIUse
+        canIUse: canIUse
     };
 
     var CanvasContext = function CanvasContext(canvasId) {
-      var canvasDom = document.getElementById(canvasId);
-      if (!canvasDom || !canvasDom.getContext) {
-        console.error('canvasId错误，或浏览器不支持canvas');
-      } else {
-        this.canvasDom = canvasDom;
-        this.width = canvasDom.width;
-        this.height = canvasDom.height;
-        this.ctx = canvasDom.getContext('2d');
-      }
-      this.missions = [];
+        var canvasDom = document.getElementById(canvasId);
+        if (!canvasDom || !canvasDom.getContext) {
+            console.error('canvasId错误，或浏览器不支持canvas');
+        } else {
+            this.canvasDom = canvasDom;
+            this.width = canvasDom.width;
+            this.height = canvasDom.height;
+            this.ctx = canvasDom.getContext('2d');
+        }
+        this.missions = [];
     };
     CanvasContext.prototype.setTextAlign = function (align) {
-      var _this = this;
-      this.missions.push(function () {
-        _this.ctx.textAlign = align;
-      });
+        var _this = this;
+        this.missions.push(function () {
+            _this.ctx.textAlign = align;
+        });
     };
     CanvasContext.prototype.setTextBaseline = function (textBaseline) {
-      var _this2 = this;
-      this.missions.push(function () {
-        _this2.ctx.textBaseline = textBaseline;
-      });
+        var _this2 = this;
+        this.missions.push(function () {
+            _this2.ctx.textBaseline = textBaseline;
+        });
     };
     CanvasContext.prototype.setFillStyle = function () {
-      var _this3 = this;
-      var color = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'black';
-      this.missions.push(function () {
-        _this3.ctx.fillStyle = color;
-      });
+        var _this3 = this;
+        var color = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'black';
+        this.missions.push(function () {
+            _this3.ctx.fillStyle = color;
+        });
     };
     CanvasContext.prototype.setStrokeStyle = function () {
-      var _this4 = this;
-      var color = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'black';
-      this.missions.push(function () {
-        _this4.ctx.strokeStyle = color;
-      });
+        var _this4 = this;
+        var color = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'black';
+        this.missions.push(function () {
+            _this4.ctx.strokeStyle = color;
+        });
     };
     CanvasContext.prototype.setShadow = function () {
-      var offsetX = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-      var offsetY = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-      var _this5 = this;
-      var blur = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-      var color = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'black';
-      this.missions.push(function () {
-        _this5.ctx.shadowOffsetX = offsetX;
-        _this5.ctx.shadowOffsetY = offsetY;
-        _this5.ctx.shadowBlur = blur;
-        _this5.ctx.shadowColor = color;
-      });
+        var offsetX = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+        var offsetY = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+        var _this5 = this;
+        var blur = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+        var color = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'black';
+        this.missions.push(function () {
+            _this5.ctx.shadowOffsetX = offsetX;
+            _this5.ctx.shadowOffsetY = offsetY;
+            _this5.ctx.shadowBlur = blur;
+            _this5.ctx.shadowColor = color;
+        });
     };
     CanvasContext.prototype.createLinearGradient = function (x0, y0, x1, y1) {
-      return this.ctx.createLinearGradient(x0, y0, x1, y1);
+        return this.ctx.createLinearGradient(x0, y0, x1, y1);
     };
     CanvasContext.prototype.createCircularGradient = function (x, y, r) {
-      return this.ctx.createRadialGradient(x, y, 0, x, y, r);
+        return this.ctx.createRadialGradient(x, y, 0, x, y, r);
     };
     CanvasContext.prototype.setLineWidth = function (lineWidth) {
-      var _this6 = this;
-      this.missions.push(function () {
-        _this6.ctx.lineWidth = lineWidth;
-      });
+        var _this6 = this;
+        this.missions.push(function () {
+            _this6.ctx.lineWidth = lineWidth;
+        });
     };
     CanvasContext.prototype.setLineCap = function (lineCap) {
-      var _this7 = this;
-      this.missions.push(function () {
-        _this7.ctx.lineCap = lineCap;
-      });
+        var _this7 = this;
+        this.missions.push(function () {
+            _this7.ctx.lineCap = lineCap;
+        });
     };
     CanvasContext.prototype.setLineJoin = function (lineJoin) {
-      var _this8 = this;
-      this.missions.push(function () {
-        _this8.ctx.lineJoin = lineJoin;
-      });
+        var _this8 = this;
+        this.missions.push(function () {
+            _this8.ctx.lineJoin = lineJoin;
+        });
     };
     CanvasContext.prototype.setMiterLimit = function (miterLimit) {
-      var _this9 = this;
-      this.missions.push(function () {
-        _this9.ctx.miterLimit = miterLimit;
-      });
+        var _this9 = this;
+        this.missions.push(function () {
+            _this9.ctx.miterLimit = miterLimit;
+        });
     };
     CanvasContext.prototype.rect = function (x, y, width, height) {
-      var _this10 = this;
-      this.missions.push(function () {
-        _this10.ctx.rect(x, y, width, height);
-      });
+        var _this10 = this;
+        this.missions.push(function () {
+            _this10.ctx.rect(x, y, width, height);
+        });
     };
     CanvasContext.prototype.fillRect = function (x, y, width, height) {
-      var _this11 = this;
-      this.missions.push(function () {
-        _this11.ctx.fillRect(x, y, width, height);
-      });
+        var _this11 = this;
+        this.missions.push(function () {
+            _this11.ctx.fillRect(x, y, width, height);
+        });
     };
     CanvasContext.prototype.strokeRect = function (x, y, width, height) {
-      var _this12 = this;
-      this.missions.push(function () {
-        _this12.ctx.strokeRect(x, y, width, height);
-      });
+        var _this12 = this;
+        this.missions.push(function () {
+            _this12.ctx.strokeRect(x, y, width, height);
+        });
     };
     CanvasContext.prototype.clearRect = function (x, y, width, height) {
-      var _this13 = this;
-      this.missions.push(function () {
-        _this13.ctx.clearRect(x, y, width, height);
-      });
+        var _this13 = this;
+        this.missions.push(function () {
+            _this13.ctx.clearRect(x, y, width, height);
+        });
     };
     CanvasContext.prototype.fill = function () {
-      var _this14 = this;
-      this.missions.push(function () {
-        _this14.ctx.fill();
-      });
+        var _this14 = this;
+        this.missions.push(function () {
+            _this14.ctx.fill();
+        });
     };
     CanvasContext.prototype.stroke = function () {
-      var _this15 = this;
-      this.missions.push(function () {
-        _this15.ctx.stroke();
-      });
+        var _this15 = this;
+        this.missions.push(function () {
+            _this15.ctx.stroke();
+        });
     };
     CanvasContext.prototype.beginPath = function () {
-      var _this16 = this;
-      this.missions.push(function () {
-        _this16.ctx.beginPath();
-      });
+        var _this16 = this;
+        this.missions.push(function () {
+            _this16.ctx.beginPath();
+        });
     };
     CanvasContext.prototype.closePath = function () {
-      var _this17 = this;
-      this.missions.push(function () {
-        _this17.ctx.closePath();
-      });
+        var _this17 = this;
+        this.missions.push(function () {
+            _this17.ctx.closePath();
+        });
     };
     CanvasContext.prototype.moveTo = function (x, y) {
-      var _this18 = this;
-      this.missions.push(function () {
-        _this18.ctx.moveTo(x, y);
-      });
+        var _this18 = this;
+        this.missions.push(function () {
+            _this18.ctx.moveTo(x, y);
+        });
     };
     CanvasContext.prototype.lineTo = function (x, y) {
-      var _this19 = this;
-      this.missions.push(function () {
-        _this19.ctx.lineTo(x, y);
-      });
+        var _this19 = this;
+        this.missions.push(function () {
+            _this19.ctx.lineTo(x, y);
+        });
     };
     CanvasContext.prototype.arc = function (x, y, r, sAngle, eAngle, counterclockwise) {
-      var _this20 = this;
-      this.missions.push(function () {
-        _this20.ctx.arc(x, y, r, sAngle, eAngle, counterclockwise);
-      });
+        var _this20 = this;
+        this.missions.push(function () {
+            _this20.ctx.arc(x, y, r, sAngle, eAngle, counterclockwise);
+        });
     };
     CanvasContext.prototype.bezierCurveTo = function (cp1x, cp1y, cp2x, cp2y, x, y) {
-      var _this21 = this;
-      this.missions.push(function () {
-        _this21.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
-      });
+        var _this21 = this;
+        this.missions.push(function () {
+            _this21.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+        });
     };
     CanvasContext.prototype.clip = function () {
-      var _this22 = this;
-      this.missions.push(function () {
-        _this22.ctx.clip();
-      });
+        var _this22 = this;
+        this.missions.push(function () {
+            _this22.ctx.clip();
+        });
     };
     CanvasContext.prototype.quadraticCurveTo = function (cpx, cpy, x, y) {
-      var _this23 = this;
-      this.missions.push(function () {
-        _this23.ctx.quadraticCurveTo(cpx, cpy, x, y);
-      });
+        var _this23 = this;
+        this.missions.push(function () {
+            _this23.ctx.quadraticCurveTo(cpx, cpy, x, y);
+        });
     };
     CanvasContext.prototype.scale = function (scaleWidth, scaleHeight) {
-      var _this24 = this;
-      this.missions.push(function () {
-        _this24.ctx.scale(scaleWidth, scaleHeight);
-      });
+        var _this24 = this;
+        this.missions.push(function () {
+            _this24.ctx.scale(scaleWidth, scaleHeight);
+        });
     };
     CanvasContext.prototype.rotate = function (rotate) {
-      var _this25 = this;
-      this.missions.push(function () {
-        _this25.ctx.rotate(rotate);
-      });
+        var _this25 = this;
+        this.missions.push(function () {
+            _this25.ctx.rotate(rotate);
+        });
     };
     CanvasContext.prototype.translate = function (x, y) {
-      var _this26 = this;
-      this.missions.push(function () {
-        _this26.ctx.translate(x, y);
-      });
+        var _this26 = this;
+        this.missions.push(function () {
+            _this26.ctx.translate(x, y);
+        });
     };
     CanvasContext.prototype.setFontSize = function (fontSize) {
-      var _this27 = this;
-      this.missions.push(function () {
-        _this27.ctx.font = fontSize;
-      });
+        var _this27 = this;
+        this.missions.push(function () {
+            _this27.ctx.font = fontSize;
+        });
     };
     CanvasContext.prototype.fillText = function (text, x, y, maxWidth) {
-      var _this28 = this;
-      this.missions.push(function () {
-        _this28.ctx.fillText(text, x, y, maxWidth);
-      });
+        var _this28 = this;
+        this.missions.push(function () {
+            _this28.ctx.fillText(text, x, y, maxWidth);
+        });
     };
     CanvasContext.prototype.drawImage = function (imageResource, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight) {
-      var _this29 = this;
-      this.missions.push(function () {
-        _this29.ctx.drawImage(imageResource, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight);
-      });
+        var _this29 = this;
+        this.missions.push(function () {
+            _this29.ctx.drawImage(imageResource, dx, dy, dWidth, dHeight, sx, sy, sWidth, sHeight);
+        });
     };
     CanvasContext.prototype.setGlobalAlpha = function (alpha) {
-      var _this30 = this;
-      this.missions.push(function () {
-        _this30.ctx.globalAlpha = alpha;
-      });
+        var _this30 = this;
+        this.missions.push(function () {
+            _this30.ctx.globalAlpha = alpha;
+        });
     };
     CanvasContext.prototype.setLineDash = function (segments, offset) {
-      var _this31 = this;
-      this.missions.push(function () {
-        _this31.ctx.setLineDash(segments, offset);
-      });
+        var _this31 = this;
+        this.missions.push(function () {
+            _this31.ctx.setLineDash(segments, offset);
+        });
     };
     CanvasContext.prototype.transform = function (scaleX, skewX, skewY, scaleY, translateX, translateY) {
-      var _this32 = this;
-      this.missions.push(function () {
-        _this32.ctx.transform(scaleX, skewX, skewY, scaleY, translateX, translateY);
-      });
+        var _this32 = this;
+        this.missions.push(function () {
+            _this32.ctx.transform(scaleX, skewX, skewY, scaleY, translateX, translateY);
+        });
     };
     CanvasContext.prototype.setTransform = function (scaleX, skewX, skewY, scaleY, translateX, translateY) {
-      var _this33 = this;
-      this.missions.push(function () {
-        _this33.ctx.setTransform(scaleX, skewX, skewY, scaleY, translateX, translateY);
-      });
+        var _this33 = this;
+        this.missions.push(function () {
+            _this33.ctx.setTransform(scaleX, skewX, skewY, scaleY, translateX, translateY);
+        });
     };
     CanvasContext.prototype.save = function () {
-      var _this34 = this;
-      this.missions.push(function () {
-        _this34.ctx.save();
-      });
+        var _this34 = this;
+        this.missions.push(function () {
+            _this34.ctx.save();
+        });
     };
     CanvasContext.prototype.restore = function () {
-      var _this35 = this;
-      this.missions.push(function () {
-        _this35.ctx.restore();
-      });
+        var _this35 = this;
+        this.missions.push(function () {
+            _this35.ctx.restore();
+        });
     };
     CanvasContext.prototype.draw = function () {
-      var reserve = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
-      if (!reserve) {
-        this.height = this.height;
-      }
-      this.missions.forEach(function (mission) {
-        mission();
-      });
-      callback();
+        var reserve = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+        if (!reserve) {
+            this.height = this.height;
+        }
+        this.missions.forEach(function (mission) {
+            mission();
+        });
+        callback();
     };
     CanvasContext.prototype.measureText = function (text) {
-      return this.ctx.measureText(text);
+        return this.ctx.measureText(text);
     };
     function createCanvasContext(canvasId) {
-      return new CanvasContext(canvasId);
+        return new CanvasContext(canvasId);
     }
     function canvasToTempFilePath() {
-      console.warn('暂未实现');
+        console.warn('暂未实现');
     }
     var canvas = {
-      createCanvasContext: createCanvasContext,
-      canvasToTempFilePath: canvasToTempFilePath
+        createCanvasContext: createCanvasContext,
+        canvasToTempFilePath: canvasToTempFilePath
     };
 
     function setClipboardData() {
@@ -3787,80 +3819,81 @@
 
     var file = {};
 
-    function chooseImage(_ref) {
-      var _ref$files = _ref.files,
-          files = _ref$files === undefined ? [] : _ref$files;
-      var result = [];
-      var _loop = function _loop(i) {
-        var f = files[i];
-        if (!f) return 'break';
-        result.push(new Promise(function (res) {
-          var reader = new FileReader();
-          reader.readAsDataURL(f);
-          reader.onload = function () {
-            return res(reader.result);
-          };
-        }));
-      };
-      for (var i = 0; i < 9; i++) {
-        var _ret = _loop(i);
-        if (_ret === 'break') break;
-      }
-      return Promise.all(result);
+    function chooseImage() {
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref$count = _ref.count,
+            _ref$sizeType = _ref.sizeType,
+            _ref$sourceType = _ref.sourceType,
+            _ref$success = _ref.success,
+            success = _ref$success === undefined ? function () {} : _ref$success,
+            _ref$fail = _ref.fail,
+            _ref$complete = _ref.complete,
+            complete = _ref$complete === undefined ? function () {} : _ref$complete;
+        var tempInput = document.createElement('input');
+        tempInput.type = 'file';
+        tempInput.accept = 'image/*';
+        tempInput.multiple = true;
+        tempInput.onchange = function (e) {
+            var files = e.path[0].files;
+            handleSuccess({
+                tempFiles: files
+            }, success, complete);
+        };
+        tempInput.click();
     }
     function saveImageToPhotosAlbum(filePath) {
-      console.log(filePath);
+        console.log(filePath);
     }
     function getImageInfo() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var img = new Image();
-      var src = options.src,
-          _options$success = options.success,
-          success = _options$success === undefined ? function () {} : _options$success,
-          _options$fail = options.fail,
-          fail = _options$fail === undefined ? function () {} : _options$fail,
-          _options$complete = options.complete,
-          complete = _options$complete === undefined ? function () {} : _options$complete;
-      img.src = src;
-      var result = {
-        width: 1,
-        height: 1,
-        path: '',
-        orientation: '',
-        type: ''
-      };
-      return new Promise(function (resolve, reject) {
-        try {
-          if (!src) {
-            handleFail({
-              errMsg: 'getImageInfo 参数错误'
-            }, fail, complete, reject);
-            return;
-          }
-          if (img.complete) {
-            result.width = img.width;
-            result.height = img.height;
-            result.path = img.src;
-            handleSuccess(result, success, complete, resolve);
-          } else {
-            img.onload = function () {
-              result.width = img.width;
-              result.height = img.height;
-              result.path = img.src;
-              handleSuccess(result, success, complete, resolve);
-            };
-          }
-        } catch (e) {
-          handleFail({
-            errMsg: e
-          }, fail, complete, reject);
-        }
-      });
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var img = new Image();
+        var src = options.src,
+            _options$success = options.success,
+            success = _options$success === undefined ? function () {} : _options$success,
+            _options$fail = options.fail,
+            fail = _options$fail === undefined ? function () {} : _options$fail,
+            _options$complete = options.complete,
+            complete = _options$complete === undefined ? function () {} : _options$complete;
+        img.src = src;
+        var result = {
+            width: 1,
+            height: 1,
+            path: '',
+            orientation: '',
+            type: ''
+        };
+        return new Promise(function (resolve, reject) {
+            try {
+                if (!src) {
+                    handleFail({
+                        errMsg: 'getImageInfo 参数错误'
+                    }, fail, complete, reject);
+                    return;
+                }
+                if (img.complete) {
+                    result.width = img.width;
+                    result.height = img.height;
+                    result.path = img.src;
+                    handleSuccess(result, success, complete, resolve);
+                } else {
+                    img.onload = function () {
+                        result.width = img.width;
+                        result.height = img.height;
+                        result.path = img.src;
+                        handleSuccess(result, success, complete, resolve);
+                    };
+                }
+            } catch (e) {
+                handleFail({
+                    errMsg: e
+                }, fail, complete, reject);
+            }
+        });
     }
     var images = {
-      chooseImage: chooseImage,
-      saveImageToPhotosAlbum: saveImageToPhotosAlbum,
-      getImageInfo: getImageInfo
+        chooseImage: chooseImage,
+        saveImageToPhotosAlbum: saveImageToPhotosAlbum,
+        getImageInfo: getImageInfo
     };
 
     function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -3890,41 +3923,35 @@
       };
       Modal.prototype.render = function render() {
         return React.createElement(
-          Fragment,
-          null,
+          'div',
+          { className: 'modal2019' },
           React.createElement(
             'div',
-            { className: 'modal' },
-            React.createElement(
-              'div',
-              { className: 'top' },
-              this.props.title
-            ),
-            React.createElement(
-              'div',
-              { className: 'center' },
-              this.props.content
-            ),
-            React.createElement(
-              'div',
-              { className: 'bottom' },
-              this.props.showCancel ? React.createElement(
-                'div',
-                { className: 'cancel', style: { color: this.props.cancelColor }, onClick: this.handleCancel.bind(this) },
-                this.props.cancelText
-              ) : null,
-              React.createElement(
-                'div',
-                { className: 'confirm', style: { color: this.props.confirmColor }, onClick: this.handleConfirm.bind(this) },
-                this.props.confirmText
-              )
-            )
+            { className: 'top' },
+            this.props.title
           ),
           React.createElement(
-            'style',
-            { jsx: true },
-            '\n          .modal { \n            display: flex;\n            flex-direction: column;\n            position: fixed;\n            width: 280px;\n            height: 150px;\n            background-color: #fff;\n            margin: auto;\n            left: 0;\n            top: 0;\n            bottom: 0;\n            right: 0;\n            border-radius: 5px;\n          }\n          .top {\n            height: 40px;\n            line-height: 40px;\n            text-align: center;\n          }\n          .center {\n            flex: 1;\n            font-size: 15px;\n            margin: 0 15px;\n            color: #888;\n            text-align: center;\n            word-break: break-all;\n            overflow: scroll;\n          }\n          .bottom {\n            height: 40px;\n            display: flex;\n            flex-direction: row;\n            border-top: solid 1px #f8f8f8;\n          }\n          .confirm {\n            flex: 1;\n            text-align: center;\n            height: 100%;\n            line-height: 40px;\n          }\n          .cancel {\n            flex: 1;\n            borderRight: solid 1px #f8f8f8;\n            text-align: center;\n            height: 100%;\n            line-height: 40px;\n          }\n        '
-          )
+            'div',
+            { className: 'center' },
+            this.props.content
+          ),
+          React.createElement(
+            'div',
+            { className: 'bottom' },
+            this.props.showCancel ? React.createElement(
+              'div',
+              { className: 'cancel', style: { color: this.props.cancelColor }, onClick: this.handleCancel.bind(this) },
+              this.props.cancelText
+            ) : null,
+            React.createElement(
+              'div',
+              { className: 'confirm', style: { color: this.props.confirmColor }, onClick: this.handleConfirm.bind(this) },
+              this.props.confirmText
+            )
+          ),
+          React.createElement('style', { ref: function ref(node) {
+              Object(node).textContent = '\n            .modal2019 { \n              display: flex;\n              flex-direction: column;\n              position: fixed;\n              width: 280px;\n              height: 150px;\n              background-color: #fff;\n              margin: auto;\n              left: 0;\n              top: 0;\n              bottom: 0;\n              right: 0;\n              border-radius: 5px;\n            }\n           .modal2019 .top {\n              height: 40px;\n              line-height: 40px;\n              text-align: center;\n            }\n            .modal2019 .center {\n              flex: 1;\n              font-size: 15px;\n              margin: 0 15px;\n              color: #888;\n              text-align: center;\n              word-break: break-all;\n              overflow: scroll;\n            }\n            .modal2019 .bottom {\n              height: 40px;\n              display: flex;\n              flex-direction: row;\n              border-top: solid 1px #f8f8f8;\n            }\n            .modal2019 .confirm {\n              flex: 1;\n              text-align: center;\n              height: 100%;\n              line-height: 40px;\n            }\n            .modal2019 .cancel {\n              flex: 1;\n              borderRight: solid 1px #f8f8f8;\n              text-align: center;\n              height: 100%;\n              line-height: 40px;\n            }';
+            } })
         );
       };
       return Modal;
@@ -3946,11 +3973,24 @@
       };
       Toast.prototype.render = function render() {
         return React.createElement(
-          Fragment,
+          'div',
           null,
-          React.createElement(
+          React.appType === 'h5' ? React.createElement(
+            'dialog',
+            { open: true, className: 'toast2019' },
+            React.createElement(
+              'div',
+              { className: 'icon' },
+              this.props.image ? React.createElement('img', { src: this.props.image }) : this.props.icon
+            ),
+            React.createElement(
+              'div',
+              { className: 'title' },
+              this.props.title
+            )
+          ) : React.createElement(
             'div',
-            { className: 'toast' },
+            { className: 'toast2019' },
             React.createElement(
               'div',
               { className: 'icon' },
@@ -3962,11 +4002,12 @@
               this.props.title
             )
           ),
-          React.createElement(
-            'style',
-            { jsx: true },
-            '\n          .toast { \n            display: flex;\n            flex-direction: column;\n            position: fixed;\n            width: 120px;\n            height: 120px; \n            background-color: rgba(0, 0, 0, 0.4);\n            margin: auto;\n            left: 0;\n            top: 0;\n            bottom: 0;\n            right: 0;\n            border-radius: 5px;\n          }\n          .icon {\n            width: 90px;\n            height: 90px;\n            margin: 0 auto;\n            fill: #fff;\n            color: #fff;\n            text-align: center;\n            font-size: 30px;\n            line-height: 90px;\n          }\n          .title {\n            height: 30px;\n            text-align: center;\n            line-height: 30px;\n            color: #fff;\n            overflow: hidden;\n          }\n        '
-          )
+          React.createElement('style', { ref: function ref(node) {
+              var other = 'display: flex;\n                          flex-direction: column;\n                          position: fixed;\n                          width: 120px;\n                          height: 120px; \n                          background-color: rgba(0, 0, 0, 0.4);\n                          margin: auto;\n                          left: 0;\n                          top: 0;\n                          bottom: 0;\n                          right: 0;\n                          border-radius: 5px;';
+              var h5 = 'display: flex;\n                      flex-direction: column;\n                      align-items:center;\n                      width: 120px;\n                      height: 120px; \n                      background-color: rgba(0, 0, 0, 0.4);\n                      text-align: center;\n                      line-height:120px; \n                      border:none;\n                      border-radius: 5px;';
+              var context = React.appType === 'h5' ? h5 : other;
+              Object(node).textContent = '\n             .toast2019 { \n              ' + context + '\n            }\n            .toast2019 .icon {\n              width: 90px;\n              height: 90px;\n              margin: 0 auto;\n              fill: #fff;\n              color: #fff;\n              text-align: center;\n              font-size: 30px;\n              line-height: 90px;\n            }\n            .toast2019 .title {\n              height: 30px;\n              text-align: center;\n              line-height: 30px;\n              color: #fff;\n              overflow: hidden;\n            } ';
+            } })
         );
       };
       return Toast;
@@ -3988,27 +4029,21 @@
       };
       Loading.prototype.render = function render() {
         return React.createElement(
-          Fragment,
-          null,
+          'div',
+          { className: 'loading2019' },
           React.createElement(
             'div',
-            { className: 'loading' },
-            React.createElement(
-              'div',
-              { className: 'icon' },
-              React.createElement('img', { style: { width: '1.5rem', height: '1.5rem' }, src: 'http://s.qunarzz.com/dev_test_2/loading4.gif' })
-            ),
-            React.createElement(
-              'div',
-              { className: 'title' },
-              this.props.title
-            )
+            { className: 'icon' },
+            React.createElement('img', { style: { width: '1.5rem', height: '1.5rem' }, src: 'http://s.qunarzz.com/dev_test_2/loading4.gif' })
           ),
           React.createElement(
-            'style',
-            { jsx: true },
-            '\n          .loading { \n            display: flex;\n            flex-direction: column;\n            position: fixed;\n            width: 120px;\n            height: 120px;\n            background-color: rgba(0, 0, 0, 0.4);\n            margin: auto;\n            left: 0; \n            top: 0;\n            bottom: 0;\n            right: 0;\n            border-radius: 5px;\n          }\n          .icon {\n            height: 90px;\n            color: #fff;\n            text-align: center;\n            font-size: 30px;\n            line-height: 90px;\n          }\n          .title {\n            height: 30px;\n            text-align: center;\n            line-height: 30px;\n            color: #fff;\n            overflow: hidden;\n          }\n        '
-          )
+            'div',
+            { className: 'title' },
+            this.props.title
+          ),
+          React.createElement('style', { ref: function ref(node) {
+              Object(node).textContent = '\n              .loading2019 { \n                display: flex;\n                flex-direction: column;\n                position: fixed;\n                width: 120px;\n                height: 120px;\n                background-color: rgba(0, 0, 0, 0.4);\n                margin: auto;\n                left: 0; \n                top: 0;\n                bottom: 0;\n                right: 0;\n                border-radius: 5px;\n              }\n              .loading2019 .icon {\n                height: 90px;\n                color: #fff;\n                text-align: center;\n                font-size: 30px;\n                line-height: 90px;\n              }\n              .loading2019 .title {\n                height: 30px;\n                text-align: center;\n                line-height: 30px;\n                color: #fff;\n                overflow: hidden;\n              }\n              ';
+            } })
         );
       };
       return Loading;
@@ -4038,36 +4073,30 @@
         ActionSheet.prototype.render = function render() {
             var _this2 = this;
             return React.createElement(
-                Fragment,
-                null,
-                React.createElement(
-                    'div',
-                    { className: 'actionSheet' },
-                    this.props.itemList.map(function (item, index) {
-                        return React.createElement(
-                            'div',
-                            {
-                                className: 'item',
-                                onClick: _this2.handleSelect.bind(_this2, index),
-                                style: {
-                                    color: _this2.props.itemColor
-                                } },
-                            item
-                        );
-                    }),
-                    React.createElement(
+                'div',
+                { className: 'actionSheet2019' },
+                this.props.itemList.map(function (item, index) {
+                    return React.createElement(
                         'div',
                         {
-                            onClick: this.handleCancel.bind(this),
-                            className: 'cancel' },
-                        this.props.cancelButtonText
-                    )
-                ),
+                            className: 'item',
+                            onClick: _this2.handleSelect.bind(_this2, index),
+                            style: {
+                                color: _this2.props.itemColor
+                            } },
+                        item
+                    );
+                }),
                 React.createElement(
-                    'style',
-                    { jsx: true },
-                    '\n                  .actionSheet { \n                    display: flex;\n                    flex-direction: column;\n                    position: fixed;\n                    width: 100%;\n                    background-color: #f8f8f8;\n                    margin: auto;\n                    left: 0;\n                    bottom: 0;\n                    right: 0;\n                  }\n                  .cancel {\n                    height: .8rem;\n                    line-height: .8rem;\n                    text-align: center;\n                    background-color: #fff;\n                    margin-top: .2rem;\n                  }\n                  .item {\n                    height: .8rem;\n                    line-height: .8rem;\n                    text-align: center;\n                    background-color: #fff;\n                    border-top: solid #f8f8f8 1px;\n                  }\n                '
-                )
+                    'div',
+                    {
+                        onClick: this.handleCancel.bind(this),
+                        className: 'cancel' },
+                    this.props.cancelButtonText
+                ),
+                React.createElement('style', { ref: function ref(node) {
+                        Object(node).textContent = '\n                  .actionSheet2019 { \n                    display: flex;\n                    flex-direction: column;\n                    position: fixed;\n                    width: 100%;\n                    background-color: #f8f8f8;\n                    margin: auto;\n                    left: 0;\n                    bottom: 0;\n                    right: 0;\n                  }\n                  .actionSheet2019 .cancel {\n                    height: .8rem;\n                    line-height: .8rem;\n                    text-align: center;\n                    background-color: #fff;\n                    margin-top: .2rem;\n                  }\n                  .actionSheet2019 .item {\n                    height: .8rem;\n                    line-height: .8rem;\n                    text-align: center;\n                    background-color: #fff;\n                    border-top: solid #f8f8f8 1px;\n                  }\n                ';
+                    } })
             );
         };
         return ActionSheet;
@@ -4308,167 +4337,464 @@
       getLocation: getLocation
     };
 
-    var previewImage = {
+    function _classCallCheck$4(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+    function _possibleConstructorReturn$4(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+    function _inherits$4(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+    var PreviewImage = function (_Component) {
+        _inherits$4(PreviewImage, _Component);
+        function PreviewImage(props) {
+            _classCallCheck$4(this, PreviewImage);
+            var _this = _possibleConstructorReturn$4(this, _Component.call(this, props));
+            _this.state = {
+                visible: false,
+                current: 0
+            };
+            _this.container = _this.props.container;
+            _this.close = _this.close.bind(_this);
+            _this.gotoPrevious = _this.gotoPrevious.bind(_this);
+            _this.gotoNext = _this.gotoNext.bind(_this);
+            return _this;
+        }
+        PreviewImage.prototype.componentDidMount = function componentDidMount() {
+            handleSuccess({
+                errMsg: 'previewImage:ok'
+            }, this.props.success, this.props.complete, this.props.resolve);
+        };
+        PreviewImage.prototype.componentWillUnmount = function componentWillUnmount() {
+            React$1.api.previewImageSingleton = null;
+            var el = this.container;
+            if (el && el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
+        };
+        PreviewImage.prototype.gotoPrevious = function gotoPrevious() {
+            var urls = this.props.urls;
+            var index = urls.indexOf(this.state.current) - 1;
+            if (index < 0) {
+                index = urls.length - 1;
+            }
+            this.setState({
+                current: urls[index]
+            });
+        };
+        PreviewImage.prototype.gotoNext = function gotoNext() {
+            var urls = this.props.urls;
+            var index = urls.indexOf(this.state.current) + 1;
+            if (index === urls.length) {
+                index = 0;
+            }
+            this.setState({
+                current: urls[index]
+            });
+        };
+        PreviewImage.prototype.close = function close() {
+            this.componentWillUnmount();
+        };
+        PreviewImage.prototype.render = function render() {
+            return React$1.createElement(
+                'div',
+                { className: 'showImg2019' },
+                React$1.createElement('image', { src: this.state.current }),
+                React$1.createElement('style', { ref: function ref(node) {
+                        Object(node).textContent = '\n                    .showImg2019{\n                        display: flex;\n                        flex-direction: column;\n                        align-items: center;\n                        justify-content: center;\n                        position: fixed;\n                        width:100%;\n                    }\n                    .showImg2019 img{\n                        width:100%;\n                    }';
+                    } })
+            );
+        };
+        return PreviewImage;
+    }(Component);
+    function previewImage() {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        return new Promise(function (resolve, reject) {
+            var urls = options.urls,
+                current = options.current,
+                _options$success = options.success,
+                success = _options$success === undefined ? function () {} : _options$success,
+                _options$fail = options.fail,
+                fail = _options$fail === undefined ? function () {} : _options$fail,
+                _options$complete = options.complete,
+                complete = _options$complete === undefined ? function () {} : _options$complete;
+            var instance = React$1.api.previewImageSingleton;
+            var el = document.querySelector('#h5-api-previewMask');
+            if (!el) {
+                var id = 'h5-api-previewMask';
+                var imgModal = document.querySelector('.__internal__Page-container');
+                var container = document.createElement('div');
+                container.id = id;
+                container.style.position = 'fixed';
+                container.style.top = 0;
+                container.style.width = '100%';
+                container.style.height = '100%';
+                container.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                container.style.display = 'flex';
+                container.style.justifyContent = 'center';
+                container.style.alignItems = 'center';
+                imgModal.appendChild(container);
+                var startX,
+                    startTimeX = 0;
+                container.ontouchstart = function (e) {
+                    startX = e.touches[0].pageX;
+                    startTimeX = e.timeStamp;
+                };
+                container.ontouchend = function (e) {
+                    var endX = e.changedTouches[0].pageX;
+                    var endStartTime = e.timeStamp;
+                    if (!instance || !e.changedTouches[0]) {
+                        return;
+                    }
+                    if (endStartTime - startTimeX <= 200 || Math.abs(endX - startX) < 10) {
+                        setTimeout(function () {
+                            instance.close();
+                        }, 0);
+                        startTimeX = 0;
+                        return;
+                    }
+                    if (startX != null) {
+                        if (endX - startX > 0) {
+                            instance.gotoPrevious();
+                            startX = null;
+                        } else {
+                            instance.gotoNext();
+                            startX = null;
+                        }
+                    }
+                };
+                React$1.render(React$1.createElement(PreviewImage, {
+                    success: success,
+                    fail: fail,
+                    urls: urls,
+                    container: container,
+                    complete: complete,
+                    resolve: resolve,
+                    reject: reject,
+                    ref: function ref(refs) {
+                        if (refs) {
+                            instance = React$1.api.previewImageSingleton = refs;
+                        }
+                    }
+                }), container, function () {
+                    instance.setState({
+                        visible: true,
+                        current: current
+                    });
+                });
+            } else {
+                instance.setState({
+                    visible: true,
+                    current: current
+                });
+            }
+        });
+    }
+    var previewImage$1 = {
+        previewImage: previewImage
     };
 
-    axios.defaults.headers = {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    };
+    function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+    function _possibleConstructorReturn$5(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+    function _inherits$5(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+    function _classCallCheck$5(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
     var CancelToken = axios.CancelToken;
-    axios.interceptors.response.use(function (response) {
-      return response.status === 200 ? Promise.resolve(response) : Promise.reject(response);
-    }, function (error) {
-      if (error && error.response) {
-        switch (error.response.status) {
-          case 404:
-            error.message = '请求错误,未找到该资源';
-            break;
-          case 500:
-            error.message = '服务器端出错';
-            break;
-          default:
-            error.message = '\u672A\u77E5\u9519\u8BEF: ' + error.response.status;
+    var contentTypeMap = {
+        'jpg': 'application/x-jpg',
+        'jpeg': 'image/jpeg',
+        'png': 'application/x-png',
+        'gif': 'image/gif'
+    };
+    var BaseTask = function () {
+        function BaseTask(fileType) {
+            _classCallCheck$5(this, BaseTask);
+            this._headerReceivedCallbacks = [];
+            this._progressUpdateCallbacks = [];
+            this._source = CancelToken.source();
+            axios.defaults.headers = {
+                'Content-Type': fileType && contentTypeMap[fileType] || 'application/x-www-form-urlencoded'
+            };
         }
-      }
-      return Promise.resolve(error);
+        BaseTask.prototype.abort = function abort() {
+            this._source.cancel();
+        };
+        BaseTask.prototype.offHeadersReceived = function offHeadersReceived(callback) {};
+        BaseTask.prototype.onHeadersReceived = function onHeadersReceived(callback) {
+            if (typeof callback !== 'function') {
+                throw new Error('Callback must be a function!');
+            }
+            this._headerReceivedCallbacks.push(callback);
+        };
+        return BaseTask;
+    }();
+    var RequestTask = function (_BaseTask) {
+        _inherits$5(RequestTask, _BaseTask);
+        function RequestTask(_ref) {
+            var _ref$url = _ref.url,
+                url = _ref$url === undefined ? '' : _ref$url,
+                _ref$method = _ref.method,
+                method = _ref$method === undefined ? 'get' : _ref$method,
+                _ref$data = _ref.data,
+                data = _ref$data === undefined ? {} : _ref$data,
+                _ref$header = _ref.header,
+                header = _ref$header === undefined ? {} : _ref$header,
+                _ref$responseType = _ref.responseType,
+                responseType = _ref$responseType === undefined ? 'text' : _ref$responseType,
+                _ref$success = _ref.success,
+                success = _ref$success === undefined ? function () {} : _ref$success,
+                _ref$fail = _ref.fail,
+                fail = _ref$fail === undefined ? function () {} : _ref$fail,
+                _ref$complete = _ref.complete,
+                complete = _ref$complete === undefined ? function () {} : _ref$complete;
+            _classCallCheck$5(this, RequestTask);
+            var _this = _possibleConstructorReturn$5(this, _BaseTask.call(this));
+            method = method.toLowerCase();
+            Object.keys(data).forEach(function (key) {
+                if (data[key] === '' || data[key] == null) delete data[key];
+            });
+            if (method === 'get') data = { params: data };
+            if (method === 'post') data = qs.stringify(data);
+            axios({
+                method: method,
+                url: url,
+                data: data,
+                headers: header,
+                responseType: responseType,
+                cancelToken: _this._source.token
+            }).then(function (res) {
+                if (axios.isCancel(res)) {
+                    handleFail(res.message || 'request abort!', fail, complete);
+                    return;
+                }
+                _this._headerReceivedCallbacks.forEach(function (cb) {
+                    cb({
+                        header: res.headers
+                    });
+                });
+                handleSuccess(res, success, complete);
+            }).catch(function (err) {
+                handleFail(err, fail, complete);
+            });
+            return _this;
+        }
+        return RequestTask;
+    }(BaseTask);
+    var DownloadTask = function (_BaseTask2) {
+        _inherits$5(DownloadTask, _BaseTask2);
+        function DownloadTask(_ref2) {
+            var _ref2$url = _ref2.url,
+                url = _ref2$url === undefined ? '' : _ref2$url,
+                _ref2$header = _ref2.header,
+                header = _ref2$header === undefined ? '' : _ref2$header,
+                _ref2$formData = _ref2.formData,
+                formData = _ref2$formData === undefined ? {} : _ref2$formData,
+                _ref2$success = _ref2.success,
+                success = _ref2$success === undefined ? function () {} : _ref2$success,
+                _ref2$fail = _ref2.fail,
+                fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
+                _ref2$complete = _ref2.complete,
+                complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
+            _classCallCheck$5(this, DownloadTask);
+            var fileType = '';
+            url.replace(/\.(\w+)$/, function (match, type) {
+                fileType = type;
+            });
+            var _this2 = _possibleConstructorReturn$5(this, _BaseTask2.call(this, fileType));
+            var reg = /\/([\w.]+?)$/;
+            var name = url.match(reg) && url.match(reg)[1] || 'temp';
+            axios({
+                url: url,
+                method: 'GET',
+                responseType: 'blob',
+                headers: header,
+                data: getFormData(formData),
+                onDownloadProgress: function onDownloadProgress(progressEvent) {
+                    _this2._progressUpdateCallbacks.forEach(function (cb) {
+                        cb(getProcessEventData(progressEvent));
+                    });
+                }
+            }).then(function (response) {
+                if (response && response.status === 200) {
+                    var _url = window.URL.createObjectURL(new Blob([response.data]));
+                    var link = document.createElement('a');
+                    link.href = _url;
+                    link.setAttribute('download', name);
+                    document.body.appendChild(link);
+                    link.click();
+                    handleSuccess(response, success, complete);
+                } else {
+                    handleFail(response, fail, complete);
+                }
+            }).catch(function (err) {
+                handleFail(err, fail, complete);
+            });
+            return _this2;
+        }
+        DownloadTask.prototype.offProgressUpdate = function offProgressUpdate() {};
+        DownloadTask.prototype.onProgressUpdate = function onProgressUpdate(callback) {
+            if (typeof callback !== 'function') {
+                throw new Error('Callback must be a function!');
+            }
+            this._progressUpdateCallbacks.push(callback);
+        };
+        return DownloadTask;
+    }(BaseTask);
+    var UploadeTask = function (_BaseTask3) {
+        _inherits$5(UploadeTask, _BaseTask3);
+        function UploadeTask(_ref3) {
+            var _ref3$url = _ref3.url,
+                url = _ref3$url === undefined ? '' : _ref3$url,
+                _ref3$formData = _ref3.formData,
+                formData = _ref3$formData === undefined ? {} : _ref3$formData,
+                _ref3$header = _ref3.header,
+                header = _ref3$header === undefined ? {} : _ref3$header,
+                _ref3$filePath = _ref3.filePath,
+                filePath = _ref3$filePath === undefined ? new File() : _ref3$filePath,
+                _ref3$name = _ref3.name,
+                name = _ref3$name === undefined ? 'file' : _ref3$name,
+                _ref3$success = _ref3.success,
+                success = _ref3$success === undefined ? function () {} : _ref3$success,
+                _ref3$fail = _ref3.fail,
+                fail = _ref3$fail === undefined ? function () {} : _ref3$fail,
+                _ref3$complete = _ref3.complete,
+                complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
+            _classCallCheck$5(this, UploadeTask);
+            var _this3 = _possibleConstructorReturn$5(this, _BaseTask3.call(this));
+            Object.assign(formData, _defineProperty({}, name, filePath));
+            axios({
+                method: 'post',
+                url: url,
+                data: getFormData(formData),
+                headers: Object.assign({}, { 'content-type': 'multipart/form-data' }, header),
+                onUploadProgress: function onUploadProgress(progressEvent) {
+                    _this3._progressUpdateCallbacks.forEach(function (cb) {
+                        cb(getProcessEventData(progressEvent));
+                    });
+                }
+            }).then(function (res) {
+                handleSuccess(res, success, complete);
+            }).catch(function (err) {
+                handleFail(err, fail, complete);
+            });
+            return _this3;
+        }
+        UploadeTask.prototype.offProgressUpdate = function offProgressUpdate() {};
+        UploadeTask.prototype.onProgressUpdate = function onProgressUpdate(callback) {
+            if (typeof callback !== 'function') {
+                throw new Error('Callback must be a function!');
+            }
+            this._progressUpdateCallbacks.push(callback);
+        };
+        return UploadeTask;
+    }(BaseTask);
+    axios.interceptors.response.use(function (response) {
+        return response.status === 200 ? Promise.resolve(response) : Promise.reject(response);
+    }, function (error) {
+        if (error && error.response) {
+            switch (error.response.status) {
+                case 404:
+                    error.message = '请求错误,未找到该资源';
+                    break;
+                case 500:
+                    error.message = '服务器端出错';
+                    break;
+                default:
+                    error.message = '\u672A\u77E5\u9519\u8BEF: ' + error.response.status;
+            }
+        }
+        return Promise.resolve(error);
     });
     function getFormData(formData) {
-      var data = new FormData();
-      Object.keys(formData).forEach(function (k) {
-        data.append(k, formData[k]);
-      });
-      return data;
+        var data = new FormData();
+        Object.keys(formData).forEach(function (k) {
+            data.append(k, formData[k]);
+        });
+        return data;
+    }
+    function getProcessEventData(nativeEvent) {
+        var totalBytesWritten = nativeEvent.loaded;
+        var totalBytesExpectedToWrite = nativeEvent.total;
+        var progress = Math.floor(totalBytesWritten / totalBytesExpectedToWrite * 100);
+        return {
+            progress: progress,
+            totalBytesWritten: totalBytesWritten,
+            totalBytesExpectedToWrite: totalBytesExpectedToWrite
+        };
     }
     function request() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref$url = _ref.url,
-          url = _ref$url === undefined ? '' : _ref$url,
-          _ref$method = _ref.method,
-          method = _ref$method === undefined ? 'get' : _ref$method,
-          _ref$data = _ref.data,
-          data = _ref$data === undefined ? {} : _ref$data,
-          _ref$header = _ref.header,
-          header = _ref$header === undefined ? {} : _ref$header,
-          _ref$responseType = _ref.responseType,
-          responseType = _ref$responseType === undefined ? 'text' : _ref$responseType,
-          _ref$success = _ref.success,
-          success = _ref$success === undefined ? function () {} : _ref$success,
-          _ref$fail = _ref.fail,
-          fail = _ref$fail === undefined ? function () {} : _ref$fail,
-          _ref$complete = _ref.complete,
-          complete = _ref$complete === undefined ? function () {} : _ref$complete;
-      return new Promise(function (resolve, reject) {
-        method = method.toLowerCase();
-        Object.keys(data).forEach(function (key) {
-          if (data[key] === '' || data[key] == null) delete data[key];
-        });
-        if (method === 'get') data = { params: data };
-        if (method === 'post') data = qs.stringify(data);
-        axios({
-          method: method,
-          url: url,
-          data: data,
-          headers: header,
-          responseType: responseType,
-          cancelToken: new CancelToken(function (c) {
-          })
-        }).then(function (res) {
-          handleSuccess(res, success, complete, resolve);
-        }).catch(function (err) {
-          handleFail(err, fail, complete, reject);
-        });
-      });
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        return new RequestTask(options);
     }
     function uploadFile() {
-      var url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-      var formData = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var header = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-      var success = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : function () {};
-      var fail = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : function () {};
-      var complete = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : function () {};
-      return new Promise(function (resolve, reject) {
-        axios({
-          method: 'post',
-          url: url,
-          data: getFormData(formData),
-          headers: Object.assign({}, { 'content-type': 'multipart/form-data' }, header)
-        }).then(function (res) {
-          handleSuccess(res, success, complete, resolve);
-        }).catch(function (err) {
-          handleFail(err, fail, complete, reject);
-        });
-      });
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        return new UploadeTask(options);
     }
     function downloadFile() {
-      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref2$url = _ref2.url,
-          url = _ref2$url === undefined ? '' : _ref2$url,
-          _ref2$name = _ref2.name,
-          name = _ref2$name === undefined ? '' : _ref2$name,
-          _ref2$header = _ref2.header,
-          header = _ref2$header === undefined ? '' : _ref2$header,
-          _ref2$formData = _ref2.formData,
-          formData = _ref2$formData === undefined ? {} : _ref2$formData,
-          _ref2$success = _ref2.success,
-          success = _ref2$success === undefined ? function () {} : _ref2$success,
-          _ref2$fail = _ref2.fail,
-          fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
-          _ref2$complete = _ref2.complete,
-          complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
-      return new Promise(function (resolve, reject) {
-        var reg = /\.(\w+)$/;
-        name += url.match(reg) ? '.' + url.match(reg)[1] : '';
-        axios({
-          url: url,
-          method: 'GET',
-          responseType: 'blob',
-          headers: header,
-          data: getFormData(formData)
-        }).then(function (response) {
-          if (response && response.status === 200) {
-            var _url = window.URL.createObjectURL(new Blob([response.data]));
-            var link = document.createElement('a');
-            link.href = _url;
-            link.setAttribute('download', name);
-            document.body.appendChild(link);
-            link.click();
-            handleSuccess(response, success, complete, resolve);
-          } else {
-            handleFail(response, fail, complete, reject);
-          }
-        }).catch(function (err) {
-          handleFail(err, fail, complete, reject);
-        });
-      });
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        return new DownloadTask(options);
     }
     var request$1 = {
-      request: request,
-      uploadFile: uploadFile,
-      downloadFile: downloadFile
+        request: request,
+        uploadFile: uploadFile,
+        downloadFile: downloadFile
     };
 
     function pageScrollTo() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          scrollTop = _ref.scrollTop,
-          _ref$duration = _ref.duration,
-          _ref$success = _ref.success,
-          success = _ref$success === undefined ? function () {} : _ref$success,
-          _ref$fail = _ref.fail,
-          fail = _ref$fail === undefined ? function () {} : _ref$fail,
-          _ref$complete = _ref.complete,
-          complete = _ref$complete === undefined ? function () {} : _ref$complete;
-      return new Promise(function (resolve, reject) {
-        var container = document.getElementsByClassName('page-container');
-        if (container.length > 0) {
-          container[container.length - 1].scrollTo(0, scrollTop);
-          handleSuccess({ scrollTop: scrollTop }, success, complete, resolve);
-        } else {
-          handleFail({ errMsg: 'pageScrollTo fail' }, fail, complete, reject);
-        }
-      });
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            scrollTop = _ref.scrollTop,
+            _ref$duration = _ref.duration,
+            duration = _ref$duration === undefined ? 300 : _ref$duration,
+            _ref$success = _ref.success,
+            success = _ref$success === undefined ? function () {} : _ref$success,
+            _ref$fail = _ref.fail,
+            fail = _ref$fail === undefined ? function () {} : _ref$fail,
+            _ref$complete = _ref.complete,
+            complete = _ref$complete === undefined ? function () {} : _ref$complete;
+        return new Promise(function (resolve, reject) {
+            var bounce = function bounce(per) {
+                if (per < 1 / 2.75) {
+                    return 7.5625 * per * per;
+                } else if (per < 2 / 2.75) {
+                    return 7.5625 * (per -= 1.5 / 2.75) * per + .75;
+                } else if (per < 2.5 / 2.75) {
+                    return 7.5625 * (per -= 2.25 / 2.75) * per + .9375;
+                } else {
+                    return 7.5625 * (per -= 2.25 / 2.75) * per + .984375;
+                }
+            };
+            var container = document.getElementsByClassName('__internal__DynamicPage-container');
+            if (container.length > 0) {
+                var page = container[container.length - 1];
+                var begin = page.scrollTop;
+                var distance = begin + scrollTop;
+                var fps = 60;
+                var internal = 1000 / fps;
+                var times = duration / 1000 * fps;
+                var step = distance / times;
+                var beginTime = new Date();
+                var id = setInterval(function () {
+                    var per = (new Date() - beginTime) / duration;
+                    if (scrollTop > 0) {
+                        if (begin >= distance) {
+                            clearInterval(id);
+                            handleSuccess({ scrollTop: scrollTop }, success, complete, resolve);
+                        } else {
+                            page.style.top = begin + bounce(per) * scrollTop + 'px';
+                            begin += step;
+                        }
+                    } else if (scrollTop < 0) {
+                        if (begin < distance) {
+                            clearInterval(id);
+                            handleSuccess({ scrollTop: scrollTop }, success, complete, resolve);
+                        } else {
+                            page.style.top = begin + bounce(per) * scrollTop + 'px';
+                            begin += step;
+                        }
+                    }
+                    page.scrollTop = begin;
+                }, internal);
+            } else {
+                handleFail({ errMsg: 'pageScrollTo fail' }, fail, complete, reject);
+            }
+        });
     }
     var scroll = {
-      pageScrollTo: pageScrollTo
+        pageScrollTo: pageScrollTo
     };
 
     var SelectorQuery = function SelectorQuery() {
@@ -4548,206 +4874,234 @@
 
     var ERROR_MESSAGE = '不支持 localStorage !';
     function isSupportStorage() {
-      if (!window.localStorage) {
-        console.log(ERROR_MESSAGE);
-        return false;
-      }
-      return true;
+        if (!window.localStorage) {
+            console.log(ERROR_MESSAGE);
+            return false;
+        }
+        return true;
     }
     function setStorage() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          key = _ref.key,
-          data = _ref.data,
-          _ref$success = _ref.success,
-          success = _ref$success === undefined ? function () {} : _ref$success,
-          _ref$fail = _ref.fail,
-          fail = _ref$fail === undefined ? function () {} : _ref$fail,
-          _ref$complete = _ref.complete,
-          complete = _ref$complete === undefined ? function () {} : _ref$complete;
-      return new Promise(function (resolve, reject) {
-        if (!isSupportStorage()) {
-          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
-        } else {
-          localStorage.setItem(key, JSON.stringify(data));
-          handleSuccess({ key: key, data: data }, success, complete, resolve);
-        }
-      });
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            key = _ref.key,
+            data = _ref.data,
+            _ref$success = _ref.success,
+            success = _ref$success === undefined ? function () {} : _ref$success,
+            _ref$fail = _ref.fail,
+            fail = _ref$fail === undefined ? function () {} : _ref$fail,
+            _ref$complete = _ref.complete,
+            complete = _ref$complete === undefined ? function () {} : _ref$complete;
+        return new Promise(function (resolve, reject) {
+            if (!isSupportStorage()) {
+                handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+            } else {
+                localStorage.setItem(key, JSON.stringify(data));
+                handleSuccess({ key: key, data: data }, success, complete, resolve);
+            }
+        });
     }
     function setStorageSync(key, data) {
-      if (!isSupportStorage()) {
-        return;
-      }
-      localStorage.setItem(key, JSON.stringify(data));
+        if (!isSupportStorage()) {
+            return;
+        }
+        localStorage.setItem(key, JSON.stringify(data));
     }
     function getStorage() {
-      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          key = _ref2.key,
-          _ref2$success = _ref2.success,
-          success = _ref2$success === undefined ? function () {} : _ref2$success,
-          _ref2$fail = _ref2.fail,
-          fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
-          _ref2$complete = _ref2.complete,
-          complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
-      return new Promise(function (resolve, reject) {
-        if (!isSupportStorage()) {
-          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
-        } else {
-          handleSuccess({ data: JSON.parse(localStorage.getItem(key)) }, success, complete, resolve);
-        }
-      });
+        var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            key = _ref2.key,
+            _ref2$success = _ref2.success,
+            success = _ref2$success === undefined ? function () {} : _ref2$success,
+            _ref2$fail = _ref2.fail,
+            fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
+            _ref2$complete = _ref2.complete,
+            complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
+        return new Promise(function (resolve, reject) {
+            if (!isSupportStorage()) {
+                handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+            } else {
+                handleSuccess({ data: JSON.parse(localStorage.getItem(key)) }, success, complete, resolve);
+            }
+        });
     }
     function getStorageSync(key) {
-      if (!isSupportStorage()) {
-        return;
-      }
-      return JSON.parse(localStorage.getItem(key));
+        if (!isSupportStorage()) {
+            return;
+        }
+        return JSON.parse(localStorage.getItem(key));
     }
     function removeStorage() {
-      var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          key = _ref3.key,
-          _ref3$success = _ref3.success,
-          success = _ref3$success === undefined ? function () {} : _ref3$success,
-          _ref3$fail = _ref3.fail,
-          fail = _ref3$fail === undefined ? function () {} : _ref3$fail,
-          _ref3$complete = _ref3.complete,
-          complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
-      return new Promise(function (resolve, reject) {
-        if (!isSupportStorage()) {
-          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
-        } else {
-          localStorage.removeItem(key);
-          handleSuccess(null, success, complete, resolve);
-        }
-      });
+        var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            key = _ref3.key,
+            _ref3$success = _ref3.success,
+            success = _ref3$success === undefined ? function () {} : _ref3$success,
+            _ref3$fail = _ref3.fail,
+            fail = _ref3$fail === undefined ? function () {} : _ref3$fail,
+            _ref3$complete = _ref3.complete,
+            complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
+        return new Promise(function (resolve, reject) {
+            if (!isSupportStorage()) {
+                handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+            } else {
+                localStorage.removeItem(key);
+                handleSuccess(null, success, complete, resolve);
+            }
+        });
     }
     function removeStorageSync(key) {
-      if (!isSupportStorage()) {
-        return;
-      }
-      localStorage.removeItem(key);
+        if (!isSupportStorage()) {
+            return;
+        }
+        localStorage.removeItem(key);
     }
     function clearStorage() {
-      var _ref4 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref4$success = _ref4.success,
-          success = _ref4$success === undefined ? function () {} : _ref4$success,
-          _ref4$fail = _ref4.fail,
-          fail = _ref4$fail === undefined ? function () {} : _ref4$fail,
-          _ref4$complete = _ref4.complete,
-          complete = _ref4$complete === undefined ? function () {} : _ref4$complete;
-      return new Promise(function (resolve, reject) {
-        if (!isSupportStorage()) {
-          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
-        } else {
-          localStorage.clear();
-          handleSuccess(null, success, complete, resolve);
-        }
-      });
+        var _ref4 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref4$success = _ref4.success,
+            success = _ref4$success === undefined ? function () {} : _ref4$success,
+            _ref4$fail = _ref4.fail,
+            fail = _ref4$fail === undefined ? function () {} : _ref4$fail,
+            _ref4$complete = _ref4.complete,
+            complete = _ref4$complete === undefined ? function () {} : _ref4$complete;
+        return new Promise(function (resolve, reject) {
+            if (!isSupportStorage()) {
+                handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+            } else {
+                localStorage.clear();
+                handleSuccess(null, success, complete, resolve);
+            }
+        });
     }
     function clearStorageSync() {
-      if (!isSupportStorage()) {
-        return;
-      }
-      localStorage.clear();
+        if (!isSupportStorage()) {
+            return;
+        }
+        localStorage.clear();
     }
     function get10KBStr() {
-      var str = '0123456789';
-      function add(s) {
-        s += str;
-        if (s.length === 10240) {
-          str = s;
-          return;
+        var str = '0123456789';
+        function add(s) {
+            s += str;
+            if (s.length === 10240) {
+                str = s;
+                return;
+            }
+            add(s);
         }
-        add(s);
-      }
-      add(str);
-      return str;
+        add(str);
+        return str;
     }
     var LIMIT_SIZE_CACHE = -1;
     function getStorageUnusedSize(cb) {
-      if (LIMIT_SIZE_CACHE !== -1) {
-        cb(LIMIT_SIZE_CACHE);
-      } else {
-        var _10KBStr = get10KBStr();
-        var sum = _10KBStr;
-        var id = setInterval(function () {
-          sum += _10KBStr;
-          try {
-            localStorage.removeItem('test');
-            localStorage.setItem('test', sum);
-          } catch (e) {
-            LIMIT_SIZE_CACHE = sum.length / 1024;
+        if (LIMIT_SIZE_CACHE !== -1) {
             cb(LIMIT_SIZE_CACHE);
-            clearInterval(id);
-          }
-        }, 1);
-      }
+        } else {
+            var _10KBStr = get10KBStr();
+            var sum = _10KBStr;
+            var id = setInterval(function () {
+                sum += _10KBStr;
+                try {
+                    localStorage.removeItem('test');
+                    localStorage.setItem('test', sum);
+                } catch (e) {
+                    LIMIT_SIZE_CACHE = sum.length / 1024;
+                    cb(LIMIT_SIZE_CACHE);
+                    clearInterval(id);
+                }
+            }, 1);
+        }
     }
     function getStorageUsedSize() {
-      var values = Object.values(localStorage.valueOf());
-      return values.reduce(function (size, value) {
-        return value.length;
-      }, 0) / 1024;
+        var values = Object.values(localStorage.valueOf());
+        return values.reduce(function (size, value) {
+            return value.length;
+        }, 0) / 1024;
     }
     async function getStorageInfoSync() {
-      var needLimitSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-      var result = await getStorageInfo({ needLimitSize: needLimitSize });
-      return result;
+        var needLimitSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        var result = await getStorageInfo({ needLimitSize: needLimitSize });
+        return result;
     }
     function getStorageInfo() {
-      var _ref5 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref5$needLimitSize = _ref5.needLimitSize,
-          needLimitSize = _ref5$needLimitSize === undefined ? false : _ref5$needLimitSize,
-          _ref5$success = _ref5.success,
-          success = _ref5$success === undefined ? function () {} : _ref5$success,
-          _ref5$fail = _ref5.fail,
-          fail = _ref5$fail === undefined ? function () {} : _ref5$fail,
-          _ref5$complete = _ref5.complete,
-          complete = _ref5$complete === undefined ? function () {} : _ref5$complete;
-      return new Promise(function (resolve, reject) {
-        if (!isSupportStorage()) {
-          handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
-          return;
-        }
-        var result = {
-          keys: Object.keys(localStorage),
-          currentSize: getStorageUsedSize()
-        };
-        if (needLimitSize) {
-          getStorageUnusedSize(function (unUsedSize) {
-            handleSuccess(Object.assign({}, result, {
-              limitSize: result.currentSize + unUsedSize
-            }), success, complete, resolve);
-          });
-        } else {
-          handleSuccess(result, success, complete, resolve);
-        }
-      });
+        var _ref5 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref5$needLimitSize = _ref5.needLimitSize,
+            needLimitSize = _ref5$needLimitSize === undefined ? false : _ref5$needLimitSize,
+            _ref5$success = _ref5.success,
+            success = _ref5$success === undefined ? function () {} : _ref5$success,
+            _ref5$fail = _ref5.fail,
+            fail = _ref5$fail === undefined ? function () {} : _ref5$fail,
+            _ref5$complete = _ref5.complete,
+            complete = _ref5$complete === undefined ? function () {} : _ref5$complete;
+        return new Promise(function (resolve, reject) {
+            if (!isSupportStorage()) {
+                handleFail({ errMsg: ERROR_MESSAGE }, fail, complete, reject);
+                return;
+            }
+            var result = {
+                keys: Object.keys(localStorage),
+                currentSize: getStorageUsedSize()
+            };
+            if (needLimitSize) {
+                getStorageUnusedSize(function (unUsedSize) {
+                    handleSuccess(Object.assign({}, result, {
+                        limitSize: result.currentSize + unUsedSize
+                    }), success, complete, resolve);
+                });
+            } else {
+                handleSuccess(result, success, complete, resolve);
+            }
+        });
     }
     var storage = {
-      setStorage: setStorage,
-      setStorageSync: setStorageSync,
-      getStorage: getStorage,
-      getStorageSync: getStorageSync,
-      removeStorage: removeStorage,
-      removeStorageSync: removeStorageSync,
-      clearStorage: clearStorage,
-      clearStorageSync: clearStorageSync,
-      getStorageInfo: getStorageInfo,
-      getStorageInfoSync: getStorageInfoSync
+        setStorage: setStorage,
+        setStorageSync: setStorageSync,
+        getStorage: getStorage,
+        getStorageSync: getStorageSync,
+        removeStorage: removeStorage,
+        removeStorageSync: removeStorageSync,
+        clearStorage: clearStorage,
+        clearStorageSync: clearStorageSync,
+        getStorageInfo: getStorageInfo,
+        getStorageInfoSync: getStorageInfoSync
     };
 
     function getSystemInfo() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref$success = _ref.success,
-          success = _ref$success === undefined ? function () {} : _ref$success,
-          _ref$fail = _ref.fail,
-          fail = _ref$fail === undefined ? function () {} : _ref$fail,
-          _ref$complete = _ref.complete,
-          complete = _ref$complete === undefined ? function () {} : _ref$complete;
-      return new Promise(function (resolve, reject) {
-        try {
-          var md = new MobileDetect(navigator.userAgent || navigator.vendor || window.opera, window.screen.width);
-          var res = {
+        var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref$success = _ref.success,
+            success = _ref$success === undefined ? function () {} : _ref$success,
+            _ref$fail = _ref.fail,
+            fail = _ref$fail === undefined ? function () {} : _ref$fail,
+            _ref$complete = _ref.complete,
+            complete = _ref$complete === undefined ? function () {} : _ref$complete;
+        return new Promise(function (resolve, reject) {
+            try {
+                var md = new MobileDetect(navigator.userAgent || navigator.vendor || window.opera, window.screen.width);
+                var res = {
+                    brand: md.mobile(),
+                    model: md.phone(),
+                    pixelRatio: '',
+                    screenWidth: window.screen.width,
+                    screenHeight: window.screen.height,
+                    windowWidth: window.screen.width,
+                    windowHeight: window.screen.height,
+                    statusBarHeight: '',
+                    language: navigator.language || '',
+                    version: md.version('Webkit'),
+                    system: md.os(),
+                    platform: md.os(),
+                    fontSizeSetting: '',
+                    SDKVersion: '',
+                    storage: '',
+                    currentBattery: '',
+                    app: '',
+                    benchmarkLevel: ''
+                };
+                handleSuccess(res, success, complete, resolve);
+            } catch (e) {
+                handleFail({ errMsg: e }, fail, complete, reject);
+            }
+        });
+    }
+    function getSystemInfoSync() {
+        var md = new MobileDetect(navigator.userAgent || navigator.vendor || window.opera, window.screen.width);
+        return {
             brand: md.mobile(),
             model: md.phone(),
             pixelRatio: '',
@@ -4766,39 +5120,11 @@
             currentBattery: '',
             app: '',
             benchmarkLevel: ''
-          };
-          handleSuccess(res, success, complete, resolve);
-        } catch (e) {
-          handleFail({ errMsg: e }, fail, complete, reject);
-        }
-      });
-    }
-    function getSystemInfoSync() {
-      var md = new MobileDetect(navigator.userAgent || navigator.vendor || window.opera, window.screen.width);
-      return {
-        brand: md.mobile(),
-        model: md.phone(),
-        pixelRatio: '',
-        screenWidth: window.screen.width,
-        screenHeight: window.screen.height,
-        windowWidth: window.screen.width,
-        windowHeight: window.screen.height,
-        statusBarHeight: '',
-        language: navigator.language || '',
-        version: md.version('Webkit'),
-        system: md.os(),
-        platform: md.os(),
-        fontSizeSetting: '',
-        SDKVersion: '',
-        storage: '',
-        currentBattery: '',
-        app: '',
-        benchmarkLevel: ''
-      };
+        };
     }
     var systemInfo = {
-      getSystemInfo: getSystemInfo,
-      getSystemInfoSync: getSystemInfoSync
+        getSystemInfo: getSystemInfo,
+        getSystemInfoSync: getSystemInfoSync
     };
 
     function vibrateLong() {
@@ -4840,102 +5166,161 @@
       vibrateShort: vibrateShort
     };
 
+    var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+    function _classCallCheck$6(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
     var Err = 'ws不存在';
-    var socket = null;
-    function connectSocket() {
-      var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref$url = _ref.url,
-          url = _ref$url === undefined ? '' : _ref$url,
-          protocols = _ref.protocols,
-          _ref$header = _ref.header,
-          header = _ref$header === undefined ? {} : _ref$header,
-          _ref$success = _ref.success,
-          success = _ref$success === undefined ? function () {} : _ref$success,
-          _ref$fail = _ref.fail,
-          fail = _ref$fail === undefined ? function () {} : _ref$fail,
-          _ref$complete = _ref.complete,
-          complete = _ref$complete === undefined ? function () {} : _ref$complete;
-      return new Promise(async function (resolve, reject) {
-        try {
-          if (socket) {
-            await closeSocket();
-          }
-          socket = io(url, {
-            extraHeaders: header
-          });
-          handleSuccess('socket created!', success, complete, resolve);
-        } catch (e) {
-          handleFail(e, fail, complete, reject);
+    var sockets = [];
+    var MAX_SOCKET = 5;
+    var SocketTask = function () {
+        function SocketTask(_ref) {
+            var _ref$url = _ref.url,
+                url = _ref$url === undefined ? '' : _ref$url,
+                protocols = _ref.protocols,
+                _ref$header = _ref.header,
+                header = _ref$header === undefined ? {} : _ref$header,
+                _ref$success = _ref.success,
+                success = _ref$success === undefined ? function () {} : _ref$success,
+                _ref$fail = _ref.fail,
+                fail = _ref$fail === undefined ? function () {} : _ref$fail,
+                _ref$complete = _ref.complete,
+                complete = _ref$complete === undefined ? function () {} : _ref$complete;
+            _classCallCheck$6(this, SocketTask);
+            if (sockets.length >= MAX_SOCKET) {
+                handleFail('\u5F53\u524D\u6700\u5927socket\u8FDE\u63A5\u6570\u4E0D\u80FD\u8D85\u8FC7' + MAX_SOCKET, fail, complete);
+                return null;
+            }
+            this._socket = io(url, {
+                transportOptions: {
+                    polling: {
+                        extraHeaders: header
+                    }
+                },
+                protocols: protocols
+            });
+            handleSuccess('websocket connect success!', success, complete);
+            sockets.push(this._socket);
         }
-      });
+        SocketTask.prototype.send = function send(_ref2) {
+            var _ref2$data = _ref2.data,
+                data = _ref2$data === undefined ? {} : _ref2$data,
+                _ref2$success = _ref2.success,
+                success = _ref2$success === undefined ? function () {} : _ref2$success,
+                _ref2$fail = _ref2.fail,
+                _ref2$complete = _ref2.complete,
+                complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
+            if ((typeof data === 'undefined' ? 'undefined' : _typeof$1(data)) !== 'object') {
+                throw new Error('type error!');
+            }
+            var args = Object.keys(data).map(function (key) {
+                return data[key];
+            });
+            this._socket.send(args);
+            handleSuccess('message send success!', success, complete);
+        };
+        SocketTask.prototype.close = function close(_ref3) {
+            var _ref3$code = _ref3.code,
+                code = _ref3$code === undefined ? 1000 : _ref3$code,
+                _ref3$reason = _ref3.reason,
+                reason = _ref3$reason === undefined ? '' : _ref3$reason,
+                _ref3$success = _ref3.success,
+                success = _ref3$success === undefined ? function () {} : _ref3$success,
+                _ref3$fail = _ref3.fail,
+                _ref3$complete = _ref3.complete,
+                complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
+            this._socket.close();
+            handleSuccess(code + ': socket closed.' + (reason ? 'reason: ' + reason : ''), success, complete);
+        };
+        SocketTask.prototype.onOpen = function onOpen(callback) {
+            this._socket.on('connect', callback);
+        };
+        SocketTask.prototype.onClose = function onClose(callback) {
+            this._socket.on('disconnect', callback);
+        };
+        SocketTask.prototype.onError = function onError(callback) {
+            this._socket.on('error', callback);
+        };
+        SocketTask.prototype.onMessage = function onMessage(callback) {
+            this._socket.on('message', callback);
+        };
+        return SocketTask;
+    }();
+    function connectSocket() {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        return new SocketTask(options);
     }
     function onSocketOpen() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-      if (!socket) return callback(Err);
-      socket.on('connect', function () {
-        return callback(socket.id);
-      });
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        if (!sockets.length) return callback(Err);
+        socket.on('connect', function () {
+            return callback(socket.id);
+        });
     }
     function closeSocket() {
-      var _ref2 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          _ref2$success = _ref2.success,
-          success = _ref2$success === undefined ? function () {} : _ref2$success,
-          _ref2$fail = _ref2.fail,
-          fail = _ref2$fail === undefined ? function () {} : _ref2$fail,
-          _ref2$complete = _ref2.complete,
-          complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
-      return new Promise(function (resolve, reject) {
-        if (!socket) return handleFail(Err, fail, complete, reject);
-        socket.close();
-        socket = null;
-        handleSuccess('socket closed.', success, complete, resolve);
-      });
+        var _ref4 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            _ref4$success = _ref4.success,
+            success = _ref4$success === undefined ? function () {} : _ref4$success,
+            _ref4$fail = _ref4.fail,
+            fail = _ref4$fail === undefined ? function () {} : _ref4$fail,
+            _ref4$complete = _ref4.complete,
+            complete = _ref4$complete === undefined ? function () {} : _ref4$complete;
+        if (!sockets.length) return handleFail(Err, fail, complete);
+        while (sockets.length) {
+            var _socket = sockets.pop();
+            _socket.close();
+        }
+        handleSuccess('socket closed.', success, complete);
     }
     function sendSocketMessage() {
-      var _ref3 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-          data = _ref3.data,
-          _ref3$success = _ref3.success,
-          success = _ref3$success === undefined ? function () {} : _ref3$success,
-          _ref3$fail = _ref3.fail,
-          fail = _ref3$fail === undefined ? function () {} : _ref3$fail,
-          _ref3$complete = _ref3.complete,
-          complete = _ref3$complete === undefined ? function () {} : _ref3$complete;
-      return new Promise(function (resolve, reject) {
-        if (!socket) return handleFail(Err, fail, complete, reject);
-        socket.send(data, function (res) {
-          handleSuccess(res, success, complete, resolve);
+        var _ref5 = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+            data = _ref5.data,
+            _ref5$success = _ref5.success,
+            success = _ref5$success === undefined ? function () {} : _ref5$success,
+            _ref5$fail = _ref5.fail,
+            fail = _ref5$fail === undefined ? function () {} : _ref5$fail,
+            _ref5$complete = _ref5.complete,
+            complete = _ref5$complete === undefined ? function () {} : _ref5$complete;
+        if (!sockets.length) return handleFail(Err, fail, complete);
+        sockets.forEach(function (socket) {
+            socket.send(data, function (res) {
+                handleSuccess(res, success, complete, resolve);
+            });
         });
-      });
     }
     function onSocketMessage() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-      if (!socket) return callback(Err);
-      socket.on('message', function (res) {
-        return callback(res);
-      });
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        if (!sockets.length) return callback(Err);
+        sockets.forEach(function (socket) {
+            socket.on('message', function (res) {
+                return callback(res);
+            });
+        });
     }
     function onSocketError() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-      if (!socket) return callback(Err);
-      socket.on('error', function (res) {
-        return callback(res);
-      });
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        if (!sockets.length) return callback(Err);
+        sockets.forEach(function (socket) {
+            socket.on('error', function (res) {
+                return callback(res);
+            });
+        });
     }
     function onSocketClose() {
-      var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
-      if (!socket) return callback(Err);
-      socket.on('disconnect', function (res) {
-        return callback(res);
-      });
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        if (!sockets.length) return callback(Err);
+        sockets.forEach(function (socket) {
+            socket.on('disconnect', function (res) {
+                return callback(res);
+            });
+        });
     }
     var ws = {
-      connectSocket: connectSocket,
-      onSocketOpen: onSocketOpen,
-      closeSocket: closeSocket,
-      sendSocketMessage: sendSocketMessage,
-      onSocketMessage: onSocketMessage,
-      onSocketError: onSocketError,
-      onSocketClose: onSocketClose
+        connectSocket: connectSocket,
+        onSocketOpen: onSocketOpen,
+        closeSocket: closeSocket,
+        sendSocketMessage: sendSocketMessage,
+        onSocketMessage: onSocketMessage,
+        onSocketError: onSocketError,
+        onSocketClose: onSocketClose
     };
 
     var share = {
@@ -4967,7 +5352,7 @@
         images: images,
         interaction: interaction,
         location: location,
-        previewImage: previewImage,
+        previewImage: previewImage$1,
         request: request$1,
         scroll: scroll,
         selectorQuery: selectorQuery,
@@ -5050,6 +5435,7 @@
         return event;
     }
 
+    var defer = Promise.resolve().then.bind(Promise.resolve());
     function registerComponent(type, name) {
         type.isMPComponent = true;
         registeredComponents[name] = type;
@@ -5062,9 +5448,12 @@
             },
             options: type.options,
             attached: function attached() {
-                usingComponents[name] = type;
-                var uuid = this.dataset.instanceUid || null;
-                refreshComponent(reactInstances, this, uuid);
+                var wx = this;
+                defer(function () {
+                    usingComponents[name] = type;
+                    var uuid = wx.dataset.instanceUid || null;
+                    refreshComponent(reactInstances, wx, uuid);
+                });
             },
             detached: detachComponent,
             dispatchEvent: dispatchEvent$1
@@ -5125,13 +5514,13 @@
     }
 
     var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-    function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+    function _defineProperty$1(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
     var render$2 = DOMRenderer.render;
     var __currentPages = [];
     var MAX_PAGE_STACK_NUM = 10;
-    var React$1 = getWindow().React = {
+    var React$2 = getWindow().React = {
         findDOMNode: findDOMNode,
-        version: '1.5.0',
+        version: '1.5.10',
         render: render$2,
         hydrate: render$2,
         Fragment: Fragment,
@@ -5170,6 +5559,7 @@
         useContext: useContext,
         useComponent: useComponent,
         createRef: createRef,
+        forwardRef: forwardRef,
         cloneElement: cloneElement,
         appType: 'h5',
         __app: {},
@@ -5190,24 +5580,24 @@
             _getQuery2 = _slicedToArray(_getQuery, 2),
             path = _getQuery2[0],
             query = _getQuery2[1];
-        var appInstance = React$1.__app;
+        var appInstance = React$2.__app;
         var appConfig = appInstance.constructor.config;
         if (appConfig.pages.indexOf(path) === -1) {
             throw "没有注册该页面: " + path;
         }
         if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
-        var pageClass = React$1.__pages[path];
+        var pageClass = React$2.__pages[path];
         __currentPages.forEach(function (page, index, self) {
-            self[index] = React$1.cloneElement(self[index], {
+            self[index] = React$2.cloneElement(self[index], {
                 show: false
             });
         });
-        var pageInstance = React$1.createElement(pageClass, {
-            isTabPage: false,
+        var pageInstance = React$2.createElement(pageClass, {
+            isTabPage: React$2.__isTab(path),
             path: path,
             query: query,
             url: url,
-            app: React$1.__app,
+            app: React$2.__app,
             show: true,
             needBackButton: __currentPages.length > 0 ? true : false
         });
@@ -5252,7 +5642,7 @@
                 var url = page.props.url;
                 history.pushState({ url: url }, null, prefix + url);
             });
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({
                 showBackAnimation: true
             });
@@ -5264,7 +5654,7 @@
                 var _currentPages$props = __currentPages[__currentPages.length - 1].props,
                     path = _currentPages$props.path,
                     query = _currentPages$props.query;
-                React$1.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
+                React$2.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
             }, 300);
         },
         switchTab: function switchTab(_ref2) {
@@ -5276,7 +5666,7 @@
                 _getQuery4 = _slicedToArray(_getQuery3, 2),
                 path = _getQuery4[0],
                 query = _getQuery4[1];
-            var config = React$1.__app.constructor.config;
+            var config = React$2.__app.constructor.config;
             if (config && config.tabBar && config.tabBar.list) {
                 if (config.tabBar.list.length < 2 || config.tabBar.list.length > 5) {
                     console.warn('tabBar数量非法，必须大于2且小于5个');
@@ -5303,33 +5693,33 @@
         setNavigationBarColor: function setNavigationBarColor(options) {
             var processedOptions = Object.keys(options).reduce(function (accr, curr) {
                 var key = titleBarColorMap[curr];
-                return Object.assign({}, accr, _defineProperty({}, key || curr, options[curr]));
+                return Object.assign({}, accr, _defineProperty$1({}, key || curr, options[curr]));
             }, {});
             var currentPage = __currentPages.pop();
             __currentPages.push(cloneElement(currentPage, {
                 config: processedOptions
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         setNavigationBarTitle: function setNavigationBarTitle(options) {
             var processedOptions = Object.keys(options).reduce(function (accr, curr) {
                 var key = titleBarTitleMap[curr];
-                return Object.assign({}, accr, _defineProperty({}, key || curr, options[curr]));
+                return Object.assign({}, accr, _defineProperty$1({}, key || curr, options[curr]));
             }, {});
             var currentPage = __currentPages.pop();
             __currentPages.push(cloneElement(currentPage, {
                 config: processedOptions
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         stopPullDownRefresh: function stopPullDownRefresh() {
-            var pageInstance = React$1.getCurrentPages().pop();
-            React$1.getCurrentPages().push(cloneElement(pageInstance, {
+            var pageInstance = React$2.getCurrentPages().pop();
+            React$2.getCurrentPages().push(cloneElement(pageInstance, {
                 stopPullDownRefresh: true
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         createModal: function createModal(instance) {
@@ -5363,8 +5753,8 @@
             return key + '=' + obj[key];
         }).join('&');
     }
-    registerAPIs(React$1, apiContainer, more);
+    registerAPIs(React$2, apiContainer, more);
 
-    return React$1;
+    return React$2;
 
 })));

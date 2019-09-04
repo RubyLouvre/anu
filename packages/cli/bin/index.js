@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const package_json_1 = require("../package.json");
 const platforms_1 = __importDefault(require("../consts/platforms"));
 const buildOptions_1 = __importDefault(require("../consts/buildOptions"));
 const cliBuilder_1 = __importDefault(require("./cliBuilder"));
@@ -13,9 +12,10 @@ const createPage_1 = __importDefault(require("./commands/createPage"));
 const build_1 = __importDefault(require("./commands/build"));
 const install_1 = __importDefault(require("./commands/install"));
 require("../tasks/chaikaMergeTask/injectChaikaEnv");
+const { version } = require('../package.json');
 const cli = new cliBuilder_1.default();
 cli.checkNodeVersion('8.6.0');
-cli.version = package_json_1.version;
+cli.version = version;
 cli.addCommand('init <app-name>', null, 'description: 初始化项目', {}, (appName) => {
     init_1.default(appName);
 });
@@ -36,11 +36,7 @@ platforms_1.default.forEach(function (el) {
     const { buildType, des, isDefault } = el;
     ['build', 'watch'].forEach(function (compileType) {
         cli.addCommand(`${compileType}:${buildType}`, isDefault ? compileType : null, des, buildOptions_1.default, (options) => {
-            const args = {};
-            Object.keys(options).forEach(key => {
-                args[key] = options.key;
-            });
-            build_1.default(Object.assign({}, args, { watch: compileType === 'watch', buildType }));
+            build_1.default(Object.assign({}, options, { watch: compileType === 'watch', buildType }));
         });
     });
 });

@@ -34,7 +34,7 @@ export const warningLog = ( {id, msg, loc}: Log ) => {
     console.log(result);
 };
 
-export const errorLog = ( {id, msg, loc}: Log ) => {
+export const errorLog = ( {id, msg, loc = {line: '0', column: '1'}}: Log ) => {
     let result = '';
     result = chalk`{underline ${id}}\n{grey ${loc.line}:${loc.column}}\t{red error}\t${msg}\n`; 
     // eslint-disable-next-line

@@ -1,78 +1,41 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
+  <meta charset="UTF-8" />
+  <title>Document</title>
+  <!--<script src="https://unpkg.com/anujs@1.5.6/dist/React.js"></script>-->
+  <script src="./dist/ReactIE.js"></script>
+  <script>
+      console.log('...............')
+      window.onload = function(){
+/*
+     
+        function App(){
+            this.state = {
+                value: ""
+            }
+            console.log("xxxx")
+            var that = this
+            this.onChange = function(e) {
+                var value = e.target.value;
+                thast.setState({value: value})
+            }
+        }
+        var h = React.createElement;
+         App =  React.miniCreateClass(App,{     
+            render: function(){
+                return h("div", null, h("input", {type: 'number',value: this.state.value.toUpperCase(), onChange: this.onChange}), this.state.value.toUpperCase())
+            }
+        },{})
+console.log(App)
 
-  <script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
-  <script src="https://cdn.bootcss.com/react-dom/16.7.0-alpha.2/umd/react-dom.development.js"></script>
-
-  <script src="./lib/ReactPropTypes.js"></script>
-<!--
- <script src="./dist/React.js"></script>
--->
-  <script type='text/javascript' src="./lib/babel.js"></script>
-
+ReactDOM.render(h(App), document.getElementById('root'))
+*/
+      }
+ 
+  </script>
 </head>
-
 <body>
-
-  <div id='root' class="root">
-
-  </div>
-  <script type='text/babel'>
-
-var container = document.getElementById('root');
-class A extends React.Component{
-  state = {
-    time: 19860219
-  }
-  getChildContext(){
-    return {
-      b: this.state.time
-    }
-  }
-  static childContextTypes = {
-    b: ReactPropTypes.number
-  }
-  onClick(){
-    this.setState({
-      time: new Date - 0
-    })
-  }
-  render(){
-    console.log('a render')
-    return <div><B />
-      <button type="button" onClick={
-          this.onClick.bind(this)
-    }> change </button></div>
-  }
-
-}
-class B extends React.Component{
-  static contextTypes = {
-     b: ReactPropTypes.number
-  }
-  shouldComponentUpdate(a, b){
-    return false
-  }
-  render(){
-    console.log('b render')
-    return <div>|{this.context.b}|<C /></div>
-  }
-
-}
-class C extends React.Component{
-  static contextTypes = {
-     b: ReactPropTypes.number
-  }
-  render(){
-    console.log('c render')
-    return <strong>{this.context.b}</strong>
-  }
-}
-ReactDOM.render(<A />, container)
-	
-    </script>
+  <div id="root"></div>
+</body>
 </html>

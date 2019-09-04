@@ -1,82 +1,63 @@
-const t = require('@babel/types');
-const template = require('@babel/template').default;
-const generate = require('@babel/generator').default;
-const utils = require('../utils');
-
+"use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const t = __importStar(require("@babel/types"));
+const generator_1 = __importDefault(require("@babel/generator"));
+const template_1 = __importDefault(require("@babel/template"));
+const utils_1 = __importDefault(require("../utils"));
 module.exports = {
     enter(astPath, state) {
-        //重置数据
-        let modules = utils.getAnu(state);
+        let modules = utils_1.default.getAnu(state);
         modules.className = astPath.node.id.name;
-        modules.parentName = generate(astPath.node.superClass).code || 'Object';
-        modules.classUid = 'c' + utils.createUUID(astPath);
+        modules.parentName = generator_1.default(astPath.node.superClass).code || 'Object';
+        modules.classUid = 'c' + utils_1.default.createUUID(astPath);
     },
     exit(astPath, state) {
-        // 将类表式变成函数调用
-        let modules = utils.getAnu(state);
+        let modules = utils_1.default.getAnu(state);
         if (!modules.ctorFn) {
-            /**
-             * 占位符要大写
-             * placeholderPattern
-             * Type: RegExp | false Default: /^[_$A-Z0-9]+$/
-             * 
-             * A pattern to search for when looking for Identifier and StringLiteral nodes
-             * that should be considered placeholders. 'false' will disable placeholder searching
-             * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
-             */
-            modules.ctorFn = template('function X(){B}')({
+            modules.ctorFn = template_1.default('function X(){B}')({
                 X: t.identifier(modules.className),
                 B: modules.thisProperties
             });
-           
         }
-        astPath.insertBefore(modules.ctorFn);
-        //用于绑定事件
-        modules.thisMethods.push(
-            t.objectProperty(
-                t.identifier('classUid'),
-                t.stringLiteral(modules.classUid)
-            )
-        );
-        /**
-         * 使用 babel-types 完成如下语法
-         * var Global = React.toClass(Global, React.Component, {});
-         */
-        
-        const classDeclarationAst = t.assignmentExpression(
-            '=', 
+        if (astPath.parent.type === 'Program') {
+            astPath.insertBefore(modules.ctorFn);
+        }
+        else {
+            let tempPath;
+            astPath.findParent(function (astPath) {
+                if (astPath.type !== 'Program') {
+                    tempPath = astPath;
+                    return false;
+                }
+                return true;
+            });
+            let tempExp = tempPath.get('declarations')[0];
+            let left = tempExp.get('id').node, right = tempExp.get('init').node;
+            tempPath.replaceWith(t.expressionStatement(t.assignmentExpression('=', left, right)));
+            tempPath.insertBefore(modules.ctorFn);
+        }
+        modules.thisMethods.push(t.objectProperty(t.identifier('classUid'), t.stringLiteral(modules.classUid)));
+        const classDeclarationAst = t.assignmentExpression('=', t.identifier(modules.className), t.callExpression(t.identifier('React.toClass'), [
             t.identifier(modules.className),
-            t.callExpression(t.identifier('React.toClass'), [
-                t.identifier(modules.className),
-                t.identifier(modules.parentName),
-                t.objectExpression(modules.thisMethods),
-                t.objectExpression(modules.staticMethods)
-            ])
-        );
-        if(modules.componentType === 'App'){
-            if(!/this.globalData/.test(generate(modules.ctorFn).code)){
-                 throw 'app.js没有设置globalData对象'
+            t.identifier(modules.parentName),
+            t.objectExpression(modules.thisMethods),
+            t.objectExpression(modules.staticMethods)
+        ]));
+        if (modules.componentType === 'App') {
+            if (!/this.globalData/.test(generator_1.default(modules.ctorFn).code)) {
+                throw 'app.js没有设置globalData对象';
             }
         }
-        
-        // const classDeclarationAst = t.variableDeclaration(
-        //     'var',
-        //     [
-        //         t.variableDeclarator(
-        //             t.identifier(modules.className),
-        //             t.callExpression(t.identifier('React.toClass'), [
-        //                 t.identifier(modules.className),
-        //                 t.identifier(modules.parentName),
-        //                 t.objectExpression(modules.thisMethods),
-        //                 t.objectExpression(modules.staticMethods)
-        //             ])
-        //         )
-        //     ]
-        // );
-
-        
-        // 可以通过 `console.log(generate(classDeclarationAst).code)` 查看编译后的代码
-
         astPath.replaceWith(classDeclarationAst);
         if (astPath.type == 'CallExpression') {
             if (astPath.parentPath.type === 'VariableDeclarator') {
@@ -86,18 +67,12 @@ module.exports = {
             }
         }
         if (modules.componentType === 'Page') {
-            modules.registerStatement = utils.createRegisterStatement(
-                modules.className,
-                modules.current
-                    .replace(/.+pages/, 'pages')
-                    .replace(/\.js$/, ''),
-                true
-            );
-        } else if (modules.componentType === 'Component') {
-            modules.registerStatement = utils.createRegisterStatement(
-                modules.className,
-                modules.className
-            );
+            modules.registerStatement = utils_1.default.createRegisterStatement(modules.className, modules.current
+                .replace(/.+pages/, 'pages')
+                .replace(/\.js$/, ''), true);
+        }
+        else if (modules.componentType === 'Component') {
+            modules.registerStatement = utils_1.default.createRegisterStatement(modules.className, modules.className);
         }
     }
 };

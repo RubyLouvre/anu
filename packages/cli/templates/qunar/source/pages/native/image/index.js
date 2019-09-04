@@ -6,7 +6,7 @@ class P extends React.Component {
         this.state = {
             state: '正在加载',
             src:
-                'https://static.rolandreed.cn/images/articles/JavaScript-Coercion/JavaScript.jpg',
+                'https://picbed.qunarzz.com/dc6e8d9b90d2038db4669e0861a3fb5b.jpeg',
             mode: 'scaleToFill',
             modes: [
                 {
@@ -61,6 +61,8 @@ class P extends React.Component {
                 }
             ]
         };
+        this.onLoad = this.onLoad.bind(this);
+        this.onError = this.onError.bind(this);
     }
 
     onError() {
@@ -96,7 +98,9 @@ class P extends React.Component {
                     />
                 </div>
                 <div style="font-size: 32rpx;">
-                    <span style="color: #999;">当前状态：</span>
+                    <span
+                        style="color: #999;"
+                    >当前状态：</span>
                     <span style={this.state.color}>{this.state.state}</span>
                 </div>
                 <scroll-view>
@@ -105,7 +109,7 @@ class P extends React.Component {
                             <list-item type={'image' + idx}>
                                 <div style="font-size: 32rpx;" >
                                     <button
-                                        style="color: #999;"
+                                        // style="color: #999;"
                                         onTap={this.changeType.bind(
                                             this,
                                             mode.mode

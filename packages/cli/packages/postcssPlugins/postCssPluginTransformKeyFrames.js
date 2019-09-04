@@ -1,9 +1,13 @@
-const postCss = require('postcss');
-const config = require('../../config/config');
-
-const postCssPluginTransformKeyFrames = postCss.plugin('postcss-plugin-transform-keyframes', function() {
-    return function(root) {
-        if (config.buildType !== 'quick') {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const postcss_1 = __importDefault(require("postcss"));
+const config_1 = __importDefault(require("../../config/config"));
+const postCssPluginTransformKeyFrames = postcss_1.default.plugin('postcss-plugin-transform-keyframes', function () {
+    return function (root) {
+        if (config_1.default.buildType !== 'quick') {
             return;
         }
         root.walkAtRules(atrule => {
@@ -11,7 +15,7 @@ const postCssPluginTransformKeyFrames = postCss.plugin('postcss-plugin-transform
                 atrule.walkRules((rule) => {
                     const rules = rule.selector.split(/\s*,\s*/);
                     rules.forEach(r => {
-                        rule.cloneBefore(postCss.rule({
+                        rule.cloneBefore(postcss_1.default.rule({
                             selector: r,
                             nodes: rule.nodes
                         }));
@@ -22,5 +26,4 @@ const postCssPluginTransformKeyFrames = postCss.plugin('postcss-plugin-transform
         });
     };
 });
-
 module.exports = postCssPluginTransformKeyFrames;

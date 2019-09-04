@@ -9,7 +9,7 @@ class PageWrapper extends React.Component{
         this.$app = props.app;
         this.initAppConfig();
         this.state = {
-            pagePath: ''
+            pageAppear: true
         };
     }
     initAppConfig() {
@@ -18,13 +18,25 @@ class PageWrapper extends React.Component{
         Object.assign(this.appConfig, this.appConfig.window);
         delete this.appConfig.window;
     }
-    get pagePath() {
-        return this.$app.state.path;
+    componentWillReceiveProps(nextProps) {
+        // 页面跳转 且不是后退操作时更改pageAppear控制跳转动画
+        if (nextProps.path !== this.props.path && !this.props.showBackAnimation) {
+            this.setState({
+                pageAppear: false
+            });
+        }
+    }
+    componentDidUpdate() {
+        if (!this.state.pageAppear) {
+            this.setState({
+                pageAppear: true
+            });
+        }
     }
     render(){
         const instances = React.getCurrentPages();
         return (
-            <div className='__internal__Page__' >
+            <div className={`__internal__Page__ ${this.state.pageAppear ? 'page-appear-done' : 'page-appear'}`} >
                 {instances.map((page, index) => {
                     let className = '__hidden';
                     if (index === instances.length - 1) {
@@ -37,34 +49,6 @@ class PageWrapper extends React.Component{
                     </div>;
                 })}
                 <div className='__internal__Modal__'></div>
-                <style jsx>{`
-                        .__internal__Page__ {
-                            width: 100%;
-                            height: 100%;
-                            min-width: 320px;
-                            max-width: 480px;
-                            margin: 0 auto;
-                            overflow: hidden;
-                            position: relative;
-                        }
-                        .__internal__Page-container {
-                            width: 100%;
-                            height: 100%;
-                            -webkit-overflow-scrolling: touch;
-                        }
-                        .__hidden {
-                            display: none;
-                        }
-                        .__bottom {
-                            position: absolute;
-                            width: 100%;
-                        }
-                        .__backAnimation {
-                            transform: translateX(375px);
-                            transition: transform 500ms ease;
-                        }
-                    `}
-                </style>
             </div>
         );
     }

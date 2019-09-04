@@ -1,4 +1,4 @@
-interface Platform {
+export interface Platform {
     buildType: string;
     des: string;
     isDefault?: boolean;

@@ -1,0 +1,48 @@
+.todoList{
+    list-style: none;
+}
+.header {
+    text-align: center
+}
+.addTask .input {
+    display: flex;
+}
+.addTask .input textarea{
+    margin:0px 20px;
+    flex-grow: 1;
+}
+
+.addTask .hint {
+    vertical-align: top;
+}
+.addTask button {
+    float: right;
+    background: skyblue;
+    padding: 10px;
+    color:white;
+    font-size: 20px;
+}
+
+
+
+.item  {
+    padding: 20px;
+    background: yellowgreen;
+    border:1px solid goldenrod;
+    margin-top: -1px;
+}
+.item .del-button {
+    float: right;
+    margin-right: 20px;
+    visibility: hidden;
+    color:gray;
+    cursor: pointer;
+ }
+ .item.finished {
+     background: yellow;
+    text-decoration:line-through;
+ }
+ .item:hover .del-button {
+    visibility: visible;
+ }
+

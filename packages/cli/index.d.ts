@@ -1,7 +1,8 @@
 import webpack from 'webpack';
+import { validatePlatforms } from './config/config';
 export interface NanachiOptions {
     watch?: boolean;
-    platform?: string;
+    platform?: validatePlatforms;
     beta?: boolean;
     betaUi?: boolean;
     compress?: boolean;

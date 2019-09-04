@@ -8,41 +8,40 @@ import { Suspense } from "./Suspense";
 var LazyComponent = miniCreateClass(function LazyComponent(props, context) {
     this.props = props;
     this.context = context;
-    var promise = props.lazyFn();
+    this.state = {
+        component: null,
+        resolved: false
+    }
+    var promise = props.render();
     if(!promise || !isFn(promise.then)){
         throw "lazy必须返回一个thenable对象"
     }
-    var that = this
-    this.state = {
-        render: null,
-        resolve: false
-    }
-    promise.then(function(value){
-        that.setState({
-            render: value.default,
-            resolve:  true
+    promise.then( (value) =>
+        this.setState({
+            component: value.default,
+            resolved:  true
         })
-    })
+    )
    
 }, Component, {
-    getSuspense(){
-        var fiber = get(this)
-        while(fiber.return ){
-          if(fiber.return.type === Suspense){
-              return fiber.return.props.fallback
+    fallback(){//返回上层Suspense组件的fallback属性
+        var parent = Object(get(this)).return
+        while(parent){
+          if( parent.type === Suspense){
+              return parent.props.fallback
            }
-           fiber = fiber.return
+           parent = parent.return
         }
         throw "lazy组件必须包一个Suspense组件"
     },
-    render(){
-        return  this.state.resolve ? this.state.render() : this.getSuspense()
+    render: function f2(){
+        return this.state.resolved ? createElement(this.state.component) : this.fallback()
     }
 });
 function lazy(fn) {
     return function(){
         return createElement(LazyComponent, {
-            lazyFn: fn
+            render: fn
         })
     }
 }

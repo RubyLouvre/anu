@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2019-07-17
+ * by 司徒正美 Copyright 2019-08-20
  * IE9+
  */
 
@@ -580,8 +580,9 @@
         };
     }
     function forwardRef(fn) {
-        createRef.render = fn;
-        return createRef;
+        return function ForwardRefComponent(props) {
+            return fn(props, this.ref);
+        };
     }
 
     function AnuPortal(props) {
@@ -668,8 +669,11 @@
     }
 
     function setter(compute, cursor, value) {
-        this.updateQueue[cursor] = compute(cursor, value);
-        Renderer.updateComponent(this, true);
+        var _this = this;
+        Renderer.batchedUpdates(function () {
+            _this.updateQueue[cursor] = compute(cursor, value);
+            Renderer.updateComponent(_this, true);
+        });
     }
     var hookCursor = 0;
     function resetCursor() {
@@ -710,7 +714,7 @@
         var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
     }
-    function useCallbackImpl(create, deps, isMemo) {
+    function useCallbackImpl(create, deps, isMemo, isEffect) {
         var fiber = getCurrentFiber();
         var key = getCurrentKey();
         var updateQueue = fiber.updateQueue;
@@ -719,12 +723,24 @@
         if (prevState) {
             var prevInputs = prevState[1];
             if (areHookInputsEqual(nextInputs, prevInputs)) {
-                return;
+                return isEffect ? null : prevState[0];
             }
         }
-        var value = isMemo ? create() : create;
-        updateQueue[key] = [value, nextInputs];
-        return value;
+        var fn = isMemo ? create() : create;
+        updateQueue[key] = [fn, nextInputs];
+        return fn;
+    }
+    function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
+        var fiber = getCurrentFiber();
+        var updateQueue = fiber.updateQueue;
+        if (useCallbackImpl(create, deps, false, true)) {
+            if (fiber.effectTag % EffectTag) {
+                fiber.effectTag *= EffectTag;
+            }
+            var list = updateQueue[createList] || (updateQueue[createList] = []);
+            updateQueue[destroyList] || (updateQueue[destroyList] = []);
+            list.push(create);
+        }
     }
     function useRef(initValue) {
         var fiber = getCurrentFiber();
@@ -734,17 +750,6 @@
             return updateQueue[key];
         }
         return updateQueue[key] = { current: initValue };
-    }
-    function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
-        var fiber = getCurrentFiber();
-        var cb = useCallbackImpl(create, deps);
-        if (fiber.effectTag % EffectTag) {
-            fiber.effectTag *= EffectTag;
-        }
-        var updateQueue = fiber.updateQueue;
-        var list = updateQueue[createList] || (updateQueue[createList] = []);
-        updateQueue[destroyList] || (updateQueue[destroyList] = []);
-        list.push(cb);
     }
     function useImperativeHandle(ref, create, deps) {
         var nextInputs = Array.isArray(deps) ? deps.concat([ref]) : [ref, create];
@@ -820,42 +825,42 @@
     }
 
     var LazyComponent = miniCreateClass(function LazyComponent(props, context) {
+        var _this = this;
         this.props = props;
         this.context = context;
-        var promise = props.lazyFn();
+        this.state = {
+            component: null,
+            resolved: false
+        };
+        var promise = props.render();
         if (!promise || !isFn(promise.then)) {
             throw "lazy必须返回一个thenable对象";
         }
-        var that = this;
-        this.state = {
-            render: null,
-            resolve: false
-        };
         promise.then(function (value) {
-            that.setState({
-                render: value.default,
-                resolve: true
+            return _this.setState({
+                component: value.default,
+                resolved: true
             });
         });
     }, Component, {
-        getSuspense: function getSuspense() {
-            var fiber = get(this);
-            while (fiber.return) {
-                if (fiber.return.type === Suspense) {
-                    return fiber.return.props.fallback;
+        fallback: function fallback() {
+            var parent = Object(get(this)).return;
+            while (parent) {
+                if (parent.type === Suspense) {
+                    return parent.props.fallback;
                 }
-                fiber = fiber.return;
+                parent = parent.return;
             }
             throw "lazy组件必须包一个Suspense组件";
         },
-        render: function render() {
-            return this.state.resolve ? this.state.render() : this.getSuspense();
+        render: function f2() {
+            return this.state.resolved ? createElement(this.state.component) : this.fallback();
         }
     });
     function lazy(fn) {
         return function () {
             return createElement(LazyComponent, {
-                lazyFn: fn
+                render: fn
             });
         };
     }
@@ -1037,7 +1042,7 @@
                     syncValue(node, "checked", !!props.checked);
                 }
                 var isActive = node === node.ownerDocument.activeElement;
-                var value = isActive ? node.value : getSafeValue(props.value);
+                var value = getSafeValue(props.value);
                 if (value != null) {
                     if (props.type === "number") {
                         if (value === 0 && node.value === "" ||
@@ -1899,20 +1904,17 @@
                 extend(instance, {
                     __isStateless: true,
                     renderImpl: type,
-                    render: function f() {
+                    render: function f1() {
                         return this.renderImpl(this.props, this.context);
                     }
                 });
                 Renderer.currentOwner = instance;
-                if (type.render) {
-                    instance.render = function () {
-                        return type.render(this.props, this.ref);
-                    };
-                }
             } else {
                 instance = new type(props, context);
                 if (!(instance instanceof Component)) {
-                    throw type.name + ' doesn\'t extend React.Component';
+                    if (!instance.updater || !instance.updater.enqueueSetState) {
+                        throw type.name + ' doesn\'t extend React.Component';
+                    }
                 }
             }
         } finally {
@@ -2770,7 +2772,7 @@
             child: props.child
         };
     }, Component, {
-        render: function render() {
+        render: function f3() {
             return this.state.child;
         }
     });
@@ -3218,7 +3220,7 @@
             findDOMNode: findDOMNode,
             unmountComponentAtNode: unmountComponentAtNode,
             unstable_renderSubtreeIntoContainer: unstable_renderSubtreeIntoContainer,
-            version: '1.5.0',
+            version: '1.5.10',
             render: render$1,
             hydrate: render$1,
             unstable_batchedUpdates: DOMRenderer.batchedUpdates,

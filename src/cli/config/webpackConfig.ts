@@ -122,6 +122,14 @@ export default function({
                 nanachiStyleLoader,
                 prevLoaders)
         },
+        {
+            test: /\.(jpg|png|gif)$/,
+            loader: require.resolve('file-loader'),
+            options: {
+                outputPath: 'assets',
+                name: '[name].[hash:10].[ext]'
+            }
+        },
         rules);
     
     if (platform === 'quick') {
@@ -196,6 +204,9 @@ export default function({
             modules: [
                 path.join(process.cwd(), 'node_modules')
             ]
+        },
+        watchOptions: {
+            ignored: /node_modules|dist/
         },
         externals: platform === 'h5' ? ['react','@react','react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/] : []
         // performance: {

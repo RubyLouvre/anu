@@ -1,127 +1,101 @@
-const t = require('@babel/types');
-const generate = require('@babel/generator').default;
-const utils = require('../utils');
-const chalk = require('chalk');
-const { createElement, createAttribute } = utils;
-/**
- * 本模板将array.map(fn)变成<block wx:for="{{}}"></block>
- * 将if(xxx){}变成<block wx:if="{{xxx}}"></block>
- * 将xxx? aaa: bbb变成<block wx:if="aaa">aaa</block>
- * <block wx:if="!xxx">bbb</block>
- */
+"use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const t = __importStar(require("@babel/types"));
+const generator_1 = __importDefault(require("@babel/generator"));
+const utils_1 = __importDefault(require("../utils"));
+const chalk_1 = __importDefault(require("chalk"));
+const { createElement, createAttribute } = utils_1.default;
 const rexpr = /(^|[^\w.])this\./g;
-
 function parseExpr(node) {
-    return `{{${generate(node).code.replace(rexpr, '$1')}}}`;
+    return `{{${generator_1.default(node).code.replace(rexpr, '$1')}}}`;
 }
-
 function wrapText(node) {
     if (node.type !== 'JSXElement') {
-        return t.JSXText(parseExpr(node));
+        return t.jsxText(parseExpr(node));
     }
     return node;
 }
-
-module.exports = function createLogicHelper(prefix, keyName, hasDefaultKey){
+function createLogicHelper(prefix, keyName, hasDefaultKey) {
     function logic(expr, modules, isText) {
-        if (isText){
+        if (isText) {
             return [wrapText(expr)];
         }
-        // 处理条件指令
         if (t.isConditionalExpression(expr) || t.isIfStatement(expr)) {
             return condition(expr.test, expr.consequent, expr.alternate, modules);
-        } else if (t.isLogicalExpression(expr) && expr.operator === '&&') {
+        }
+        else if (t.isLogicalExpression(expr) && expr.operator === '&&') {
             return condition(expr.left, expr.right, null, modules);
-        } else if (
-            t.isCallExpression(expr) &&
-            expr.callee.property && expr.callee.property.name === 'map'
-        ) {
-            // 处理列表指令
+        }
+        else if (t.isCallExpression(expr) &&
+            expr.callee.property && expr.callee.property.name === 'map') {
             if (expr.arguments[0].type === 'ArrowFunctionExpression') {
-                
                 return loop(expr.callee, expr.arguments[0], modules);
-            } else if (
-                expr.arguments[0] &&
-                expr.arguments[0].type === 'FunctionExpression'
-            ) {
-               
-                return loop(expr.callee, expr.arguments[0], modules);
-            } else {
-                throw generate(expr.callee.object).code +
-                '.map 后面的必须跟匿名函数或一个函数调用';
             }
-        } else {
+            else if (expr.arguments[0] &&
+                expr.arguments[0].type === 'FunctionExpression') {
+                return loop(expr.callee, expr.arguments[0], modules);
+            }
+            else {
+                throw generator_1.default(expr.callee.object).code +
+                    '.map 后面的必须跟匿名函数或一个函数调用';
+            }
+        }
+        else {
             return [wrapText(expr)];
         }
     }
-    // 处理 test ? consequent: alternate 或 test && consequent
     function condition(test, consequent, alternate, modules) {
-        let ifNode = createElement(
-            'block',
-            [createAttribute(prefix+ 'if', parseExpr(test))],
-            logic(consequent, modules)
-        );
-        // null就不用创建一个<block>元素了，&&表达式也不需要创建<block>元素
+        let ifNode = createElement('block', [createAttribute(prefix + 'if', parseExpr(test))], logic(consequent, modules));
         if (alternate && alternate.type !== 'NullLiteral') {
-            // 如果存在if分支，那么就再包一层，一共三个block,
-            // <block><block wx:if /><block wx:else /></block>
-            let elseNode = createElement(
-                'block',
-                [createAttribute(prefix+'elif', 'true')],//elif
-                logic(alternate, modules)
-            );
+            let elseNode = createElement('block', [createAttribute(prefix + 'elif', 'true')], logic(alternate, modules));
             return [ifNode, elseNode];
         }
         return [ifNode];
     }
-    
-    // 处理 callee.map(fn)
     function loop(callee, fn, modules) {
         const attrs = [];
-        if (prefix){//其他小程序
-            attrs.push(createAttribute(prefix +'for', parseExpr(callee.object)));
-            attrs.push(createAttribute(prefix +'for-item', fn.params[0].name));
-            attrs.push(createAttribute(prefix +'for-index', fn.params[1].name));
-        } else { //快应用
+        if (prefix) {
+            attrs.push(createAttribute(prefix + 'for', parseExpr(callee.object)));
+            attrs.push(createAttribute(prefix + 'for-item', fn.params[0].name));
+            attrs.push(createAttribute(prefix + 'for-index', fn.params[1].name));
+        }
+        else {
             var forExpr = '(' + fn.params[1].name + ',' + fn.params[0].name + ') in ' + parseExpr(callee.object).slice(2, -2);
             attrs.push(createAttribute('for', forExpr));
         }
-       
         ;
         if (Object.keys(modules.key || {}).length) {
-            //快应用不生成key
-
-            //用于取到对应的 key
-            var calleeCode = generate(callee).code;
-            prefix &&  attrs.push( createAttribute(keyName, utils.genKey(modules.key[calleeCode])) );
-            
+            var calleeCode = generator_1.default(callee).code;
+            prefix && attrs.push(createAttribute(keyName, utils_1.default.genKey(modules.key[calleeCode])));
             delete modules.key[calleeCode];
-           // modules.key = null;
-        } else if (hasDefaultKey) {
+        }
+        else if (hasDefaultKey) {
             attrs.push(createAttribute(keyName, '*this'));
         }
-    
         const body = t.isBlockStatement(fn.body)
             ? fn.body.body.find(t.isReturnStatement)
             : fn.body;
-    
         if (body) {
-            // 循环内部存在循环或条件
-            let children = logic(
-                t.isBlockStatement(fn.body) ? body.argument : body,
-                modules
-            );
-    
+            let children = logic(t.isBlockStatement(fn.body) ? body.argument : body, modules);
             return [createElement('block', attrs, children)];
-    
-        } else {
-            // eslint-disable-next-line
-            console.log(
-                chalk`{cyan .map(fn)} 的函数中需要有 {cyan ReturnStatement}，在 ${
-                    generate(fn).code} 中未找到 {cyan ReturnStatement}`
-            );
+        }
+        else {
+            console.log(chalk_1.default `{cyan .map(fn)} 的函数中需要有 {cyan ReturnStatement}，在 ${generator_1.default(fn).code} 中未找到 {cyan ReturnStatement}`);
             throw new Error('Parse error');
         }
     }
-    return logic;    
-};
+    return logic;
+}
+;
+module.exports = createLogicHelper;
+exports.default = createLogicHelper;

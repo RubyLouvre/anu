@@ -19,7 +19,6 @@ import { Fragment, getWindow, miniCreateClass, noop } from 'react-core/util';
 //import { dispatchEvent, webview } from './eventSystem';
 import { DOMRenderer} from '../dom/DOMRenderer';
 
-
 // import { toStyle } from './toStyle';
 import { 
     _getApp , 
@@ -96,6 +95,7 @@ let React = (getWindow().React = {
     useContext,
     useComponent,
     createRef,
+    forwardRef,
     cloneElement,
     appType: 'h5',
     __app: {},
@@ -112,21 +112,21 @@ let React = (getWindow().React = {
 });
 
 function router({url, success, fail, complete}) {
-    var [path, query] = getQuery(url);
-    var appInstance = React.__app;
-    var appConfig = appInstance.constructor.config;
+    const [path, query] = getQuery(url);
+    const appInstance = React.__app;
+    const appConfig = appInstance.constructor.config;
     if (appConfig.pages.indexOf(path) === -1){
         throw "没有注册该页面: "+ path;
     }
     if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
-    var pageClass = React.__pages[path];
+    const pageClass = React.__pages[path];
     __currentPages.forEach((page, index, self) => {
         self[index] = React.cloneElement(self[index], {
             show: false
         });
     });
-    var pageInstance = React.createElement(pageClass, {
-        isTabPage: false,
+    const pageInstance = React.createElement(pageClass, {
+        isTabPage: React.__isTab(path),
         path,
         query,
         url,
@@ -181,7 +181,7 @@ let apiContainer = {
                 __currentPages.pop();
                 delta--;
             }
-            let { path, query } = __currentPages[__currentPages.length - 1].props;
+            const { path, query } = __currentPages[__currentPages.length - 1].props;
             React.api.redirectTo({url: path + parseObj2Query(query), success, fail, complete});
         }, 300);
     },
