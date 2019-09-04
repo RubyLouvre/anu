@@ -1,0 +1,21 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+
+version: 2
+jobs:
+  build:
+    working_directory: ~/anu/packages/cli
+    docker:
+      - image: circleci/node:8.10.0
+    branches:
+      only:
+        - branch3
+    steps:
+      - checkout
+      - run:
+          name: install npm package
+          command: npm install
+      - run:
+          name: test
