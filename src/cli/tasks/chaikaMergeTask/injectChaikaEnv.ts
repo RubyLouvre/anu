@@ -14,7 +14,7 @@ function injectChaikEnv(){
     let chaikaMode = pkg.nanachi && pkg.nanachi.chaika_mode
         ? 'CHAIK_MODE'
         : 'NOT_CHAIK_MODE';
-    process.env.NANACHI_CHAIK_MODE = chaikaMode;
+    process.env.NANACHI_CHAIK_MODE = process.env.NANACHI_CHAIK_MODE || chaikaMode;
 }
 
 injectChaikEnv();
