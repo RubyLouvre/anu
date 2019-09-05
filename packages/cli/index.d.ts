@@ -10,11 +10,15 @@ export interface NanachiOptions {
     huawei?: boolean;
     rules?: Array<webpack.Rule>;
     prevLoaders?: Array<string>;
+    prevJsLoaders?: Array<string>;
+    postJsLoaders?: Array<string>;
+    prevCssLoaders?: Array<string>;
+    postCssLoaders?: Array<string>;
     postLoaders?: Array<string>;
     plugins?: Array<webpack.Plugin>;
     analysis?: boolean;
     silent?: boolean;
     complete?: Function;
 }
-declare function nanachi({ watch, platform, beta, betaUi, compress, compressOption, huawei, rules, prevLoaders, postLoaders, plugins, analysis, silent, complete }?: NanachiOptions): Promise<void>;
+declare function nanachi({ watch, platform, beta, betaUi, compress, compressOption, huawei, rules, prevLoaders, postLoaders, prevJsLoaders, postJsLoaders, prevCssLoaders, postCssLoaders, plugins, analysis, silent, complete }?: NanachiOptions): Promise<void>;
 export default nanachi;

@@ -36,6 +36,10 @@ export default function({
     analysis,
     prevLoaders, // 自定义预处理loaders
     postLoaders, // 自定义后处理loaders
+    prevJsLoaders,
+    postJsLoaders,
+    prevCssLoaders,
+    postCssLoaders,
     // maxAssetSize // 资源大小限制，超出后报warning
 }: NanachiOptions): webpack.Configuration {
     
@@ -90,6 +94,7 @@ export default function({
             use: [].concat(
                 fileLoader, 
                 postLoaders, 
+                postJsLoaders,
                 platform !== 'h5' ? aliasLoader: [], 
                 nanachiLoader,
                 {
@@ -101,6 +106,7 @@ export default function({
                         useEslintrc: false // 不使用用户自定义eslintrc配置
                     }
                 },
+                prevJsLoaders,
                 prevLoaders ) ,
             exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,
         },
@@ -118,8 +124,10 @@ export default function({
             use: [].concat(
                 fileLoader, 
                 postLoaders, 
+                postCssLoaders,
                 platform !== 'h5' ? aliasLoader : [], 
                 nanachiStyleLoader,
+                prevCssLoaders,
                 prevLoaders)
         },
         {

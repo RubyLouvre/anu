@@ -23,6 +23,10 @@ export interface NanachiOptions {
     huawei?: boolean;
     rules?: Array<webpack.Rule>;
     prevLoaders?: Array<string>;
+    prevJsLoaders?: Array<string>;
+    postJsLoaders?: Array<string>;
+    prevCssLoaders?: Array<string>;
+    postCssLoaders?: Array<string>;
     postLoaders?: Array<string>;
     plugins?: Array<webpack.Plugin>;
     analysis?: boolean;
@@ -42,6 +46,10 @@ async function nanachi({
     rules = [],
     prevLoaders = [], // 自定义预处理loaders
     postLoaders = [], // 自定义后处理loaders
+    prevJsLoaders = [],
+    postJsLoaders = [],
+    prevCssLoaders = [],
+    postCssLoaders = [],
     plugins = [],
     analysis = false,
     silent = false, // 是否显示warning
@@ -142,6 +150,10 @@ async function nanachi({
             analysis,
             prevLoaders,
             postLoaders,
+            prevJsLoaders,
+            postJsLoaders,
+            prevCssLoaders,
+            postCssLoaders,
             rules,
             huawei
             // maxAssetSize
