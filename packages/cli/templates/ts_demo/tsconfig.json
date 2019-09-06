@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "jsx": "react",
+        "paths": {
+            "@react": [
+                "source/ReactWX.js",
+                "source/ReactAli.js",
+                "source/ReactBu.js",
+                "source/ReactQuick.js",
+                "source/ReactH5.js"
+            ]
+        },
+        "module": "es6",
+        "target": "es6"
+    }
+}
