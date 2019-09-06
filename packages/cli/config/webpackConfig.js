@@ -25,7 +25,7 @@ const nodeLoader = require.resolve('../nanachi-loader/loaders/nodeLoader');
 const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 const nanachiStyleLoader = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
 const cwd = process.cwd();
-function default_1({ platform, compress, compressOption, plugins, rules, huawei, analysis, prevLoaders, postLoaders, prevJsLoaders, postJsLoaders, prevCssLoaders, postCssLoaders, }) {
+function default_1({ platform, compress, compressOption, plugins, rules, huawei, analysis, typescript, prevLoaders, postLoaders, prevJsLoaders, postJsLoaders, prevCssLoaders, postCssLoaders, }) {
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
     let distPath = path.resolve(cwd, utils.getDistName(platform));
     if (platform === 'h5') {
@@ -47,15 +47,15 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
             use: [].concat(fileLoader, postLoaders, aliasLoader, nodeLoader)
         }];
     const copyAssetsRules = [Object.assign({ from: '**', to: 'assets', context: 'source/assets', ignore: [
-                '**/*.@(js|jsx|json|sass|scss|less|css)'
+                '**/*.@(js|jsx|json|sass|scss|less|css|ts|tsx)'
             ] }, copyPluginOption)];
     const mergePlugins = [].concat(new chaikaPlugin_1.default(), analysis ? new sizePlugin_1.default() : [], new plugin_1.default({
         platform,
         compress
     }), new copy_webpack_plugin_1.default(copyAssetsRules), plugins);
     const mergeRule = [].concat({
-        test: /\.jsx?$/,
-        use: [].concat(fileLoader, postLoaders, postJsLoaders, platform !== 'h5' ? aliasLoader : [], nanachiLoader, {
+        test: /\.[jt]sx?$/,
+        use: [].concat(fileLoader, postLoaders, postJsLoaders, platform !== 'h5' ? aliasLoader : [], nanachiLoader, typescript ? require.resolve('ts-loader') : [], {
             loader: require.resolve('eslint-loader'),
             options: {
                 configFile: require.resolve(`./eslint/.eslintrc-${platform}.js`),
@@ -110,9 +110,13 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         catch (err) {
         }
     }
-    const entry = process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+    let entry = process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
         ? path.join(cwd, '.CACHE/nanachi/source/app')
         : path.join(cwd, 'source/app');
+    if (typescript) {
+        entry += '.ts';
+    }
+    ;
     return {
         entry: entry,
         mode: 'development',
@@ -126,6 +130,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         plugins: mergePlugins,
         resolve: {
             alias: aliasMap,
+            extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
             mainFields: ['main'],
             symlinks: true,
             modules: [

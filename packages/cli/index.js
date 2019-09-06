@@ -31,8 +31,9 @@ const index_2 = __importDefault(require("./packages/utils/index"));
 const config_1 = __importDefault(require("./config/config"));
 const runBeforeParseTasks_1 = __importDefault(require("./tasks/runBeforeParseTasks"));
 const createH5Server_1 = __importDefault(require("./tasks/createH5Server"));
-function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, rules = [], prevLoaders = [], postLoaders = [], prevJsLoaders = [], postJsLoaders = [], prevCssLoaders = [], postCssLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = {}) {
+function nanachi(options = {}) {
     return __awaiter(this, void 0, void 0, function* () {
+        const { watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, typescript = false, rules = [], prevLoaders = [], postLoaders = [], prevJsLoaders = [], postJsLoaders = [], prevCssLoaders = [], postCssLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = options;
         function callback(err, stats) {
             if (err) {
                 console.log(err);
@@ -110,6 +111,7 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
                 beta,
                 betaUi,
                 plugins,
+                typescript,
                 analysis,
                 prevLoaders,
                 postLoaders,

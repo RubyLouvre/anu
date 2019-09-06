@@ -12,7 +12,7 @@ interface BulidOptions {
 
 export default async function(args: BulidOptions){
     try {
-        const { buildType, beta, betaUi, watch, compress, huawei, analysis, silent} = args;
+        const { buildType, beta, betaUi, watch, compress, huawei, analysis, silent, typescript} = args;
         const nanachiConfig = {};
         const baseConfig = {
             platform: buildType,
@@ -22,7 +22,8 @@ export default async function(args: BulidOptions){
             watch,
             huawei,
             analysis,
-            silent
+            silent,
+            typescript
         };
         // 合并nanachi.config.js中的用户自定义配置
         if (fs.existsSync(NANACHI_CONFIG_PATH)) {

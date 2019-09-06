@@ -18,7 +18,7 @@ const config = webpack_merge_1.default(webpack_config_base_1.default, {
     module: {
         rules: [
             {
-                test: /\.jsx?$/,
+                test: /\.[jt]sx?$/,
                 loader: require.resolve('babel-loader'),
                 options: {
                     exclude: [/node_modules/],

@@ -20,6 +20,7 @@ export interface NanachiOptions {
     betaUi?: boolean;
     compress?: boolean;
     compressOption?: any;
+    typescript?: boolean;
     huawei?: boolean;
     rules?: Array<webpack.Rule>;
     prevLoaders?: Array<string>;
@@ -34,28 +35,30 @@ export interface NanachiOptions {
     complete?: Function;
 }
 
-async function nanachi({
-    // entry = './source/app', // TODO: 入口文件配置暂时不支持
-    watch = false,
-    platform = 'wx',
-    beta = false,
-    betaUi = false,
-    compress = false,
-    compressOption = {},
-    huawei = false,
-    rules = [],
-    prevLoaders = [], // 自定义预处理loaders
-    postLoaders = [], // 自定义后处理loaders
-    prevJsLoaders = [],
-    postJsLoaders = [],
-    prevCssLoaders = [],
-    postCssLoaders = [],
-    plugins = [],
-    analysis = false,
-    silent = false, // 是否显示warning
-    // maxAssetSize = 20480, // 最大资源限制，超出报warning
-    complete = () => { }
-}: NanachiOptions = {}) {
+async function nanachi(options: NanachiOptions = {}) {
+    const {
+        // entry = './source/app', // TODO: 入口文件配置暂时不支持
+        watch = false,
+        platform = 'wx',
+        beta = false,
+        betaUi = false,
+        compress = false,
+        compressOption = {},
+        huawei = false,
+        typescript = false,
+        rules = [],
+        prevLoaders = [], // 自定义预处理loaders
+        postLoaders = [], // 自定义后处理loaders
+        prevJsLoaders = [],
+        postJsLoaders = [],
+        prevCssLoaders = [],
+        postCssLoaders = [],
+        plugins = [],
+        analysis = false,
+        silent = false, // 是否显示warning
+        // maxAssetSize = 20480, // 最大资源限制，超出报warning
+        complete = () => { }
+    } = options;
     function callback(err: Error, stats?: webpack.Stats) {
         if (err) {
             // eslint-disable-next-line
@@ -147,6 +150,7 @@ async function nanachi({
             beta,
             betaUi,
             plugins,
+            typescript,
             analysis,
             prevLoaders,
             postLoaders,
@@ -158,7 +162,6 @@ async function nanachi({
             huawei
             // maxAssetSize
         });
-
         const compiler = webpack(webpackConfig);
 
         if (watch) {
