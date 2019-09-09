@@ -51,6 +51,7 @@ import { share } from './share';
 import { createCanvasContext } from './canvas.js';
 
 import { pay, getProvider, wxpayGetType, wxpay, alipay} from './pay.js';
+import {accountGetProvider, accountAuthorize} from './account.js';
 function stopPullDownRefresh({success, fail, complete } = {}) {
     // 停止刷新没有作用
     runCallbacks(Number, success, fail, complete );
@@ -140,6 +141,8 @@ export function more(){
         wxpay, 
         alipay,
         getDeviceId,
-        getUserId
+        getUserId,
+        accountGetProvider, 
+        accountAuthorize
     };
 } 
