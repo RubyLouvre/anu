@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-08-29
+ * 运行于快应用的React by 司徒正美 Copyright 2019-09-09
  */
 
 var arrayPush = Array.prototype.push;
@@ -1528,6 +1528,14 @@ function alipay(obj) {
     alipayAPI.pay(obj);
 }
 
+var account = require('@service.account');
+function accountGetProvider() {
+    return account.getProvider();
+}
+function accountAuthorize(options) {
+    return account.authorize(options);
+}
+
 function stopPullDownRefresh() {
     var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
         success = _ref.success,
@@ -1604,7 +1612,9 @@ function more() {
         wxpay: wxpay,
         alipay: alipay,
         getDeviceId: getDeviceId,
-        getUserId: getUserId
+        getUserId: getUserId,
+        accountGetProvider: accountGetProvider,
+        accountAuthorize: accountAuthorize
     };
 }
 
