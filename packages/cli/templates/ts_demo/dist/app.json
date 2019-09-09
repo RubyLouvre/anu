@@ -1,0 +1,11 @@
+{
+    "window": {
+        "navigationBarBackgroundColor": "#00afc7",
+        "backgroundTextStyle": "light",
+        "navigationBarTitleText": "nanachi",
+        "navigationBarTextStyle": "white"
+    },
+    "pages": [
+        "pages/index/index"
+    ]
+}

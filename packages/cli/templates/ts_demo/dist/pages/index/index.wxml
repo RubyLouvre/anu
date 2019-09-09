@@ -1,0 +1,8 @@
+
+    <view class="page">
+        <block>
+            <anu-layout data-instance-uid="{{'i18_16_' + 0}}">
+                <anu-anothercomponent data-instance-uid="{{'i19_20_' + 0}}" />
+            </anu-layout>
+        </block>
+    </view>

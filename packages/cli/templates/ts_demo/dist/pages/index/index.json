@@ -1,0 +1,6 @@
+{
+    "usingComponents": {
+        "anu-layout": "/components/Layout/index",
+        "anu-anothercomponent": "/components/AnotherComponent/index"
+    }
+}

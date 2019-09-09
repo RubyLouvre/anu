@@ -1,0 +1,4 @@
+
+    <view style="{{props['style517'] }}">
+        <slot />
+    </view>
