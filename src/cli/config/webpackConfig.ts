@@ -97,7 +97,6 @@ export default function({
                 postJsLoaders,
                 platform !== 'h5' ? aliasLoader: [], 
                 nanachiLoader,
-                typescript ? require.resolve('ts-loader') : [],
                 {
                     loader: require.resolve('eslint-loader'),
                     options: {
@@ -107,6 +106,7 @@ export default function({
                         useEslintrc: false // 不使用用户自定义eslintrc配置
                     }
                 },
+                typescript ? require.resolve('ts-loader') : [],
                 prevJsLoaders,
                 prevLoaders ) ,
             exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,

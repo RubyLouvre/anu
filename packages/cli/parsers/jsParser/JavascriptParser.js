@@ -62,7 +62,7 @@ class JavascriptParser {
     }
     parse() {
         return __awaiter(this, void 0, void 0, function* () {
-            const res = yield babel.transformFileAsync(this.filepath, this._babelPlugin);
+            const res = yield babel.transformAsync(this.code, Object.assign({}, this._babelPlugin, { filename: this.filepath }));
             this.extraModules = res.options.anu && res.options.anu.extraModules || this.extraModules;
             this.parsedCode = res.code;
             this.ast = res.ast;

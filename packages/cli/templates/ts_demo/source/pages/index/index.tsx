@@ -16,7 +16,7 @@ class P extends React.Component {
         return (<div class="page" >
             <GlobalTheme.Provider value={this.state.anyVar} >
                 <Layout>
-                    <AnotherComponent />
+                    <AnotherComponent text='Hello Typescript!' />
                 </Layout>
             </GlobalTheme.Provider>
         </div>

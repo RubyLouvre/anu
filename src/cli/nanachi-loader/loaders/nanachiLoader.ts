@@ -17,7 +17,6 @@ export interface NanachiLoaderStruct {
 
 module.exports = async function(code: string, map: any, meta: any) {
     const callback = this.async();
-
     try {
         const parser = JavascriptParserFactory.create({
             platform: this.nanachiOptions.platform,

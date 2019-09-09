@@ -55,7 +55,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
     }), new copy_webpack_plugin_1.default(copyAssetsRules), plugins);
     const mergeRule = [].concat({
         test: /\.[jt]sx?$/,
-        use: [].concat(fileLoader, postLoaders, postJsLoaders, platform !== 'h5' ? aliasLoader : [], nanachiLoader, typescript ? require.resolve('ts-loader') : [], {
+        use: [].concat(fileLoader, postLoaders, postJsLoaders, platform !== 'h5' ? aliasLoader : [], nanachiLoader, {
             loader: require.resolve('eslint-loader'),
             options: {
                 configFile: require.resolve(`./eslint/.eslintrc-${platform}.js`),
@@ -63,7 +63,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
                 allowInlineConfig: false,
                 useEslintrc: false
             }
-        }, prevJsLoaders, prevLoaders),
+        }, typescript ? require.resolve('ts-loader') : [], prevJsLoaders, prevLoaders),
         exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,
     }, platform !== 'h5' ? nodeRules : [], {
         test: /React\w+/,

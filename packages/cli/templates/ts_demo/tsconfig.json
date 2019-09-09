@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "baseUrl": ".",
-        "jsx": "react",
+        "jsx": "preserve",
         "paths": {
             "@react": [
                 "source/ReactWX.js",
