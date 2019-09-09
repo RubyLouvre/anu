@@ -1,7 +1,8 @@
 import React from '@react';
 import './pages/index/index';
 
-declare var App: any;
+declare let App: any;
+declare let global: any;
 
 class Global extends React.Component {
     globalData = {}
