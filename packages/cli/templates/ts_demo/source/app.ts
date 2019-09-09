@@ -1,7 +1,12 @@
 import React from '@react';
 import './pages/index/index';
+
+declare var App: any;
+
 class Global extends React.Component {
     globalData = {}
+    $data?: any;
+    $def?: any;
     static config = {
         window: {
             navigationBarBackgroundColor: '#00afc7',

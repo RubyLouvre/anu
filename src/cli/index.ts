@@ -1,5 +1,6 @@
 import webpack from 'webpack';
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import platforms from './consts/platforms';
 import { build as buildLog, Log, warning, error } from './packages/utils/logger/queue';
 import { errorLog, warningLog } from './packages/utils/logger/index';
@@ -127,7 +128,12 @@ async function nanachi(options: NanachiOptions = {}) {
         if (!utils.validatePlatform(platform, platforms)) {
             throw new Error(`不支持的platform：${platform}`);
         }
-
+        // 是否使用typescript编译
+        const useTs = fs.existsSync(path.resolve(process.cwd(), './source/app.ts'));
+        if (useTs && !typescript) {
+            throw '检测到app.ts，请使用typescript模式编译(-t/--typescript)';
+        }
+        
         injectBuildEnv({
             platform,
             compress,

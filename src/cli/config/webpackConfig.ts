@@ -97,16 +97,16 @@ export default function({
                 postJsLoaders,
                 platform !== 'h5' ? aliasLoader: [], 
                 nanachiLoader,
+                // {
+                //     loader: require.resolve('eslint-loader'),
+                //     options: {
+                //         configFile: require.resolve(`./eslint/.eslintrc-${platform}.js`),
+                //         failOnError: utils.isMportalEnv(),
+                //         allowInlineConfig: false, // 不允许使用注释配置eslint规则
+                //         useEslintrc: false // 不使用用户自定义eslintrc配置
+                //     }
+                // },
                 typescript ? require.resolve('ts-loader') : [],
-                {
-                    loader: require.resolve('eslint-loader'),
-                    options: {
-                        configFile: require.resolve(`./eslint/.eslintrc-${platform}.js`),
-                        failOnError: utils.isMportalEnv(),
-                        allowInlineConfig: false, // 不允许使用注释配置eslint规则
-                        useEslintrc: false // 不使用用户自定义eslintrc配置
-                    }
-                },
                 prevJsLoaders,
                 prevLoaders ) ,
             exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,

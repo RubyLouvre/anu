@@ -20,6 +20,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const webpack_1 = __importDefault(require("webpack"));
 const path = __importStar(require("path"));
+const fs = __importStar(require("fs-extra"));
 const platforms_1 = __importDefault(require("./consts/platforms"));
 const queue_1 = require("./packages/utils/logger/queue");
 const index_1 = require("./packages/utils/logger/index");
@@ -93,6 +94,10 @@ function nanachi(options = {}) {
         try {
             if (!index_2.default.validatePlatform(platform, platforms_1.default)) {
                 throw new Error(`不支持的platform：${platform}`);
+            }
+            const useTs = fs.existsSync(path.resolve(process.cwd(), './source/app.ts'));
+            if (useTs && !typescript) {
+                throw '检测到app.ts，请使用typescript模式编译(-t/--typescript)';
             }
             injectBuildEnv({
                 platform,
