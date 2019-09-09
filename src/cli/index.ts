@@ -63,7 +63,7 @@ async function nanachi(options: NanachiOptions = {}) {
     function callback(err: Error, stats?: webpack.Stats) {
         if (err) {
             // eslint-disable-next-line
-            console.log(err);
+            console.log(chalk.red(err.toString()));
             return;
         }
        

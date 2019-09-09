@@ -37,7 +37,7 @@ function nanachi(options = {}) {
         const { watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, typescript = false, rules = [], prevLoaders = [], postLoaders = [], prevJsLoaders = [], postJsLoaders = [], prevCssLoaders = [], postCssLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = options;
         function callback(err, stats) {
             if (err) {
-                console.log(err);
+                console.log(chalk_1.default.red(err.toString()));
                 return;
             }
             showLog();
