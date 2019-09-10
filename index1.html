@@ -1,41 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Document</title>
-  <!--<script src="https://unpkg.com/anujs@1.5.6/dist/React.js"></script>-->
-  <script src="./dist/ReactIE.js"></script>
-  <script>
-      console.log('...............')
-      window.onload = function(){
-/*
-     
-        function App(){
-            this.state = {
-                value: ""
-            }
-            console.log("xxxx")
-            var that = this
-            this.onChange = function(e) {
-                var value = e.target.value;
-                thast.setState({value: value})
-            }
-        }
-        var h = React.createElement;
-         App =  React.miniCreateClass(App,{     
-            render: function(){
-                return h("div", null, h("input", {type: 'number',value: this.state.value.toUpperCase(), onChange: this.onChange}), this.state.value.toUpperCase())
-            }
-        },{})
-console.log(App)
+    <head>
+        <meta charset="UTF-8" />
+        <title>Document</title>
+        <script type="text/javascript" src="./dist/React.js"></script>
+        <!--
+        <script src="https://cdn.bootcss.com/react/16.9.0-rc.0/umd/react.development.js"></script>-
+        <script src="https://cdn.bootcss.com/react-dom/16.9.0-alpha.0/umd/react-dom.development.js"></script>
+        -->
 
-ReactDOM.render(h(App), document.getElementById('root'))
-*/
-      }
- 
-  </script>
-</head>
-<body>
-  <div id="root"></div>
-</body>
+        <script type="text/javascript" src="./lib/babel.js"></script>
+    </head>
+    <body>
+        <div id="app"></div>
+        <script>
+            function App() {
+                const [data, setData] = React.useState([]);
+
+                React.useEffect(() => {
+                    setTimeout(() => {
+                        console.log(111);
+                        setData([1, 2, 3, 4]);
+                    }, 300);
+                }, [1, 2]);
+
+                if (data.length > 2) {
+                    data.length = 2;
+                    setData(data);
+                }
+
+                return "hello world";
+            }
+            window.onload = function() {
+                ReactDOM.render(
+                    React.createElement(App),
+                    document.getElementById("app")
+                );
+            };
+        </script>
+    </body>
 </html>
