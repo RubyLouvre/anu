@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-08-29
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-10
  */
 
 var arrayPush = Array.prototype.push;
@@ -621,7 +621,6 @@ function callGlobalHook(method, e) {
         return app[method](e);
     }
 }
-var delayMounts = [];
 var usingComponents = [];
 var registeredComponents = {};
 function getCurrentPage() {
@@ -650,28 +649,33 @@ function updateMiniApp(instance) {
         updateQuickApp(instance.wx, data);
     }
 }
-function refreshComponent(reactInstances, wx, uuid) {
+function refreshComponent(instances, wx, uuid) {
     if (wx.disposed) {
         return;
     }
     var pagePath = Object(_getApp()).$$pagePath;
-    for (var i = 0, n = reactInstances.length; i < n; i++) {
-        var reactInstance = reactInstances[i];
-        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-            var fiber = get(reactInstance);
+    for (var i = 0, n = instances.length; i < n; i++) {
+        var instance = instances[i];
+        if (instance.$$pagePath === pagePath && !instance.wx && instance.instanceUid === uuid) {
+            var fiber = get(instance);
             if (fiber.disposed) {
                 console.log("fiber.disposed by nanachi");
                 continue;
             }
             if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
-                reactInstance = fiber.child.stateNode;
+                instance = fiber.child.stateNode;
             } else {
-                reactInstance = getWrappedComponent(fiber, reactInstance);
+                instance = getWrappedComponent(fiber, instance);
             }
-            reactInstance.wx = wx;
-            wx.reactInstance = reactInstance;
-            updateMiniApp(reactInstance);
-            return reactInstances.splice(i, 1);
+            instance.wx = wx;
+            wx.reactInstance = instance;
+            updateMiniApp(instance);
+            if (instance.$$componentDidMount) {
+                instance.$$componentDidMount();
+                instance.componentDidMount = instance.$$componentDidMount;
+                delete instance.$$componentDidMount;
+            }
+            return instances.splice(i, 1);
         }
     }
 }
@@ -680,7 +684,7 @@ function detachComponent() {
     this.disposed = true;
     if (t) {
         t.wx = null;
-        this.reactInstance = null;
+        this.instance = null;
     }
 }
 function updateQuickApp(quick, data) {
@@ -2112,15 +2116,10 @@ var Renderer$1 = createRenderer({
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
+                    instance.$$componentDidMount = instance.componentDidMount;
+                    instance.componentDidMount = null;
                 }
             }
-        }
-        if (!app.$$pageIsReady && instance.componentDidMount) {
-            delayMounts.push({
-                instance: instance,
-                fn: instance.componentDidMount
-            });
-            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -2698,11 +2697,6 @@ function onLoad(PageClass, path, query) {
 function onReady() {
     var app = _getApp();
     app.$$pageIsReady = true;
-    var el = void 0;
-    while (el = delayMounts.pop()) {
-        el.fn.call(el.instance);
-        el.instance.componentDidMount = el.fn;
-    }
     callGlobalHook("onGlobalReady");
 }
 function onUnload() {

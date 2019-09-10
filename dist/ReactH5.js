@@ -1,14 +1,13 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-08-29T06
+ * 运行于webview的React by 司徒正美 Copyright 2019-09-10T03
  * IE9+
  */
 
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('clipboard'), require('@react'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
-    typeof define === 'function' && define.amd ? define(['clipboard', '@react', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
-    (global.React = factory(global.Clipboard,global.React$1,global.axios,global.qs,global.MobileDetect,global.io));
-}(this, (function (Clipboard,React$1,axios,qs,MobileDetect,io) {
-    Clipboard = Clipboard && Clipboard.hasOwnProperty('default') ? Clipboard['default'] : Clipboard;
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('@react'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
+    typeof define === 'function' && define.amd ? define(['@react', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
+    (global.React = factory(global.React$1,global.axios,global.qs,global.MobileDetect,global.io));
+}(this, (function (React$1,axios,qs,MobileDetect,io) {
     React$1 = React$1 && React$1.hasOwnProperty('default') ? React$1['default'] : React$1;
     axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
     qs = qs && qs.hasOwnProperty('default') ? qs['default'] : qs;
@@ -3121,28 +3120,33 @@
             updateQuickApp(instance.wx, data);
         }
     }
-    function refreshComponent(reactInstances, wx, uuid) {
+    function refreshComponent(instances, wx, uuid) {
         if (wx.disposed) {
             return;
         }
         var pagePath = Object(_getApp()).$$pagePath;
-        for (var i = 0, n = reactInstances.length; i < n; i++) {
-            var reactInstance = reactInstances[i];
-            if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-                var fiber = get(reactInstance);
+        for (var i = 0, n = instances.length; i < n; i++) {
+            var instance = instances[i];
+            if (instance.$$pagePath === pagePath && !instance.wx && instance.instanceUid === uuid) {
+                var fiber = get(instance);
                 if (fiber.disposed) {
                     console.log("fiber.disposed by nanachi");
                     continue;
                 }
                 if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
-                    reactInstance = fiber.child.stateNode;
+                    instance = fiber.child.stateNode;
                 } else {
-                    reactInstance = getWrappedComponent(fiber, reactInstance);
+                    instance = getWrappedComponent(fiber, instance);
                 }
-                reactInstance.wx = wx;
-                wx.reactInstance = reactInstance;
-                updateMiniApp(reactInstance);
-                return reactInstances.splice(i, 1);
+                instance.wx = wx;
+                wx.reactInstance = instance;
+                updateMiniApp(instance);
+                if (instance.$$componentDidMount) {
+                    instance.$$componentDidMount();
+                    instance.componentDidMount = instance.$$componentDidMount;
+                    delete instance.$$componentDidMount;
+                }
+                return instances.splice(i, 1);
             }
         }
     }
@@ -3151,7 +3155,7 @@
         this.disposed = true;
         if (t) {
             t.wx = null;
-            this.reactInstance = null;
+            this.instance = null;
         }
     }
     function updateQuickApp(quick, data) {
@@ -3786,35 +3790,42 @@
         canvasToTempFilePath: canvasToTempFilePath
     };
 
-    function setClipboardData() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return new Promise(function (resolve, reject) {
-        var _options$data = options.data,
-            data = _options$data === undefined ? '' : _options$data,
-            _options$success = options.success,
-            success = _options$success === undefined ? function () {} : _options$success,
-            _options$fail = options.fail,
-            fail = _options$fail === undefined ? function () {} : _options$fail,
-            _options$complete = options.complete,
-            complete = _options$complete === undefined ? function () {} : _options$complete;
+    function coolieMethod(input, success, fail, complete, method, msg) {
         try {
-          var aux = document.createElement('input');
-          aux.setAttribute('data-clipboard-text', data);
-          new Clipboard(aux);
-          aux.click();
-          handleSuccess({
-            errMsg: 'setClipboardData success',
-            data: data
-          }, success, complete, resolve);
+            return navigator.clipboard[method](input).then(function (data) {
+                var ok = {
+                    errMsg: msg,
+                    data: data
+                };
+                handleSuccess(ok, success, complete);
+            }).catch(function (e) {
+                var ng = { data: null, errMsg: e };
+                handleFail(ng, fail, complete);
+            });
         } catch (e) {
-          handleFail({
-            errMsg: e
-          }, fail, complete, reject);
+            return Promise.reject({
+                data: null, errMsg: e
+            }).catch(function (reason) {
+                handleFail(reason, fail, complete);
+            });
         }
-      });
+    }
+    function setClipboardData(_ref) {
+        var data = _ref.data,
+            success = _ref.success,
+            fail = _ref.fail,
+            complete = _ref.complete;
+        return coolieMethod(data, success, fail, complete, "writeText", 'setClipboardData:ok');
+    }
+    function getClipboardData(_ref2) {
+        var success = _ref2.success,
+            fail = _ref2.fail,
+            complete = _ref2.complete;
+        return coolieMethod(null, success, fail, complete, "readText", 'getClipboardData:ok');
     }
     var clipboard = {
-      setClipboardData: setClipboardData
+        getClipboardData: getClipboardData,
+        setClipboardData: setClipboardData
     };
 
     var file = {};

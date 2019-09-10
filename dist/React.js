@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2019-08-20
+ * by 司徒正美 Copyright 2019-09-10
  * IE9+
  */
 
