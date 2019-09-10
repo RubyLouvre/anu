@@ -1,5 +1,6 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-09-10
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-29T06
+ * IE9+
  */
 
 var arrayPush = Array.prototype.push;
@@ -594,1034 +595,6 @@ function createContext(defaultValue, calculateChangedBits) {
     return getContext;
 }
 
-function getDataSetFromAttr(obj) {
-    var ret = {};
-    for (var name in obj) {
-        if (name.slice(0, 4) == 'data') {
-            var key = toLowerCase(name[4]) + name.slice(5);
-            ret[key] = obj[name];
-        }
-    }
-    return ret;
-}
-var beaconType = /click|tap|change|blur|input/i;
-function dispatchEvent(e) {
-    var instance = this.reactInstance;
-    if (!instance || !instance.$$eventCached) {
-        return;
-    }
-    var eventType = toLowerCase(e._type || e.type);
-    var target = e.currentTarget || e.target;
-    var dataset = target.dataset || getDataSetFromAttr(target.attr || target._attr);
-    var app = this.$app.$def;
-    var eventUid = dataset[eventType + 'Uid'];
-    var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
-        props: {},
-        type: 'unknown'
-    };
-    if (eventType == 'change') {
-        if (fiber.props.value + '' === e.value) {
-            return;
-        }
-    }
-    var safeTarget = {
-        dataset: dataset,
-        nodeName: target._nodeName || target.nodeName || target.type,
-        value: e.value
-    };
-    if (app && app.onCollectLogs && beaconType.test(eventType)) {
-        app.onCollectLogs(dataset, eventType, fiber.stateNode);
-    }
-    Renderer.batchedUpdates(function () {
-        try {
-            var fn = instance.$$eventCached[eventUid];
-            fn && fn.call(instance, createEvent(e, safeTarget, eventType));
-        } catch (err) {
-            console.log(err.stack);
-        }
-    }, e);
-}
-function createEvent(e, target, type) {
-    var event = {};
-    for (var i in e) {
-        if (i.indexOf('_') !== 0) {
-            event[i] = e[i];
-        }
-    }
-    var touches = event.touches = e._touches || e._changeTouches;
-    event.changeTouches = e._changeTouches;
-    var touch = touches && touches[0];
-    if (touch) {
-        event.pageX = touch.pageX;
-        event.pageY = touch.pageY;
-    }
-    event.nativeEvent = e;
-    event.stopPropagation = e.stopPropagation.bind(e);
-    if (e.preventDefault) {
-        event.preventDefault = e.preventDefault.bind(e);
-    } else {
-        event.preventDefault = Date;
-    }
-    event.target = target;
-    event.type = type;
-    event.timeStamp = Date.now();
-    return event;
-}
-
-var fakeApp = {
-    app: {
-        globalData: {}
-    }
-};
-function _getApp() {
-    if (isFn(getApp)) {
-        return getApp();
-    }
-    return fakeApp;
-}
-function getWrappedComponent(fiber, instance) {
-    if (instance.isPureComponent && instance.constructor.WrappedComponent) {
-        return fiber.child.child.stateNode;
-    } else {
-        return instance;
-    }
-}
-if (typeof getApp === 'function') {
-    _getApp = getApp;
-}
-function callGlobalHook(method, e) {
-    var app = _getApp();
-    if (app && app[method]) {
-        return app[method](e);
-    }
-}
-var usingComponents = [];
-var registeredComponents = {};
-function getCurrentPage() {
-    var app = _getApp();
-    return app.$$page && app.$$page.reactInstance;
-}
-function updateMiniApp(instance) {
-    if (!instance || !instance.wx) {
-        return;
-    }
-    var data = safeClone({
-        props: instance.props,
-        state: instance.state || null,
-        context: instance.context
-    });
-    if (instance.wx.setData) {
-        instance.wx.setData(data);
-    } else {
-        updateQuickApp(instance.wx, data);
-    }
-}
-function refreshComponent(instances, wx, uuid) {
-    if (wx.disposed) {
-        return;
-    }
-    var pagePath = Object(_getApp()).$$pagePath;
-    for (var i = 0, n = instances.length; i < n; i++) {
-        var instance = instances[i];
-        if (instance.$$pagePath === pagePath && !instance.wx && instance.instanceUid === uuid) {
-            var fiber = get(instance);
-            if (fiber.disposed) {
-                console.log("fiber.disposed by nanachi");
-                continue;
-            }
-            if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
-                instance = fiber.child.stateNode;
-            } else {
-                instance = getWrappedComponent(fiber, instance);
-            }
-            instance.wx = wx;
-            wx.reactInstance = instance;
-            updateMiniApp(instance);
-            if (instance.$$componentDidMount) {
-                instance.$$componentDidMount();
-                instance.componentDidMount = instance.$$componentDidMount;
-                delete instance.$$componentDidMount;
-            }
-            return instances.splice(i, 1);
-        }
-    }
-}
-function detachComponent() {
-    var t = this.reactInstance;
-    this.disposed = true;
-    if (t) {
-        t.wx = null;
-        this.instance = null;
-    }
-}
-function updateQuickApp(quick, data) {
-    for (var i in data) {
-        quick.$set(i, data[i]);
-    }
-}
-function isReferenceType(val) {
-    return typeNumber(val) > 6;
-}
-function runCallbacks(cb, success, fail, complete) {
-    try {
-        cb();
-        success && success();
-    } catch (error) {
-        fail && fail(error);
-    } finally {
-        complete && complete();
-    }
-}
-function useComponent(props) {
-    var is = props.is;
-    var clazz = registeredComponents[is];
-    props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
-    clazz.displayName = is;
-    if (this.ref !== null) {
-        props.ref = this.ref;
-    }
-    var owner = Renderer.currentOwner;
-    if (owner) {
-        Renderer.currentOwner = get(owner)._owner;
-    }
-    return createElement(clazz, props);
-}
-function safeClone(originVal) {
-    var temp = originVal instanceof Array ? [] : {};
-    for (var item in originVal) {
-        if (hasOwnProperty.call(originVal, item)) {
-            var value = originVal[item];
-            if (isReferenceType(value)) {
-                if (value.$$typeof) {
-                    continue;
-                }
-                temp[item] = safeClone(value);
-            } else {
-                temp[item] = value;
-            }
-        }
-    }
-    return temp;
-}
-
-var HTTP_OK_CODE = 200;
-var JSON_TYPE_STRING = 'json';
-function uploadFile(_ref) {
-    var url = _ref.url,
-        filePath = _ref.filePath,
-        name = _ref.name,
-        header = _ref.header,
-        formData = _ref.formData,
-        _ref$success = _ref.success,
-        success = _ref$success === undefined ? noop : _ref$success,
-        _ref$fail = _ref.fail,
-        fail = _ref$fail === undefined ? noop : _ref$fail,
-        _ref$complete = _ref.complete,
-        complete = _ref$complete === undefined ? noop : _ref$complete;
-    var request = require('@system.request');
-    var data = [];
-    Object.keys(formData).map(function (key) {
-        var value = formData[key];
-        var item = {
-            value: value,
-            name: key
-        };
-        data.push(item);
-    });
-    function successForMi(_ref2) {
-        var statusCode = _ref2.code,
-            data = _ref2.data;
-        success({
-            statusCode: statusCode,
-            data: data
-        });
-    }
-    request.upload({
-        url: url,
-        header: header,
-        data: data,
-        files: [{ uri: filePath, name: name }],
-        success: successForMi,
-        fail: fail,
-        complete: complete
-    });
-}
-function downloadFile(_ref3) {
-    var url = _ref3.url,
-        header = _ref3.header,
-        _ref3$success = _ref3.success,
-        success = _ref3$success === undefined ? noop : _ref3$success,
-        _ref3$fail = _ref3.fail,
-        fail = _ref3$fail === undefined ? noop : _ref3$fail,
-        _ref3$complete = _ref3.complete,
-        complete = _ref3$complete === undefined ? noop : _ref3$complete;
-    function downloadSuccess(_ref4) {
-        var tempFilePath = _ref4.uri;
-        success({
-            statusCode: HTTP_OK_CODE,
-            tempFilePath: tempFilePath
-        });
-    }
-    function downloadTaskStarted(_ref5) {
-        var token = _ref5.token;
-        request.onDownloadComplete({
-            token: token,
-            success: downloadSuccess,
-            fail: fail,
-            complete: complete
-        });
-    }
-    var request = require('@system.request');
-    request.download({
-        url: url,
-        header: header,
-        success: downloadTaskStarted,
-        fail: fail,
-        complete: complete
-    });
-}
-function request(_ref6) {
-    var url = _ref6.url,
-        data = _ref6.data,
-        header = _ref6.header,
-        method = _ref6.method,
-        _ref6$dataType = _ref6.dataType,
-        dataType = _ref6$dataType === undefined ? JSON_TYPE_STRING : _ref6$dataType,
-        _ref6$success = _ref6.success,
-        success = _ref6$success === undefined ? noop : _ref6$success,
-        _ref6$fail = _ref6.fail,
-        fail = _ref6$fail === undefined ? noop : _ref6$fail,
-        _ref6$complete = _ref6.complete,
-        complete = _ref6$complete === undefined ? noop : _ref6$complete;
-    var fetch = require('@system.fetch');
-    function onFetchSuccess(_ref7) {
-        var statusCode = _ref7.code,
-            data = _ref7.data,
-            headers = _ref7.headers;
-        if (dataType === JSON_TYPE_STRING) {
-            try {
-                data = JSON.parse(data);
-            } catch (error) {}
-        }
-        success({
-            statusCode: statusCode,
-            data: data,
-            headers: headers
-        });
-    }
-    fetch.fetch({
-        url: url,
-        data: data,
-        header: header,
-        method: method,
-        success: onFetchSuccess,
-        fail: fail,
-        complete: complete
-    });
-}
-
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-var storage = require('@system.storage');
-function saveParse(str) {
-    try {
-        return JSON.parse(str);
-    } catch (err) {
-    }
-    return str;
-}
-function setStorage(_ref) {
-    var key = _ref.key,
-        data = _ref.data,
-        success = _ref.success,
-        _ref$fail = _ref.fail,
-        fail = _ref$fail === undefined ? noop : _ref$fail,
-        complete = _ref.complete;
-    var value = data;
-    if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
-        try {
-            value = JSON.stringify(value);
-        } catch (error) {
-            return fail(error);
-        }
-    }
-    storage.set({ key: key, value: value, success: success, fail: fail, complete: complete });
-}
-function getStorage(_ref2) {
-    var key = _ref2.key,
-        _ref2$success = _ref2.success,
-        _success = _ref2$success === undefined ? noop : _ref2$success,
-        complete = _ref2.complete;
-    storage.get({
-        key: key,
-        success: function success(data) {
-            _success({
-                data: saveParse(data)
-            });
-        },
-        fail: function fail() {
-            _success({});
-        }, complete: complete });
-}
-function removeStorage(obj) {
-    storage.delete(obj);
-}
-function clearStorage(obj) {
-    storage.clear(obj);
-}
-function initStorageSync(storageCache) {
-    if ((typeof ReactQuick === 'undefined' ? 'undefined' : _typeof$1(ReactQuick)) !== 'object') {
-        return;
-    }
-    var apis = ReactQuick.api;
-    var n = storage.length;
-    var j = 0;
-    for (var i = 0; i < n; i++) {
-        storage.key({
-            index: i,
-            success: function success(key) {
-                storage.get({
-                    key: key,
-                    success: function success(value) {
-                        storageCache[key] = value;
-                        if (++j == n) {
-                            console.log('init storage success');
-                        }
-                    }
-                });
-            }
-        });
-    }
-    apis.setStorageSync = function (key, value) {
-        setStorage({
-            key: key,
-            data: value
-        });
-        return storageCache[key] = value;
-    };
-    apis.getStorageSync = function (key) {
-        return saveParse(storageCache[key]);
-    };
-    apis.removeStorageSync = function (key) {
-        delete storageCache[key];
-        removeStorage({ key: key });
-    };
-    apis.clearStorageSync = function () {
-        for (var i in storageCache) {
-            delete storageCache[i];
-        }
-        clearStorage({});
-    };
-}
-function warnToInitStorage() {
-    {
-        console.log('还没有初始化storageSync');
-    }
-}
-var setStorageSync = warnToInitStorage;
-var getStorageSync = warnToInitStorage;
-var removeStorageSync = warnToInitStorage;
-var clearStorageSync = warnToInitStorage;
-
-var file = require('@system.file');
-var SUCCESS_MESSAGE = 'ok';
-function getSavedFileInfo(_ref) {
-    var uri = _ref.filePath,
-        _ref$success = _ref.success,
-        success = _ref$success === undefined ? noop : _ref$success,
-        _ref$fail = _ref.fail,
-        fail = _ref$fail === undefined ? noop : _ref$fail,
-        _ref$complete = _ref.complete,
-        complete = _ref$complete === undefined ? noop : _ref$complete;
-    function gotFile(_ref2) {
-        var length = _ref2.length,
-            lastModifiedTime = _ref2.lastModifiedTime;
-        success({
-            errMsg: SUCCESS_MESSAGE,
-            size: length,
-            createTime: lastModifiedTime
-        });
-    }
-    file.get({
-        uri: uri,
-        success: gotFile,
-        fail: fail,
-        complete: complete
-    });
-}
-function getSavedFileList(_ref3) {
-    var uri = _ref3.uri,
-        _ref3$success = _ref3.success,
-        success = _ref3$success === undefined ? noop : _ref3$success,
-        _ref3$fail = _ref3.fail,
-        fail = _ref3$fail === undefined ? noop : _ref3$fail,
-        _ref3$complete = _ref3.complete,
-        complete = _ref3$complete === undefined ? noop : _ref3$complete;
-    if (!uri) {
-        fail(new Error('小米需要指定目录'));
-    }
-    function gotFileList(fileList) {
-        var newFileList = fileList.map(function (item) {
-            return {
-                fileList: item.uri,
-                size: item.length,
-                createTime: item.lastModifiedTime
-            };
-        });
-        success({
-            fileList: newFileList,
-            errMsg: SUCCESS_MESSAGE
-        });
-    }
-    file.list({
-        uri: uri,
-        success: gotFileList,
-        fail: fail,
-        complete: complete
-    });
-}
-function removeSavedFile(_ref4) {
-    var uri = _ref4.filePath,
-        _ref4$success = _ref4.success,
-        success = _ref4$success === undefined ? noop : _ref4$success,
-        _ref4$fail = _ref4.fail,
-        fail = _ref4$fail === undefined ? noop : _ref4$fail,
-        _ref4$complete = _ref4.complete,
-        complete = _ref4$complete === undefined ? noop : _ref4$complete;
-    file.delete({
-        uri: uri,
-        success: success,
-        fail: fail,
-        complete: complete
-    });
-}
-function saveFile(_ref5) {
-    var srcUri = _ref5.tempFilePath,
-        dstUri = _ref5.destinationFilePath,
-        _ref5$success = _ref5.success,
-        success = _ref5$success === undefined ? noop : _ref5$success,
-        _ref5$fail = _ref5.fail,
-        fail = _ref5$fail === undefined ? noop : _ref5$fail,
-        _ref5$complete = _ref5.complete,
-        complete = _ref5$complete === undefined ? noop : _ref5$complete;
-    if (!dstUri) {
-        fail(new Error('小米需要指定需要指定目标路径'));
-    }
-    function gotSuccess(uri) {
-        success({
-            savedFilePath: uri
-        });
-    }
-    file.move({
-        srcUri: srcUri,
-        dstUri: dstUri,
-        success: gotSuccess,
-        fail: fail,
-        complete: complete
-    });
-}
-
-var clipboard = require('@system.clipboard');
-function setClipboardData(_ref) {
-    var text = _ref.data,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    clipboard.set({
-        text: text,
-        success: success || noop,
-        fail: fail || noop,
-        complete: complete || noop
-    });
-}
-function getClipboardData(_ref2) {
-    var _ref2$success = _ref2.success,
-        _success = _ref2$success === undefined ? noop : _ref2$success,
-        _ref2$fail = _ref2.fail,
-        fail = _ref2$fail === undefined ? noop : _ref2$fail,
-        _ref2$complete = _ref2.complete,
-        complete = _ref2$complete === undefined ? noop : _ref2$complete;
-    clipboard.get({
-        success: function success(obj) {
-            _success({
-                data: obj.text
-            });
-        },
-        fail: fail,
-        complete: complete
-    });
-}
-
-var network = require('@system.network');
-function getNetworkType(_ref) {
-    var success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    network.getType({
-        success: function networkTypeGot(res) {
-            success({ networkType: res.type });
-        },
-        fail: fail,
-        complete: complete
-    });
-}
-function onNetworkStatusChange(callback) {
-    function networkChanged(_ref2) {
-        var networkType = _ref2.type;
-        var connectedTypes = ['wifi', '4g', '3g', '2g'];
-        callback({
-            isConnected: connectedTypes.includes(networkType),
-            networkType: networkType
-        });
-    }
-    network.subscribe({ callback: networkChanged });
-}
-
-function setNavigationBarTitle(_ref) {
-    var title = _ref.title,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    runCallbacks(function () {
-        var currentPage = _getApp().$$page;
-        currentPage.$page.setTitleBar({ text: title });
-    }, success, fail, complete);
-}
-
-var device = require('@system.device');
-var mapNames = {
-    osVersionName: 'version',
-    osVersionCode: 'system',
-    platformVersionName: 'platform',
-    platformVersionCode: 'SDKVersion'
-};
-function getSystemInfo(_ref) {
-    var _success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    device.getInfo({
-        success: function success(rawObject) {
-            var result = {
-                fontSizeSetting: 14
-            };
-            for (var name in rawObject) {
-                result[mapNames[name] || name] = rawObject[name];
-            }
-            _success && _success(result);
-        },
-        fail: fail,
-        complete: complete
-    });
-}
-function getDeviceId(options) {
-    return device.getDeviceId(options);
-}
-function getUserId(options) {
-    return device.getUserId(options);
-}
-
-function chooseImage(_ref) {
-    var _ref$count = _ref.count,
-        count = _ref$count === undefined ? 1 : _ref$count,
-        _ref$sourceType = _ref.sourceType,
-        sourceType = _ref$sourceType === undefined ? [] : _ref$sourceType,
-        _success = _ref.success,
-        _ref$fail = _ref.fail,
-        fail = _ref$fail === undefined ? noop : _ref$fail,
-        _ref$complete = _ref.complete,
-        complete = _ref$complete === undefined ? noop : _ref$complete;
-    if (count > 1) {
-        return fail(new Error('快应用选择图片的数量不能大于1'));
-    }
-    function imagePicked(_ref2) {
-        var path = _ref2.uri;
-        var file = require('@system.file');
-        file.get({
-            uri: path,
-            success: function success(_ref3) {
-                var size = _ref3.length;
-                var tempFilePaths = [path];
-                var tempFiles = [{ path: path, size: size }];
-                _success({
-                    tempFilePaths: tempFilePaths,
-                    tempFiles: tempFiles
-                });
-            },
-            fail: fail
-        });
-    }
-    var media = require('@system.media');
-    var pick = sourceType.length === 1 && sourceType[0] === 'camera' ? media.takePhoto : media.pickImage;
-    pick({
-        success: imagePicked,
-        fail: fail,
-        complete: complete,
-        cancel: fail
-    });
-}
-
-var prompt = require('@system.prompt');
-function showModal(obj) {
-    obj.showCancel = obj.showCancel === false ? false : true;
-    var buttons = [{
-        text: obj.confirmText,
-        color: obj.confirmColor
-    }];
-    if (obj.showCancel) {
-        buttons.push({
-            text: obj.cancelText,
-            color: obj.cancelColor
-        });
-    }
-    obj.buttons = obj.confirmText ? buttons : [];
-    obj.message = obj.content;
-    delete obj.content;
-    var fn = obj['success'];
-    obj['success'] = function (res) {
-        res.confirm = !res.index;
-        fn && fn(res);
-    };
-    prompt.showDialog(obj);
-}
-function showToast(obj) {
-    obj.message = obj.title;
-    obj.duration = obj.duration / 1000 >= 1 ? 1 : 0;
-    runCallbacks(function () {
-        prompt.showToast(obj);
-    }, obj.success, obj.fail, obj.complete);
-}
-function showActionSheet(obj) {
-    prompt.showContextMenu(obj);
-}
-function showLoading(obj) {
-    obj.message = obj.title;
-    obj.duration = 1;
-    prompt.showToast(obj);
-}
-
-var shortcut = require('@system.shortcut');
-function createShortcut() {
-    shortcut.hasInstalled({
-        success: function success(ok) {
-            if (ok) {
-                showToast({ title: '已创建桌面图标' });
-            } else {
-                shortcut.install({
-                    success: function success() {
-                        showToast({ title: '成功创建桌面图标' });
-                    },
-                    fail: function fail(errmsg, errcode) {
-                        if (errcode === 200) {
-                            showToast({ title: '请打开系统授权后再试' });
-                            return;
-                        }
-                        console.log(errcode, errmsg);
-                    }
-                });
-            }
-        }
-    });
-}
-function shortcutInstall(obj) {
-    return shortcut.install(obj);
-}
-function hasInstalled(obj) {
-    return shortcut.hasInstalled(obj);
-}
-
-var push = require('@service.push');
-function getPushProvider() {
-    return push.getProvider();
-}
-function subscribe(obj) {
-    return push.subscribe(obj);
-}
-function unsubscribe(obj) {
-    return push.unsubscribe(obj);
-}
-function pushOn(obj) {
-    return push.on(obj);
-}
-function pushOff() {
-    return push.off();
-}
-
-function getCurrentPages$1() {
-    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
-    var globalData = _getApp().globalData;
-    var c = globalData.__currentPages;
-    if (!c || !c.length) {
-        var router = require('@system.router');
-        globalData.__currentPages = [router.getState()['path']];
-    }
-    return globalData.__currentPages;
-}
-
-var router = require('@system.router');
-var rQuery = /\?(.*)/;
-var urlReg = /(((http|https)\:\/\/)|(www)){1}[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z0-9\&\.\/\?\:@\-_=#])*/g;
-function getQueryFromUri(uri, query) {
-    return uri.replace(rQuery, function (a, b) {
-        b.split('&').forEach(function (param) {
-            param = param.split('=');
-            query[param[0]] = param[1];
-        });
-        return '';
-    });
-}
-function createRouter(name) {
-    return function (obj, inner) {
-        var uri = "",
-            params = {},
-            delta = 0;
-        if (name === 'back') {
-            delta = Object(obj).delta;
-            if (delta + 0 !== delta) {
-                console.warn('navigateBack的传参应该为({delta: number})');
-            }
-        } else {
-            var href = Object(obj).url || "";
-            if (urlReg.test(href)) {
-                var webview = require('@system.webview');
-                webview.loadUrl({
-                    url: href,
-                    allowthirdpartycookies: true
-                });
-                return;
-            }
-            uri = href.slice(href.indexOf('/pages') + 1);
-            if (process.env.ANU_WEBVIEW) {
-                var webViewRoutes = {};
-                try {
-                    webViewRoutes = require('./webviewConfig.js');
-                    var effectPath = uri.split('?')[0];
-                    if (webViewRoutes[effectPath]) {
-                        var config = webViewRoutes[effectPath];
-                        params = {
-                            src: config.src || '',
-                            allowthirdpartycookies: config.allowthirdpartycookies || false,
-                            trustedurl: config.trustedurl || []
-                        };
-                    }
-                } catch (err) {
-                }
-                if (webViewRoutes[uri.split('?')[0]]) {
-                    uri = '/pages/__web__view__';
-                }
-            }
-            uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
-            if (uri.charAt(0) !== '/' && !uri.match(/^(hap|https?)\:/)) {
-                uri = '/' + uri;
-            }
-        }
-        if (typeof getApp !== 'undefined') {
-            var globalData = getApp().globalData;
-            var queryObject = globalData.__quickQuery || (globalData.__quickQuery = {});
-            var currentPages = getCurrentPages$1();
-            switch (name) {
-                case 'push':
-                    currentPages.push(uri);
-                    break;
-                case 'replace':
-                    var last = currentPages.pop();
-                    delete queryObject[last];
-                    if (inner === 'clear') {
-                        currentPages.length = 0;
-                    }
-                    currentPages.push(uri);
-                    break;
-                case 'back':
-                    while (delta) {
-                        uri = currentPages.pop();
-                        if (uri) {
-                            delta = delta - 1;
-                            console.log("DEBUG::", router.getState().path == uri);
-                            params = queryObject[uri];
-                        } else {
-                            return;
-                        }
-                    }
-            }
-        }
-        if (name !== 'back') {
-            queryObject[uri] = params;
-        }
-        router[name]({
-            uri: uri,
-            params: params
-        });
-    };
-}
-var navigateTo = createRouter('push');
-var redirectTo = createRouter('replace');
-var navigateBack = createRouter('back');
-var reLaunch = function reLaunch(obj) {
-    router.clear();
-    redirectTo(obj, 'clear');
-};
-function makePhoneCall(_ref) {
-    var phoneNumber = _ref.phoneNumber,
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    runCallbacks(function () {
-        router.push({
-            uri: 'tel:' + phoneNumber
-        });
-    }, success, fail, complete);
-}
-
-var vibrator = require('@system.vibrator');
-function vibrateLong() {
-    vibrator.vibrate({
-        mode: 'long'
-    });
-}
-function vibrateShort() {
-    vibrator.vibrate({
-        mode: 'short'
-    });
-}
-
-function share(obj) {
-    var share = require('@service.share');
-    share.getAvailablePlatforms({
-        success: function success() {
-            share.share(obj);
-        }
-    });
-}
-
-function createCanvasContext(id, obj) {
-    if (obj.wx && obj.wx.$element) {
-        var el = obj.wx.$element(id);
-        var ctx = el && el.getContext('2d');
-        'strokeStyle,textAlign,textBaseline,fillStyle,lineWidth,lineCap,lineJoin,miterLimit,globalAlpha'.split(',').map(function (item) {
-            var method = 'set' + item.substring(0, 1).toUpperCase() + item.substring(1);
-            ctx[method] = function (value) {
-                ctx[item] = value;
-            };
-        });
-        ctx.setFontSize = function (value) {
-            ctx.font = value + 'px';
-        };
-        ctx.draw = function () {
-            ctx.closePath();
-        };
-        return ctx;
-    } else {
-        throw new Error('createCanvasContext 第二个 字段 this 必须添加');
-    }
-}
-
-var payAPI = require('@service.pay');
-var wxpayAPI = require('@service.wxpay');
-var alipayAPI = require('@service.alipay');
-function pay(obj) {
-    payAPI.pay(obj);
-}
-function getProvider() {
-    return payAPI.getProvider();
-}
-function wxpayGetType() {
-    return wxpayAPI.getType();
-}
-function wxpay(obj) {
-    wxpayAPI.pay(obj);
-}
-function alipay(obj) {
-    alipayAPI.pay(obj);
-}
-
-var account = require('@service.account');
-function accountGetProvider() {
-    return account.getProvider();
-}
-function accountAuthorize(options) {
-    return account.authorize(options);
-}
-
-function stopPullDownRefresh() {
-    var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-        success = _ref.success,
-        fail = _ref.fail,
-        complete = _ref.complete;
-    runCallbacks(Number, success, fail, complete);
-}
-var facade = {
-    showModal: showModal,
-    showActionSheet: showActionSheet,
-    showToast: showToast,
-    showLoading: showLoading,
-    navigateTo: navigateTo,
-    redirectTo: redirectTo,
-    switchTab: redirectTo,
-    reLaunch: reLaunch,
-    navigateBack: navigateBack,
-    vibrateLong: vibrateLong,
-    vibrateShort: vibrateShort,
-    uploadFile: uploadFile,
-    downloadFile: downloadFile,
-    request: request,
-    makePhoneCall: makePhoneCall,
-    scanCode: function scanCode(_ref2) {
-        var success = _ref2.success,
-            fail = _ref2.fail,
-            complete = _ref2.complete;
-        var barcode = require('@system.barcode');
-        barcode.scan({
-            success: success,
-            fail: fail,
-            cancel: fail,
-            complete: complete
-        });
-    },
-    setStorage: setStorage,
-    getStorage: getStorage,
-    removeStorage: removeStorage,
-    clearStorage: clearStorage,
-    setStorageSync: setStorageSync,
-    getStorageSync: getStorageSync,
-    removeStorageSync: removeStorageSync,
-    clearStorageSync: clearStorageSync,
-    getSavedFileInfo: getSavedFileInfo,
-    getSavedFileList: getSavedFileList,
-    removeSavedFile: removeSavedFile,
-    saveFile: saveFile,
-    setClipboardData: setClipboardData,
-    getClipboardData: getClipboardData,
-    getLocation: function getLocation(obj) {
-        var geolocation = require('@system.geolocation');
-        geolocation.getLocation(obj);
-    },
-    getNetworkType: getNetworkType,
-    onNetworkStatusChange: onNetworkStatusChange,
-    getSystemInfo: getSystemInfo,
-    chooseImage: chooseImage,
-    setNavigationBarTitle: setNavigationBarTitle,
-    createCanvasContext: createCanvasContext,
-    stopPullDownRefresh: stopPullDownRefresh,
-    createAnimation: stopPullDownRefresh
-};
-function more() {
-    return {
-        initStorageSync: initStorageSync,
-        createShortcut: createShortcut,
-        share: share,
-        hasInstalled: hasInstalled,
-        shortcutInstall: shortcutInstall,
-        getPushProvider: getPushProvider, subscribe: subscribe, unsubscribe: unsubscribe, pushOn: pushOn, pushOff: pushOff,
-        pay: pay,
-        getProvider: getProvider,
-        wxpayGetType: wxpayGetType,
-        wxpay: wxpay,
-        alipay: alipay,
-        getDeviceId: getDeviceId,
-        getUserId: getUserId,
-        accountGetProvider: accountGetProvider,
-        accountAuthorize: accountAuthorize
-    };
-}
-
 var onAndSyncApis = {
   onSocketOpen: true,
   onSocketError: true,
@@ -1857,11 +830,285 @@ function promisefyApis(ReactWX, facade, more) {
         }
     });
 }
+function pxTransform(size) {
+    var deviceRatio = this.api.deviceRatio;
+    return parseInt(size, 10) / deviceRatio + 'rpx';
+}
+function initPxTransform(facade) {
+    function fallback(windowWidth) {
+        facade.designWidth = windowWidth;
+        facade.deviceRatio = 750 / windowWidth / 2;
+    }
+    if (facade.getSystemInfo) {
+        facade.getSystemInfo({
+            success: function success(res) {
+                fallback(res.windowWidth);
+            }
+        });
+    } else {
+        fallback(375);
+    }
+}
+function registerAPIs(ReactWX, facade, override) {
+    registerAPIsQuick(ReactWX, facade, override);
+    initPxTransform(ReactWX.api);
+    ReactWX.api.pxTransform = ReactWX.pxTransform = pxTransform.bind(ReactWX);
+}
 function registerAPIsQuick(ReactWX, facade, override) {
     if (!ReactWX.api) {
         ReactWX.api = {};
         promisefyApis(ReactWX, facade, override(facade));
     }
+}
+
+var RequestQueue = {
+    MAX_REQUEST: 10,
+    queue: [],
+    request: function request(options) {
+        this.push(options);
+        return this.run();
+    },
+    push: function push(options) {
+        this.queue.push(options);
+    },
+    run: function run() {
+        if (!this.queue.length) {
+            return;
+        }
+        if (this.queue.length <= this.MAX_REQUEST) {
+            var options = this.queue.shift();
+            var completeFn = options.complete;
+            var self = this;
+            options.complete = function () {
+                completeFn && completeFn.apply(null, arguments);
+                self.run();
+            };
+            return this.facade.request(options);
+        }
+    }
+};
+var more = function more(api) {
+    return {
+        request: function request(_a) {
+            RequestQueue.facade = api;
+            return RequestQueue.request(_a);
+        },
+        uploadFile: function _(a) {
+            var cb = a.success || Number;
+            a.success = function (res) {
+                cb(res);
+            };
+            return api.uploadFile(a);
+        },
+        getStorage: function getStorage(_ref) {
+            var key = _ref.key,
+                success = _ref.success,
+                complete = _ref.complete;
+            return api.getStorage({
+                key: key,
+                complete: complete,
+                success: success,
+                fail: function fail(e) {
+                    success && success({});
+                }
+            });
+        }
+    };
+};
+
+var fakeApp = {
+    app: {
+        globalData: {}
+    }
+};
+function _getApp() {
+    if (isFn(getApp)) {
+        return getApp();
+    }
+    return fakeApp;
+}
+function getWrappedComponent(fiber, instance) {
+    if (instance.isPureComponent && instance.constructor.WrappedComponent) {
+        return fiber.child.child.stateNode;
+    } else {
+        return instance;
+    }
+}
+if (typeof getApp === 'function') {
+    _getApp = getApp;
+}
+function callGlobalHook(method, e) {
+    var app = _getApp();
+    if (app && app[method]) {
+        return app[method](e);
+    }
+}
+var delayMounts = [];
+var usingComponents = [];
+var registeredComponents = {};
+function getCurrentPage() {
+    var app = _getApp();
+    return app.$$page && app.$$page.reactInstance;
+}
+function _getCurrentPages() {
+    console.warn('getCurrentPages存在严重的平台差异性，不建议再使用');
+    if (typeof getCurrentPages !== 'undefined') {
+        return getCurrentPages();
+    }
+    return [];
+}
+function updateMiniApp(instance) {
+    if (!instance || !instance.wx) {
+        return;
+    }
+    var data = safeClone({
+        props: instance.props,
+        state: instance.state || null,
+        context: instance.context
+    });
+    if (instance.wx.setData) {
+        instance.wx.setData(data);
+    } else {
+        updateQuickApp(instance.wx, data);
+    }
+}
+function refreshComponent(reactInstances, wx, uuid) {
+    if (wx.disposed) {
+        return;
+    }
+    var pagePath = Object(_getApp()).$$pagePath;
+    for (var i = 0, n = reactInstances.length; i < n; i++) {
+        var reactInstance = reactInstances[i];
+        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
+            var fiber = get(reactInstance);
+            if (fiber.disposed) {
+                console.log("fiber.disposed by nanachi");
+                continue;
+            }
+            if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
+                reactInstance = fiber.child.stateNode;
+            } else {
+                reactInstance = getWrappedComponent(fiber, reactInstance);
+            }
+            reactInstance.wx = wx;
+            wx.reactInstance = reactInstance;
+            updateMiniApp(reactInstance);
+            return reactInstances.splice(i, 1);
+        }
+    }
+}
+function detachComponent() {
+    var t = this.reactInstance;
+    this.disposed = true;
+    if (t) {
+        t.wx = null;
+        this.reactInstance = null;
+    }
+}
+function updateQuickApp(quick, data) {
+    for (var i in data) {
+        quick.$set(i, data[i]);
+    }
+}
+function isReferenceType(val) {
+    return typeNumber(val) > 6;
+}
+function useComponent(props) {
+    var is = props.is;
+    var clazz = registeredComponents[is];
+    props.key = this.key != null ? this.key : props['data-instance-uid'] || new Date() - 0;
+    clazz.displayName = is;
+    if (this.ref !== null) {
+        props.ref = this.ref;
+    }
+    var owner = Renderer.currentOwner;
+    if (owner) {
+        Renderer.currentOwner = get(owner)._owner;
+    }
+    return createElement(clazz, props);
+}
+function safeClone(originVal) {
+    var temp = originVal instanceof Array ? [] : {};
+    for (var item in originVal) {
+        if (hasOwnProperty.call(originVal, item)) {
+            var value = originVal[item];
+            if (isReferenceType(value)) {
+                if (value.$$typeof) {
+                    continue;
+                }
+                temp[item] = safeClone(value);
+            } else {
+                temp[item] = value;
+            }
+        }
+    }
+    return temp;
+}
+
+var webview = {};
+var rbeaconType = /click|tap|change|blur|input/i;
+function dispatchEvent(e) {
+    var eventType = toLowerCase(e.type);
+    if (eventType == 'message') {
+        if (webview.instance && webview.cb) {
+            webview.cb.call(webview.instance, e);
+        }
+        return;
+    }
+    var instance = this.reactInstance;
+    if (!instance || !instance.$$eventCached) {
+        console.log(eventType, '没有实例');
+        return;
+    }
+    var app = _getApp();
+    var target = e.currentTarget;
+    var dataset = target.dataset || {};
+    var eventUid = dataset[eventType + 'Uid'];
+    var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
+        props: {},
+        type: 'unknown'
+    };
+    var value = Object(e.detail).value;
+    if (eventType == 'change') {
+        if (fiber.props.value + '' == value) {
+            return;
+        }
+    }
+    var safeTarget = {
+        dataset: dataset,
+        nodeName: target.tagName || fiber.type,
+        value: value
+    };
+    if (app && app.onCollectLogs && rbeaconType.test(eventType)) {
+        app.onCollectLogs(dataset, eventType, fiber.stateNode);
+    }
+    Renderer.batchedUpdates(function () {
+        try {
+            var fn = instance.$$eventCached[eventUid];
+            fn && fn.call(instance, createEvent(e, safeTarget));
+        } catch (err) {
+            console.log(err.stack);
+        }
+    }, e);
+}
+function createEvent(e, target) {
+    var event = Object.assign({}, e);
+    if (e.detail) {
+        Object.assign(event, e.detail);
+    }
+    event.stopPropagation = function () {
+        console.warn("小程序不支持这方法，请使用catchXXX");
+    };
+    event.nativeEvent = e;
+    event.preventDefault = returnFalse;
+    event.target = target;
+    event.timeStamp = Date.now();
+    var touch = e.touches && e.touches[0];
+    if (touch) {
+        event.pageX = touch.pageX;
+        event.pageY = touch.pageY;
+    }
+    return event;
 }
 
 function AnuPortal(props) {
@@ -3187,10 +2434,15 @@ var Renderer$1 = createRenderer({
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
-                    instance.$$componentDidMount = instance.componentDidMount;
-                    instance.componentDidMount = null;
                 }
             }
+        }
+        if (!app.$$pageIsReady && instance.componentDidMount) {
+            delayMounts.push({
+                instance: instance,
+                fn: instance.componentDidMount
+            });
+            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -3211,42 +2463,27 @@ var Renderer$1 = createRenderer({
     removeElement: function removeElement() {}
 });
 
-var rcamel = /-(\w)/g;
-var rpx = /(\d[\d\.]*)(r?px)/gi;
-function camel(target) {
-    return target.replace(rcamel, function (all, letter) {
-        return letter.toUpperCase();
-    });
+var rhyphen = /([a-z\d])([A-Z]+)/g;
+function hyphen(target) {
+    return target.replace(rhyphen, '$1-$2').toLowerCase();
 }
-function transform(obj) {
-    var ret = {};
-    for (var i in obj) {
-        var value = obj[i] + '';
-        value = value.replace(rpx, function (str, match, unit) {
-            if (unit.toLowerCase() === 'px') {
-                match = parseFloat(match) * 2;
-            }
-            return match + 'px';
+function transform(React, obj) {
+    var pxTransform = React.api.pxTransform || React.pxTransform;
+    return Object.keys(obj).map(function (item) {
+        var value = obj[item] + '';
+        value = value.replace(/(\d+)px/g, function (str, match) {
+            return pxTransform(match);
         });
-        ret[camel(i)] = value;
-    }
-    return ret;
+        return hyphen(item) + ': ' + value;
+    }).join(';');
 }
 function toStyle(obj, props, key) {
     if (props) {
-        if (obj + '' === obj) {
-            var ret = {};
-            obj.split(';').forEach(function (el) {
-                var index = el.indexOf(':');
-                var name = el.slice(0, index).trim();
-                var value = el.slice(index).trim();
-                if (name) {
-                    ret[name] = value;
-                }
-            });
-            obj = ret;
+        if (Object(obj) == obj) {
+            var str = transform(this, obj);
+        } else {
+            str = obj;
         }
-        var str = transform.call(this, obj);
         props[key] = str;
     } else {
         console.warn('toStyle生成样式失败，key为', key);
@@ -3254,57 +2491,13 @@ function toStyle(obj, props, key) {
     return obj;
 }
 
-var appMethods = {
-    onLaunch: 'onCreate',
-    onHide: 'onDestroy'
-};
-function registerApp(demo, containProvider) {
-    var app = {};
-    if (containProvider) {
-        demo.globalData._GlobalApp = demo.constructor;
-    }
-    for (var name in demo) {
-        var value = demo[name];
-        name = appMethods[name] || name;
-        app[name] = value;
-    }
-    for (var _name in demo.constructor) {
-        var _value = demo.constructor[_name];
-        if (!app[_name]) {
-            app[_name] = _value;
-        } else {
-            throw 'app.js已经存在同名的静态属性与实例属性 ' + _name + ' !';
-        }
-    }
-    delete app.constructor;
-    return app;
-}
-
-function registerComponent(type, name) {
-    type.isMPComponent = true;
-    registeredComponents[name] = type;
-    var reactInstances = type.reactInstances = [];
-    return {
-        data: function data() {
-            return {
-                props: {},
-                state: {},
-                context: {}
-            };
-        },
-        onInit: function onInit() {
-            usingComponents[name] = type;
-            var uuid = this.dataInstanceUid || null;
-            refreshComponent(reactInstances, this, uuid);
-        },
-        onDestroy: detachComponent,
-        dispatchEvent: dispatchEvent
-    };
-}
-
 var GlobalApp = void 0;
 function _getGlobalApp(app) {
     return GlobalApp || app.globalData._GlobalApp;
+}
+function registerApp(app) {
+    GlobalApp = app.constructor;
+    return app;
 }
 
 function onLoad(PageClass, path, query) {
@@ -3348,6 +2541,11 @@ function onLoad(PageClass, path, query) {
 function onReady() {
     var app = _getApp();
     app.$$pageIsReady = true;
+    var el = void 0;
+    while (el = delayMounts.pop()) {
+        el.fn.call(el.instance);
+        el.instance.componentDidMount = el.fn;
+    }
     callGlobalHook("onGlobalReady");
 }
 function onUnload() {
@@ -3395,97 +2593,84 @@ var appHooks = {
     onShow: 'onGlobalShow',
     onHide: 'onGlobalHide'
 };
-function getQuery(wx, huaweiHack) {
-    var page = wx.$page;
-    if (page.query) {
-        return page.query;
-    }
-    var query = {};
-    if (page.uri) {
-        getQueryFromUri(page.uri, query);
-        for (var i in query) {
-            return query;
-        }
-    }
-    var data = _getApp().globalData;
-    var routerQuery = data && data.__quickQuery && data.__quickQuery[page.path] || query;
-    if (huaweiHack && Object.keys(huaweiHack).length) {
-        for (var _i in huaweiHack) {
-            routerQuery[_i] = wx[_i];
-        }
-    }
-    return routerQuery;
-}
-function registerPage(PageClass, path) {
+function registerPage(PageClass, path, testObject) {
     PageClass.reactInstances = [];
-    var def = _getApp().$def;
-    var appInner = def.innerQuery;
-    var appOuter = def.outerQuery;
-    var pageInner = PageClass.innerQuery;
-    var pageOuter = PageClass.outerQuery;
-    if (!pageInner && PageClass.protected) {
-        console.warn('protected静态对象已经被废弃，请改用pageQuery静态对象');
-        pageInner = PageClass.protected;
-    }
-    var innerQuery = pageInner ? Object.assign({}, appInner, pageInner) : appInner;
-    var outerQuery = pageOuter ? Object.assign({}, appOuter, pageOuter) : appOuter;
-    var duplicate = {};
-    if (innerQuery) {
-        for (var i in innerQuery) {
-            duplicate[i] = true;
-        }
-    }
-    if (outerQuery) {
-        var keys = [];
-        for (var i in outerQuery) {
-            if (duplicate[i] === true) {
-                keys.push(i);
-            }
-            duplicate[i] = true;
-        }
-        if (keys.length) {
-            throw '页面 ' + path + ' 的两个参数对象存在重复的键名 ' + keys;
-        }
-    }
     var config = {
-        private: {
-            props: Object,
-            context: Object,
-            state: Object
-        },
-        protected: innerQuery,
-        public: outerQuery,
+        data: {},
         dispatchEvent: dispatchEvent,
-        onInit: function onInit() {
-            var app = this.$app;
-            var instance = onLoad.call(this, PageClass, path, getQuery(this, duplicate));
-            var pageConfig = PageClass.config || instance.config || emptyObject;
-            app.$$pageConfig = Object.keys(pageConfig).length ? pageConfig : null;
+        onLoad: function onLoad$$1(query) {
+            onLoad.call(this, PageClass, path, query);
         },
         onReady: onReady,
-        onDestroy: onUnload
+        onUnload: onUnload
     };
-    Array('onShow', 'onHide', 'onMenuPress', "onBackPress").forEach(function (pageHook) {
-        config[pageHook] = function (e) {
+    Array('onShareAppMessage', 'onPageScroll', 'onReachBottom', 'onPullDownRefresh', 'onTabItemTap', 'onResize', 'onShow', 'onHide').forEach(function (hook) {
+        config[hook] = function (e) {
             var instance = this.reactInstance,
+                pageHook = hook,
                 app = _getApp(),
                 param = e;
-            if (pageHook === 'onShow') {
-                param = instance.props.query = getQuery(this, duplicate);
-                app.$$page = instance.wx;
-                app.$$pagePath = instance.props.path;
-            } else if (pageHook === 'onMenuPress') {
-                app.onShowMenu && app.onShowMenu(instance, this.$app);
-                return;
-            } else if (pageHook == 'onBackPress') {
-                if (instance[pageHook] && instance[pageHook]() === true) {
-                    return;
+            if (pageHook === 'onShareAppMessage') {
+                if (!instance.onShare) {
+                    instance.onShare = instance[pageHook];
                 }
-                getCurrentPages$1().pop();
+                var shareObject = instance.onShare && instance.onShare(param);
+                if (!shareObject) {
+                    shareObject = app.onGlobalShare && app.onGlobalShare(param);
+                }
+                return shareObject;
+            } else if (pageHook === 'onShow') {
+                if (this.options) {
+                    instance.props.query = this.options;
+                }
+                param = instance.props.query;
+                app.$$page = this;
+                app.$$pagePath = instance.props.path;
             }
             return registerPageHook(appHooks, pageHook, app, instance, param);
         };
     });
+    if (testObject) {
+        config.setData = function (obj) {
+            config.data = obj;
+        };
+        config.onLoad();
+        return config;
+    }
+    return config;
+}
+
+var defer = Promise.resolve().then.bind(Promise.resolve());
+function registerComponent(type, name) {
+    type.isMPComponent = true;
+    registeredComponents[name] = type;
+    type.reactInstances = [];
+    var config = {
+        data: {
+            props: {},
+            state: {},
+            context: {}
+        },
+        options: type.options,
+        lifetimes: {
+            attached: function attached() {
+                var wx = this;
+                defer(function () {
+                    usingComponents[name] = type;
+                    var uuid = wx.dataset.instanceUid || null;
+                    refreshComponent(type.reactInstances, wx, uuid);
+                });
+            },
+            detached: detachComponent,
+            error: function error(e) {
+                console.log(e, name);
+            }
+        },
+        methods: {
+            dispatchEvent: dispatchEvent
+        }
+    };
+    Object.assign(config, config.lifetimes);
     return config;
 }
 
@@ -3511,11 +2696,11 @@ var React = getWindow().React = {
         dispatchEvent: dispatchEvent
     },
     findDOMNode: function findDOMNode() {
-        console.log("小程序不支持findDOMNode");
+        console.log('小程序不支持findDOMNode');
     },
-    version: '1.5.10',
     render: render$1,
     hydrate: render$1,
+    webview: webview,
     Fragment: Fragment,
     PropTypes: PropTypes,
     Component: Component,
@@ -3527,8 +2712,9 @@ var React = getWindow().React = {
     toClass: miniCreateClass,
     registerComponent: registerComponent,
     getCurrentPage: getCurrentPage,
-    getCurrentPages: getCurrentPages$1,
+    getCurrentPages: _getCurrentPages,
     getApp: _getApp,
+    registerApp: registerApp,
     registerPage: registerPage,
     toStyle: toStyle,
     useState: useState,
@@ -3538,14 +2724,19 @@ var React = getWindow().React = {
     useEffect: useEffect,
     useContext: useContext,
     useComponent: useComponent,
-    appType: 'quick',
-    registerApp: registerApp
+    appType: 'wx'
 };
-if (typeof global !== 'undefined') {
-    var ref = Object.getPrototypeOf(global) || global;
-    ref.ReactQuick = React;
+var apiContainer = {};
+if (typeof wx != 'undefined') {
+    apiContainer = wx;
+} else if (typeof qq != 'undefined') {
+    apiContainer = qq;
+    React.appType = 'qq';
+} else if (typeof tt != 'undefined') {
+    apiContainer = tt;
+    React.appType = 'tt';
 }
-registerAPIsQuick(React, facade, more);
+registerAPIs(React, apiContainer, more);
 
 export default React;
 export { Children, createElement, Component, PureComponent };

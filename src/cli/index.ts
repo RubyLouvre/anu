@@ -1,5 +1,6 @@
 import webpack from 'webpack';
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import platforms from './consts/platforms';
 import { build as buildLog, Log, warning, error } from './packages/utils/logger/queue';
 import { errorLog, warningLog } from './packages/utils/logger/index';
@@ -20,9 +21,14 @@ export interface NanachiOptions {
     betaUi?: boolean;
     compress?: boolean;
     compressOption?: any;
+    typescript?: boolean;
     huawei?: boolean;
     rules?: Array<webpack.Rule>;
     prevLoaders?: Array<string>;
+    prevJsLoaders?: Array<string>;
+    postJsLoaders?: Array<string>;
+    prevCssLoaders?: Array<string>;
+    postCssLoaders?: Array<string>;
     postLoaders?: Array<string>;
     plugins?: Array<webpack.Plugin>;
     analysis?: boolean;
@@ -30,28 +36,34 @@ export interface NanachiOptions {
     complete?: Function;
 }
 
-async function nanachi({
-    // entry = './source/app', // TODO: 入口文件配置暂时不支持
-    watch = false,
-    platform = 'wx',
-    beta = false,
-    betaUi = false,
-    compress = false,
-    compressOption = {},
-    huawei = false,
-    rules = [],
-    prevLoaders = [], // 自定义预处理loaders
-    postLoaders = [], // 自定义后处理loaders
-    plugins = [],
-    analysis = false,
-    silent = false, // 是否显示warning
-    // maxAssetSize = 20480, // 最大资源限制，超出报warning
-    complete = () => { }
-}: NanachiOptions = {}) {
+async function nanachi(options: NanachiOptions = {}) {
+    const {
+        // entry = './source/app', // TODO: 入口文件配置暂时不支持
+        watch = false,
+        platform = 'wx',
+        beta = false,
+        betaUi = false,
+        compress = false,
+        compressOption = {},
+        huawei = false,
+        typescript = false,
+        rules = [],
+        prevLoaders = [], // 自定义预处理loaders
+        postLoaders = [], // 自定义后处理loaders
+        prevJsLoaders = [],
+        postJsLoaders = [],
+        prevCssLoaders = [],
+        postCssLoaders = [],
+        plugins = [],
+        analysis = false,
+        silent = false, // 是否显示warning
+        // maxAssetSize = 20480, // 最大资源限制，超出报warning
+        complete = () => { }
+    } = options;
     function callback(err: Error, stats?: webpack.Stats) {
         if (err) {
             // eslint-disable-next-line
-            console.log(err);
+            console.log(chalk.red(err.toString()));
             return;
         }
        
@@ -116,7 +128,12 @@ async function nanachi({
         if (!utils.validatePlatform(platform, platforms)) {
             throw new Error(`不支持的platform：${platform}`);
         }
-
+        // 是否使用typescript编译
+        const useTs = fs.existsSync(path.resolve(process.cwd(), './source/app.ts'));
+        if (useTs && !typescript) {
+            throw '检测到app.ts，请使用typescript模式编译(-t/--typescript)';
+        }
+        
         injectBuildEnv({
             platform,
             compress,
@@ -139,14 +156,18 @@ async function nanachi({
             beta,
             betaUi,
             plugins,
+            typescript,
             analysis,
             prevLoaders,
             postLoaders,
+            prevJsLoaders,
+            postJsLoaders,
+            prevCssLoaders,
+            postCssLoaders,
             rules,
             huawei
             // maxAssetSize
         });
-
         const compiler = webpack(webpackConfig);
 
         if (watch) {

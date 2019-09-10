@@ -23,7 +23,6 @@ let miniAppPlugin = function(): PluginObj{
                 extraModules: [], // 用于webpack分析依赖，将babel中删除的依赖关系暂存
                 queue: []
             });
-            
             let filePath = opts.filename.replace(/\\/g, '/');
             modules.sourcePath = filePath;
             modules.current = filePath.replace(process.cwd().replace(/\\/g, '/'), '');
@@ -33,7 +32,7 @@ let miniAppPlugin = function(): PluginObj{
                 modules.componentType = 'Component';
             } else if (/\/pages\//.test(filePath)) {
                 modules.componentType = 'Page';
-            } else if (/app\.js$/.test(filePath)) {
+            } else if (/app\.[jt]s$/.test(filePath)) {
                 modules.componentType = 'App';
             }
             //如果是快应用
