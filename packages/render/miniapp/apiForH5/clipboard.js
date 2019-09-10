@@ -1,52 +1,41 @@
-import Clipboard from 'clipboard';
-import { handleSuccess, handleFail } from '../utils';
-
-/**
- * 获取系统剪贴板的内容
- */
-function getClipboardData() {
-  // 暂时无法实现
-}
+import { handleSuccess, handleFail } from "../utils";
 
 /**
  * 设置系统剪贴板的内容
+ * https://w3c.github.io/clipboard-apis/#dom-clipboard-writetext
  */
-function setClipboardData(options = {}) {
-  return new Promise(function(resolve, reject) {
-    const {
-      data = '',
-      success = () => {},
-      fail = () => {},
-      complete = () => {}
-    } = options;
-    try {
-      const aux = document.createElement('input');
-      aux.setAttribute('data-clipboard-text', data);
-      new Clipboard(aux);
-      aux.click();
-      handleSuccess(
-        {
-          errMsg: 'setClipboardData success',
-          data
-        },
-        success,
-        complete,
-        resolve
-      );
-    } catch (e) {
-      handleFail(
-        {
-          errMsg: e
-        },
-        fail,
-        complete,
-        reject
-      );
+function coolieMethod(input, success, fail, complete, method, msg) {
+    try{
+    return navigator.clipboard
+        [method](input)
+        .then(function(data) {
+            var ok = {
+                errMsg: msg,
+                data: data
+            };
+            handleSuccess(ok, success, complete);
+        })
+        .catch(function(e) {
+            var ng = { data: null, errMsg: e };
+            handleFail(ng, fail, complete);
+        });
+    }catch(e){
+      return  Promise.reject({
+        data: null, errMsg: e
+      }).catch(function(reason){
+         handleFail(reason, fail, complete);
+      })
     }
-  });
+}
+function setClipboardData({data, success, fail, complete }){
+    return coolieMethod(data, success, fail, complete, "writeText", 'setClipboardData:ok' )
+}
+function getClipboardData({success, fail, complete }){
+    return coolieMethod(null, success, fail, complete, "readText", 'getClipboardData:ok' )
 }
 
+
 export default {
-    // getClipboardData,
+    getClipboardData,
     setClipboardData
 };

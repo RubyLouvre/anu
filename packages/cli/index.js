@@ -20,6 +20,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const webpack_1 = __importDefault(require("webpack"));
 const path = __importStar(require("path"));
+const fs = __importStar(require("fs-extra"));
 const platforms_1 = __importDefault(require("./consts/platforms"));
 const queue_1 = require("./packages/utils/logger/queue");
 const index_1 = require("./packages/utils/logger/index");
@@ -31,11 +32,12 @@ const index_2 = __importDefault(require("./packages/utils/index"));
 const config_1 = __importDefault(require("./config/config"));
 const runBeforeParseTasks_1 = __importDefault(require("./tasks/runBeforeParseTasks"));
 const createH5Server_1 = __importDefault(require("./tasks/createH5Server"));
-function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, rules = [], prevLoaders = [], postLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = {}) {
+function nanachi(options = {}) {
     return __awaiter(this, void 0, void 0, function* () {
+        const { watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, typescript = false, rules = [], prevLoaders = [], postLoaders = [], prevJsLoaders = [], postJsLoaders = [], prevCssLoaders = [], postCssLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = options;
         function callback(err, stats) {
             if (err) {
-                console.log(err);
+                console.log(chalk_1.default.red(err.toString()));
                 return;
             }
             showLog();
@@ -93,6 +95,10 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
             if (!index_2.default.validatePlatform(platform, platforms_1.default)) {
                 throw new Error(`不支持的platform：${platform}`);
             }
+            const useTs = fs.existsSync(path.resolve(process.cwd(), './source/app.ts'));
+            if (useTs && !typescript) {
+                throw '检测到app.ts，请使用typescript模式编译(-t/--typescript)';
+            }
             injectBuildEnv({
                 platform,
                 compress,
@@ -110,9 +116,14 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
                 beta,
                 betaUi,
                 plugins,
+                typescript,
                 analysis,
                 prevLoaders,
                 postLoaders,
+                prevJsLoaders,
+                postJsLoaders,
+                prevCssLoaders,
+                postCssLoaders,
                 rules,
                 huawei
             });

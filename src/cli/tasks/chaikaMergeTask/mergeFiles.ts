@@ -364,9 +364,9 @@ export default function(){
     
     let queue = Array.from(mergeFilesQueue);
     
-    validateAppJsFileCount(queue);
-    validateConfigFileCount(queue);
-    validateMiniAppProjectConfigJson(queue);
+    // validateAppJsFileCount(queue);
+    // validateConfigFileCount(queue);
+    // validateMiniAppProjectConfigJson(queue);
 
     let map: any = getFilesMap(queue);
 
@@ -396,9 +396,11 @@ export default function(){
    
     //semver.satisfies('1.2.9', '~1.2.3')
     var installPkgList = installList.reduce(function(needInstall, pkg){
-        //@xxx@1.0.0 => xxx
-        var pkgName = pkg.replace(/^@/, '').split('@')[0];
-        var isExit = fs.existsSync( path.join(cwd, 'node_modules', pkgName, 'package.json'));
+        //@xxx/yyy@1.0.0 => xxx
+        var pkgMeta = pkg.split('@');
+        var pkgName = pkgMeta[0] === '' ? '@' + pkgMeta[1] : pkgMeta[0];
+        var p = path.join(cwd, 'node_modules', pkgName, 'package.json');
+        var isExit = fs.existsSync(p);
         if (!isExit) {
             needInstall.push(pkg);
         } 

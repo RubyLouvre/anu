@@ -4,7 +4,6 @@ import { createStore } from 'redux';
 import { reducer } from './store/index';
 import './pages/index/index';
 
-React.Provider = Provider;
 const store = new createStore(reducer, {
     value: 12,
     inputVal: 100
@@ -34,7 +33,7 @@ class Global extends React.Component {
         console.log('App launched');//eslint-disable-line
     }
     render() {
-        return <React.Provider store={store}>{this.props.children}</React.Provider>
+        return <Provider store={store}>{this.props.children}</Provider>
     }
 }
 // eslint-disable-next-line

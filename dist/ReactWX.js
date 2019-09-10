@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-08-20T12
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-09-10T08
  * IE9+
  */
 
@@ -186,7 +186,6 @@ Component.prototype = {
     }
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var RESERVED_PROPS = {
     key: true,
     ref: true,
@@ -327,7 +326,7 @@ function fiberizeChildren(children, fiber) {
     return fiber.children = flattenObject;
 }
 function getComponentKey(component, index) {
-    if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
+    if (Object(component).key != null) {
         return escape(component.key);
     }
     return index.toString(36);
@@ -896,9 +895,6 @@ var more = function more(api) {
         uploadFile: function _(a) {
             var cb = a.success || Number;
             a.success = function (res) {
-                if (res.data + '' === res.data) {
-                    res.data = JSON.parse(res.data);
-                }
                 cb(res);
             };
             return api.uploadFile(a);
@@ -946,7 +942,6 @@ function callGlobalHook(method, e) {
         return app[method](e);
     }
 }
-var delayMounts = [];
 var usingComponents = [];
 var registeredComponents = {};
 function getCurrentPage() {
@@ -975,32 +970,42 @@ function updateMiniApp(instance) {
         updateQuickApp(instance.wx, data);
     }
 }
-function refreshComponent(reactInstances, wx, uuid) {
+function refreshComponent(instances, wx, uuid) {
+    if (wx.disposed) {
+        return;
+    }
     var pagePath = Object(_getApp()).$$pagePath;
-    for (var i = 0, n = reactInstances.length; i < n; i++) {
-        var reactInstance = reactInstances[i];
-        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-            var fiber = get(reactInstance);
+    for (var i = 0, n = instances.length; i < n; i++) {
+        var instance = instances[i];
+        if (instance.$$pagePath === pagePath && !instance.wx && instance.instanceUid === uuid) {
+            var fiber = get(instance);
             if (fiber.disposed) {
+                console.log("fiber.disposed by nanachi");
                 continue;
             }
             if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
-                reactInstance = fiber.child.stateNode;
+                instance = fiber.child.stateNode;
             } else {
-                reactInstance = getWrappedComponent(fiber, reactInstance);
+                instance = getWrappedComponent(fiber, instance);
             }
-            reactInstance.wx = wx;
-            wx.reactInstance = reactInstance;
-            updateMiniApp(reactInstance);
-            return reactInstances.splice(i, 1);
+            instance.wx = wx;
+            wx.reactInstance = instance;
+            updateMiniApp(instance);
+            if (instance.$$componentDidMount) {
+                instance.$$componentDidMount();
+                instance.componentDidMount = instance.$$componentDidMount;
+                delete instance.$$componentDidMount;
+            }
+            return instances.splice(i, 1);
         }
     }
 }
 function detachComponent() {
     var t = this.reactInstance;
+    this.disposed = true;
     if (t) {
         t.wx = null;
-        this.reactInstance = null;
+        this.instance = null;
     }
 }
 function updateQuickApp(quick, data) {
@@ -1365,8 +1370,8 @@ function useReducerImpl(reducer, initValue, initAction) {
     var compute = reducer ? function (cursor, action) {
         return reducer(updateQueue[cursor], action || { type: Math.random() });
     } : function (cursor, value) {
-        var novel = updateQueue[cursor];
-        return typeof value == 'function' ? value(novel) : value;
+        var other = updateQueue[cursor];
+        return isFn(value) ? value(other) : value;
     };
     var dispatch = setter.bind(fiber, compute, key);
     if (key in updateQueue) {
@@ -2432,15 +2437,10 @@ var Renderer$1 = createRenderer({
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
+                    instance.$$componentDidMount = instance.componentDidMount;
+                    instance.componentDidMount = null;
                 }
             }
-        }
-        if (!app.$$pageIsReady && instance.componentDidMount) {
-            delayMounts.push({
-                instance: instance,
-                fn: instance.componentDidMount
-            });
-            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -2539,11 +2539,6 @@ function onLoad(PageClass, path, query) {
 function onReady() {
     var app = _getApp();
     app.$$pageIsReady = true;
-    var el = void 0;
-    while (el = delayMounts.pop()) {
-        el.fn.call(el.instance);
-        el.instance.componentDidMount = el.fn;
-    }
     callGlobalHook("onGlobalReady");
 }
 function onUnload() {

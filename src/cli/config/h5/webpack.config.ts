@@ -8,7 +8,7 @@ const config: webpack.Configuration = merge(developmentConfig, {
     module: {
         rules: [
             {
-                test: /\.jsx?$/,
+                test: /\.[jt]sx?$/,
                 loader: require.resolve('babel-loader'),
                 options: {
                     exclude: [/node_modules/],

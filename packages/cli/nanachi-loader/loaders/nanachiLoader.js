@@ -12,7 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const JavascriptParserFactory_1 = __importDefault(require("../../parsers/jsParser/JavascriptParserFactory"));
-const utils = require('../../packages/utils/index');
+const index_1 = __importDefault(require("../../packages/utils/index"));
+const queue_1 = require("../../packages/utils/logger/queue");
 module.exports = function (code, map, meta) {
     return __awaiter(this, void 0, void 0, function* () {
         const callback = this.async();
@@ -28,11 +29,14 @@ module.exports = function (code, map, meta) {
                 yield parser.parse();
             }
             catch (err) {
-                if (utils.isMportalEnv()) {
+                if (index_1.default.isMportalEnv()) {
                     console.log(err);
                     process.exit(1);
                 }
-                console.log(this.resourcePath, '\n', err);
+                queue_1.error.push({
+                    id: this.resourcePath,
+                    msg: err
+                });
             }
             let result = {
                 queues: parser.getExtraFiles(),

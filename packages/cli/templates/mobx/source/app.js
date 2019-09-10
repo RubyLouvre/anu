@@ -3,7 +3,6 @@ import { Provider } from 'mobx-react';
 import Store from './store/index';
 import './pages/index/index';
 
-React.Provider = Provider;
 const store = new Store();
 
 class Global extends React.Component {
@@ -30,7 +29,7 @@ class Global extends React.Component {
         console.log('App launched');//eslint-disable-line
     }
     render() {
-        return <React.Provider store={store}>{this.props.children}</React.Provider>
+        return <Provider store={store}>{this.props.children}</Provider>
     }
 }
 // eslint-disable-next-line

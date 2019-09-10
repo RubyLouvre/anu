@@ -1,7 +1,7 @@
 import { Renderer } from 'react-core/createRenderer';
 import { get, isFn } from 'react-core/util';
+import  {HOOK } from './effectTag'
 function setter(compute, cursor, value) {
-
     Renderer.batchedUpdates(() => { //解决钩子useXXX放在setTimeout不更新的问题
         this.updateQueue[cursor] = compute(cursor, value);
         Renderer.updateComponent(this, true);
@@ -37,8 +37,8 @@ export function useReducerImpl(reducer, initValue, initAction) {//ok
     let compute = reducer ? function (cursor, action) {
         return reducer(updateQueue[cursor], action || { type: Math.random() });
     } : function (cursor, value) {
-        let novel = updateQueue[cursor];
-        return typeof value == 'function' ? value(novel) : value;
+        let other = updateQueue[cursor];
+        return isFn( value ) ? value(other) : value;
     };
     let dispatch = setter.bind(fiber, compute, key);
 
@@ -94,12 +94,12 @@ export function useImperativeHandle(ref, create, deps) {
     const nextInputs = Array.isArray(deps) ? deps.concat([ref])
         : [ref, create];
     useEffectImpl(() => {
-        if (typeof ref === 'function') {
+        if (isFn( ref )) {
             const refCallback = ref;
             const inst = create();
             refCallback(inst);
             return () => refCallback(null);
-        } else if (ref !== null && ref !== undefined) {
+        } else if (Object(ref) === ref) {
             const refObject = ref;
             const inst = create();
             refObject.current = inst;
@@ -107,7 +107,7 @@ export function useImperativeHandle(ref, create, deps) {
                 refObject.current = null;
             };
         }
-    }, nextInputs);
+    }, nextInputs,  HOOK, 'layout', 'unlayout');
 }
 
 function getCurrentFiber() {

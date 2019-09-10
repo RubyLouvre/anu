@@ -53,14 +53,8 @@ platforms.forEach(function(el){
             des, 
             BUILD_OPTIONS,
             (options) => {
-                const args: {
-                    [propName: string]: any
-                } = {};
-                Object.keys(options).forEach(key => {
-                    args[key] = options.key;
-                });
                 build({
-                    ...args,
+                    ...options,
                     watch: compileType === 'watch',
                     buildType
                 });

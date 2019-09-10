@@ -311,9 +311,6 @@ function validateConfigFileCount(queue) {
 }
 function default_1() {
     let queue = Array.from(mergeFilesQueue);
-    validateAppJsFileCount(queue);
-    validateConfigFileCount(queue);
-    validateMiniAppProjectConfigJson(queue);
     let map = getFilesMap(queue);
     let tasks = [
         getMergedAppJsConent(getAppJsSourcePath(queue), map.pages),
@@ -330,8 +327,10 @@ function default_1() {
     }
     var installList = [...getNodeModulesList(map.pkgDependencies), ...getNodeModulesList(map.pkgDevDep)];
     var installPkgList = installList.reduce(function (needInstall, pkg) {
-        var pkgName = pkg.replace(/^@/, '').split('@')[0];
-        var isExit = fs.existsSync(path.join(cwd, 'node_modules', pkgName, 'package.json'));
+        var pkgMeta = pkg.split('@');
+        var pkgName = pkgMeta[0] === '' ? '@' + pkgMeta[1] : pkgMeta[0];
+        var p = path.join(cwd, 'node_modules', pkgName, 'package.json');
+        var isExit = fs.existsSync(p);
         if (!isExit) {
             needInstall.push(pkg);
         }

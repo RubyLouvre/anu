@@ -72,7 +72,10 @@ class JavascriptParser{
     }
     
     async parse():Promise<BabelRes> {
-        const res: BabelRes = await babel.transformFileAsync(this.filepath, this._babelPlugin);
+        const res: BabelRes = await babel.transformAsync(this.code, {
+            ...this._babelPlugin,
+            filename: this.filepath
+        });
         this.extraModules = res.options.anu && res.options.anu.extraModules || this.extraModules;
         this.parsedCode = res.code;
         this.ast = res.ast;

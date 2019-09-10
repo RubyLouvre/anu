@@ -25,7 +25,7 @@ const { deepMerge } = require('../../packages/utils/index');
 function default_1(args) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { buildType, beta, betaUi, watch, compress, huawei, analysis, silent } = args;
+            const { buildType, beta, betaUi, watch, compress, huawei, analysis, silent, typescript } = args;
             const nanachiConfig = {};
             const baseConfig = {
                 platform: buildType,
@@ -35,7 +35,8 @@ function default_1(args) {
                 watch,
                 huawei,
                 analysis,
-                silent
+                silent,
+                typescript
             };
             if (fs.existsSync(index_1.NANACHI_CONFIG_PATH)) {
                 const userConfig = require(index_1.NANACHI_CONFIG_PATH);

@@ -32,7 +32,7 @@ let miniAppPlugin = function () {
             else if (/\/pages\//.test(filePath)) {
                 modules.componentType = 'Page';
             }
-            else if (/app\.js$/.test(filePath)) {
+            else if (/app\.[jt]s$/.test(filePath)) {
                 modules.componentType = 'App';
             }
             if (config_1.default.buildType === 'quick' && modules.componentType) {

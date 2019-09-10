@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-08-20
+ * 运行于快应用的React by 司徒正美 Copyright 2019-09-10
  */
 
 var arrayPush = Array.prototype.push;
@@ -185,7 +185,6 @@ Component.prototype = {
     }
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var RESERVED_PROPS = {
     key: true,
     ref: true,
@@ -326,7 +325,7 @@ function fiberizeChildren(children, fiber) {
     return fiber.children = flattenObject;
 }
 function getComponentKey(component, index) {
-    if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
+    if (Object(component).key != null) {
         return escape(component.key);
     }
     return index.toString(36);
@@ -695,7 +694,6 @@ function callGlobalHook(method, e) {
         return app[method](e);
     }
 }
-var delayMounts = [];
 var usingComponents = [];
 var registeredComponents = {};
 function getCurrentPage() {
@@ -717,32 +715,42 @@ function updateMiniApp(instance) {
         updateQuickApp(instance.wx, data);
     }
 }
-function refreshComponent(reactInstances, wx, uuid) {
+function refreshComponent(instances, wx, uuid) {
+    if (wx.disposed) {
+        return;
+    }
     var pagePath = Object(_getApp()).$$pagePath;
-    for (var i = 0, n = reactInstances.length; i < n; i++) {
-        var reactInstance = reactInstances[i];
-        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-            var fiber = get(reactInstance);
+    for (var i = 0, n = instances.length; i < n; i++) {
+        var instance = instances[i];
+        if (instance.$$pagePath === pagePath && !instance.wx && instance.instanceUid === uuid) {
+            var fiber = get(instance);
             if (fiber.disposed) {
+                console.log("fiber.disposed by nanachi");
                 continue;
             }
             if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
-                reactInstance = fiber.child.stateNode;
+                instance = fiber.child.stateNode;
             } else {
-                reactInstance = getWrappedComponent(fiber, reactInstance);
+                instance = getWrappedComponent(fiber, instance);
             }
-            reactInstance.wx = wx;
-            wx.reactInstance = reactInstance;
-            updateMiniApp(reactInstance);
-            return reactInstances.splice(i, 1);
+            instance.wx = wx;
+            wx.reactInstance = instance;
+            updateMiniApp(instance);
+            if (instance.$$componentDidMount) {
+                instance.$$componentDidMount();
+                instance.componentDidMount = instance.$$componentDidMount;
+                delete instance.$$componentDidMount;
+            }
+            return instances.splice(i, 1);
         }
     }
 }
 function detachComponent() {
     var t = this.reactInstance;
+    this.disposed = true;
     if (t) {
         t.wx = null;
-        this.reactInstance = null;
+        this.instance = null;
     }
 }
 function updateQuickApp(quick, data) {
@@ -911,7 +919,7 @@ function request(_ref6) {
     });
 }
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
 function saveParse(str) {
     try {
@@ -928,7 +936,7 @@ function setStorage(_ref) {
         fail = _ref$fail === undefined ? noop : _ref$fail,
         complete = _ref.complete;
     var value = data;
-    if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
+    if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') {
         try {
             value = JSON.stringify(value);
         } catch (error) {
@@ -960,7 +968,7 @@ function clearStorage(obj) {
     storage.clear(obj);
 }
 function initStorageSync(storageCache) {
-    if ((typeof ReactQuick === 'undefined' ? 'undefined' : _typeof$1(ReactQuick)) !== 'object') {
+    if ((typeof ReactQuick === 'undefined' ? 'undefined' : _typeof(ReactQuick)) !== 'object') {
         return;
     }
     var apis = ReactQuick.api;
@@ -1400,7 +1408,7 @@ function createRouter(name) {
                 }
             }
             uri = getQueryFromUri(uri, params).replace(/\/index$/, '');
-            if (uri.charAt(0) !== '/' && !uri.test(/^(hap|https?)\:/)) {
+            if (uri.charAt(0) !== '/' && !uri.match(/^(hap|https?)\:/)) {
                 uri = '/' + uri;
             }
         }
@@ -1523,6 +1531,14 @@ function alipay(obj) {
     alipayAPI.pay(obj);
 }
 
+var account = require('@service.account');
+function accountGetProvider() {
+    return account.getProvider();
+}
+function accountAuthorize(options) {
+    return account.authorize(options);
+}
+
 function stopPullDownRefresh() {
     var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
         success = _ref.success,
@@ -1599,7 +1615,9 @@ function more() {
         wxpay: wxpay,
         alipay: alipay,
         getDeviceId: getDeviceId,
-        getUserId: getUserId
+        getUserId: getUserId,
+        accountGetProvider: accountGetProvider,
+        accountAuthorize: accountAuthorize
     };
 }
 
@@ -2101,8 +2119,8 @@ function useReducerImpl(reducer, initValue, initAction) {
     var compute = reducer ? function (cursor, action) {
         return reducer(updateQueue[cursor], action || { type: Math.random() });
     } : function (cursor, value) {
-        var novel = updateQueue[cursor];
-        return typeof value == 'function' ? value(novel) : value;
+        var other = updateQueue[cursor];
+        return isFn(value) ? value(other) : value;
     };
     var dispatch = setter.bind(fiber, compute, key);
     if (key in updateQueue) {
@@ -3168,15 +3186,10 @@ var Renderer$1 = createRenderer({
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
+                    instance.$$componentDidMount = instance.componentDidMount;
+                    instance.componentDidMount = null;
                 }
             }
-        }
-        if (!app.$$pageIsReady && instance.componentDidMount) {
-            delayMounts.push({
-                instance: instance,
-                fn: instance.componentDidMount
-            });
-            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -3334,11 +3347,6 @@ function onLoad(PageClass, path, query) {
 function onReady() {
     var app = _getApp();
     app.$$pageIsReady = true;
-    var el = void 0;
-    while (el = delayMounts.pop()) {
-        el.fn.call(el.instance);
-        el.instance.componentDidMount = el.fn;
-    }
     callGlobalHook("onGlobalReady");
 }
 function onUnload() {
@@ -3504,7 +3512,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.5.9',
+    version: '1.5.10',
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,

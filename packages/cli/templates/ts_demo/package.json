@@ -1,0 +1,22 @@
+{
+    "license": "MIT",
+    "version": "1.0.0",
+    "nanachi_project": true,
+    "name": "qunar",
+    "nanachi": {
+        "alias": {
+            "@assets": "source/assets",
+            "@common": "source/common"
+        }
+    },
+    "dependencies": {
+        "regenerator-runtime": "0.12.1"
+    },
+    "devDependencies": {
+        "eslint": "^5.16.0",
+        "eslint-plugin-nanachi": "latest",
+        "stylelint": "^10.0.1",
+        "stylelint-plugin-nanachi": "latest",
+        "typescript": "^3.6.2"
+    }
+}
