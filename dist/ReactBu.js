@@ -683,7 +683,7 @@ function detachComponent() {
     this.disposed = true;
     if (t) {
         t.wx = null;
-        this.instance = null;
+        this.reactInstance = null;
     }
 }
 function updateQuickApp(quick, data) {
