@@ -185,7 +185,6 @@ Component.prototype = {
     }
 };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var RESERVED_PROPS = {
     key: true,
     ref: true,
@@ -326,7 +325,7 @@ function fiberizeChildren(children, fiber) {
     return fiber.children = flattenObject;
 }
 function getComponentKey(component, index) {
-    if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
+    if (Object(component).key != null) {
         return escape(component.key);
     }
     return index.toString(36);
@@ -920,7 +919,7 @@ function request(_ref6) {
     });
 }
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 var storage = require('@system.storage');
 function saveParse(str) {
     try {
@@ -937,7 +936,7 @@ function setStorage(_ref) {
         fail = _ref$fail === undefined ? noop : _ref$fail,
         complete = _ref.complete;
     var value = data;
-    if ((typeof value === 'undefined' ? 'undefined' : _typeof$1(value)) === 'object') {
+    if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') {
         try {
             value = JSON.stringify(value);
         } catch (error) {
@@ -969,7 +968,7 @@ function clearStorage(obj) {
     storage.clear(obj);
 }
 function initStorageSync(storageCache) {
-    if ((typeof ReactQuick === 'undefined' ? 'undefined' : _typeof$1(ReactQuick)) !== 'object') {
+    if ((typeof ReactQuick === 'undefined' ? 'undefined' : _typeof(ReactQuick)) !== 'object') {
         return;
     }
     var apis = ReactQuick.api;
@@ -2120,8 +2119,8 @@ function useReducerImpl(reducer, initValue, initAction) {
     var compute = reducer ? function (cursor, action) {
         return reducer(updateQueue[cursor], action || { type: Math.random() });
     } : function (cursor, value) {
-        var novel = updateQueue[cursor];
-        return typeof value == 'function' ? value(novel) : value;
+        var other = updateQueue[cursor];
+        return isFn(value) ? value(other) : value;
     };
     var dispatch = setter.bind(fiber, compute, key);
     if (key in updateQueue) {

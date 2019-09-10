@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-09-10T03
+ * 运行于webview的React by 司徒正美 Copyright 2019-09-10T08
  * IE9+
  */
 
@@ -222,7 +222,6 @@
         }
     };
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     var RESERVED_PROPS = {
         key: true,
         ref: true,
@@ -386,7 +385,7 @@
         return fiber.children = flattenObject;
     }
     function getComponentKey(component, index) {
-        if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
+        if (Object(component).key != null) {
             return escape(component.key);
         }
         return index.toString(36);
@@ -1892,8 +1891,8 @@
         var compute = reducer ? function (cursor, action) {
             return reducer(updateQueue[cursor], action || { type: Math.random() });
         } : function (cursor, value) {
-            var novel = updateQueue[cursor];
-            return typeof value == 'function' ? value(novel) : value;
+            var other = updateQueue[cursor];
+            return isFn(value) ? value(other) : value;
         };
         var dispatch = setter.bind(fiber, compute, key);
         if (key in updateQueue) {
@@ -3518,15 +3517,6 @@
     'startBeaconDiscovery', 'stopBeaconDiscovery', 'getBeacons', 'onBeaconUpdate', 'onBeaconServiceChange',
     'hideKeyboard',
     'setKeepScreenOn', 'getScreenBrightness', 'setScreenBrightness '];
-    function canIUse(api) {
-        var apis = Object.keys(apiData).map(function (k) {
-            return k;
-        });
-        return apis.indexOf(api) >= 0 && NOTSUPPORTAPI.indexOf(api) < 0;
-    }
-    var canIUse$1 = {
-        canIUse: canIUse
-    };
 
     var CanvasContext = function CanvasContext(canvasId) {
         var canvasDom = document.getElementById(canvasId);
@@ -5177,7 +5167,7 @@
       vibrateShort: vibrateShort
     };
 
-    var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     function _classCallCheck$6(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
     var Err = 'ws不存在';
     var sockets = [];
@@ -5219,7 +5209,7 @@
                 _ref2$fail = _ref2.fail,
                 _ref2$complete = _ref2.complete,
                 complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
-            if ((typeof data === 'undefined' ? 'undefined' : _typeof$1(data)) !== 'object') {
+            if ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) !== 'object') {
                 throw new Error('type error!');
             }
             var args = Object.keys(data).map(function (key) {
@@ -5356,7 +5346,12 @@
 
     var interfaceNameSpaces = {
         call: call,
-        canIUse: canIUse$1,
+        canIUse: function canIUse(api) {
+            var apis = Object.keys(apiData).map(function (k) {
+                return k;
+            });
+            return apis.indexOf(api) >= 0 && NOTSUPPORTAPI.indexOf(api) < 0;
+        },
         canvas: canvas,
         clipboard: clipboard,
         file: file,
@@ -5379,7 +5374,7 @@
             return Object.assign({}, apis, interfaceNameSpaces[interfaceNameSpaceName]);
         }, {});
     }
-    var apiData = extractApis(interfaceNameSpaces);
+    extractApis(interfaceNameSpaces);
     var more = function more() {
         return extractApis(interfaceNameSpaces);
     };
@@ -5598,8 +5593,8 @@
         }
         if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
         var pageClass = React$2.__pages[path];
-        __currentPages.forEach(function (page, index, self) {
-            self[index] = React$2.cloneElement(self[index], {
+        __currentPages.forEach(function (page, index$$1, self) {
+            self[index$$1] = React$2.cloneElement(self[index$$1], {
                 show: false
             });
         });
