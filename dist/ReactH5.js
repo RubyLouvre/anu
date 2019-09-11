@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-09-10T08
+ * 运行于webview的React by 司徒正美 Copyright 2019-09-11T08
  * IE9+
  */
 
@@ -3154,7 +3154,7 @@
         this.disposed = true;
         if (t) {
             t.wx = null;
-            this.instance = null;
+            this.reactInstance = null;
         }
     }
     function updateQuickApp(quick, data) {

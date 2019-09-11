@@ -60,6 +60,8 @@ function nanachi(options = {}) {
             if (platform === 'h5') {
                 const configPath = watch ? './config/h5/webpack.config.js' : './config/h5/webpack.config.prod.js';
                 const webpackH5Config = require(configPath);
+                if (typescript)
+                    webpackH5Config.entry += '.tsx';
                 const compilerH5 = webpack_1.default(webpackH5Config);
                 if (watch) {
                     createH5Server_1.default(compilerH5);
@@ -95,14 +97,15 @@ function nanachi(options = {}) {
             if (!index_2.default.validatePlatform(platform, platforms_1.default)) {
                 throw new Error(`不支持的platform：${platform}`);
             }
-            const useTs = fs.existsSync(path.resolve(process.cwd(), './source/app.ts'));
+            const useTs = fs.existsSync(path.resolve(process.cwd(), './source/app.tsx'));
             if (useTs && !typescript) {
-                throw '检测到app.ts，请使用typescript模式编译(-t/--typescript)';
+                throw '检测到app.tsx，请使用typescript模式编译(-t/--typescript)';
             }
             injectBuildEnv({
                 platform,
                 compress,
-                huawei
+                huawei,
+                typescript
             });
             getWebViewRules();
             yield runBeforeParseTasks_1.default({ platform, beta, betaUi, compress });
@@ -140,10 +143,11 @@ function nanachi(options = {}) {
         }
     });
 }
-function injectBuildEnv({ platform, compress, huawei }) {
+function injectBuildEnv({ platform, compress, huawei, typescript }) {
     process.env.ANU_ENV = (platform === 'h5' ? 'web' : platform);
     config_1.default['buildType'] = platform;
     config_1.default['compress'] = compress;
+    config_1.default['typescript'] = typescript;
     if (platform === 'quick') {
         config_1.default['huawei'] = huawei || false;
     }

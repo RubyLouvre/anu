@@ -31,7 +31,7 @@ const webpackConfig: webpack.Configuration = {
     mode: 'development',
     context,
     target: 'web',
-    entry: resolveFromContext(`${intermediateDirectoryName}/app.js`),
+    entry: resolveFromContext(`${intermediateDirectoryName}/app`),
     output: {
         path: resolveFromDirCwd(outputDirectory),
         filename: 'bundle.[hash:10].js',
@@ -52,7 +52,8 @@ const webpackConfig: webpack.Configuration = {
             // '@pageConfig': resolveFromContext(`${intermediateDirectoryName}/pageConfig.js`),
             '@qunar-default-loading': resolveFromH5Helper('components/Loading'),
         },
-        modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')]
+        modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')],
+        extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
     },
     module: {
         rules: [

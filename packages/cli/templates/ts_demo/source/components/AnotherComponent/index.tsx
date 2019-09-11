@@ -1,12 +1,23 @@
 // eslint-disable-next-line
 import React from '@react';
+import { observer, inject } from 'mobx-react';
 
-interface ComponentProps {
-    text: string;
+declare namespace React {
+    class Component {
+        props: any;
+    }
 }
 
-export default function AnotherComponent(props: ComponentProps) {
-    //它要表示为一个组件，因此必须 大写开头
-    console.log('AnotherComponent init'); //debug
-    return <div> {props.text} </div>;
+@inject(
+    (state: any) => ({
+        addText: state.store.addText
+    })
+)
+@observer
+class AnotherComponent extends React.Component{
+    render() {
+        return <div onClick={() => {this.props.addText()}}> {this.props.text} </div>;
+    }
 }
+
+export default AnotherComponent;

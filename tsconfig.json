@@ -9,7 +9,7 @@
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "target": "es6",
-        "declaration": true,
+        "declaration": true
     },
     "include": [
         "src/**/*"

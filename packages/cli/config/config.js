@@ -94,6 +94,7 @@ const config = {
     buildDir: buildDir,
     sourceDir: sourceDir,
     huawei: false,
+    typescript: false,
     patchComponents: {},
     pluginTags: {},
     plugins: {}

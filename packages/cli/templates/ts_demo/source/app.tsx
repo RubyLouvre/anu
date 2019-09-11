@@ -1,8 +1,18 @@
 import React from '@react';
 import './pages/index/index';
+import Store from './store/index';
+import { Provider } from 'mobx-react';
 
 declare let App: any;
 declare let global: any;
+
+const store = new Store();
+
+declare namespace React {
+    class Component {
+        props: any;
+    }
+}
 
 class Global extends React.Component {
     globalData = {}
@@ -27,6 +37,9 @@ class Global extends React.Component {
             };
         }
         console.log('App launched');//eslint-disable-line
+    }
+    render() {
+        return <Provider store={store}>{this.props.children}</Provider>
     }
 }
 // eslint-disable-next-line

@@ -10,6 +10,8 @@
         }
     },
     "dependencies": {
+        "mobx": "^4.13.0",
+        "mobx-react": "^5.4.4",
         "regenerator-runtime": "0.12.1"
     },
     "devDependencies": {

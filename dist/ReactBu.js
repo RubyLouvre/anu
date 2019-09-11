@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-10
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-11
  */
 
 var arrayPush = Array.prototype.push;
@@ -683,7 +683,7 @@ function detachComponent() {
     this.disposed = true;
     if (t) {
         t.wx = null;
-        this.instance = null;
+        this.reactInstance = null;
     }
 }
 function updateQuickApp(quick, data) {
