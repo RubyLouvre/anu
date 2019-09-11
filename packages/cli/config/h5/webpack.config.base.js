@@ -33,7 +33,7 @@ const webpackConfig = {
     mode: 'development',
     context,
     target: 'web',
-    entry: resolveFromContext(`${configurations_1.intermediateDirectoryName}/app.js`),
+    entry: resolveFromContext(`${configurations_1.intermediateDirectoryName}/app`),
     output: {
         path: resolveFromDirCwd(configurations_1.outputDirectory),
         filename: 'bundle.[hash:10].js',
@@ -41,7 +41,8 @@ const webpackConfig = {
     },
     resolve: {
         alias: Object.assign({}, configurations_1.retrieveNanachiConfig(), { react: resolveFromDirCwd('./source/ReactH5.js'), '@react': resolveFromDirCwd('./source/ReactH5.js'), 'react-dom': resolveFromDirCwd('./source/ReactH5.js'), 'schnee-ui': resolveFromContext(`${configurations_1.intermediateDirectoryName}/npm/schnee-ui`), '@internalComponents': resolveFromH5Helper('components'), '@internalConsts': path.resolve(__dirname, '../../consts/'), '@components': resolveFromContext(`${configurations_1.intermediateDirectoryName}/components`), '@qunar-default-loading': resolveFromH5Helper('components/Loading') }),
-        modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')]
+        modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')],
+        extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
     },
     module: {
         rules: [

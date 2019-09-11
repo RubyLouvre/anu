@@ -30,6 +30,7 @@ export interface GlobalConfigMap {
     pluginTags: any;
     plugins: any;
     compress?: boolean;
+    typescript?: boolean;
     WebViewRules?: any;
     [Platforms.wx]: PlatConfig;
     [Platforms.qq]: PlatConfig;

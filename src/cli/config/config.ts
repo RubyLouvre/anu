@@ -45,6 +45,7 @@ export interface GlobalConfigMap {
     pluginTags: any;
     plugins: any;
     compress?: boolean;
+    typescript?: boolean;
     WebViewRules?: any; // TODO
     [Platforms.wx]: PlatConfig;
     [Platforms.qq]: PlatConfig;
@@ -121,6 +122,7 @@ const config: GlobalConfigMap =  {
     buildDir: buildDir,   //非快应用项目默认构建目录为dist
     sourceDir: sourceDir,  //默认生成的源码目录
     huawei: false,
+    typescript: false,
     patchComponents: {}, // 项目中使用的补丁组件
     pluginTags: {},
     plugins: {}

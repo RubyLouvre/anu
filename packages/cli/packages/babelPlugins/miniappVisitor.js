@@ -116,6 +116,20 @@ const visitor = {
             }
         }
     },
+    VariableDeclaration: {
+        enter(astPath) {
+            const decl = astPath.get('declarations')[0];
+            if (config_1.default.typescript &&
+                astPath.parent.type === 'Program' &&
+                decl.type === 'VariableDeclarator' &&
+                decl.get('init').type === 'ClassExpression') {
+                const body = decl.get('init').get('body').node;
+                const id = decl.get('init').get('id').node;
+                const superClass = decl.get('init').get('superClass').node;
+                astPath.replaceWith(t.classDeclaration(id, superClass, body));
+            }
+        }
+    },
     FunctionDeclaration: {
         exit(astPath, state) {
             let modules = utils_1.default.getAnu(state);

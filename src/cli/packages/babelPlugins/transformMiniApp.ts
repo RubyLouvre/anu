@@ -32,7 +32,7 @@ let miniAppPlugin = function(): PluginObj{
                 modules.componentType = 'Component';
             } else if (/\/pages\//.test(filePath)) {
                 modules.componentType = 'Page';
-            } else if (/app\.[jt]s$/.test(filePath)) {
+            } else if (/app\.[jt]sx?$/.test(filePath)) {
                 modules.componentType = 'App';
             }
             //如果是快应用
