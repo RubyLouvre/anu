@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-09-11T08
+ * 运行于webview的React by 司徒正美 Copyright 2019-09-11T11
  * IE9+
  */
 
@@ -3399,7 +3399,9 @@
       chooseInvoiceTitle: true,
       checkIsSupportSoterAuthentication: true,
       startSoterAuthentication: true,
-      checkIsSoterEnrolledInDevice: true
+      checkIsSoterEnrolledInDevice: true,
+      setBackgroundColor: true,
+      setBackgroundTextStyle: true
     };
 
     function promisefyApis(ReactWX, facade, more) {
