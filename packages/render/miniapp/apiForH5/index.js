@@ -1,6 +1,6 @@
 // 禁止使用 require() ！
 import call from './call';
-// import canIUse from './canIUse';
+import {NOTSUPPORTAPI} from './canIUse';
 import canvas from './canvas';
 import clipboard from './clipboard';
 import file from './file';
@@ -18,36 +18,14 @@ import ws from './ws';
 import share from './share';
 import notSupport from './notSupport';
 
-const NOTSUPPORTAPI = [
-    // 位置
-    'openLocation',
-    'chooseLocation',
-    // 剪切板
-    'getClipboardData',
-    // 图片
-    'saveImageToPhotosAlbum',
-    // 网络
-    'getNetworkType',
-    'onNetworkStatusChange',
-    // iBeacon
-    'startBeaconDiscovery',
-    'stopBeaconDiscovery',
-    'getBeacons',
-    'onBeaconUpdate',
-    'onBeaconServiceChange',
-    // 键盘
-    'hideKeyboard',
-    // 屏幕
-    'setKeepScreenOn',
-    'getScreenBrightness',
-    'setScreenBrightness '
-];
-
 const interfaceNameSpaces = {
     call,
-    canIUse: function(api) {
-        const apis = Object.keys(apiData).map(k => k);
-        return apis.indexOf(api) >= 0 && NOTSUPPORTAPI.indexOf(api) < 0;
+    canIUse: function(api){
+     
+            const apis = Object.keys(apiData).map(k => k);
+        
+            return apis.indexOf(api) >= 0 && NOTSUPPORTAPI.indexOf(api) < 0;
+        
     },
     canvas,
     clipboard,

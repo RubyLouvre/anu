@@ -75,31 +75,37 @@ export function updateMiniApp (instance) {
         updateQuickApp(instance.wx, data);
     }
 }
-export function refreshComponent (reactInstances, wx, uuid) {
+export function refreshComponent (instances, wx, uuid) {
     if(wx.disposed){
         return 
     }
     let pagePath = Object(_getApp()).$$pagePath;
-    for (let i = 0, n = reactInstances.length ;i < n; i++) {
-        let reactInstance = reactInstances[i];
+    for (let i = 0, n = instances.length ;i < n; i++) {
+        let instance = instances[i];
         //处理组件A包含组件时B，当出现多个A组件，B组件会串的问题
-        if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-            var fiber = get(reactInstance)
+        if (instance.$$pagePath === pagePath && !instance.wx && instance.instanceUid === uuid) {
+            var fiber = get(instance)
             if(fiber.disposed){
                console.log("fiber.disposed by nanachi");
                continue;
             }
             //处理mobx
             if(fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector'){
-                reactInstance = fiber.child.stateNode;
+                instance = fiber.child.stateNode;
             } else {
                 // 处理redux与普通情况
-                reactInstance = getWrappedComponent(fiber, reactInstance);
+                instance = getWrappedComponent(fiber, instance);
             }
-            reactInstance.wx = wx;
-            wx.reactInstance = reactInstance;
-            updateMiniApp(reactInstance);
-            return reactInstances.splice(i, 1);
+            
+            instance.wx = wx;
+            wx.reactInstance = instance;
+            updateMiniApp(instance);
+            if(instance.$$componentDidMount){
+               instance.$$componentDidMount();
+               instance.componentDidMount = instance.$$componentDidMount ;
+               delete instance.$$componentDidMount;
+            }
+            return instances.splice(i, 1);
         }
     }
 }

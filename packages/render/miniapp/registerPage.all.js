@@ -68,11 +68,11 @@ export function onLoad(PageClass, path, query) {
 export function onReady() {
     var app = _getApp();
     app.$$pageIsReady = true;
-    let el = void 0;
-    while ((el = delayMounts.pop())) {
-        el.fn.call(el.instance);
-        el.instance.componentDidMount = el.fn;
-    }
+  //  let el = void 0;
+  //  while ((el = delayMounts.pop())) {
+  //      el.fn.call(el.instance);
+  //     el.instance.componentDidMount = el.fn;
+  // }
     callGlobalHook("onGlobalReady");
 }
 

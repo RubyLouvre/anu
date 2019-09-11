@@ -1,6 +1,6 @@
-import apiData from './index';
+//import apiData from './index';
 
-const NOTSUPPORTAPI = [
+export const NOTSUPPORTAPI = [
     // 位置
     'openLocation',
     'chooseLocation',
@@ -28,7 +28,7 @@ const NOTSUPPORTAPI = [
  * canIUse
  * @param {string} api Api名字
  */
-
+/*
 function canIUse(api) {
     const apis = Object.keys(apiData).map(k => k);
 
@@ -38,3 +38,4 @@ function canIUse(api) {
 export default {
     canIUse
 };
+*/

@@ -1,14 +1,14 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-09-10T06
+ * 运行于webview的React by 司徒正美 Copyright 2019-09-11T08
  * IE9+
  */
 
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('@react'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
     typeof define === 'function' && define.amd ? define(['@react', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
-    (global = global || self, global.React = factory(global.React$2, global.axios, global.qs, global.MobileDetect, global.io));
-}(this, function (React$2, axios, qs, MobileDetect, io) {
-    React$2 = React$2 && React$2.hasOwnProperty('default') ? React$2['default'] : React$2;
+    (global.React = factory(global.React$1,global.axios,global.qs,global.MobileDetect,global.io));
+}(this, (function (React$1,axios,qs,MobileDetect,io) {
+    React$1 = React$1 && React$1.hasOwnProperty('default') ? React$1['default'] : React$1;
     axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
     qs = qs && qs.hasOwnProperty('default') ? qs['default'] : qs;
     MobileDetect = MobileDetect && MobileDetect.hasOwnProperty('default') ? MobileDetect['default'] : MobileDetect;
@@ -207,7 +207,7 @@
             toWarnDev("replaceState", true);
         },
         isReactComponent: returnTrue,
-        isMounted: function isMounted() {
+        isMounted: function isMounted$$1() {
             toWarnDev("isMounted", true);
             return this.updater.isMounted(this);
         },
@@ -222,7 +222,6 @@
         }
     };
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     var RESERVED_PROPS = {
         key: true,
         ref: true,
@@ -386,7 +385,7 @@
         return fiber.children = flattenObject;
     }
     function getComponentKey(component, index) {
-        if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
+        if (Object(component).key != null) {
             return escape(component.key);
         }
         return index.toString(36);
@@ -477,7 +476,7 @@
         forEach: function forEach(children, func, context) {
             return proxyIt(children, func, null, context);
         },
-        toArray: function toArray(children) {
+        toArray: function toArray$$1(children) {
             return proxyIt(children, K, []);
         }
     };
@@ -1848,12 +1847,12 @@
             arr.splice(index, 1);
         }
     }
-    function detachFiber(fiber, effects) {
+    function detachFiber(fiber, effects$$1) {
         fiber.effectTag = DETACH;
-        effects.push(fiber);
+        effects$$1.push(fiber);
         fiber.disposed = true;
         for (var child = fiber.child; child; child = child.sibling) {
-            detachFiber(child, effects);
+            detachFiber(child, effects$$1);
         }
     }
 
@@ -1892,8 +1891,8 @@
         var compute = reducer ? function (cursor, action) {
             return reducer(updateQueue[cursor], action || { type: Math.random() });
         } : function (cursor, value) {
-            var novel = updateQueue[cursor];
-            return typeof value == 'function' ? value(novel) : value;
+            var other = updateQueue[cursor];
+            return isFn(value) ? value(other) : value;
         };
         var dispatch = setter.bind(fiber, compute, key);
         if (key in updateQueue) {
@@ -2326,7 +2325,7 @@
             oldFibers = {};
         }
         var newFibers = fiberizeChildren(children, parentFiber);
-        var effects = parentFiber.effects || (parentFiber.effects = []);
+        var effects$$1 = parentFiber.effects || (parentFiber.effects = []);
         var matchFibers = new Object();
         delete parentFiber.child;
         for (var i in oldFibers) {
@@ -2339,7 +2338,7 @@
                 }
                 continue;
             }
-            detachFiber(oldFiber, effects);
+            detachFiber(oldFiber, effects$$1);
         }
         var prevFiber = void 0,
             index = 0;
@@ -2359,13 +2358,13 @@
                         delete _newFiber.deleteRef;
                     }
                     if (oldRef && oldRef !== _newFiber.ref) {
-                        effects.push(alternate);
+                        effects$$1.push(alternate);
                     }
                     if (_newFiber.tag === 5) {
                         _newFiber.lastProps = alternate.props;
                     }
                 } else {
-                    detachFiber(_oldFiber, effects);
+                    detachFiber(_oldFiber, effects$$1);
                 }
             } else {
                 _newFiber = new Fiber(_newFiber);
@@ -2481,10 +2480,10 @@
             }
         }
     }
-    function commitDFS(effects) {
+    function commitDFS(effects$$1) {
         Renderer.batchedUpdates(function () {
             var el;
-            while (el = effects.shift()) {
+            while (el = effects$$1.shift()) {
                 if (el.effectTag === DETACH && el.caughtError) {
                     disposeFiber(el);
                 } else {
@@ -2592,7 +2591,7 @@
     }
     function safeInvokeHooks(upateQueue, create, destory) {
         var uneffects = upateQueue[destory],
-            effects = upateQueue[create],
+            effects$$1 = upateQueue[create],
             fn;
         if (!uneffects) {
             return;
@@ -2602,7 +2601,7 @@
                 fn();
             } catch (e) {      }
         }
-        while (fn = effects.shift()) {
+        while (fn = effects$$1.shift()) {
             try {
                 var f = fn();
                 if (typeof f === 'function') {
@@ -3081,7 +3080,7 @@
         dom._reactInternalFiber = null;
     }
 
-    var noop$1 = function noop() {};
+    var noop$1 = function noop$$1() {};
     var fakeApp = {
         app: {
             globalData: {}
@@ -3120,28 +3119,33 @@
             updateQuickApp(instance.wx, data);
         }
     }
-    function refreshComponent(reactInstances, wx, uuid) {
+    function refreshComponent(instances, wx, uuid) {
         if (wx.disposed) {
             return;
         }
         var pagePath = Object(_getApp()).$$pagePath;
-        for (var i = 0, n = reactInstances.length; i < n; i++) {
-            var reactInstance = reactInstances[i];
-            if (reactInstance.$$pagePath === pagePath && !reactInstance.wx && reactInstance.instanceUid === uuid) {
-                var fiber = get(reactInstance);
+        for (var i = 0, n = instances.length; i < n; i++) {
+            var instance = instances[i];
+            if (instance.$$pagePath === pagePath && !instance.wx && instance.instanceUid === uuid) {
+                var fiber = get(instance);
                 if (fiber.disposed) {
                     console.log("fiber.disposed by nanachi");
                     continue;
                 }
                 if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
-                    reactInstance = fiber.child.stateNode;
+                    instance = fiber.child.stateNode;
                 } else {
-                    reactInstance = getWrappedComponent(fiber, reactInstance);
+                    instance = getWrappedComponent(fiber, instance);
                 }
-                reactInstance.wx = wx;
-                wx.reactInstance = reactInstance;
-                updateMiniApp(reactInstance);
-                return reactInstances.splice(i, 1);
+                instance.wx = wx;
+                wx.reactInstance = instance;
+                updateMiniApp(instance);
+                if (instance.$$componentDidMount) {
+                    instance.$$componentDidMount();
+                    instance.componentDidMount = instance.$$componentDidMount;
+                    delete instance.$$componentDidMount;
+                }
+                return instances.splice(i, 1);
             }
         }
     }
@@ -3504,6 +3508,15 @@
     var call = {
         makePhoneCall: makePhoneCall
     };
+
+    var NOTSUPPORTAPI = [
+    'openLocation', 'chooseLocation',
+    'getClipboardData',
+    'saveImageToPhotosAlbum',
+    'getNetworkType', 'onNetworkStatusChange',
+    'startBeaconDiscovery', 'stopBeaconDiscovery', 'getBeacons', 'onBeaconUpdate', 'onBeaconServiceChange',
+    'hideKeyboard',
+    'setKeepScreenOn', 'getScreenBrightness', 'setScreenBrightness '];
 
     var CanvasContext = function CanvasContext(canvasId) {
         var canvasDom = document.getElementById(canvasId);
@@ -4349,7 +4362,7 @@
             }, this.props.success, this.props.complete, this.props.resolve);
         };
         PreviewImage.prototype.componentWillUnmount = function componentWillUnmount() {
-            React$2.api.previewImageSingleton = null;
+            React$1.api.previewImageSingleton = null;
             var el = this.container;
             if (el && el.parentNode) {
                 el.parentNode.removeChild(el);
@@ -4379,11 +4392,11 @@
             this.componentWillUnmount();
         };
         PreviewImage.prototype.render = function render() {
-            return React$2.createElement(
+            return React$1.createElement(
                 'div',
                 { className: 'showImg2019' },
-                React$2.createElement('image', { src: this.state.current }),
-                React$2.createElement('style', { ref: function ref(node) {
+                React$1.createElement('image', { src: this.state.current }),
+                React$1.createElement('style', { ref: function ref(node) {
                         Object(node).textContent = '\n                    .showImg2019{\n                        display: flex;\n                        flex-direction: column;\n                        align-items: center;\n                        justify-content: center;\n                        position: fixed;\n                        width:100%;\n                    }\n                    .showImg2019 img{\n                        width:100%;\n                    }';
                     } })
             );
@@ -4401,7 +4414,7 @@
                 fail = _options$fail === undefined ? function () {} : _options$fail,
                 _options$complete = options.complete,
                 complete = _options$complete === undefined ? function () {} : _options$complete;
-            var instance = React$2.api.previewImageSingleton;
+            var instance = React$1.api.previewImageSingleton;
             var el = document.querySelector('#h5-api-previewMask');
             if (!el) {
                 var id = 'h5-api-previewMask';
@@ -4446,7 +4459,7 @@
                         }
                     }
                 };
-                React$2.render(React$2.createElement(PreviewImage, {
+                React$1.render(React$1.createElement(PreviewImage, {
                     success: success,
                     fail: fail,
                     urls: urls,
@@ -4456,7 +4469,7 @@
                     reject: reject,
                     ref: function ref(refs) {
                         if (refs) {
-                            instance = React$2.api.previewImageSingleton = refs;
+                            instance = React$1.api.previewImageSingleton = refs;
                         }
                     }
                 }), container, function () {
@@ -5154,7 +5167,7 @@
       vibrateShort: vibrateShort
     };
 
-    var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     function _classCallCheck$6(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
     var Err = 'ws不存在';
     var sockets = [];
@@ -5196,7 +5209,7 @@
                 _ref2$fail = _ref2.fail,
                 _ref2$complete = _ref2.complete,
                 complete = _ref2$complete === undefined ? function () {} : _ref2$complete;
-            if ((typeof data === 'undefined' ? 'undefined' : _typeof$1(data)) !== 'object') {
+            if ((typeof data === 'undefined' ? 'undefined' : _typeof(data)) !== 'object') {
                 throw new Error('type error!');
             }
             var args = Object.keys(data).map(function (key) {
@@ -5331,14 +5344,6 @@
         createShortcut: notSupport('createShortcut')
     };
 
-    var NOTSUPPORTAPI = [
-    'openLocation', 'chooseLocation',
-    'getClipboardData',
-    'saveImageToPhotosAlbum',
-    'getNetworkType', 'onNetworkStatusChange',
-    'startBeaconDiscovery', 'stopBeaconDiscovery', 'getBeacons', 'onBeaconUpdate', 'onBeaconServiceChange',
-    'hideKeyboard',
-    'setKeepScreenOn', 'getScreenBrightness', 'setScreenBrightness '];
     var interfaceNameSpaces = {
         call: call,
         canIUse: function canIUse(api) {
@@ -5519,7 +5524,7 @@
     var render$2 = DOMRenderer.render;
     var __currentPages = [];
     var MAX_PAGE_STACK_NUM = 10;
-    var React$1 = getWindow().React = {
+    var React$2 = getWindow().React = {
         findDOMNode: findDOMNode,
         version: '1.5.10',
         render: render$2,
@@ -5536,7 +5541,7 @@
         isValidElement: isValidElement,
         toClass: miniCreateClass,
         registerComponent: registerComponent,
-        getCurrentPage: function getCurrentPage() {
+        getCurrentPage: function getCurrentPage$$1() {
             return __currentPages[__currentPages.length - 1];
         },
         getCurrentPages: function getCurrentPages() {
@@ -5581,24 +5586,24 @@
             _getQuery2 = _slicedToArray(_getQuery, 2),
             path = _getQuery2[0],
             query = _getQuery2[1];
-        var appInstance = React$1.__app;
+        var appInstance = React$2.__app;
         var appConfig = appInstance.constructor.config;
         if (appConfig.pages.indexOf(path) === -1) {
             throw "没有注册该页面: " + path;
         }
         if (__currentPages.length >= MAX_PAGE_STACK_NUM) __currentPages.shift();
-        var pageClass = React$1.__pages[path];
-        __currentPages.forEach(function (page, index, self) {
-            self[index] = React$1.cloneElement(self[index], {
+        var pageClass = React$2.__pages[path];
+        __currentPages.forEach(function (page, index$$1, self) {
+            self[index$$1] = React$2.cloneElement(self[index$$1], {
                 show: false
             });
         });
-        var pageInstance = React$1.createElement(pageClass, {
-            isTabPage: React$1.__isTab(path),
+        var pageInstance = React$2.createElement(pageClass, {
+            isTabPage: React$2.__isTab(path),
             path: path,
             query: query,
             url: url,
-            app: React$1.__app,
+            app: React$2.__app,
             show: true,
             needBackButton: __currentPages.length > 0 ? true : false
         });
@@ -5643,7 +5648,7 @@
                 var url = page.props.url;
                 history.pushState({ url: url }, null, prefix + url);
             });
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({
                 showBackAnimation: true
             });
@@ -5655,7 +5660,7 @@
                 var _currentPages$props = __currentPages[__currentPages.length - 1].props,
                     path = _currentPages$props.path,
                     query = _currentPages$props.query;
-                React$1.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
+                React$2.api.redirectTo({ url: path + parseObj2Query(query), success: success, fail: fail, complete: complete });
             }, 300);
         },
         switchTab: function switchTab(_ref2) {
@@ -5667,7 +5672,7 @@
                 _getQuery4 = _slicedToArray(_getQuery3, 2),
                 path = _getQuery4[0],
                 query = _getQuery4[1];
-            var config = React$1.__app.constructor.config;
+            var config = React$2.__app.constructor.config;
             if (config && config.tabBar && config.tabBar.list) {
                 if (config.tabBar.list.length < 2 || config.tabBar.list.length > 5) {
                     console.warn('tabBar数量非法，必须大于2且小于5个');
@@ -5700,7 +5705,7 @@
             __currentPages.push(cloneElement(currentPage, {
                 config: processedOptions
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         setNavigationBarTitle: function setNavigationBarTitle(options) {
@@ -5712,15 +5717,15 @@
             __currentPages.push(cloneElement(currentPage, {
                 config: processedOptions
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         stopPullDownRefresh: function stopPullDownRefresh() {
-            var pageInstance = React$1.getCurrentPages().pop();
-            React$1.getCurrentPages().push(cloneElement(pageInstance, {
+            var pageInstance = React$2.getCurrentPages().pop();
+            React$2.getCurrentPages().push(cloneElement(pageInstance, {
                 stopPullDownRefresh: true
             }));
-            var appInstance = React$1.__app;
+            var appInstance = React$2.__app;
             appInstance.setState({});
         },
         createModal: function createModal(instance) {
@@ -5754,8 +5759,8 @@
             return key + '=' + obj[key];
         }).join('&');
     }
-    registerAPIs(React$1, apiContainer, more);
+    registerAPIs(React$2, apiContainer, more);
 
-    return React$1;
+    return React$2;
 
-}));
+})));
