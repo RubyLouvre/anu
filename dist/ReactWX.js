@@ -780,7 +780,9 @@ var otherApis = {
   chooseInvoiceTitle: true,
   checkIsSupportSoterAuthentication: true,
   startSoterAuthentication: true,
-  checkIsSoterEnrolledInDevice: true
+  checkIsSoterEnrolledInDevice: true,
+  setBackgroundColor: true,
+  setBackgroundTextStyle: true
 };
 
 function promisefyApis(ReactWX, facade, more) {

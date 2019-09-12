@@ -69,7 +69,7 @@ function registerPageOrComponent(name: string, path: NodePath<t.ExportDefaultDec
     }
 }
 
-const visitor = {
+const visitor:babel.Visitor = {
     ClassDeclaration: helpers.classDeclaration,
     //babel 6 没有ClassDeclaration，只有ClassExpression
     ClassExpression: helpers.classDeclaration,
@@ -162,7 +162,27 @@ const visitor = {
             }
         }
     },
-
+    VariableDeclaration: {
+        /**
+         * typescript装饰器补丁
+         * typescript不支持关闭自带装饰器编译，参考:https://github.com/microsoft/TypeScript/issues/16882。
+         * 使用装饰器时class P {}会编译成let P = class P {}，与原先编译器逻辑冲突，此处去掉let P =
+         *  */ 
+        enter(astPath) {
+            const decl = astPath.get('declarations')[0];
+            if (
+                config.typescript && 
+                astPath.parent.type === 'Program' && 
+                decl.type === 'VariableDeclarator' && 
+                decl.get('init').type === 'ClassExpression'
+            ) {
+                const body = (decl.get('init').get('body') as any).node;
+                const id = (decl.get('init').get('id') as any).node;
+                const superClass =  (decl.get('init').get('superClass') as any).node;
+                astPath.replaceWith(t.classDeclaration(id, superClass, body));
+            }
+        }
+    },
     FunctionDeclaration: {
         //enter里面会转换jsx中的JSXExpressionContainer
         exit(astPath: NodePath<t.FunctionDeclaration>, state: any) {
