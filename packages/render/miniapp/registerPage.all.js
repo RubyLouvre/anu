@@ -19,13 +19,7 @@ export function onLoad(PageClass, path, query, fire ) {
    // app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
-    let container = {
-        type: "page",
-        props: {},
-        children: [],
-        root: true,
-        appendChild: noop
-    };
+    var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
         render(
@@ -45,7 +39,7 @@ export function onLoad(PageClass, path, query, fire ) {
                     }
                 })
             ),
-            container
+            dom
         );
     } else {
         pageInstance = render(
@@ -55,13 +49,13 @@ export function onLoad(PageClass, path, query, fire ) {
                 query: query,
                 isPageComponent: true
             }),
-            container
+            dom
         );
     }
     if(fire){
         callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
     }
-    this.reactContainer = container;
+    this.reactContainer = dom;
     this.reactInstance = pageInstance;
     pageInstance.wx = this; //保存小程序的页面对象
     updateMiniApp(pageInstance); //更新小程序视图
@@ -102,5 +96,5 @@ export function onUnload() {
         );
     }
     callGlobalHook("onGlobalUnload");
-    //this.reactInstance = null;
+    this.reactContainer = null;
 }

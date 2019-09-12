@@ -2526,13 +2526,7 @@ function onLoad(PageClass, path, query, fire) {
     var GlobalApp = _getGlobalApp(app);
     app.$$page = this;
     app.$$pagePath = path;
-    var container = {
-        type: "page",
-        props: {},
-        children: [],
-        root: true,
-        appendChild: noop
-    };
+    var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
         render(createElement(GlobalApp, { key: 'g' }, createElement(PageClass, {
@@ -2543,19 +2537,19 @@ function onLoad(PageClass, path, query, fire) {
             ref: function ref(ins) {
                 if (ins) pageInstance = ins.wrappedInstance || getWrappedComponent(get(ins), ins);
             }
-        })), container);
+        })), dom);
     } else {
         pageInstance = render(
         createElement(PageClass, {
             path: path,
             query: query,
             isPageComponent: true
-        }), container);
+        }), dom);
     }
     if (fire) {
         callGlobalHook("onGlobalLoad");
     }
-    this.reactContainer = container;
+    this.reactContainer = dom;
     this.reactInstance = pageInstance;
     pageInstance.wx = this;
     updateMiniApp(pageInstance);
@@ -2587,6 +2581,7 @@ function onUnload() {
         }, true);
     }
     callGlobalHook("onGlobalUnload");
+    this.reactContainer = null;
 }
 
 function registerPageHook(appHooks, pageHook, app, instance, args) {
@@ -2610,6 +2605,13 @@ var appHooks = {
     onHide: 'onGlobalHide'
 };
 function registerPage(PageClass, path, testObject) {
+    PageClass.container = {
+        type: "page",
+        props: {},
+        children: [],
+        root: true,
+        appendChild: noop
+    };
     PageClass.reactInstances = [];
     var config = {
         data: {},

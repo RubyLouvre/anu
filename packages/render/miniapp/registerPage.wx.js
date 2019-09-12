@@ -1,6 +1,7 @@
 import { dispatchEvent } from './eventSystem';
 import { onLoad, onUnload, onReady } from './registerPage.all';
 import { registerPageHook } from './registerPageHook';
+import {  noop } from "react-core/util";
 
 import { _getApp } from './utils';
 
@@ -10,6 +11,13 @@ var appHooks = {
 };
 
 export function registerPage(PageClass, path, testObject) {
+    PageClass.container = {
+        type: "page",
+        props: {},
+        children: [],
+        root: true,
+        appendChild: noop
+    };
     PageClass.reactInstances = [];
     let config = {
         data: {},
