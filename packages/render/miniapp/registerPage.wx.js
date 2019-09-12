@@ -15,7 +15,7 @@ export function registerPage(PageClass, path, testObject) {
         data: {},
         dispatchEvent,
         onLoad(query) {
-            onLoad.call(this, PageClass, path, query);
+            onLoad.call(this, PageClass, path, query, true);
         },
         onReady: onReady,
         onUnload: onUnload
@@ -52,8 +52,9 @@ export function registerPage(PageClass, path, testObject) {
                 //在百度小程序，从A页面跳转到B页面，模拟器下是先触发A的onHide再触发B的onShow
                 //真机下，却是先触发B的onShow再触发A的onHide,其他小程序可能也有这问题，因此我们只在onShow
                 //里修改全局对象的属性
-                app.$$page = this;
-                app.$$pagePath = instance.props.path;
+               // app.$$page = this;
+              //  app.$$pagePath = instance.props.path;
+                onLoad.call(this, PageClass, instance.props.path, param);
             }  
             //调用onShare/onHide/onGlobalShow/onGlobalHide/onPageScroll
             return registerPageHook(appHooks, pageHook, app, instance, param)

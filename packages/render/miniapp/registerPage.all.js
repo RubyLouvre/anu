@@ -12,11 +12,11 @@ import { render } from "react-fiber/scheduleWork";
 import { createElement } from "react-core/createElement";
 import { _getGlobalApp } from "./registerApp.all.js";
 
-export function onLoad(PageClass, path, query) {
+export function onLoad(PageClass, path, query, fire ) {
     var app = _getApp();
     // 快应用拿不到全局数据，从globalData中取
     let GlobalApp = _getGlobalApp(app);
-    app.$$pageIsReady = false;
+   // app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
     let container = {
@@ -31,9 +31,10 @@ export function onLoad(PageClass, path, query) {
         render(
             createElement(
                 GlobalApp,
-                {},
+                {key: 'g'},
                 createElement(PageClass, {
                     path: path,
+                    key: path,
                     query: query,
                     isPageComponent: true,
                     ref: function(ins) {
@@ -57,7 +58,9 @@ export function onLoad(PageClass, path, query) {
             container
         );
     }
-    callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
+    if(fire){
+        callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
+    }
     this.reactContainer = container;
     this.reactInstance = pageInstance;
     pageInstance.wx = this; //保存小程序的页面对象
@@ -66,13 +69,8 @@ export function onLoad(PageClass, path, query) {
 }
 
 export function onReady() {
-    var app = _getApp();
-    app.$$pageIsReady = true;
-  //  let el = void 0;
-  //  while ((el = delayMounts.pop())) {
-  //      el.fn.call(el.instance);
-  //     el.instance.componentDidMount = el.fn;
-  // }
+   // var app = _getApp();
+   // app.$$pageIsReady = true;
     callGlobalHook("onGlobalReady");
 }
 

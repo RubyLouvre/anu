@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-09-10
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-09-12
  */
 
 (function (global, factory) {

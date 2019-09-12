@@ -1,41 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Document</title>
-  <!--<script src="https://unpkg.com/anujs@1.5.6/dist/React.js"></script>-->
-  <script src="./dist/ReactIE.js"></script>
-  <script>
-      console.log('...............')
-      window.onload = function(){
-/*
-     
-        function App(){
-            this.state = {
-                value: ""
-            }
-            console.log("xxxx")
-            var that = this
-            this.onChange = function(e) {
-                var value = e.target.value;
-                thast.setState({value: value})
-            }
-        }
-        var h = React.createElement;
-         App =  React.miniCreateClass(App,{     
-            render: function(){
-                return h("div", null, h("input", {type: 'number',value: this.state.value.toUpperCase(), onChange: this.onChange}), this.state.value.toUpperCase())
-            }
-        },{})
-console.log(App)
+    <head>
+        <meta charset="UTF-8" />
+        <title>Document</title>
+        <!--<script src="https://unpkg.com/anujs@1.5.6/dist/React.js"></script>-->
+        <script src="./dist/ReactIE.js"></script>
+        <script>
+            function countSort2(arr) {
+                var len = arr.length;
+                var max = arr[0],
+                    min = arr[0];
 
-ReactDOM.render(h(App), document.getElementById('root'))
+                for (var i = 1; i < len; i++) {
+                    if (arr[i] > max) max = arr[i];
+                    if (arr[i] < min) min = arr[i];
+                }
+                var size = max - min + 1;
+                var count = new Array(size);
+
+                for (var i = 0; i < len; i++) {
+                    var j = arr[i] - min;
+                    if (count[j]) {
+                        count[j]++;
+                    } else {
+                        count[j] = 1;
+                    }
+                }
+                console.log(count);
+                /*
+	for (var i = 1; i < size; i++)	count[i] += count[i - 1];
+	int* psort = (int*)malloc(sizeof(int)*len);
+	memset(psort, 0, sizeof(int)*len);
+	for (int i = len - 1; i >= 0; i--) { 
+		count[arr[i] - min]--;//要先把自己减去
+		psort[count[arr[i] - min]] = arr[i];
+	}
+	for (int i = 0; i < len; i++) {
+		arr[i] = psort[i];
+	}
+	free(count);
+	free(psort);
+	count = NULL;
+	psort = NULL;
 */
-      }
- 
-  </script>
-</head>
-<body>
-  <div id="root"></div>
-</body>
+            }
+
+            // countSort([-1, -5, -6, -2, 1, 2, 8, 2, 1, 8]);
+
+            function countSort(arr) {
+                var max = arr[0],
+                    min = arr[0],
+                    n = arr.length;
+                for (var i = 0; i < n; i++) {
+                    if (arr[i] > max) {
+                        max = arr[i];
+                    }
+                    if (arr[i] < min) {
+                        min = arr[i];
+                    }
+                }
+                var size = max - min + 1;
+                var buckets = new Array(size).fill(0);
+                //遍历所有桶
+                for (var i = 0; i < n; i++) {
+                    var j = arr[i] - min; //减去最小值，确保索引大于负数
+                    buckets[j]++; //包含了自己
+                }
+                for (var i = 1; i < size; i++) {
+                    //求前缀和
+                    buckets[i] += buckets[i - 1];
+                }
+                var res = [];//逆向遍历源数组（保证稳定性）
+                for (var i = n - 1; i >= 0; i--) {
+                    var index =  --buckets[arr[i] - min] //去掉自己
+                    res[index] = arr[i];
+                }
+                return res;
+            }
+            var arr = countSort([-1, -5, -6, -2, 1, 2, 8, 2, 1, 8]);
+            console.log(arr);
+        </script>
+    </head>
+    <body>
+        <div id="root"></div>
+    </body>
 </html>

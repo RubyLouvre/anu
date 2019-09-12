@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-10
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-12
  */
 
 var arrayPush = Array.prototype.push;
@@ -683,7 +683,7 @@ function detachComponent() {
     this.disposed = true;
     if (t) {
         t.wx = null;
-        this.instance = null;
+        this.reactInstance = null;
     }
 }
 function updateQuickApp(quick, data) {
@@ -2655,10 +2655,9 @@ function registerComponent(type, name) {
     };
 }
 
-function onLoad(PageClass, path, query) {
+function onLoad(PageClass, path, query, fire) {
     var app = _getApp();
     var GlobalApp = _getGlobalApp(app);
-    app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
     var container = {
@@ -2670,8 +2669,9 @@ function onLoad(PageClass, path, query) {
     };
     var pageInstance;
     if (typeof GlobalApp === "function") {
-        render(createElement(GlobalApp, {}, createElement(PageClass, {
+        render(createElement(GlobalApp, { key: 'g' }, createElement(PageClass, {
             path: path,
+            key: path,
             query: query,
             isPageComponent: true,
             ref: function ref(ins) {
@@ -2686,7 +2686,9 @@ function onLoad(PageClass, path, query) {
             isPageComponent: true
         }), container);
     }
-    callGlobalHook("onGlobalLoad");
+    if (fire) {
+        callGlobalHook("onGlobalLoad");
+    }
     this.reactContainer = container;
     this.reactInstance = pageInstance;
     pageInstance.wx = this;
@@ -2694,8 +2696,6 @@ function onLoad(PageClass, path, query) {
     return pageInstance;
 }
 function onReady() {
-    var app = _getApp();
-    app.$$pageIsReady = true;
     callGlobalHook("onGlobalReady");
 }
 function onUnload() {
@@ -2749,7 +2749,7 @@ function registerPage(PageClass, path, testObject) {
         data: {},
         dispatchEvent: dispatchEvent,
         onLoad: function onLoad$$1(query) {
-            onLoad.call(this, PageClass, path, query);
+            onLoad.call(this, PageClass, path, query, true);
         },
         onReady: onReady,
         onUnload: onUnload
@@ -2774,8 +2774,7 @@ function registerPage(PageClass, path, testObject) {
                     instance.props.query = this.options;
                 }
                 param = instance.props.query;
-                app.$$page = this;
-                app.$$pagePath = instance.props.path;
+                onLoad.call(this, PageClass, instance.props.path, param);
             }
             return registerPageHook(appHooks, pageHook, app, instance, param);
         };
