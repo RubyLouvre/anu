@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2019-09-12
+ * by 司徒正美 Copyright 2019-09-16
  * IE9+
  */
 
@@ -860,6 +860,21 @@
         return function () {
             return createElement(LazyComponent, {
                 render: fn
+            });
+        };
+    }
+
+    var MemoComponent = miniCreateClass(function MemoComponent(props) {
+        this.props = props;
+        this.state = {};
+        this.render = props.render;
+        this.shouldComponentUpdate = props.shouldComponentUpdate;
+    }, Component, {});
+    function memo(render, shouldComponentUpdate) {
+        return function () {
+            return createElement(MemoComponent, {
+                render: render,
+                shouldComponentUpdate: shouldComponentUpdate
             });
         };
     }
@@ -3228,6 +3243,7 @@
             Children: Children,
             createPortal: createPortal,
             createContext: createContext,
+            memo: memo,
             lazy: lazy,
             Suspense: Suspense,
             Component: Component,

@@ -17,6 +17,7 @@ import { findDOMNode } from './findDOMNode';
 import { DOMRenderer } from './DOMRenderer';
 import { useState, useReducer, useEffect, useLayoutEffect, useCallback, useMemo, useRef, useContext, useImperativeHandle } from 'react-core/hooks';
 import { lazy } from 'react-fiber/lazy';
+import { memo } from "react-fiber/memo";
 import { Suspense } from 'react-fiber/Suspense';
 import './compat';
 let win = getWindow();
@@ -51,6 +52,7 @@ if (prevReact && prevReact.eventSystem) {
         createContext,
         Component,
         lazy,
+        memo,
         Suspense,
         createRef,
         forwardRef,

@@ -605,7 +605,7 @@ function _getApp() {
     return fakeApp;
 }
 function getWrappedComponent(fiber, instance) {
-    if (instance.isPureComponent && instance.constructor.WrappedComponent) {
+    if (instance.constructor.WrappedComponent) {
         return fiber.child.child.stateNode;
     } else {
         return instance;
@@ -2814,6 +2814,21 @@ function useMemo(create, deps) {
     return useCallbackImpl(create, deps, true);
 }
 
+var MemoComponent = miniCreateClass(function MemoComponent(props) {
+    this.props = props;
+    this.state = {};
+    this.render = props.render;
+    this.shouldComponentUpdate = props.shouldComponentUpdate;
+}, Component, {});
+function memo(render, shouldComponentUpdate) {
+    return function () {
+        return createElement(MemoComponent, {
+            render: render,
+            shouldComponentUpdate: shouldComponentUpdate
+        });
+    };
+}
+
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {
@@ -2822,7 +2837,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.5.10',
+    version: "1.5.10",
     render: render$1,
     hydrate: render$1,
     webview: webview,
@@ -2842,6 +2857,7 @@ var React = getWindow().React = {
     registerComponent: registerComponent,
     registerPage: registerPage,
     toStyle: toStyle,
+    memo: memo,
     useState: useState,
     useReducer: useReducer,
     useCallback: useCallback,
@@ -2849,10 +2865,10 @@ var React = getWindow().React = {
     useEffect: useEffect,
     useContext: useContext,
     useComponent: useComponent,
-    appType: 'ali'
+    appType: "ali"
 };
 var apiContainer = {};
-if (typeof my != 'undefined') {
+if (typeof my != "undefined") {
     apiContainer = my;
 }
 registerAPIs(React, apiContainer, more);

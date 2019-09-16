@@ -21,7 +21,7 @@ function _getApp () {
 //  https://cdn.bootcss.com/react-redux/5.1.1/react-redux.js
 //  https://cdn.bootcss.com/react-redux/4.4.5/react-redux.js
 export function getWrappedComponent(fiber, instance) {
-    if(instance.isPureComponent && instance.constructor.WrappedComponent){
+    if( instance.constructor.WrappedComponent){
        return fiber.child.child.stateNode
     }else{
        return instance

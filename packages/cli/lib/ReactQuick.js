@@ -679,7 +679,7 @@ function _getApp() {
     return fakeApp;
 }
 function getWrappedComponent(fiber, instance) {
-    if (instance.isPureComponent && instance.constructor.WrappedComponent) {
+    if (instance.constructor.WrappedComponent) {
         return fiber.child.child.stateNode;
     } else {
         return instance;
@@ -3512,6 +3512,21 @@ function useMemo(create, deps) {
     return useCallbackImpl(create, deps, true);
 }
 
+var MemoComponent = miniCreateClass(function MemoComponent(props) {
+    this.props = props;
+    this.state = {};
+    this.render = props.render;
+    this.shouldComponentUpdate = props.shouldComponentUpdate;
+}, Component, {});
+function memo(render, shouldComponentUpdate) {
+    return function () {
+        return createElement(MemoComponent, {
+            render: render,
+            shouldComponentUpdate: shouldComponentUpdate
+        });
+    };
+}
+
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {
@@ -3520,7 +3535,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: '1.5.10',
+    version: "1.5.10",
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,
@@ -3528,6 +3543,7 @@ var React = getWindow().React = {
     Component: Component,
     createElement: createElement,
     createFactory: createFactory,
+    memo: memo,
     PureComponent: PureComponent,
     isValidElement: isValidElement,
     createContext: createContext,
@@ -3545,10 +3561,10 @@ var React = getWindow().React = {
     useEffect: useEffect,
     useContext: useContext,
     useComponent: useComponent,
-    appType: 'quick',
+    appType: "quick",
     registerApp: registerApp
 };
-if (typeof global !== 'undefined') {
+if (typeof global !== "undefined") {
     var ref = Object.getPrototypeOf(global) || global;
     ref.ReactQuick = React;
 }

@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-09-16T03
+ * 运行于webview的React by 司徒正美 Copyright 2019-09-16T12
  * IE9+
  */
 
@@ -671,6 +671,21 @@
         getContext.Provider = Provider;
         getContext.Consumer = Consumer;
         return getContext;
+    }
+
+    var MemoComponent = miniCreateClass(function MemoComponent(props) {
+        this.props = props;
+        this.state = {};
+        this.render = props.render;
+        this.shouldComponentUpdate = props.shouldComponentUpdate;
+    }, Component, {});
+    function memo(render, shouldComponentUpdate) {
+        return function () {
+            return createElement(MemoComponent, {
+                render: render,
+                shouldComponentUpdate: shouldComponentUpdate
+            });
+        };
     }
 
     function DOMElement(type) {
@@ -3093,7 +3108,7 @@
         return fakeApp;
     }
     function getWrappedComponent(fiber, instance) {
-        if (instance.isPureComponent && instance.constructor.WrappedComponent) {
+        if (instance.constructor.WrappedComponent) {
             return fiber.child.child.stateNode;
         } else {
             return instance;
@@ -5559,6 +5574,7 @@
             this.__pages[path] = PageClass;
             return PageClass;
         },
+        memo: memo,
         useState: useState,
         useReducer: useReducer,
         useCallback: useCallback,

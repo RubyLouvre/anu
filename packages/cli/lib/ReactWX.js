@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-09-16T03
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-09-16T12
  * IE9+
  */
 
@@ -929,7 +929,7 @@ function _getApp() {
     return fakeApp;
 }
 function getWrappedComponent(fiber, instance) {
-    if (instance.isPureComponent && instance.constructor.WrappedComponent) {
+    if (instance.constructor.WrappedComponent) {
         return fiber.child.child.stateNode;
     } else {
         return instance;
@@ -2691,13 +2691,28 @@ function useMemo(create, deps) {
     return useCallbackImpl(create, deps, true);
 }
 
+var MemoComponent = miniCreateClass(function MemoComponent(props) {
+    this.props = props;
+    this.state = {};
+    this.render = props.render;
+    this.shouldComponentUpdate = props.shouldComponentUpdate;
+}, Component, {});
+function memo(render, shouldComponentUpdate) {
+    return function () {
+        return createElement(MemoComponent, {
+            render: render,
+            shouldComponentUpdate: shouldComponentUpdate
+        });
+    };
+}
+
 var render$1 = Renderer$1.render;
 var React = getWindow().React = {
     eventSystem: {
         dispatchEvent: dispatchEvent
     },
     findDOMNode: function findDOMNode() {
-        console.log('小程序不支持findDOMNode');
+        console.log("小程序不支持findDOMNode");
     },
     render: render$1,
     hydrate: render$1,
@@ -2718,6 +2733,7 @@ var React = getWindow().React = {
     registerApp: registerApp,
     registerPage: registerPage,
     toStyle: toStyle,
+    memo: memo,
     useState: useState,
     useReducer: useReducer,
     useCallback: useCallback,
@@ -2725,17 +2741,17 @@ var React = getWindow().React = {
     useEffect: useEffect,
     useContext: useContext,
     useComponent: useComponent,
-    appType: 'wx'
+    appType: "wx"
 };
 var apiContainer = {};
-if (typeof wx != 'undefined') {
+if (typeof wx != "undefined") {
     apiContainer = wx;
-} else if (typeof qq != 'undefined') {
+} else if (typeof qq != "undefined") {
     apiContainer = qq;
-    React.appType = 'qq';
-} else if (typeof tt != 'undefined') {
+    React.appType = "qq";
+} else if (typeof tt != "undefined") {
     apiContainer = tt;
-    React.appType = 'tt';
+    React.appType = "tt";
 }
 registerAPIs(React, apiContainer, more);
 

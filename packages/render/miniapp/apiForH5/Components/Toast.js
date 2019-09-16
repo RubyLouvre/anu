@@ -1,4 +1,3 @@
-import { Fragment } from 'react-core/util';
 import { Component } from 'react-core/Component';
 import { handleSuccess, handleFail } from '../../utils';
 

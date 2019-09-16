@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-09-12
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-09-16
  */
 
 (function (global, factory) {
@@ -3204,6 +3204,21 @@
         };
     }
 
+    var MemoComponent = miniCreateClass(function MemoComponent(props) {
+        this.props = props;
+        this.state = {};
+        this.render = props.render;
+        this.shouldComponentUpdate = props.shouldComponentUpdate;
+    }, Component, {});
+    function memo(render, shouldComponentUpdate) {
+        return function () {
+            return createElement(MemoComponent, {
+                render: render,
+                shouldComponentUpdate: shouldComponentUpdate
+            });
+        };
+    }
+
     var noCheck = false;
     function setSelectValue(e) {
         if (e.propertyName === "value" && !noCheck) {
@@ -3355,6 +3370,7 @@
             createContext: createContext,
             Component: Component,
             lazy: lazy,
+            memo: memo,
             Suspense: Suspense,
             createRef: createRef,
             forwardRef: forwardRef,

@@ -38,6 +38,7 @@ var LazyComponent = miniCreateClass(function LazyComponent(props, context) {
         return this.state.resolved ? createElement(this.state.component) : this.fallback()
     }
 });
+
 function lazy(fn) {
     return function(){
         return createElement(LazyComponent, {
@@ -48,3 +49,5 @@ function lazy(fn) {
 export {
     lazy
 }
+
+
