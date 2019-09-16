@@ -673,18 +673,16 @@
         return getContext;
     }
 
-    var MemoComponent = miniCreateClass(function MemoComponent(props) {
-        this.props = props;
-        this.state = {};
-        this.render = props.render;
-        this.shouldComponentUpdate = props.shouldComponentUpdate;
+    var MemoComponent = miniCreateClass(function MemoComponent(obj) {
+        this.render = obj.render;
+        this.shouldComponentUpdate = obj.shouldComponentUpdate;
     }, Component, {});
     function memo(render, shouldComponentUpdate) {
-        return function () {
-            return createElement(MemoComponent, {
+        return function (props) {
+            return createElement(MemoComponent, Object.assign(props, {
                 render: render,
                 shouldComponentUpdate: shouldComponentUpdate
-            });
+            }));
         };
     }
 

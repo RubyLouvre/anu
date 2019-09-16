@@ -1,23 +1,20 @@
-
-
 import { miniCreateClass } from "react-core/util";
 import { Component } from "react-core/Component";
 import { createElement } from "react-core/createElement";
-var MemoComponent = miniCreateClass(function MemoComponent(props) {
-    this.props = props;
-    this.state = {
-    }
-    this.render = props.render;
-    this.shouldComponentUpdate = props.shouldComponentUpdate
-}, Component, {
+var MemoComponent = miniCreateClass(
+    function MemoComponent(obj) {
+        this.render = obj.render;
+        this.shouldComponentUpdate = obj.shouldComponentUpdate
+    },
+    Component,
+    {}
+);
 
-});
-
-export function memo(render, shouldComponentUpdate){
-    return function(){
-        return createElement(MemoComponent, {
+export function memo(render, shouldComponentUpdate) {
+    return function(props) {
+        return createElement(MemoComponent, Object.assign(props,{
             render,
             shouldComponentUpdate
-        })
-    }
+        }));
+    };
 }
