@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-12
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-16
  */
 
 var arrayPush = Array.prototype.push;
@@ -2665,6 +2665,7 @@ function onLoad(PageClass, path, query, fire) {
     var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
+        this.needReRender = true;
         render(createElement(GlobalApp, { key: 'g' }, createElement(PageClass, {
             path: path,
             key: path,
@@ -2778,7 +2779,11 @@ function registerPage(PageClass, path, testObject) {
                     instance.props.query = this.options;
                 }
                 param = instance.props.query;
-                onLoad.call(this, PageClass, instance.props.path, param);
+                app.$$page = this;
+                var path = app.$$pagePath = instance.props.path;
+                if (this.needReRender) {
+                    onLoad.call(this, PageClass, path, param);
+                }
             }
             return registerPageHook(appHooks, pageHook, app, instance, param);
         };

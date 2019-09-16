@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-09-12
+ * 运行于快应用的React by 司徒正美 Copyright 2019-09-16
  */
 
 var arrayPush = Array.prototype.push;
@@ -3316,6 +3316,7 @@ function onLoad(PageClass, path, query, fire) {
     var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
+        this.needReRender = true;
         render(createElement(GlobalApp, { key: 'g' }, createElement(PageClass, {
             path: path,
             key: path,
@@ -3475,7 +3476,11 @@ function registerPage(PageClass, path) {
                 query = e;
             if (pageHook === 'onShow') {
                 query = instance.props.query = getQuery(this, duplicate);
-                onLoad.call(this, PageClass, instance.props.path, query);
+                app.$$page = instance.wx;
+                var path = app.$$pagePath = instance.props.path;
+                if (this.needReRender) {
+                    onLoad.call(this, PageClass, path, query);
+                }
             } else if (pageHook === 'onMenuPress') {
                 app.onShowMenu && app.onShowMenu(instance, this.$app);
                 return;

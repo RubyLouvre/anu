@@ -22,6 +22,7 @@ export function onLoad(PageClass, path, query, fire ) {
     var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
+        this.needReRender = true
         render(
             createElement(
                 GlobalApp,

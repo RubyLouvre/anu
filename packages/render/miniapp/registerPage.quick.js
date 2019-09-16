@@ -106,9 +106,11 @@ export function registerPage(PageClass, path) {
                 query = e
             if (pageHook === 'onShow') {
                 query = instance.props.query = getQuery(this, duplicate);
-               // app.$$page = instance.wx;
-               // app.$$pagePath = instance.props.path;
-                onLoad.call(this, PageClass, instance.props.path, query);
+                app.$$page = instance.wx;
+                var path = app.$$pagePath = instance.props.path;
+                if(this.needReRender){
+                    onLoad.call(this, PageClass, path, query);
+                }
             } else if (pageHook === 'onMenuPress') {
                 app.onShowMenu && app.onShowMenu(instance, this.$app);
                 return
