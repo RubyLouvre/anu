@@ -13,7 +13,8 @@ import {
 
 import { createContext } from 'react-core/createContext';
 
-import { Fragment, getWindow, miniCreateClass, noop } from 'react-core/util';
+import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
+import { memo } from 'react-fiber/memo';
 
 
 //import { dispatchEvent, webview } from './eventSystem';
@@ -87,6 +88,7 @@ let React = (getWindow().React = {
         return PageClass;
     },
     // toStyle,
+    memo,
     useState,
     useReducer, 
     useCallback,

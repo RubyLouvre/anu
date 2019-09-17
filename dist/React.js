@@ -1,5 +1,5 @@
 /**
- * by 司徒正美 Copyright 2019-09-10
+ * by 司徒正美 Copyright 2019-09-16
  * IE9+
  */
 
@@ -216,7 +216,6 @@
         }
     };
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     var RESERVED_PROPS = {
         key: true,
         ref: true,
@@ -380,7 +379,7 @@
         return fiber.children = flattenObject;
     }
     function getComponentKey(component, index) {
-        if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
+        if (Object(component).key != null) {
             return escape(component.key);
         }
         return index.toString(36);
@@ -668,6 +667,23 @@
         return getContext;
     }
 
+    var NOWORK = 1;
+    var WORKING = 2;
+    var PLACE = 3;
+    var CONTENT = 5;
+    var ATTR = 7;
+    var DUPLEX = 11;
+    var DETACH = 13;
+    var HOOK = 17;
+    var REF = 19;
+    var CALLBACK = 23;
+    var PASSIVE = 29;
+    var CAPTURE = 31;
+    var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, PASSIVE, CAPTURE].sort(function (a, b) {
+        return a - b;
+    });
+    var effectLength = effectNames.length;
+
     function setter(compute, cursor, value) {
         var _this = this;
         Renderer.batchedUpdates(function () {
@@ -703,8 +719,8 @@
         var compute = reducer ? function (cursor, action) {
             return reducer(updateQueue[cursor], action || { type: Math.random() });
         } : function (cursor, value) {
-            var novel = updateQueue[cursor];
-            return typeof value == 'function' ? value(novel) : value;
+            var other = updateQueue[cursor];
+            return isFn(value) ? value(other) : value;
         };
         var dispatch = setter.bind(fiber, compute, key);
         if (key in updateQueue) {
@@ -754,14 +770,14 @@
     function useImperativeHandle(ref, create, deps) {
         var nextInputs = Array.isArray(deps) ? deps.concat([ref]) : [ref, create];
         useEffectImpl(function () {
-            if (typeof ref === 'function') {
+            if (isFn(ref)) {
                 var refCallback = ref;
                 var inst = create();
                 refCallback(inst);
                 return function () {
                     return refCallback(null);
                 };
-            } else if (ref !== null && ref !== undefined) {
+            } else if (Object(ref) === ref) {
                 var refObject = ref;
                 var _inst = create();
                 refObject.current = _inst;
@@ -769,7 +785,7 @@
                     refObject.current = null;
                 };
             }
-        }, nextInputs);
+        }, nextInputs, HOOK, 'layout', 'unlayout');
     }
     function getCurrentFiber() {
         return get(Renderer.currentOwner);
@@ -783,23 +799,6 @@
         }
         return true;
     }
-
-    var NOWORK = 1;
-    var WORKING = 2;
-    var PLACE = 3;
-    var CONTENT = 5;
-    var ATTR = 7;
-    var DUPLEX = 11;
-    var DETACH = 13;
-    var HOOK = 17;
-    var REF = 19;
-    var CALLBACK = 23;
-    var PASSIVE = 29;
-    var CAPTURE = 31;
-    var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, PASSIVE, CAPTURE].sort(function (a, b) {
-        return a - b;
-    });
-    var effectLength = effectNames.length;
 
     function useState(initValue) {
         return useReducerImpl(null, initValue);
@@ -862,6 +861,19 @@
             return createElement(LazyComponent, {
                 render: fn
             });
+        };
+    }
+
+    var MemoComponent = miniCreateClass(function MemoComponent(obj) {
+        this.render = obj.render;
+        this.shouldComponentUpdate = obj.shouldComponentUpdate;
+    }, Component, {});
+    function memo(render, shouldComponentUpdate) {
+        return function (props) {
+            return createElement(MemoComponent, Object.assign(props, {
+                render: render,
+                shouldComponentUpdate: shouldComponentUpdate
+            }));
         };
     }
 
@@ -3229,6 +3241,7 @@
             Children: Children,
             createPortal: createPortal,
             createContext: createContext,
+            memo: memo,
             lazy: lazy,
             Suspense: Suspense,
             Component: Component,

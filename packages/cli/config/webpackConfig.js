@@ -63,7 +63,12 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
                 allowInlineConfig: false,
                 useEslintrc: false
             }
-        }, typescript ? require.resolve('ts-loader') : [], prevJsLoaders, prevLoaders),
+        }, typescript ? {
+            loader: require.resolve('ts-loader'),
+            options: {
+                context: path.resolve(cwd)
+            }
+        } : [], prevJsLoaders, prevLoaders),
         exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,
     }, platform !== 'h5' ? nodeRules : [], {
         test: /React\w+/,
@@ -114,7 +119,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         ? path.join(cwd, '.CACHE/nanachi/source/app')
         : path.join(cwd, 'source/app');
     if (typescript) {
-        entry += '.ts';
+        entry += '.tsx';
     }
     ;
     return {

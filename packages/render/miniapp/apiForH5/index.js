@@ -1,6 +1,6 @@
 // 禁止使用 require() ！
 import call from './call';
-import canIUse from './canIUse';
+import {NOTSUPPORTAPI} from './canIUse';
 import canvas from './canvas';
 import clipboard from './clipboard';
 import file from './file';
@@ -20,7 +20,13 @@ import notSupport from './notSupport';
 
 const interfaceNameSpaces = {
     call,
-    canIUse,
+    canIUse: function(api){
+     
+            const apis = Object.keys(apiData).map(k => k);
+        
+            return apis.indexOf(api) >= 0 && NOTSUPPORTAPI.indexOf(api) < 0;
+        
+    },
     canvas,
     clipboard,
     file,

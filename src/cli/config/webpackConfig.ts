@@ -106,7 +106,12 @@ export default function({
                         useEslintrc: false // 不使用用户自定义eslintrc配置
                     }
                 },
-                typescript ? require.resolve('ts-loader') : [],
+                typescript ? {
+                    loader: require.resolve('ts-loader'),
+                    options: {
+                        context: path.resolve(cwd)
+                    }
+                } : [],
                 prevJsLoaders,
                 prevLoaders ) ,
             exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,
@@ -196,7 +201,7 @@ export default function({
         ? path.join(cwd, '.CACHE/nanachi/source/app')
         : path.join(cwd, 'source/app');
 
-    if (typescript) { entry += '.ts' };
+    if (typescript) { entry += '.tsx' };
     return {
         entry: entry,
         mode: 'development',
