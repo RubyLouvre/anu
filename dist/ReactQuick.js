@@ -1,5 +1,9 @@
 /**
+<<<<<<< HEAD
  * 运行于快应用的React by 司徒正美 Copyright 2019-09-19
+=======
+ * 运行于快应用的React by 司徒正美 Copyright 2019-09-17
+>>>>>>> ef1d6cc208f0e32d8d673d8227078e1b8c1f757d
  */
 
 var arrayPush = Array.prototype.push;
@@ -2160,6 +2164,15 @@ function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         list.push(create);
     }
 }
+function useRef(initValue) {
+    var fiber = getCurrentFiber();
+    var key = getCurrentKey();
+    var updateQueue = fiber.updateQueue;
+    if (key in updateQueue) {
+        return updateQueue[key];
+    }
+    return updateQueue[key] = { current: initValue };
+}
 function getCurrentFiber() {
     return get(Renderer.currentOwner);
 }
@@ -3519,7 +3532,7 @@ var MemoComponent = miniCreateClass(function MemoComponent(obj) {
 function memo(render, shouldComponentUpdate) {
     return function (props) {
         return createElement(MemoComponent, Object.assign(props, {
-            render: render,
+            render: render.bind(this, props),
             shouldComponentUpdate: shouldComponentUpdate
         }));
     };
@@ -3559,6 +3572,7 @@ var React = getWindow().React = {
     useEffect: useEffect,
     useContext: useContext,
     useComponent: useComponent,
+    useRef: useRef,
     appType: "quick",
     registerApp: registerApp
 };
@@ -3569,4 +3583,4 @@ if (typeof global !== "undefined") {
 registerAPIsQuick(React, facade, more);
 
 export default React;
-export { Children, createElement, Component, PureComponent };
+export { Children, createElement, Component, PureComponent, memo, useState, useReducer, useCallback, useMemo, useEffect, useContext, useComponent, useRef };

@@ -37,7 +37,9 @@ import {
     useCallback,
     useMemo,
     useEffect, 
-    useContext } from 'react-core/hooks';
+    useContext,
+    useRef
+} from 'react-core/hooks';
 import { findDOMNode } from '../dom/findDOMNode';
 let { render } = DOMRenderer;
 
@@ -96,6 +98,7 @@ let React = (getWindow().React = {
     useEffect, 
     useContext,
     useComponent,
+    useRef,
     createRef,
     forwardRef,
     cloneElement,
@@ -270,3 +273,4 @@ function parseObj2Query(obj) {
 
 registerAPIs(React, apiContainer, more);
 export default React;
+
