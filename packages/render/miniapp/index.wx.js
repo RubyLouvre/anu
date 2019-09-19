@@ -34,7 +34,8 @@ import {
     useCallback,
     useMemo,
     useEffect,
-    useContext
+    useContext,
+    useRef
 } from "react-core/hooks";
 
 import { memo } from "react-fiber/memo";
@@ -81,6 +82,7 @@ let React = (getWindow().React = {
     useEffect,
     useContext,
     useComponent,
+    useRef,
     appType: "wx"
 });
 let apiContainer = {};
@@ -97,4 +99,18 @@ if (typeof wx != "undefined") {
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component, PureComponent };
+export { 
+    Children, 
+    createElement, 
+    Component, 
+    PureComponent, 
+    memo,
+    useState,
+    useReducer,
+    useCallback,
+    useMemo,
+    useEffect,
+    useContext,
+    useComponent,
+    useRef 
+};

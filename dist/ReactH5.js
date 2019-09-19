@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-09-16T12
+ * 运行于webview的React by 司徒正美 Copyright 2019-09-17T08
  * IE9+
  */
 
@@ -680,7 +680,7 @@
     function memo(render, shouldComponentUpdate) {
         return function (props) {
             return createElement(MemoComponent, Object.assign(props, {
-                render: render,
+                render: render.bind(this, props),
                 shouldComponentUpdate: shouldComponentUpdate
             }));
         };
@@ -1942,6 +1942,15 @@
             updateQueue[destroyList] || (updateQueue[destroyList] = []);
             list.push(create);
         }
+    }
+    function useRef(initValue) {
+        var fiber = getCurrentFiber();
+        var key = getCurrentKey();
+        var updateQueue = fiber.updateQueue;
+        if (key in updateQueue) {
+            return updateQueue[key];
+        }
+        return updateQueue[key] = { current: initValue };
     }
     function getCurrentFiber() {
         return get(Renderer.currentOwner);
@@ -5580,6 +5589,7 @@
         useEffect: useEffect,
         useContext: useContext,
         useComponent: useComponent,
+        useRef: useRef,
         createRef: createRef,
         forwardRef: forwardRef,
         cloneElement: cloneElement,
