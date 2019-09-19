@@ -66,36 +66,107 @@
                     }
                 }
             }
-            //alsdfkjfjkdsal
-            //fdjskalajfkdsla
-            //aaaajfaaaa
-            function getLCS(strs) {
-                var s = strs.shift();
+            function findK(str, substr) {
+                //op为0则表示不同位置的相同子串算作一个(不重复子串)。po=1则表示不同位置的相同子串算作多个(重复子串)
                 var sam = new SuffixAutomaton();
-
-                sam.extend(s);
-
-                var count = [];
-                for (var i = 0; i <= s.length; i++) {
-                    count[i] = 0;
-                }
-                //根据节点的lenn属性进行计数排序
+                sam.extend(str);
                 var nodes = sam.nodes;
-                for (var i = 0; i < nodes.length; i++) {
-                    count[nodes[i].len]++;
+                var total = nodes.length;
+                var indegree = new Array(total).fill(0);
+                var rank = [];
+                /*
+                我们令cnt[i]为i这个状态在原串中出现的次数。再在每个状态维护一个size。
+                若T=0，siz[i[siz[i[表示ii的所有儿子的size之和+1（子树大小），
+                否则siz[i[siz[i[表示ii的所有儿子的sizsiz之和+cnt[i]（类似子树大小的东西）。
+                接下来我们用size像平衡树一样查询就好了。 
+————————————————*/
+
+                for (var i = 0; i < total; i++) {
+                    nodes[i].count = 0;
+                    nodes[i].size = 0;
                 }
-                for (var i = 1; i <= s.length; i++) {
-                    count[i] += count[i - 1];
-                }
-                var sa = [];
-                for (var i = nodes.length - 1; i >= 0; i--) {
-                    sa[--count[nodes[i].len]] = nodes[i];
+                if (op) {
+                    var p = nodes[0];
+                    for (var i = 0; i < str.length; i++) {
+                        p = p.children[str[i]];
+                        p.count++;
+                    }
+                } else {
+                    for (var i = 0; i < total; i++) {
+                        nodes[i].count = 1;
+                    }
                 }
 
-                console.log(count, sa);
+                //计数排序
+                for (var i = 0; i < total; i++) {
+                    indegree[nodes[i].len]++;// 统计相同度数的节点的个数
+                }
+                for (var i = 1; i < total; i++) {
+                    indegree[i] += indegree[i - 1];// 统计度数小于等于 i 的节点的总数
+                }
+
+                for (var i = 0; i < total; i++) {
+                    rank[--indegree[nodes[i].len]] = nodes[i];// 为每个节点编号，节点度数越大编号越靠后
+                }
+
+                if (op) {
+                    for (var i = total - 1; i >= 0; i--) {
+                        rank[i].fail.count += rank[i].count;
+                    }
+                }
+
+                console.log(rank, "rank");
+                // console.log(pos)
+                for (var i = total - 1; i >= 0; i--) {
+                    var node = rank[i];
+                    node.size += node.count;
+                    for (var c in node.children) {
+                        node.size += node.children[c].size;
+                    }
+                }
+                var res = 0;
+                var root = nodes[0];
+                for (var c in root.children) {
+                    res += root.children[c].size;
+                }
+                if (res < k) {
+                    console.log(-1, nodes);
+                    return -1;
+                }
+                var ok = false,
+                    ans = [];
+                function dfs(node, k) {
+                    if (ok) {
+                        return;
+                    }
+                    if (k <= 0) {
+                        ok = 1;
+                        return;
+                    }
+                    for (var c in node.children) {
+                        var child = node.children[c];
+                        if (ok) {
+                            break;
+                        }
+                        if (k > child.size) {
+                            k -= child.size;
+                        } else {
+                            k -= child.count;
+                            ans.push(c);
+                            dfs(child, k);
+                        }
+                    }
+                }
+                dfs(root, k);
+                if (ok) {
+                    return ans.join("");
+                } else {
+                    return -1;
+                }
             }
-            console.log(getLCS(["uabcdefo", "dabcdui"])); //abcd
-            // console.log(getLCS("alsdfkjffkdsal", "fdjskalajfkdsla")); //fkds
+            // https://blog.csdn.net/blankcqk/article/details/47337959
+            // https://www.cnblogs.com/shuaihui520/p/10695207.html
+            console.log(findK("aaa", 2));
         </script>
     </body>
 </html>

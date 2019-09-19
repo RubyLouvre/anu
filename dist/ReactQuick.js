@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-09-16
+ * 运行于快应用的React by 司徒正美 Copyright 2019-09-19
  */
 
 var arrayPush = Array.prototype.push;
@@ -3503,13 +3503,13 @@ function useReducer(reducer, initValue, initAction) {
     return useReducerImpl(reducer, initValue, initAction);
 }
 function useEffect(create, deps) {
-    return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
-}
-function useCallback(create, deps) {
-    return useCallbackImpl(create, deps);
+    return useEffectImpl(create, deps, PASSIVE, "passive", "unpassive");
 }
 function useMemo(create, deps) {
     return useCallbackImpl(create, deps, true);
+}
+function useCallback(create, deps) {
+    return useCallbackImpl(create, deps);
 }
 
 var MemoComponent = miniCreateClass(function MemoComponent(obj) {

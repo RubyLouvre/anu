@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-09-16T12
+ * 运行于webview的React by 司徒正美 Copyright 2019-09-19T03
  * IE9+
  */
 
@@ -5488,13 +5488,13 @@
         return useReducerImpl(reducer, initValue, initAction);
     }
     function useEffect(create, deps) {
-        return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
-    }
-    function useCallback(create, deps) {
-        return useCallbackImpl(create, deps);
+        return useEffectImpl(create, deps, PASSIVE, "passive", "unpassive");
     }
     function useMemo(create, deps) {
         return useCallbackImpl(create, deps, true);
+    }
+    function useCallback(create, deps) {
+        return useCallbackImpl(create, deps);
     }
 
     function findHostInstance(fiber) {
