@@ -5,7 +5,7 @@ export let webview = {};
 
 var rbeaconType = /click|tap|change|blur|input/i;
 export function dispatchEvent(e) {
-    const eventType = toLowerCase(e.type);
+    let eventType = toLowerCase(e.type);
     if (eventType == 'message') { //处理支付宝web-view组件的dataset为空的BUG
         if (webview.instance && webview.cb) {
             webview.cb.call(webview.instance, e);
@@ -20,6 +20,9 @@ export function dispatchEvent(e) {
     const app = _getApp();
     const target = e.currentTarget;
     const dataset = target.dataset || {};
+    if(dataset[eventType+'Alias']){
+        eventType = dataset[eventType+'Alias'];
+    }
     const eventUid = dataset[eventType + 'Uid'];
     const fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
         props: {},

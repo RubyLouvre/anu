@@ -3211,7 +3211,7 @@
     function memo(render, shouldComponentUpdate) {
         return function (props) {
             return createElement(MemoComponent, Object.assign(props, {
-                render: render,
+                render: render.bind(this, props),
                 shouldComponentUpdate: shouldComponentUpdate
             }));
         };

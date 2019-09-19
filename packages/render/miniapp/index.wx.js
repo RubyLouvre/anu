@@ -4,11 +4,12 @@ import { Component } from "react-core/Component";
 import { PureComponent } from "react-core/PureComponent";
 import {
     createElement,
-    cloneElement,
     isValidElement,
     createFactory
 } from "react-core/createElement";
 import { createContext } from "react-core/createContext";
+import { createRef } from "react-core/createRef";
+
 import { Fragment, getWindow, miniCreateClass } from "react-core/util";
 //注入小程序的API
 import { registerAPIs } from "./registerAPIs";
@@ -57,7 +58,7 @@ let React = (getWindow().React = {
     webview,
     Fragment,
     PropTypes,
-    // Children,
+    createRef,
     Component,
     //  createPortal,
     createElement,
@@ -105,6 +106,7 @@ export {
     Component, 
     PureComponent, 
     memo,
+    createRef,
     useState,
     useReducer,
     useCallback,

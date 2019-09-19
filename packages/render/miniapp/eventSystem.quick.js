@@ -18,11 +18,14 @@ export function dispatchEvent(e) {
     if (!instance || !instance.$$eventCached) {
         return;
     }
-    const eventType = toLowerCase(e._type || e.type);
+    let eventType = toLowerCase(e._type || e.type);
     const target = e.currentTarget || e.target;
     // 小米1040 || 小米1040之前 || 华为在1050前
     var dataset = target.dataset || getDataSetFromAttr(target.attr || target._attr);
     const app = this.$app.$def;
+    if(dataset[eventType+'Alias']){
+        eventType = dataset[eventType+'Alias'];
+     }
     let eventUid = dataset[eventType + 'Uid'];
     const fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
         props: {},

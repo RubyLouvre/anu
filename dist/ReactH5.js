@@ -1,9 +1,5 @@
 /**
-<<<<<<< HEAD
- * 运行于webview的React by 司徒正美 Copyright 2019-09-19T03
-=======
- * 运行于webview的React by 司徒正美 Copyright 2019-09-17T08
->>>>>>> ef1d6cc208f0e32d8d673d8227078e1b8c1f757d
+ * 运行于webview的React by 司徒正美 Copyright 2019-09-19T09
  * IE9+
  */
 
@@ -5421,6 +5417,9 @@
         var app = _getApp();
         var target = e.currentTarget;
         var dataset = target.dataset || {};
+        if (dataset[eventType + 'Alias']) {
+            eventType = dataset[eventType + 'Alias'];
+        }
         var eventUid = dataset[eventType + 'Uid'];
         var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
             props: {},

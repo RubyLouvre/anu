@@ -1,9 +1,5 @@
 /**
-<<<<<<< HEAD
  * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-19
-=======
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-17
->>>>>>> ef1d6cc208f0e32d8d673d8227078e1b8c1f757d
  */
 
 var arrayPush = Array.prototype.push;
@@ -597,6 +593,12 @@ function createContext(defaultValue, calculateChangedBits) {
     return getContext;
 }
 
+function createRef() {
+    return {
+        current: null
+    };
+}
+
 var fakeApp = {
     app: {
         globalData: {}
@@ -748,6 +750,9 @@ function dispatchEvent(e) {
     var app = _getApp();
     var target = e.currentTarget;
     var dataset = target.dataset || {};
+    if (dataset[eventType + 'Alias']) {
+        eventType = dataset[eventType + 'Alias'];
+    }
     var eventUid = dataset[eventType + 'Uid'];
     var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
         props: {},
@@ -2543,15 +2548,18 @@ function onLoad(PageClass, path, query, fire) {
     var pageInstance;
     if (typeof GlobalApp === "function") {
         this.needReRender = true;
-        render(createElement(GlobalApp, { key: 'g' }, createElement(PageClass, {
+        render(createElement(GlobalApp, {}, createElement(PageClass, {
             path: path,
             key: path,
             query: query,
-            isPageComponent: true,
-            ref: function ref(ins) {
-                if (ins) pageInstance = ins.wrappedInstance || getWrappedComponent(get(ins), ins);
+            isPageComponent: true
+        })), dom, function () {
+            var fiber = get(this).child;
+            while (!fiber.stateNode.classUid) {
+                fiber = fiber.child;
             }
-        })), dom);
+            pageInstance = fiber.stateNode;
+        });
     } else {
         pageInstance = render(
         createElement(PageClass, {
@@ -2560,13 +2568,13 @@ function onLoad(PageClass, path, query, fire) {
             isPageComponent: true
         }), dom);
     }
-    if (fire) {
-        callGlobalHook("onGlobalLoad");
-    }
     this.reactContainer = dom;
     this.reactInstance = pageInstance;
     pageInstance.wx = this;
-    updateMiniApp(pageInstance);
+    if (fire) {
+        callGlobalHook("onGlobalLoad");
+        updateMiniApp(pageInstance);
+    }
     return pageInstance;
 }
 function onReady() {
@@ -2718,6 +2726,7 @@ var React = getWindow().React = {
     webview: webview,
     Fragment: Fragment,
     PropTypes: PropTypes,
+    createRef: createRef,
     Component: Component,
     createContext: createContext,
     createElement: createElement,
@@ -2750,4 +2759,4 @@ if (typeof swan != "undefined") {
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component, PureComponent, memo, useState, useReducer, useCallback, useMemo, useEffect, useContext, useComponent, useRef };
+export { Children, createElement, Component, PureComponent, createRef, memo, useState, useReducer, useCallback, useMemo, useEffect, useContext, useComponent, useRef };
