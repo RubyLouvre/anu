@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-09-19T09
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-09-19T12
  * IE9+
  */
 
@@ -935,11 +935,19 @@ function _getApp() {
     return fakeApp;
 }
 function getWrappedComponent(fiber, instance) {
-    if (instance.constructor.WrappedComponent) {
-        return fiber.child.child.stateNode;
-    } else {
-        return instance;
+    var ctor = instance.constructor;
+    if (ctor.WrappedComponent) {
+        if (ctor.contextTypes) {
+            instance = fiber.child.stateNode;
+        } else {
+            instance = fiber.child.child.stateNode;
+        }
+        if (instance.componentDidMount) {
+            instance.$$componentDidMount = instance.componentDidMount;
+            instance.componentDidMount = null;
+        }
     }
+    return instance;
 }
 if (typeof getApp === 'function') {
     _getApp = getApp;
