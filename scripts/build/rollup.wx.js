@@ -21,6 +21,13 @@ export default {
         // exports: 'default',
         file: './packages/cli/lib/ReactWX.js',
         name: 'React'
+    },
+    {
+        strict: false,
+        format: 'cjs',
+       
+        file: './packages/cli/test/ReactWX.js',
+        name: 'React'
     }],
     plugins: [
         babel({

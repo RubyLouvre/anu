@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-08-20
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-09-16
  */
 
 (function (global, factory) {
@@ -216,7 +216,6 @@
         }
     };
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
     var RESERVED_PROPS = {
         key: true,
         ref: true,
@@ -380,7 +379,7 @@
         return fiber.children = flattenObject;
     }
     function getComponentKey(component, index) {
-        if ((typeof component === 'undefined' ? 'undefined' : _typeof(component)) === 'object' && component !== null && component.key != null) {
+        if (Object(component).key != null) {
             return escape(component.key);
         }
         return index.toString(36);
@@ -1923,8 +1922,8 @@
         var compute = reducer ? function (cursor, action) {
             return reducer(updateQueue[cursor], action || { type: Math.random() });
         } : function (cursor, value) {
-            var novel = updateQueue[cursor];
-            return typeof value == 'function' ? value(novel) : value;
+            var other = updateQueue[cursor];
+            return isFn(value) ? value(other) : value;
         };
         var dispatch = setter.bind(fiber, compute, key);
         if (key in updateQueue) {
@@ -1974,14 +1973,14 @@
     function useImperativeHandle(ref, create, deps) {
         var nextInputs = Array.isArray(deps) ? deps.concat([ref]) : [ref, create];
         useEffectImpl(function () {
-            if (typeof ref === 'function') {
+            if (isFn(ref)) {
                 var refCallback = ref;
                 var inst = create();
                 refCallback(inst);
                 return function () {
                     return refCallback(null);
                 };
-            } else if (ref !== null && ref !== undefined) {
+            } else if (Object(ref) === ref) {
                 var refObject = ref;
                 var _inst = create();
                 refObject.current = _inst;
@@ -1989,7 +1988,7 @@
                     refObject.current = null;
                 };
             }
-        }, nextInputs);
+        }, nextInputs, HOOK, 'layout', 'unlayout');
     }
     function getCurrentFiber() {
         return get(Renderer.currentOwner);
@@ -3205,6 +3204,19 @@
         };
     }
 
+    var MemoComponent = miniCreateClass(function MemoComponent(obj) {
+        this.render = obj.render;
+        this.shouldComponentUpdate = obj.shouldComponentUpdate;
+    }, Component, {});
+    function memo(render, shouldComponentUpdate) {
+        return function (props) {
+            return createElement(MemoComponent, Object.assign(props, {
+                render: render,
+                shouldComponentUpdate: shouldComponentUpdate
+            }));
+        };
+    }
+
     var noCheck = false;
     function setSelectValue(e) {
         if (e.propertyName === "value" && !noCheck) {
@@ -3356,6 +3368,7 @@
             createContext: createContext,
             Component: Component,
             lazy: lazy,
+            memo: memo,
             Suspense: Suspense,
             createRef: createRef,
             forwardRef: forwardRef,

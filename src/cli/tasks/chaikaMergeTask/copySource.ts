@@ -19,6 +19,7 @@ const reactFileReg = /React\w+\.js$/;
 const mergeFiles: any = [
     'app.json',
     'app.js',
+    // 'app.tsx', TODO: 看下这里支持业务ts代码是否需要添加.tsx
     'package.json'
 ];
 

@@ -35,6 +35,7 @@ module.exports = {
         if (astPath.parent.type === 'Program') {
             astPath.insertBefore(modules.ctorFn);
         } else {
+            // 支持mobx装饰器逻辑，let P = xxx 转为 P = xxx。因为let声明变量后不能声明同名function
             let tempPath: any;
             astPath.findParent(function(astPath) {
                 if (astPath.type !== 'Program') {

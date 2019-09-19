@@ -12,28 +12,24 @@ import { render } from "react-fiber/scheduleWork";
 import { createElement } from "react-core/createElement";
 import { _getGlobalApp } from "./registerApp.all.js";
 
-export function onLoad(PageClass, path, query) {
+export function onLoad(PageClass, path, query, fire ) {
     var app = _getApp();
     // 快应用拿不到全局数据，从globalData中取
     let GlobalApp = _getGlobalApp(app);
-    app.$$pageIsReady = false;
+   // app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
-    let container = {
-        type: "page",
-        props: {},
-        children: [],
-        root: true,
-        appendChild: noop
-    };
+    var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
+        this.needReRender = true
         render(
             createElement(
                 GlobalApp,
-                {},
+                {key: 'g'},
                 createElement(PageClass, {
                     path: path,
+                    key: path,
                     query: query,
                     isPageComponent: true,
                     ref: function(ins) {
@@ -44,7 +40,7 @@ export function onLoad(PageClass, path, query) {
                     }
                 })
             ),
-            container
+            dom
         );
     } else {
         pageInstance = render(
@@ -54,11 +50,13 @@ export function onLoad(PageClass, path, query) {
                 query: query,
                 isPageComponent: true
             }),
-            container
+            dom
         );
     }
-    callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
-    this.reactContainer = container;
+    if(fire){
+        callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
+    }
+    this.reactContainer = dom;
     this.reactInstance = pageInstance;
     pageInstance.wx = this; //保存小程序的页面对象
     updateMiniApp(pageInstance); //更新小程序视图
@@ -66,13 +64,8 @@ export function onLoad(PageClass, path, query) {
 }
 
 export function onReady() {
-    var app = _getApp();
-    app.$$pageIsReady = true;
-    let el = void 0;
-    while ((el = delayMounts.pop())) {
-        el.fn.call(el.instance);
-        el.instance.componentDidMount = el.fn;
-    }
+   // var app = _getApp();
+   // app.$$pageIsReady = true;
     callGlobalHook("onGlobalReady");
 }
 
@@ -104,5 +97,5 @@ export function onUnload() {
         );
     }
     callGlobalHook("onGlobalUnload");
-    //this.reactInstance = null;
+    this.reactContainer = null;
 }

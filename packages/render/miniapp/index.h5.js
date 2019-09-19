@@ -13,7 +13,8 @@ import {
 
 import { createContext } from 'react-core/createContext';
 
-import { Fragment, getWindow, miniCreateClass, noop } from 'react-core/util';
+import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
+import { memo } from 'react-fiber/memo';
 
 
 //import { dispatchEvent, webview } from './eventSystem';
@@ -36,7 +37,9 @@ import {
     useCallback,
     useMemo,
     useEffect, 
-    useContext } from 'react-core/hooks';
+    useContext,
+    useRef
+} from 'react-core/hooks';
 import { findDOMNode } from '../dom/findDOMNode';
 let { render } = DOMRenderer;
 
@@ -87,6 +90,7 @@ let React = (getWindow().React = {
         return PageClass;
     },
     // toStyle,
+    memo,
     useState,
     useReducer, 
     useCallback,
@@ -94,6 +98,7 @@ let React = (getWindow().React = {
     useEffect, 
     useContext,
     useComponent,
+    useRef,
     createRef,
     forwardRef,
     cloneElement,
@@ -268,3 +273,4 @@ function parseObj2Query(obj) {
 
 registerAPIs(React, apiContainer, more);
 export default React;
+

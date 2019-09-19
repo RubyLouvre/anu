@@ -20,6 +20,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const webpack_1 = __importDefault(require("webpack"));
 const path = __importStar(require("path"));
+const fs = __importStar(require("fs-extra"));
 const platforms_1 = __importDefault(require("./consts/platforms"));
 const queue_1 = require("./packages/utils/logger/queue");
 const index_1 = require("./packages/utils/logger/index");
@@ -31,11 +32,12 @@ const index_2 = __importDefault(require("./packages/utils/index"));
 const config_1 = __importDefault(require("./config/config"));
 const runBeforeParseTasks_1 = __importDefault(require("./tasks/runBeforeParseTasks"));
 const createH5Server_1 = __importDefault(require("./tasks/createH5Server"));
-function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, rules = [], prevLoaders = [], postLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = {}) {
+function nanachi(options = {}) {
     return __awaiter(this, void 0, void 0, function* () {
+        const { watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, typescript = false, rules = [], prevLoaders = [], postLoaders = [], prevJsLoaders = [], postJsLoaders = [], prevCssLoaders = [], postCssLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = options;
         function callback(err, stats) {
             if (err) {
-                console.log(err);
+                console.log(chalk_1.default.red(err.toString()));
                 return;
             }
             showLog();
@@ -58,6 +60,8 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
             if (platform === 'h5') {
                 const configPath = watch ? './config/h5/webpack.config.js' : './config/h5/webpack.config.prod.js';
                 const webpackH5Config = require(configPath);
+                if (typescript)
+                    webpackH5Config.entry += '.tsx';
                 const compilerH5 = webpack_1.default(webpackH5Config);
                 if (watch) {
                     createH5Server_1.default(compilerH5);
@@ -93,10 +97,15 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
             if (!index_2.default.validatePlatform(platform, platforms_1.default)) {
                 throw new Error(`不支持的platform：${platform}`);
             }
+            const useTs = fs.existsSync(path.resolve(process.cwd(), './source/app.tsx'));
+            if (useTs && !typescript) {
+                throw '检测到app.tsx，请使用typescript模式编译(-t/--typescript)';
+            }
             injectBuildEnv({
                 platform,
                 compress,
-                huawei
+                huawei,
+                typescript
             });
             getWebViewRules();
             yield runBeforeParseTasks_1.default({ platform, beta, betaUi, compress });
@@ -110,9 +119,14 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
                 beta,
                 betaUi,
                 plugins,
+                typescript,
                 analysis,
                 prevLoaders,
                 postLoaders,
+                prevJsLoaders,
+                postJsLoaders,
+                prevCssLoaders,
+                postCssLoaders,
                 rules,
                 huawei
             });
@@ -129,10 +143,11 @@ function nanachi({ watch = false, platform = 'wx', beta = false, betaUi = false,
         }
     });
 }
-function injectBuildEnv({ platform, compress, huawei }) {
+function injectBuildEnv({ platform, compress, huawei, typescript }) {
     process.env.ANU_ENV = (platform === 'h5' ? 'web' : platform);
     config_1.default['buildType'] = platform;
     config_1.default['compress'] = compress;
+    config_1.default['typescript'] = typescript;
     if (platform === 'quick') {
         config_1.default['huawei'] = huawei || false;
     }

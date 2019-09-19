@@ -28,6 +28,10 @@ const BUILD_OPTIONS: CmdMap = {
     'silent': {
         alias: 's',
         desc: '关闭eslint warning'
+    },
+    'typescript': {
+        alias: 't',
+        desc: '开启typescript编译'
     }
 };
 

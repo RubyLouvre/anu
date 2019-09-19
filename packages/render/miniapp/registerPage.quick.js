@@ -1,4 +1,4 @@
-import { emptyObject } from 'react-core/util'
+import { emptyObject,noop } from 'react-core/util'
 import { dispatchEvent } from './eventSystem.quick'
 import { onLoad, onUnload, onReady } from './registerPage.all'
 import {  _getApp } from './utils'
@@ -39,6 +39,13 @@ function getQuery(wx, huaweiHack) {
 
 export function registerPage(PageClass, path) {
     PageClass.reactInstances = []
+    PageClass.container = {
+        type: "page",
+        props: {},
+        children: [],
+        root: true,
+        appendChild: noop
+    };
     var def = _getApp().$def
     var appInner = def.innerQuery;
     var appOuter = def.outerQuery;
@@ -96,11 +103,14 @@ export function registerPage(PageClass, path) {
         config[pageHook] = function(e) {
             let instance = this.reactInstance,
                 app = _getApp(),
-                param = e
+                query = e
             if (pageHook === 'onShow') {
-                param = instance.props.query = getQuery(this, duplicate);
+                query = instance.props.query = getQuery(this, duplicate);
                 app.$$page = instance.wx;
-                app.$$pagePath = instance.props.path;
+                var path = app.$$pagePath = instance.props.path;
+                if(this.needReRender){
+                    onLoad.call(this, PageClass, path, query);
+                }
             } else if (pageHook === 'onMenuPress') {
                 app.onShowMenu && app.onShowMenu(instance, this.$app);
                 return
@@ -110,7 +120,7 @@ export function registerPage(PageClass, path) {
                 }
                 getCurrentPages().pop();
             }
-            return registerPageHook(appHooks,  pageHook,  app, instance, param);
+            return registerPageHook(appHooks,  pageHook,  app, instance, query);
         }
     })
     return config

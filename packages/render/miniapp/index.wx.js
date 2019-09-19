@@ -1,52 +1,55 @@
-import { Children } from 'react-core/Children';
-import { PropTypes } from 'react-core/PropTypes';
-import { Component } from 'react-core/Component';
-import { PureComponent } from 'react-core/PureComponent';
+import { Children } from "react-core/Children";
+import { PropTypes } from "react-core/PropTypes";
+import { Component } from "react-core/Component";
+import { PureComponent } from "react-core/PureComponent";
 import {
     createElement,
     cloneElement,
     isValidElement,
     createFactory
-} from 'react-core/createElement';
-import { createContext } from 'react-core/createContext';
-import { Fragment, getWindow, miniCreateClass } from 'react-core/util';
+} from "react-core/createElement";
+import { createContext } from "react-core/createContext";
+import { Fragment, getWindow, miniCreateClass } from "react-core/util";
 //注入小程序的API
-import { registerAPIs } from './registerAPIs';
-import { more } from './apiForWeixin/index';
+import { registerAPIs } from "./registerAPIs";
+import { more } from "./apiForWeixin/index";
 
-import { dispatchEvent, webview } from './eventSystem';
+import { dispatchEvent, webview } from "./eventSystem";
 
-import { Renderer } from './render.all';
+import { Renderer } from "./render.all";
 
-import { toStyle } from './toStyle';
-import { 
-    _getApp , 
-    getCurrentPage, 
-    _getCurrentPages, 
-    useComponent } from './utils';
-import { registerApp } from './registerApp.all';
-import { registerPage } from './registerPage.wx';
-import { registerComponent } from './registerComponent.wx';
-import { 
+import { toStyle } from "./toStyle";
+import {
+    _getApp,
+    getCurrentPage,
+    _getCurrentPages,
+    useComponent
+} from "./utils";
+import { registerApp } from "./registerApp.all";
+import { registerPage } from "./registerPage.wx";
+import { registerComponent } from "./registerComponent.wx";
+import {
     useState,
-    useReducer, 
+    useReducer,
     useCallback,
     useMemo,
-    useEffect, 
-    useContext } from 'react-core/hooks';
+    useEffect,
+    useContext,
+    useRef
+} from "react-core/hooks";
 
-
+import { memo } from "react-fiber/memo";
 
 let { render } = Renderer;
 
-let React = getWindow().React =  {
+let React = (getWindow().React = {
     //平台相关API
     eventSystem: {
         dispatchEvent
     },
 
     findDOMNode: function() {
-        console.log('小程序不支持findDOMNode'); /* eslint-disable-line */
+        console.log("小程序不支持findDOMNode"); /* eslint-disable-line */
     },
     //fiber底层API
     render: render,
@@ -54,12 +57,12 @@ let React = getWindow().React =  {
     webview,
     Fragment,
     PropTypes,
-   // Children,
+    // Children,
     Component,
-  //  createPortal,
+    //  createPortal,
     createElement,
     createFactory,
-   // cloneElement,
+    // cloneElement,
     PureComponent,
     isValidElement,
     createContext,
@@ -71,27 +74,43 @@ let React = getWindow().React =  {
     registerApp,
     registerPage,
     toStyle,
+    memo,
     useState,
-    useReducer, 
+    useReducer,
     useCallback,
     useMemo,
-    useEffect, 
+    useEffect,
     useContext,
     useComponent,
-    appType: 'wx'
-};
+    useRef,
+    appType: "wx"
+});
 let apiContainer = {};
-if (typeof wx != 'undefined'){
-    apiContainer = wx;//eslint-disable-line
-} else if (typeof qq != 'undefined'){
-    apiContainer = qq;//eslint-disable-line
-    React.appType = 'qq';
-} else if (typeof tt != 'undefined'){
-    apiContainer = tt;//eslint-disable-line
-    React.appType = 'tt';
-} 
+if (typeof wx != "undefined") {
+    apiContainer = wx; //eslint-disable-line
+} else if (typeof qq != "undefined") {
+    apiContainer = qq; //eslint-disable-line
+    React.appType = "qq";
+} else if (typeof tt != "undefined") {
+    apiContainer = tt; //eslint-disable-line
+    React.appType = "tt";
+}
 
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component, PureComponent };
+export { 
+    Children, 
+    createElement, 
+    Component, 
+    PureComponent, 
+    memo,
+    useState,
+    useReducer,
+    useCallback,
+    useMemo,
+    useEffect,
+    useContext,
+    useComponent,
+    useRef 
+};
