@@ -141,5 +141,47 @@ describe('test I/O', () => {
                 expect(err).toEqual(output);
             });
     });
+
+
+    test('test:React.api.saveFile:success', () => {
+        return React.api
+            .saveFile(
+                {
+                    mock() {
+                        return {
+                            errMsg: ':ok',
+                            tempFilePaths: ['/a/b/c.jpg']
+                        };
+                    }
+                }
+            )
+            .then(function(res){
+                var output = {
+                    errMsg: ':ok',
+                    tempFilePaths: ['/a/b/c.jpg']
+                };
+                expect(res).toEqual(output);
+            });
+    });
+
+    test('test:React.api.saveFile:fail', () => {
+        return React.api
+            .saveFile(
+                {
+                    mock() {
+                        return {
+                            errMsg: ':fail'
+                        };
+                    }
+                }
+            )
+            .catch(function(err){
+                var output = {
+                    errMsg: ':fail'
+                };
+                expect(err).toEqual(output);
+            });
+    });
+
     
 });

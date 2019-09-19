@@ -103,6 +103,39 @@ const wx = {
     },
     clearStorage(opts) {
         runClearStorageAsyncSuc(opts);
+    },
+    login(opts) {
+        runInAsync(opts, opts.mock && opts.mock() || {});
+    },
+    checkSession(opts) {
+        runInAsync(opts, opts.mock && opts.mock() || {});
+    },
+    authorize(opts) {
+        runInAsync(opts, opts.mock && opts.mock() || {});
+    },
+    getUserInfo(opts) {
+        runInAsync(opts, opts.mock && opts.mock() || {});
+    },
+    requestPayment(opts) {
+        runInAsync(opts, opts.mock && opts.mock() || {});
+    },
+    saveFile(opts) {
+        runInAsync(opts, opts.mock && opts.mock() || {});
+    },
+    getFileInfo(opts) {
+        runInAsync(opts, opts.mock && opts.mock() || {});
+    },
+    getSavedFileList(opts) {
+        runInAsync(opts, opts.mock && opts.mock() || {});
+    },
+    getSavedFileInfo(opts) {
+        runInAsync(opts, opts.mock && opts.mock() || {});
+    },
+    removeSavedFile(opts) {
+        runInAsync(opts, opts.mock && opts.mock() || {});
+    },
+    openDocument(opts) {
+        runInAsync(opts, opts.mock && opts.mock() || {});
     }
 };
 
