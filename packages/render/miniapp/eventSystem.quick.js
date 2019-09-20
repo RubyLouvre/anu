@@ -31,15 +31,18 @@ export function dispatchEvent(e) {
         props: {},
         type: 'unknown'
     };
-    if (eventType == 'change') {
-        if (fiber.props.value + '' === e.value) {
-            return;
-        }
+    const value = e.value
+    if (
+        eventType == "change" &&
+        !Array.isArray(value) &&
+        fiber.props.value + "" == value
+    ) {
+        return;
     }
     var safeTarget = {
         dataset: dataset,
         nodeName: target._nodeName || target.nodeName || target.type,
-        value: e.value
+        value: value
     };
     if (app && app.onCollectLogs && beaconType.test(eventType)) {
         app.onCollectLogs(dataset, eventType, fiber.stateNode);
