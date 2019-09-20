@@ -187,5 +187,44 @@ describe('test open api', () => {
                 expect(err).toEqual(output);
             });
     });
+
+
+    //
+    test('test:React.api.requestPayment:success', () => {
+        return React.api
+            .requestPayment({
+                mock() {
+                    return {
+                        errMsg: ':ok'
+                    };
+                }
+            })
+            .then(function(res){
+                var output = {
+                    errMsg: ':ok'
+                };
+                expect(res).toEqual(output);
+            });
+    });
+
+    
+    test('test:React.api.requestPayment:fail', () => {
+        return React.api
+            .requestPayment({
+                mock() {
+                    return {
+                        errMsg: ':fail'
+                    };
+                }
+            })
+            .catch(function(err){
+                var output = {
+                    errMsg: ':fail'
+                };
+                expect(err).toEqual(output);
+            });
+    });
+
+    
     
 });

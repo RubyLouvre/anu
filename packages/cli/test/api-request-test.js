@@ -143,14 +143,14 @@ describe('test I/O', () => {
     });
 
 
-    test('test:React.api.saveFile:success', () => {
+    test('test:React.api.getFileInfo:success', () => {
         return React.api
-            .saveFile(
+            .getFileInfo(
                 {
                     mock() {
                         return {
                             errMsg: ':ok',
-                            tempFilePaths: ['/a/b/c.jpg']
+                            size: 1000
                         };
                     }
                 }
@@ -158,15 +158,137 @@ describe('test I/O', () => {
             .then(function(res){
                 var output = {
                     errMsg: ':ok',
-                    tempFilePaths: ['/a/b/c.jpg']
+                    size: 1000
                 };
                 expect(res).toEqual(output);
             });
     });
 
-    test('test:React.api.saveFile:fail', () => {
+    test('test:React.api.getSavedFileList:fail', () => {
         return React.api
-            .saveFile(
+            .getFileInfo(
+                {
+                    mock() {
+                        return {
+                            errMsg: ':fail'
+                        };
+                    }
+                }
+            )
+            .catch(function(err){
+                var output = {
+                    errMsg: ':fail'
+                };
+                expect(err).toEqual(output);
+            });
+    });
+
+
+
+    test('test:React.api.getSavedFileList:success', () => {
+        return React.api
+            .getSavedFileList(
+                {
+                    mock() {
+                        return {
+                            errMsg: ':ok',
+                            fileList: ['a', 'b', 'c']
+                        };
+                    }
+                }
+            )
+            .then(function(res){
+                var output = {
+                    errMsg: ':ok',
+                    fileList: ['a', 'b', 'c']
+                };
+                expect(res).toEqual(output);
+            });
+    });
+
+    test('test:React.api.getSavedFileList:fail', () => {
+        return React.api
+            .getSavedFileList(
+                {
+                    mock() {
+                        return {
+                            errMsg: ':fail'
+                        };
+                    }
+                }
+            )
+            .catch(function(err){
+                var output = {
+                    errMsg: ':fail'
+                };
+                expect(err).toEqual(output);
+            });
+    });
+    
+
+
+    test('test:React.api.removeSavedFile:success', () => {
+        return React.api
+            .removeSavedFile(
+                {
+                    mock() {
+                        return {
+                            errMsg: ':ok'
+                        };
+                    }
+                }
+            )
+            .then(function(res){
+                var output = {
+                    errMsg: ':ok'
+                };
+                expect(res).toEqual(output);
+            });
+    });
+
+    test('test:React.api.removeSavedFile:fail', () => {
+        return React.api
+            .removeSavedFile(
+                {
+                    mock() {
+                        return {
+                            errMsg: ':fail'
+                        };
+                    }
+                }
+            )
+            .catch(function(err){
+                var output = {
+                    errMsg: ':fail'
+                };
+                expect(err).toEqual(output);
+            });
+    });
+
+
+
+    test('test:React.api.openDocument:success', () => {
+        return React.api
+            .openDocument(
+                {
+                    mock() {
+                        return {
+                            errMsg: ':ok'
+                        };
+                    }
+                }
+            )
+            .then(function(res){
+                var output = {
+                    errMsg: ':ok'
+                };
+                expect(res).toEqual(output);
+            });
+    });
+
+    test('test:React.api.openDocument:fail', () => {
+        return React.api
+            .openDocument(
                 {
                     mock() {
                         return {

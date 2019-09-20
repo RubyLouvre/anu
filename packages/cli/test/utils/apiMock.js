@@ -128,9 +128,6 @@ const wx = {
     getSavedFileList(opts) {
         runInAsync(opts, opts.mock && opts.mock() || {});
     },
-    getSavedFileInfo(opts) {
-        runInAsync(opts, opts.mock && opts.mock() || {});
-    },
     removeSavedFile(opts) {
         runInAsync(opts, opts.mock && opts.mock() || {});
     },
