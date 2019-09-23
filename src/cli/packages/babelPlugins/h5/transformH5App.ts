@@ -10,7 +10,7 @@ import Loadable from 'react-loadable';
 import QunarDefaultLoading from '@qunar-default-loading';
 `)();
 
-const buildAsyncImport: any = template(
+/* const buildAsyncImport: any = template(
     `
   const PAGE_NAME = Loadable({
     loader: () => import('IMPORT_PATH'),
@@ -20,7 +20,7 @@ const buildAsyncImport: any = template(
     {
         plugins: ['dynamicImport']
     }
-);
+); */
 
 const domRender: any = template(`
 window.onload = function (){
@@ -68,6 +68,16 @@ const temp = `window.addEventListener('popstate', function ({
 });
 React.registerApp(this);
 this.onLaunch();
+Global.config.pages.forEach((path) => {
+    React.registerPage(
+        Loadable({
+            loader: () => import("." + path),
+            loading: QunarDefaultLoading,
+            delay: 300
+        }),
+        path
+    );
+});
 `;
 let registerTemplate = temp;
 
@@ -101,16 +111,17 @@ module.exports = function(): PluginObj {
                 if (!/pages/.test(importPath)) {
                     return;
                 }
-                const PAGE_NAME = `PAGE_${pageIndex++}`;
-                registerTemplate += `React.registerPage(${PAGE_NAME}, '${importPath.replace(/^\./, '')}')\n`;
+             //   const PAGE_NAME = `PAGE_${pageIndex++}`;
+             //   registerTemplate += `React.registerPage(${PAGE_NAME}, '${importPath.replace(/^\./, '')}')\n`;
                 const pageItem = t.stringLiteral(importPath.replace(/^\./, ''));
                 
                 importedPages.elements.push(pageItem);
-                astPath.replaceWith(buildAsyncImport({
-                    PAGE_NAME,
-                    IMPORT_PATH: importPath
-                }));
-                // astPath.node.specifiers.push(t.importDefaultSpecifier(t.identifier(PAGE_NAME)));
+                astPath.remove();
+              //  astPath.replaceWith(buildAsyncImport({
+              //      PAGE_NAME,
+              //      IMPORT_PATH: importPath
+              //  }));
+              //  astPath.node.specifiers.push(t.importDefaultSpecifier(t.identifier(PAGE_NAME)));
             },
             ClassProperty(astPath: NodePath<t.ClassProperty>) {
                 // 装饰器必须使用babel插件转义static properties 所以向config变量注入path的逻辑放到MemberExpression中
@@ -172,7 +183,8 @@ module.exports = function(): PluginObj {
                     
     
                     const registerApp: any = template(registerTemplate, {
-                        placeholderPattern: /^CLASS_NAME$/
+                        placeholderPattern: /^CLASS_NAME$/,
+                        plugins: ['dynamicImport']
                     })({
                         CLASS_NAME: t.identifier(CLASS_NAME)
                     });
