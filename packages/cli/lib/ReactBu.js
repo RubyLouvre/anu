@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-19
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-23
  */
 
 var arrayPush = Array.prototype.push;
@@ -744,7 +744,7 @@ var webview = {};
 var rbeaconType = /click|tap|change|blur|input/i;
 function dispatchEvent(e) {
     var eventType = toLowerCase(e.type);
-    if (eventType == 'message') {
+    if (eventType == "message") {
         if (webview.instance && webview.cb) {
             webview.cb.call(webview.instance, e);
         }
@@ -752,25 +752,23 @@ function dispatchEvent(e) {
     }
     var instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
-        console.log(eventType, '没有实例');
+        console.log(eventType, "没有实例");
         return;
     }
     var app = _getApp();
     var target = e.currentTarget;
     var dataset = target.dataset || {};
-    if (dataset[eventType + 'Alias']) {
-        eventType = dataset[eventType + 'Alias'];
+    if (dataset[eventType + "Alias"]) {
+        eventType = dataset[eventType + "Alias"];
     }
-    var eventUid = dataset[eventType + 'Uid'];
-    var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
+    var eventUid = dataset[eventType + "Uid"];
+    var fiber = instance.$$eventCached[eventUid + "Fiber"] || {
         props: {},
-        type: 'unknown'
+        type: "unknown"
     };
     var value = Object(e.detail).value;
-    if (eventType == 'change') {
-        if (fiber.props.value + '' == value) {
-            return;
-        }
+    if (eventType == "change" && !Array.isArray(value) && fiber.props.value + "" == value) {
+        return;
     }
     var safeTarget = {
         dataset: dataset,

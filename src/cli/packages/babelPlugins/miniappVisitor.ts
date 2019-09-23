@@ -727,13 +727,7 @@ const visitor:babel.Visitor = {
                     var isIdentifier = styleType === 'Identifier';
                     // 华为编辑器行内样式特殊处理
 
-                    // if (config.huawei) {
-                    //     if (styleType === 'ObjectExpression') {
-                    //         let code = quickhuaweiStyle(expr);
-                    //         astPath.node.value = t.stringLiteral(code);
-                    //         return;
-                    //     }
-                    // }
+    
                     if (
                         isIdentifier ||
                         MemberExpression ||
