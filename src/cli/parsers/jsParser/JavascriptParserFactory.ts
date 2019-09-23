@@ -32,6 +32,8 @@ class JavascriptParserFactory {
                 return new QuickParser(options);
             case 'h5':
                 return new H5Parser(options);
+            case '360':
+                return new H5Parser(options);
             default:
                 return new WxParser(options);
         }

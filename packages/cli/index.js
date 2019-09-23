@@ -32,6 +32,8 @@ const index_2 = __importDefault(require("./packages/utils/index"));
 const config_1 = __importDefault(require("./config/config"));
 const runBeforeParseTasks_1 = __importDefault(require("./tasks/runBeforeParseTasks"));
 const createH5Server_1 = __importDefault(require("./tasks/createH5Server"));
+const copy_webpack_plugin_1 = __importDefault(require("copy-webpack-plugin"));
+const configurations_1 = require("./config/h5/configurations");
 function nanachi(options = {}) {
     return __awaiter(this, void 0, void 0, function* () {
         const { watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, typescript = false, rules = [], prevLoaders = [], postLoaders = [], prevJsLoaders = [], postJsLoaders = [], prevCssLoaders = [], postCssLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = options;
@@ -62,12 +64,32 @@ function nanachi(options = {}) {
                 const webpackH5Config = require(configPath);
                 if (typescript)
                     webpackH5Config.entry += '.tsx';
+                if (config_1.default['360mode']) {
+                    webpackH5Config.plugins.unshift(new copy_webpack_plugin_1.default([{
+                            from: '**',
+                            to: path.resolve(process.cwd(), 'src'),
+                            context: path.resolve(__dirname, './packages/360helpers/template')
+                        }]));
+                }
                 const compilerH5 = webpack_1.default(webpackH5Config);
                 if (watch) {
                     createH5Server_1.default(compilerH5);
                 }
                 else {
                     compilerH5.run(function (err, stats) {
+                        if (config_1.default['360mode']) {
+                            const appPath = path.resolve(process.cwd(), 'src/app.js');
+                            let script = fs.readFileSync(appPath).toString();
+                            script = `import './dist/web/bundle.${stats.hash.slice(0, 10)}.js';\n${script}`;
+                            fs.writeFileSync(appPath, script, 'utf-8');
+                            const files = fs.readdirSync(webpackH5Config.output.path);
+                            fs.ensureDirSync(path.resolve(process.cwd(), './src/dist/web'));
+                            files.forEach(filename => {
+                                if (filename !== configurations_1.intermediateDirectoryName) {
+                                    fs.copySync(path.resolve(webpackH5Config.output.path, filename), path.resolve(process.cwd(), './src/dist/web', filename));
+                                }
+                            });
+                        }
                         if (err) {
                             console.log(err);
                             return;
@@ -94,6 +116,9 @@ function nanachi(options = {}) {
             complete(err, stats);
         }
         try {
+            if (watch && config_1.default['360mode']) {
+                throw new Error('360编译不支持watch模式');
+            }
             if (!index_2.default.validatePlatform(platform, platforms_1.default)) {
                 throw new Error(`不支持的platform：${platform}`);
             }

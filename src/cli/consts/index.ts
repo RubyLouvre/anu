@@ -95,6 +95,15 @@ export const MAP: {
             'less': 'css'
         },
         patchComponents: []
+    },
+    '360': {
+        EXT_NAME: {
+            'css': 'css',
+            'scss': 'css',
+            'sass': 'css',
+            'less': 'css'
+        },
+        patchComponents: []
     }
 };
 

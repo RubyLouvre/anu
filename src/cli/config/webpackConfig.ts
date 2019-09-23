@@ -9,6 +9,7 @@ import * as path from 'path';
 import webpack from 'webpack';
 const utils = require('../packages/utils/index');
 import { intermediateDirectoryName } from './h5/configurations';
+import config from './config';
 //各种loader
 //生成文件
 const fileLoader = require.resolve('../nanachi-loader/loaders/fileLoader');
@@ -77,6 +78,7 @@ export default function({
         ],
         ...copyPluginOption // 压缩图片配置
     }];
+    
     const mergePlugins = [].concat( 
         new ChaikaPlugin(),
         analysis ? new SizePlugin() : [],
