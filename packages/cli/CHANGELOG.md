@@ -1,5 +1,26 @@
 # Changelog
 
+# 1.3.6 (2019-09-23)
+
+## 核心库
+#### Feature
+
+- 添加React.memo方法。
+- 添加React.api.setBackgroundColor && React.api.setBackgroundTextStyle。
+- 事件系统中添加事件名映射，参考文档中映射事件名部分：https://rubylouvre.github.io/nanachi/documents/event.html
+- 添加ReactH5 剪切板api。
+- 添加ReactQuick accountGetProvider、accountAuthorize api。
+
+#### Bug fix
+
+- 修复useImperativeHandle 钩子不触发bug。
+
+## CLI
+#### Feature
+
+- 支持typescript，添加typescript模板。
+- nanachi api新增prevJsLoaders, postJsLoaders, prevCssLoaders, postCssLoaders。
+
 # 1.3.4 (2019-08-27)
 
 ## 核心库
