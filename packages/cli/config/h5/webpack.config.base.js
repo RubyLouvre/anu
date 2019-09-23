@@ -29,6 +29,12 @@ try {
 }
 catch (e) {
 }
+const plugins = [
+    new HtmlWebpackPlugin({
+        template: templatePath
+    }),
+    new webpack_1.default.EnvironmentPlugin(Object.assign({ ANU_ENV: 'web' }, process.env)),
+];
 const webpackConfig = {
     mode: 'development',
     context,
@@ -83,12 +89,7 @@ const webpackConfig = {
         ]
     },
     devtool: 'cheap-source-map',
-    plugins: [
-        new HtmlWebpackPlugin({
-            template: templatePath
-        }),
-        new webpack_1.default.EnvironmentPlugin(Object.assign({ ANU_ENV: 'web' }, process.env)),
-    ],
+    plugins,
     stats: 'errors-only'
 };
 exports.default = webpackConfig;

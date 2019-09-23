@@ -27,6 +27,17 @@ try {
     // 用户根目录不存在模板html文件则用默认模板
 }
 
+const plugins = [
+    new HtmlWebpackPlugin({
+        template: templatePath
+    }),
+    new webpack.EnvironmentPlugin({
+        ANU_ENV: 'web',
+        ...process.env
+    }),
+    // new CleanWebpackPlugin()
+]
+
 const webpackConfig: webpack.Configuration = {
     mode: 'development',
     context,
@@ -94,16 +105,7 @@ const webpackConfig: webpack.Configuration = {
         ]
     },
     devtool: 'cheap-source-map',
-    plugins: [
-        new HtmlWebpackPlugin({
-            template: templatePath
-        }),
-        new webpack.EnvironmentPlugin({
-            ANU_ENV: 'web',
-            ...process.env
-        }),
-        // new CleanWebpackPlugin()
-    ],
+    plugins,
     stats: 'errors-only'
 }
 

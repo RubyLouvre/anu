@@ -21,12 +21,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../../consts/index");
 const fs = __importStar(require("fs-extra"));
 const index_2 = __importDefault(require("../../index"));
+const config_1 = __importDefault(require("../../config/config"));
 const { deepMerge } = require('../../packages/utils/index');
 function default_1(args) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { buildType, beta, betaUi, watch, compress, huawei, analysis, silent, typescript } = args;
+            const { beta, betaUi, watch, compress, huawei, analysis, silent, typescript } = args;
+            let { buildType } = args;
             const nanachiConfig = {};
+            if (buildType === '360') {
+                buildType = 'h5';
+                config_1.default['360mode'] = true;
+            }
             const baseConfig = {
                 platform: buildType,
                 beta,
