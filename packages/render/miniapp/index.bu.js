@@ -10,6 +10,7 @@ import {
 import { createContext } from "react-core/createContext";
 
 import { Fragment, getWindow, miniCreateClass } from "react-core/util";
+import { createRef } from "react-core/createRef";
 
 import { dispatchEvent, webview } from "./eventSystem";
 import { Renderer } from "./render.all";
@@ -57,7 +58,7 @@ let React = (getWindow().React = {
     webview,
     Fragment,
     PropTypes,
-    // Children,
+    createRef,
     Component,
     // createPortal,
     createContext,
@@ -94,7 +95,12 @@ if (typeof swan != "undefined") {
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component, PureComponent,
+export {
+    Children,
+    createElement,
+    Component,
+    PureComponent,
+    createRef,
     memo,
     useState,
     useReducer,
@@ -103,5 +109,5 @@ export { Children, createElement, Component, PureComponent,
     useEffect,
     useContext,
     useComponent,
-    useRef 
+    useRef
 };

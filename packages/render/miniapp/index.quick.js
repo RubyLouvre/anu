@@ -9,6 +9,7 @@ import {
 } from "react-core/createElement";
 import { createContext } from "react-core/createContext";
 import { Fragment, getWindow, miniCreateClass } from "react-core/util";
+import { createRef } from "react-core/createRef";
 
 import { dispatchEvent } from "./eventSystem.quick";
 
@@ -51,7 +52,7 @@ let React = (getWindow().React = {
 
     Fragment,
     PropTypes,
-    // Children,
+    createRef,
     Component,
     // createPortal,
     createElement,
@@ -87,7 +88,11 @@ if (typeof global !== "undefined") {
 registerAPIsQuick(React, facade, more);
 
 export default React;
-export { Children, createElement, Component, PureComponent,
+export { 
+    Children, 
+    createElement, 
+    Component, 
+    PureComponent,
     memo,
     useState,
     useReducer,

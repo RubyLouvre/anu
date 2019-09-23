@@ -71,4 +71,5 @@ if (prevReact && prevReact.eventSystem) {
         createFactory
     };
 }
+
 export default React;

@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-09-16
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-09-19
  */
 
 (function (global, factory) {
@@ -3147,16 +3147,16 @@
         return useReducerImpl(reducer, initValue, initAction);
     }
     function useEffect(create, deps) {
-        return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
+        return useEffectImpl(create, deps, PASSIVE, "passive", "unpassive");
     }
     function useLayoutEffect(create, deps) {
-        return useEffectImpl(create, deps, HOOK, 'layout', 'unlayout');
-    }
-    function useCallback(create, deps) {
-        return useCallbackImpl(create, deps);
+        return useEffectImpl(create, deps, HOOK, "layout", "unlayout");
     }
     function useMemo(create, deps) {
         return useCallbackImpl(create, deps, true);
+    }
+    function useCallback(create, deps) {
+        return useCallbackImpl(create, deps);
     }
 
     function Suspense(props) {
@@ -3211,7 +3211,7 @@
     function memo(render, shouldComponentUpdate) {
         return function (props) {
             return createElement(MemoComponent, Object.assign(props, {
-                render: render,
+                render: render.bind(this, props),
                 shouldComponentUpdate: shouldComponentUpdate
             }));
         };

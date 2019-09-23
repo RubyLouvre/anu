@@ -15,17 +15,24 @@ function _getApp () {
     }
     return fakeApp;
 }
-//获取redux-react中的connect包裹下的原始实例对象 相同点Connect.WrappedComponent
+//获取redux-react中的connect包裹下的原始实例对象 相同点Connect.WrappedComponent, 不支持react-redux4, 7
 //  https://cdn.bootcss.com/react-redux/7.1.0-alpha.1/react-redux.js
-//  https://cdn.bootcss.com/react-redux/6.0.1/react-redux.js 
-//  https://cdn.bootcss.com/react-redux/5.1.1/react-redux.js
-//  https://cdn.bootcss.com/react-redux/4.4.5/react-redux.js
+//  https://cdn.bootcss.com/react-redux/6.0.1/react-redux.js  fiber.child.child
+//  https://cdn.bootcss.com/react-redux/5.1.1/react-redux.js  fiber.child
 export function getWrappedComponent(fiber, instance) {
-    if( instance.constructor.WrappedComponent){
-       return fiber.child.child.stateNode
-    }else{
-       return instance
-    }
+    var ctor = instance.constructor;
+    if (ctor.WrappedComponent) {
+        if (ctor.contextTypes) {
+            instance =  fiber.child.stateNode;
+        } else {
+            instance = fiber.child.child.stateNode;
+        }
+        if(instance.componentDidMount){
+            instance.$$componentDidMount = instance.componentDidMount
+            instance.componentDidMount = null
+        }
+    } 
+    return instance;
 }
 
 if (typeof getApp === 'function') {
@@ -109,6 +116,7 @@ export function refreshComponent (instances, wx, uuid) {
         }
     }
 }
+
 export function detachComponent () {
     let t = this.reactInstance;
     this.disposed = true;

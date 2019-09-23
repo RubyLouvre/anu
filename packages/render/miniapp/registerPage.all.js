@@ -3,14 +3,13 @@ import { topNodes, noop, get, topFibers } from "react-core/util";
 import {
     delayMounts,
     usingComponents,
-    getWrappedComponent,
     _getApp,
     updateMiniApp,
     callGlobalHook
 } from "./utils";
 import { render } from "react-fiber/scheduleWork";
 import { createElement } from "react-core/createElement";
-import { _getGlobalApp } from "./registerApp.all.js";
+import { _getGlobalApp } from "./registerApp.all";
 
 export function onLoad(PageClass, path, query, fire ) {
     var app = _getApp();
@@ -26,22 +25,23 @@ export function onLoad(PageClass, path, query, fire ) {
         render(
             createElement(
                 GlobalApp,
-                {key: 'g'},
+                {},
                 createElement(PageClass, {
                     path: path,
                     key: path,
                     query: query,
-                    isPageComponent: true,
-                    ref: function(ins) {
-                        if (ins)
-                            pageInstance =
-                                ins.wrappedInstance ||
-                                getWrappedComponent(get(ins), ins);
-                    }
+                    isPageComponent: true
                 })
             ),
-            dom
+            dom, function(){
+                var fiber = get(this).child;
+                while (!fiber.stateNode.classUid) {
+                    fiber = fiber.child;
+                }
+                pageInstance = fiber.stateNode;
+            }
         );
+
     } else {
         pageInstance = render(
             //生成页面的React对象
@@ -53,13 +53,13 @@ export function onLoad(PageClass, path, query, fire ) {
             dom
         );
     }
-    if(fire){
-        callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
-    }
     this.reactContainer = dom;
     this.reactInstance = pageInstance;
     pageInstance.wx = this; //保存小程序的页面对象
-    updateMiniApp(pageInstance); //更新小程序视图
+    if(fire){
+        callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
+        updateMiniApp(pageInstance); //更新小程序视图
+    }
     return pageInstance;
 }
 

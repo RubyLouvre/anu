@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-09-17T08
+ * 运行于webview的React by 司徒正美 Copyright 2019-09-19T12
  * IE9+
  */
 
@@ -3115,11 +3115,19 @@
         return fakeApp;
     }
     function getWrappedComponent(fiber, instance) {
-        if (instance.constructor.WrappedComponent) {
-            return fiber.child.child.stateNode;
-        } else {
-            return instance;
+        var ctor = instance.constructor;
+        if (ctor.WrappedComponent) {
+            if (ctor.contextTypes) {
+                instance = fiber.child.stateNode;
+            } else {
+                instance = fiber.child.child.stateNode;
+            }
+            if (instance.componentDidMount) {
+                instance.$$componentDidMount = instance.componentDidMount;
+                instance.componentDidMount = null;
+            }
         }
+        return instance;
     }
     if (typeof getApp === 'function') {
         _getApp = getApp;
@@ -5417,6 +5425,9 @@
         var app = _getApp();
         var target = e.currentTarget;
         var dataset = target.dataset || {};
+        if (dataset[eventType + 'Alias']) {
+            eventType = dataset[eventType + 'Alias'];
+        }
         var eventUid = dataset[eventType + 'Uid'];
         var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
             props: {},
@@ -5497,13 +5508,13 @@
         return useReducerImpl(reducer, initValue, initAction);
     }
     function useEffect(create, deps) {
-        return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
-    }
-    function useCallback(create, deps) {
-        return useCallbackImpl(create, deps);
+        return useEffectImpl(create, deps, PASSIVE, "passive", "unpassive");
     }
     function useMemo(create, deps) {
         return useCallbackImpl(create, deps, true);
+    }
+    function useCallback(create, deps) {
+        return useCallbackImpl(create, deps);
     }
 
     function findHostInstance(fiber) {

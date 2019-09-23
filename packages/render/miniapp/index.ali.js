@@ -34,6 +34,8 @@ import {
     useContext,
     useRef
 } from "react-core/hooks";
+import { createRef } from "react-core/createRef";
+
 import { memo } from "react-fiber/memo";
 
 let { render } = Renderer;
@@ -54,7 +56,7 @@ let React = (getWindow().React = {
     webview,
     Fragment,
     PropTypes,
-    // Children,
+    createRef,
     Component,
     // createPortal,
     createElement,
@@ -90,7 +92,12 @@ if (typeof my != "undefined") {
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component, PureComponent,
+export {
+    Children,
+    createElement,
+    Component,
+    PureComponent,
+    createRef,
     memo,
     useState,
     useReducer,
