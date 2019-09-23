@@ -91,7 +91,7 @@ module.exports = function (): PluginObj {
                 ) {
                     path.traverse({
                         CallExpression(fn: NodePath<t.CallExpression>) {
-                            const callee: NodePath<t.Expression> = fn.get('callee');
+                            const callee: NodePath<t.Expression> = fn.get('callee') as any;
 
                             if (callee.isMemberExpression()) {
                                 const property = callee.get('property');

@@ -202,7 +202,7 @@ function getValueByPath(path: any, data: any){
 function xDiff(list: any) {
     if (!list.length) return {};
     let first = list[0];
-    let confictQueue = [];
+    let confictQueue: any[] = [];
     let other = list.slice(1);
     let isConfict = false;
     for (let i = 0; i < other.length; i++) {

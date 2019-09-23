@@ -600,7 +600,7 @@ const visitor:babel.Visitor = {
                 //  iconfont 各小程序匹配 去掉小程序下 <text>&#xf1f3;</text>
                 var children = (astPath.parentPath.node as any).children;
                 if (children.length === 1) {
-                    let iconValue = t.isJSXText(children[0]) ? children[0].extra.raw : '';
+                    let iconValue = t.isJSXText(children[0]) ? (children[0] as any).extra.raw : '';
                     let iconReg = /\s*&#x/i;
                     if (iconReg.test(iconValue)) {
                         children.length = 0;
