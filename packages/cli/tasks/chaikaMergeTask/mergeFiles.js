@@ -311,6 +311,9 @@ function validateConfigFileCount(queue) {
 }
 function default_1() {
     let queue = Array.from(mergeFilesQueue);
+    validateAppJsFileCount(queue);
+    validateConfigFileCount(queue);
+    validateMiniAppProjectConfigJson(queue);
     let map = getFilesMap(queue);
     let tasks = [
         getMergedAppJsConent(getAppJsSourcePath(queue), map.pages),

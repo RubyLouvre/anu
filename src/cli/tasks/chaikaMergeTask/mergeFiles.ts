@@ -364,9 +364,9 @@ export default function(){
     
     let queue = Array.from(mergeFilesQueue);
     
-    // validateAppJsFileCount(queue);
-    // validateConfigFileCount(queue);
-    // validateMiniAppProjectConfigJson(queue);
+    validateAppJsFileCount(queue);
+    validateConfigFileCount(queue);
+    validateMiniAppProjectConfigJson(queue);
 
     let map: any = getFilesMap(queue);
 

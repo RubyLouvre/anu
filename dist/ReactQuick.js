@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-09-19
+ * 运行于快应用的React by 司徒正美 Copyright 2019-09-23
  */
 
 var arrayPush = Array.prototype.push;
@@ -627,15 +627,14 @@ function dispatchEvent(e) {
         props: {},
         type: 'unknown'
     };
-    if (eventType == 'change') {
-        if (fiber.props.value + '' === e.value) {
-            return;
-        }
+    var value = e.value;
+    if (eventType == "change" && !Array.isArray(value) && fiber.props.value + "" == value) {
+        return;
     }
     var safeTarget = {
         dataset: dataset,
         nodeName: target._nodeName || target.nodeName || target.type,
-        value: e.value
+        value: value
     };
     if (app && app.onCollectLogs && beaconType.test(eventType)) {
         app.onCollectLogs(dataset, eventType, fiber.stateNode);
