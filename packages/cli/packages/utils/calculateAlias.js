@@ -15,8 +15,11 @@ function fixPath(p) {
     p = p.replace(/\\/g, '/');
     return /^\w/.test(p) ? './' + p : p;
 }
-function calculateAlias(srcPath, importerSource) {
+function calculateAlias(srcPath, importerSource, ignoredPaths) {
     const aliasMap = require('./calculateAliasConfig')();
+    if (ignoredPaths && ignoredPaths.find((p) => importerSource === p)) {
+        return '';
+    }
     if (!path.isAbsolute(srcPath)) {
         console.error(`计算alias中的 ${srcPath} 必须为绝对路径.`);
         process.exit(1);
