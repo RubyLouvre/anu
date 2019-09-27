@@ -21,7 +21,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const index_1 = require("../../consts/index");
 const babel = __importStar(require("@babel/core"));
 const alias_1 = __importDefault(require("../../consts/alias"));
-const calculateAlias = require('../../packages/utils/calculateAlias');
+const calculateAlias_1 = __importDefault(require("../../packages/utils/calculateAlias"));
 function resolveAlias(code, aliasMap, relativePath, ast, ctx) {
     const babelConfig = {
         configFile: false,
@@ -31,7 +31,7 @@ function resolveAlias(code, aliasMap, relativePath, ast, ctx) {
                 require('babel-plugin-module-resolver'),
                 {
                     resolvePath(moduleName) {
-                        return calculateAlias(ctx.resourcePath, moduleName);
+                        return calculateAlias_1.default(ctx.resourcePath, moduleName, ctx._compiler.options.externals);
                     }
                 }
             ]
