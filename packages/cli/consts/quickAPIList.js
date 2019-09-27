@@ -47,5 +47,5 @@ exports.default = [
     '@service.share',
     '@service.qqaccount',
     '@service.wxaccount',
-    '@service\.wbaccount'
+    '@service.wbaccount'
 ];
