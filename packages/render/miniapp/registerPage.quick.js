@@ -90,7 +90,7 @@ export function registerPage(PageClass, path) {
         dispatchEvent,
         onInit() {
             let app = this.$app;
-            let instance = onLoad.call(this, PageClass, path, getQuery(this, duplicate));
+            let instance = onLoad.call(this, PageClass, path, getQuery(this, duplicate), true);
             let pageConfig = PageClass.config || instance.config || emptyObject;
             app.$$pageConfig = Object.keys(pageConfig).length ?
                 pageConfig :

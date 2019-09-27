@@ -11,17 +11,17 @@ import { render } from "react-fiber/scheduleWork";
 import { createElement } from "react-core/createElement";
 import { _getGlobalApp } from "./registerApp.all";
 
-export function onLoad(PageClass, path, query, fire ) {
+export function onLoad(PageClass, path, query, fire) {
     var app = _getApp();
     // 快应用拿不到全局数据，从globalData中取
     let GlobalApp = _getGlobalApp(app);
-   // app.$$pageIsReady = false;
+    app.$$pageIsReady = false; //pageIsReadyg与delayMounts是专门给快应用
     app.$$page = this;
     app.$$pagePath = path;
     var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
-        this.needReRender = true
+        this.needReRender = true;
         render(
             createElement(
                 GlobalApp,
@@ -33,7 +33,8 @@ export function onLoad(PageClass, path, query, fire ) {
                     isPageComponent: true
                 })
             ),
-            dom, function(){
+            dom,
+            function() {
                 var fiber = get(this).child;
                 while (!fiber.stateNode.classUid) {
                     fiber = fiber.child;
@@ -41,7 +42,6 @@ export function onLoad(PageClass, path, query, fire ) {
                 pageInstance = fiber.stateNode;
             }
         );
-
     } else {
         pageInstance = render(
             //生成页面的React对象
@@ -56,7 +56,7 @@ export function onLoad(PageClass, path, query, fire ) {
     this.reactContainer = dom;
     this.reactInstance = pageInstance;
     pageInstance.wx = this; //保存小程序的页面对象
-    if(fire){
+    if (fire) {
         callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
         updateMiniApp(pageInstance); //更新小程序视图
     }
@@ -64,8 +64,13 @@ export function onLoad(PageClass, path, query, fire ) {
 }
 
 export function onReady() {
-   // var app = _getApp();
-   // app.$$pageIsReady = true;
+    var app = _getApp();
+    app.$$pageIsReady = true;
+    let el = void 0;
+    while ((el = delayMounts.pop())) {
+        el.fn.call(el.instance);
+        el.instance.componentDidMount = el.fn;
+    }
     callGlobalHook("onGlobalReady");
 }
 

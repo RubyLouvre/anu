@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-09-23T03
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-09-27T08
  * IE9+
  */
 
@@ -960,6 +960,7 @@ function callGlobalHook(method, e) {
         return app[method](e);
     }
 }
+var delayMounts = [];
 var usingComponents = [];
 var registeredComponents = {};
 function getCurrentPage() {
@@ -1009,11 +1010,6 @@ function refreshComponent(instances, wx, uuid) {
             instance.wx = wx;
             wx.reactInstance = instance;
             updateMiniApp(instance);
-            if (instance.$$componentDidMount) {
-                instance.$$componentDidMount();
-                instance.componentDidMount = instance.$$componentDidMount;
-                delete instance.$$componentDidMount;
-            }
             return instances.splice(i, 1);
         }
     }
@@ -2465,10 +2461,15 @@ var Renderer$1 = createRenderer({
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
-                    instance.$$componentDidMount = instance.componentDidMount;
-                    instance.componentDidMount = null;
                 }
             }
+        }
+        if (!app.$$pageIsReady && instance.componentDidMount) {
+            delayMounts.push({
+                instance: instance,
+                fn: instance.componentDidMount
+            });
+            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -2529,6 +2530,7 @@ function registerApp(app) {
 function onLoad(PageClass, path, query, fire) {
     var app = _getApp();
     var GlobalApp = _getGlobalApp(app);
+    app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
     var dom = PageClass.container;
@@ -2565,6 +2567,13 @@ function onLoad(PageClass, path, query, fire) {
     return pageInstance;
 }
 function onReady() {
+    var app = _getApp();
+    app.$$pageIsReady = true;
+    var el = void 0;
+    while (el = delayMounts.pop()) {
+        el.fn.call(el.instance);
+        el.instance.componentDidMount = el.fn;
+    }
     callGlobalHook("onGlobalReady");
 }
 function onUnload() {

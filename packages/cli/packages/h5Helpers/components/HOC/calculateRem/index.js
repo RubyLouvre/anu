@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import { MAX_VIEWPORT_WIDTH, MIN_VIEWPORT_WIDTH } from '@internalConsts/runtime/index';
 
 export default function calculateRem(App) {

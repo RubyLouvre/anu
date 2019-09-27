@@ -1,8 +1,6 @@
-import { hasOwnProperty, typeNumber, isFn, get } from 'react-core/util';
+import { hasOwnProperty, typeNumber, isFn, get, noop } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 import { Renderer } from 'react-core/createRenderer';
-
-const noop = () => {};
 
 var fakeApp = {
     app: {
@@ -107,11 +105,12 @@ export function refreshComponent (instances, wx, uuid) {
             instance.wx = wx;
             wx.reactInstance = instance;
             updateMiniApp(instance);
-            if(instance.$$componentDidMount){
+          /*  if(instance.$$componentDidMount){
                instance.$$componentDidMount();
                instance.componentDidMount = instance.$$componentDidMount ;
                delete instance.$$componentDidMount;
             }
+         */
             return instances.splice(i, 1);
         }
     }
