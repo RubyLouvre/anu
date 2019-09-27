@@ -20,8 +20,11 @@ function fixPath (p: string) {
 // import b from '../b';
 // import md5 from 'md5';
 // @import url('@globalStyle/reset.css');
-function calculateAlias(srcPath: string, importerSource: string): string {
+function calculateAlias(srcPath: string, importerSource: string, ignoredPaths?: Array<string|RegExp>): string {
     const aliasMap = require('./calculateAliasConfig')();
+    if (ignoredPaths && ignoredPaths.find((p) => importerSource === p)) {
+        return '';
+    }
     if (!path.isAbsolute(srcPath)) {
         console.error(`计算alias中的 ${srcPath} 必须为绝对路径.`);
         process.exit(1);

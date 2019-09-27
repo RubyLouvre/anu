@@ -19,14 +19,6 @@ import calculateRem from '@internalComponents/HOC/calculateRem';
 import Loadable from 'react-loadable';
 import QunarDefaultLoading from '@qunar-default-loading';
 `)();
-const buildAsyncImport = template_1.default(`
-  const PAGE_NAME = Loadable({
-    loader: () => import('IMPORT_PATH'),
-    loading: QunarDefaultLoading,
-    delay: 300
-  });`, {
-    plugins: ['dynamicImport']
-});
 const domRender = template_1.default(`
 window.onload = function (){
     const Wrapper = calculateRem(CLASS_NAME);
