@@ -8,165 +8,40 @@
     <body>
         <div id="root" class="root"></div>
         <script>
-            function Node(key) {
-                this.children = {};
-                this.len = 0; //最长子串的长度（该节点的子串数量=this.len - this.fail.len）
-                this.isEnd = false;
-                this.num = 0; // 该状态子串的数量
-                this.key = key;
-                this.count = 0; //被后缀链接的个数，方便求节点字符串的个数
-                this.fail = null;
-            }
-
-            class SuffixAutomaton {
-                constructor() {
-                    var node = (this.root = this.last = new Node(""));
-                    this.nodes = [node];
-                }
-                extend(word) {
-                    for (var i = 0; i < word.length; i++) {
-                        this.insert(word[i]);
-                    }
-                }
-                insert(c, n) {
-                    var p = this.last;
-                    var node = new Node(c);
-                    node.len = p.len + 1;
-                    node.num = 1;
-                    this.last = node;
-                    this.nodes.push(node);
-                    while (p && !p.children[c]) {
-                        //如果p 没有一条 c 的出边
-                        p.children[c] = node; //为a为一个c
-                        p = p.fail;
-                    }
-                    if (!p) {
-                        node.fail = this.root;
-                        this.root.count++;
-                    } else {
-                        var q = p.children[c];
-                        if (p.len + 1 == q.len) {
-                            node.fail = q;
-                            q.count++;
-                            q.isEnd = true; //主轴上冲突
-                        } else {
-                            var clone = new Node(c); //克隆节点
-                            this.nodes.push(clone);
-                            clone.children = q.children;
-                            clone.fail = q.fail;
-                            clone.len = p.len + 1;
-                            clone.isEnd = true;
-                            while (p && p.children[c] == q) {
-                                p.children[c] = clone; //将树中所有q相关的链接替换成clone
-                                p = p.fail;
-                            }
-                            clone.count += 2;
-                            q.fail = node.fail = clone;
-                        }
-                    }
+function findQueen() {
+    var result = [], path = [],
+        column = {}, mainDiagonal = {}, backDiagonal = {};
+    function isSafe(row, col) {
+        return (
+            !column[col] &&
+            !mainDiagonal[-(row - col)] &&
+            !backDiagonal[row + col]
+        );
+    }
+    function backtrack(row) {
+        if (row == 8) {
+            result.push(path.concat());
+        } else {
+            for (var col = 0; col < 8; col++) {
+                if (isSafe(row, col)) {
+                    //当前位置可放置
+                    path[row] = col; //标记放置的位置
+                    column[col] = true; //当前皇后所在列
+                    mainDiagonal[-(row - col)] = true; //皇后所在的对角线在第一行的列号
+                    backDiagonal[row + col] = true; //皇后所在的反对角线在第一行的列号
+                    backtrack(row + 1); //下一行上的皇后
+                    column[col] = false;
+                    mainDiagonal[-(row - col)] = false;
+                    backDiagonal[row + col] = false;
                 }
             }
-            function findK(str, substr) {
-                //op为0则表示不同位置的相同子串算作一个(不重复子串)。po=1则表示不同位置的相同子串算作多个(重复子串)
-                var sam = new SuffixAutomaton();
-                sam.extend(str);
-                var nodes = sam.nodes;
-                var total = nodes.length;
-                var indegree = new Array(total).fill(0);
-                var rank = [];
-                /*
-                我们令cnt[i]为i这个状态在原串中出现的次数。再在每个状态维护一个size。
-                若T=0，siz[i[siz[i[表示ii的所有儿子的size之和+1（子树大小），
-                否则siz[i[siz[i[表示ii的所有儿子的sizsiz之和+cnt[i]（类似子树大小的东西）。
-                接下来我们用size像平衡树一样查询就好了。 
-————————————————*/
-
-                for (var i = 0; i < total; i++) {
-                    nodes[i].count = 0;
-                    nodes[i].size = 0;
-                }
-                if (op) {
-                    var p = nodes[0];
-                    for (var i = 0; i < str.length; i++) {
-                        p = p.children[str[i]];
-                        p.count++;
-                    }
-                } else {
-                    for (var i = 0; i < total; i++) {
-                        nodes[i].count = 1;
-                    }
-                }
-
-                //计数排序
-                for (var i = 0; i < total; i++) {
-                    indegree[nodes[i].len]++;// 统计相同度数的节点的个数
-                }
-                for (var i = 1; i < total; i++) {
-                    indegree[i] += indegree[i - 1];// 统计度数小于等于 i 的节点的总数
-                }
-
-                for (var i = 0; i < total; i++) {
-                    rank[--indegree[nodes[i].len]] = nodes[i];// 为每个节点编号，节点度数越大编号越靠后
-                }
-
-                if (op) {
-                    for (var i = total - 1; i >= 0; i--) {
-                        rank[i].fail.count += rank[i].count;
-                    }
-                }
-
-                console.log(rank, "rank");
-                // console.log(pos)
-                for (var i = total - 1; i >= 0; i--) {
-                    var node = rank[i];
-                    node.size += node.count;
-                    for (var c in node.children) {
-                        node.size += node.children[c].size;
-                    }
-                }
-                var res = 0;
-                var root = nodes[0];
-                for (var c in root.children) {
-                    res += root.children[c].size;
-                }
-                if (res < k) {
-                    console.log(-1, nodes);
-                    return -1;
-                }
-                var ok = false,
-                    ans = [];
-                function dfs(node, k) {
-                    if (ok) {
-                        return;
-                    }
-                    if (k <= 0) {
-                        ok = 1;
-                        return;
-                    }
-                    for (var c in node.children) {
-                        var child = node.children[c];
-                        if (ok) {
-                            break;
-                        }
-                        if (k > child.size) {
-                            k -= child.size;
-                        } else {
-                            k -= child.count;
-                            ans.push(c);
-                            dfs(child, k);
-                        }
-                    }
-                }
-                dfs(root, k);
-                if (ok) {
-                    return ans.join("");
-                } else {
-                    return -1;
-                }
-            }
-            // https://blog.csdn.net/blankcqk/article/details/47337959
-            // https://www.cnblogs.com/shuaihui520/p/10695207.html
-            console.log(findK("aaa", 2));
+        }
+    }
+    backtrack(0); //先放第一行的皇后
+    console.log("总共",result.length);
+    return result.length;
+}
+findQueen();
         </script>
     </body>
 </html>
