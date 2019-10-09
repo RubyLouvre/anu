@@ -278,8 +278,6 @@ class InnerAudioContext {
 
 export default {
     createInnerAudioContext(id, opts = {}) {
-        // eslint-disable-next-line no-console
-        console.log('%ccreateInnerAudioContext::xxx::', 'color:red;font-size:21pt;');
         return new InnerAudioContext(id, opts);
     }
 };
