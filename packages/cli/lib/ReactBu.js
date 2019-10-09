@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-09-27
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-10-09
  */
 
 var arrayPush = Array.prototype.push;
@@ -618,10 +618,6 @@ function getWrappedComponent(fiber, instance) {
         } else {
             instance = fiber.child.child.stateNode;
         }
-        if (instance.componentDidMount) {
-            instance.$$componentDidMount = instance.componentDidMount;
-            instance.componentDidMount = null;
-        }
     }
     return instance;
 }
@@ -676,7 +672,7 @@ function refreshComponent(instances, wx, uuid) {
                 console.log("fiber.disposed by nanachi");
                 continue;
             }
-            if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
+            if (fiber.child && fiber.type.wrappedComponent) {
                 instance = fiber.child.stateNode;
             } else {
                 instance = getWrappedComponent(fiber, instance);

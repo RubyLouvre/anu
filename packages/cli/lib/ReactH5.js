@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-09-27T08
+ * 运行于webview的React by 司徒正美 Copyright 2019-10-09T07
  * IE9+
  */
 
@@ -3121,10 +3121,6 @@
             } else {
                 instance = fiber.child.child.stateNode;
             }
-            if (instance.componentDidMount) {
-                instance.$$componentDidMount = instance.componentDidMount;
-                instance.componentDidMount = null;
-            }
         }
         return instance;
     }
@@ -3161,7 +3157,7 @@
                     console.log("fiber.disposed by nanachi");
                     continue;
                 }
-                if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
+                if (fiber.child && fiber.type.wrappedComponent) {
                     instance = fiber.child.stateNode;
                 } else {
                     instance = getWrappedComponent(fiber, instance);
