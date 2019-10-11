@@ -13,6 +13,7 @@ const cwd = process.cwd();
 exports.default = (platform) => {
     const baseAlias = {
         'react': './source/' + index_1.REACT_LIB_MAP[platform],
+        'react-dom': './source/' + index_1.REACT_LIB_MAP[platform],
         '@react': './source/' + index_1.REACT_LIB_MAP[platform],
         '@components': './source/components'
     };
