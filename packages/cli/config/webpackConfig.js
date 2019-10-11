@@ -18,6 +18,7 @@ const copy_webpack_plugin_1 = __importDefault(require("copy-webpack-plugin"));
 const path = __importStar(require("path"));
 const utils = require('../packages/utils/index');
 const configurations_1 = require("./h5/configurations");
+const quickAPIList_1 = __importDefault(require("../consts/quickAPIList"));
 const fileLoader = require.resolve('../nanachi-loader/loaders/fileLoader');
 const aliasLoader = require.resolve('../nanachi-loader/loaders/aliasLoader');
 const nanachiLoader = require.resolve('../nanachi-loader/loaders/nanachiLoader');
@@ -25,7 +26,12 @@ const nodeLoader = require.resolve('../nanachi-loader/loaders/nodeLoader');
 const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 const nanachiStyleLoader = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
 const cwd = process.cwd();
+const H5AliasList = ['react', '@react', 'react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/];
 function default_1({ platform, compress, compressOption, plugins, rules, huawei, analysis, typescript, prevLoaders, postLoaders, prevJsLoaders, postJsLoaders, prevCssLoaders, postCssLoaders, }) {
+    let externals = quickAPIList_1.default;
+    if (platform === 'h5') {
+        externals.push(...H5AliasList);
+    }
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
     let distPath = path.resolve(cwd, utils.getDistName(platform));
     if (platform === 'h5') {
@@ -63,7 +69,12 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
                 allowInlineConfig: false,
                 useEslintrc: false
             }
-        }, typescript ? require.resolve('ts-loader') : [], prevJsLoaders, prevLoaders),
+        }, typescript ? {
+            loader: require.resolve('ts-loader'),
+            options: {
+                context: path.resolve(cwd)
+            }
+        } : [], prevJsLoaders, prevLoaders),
         exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,
     }, platform !== 'h5' ? nodeRules : [], {
         test: /React\w+/,
@@ -114,7 +125,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         ? path.join(cwd, '.CACHE/nanachi/source/app')
         : path.join(cwd, 'source/app');
     if (typescript) {
-        entry += '.ts';
+        entry += '.tsx';
     }
     ;
     return {
@@ -140,7 +151,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         watchOptions: {
             ignored: /node_modules|dist/
         },
-        externals: platform === 'h5' ? ['react', '@react', 'react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/] : []
+        externals
     };
 }
 exports.default = default_1;

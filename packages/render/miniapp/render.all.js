@@ -57,19 +57,16 @@ export let Renderer = createRenderer({
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
-                    instance.$$componentDidMount = instance.componentDidMount
-                    instance.componentDidMount = null
                 }
             }
         }
-     /*   if (!app.$$pageIsReady && instance.componentDidMount) {
+      if (!app.$$pageIsReady && instance.componentDidMount) {
             delayMounts.push({
                 instance: instance,
                 fn: instance.componentDidMount
             });
             instance.componentDidMount = Boolean;
         }
-        */
     },
 
     onAfterRender(fiber) {
@@ -95,9 +92,3 @@ export let Renderer = createRenderer({
     }
 });
 
-function remove(children, node) {
-    var index = children.indexOf(node);
-    if (index !== -1) {
-        children.splice(index, 1);
-    }
-}

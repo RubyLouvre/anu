@@ -3,48 +3,44 @@ import { topNodes, noop, get, topFibers } from "react-core/util";
 import {
     delayMounts,
     usingComponents,
-    getWrappedComponent,
     _getApp,
     updateMiniApp,
     callGlobalHook
 } from "./utils";
 import { render } from "react-fiber/scheduleWork";
 import { createElement } from "react-core/createElement";
-import { _getGlobalApp } from "./registerApp.all.js";
+import { _getGlobalApp } from "./registerApp.all";
 
-export function onLoad(PageClass, path, query) {
+export function onLoad(PageClass, path, query, fire) {
     var app = _getApp();
     // 快应用拿不到全局数据，从globalData中取
     let GlobalApp = _getGlobalApp(app);
-    app.$$pageIsReady = false;
+    app.$$pageIsReady = false; //pageIsReadyg与delayMounts是专门给快应用
     app.$$page = this;
     app.$$pagePath = path;
-    let container = {
-        type: "page",
-        props: {},
-        children: [],
-        root: true,
-        appendChild: noop
-    };
+    var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
+        this.needReRender = true;
         render(
             createElement(
                 GlobalApp,
                 {},
                 createElement(PageClass, {
                     path: path,
+                    key: path,
                     query: query,
-                    isPageComponent: true,
-                    ref: function(ins) {
-                        if (ins)
-                            pageInstance =
-                                ins.wrappedInstance ||
-                                getWrappedComponent(get(ins), ins);
-                    }
+                    isPageComponent: true
                 })
             ),
-            container
+            dom,
+            function() {
+                var fiber = get(this).child;
+                while (!fiber.stateNode.classUid) {
+                    fiber = fiber.child;
+                }
+                pageInstance = fiber.stateNode;
+            }
         );
     } else {
         pageInstance = render(
@@ -54,25 +50,27 @@ export function onLoad(PageClass, path, query) {
                 query: query,
                 isPageComponent: true
             }),
-            container
+            dom
         );
     }
-    callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
-    this.reactContainer = container;
+    this.reactContainer = dom;
     this.reactInstance = pageInstance;
     pageInstance.wx = this; //保存小程序的页面对象
-    updateMiniApp(pageInstance); //更新小程序视图
+    if (fire) {
+        callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
+        updateMiniApp(pageInstance); //更新小程序视图
+    }
     return pageInstance;
 }
 
 export function onReady() {
     var app = _getApp();
     app.$$pageIsReady = true;
-  //  let el = void 0;
-  //  while ((el = delayMounts.pop())) {
-  //      el.fn.call(el.instance);
-  //     el.instance.componentDidMount = el.fn;
-  // }
+    let el = void 0;
+    while ((el = delayMounts.pop())) {
+        el.fn.call(el.instance);
+        el.instance.componentDidMount = el.fn;
+    }
     callGlobalHook("onGlobalReady");
 }
 
@@ -104,5 +102,5 @@ export function onUnload() {
         );
     }
     callGlobalHook("onGlobalUnload");
-    //this.reactInstance = null;
+    this.reactContainer = null;
 }

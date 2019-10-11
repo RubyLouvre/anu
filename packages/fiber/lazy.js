@@ -12,7 +12,7 @@ var LazyComponent = miniCreateClass(function LazyComponent(props, context) {
         component: null,
         resolved: false
     }
-    var promise = props.render();
+    var promise = props.children();
     if(!promise || !isFn(promise.then)){
         throw "lazy必须返回一个thenable对象"
     }
@@ -35,16 +35,17 @@ var LazyComponent = miniCreateClass(function LazyComponent(props, context) {
         throw "lazy组件必须包一个Suspense组件"
     },
     render: function f2(){
-        return this.state.resolved ? createElement(this.state.component) : this.fallback()
+        return this.state.resolved ? createElement(this.state.component, this.props) : this.fallback()
     }
 });
-function lazy(fn) {
-    return function(){
-        return createElement(LazyComponent, {
-            render: fn
-        })
-    }
+
+function lazy(render) {
+    return function (props) {
+        return createElement(LazyComponent, props, render );
+    };
 }
 export {
     lazy
 }
+
+

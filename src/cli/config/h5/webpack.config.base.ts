@@ -27,11 +27,22 @@ try {
     // 用户根目录不存在模板html文件则用默认模板
 }
 
+const plugins = [
+    new HtmlWebpackPlugin({
+        template: templatePath
+    }),
+    new webpack.EnvironmentPlugin({
+        ANU_ENV: 'web',
+        ...process.env
+    }),
+    // new CleanWebpackPlugin()
+]
+
 const webpackConfig: webpack.Configuration = {
     mode: 'development',
     context,
     target: 'web',
-    entry: resolveFromContext(`${intermediateDirectoryName}/app.js`),
+    entry: resolveFromContext(`${intermediateDirectoryName}/app`),
     output: {
         path: resolveFromDirCwd(outputDirectory),
         filename: 'bundle.[hash:10].js',
@@ -52,7 +63,8 @@ const webpackConfig: webpack.Configuration = {
             // '@pageConfig': resolveFromContext(`${intermediateDirectoryName}/pageConfig.js`),
             '@qunar-default-loading': resolveFromH5Helper('components/Loading'),
         },
-        modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')]
+        modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')],
+        extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
     },
     module: {
         rules: [
@@ -93,16 +105,7 @@ const webpackConfig: webpack.Configuration = {
         ]
     },
     devtool: 'cheap-source-map',
-    plugins: [
-        new HtmlWebpackPlugin({
-            template: templatePath
-        }),
-        new webpack.EnvironmentPlugin({
-            ANU_ENV: 'web',
-            ...process.env
-        }),
-        // new CleanWebpackPlugin()
-    ],
+    plugins,
     stats: 'errors-only'
 }
 

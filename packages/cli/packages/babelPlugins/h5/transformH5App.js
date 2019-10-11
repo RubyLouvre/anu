@@ -19,14 +19,6 @@ import calculateRem from '@internalComponents/HOC/calculateRem';
 import Loadable from 'react-loadable';
 import QunarDefaultLoading from '@qunar-default-loading';
 `)();
-const buildAsyncImport = template_1.default(`
-  const PAGE_NAME = Loadable({
-    loader: () => import('IMPORT_PATH'),
-    loading: QunarDefaultLoading,
-    delay: 300
-  });`, {
-    plugins: ['dynamicImport']
-});
 const domRender = template_1.default(`
 window.onload = function (){
     const Wrapper = calculateRem(CLASS_NAME);
@@ -70,6 +62,16 @@ const temp = `window.addEventListener('popstate', function ({
 });
 React.registerApp(this);
 this.onLaunch();
+Global.config.pages.forEach((path) => {
+    React.registerPage(
+        Loadable({
+            loader: () => import("." + path),
+            loading: QunarDefaultLoading,
+            delay: 300
+        }),
+        path
+    );
+});
 `;
 let registerTemplate = temp;
 let renderDeclared = false;
@@ -101,14 +103,9 @@ module.exports = function () {
                 if (!/pages/.test(importPath)) {
                     return;
                 }
-                const PAGE_NAME = `PAGE_${pageIndex++}`;
-                registerTemplate += `React.registerPage(${PAGE_NAME}, '${importPath.replace(/^\./, '')}')\n`;
                 const pageItem = t.stringLiteral(importPath.replace(/^\./, ''));
                 importedPages.elements.push(pageItem);
-                astPath.replaceWith(buildAsyncImport({
-                    PAGE_NAME,
-                    IMPORT_PATH: importPath
-                }));
+                astPath.remove();
             },
             ClassProperty(astPath) {
             },
@@ -134,7 +131,8 @@ module.exports = function () {
                       }
                     }`;
                     const registerApp = template_1.default(registerTemplate, {
-                        placeholderPattern: /^CLASS_NAME$/
+                        placeholderPattern: /^CLASS_NAME$/,
+                        plugins: ['dynamicImport']
                     })({
                         CLASS_NAME: t.identifier(CLASS_NAME)
                     });

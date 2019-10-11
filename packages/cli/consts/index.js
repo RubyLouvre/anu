@@ -93,6 +93,15 @@ exports.MAP = {
             'less': 'css'
         },
         patchComponents: []
+    },
+    '360': {
+        EXT_NAME: {
+            'css': 'css',
+            'scss': 'css',
+            'sass': 'css',
+            'less': 'css'
+        },
+        patchComponents: []
     }
 };
 exports.NANACHI_CONFIG_PATH = path.resolve(cwd, 'nanachi.config.js');

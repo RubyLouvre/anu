@@ -26,6 +26,7 @@ var Platforms;
     Platforms["tt"] = "tt";
     Platforms["quick"] = "quick";
     Platforms["h5"] = "h5";
+    Platforms["QIHOO"] = "360";
 })(Platforms || (Platforms = {}));
 const config = {
     wx: {
@@ -66,6 +67,12 @@ const config = {
         patchComponents: {},
         disabledTitleBarPages: new Set()
     },
+    '360': {
+        libName: 'ReactH5',
+        helpers: 'h5Helpers',
+        patchComponents: {},
+        disabledTitleBarPages: new Set()
+    },
     quick: {
         libName: 'ReactQuick',
         jsExt: 'ux',
@@ -94,6 +101,8 @@ const config = {
     buildDir: buildDir,
     sourceDir: sourceDir,
     huawei: false,
+    '360mode': false,
+    typescript: false,
     patchComponents: {},
     pluginTags: {},
     plugins: {}

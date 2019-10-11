@@ -29,6 +29,10 @@ const platforms = [
     {
         buildType: 'h5',
         des: 'H5'
+    },
+    {
+        buildType: '360',
+        des: '360小程序'
     }
 ];
 exports.default = platforms;

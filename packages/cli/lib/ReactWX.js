@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-09-10T08
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-10-09T07
  * IE9+
  */
 
@@ -594,6 +594,12 @@ function createContext(defaultValue, calculateChangedBits) {
     return getContext;
 }
 
+function createRef() {
+    return {
+        current: null
+    };
+}
+
 var onAndSyncApis = {
   onSocketOpen: true,
   onSocketError: true,
@@ -780,7 +786,9 @@ var otherApis = {
   chooseInvoiceTitle: true,
   checkIsSupportSoterAuthentication: true,
   startSoterAuthentication: true,
-  checkIsSoterEnrolledInDevice: true
+  checkIsSoterEnrolledInDevice: true,
+  setBackgroundColor: true,
+  setBackgroundTextStyle: true
 };
 
 function promisefyApis(ReactWX, facade, more) {
@@ -927,11 +935,15 @@ function _getApp() {
     return fakeApp;
 }
 function getWrappedComponent(fiber, instance) {
-    if (instance.isPureComponent && instance.constructor.WrappedComponent) {
-        return fiber.child.child.stateNode;
-    } else {
-        return instance;
+    var ctor = instance.constructor;
+    if (ctor.WrappedComponent) {
+        if (ctor.contextTypes) {
+            instance = fiber.child.stateNode;
+        } else {
+            instance = fiber.child.child.stateNode;
+        }
     }
+    return instance;
 }
 if (typeof getApp === 'function') {
     _getApp = getApp;
@@ -942,6 +954,7 @@ function callGlobalHook(method, e) {
         return app[method](e);
     }
 }
+var delayMounts = [];
 var usingComponents = [];
 var registeredComponents = {};
 function getCurrentPage() {
@@ -983,7 +996,7 @@ function refreshComponent(instances, wx, uuid) {
                 console.log("fiber.disposed by nanachi");
                 continue;
             }
-            if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
+            if (fiber.child && fiber.type.wrappedComponent) {
                 instance = fiber.child.stateNode;
             } else {
                 instance = getWrappedComponent(fiber, instance);
@@ -991,11 +1004,6 @@ function refreshComponent(instances, wx, uuid) {
             instance.wx = wx;
             wx.reactInstance = instance;
             updateMiniApp(instance);
-            if (instance.$$componentDidMount) {
-                instance.$$componentDidMount();
-                instance.componentDidMount = instance.$$componentDidMount;
-                delete instance.$$componentDidMount;
-            }
             return instances.splice(i, 1);
         }
     }
@@ -1052,7 +1060,7 @@ var webview = {};
 var rbeaconType = /click|tap|change|blur|input/i;
 function dispatchEvent(e) {
     var eventType = toLowerCase(e.type);
-    if (eventType == 'message') {
+    if (eventType == "message") {
         if (webview.instance && webview.cb) {
             webview.cb.call(webview.instance, e);
         }
@@ -1060,22 +1068,23 @@ function dispatchEvent(e) {
     }
     var instance = this.reactInstance;
     if (!instance || !instance.$$eventCached) {
-        console.log(eventType, '没有实例');
+        console.log(eventType, "没有实例");
         return;
     }
     var app = _getApp();
     var target = e.currentTarget;
     var dataset = target.dataset || {};
-    var eventUid = dataset[eventType + 'Uid'];
-    var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
+    if (dataset[eventType + "Alias"]) {
+        eventType = dataset[eventType + "Alias"];
+    }
+    var eventUid = dataset[eventType + "Uid"];
+    var fiber = instance.$$eventCached[eventUid + "Fiber"] || {
         props: {},
-        type: 'unknown'
+        type: "unknown"
     };
     var value = Object(e.detail).value;
-    if (eventType == 'change') {
-        if (fiber.props.value + '' == value) {
-            return;
-        }
+    if (eventType == "change" && !Array.isArray(value) && fiber.props.value + "" == value) {
+        return;
     }
     var safeTarget = {
         dataset: dataset,
@@ -1408,6 +1417,15 @@ function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         updateQueue[destroyList] || (updateQueue[destroyList] = []);
         list.push(create);
     }
+}
+function useRef(initValue) {
+    var fiber = getCurrentFiber();
+    var key = getCurrentKey();
+    var updateQueue = fiber.updateQueue;
+    if (key in updateQueue) {
+        return updateQueue[key];
+    }
+    return updateQueue[key] = { current: initValue };
 }
 function getCurrentFiber() {
     return get(Renderer.currentOwner);
@@ -2437,10 +2455,15 @@ var Renderer$1 = createRenderer({
                 if (!instance.wx) {
                     instance.$$pagePath = Object(_getApp()).$$pagePath;
                     type.reactInstances.push(instance);
-                    instance.$$componentDidMount = instance.componentDidMount;
-                    instance.componentDidMount = null;
                 }
             }
+        }
+        if (!app.$$pageIsReady && instance.componentDidMount) {
+            delayMounts.push({
+                instance: instance,
+                fn: instance.componentDidMount
+            });
+            instance.componentDidMount = Boolean;
         }
     },
     onAfterRender: function onAfterRender(fiber) {
@@ -2498,47 +2521,53 @@ function registerApp(app) {
     return app;
 }
 
-function onLoad(PageClass, path, query) {
+function onLoad(PageClass, path, query, fire) {
     var app = _getApp();
     var GlobalApp = _getGlobalApp(app);
     app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
-    var container = {
-        type: "page",
-        props: {},
-        children: [],
-        root: true,
-        appendChild: noop
-    };
+    var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
+        this.needReRender = true;
         render(createElement(GlobalApp, {}, createElement(PageClass, {
             path: path,
+            key: path,
             query: query,
-            isPageComponent: true,
-            ref: function ref(ins) {
-                if (ins) pageInstance = ins.wrappedInstance || getWrappedComponent(get(ins), ins);
+            isPageComponent: true
+        })), dom, function () {
+            var fiber = get(this).child;
+            while (!fiber.stateNode.classUid) {
+                fiber = fiber.child;
             }
-        })), container);
+            pageInstance = fiber.stateNode;
+        });
     } else {
         pageInstance = render(
         createElement(PageClass, {
             path: path,
             query: query,
             isPageComponent: true
-        }), container);
+        }), dom);
     }
-    callGlobalHook("onGlobalLoad");
-    this.reactContainer = container;
+    this.reactContainer = dom;
     this.reactInstance = pageInstance;
     pageInstance.wx = this;
-    updateMiniApp(pageInstance);
+    if (fire) {
+        callGlobalHook("onGlobalLoad");
+        updateMiniApp(pageInstance);
+    }
     return pageInstance;
 }
 function onReady() {
     var app = _getApp();
     app.$$pageIsReady = true;
+    var el = void 0;
+    while (el = delayMounts.pop()) {
+        el.fn.call(el.instance);
+        el.instance.componentDidMount = el.fn;
+    }
     callGlobalHook("onGlobalReady");
 }
 function onUnload() {
@@ -2564,6 +2593,7 @@ function onUnload() {
         }, true);
     }
     callGlobalHook("onGlobalUnload");
+    this.reactContainer = null;
 }
 
 function registerPageHook(appHooks, pageHook, app, instance, args) {
@@ -2587,12 +2617,19 @@ var appHooks = {
     onHide: 'onGlobalHide'
 };
 function registerPage(PageClass, path, testObject) {
+    PageClass.container = {
+        type: "page",
+        props: {},
+        children: [],
+        root: true,
+        appendChild: noop
+    };
     PageClass.reactInstances = [];
     var config = {
         data: {},
         dispatchEvent: dispatchEvent,
         onLoad: function onLoad$$1(query) {
-            onLoad.call(this, PageClass, path, query);
+            onLoad.call(this, PageClass, path, query, true);
         },
         onReady: onReady,
         onUnload: onUnload
@@ -2618,7 +2655,10 @@ function registerPage(PageClass, path, testObject) {
                 }
                 param = instance.props.query;
                 app.$$page = this;
-                app.$$pagePath = instance.props.path;
+                var path = app.$$pagePath = instance.props.path;
+                if (this.needReRender) {
+                    onLoad.call(this, PageClass, path, param);
+                }
             }
             return registerPageHook(appHooks, pageHook, app, instance, param);
         };
@@ -2674,13 +2714,26 @@ function useReducer(reducer, initValue, initAction) {
     return useReducerImpl(reducer, initValue, initAction);
 }
 function useEffect(create, deps) {
-    return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
+    return useEffectImpl(create, deps, PASSIVE, "passive", "unpassive");
+}
+function useMemo(create, deps) {
+    return useCallbackImpl(create, deps, true);
 }
 function useCallback(create, deps) {
     return useCallbackImpl(create, deps);
 }
-function useMemo(create, deps) {
-    return useCallbackImpl(create, deps, true);
+
+var MemoComponent = miniCreateClass(function MemoComponent(obj) {
+    this.render = obj.render;
+    this.shouldComponentUpdate = obj.shouldComponentUpdate;
+}, Component, {});
+function memo(render, shouldComponentUpdate) {
+    return function (props) {
+        return createElement(MemoComponent, Object.assign(props, {
+            render: render.bind(this, props),
+            shouldComponentUpdate: shouldComponentUpdate
+        }));
+    };
 }
 
 var render$1 = Renderer$1.render;
@@ -2689,13 +2742,14 @@ var React = getWindow().React = {
         dispatchEvent: dispatchEvent
     },
     findDOMNode: function findDOMNode() {
-        console.log('小程序不支持findDOMNode');
+        console.log("小程序不支持findDOMNode");
     },
     render: render$1,
     hydrate: render$1,
     webview: webview,
     Fragment: Fragment,
     PropTypes: PropTypes,
+    createRef: createRef,
     Component: Component,
     createElement: createElement,
     createFactory: createFactory,
@@ -2710,6 +2764,7 @@ var React = getWindow().React = {
     registerApp: registerApp,
     registerPage: registerPage,
     toStyle: toStyle,
+    memo: memo,
     useState: useState,
     useReducer: useReducer,
     useCallback: useCallback,
@@ -2717,19 +2772,20 @@ var React = getWindow().React = {
     useEffect: useEffect,
     useContext: useContext,
     useComponent: useComponent,
-    appType: 'wx'
+    useRef: useRef,
+    appType: "wx"
 };
 var apiContainer = {};
-if (typeof wx != 'undefined') {
+if (typeof wx != "undefined") {
     apiContainer = wx;
-} else if (typeof qq != 'undefined') {
+} else if (typeof qq != "undefined") {
     apiContainer = qq;
-    React.appType = 'qq';
-} else if (typeof tt != 'undefined') {
+    React.appType = "qq";
+} else if (typeof tt != "undefined") {
     apiContainer = tt;
-    React.appType = 'tt';
+    React.appType = "tt";
 }
 registerAPIs(React, apiContainer, more);
 
 export default React;
-export { Children, createElement, Component, PureComponent };
+export { Children, createElement, Component, PureComponent, memo, createRef, useState, useReducer, useCallback, useMemo, useEffect, useContext, useComponent, useRef };

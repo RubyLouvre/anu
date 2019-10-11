@@ -2,7 +2,7 @@ import { MAP } from '../../consts/index';
 import * as babel from '@babel/core';
 import { NanachiLoaderStruct } from './nanachiLoader';
 import getAliasMap, { Alias } from '../../consts/alias';
-const calculateAlias = require('../../packages/utils/calculateAlias');
+import calculateAlias from '../../packages/utils/calculateAlias';
 
 //提取package.json中的别名配置
 function resolveAlias(code: string, aliasMap: Alias, relativePath: string, ast: any, ctx: any) {
@@ -15,7 +15,7 @@ function resolveAlias(code: string, aliasMap: Alias, relativePath: string, ast: 
                 {
                     resolvePath(moduleName: string) {
                         //计算别名配置以及处理npm路径计算
-                        return calculateAlias(ctx.resourcePath, moduleName);
+                        return calculateAlias(ctx.resourcePath, moduleName, ctx._compiler.options.externals);
                     }
                 }
             ]

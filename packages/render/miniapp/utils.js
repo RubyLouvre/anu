@@ -1,8 +1,6 @@
-import { hasOwnProperty, typeNumber, isFn, get } from 'react-core/util';
+import { hasOwnProperty, typeNumber, isFn, get, noop } from 'react-core/util';
 import { createElement } from 'react-core/createElement';
 import { Renderer } from 'react-core/createRenderer';
-
-const noop = () => {};
 
 var fakeApp = {
     app: {
@@ -15,17 +13,20 @@ function _getApp () {
     }
     return fakeApp;
 }
-//获取redux-react中的connect包裹下的原始实例对象 相同点Connect.WrappedComponent
+//获取redux-react中的connect包裹下的原始实例对象 相同点Connect.WrappedComponent, 不支持react-redux4, 7
 //  https://cdn.bootcss.com/react-redux/7.1.0-alpha.1/react-redux.js
-//  https://cdn.bootcss.com/react-redux/6.0.1/react-redux.js 
-//  https://cdn.bootcss.com/react-redux/5.1.1/react-redux.js
-//  https://cdn.bootcss.com/react-redux/4.4.5/react-redux.js
+//  https://cdn.bootcss.com/react-redux/6.0.1/react-redux.js  fiber.child.child
+//  https://cdn.bootcss.com/react-redux/5.1.1/react-redux.js  fiber.child
 export function getWrappedComponent(fiber, instance) {
-    if(instance.isPureComponent && instance.constructor.WrappedComponent){
-       return fiber.child.child.stateNode
-    }else{
-       return instance
-    }
+    var ctor = instance.constructor;
+    if (ctor.WrappedComponent) {
+        if (ctor.contextTypes) {
+            instance = fiber.child.stateNode;
+        } else {
+            instance = fiber.child.child.stateNode;
+        }
+    } 
+    return instance;
 }
 
 if (typeof getApp === 'function') {
@@ -89,8 +90,8 @@ export function refreshComponent (instances, wx, uuid) {
                console.log("fiber.disposed by nanachi");
                continue;
             }
-            //处理mobx
-            if(fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector'){
+            //处理mobx //fiber.type.name == 'Injector' && fiber.child.name === fiber.name会被压缩掉
+            if(fiber.child && fiber.type.wrappedComponent){
                 instance = fiber.child.stateNode;
             } else {
                 // 处理redux与普通情况
@@ -100,15 +101,11 @@ export function refreshComponent (instances, wx, uuid) {
             instance.wx = wx;
             wx.reactInstance = instance;
             updateMiniApp(instance);
-            if(instance.$$componentDidMount){
-               instance.$$componentDidMount();
-               instance.componentDidMount = instance.$$componentDidMount ;
-               delete instance.$$componentDidMount;
-            }
             return instances.splice(i, 1);
         }
     }
 }
+
 export function detachComponent () {
     let t = this.reactInstance;
     this.disposed = true;

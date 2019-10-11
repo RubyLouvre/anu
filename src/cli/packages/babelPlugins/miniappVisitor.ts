@@ -69,7 +69,7 @@ function registerPageOrComponent(name: string, path: NodePath<t.ExportDefaultDec
     }
 }
 
-const visitor = {
+const visitor:babel.Visitor = {
     ClassDeclaration: helpers.classDeclaration,
     //babel 6 没有ClassDeclaration，只有ClassExpression
     ClassExpression: helpers.classDeclaration,
@@ -162,7 +162,27 @@ const visitor = {
             }
         }
     },
-
+    VariableDeclaration: {
+        /**
+         * typescript装饰器补丁
+         * typescript不支持关闭自带装饰器编译，参考:https://github.com/microsoft/TypeScript/issues/16882。
+         * 使用装饰器时class P {}会编译成let P = class P {}，与原先编译器逻辑冲突，此处去掉let P =
+         *  */ 
+        enter(astPath) {
+            const decl = astPath.get('declarations')[0];
+            if (
+                config.typescript && 
+                astPath.parent.type === 'Program' && 
+                decl.type === 'VariableDeclarator' && 
+                decl.get('init').type === 'ClassExpression'
+            ) {
+                const body = (decl.get('init').get('body') as any).node;
+                const id = (decl.get('init').get('id') as any).node;
+                const superClass =  (decl.get('init').get('superClass') as any).node;
+                astPath.replaceWith(t.classDeclaration(id, superClass, body));
+            }
+        }
+    },
     FunctionDeclaration: {
         //enter里面会转换jsx中的JSXExpressionContainer
         exit(astPath: NodePath<t.FunctionDeclaration>, state: any) {
@@ -580,7 +600,7 @@ const visitor = {
                 //  iconfont 各小程序匹配 去掉小程序下 <text>&#xf1f3;</text>
                 var children = (astPath.parentPath.node as any).children;
                 if (children.length === 1) {
-                    let iconValue = t.isJSXText(children[0]) ? children[0].extra.raw : '';
+                    let iconValue = t.isJSXText(children[0]) ? (children[0] as any).extra.raw : '';
                     let iconReg = /\s*&#x/i;
                     if (iconReg.test(iconValue)) {
                         children.length = 0;
@@ -707,13 +727,7 @@ const visitor = {
                     var isIdentifier = styleType === 'Identifier';
                     // 华为编辑器行内样式特殊处理
 
-                    // if (config.huawei) {
-                    //     if (styleType === 'ObjectExpression') {
-                    //         let code = quickhuaweiStyle(expr);
-                    //         astPath.node.value = t.stringLiteral(code);
-                    //         return;
-                    //     }
-                    // }
+    
                     if (
                         isIdentifier ||
                         MemberExpression ||

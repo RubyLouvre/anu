@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 
 class ErrorBoundary extends Component {
   state = {
@@ -21,11 +21,9 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError)
       return (
-        <Fragment>
           <div className="__internal__ErrorBoundary__">
             页面遇到了一点小问题，请稍候再试
-          </div>
-          <style ref={(node) => {
+            <style ref={(node) => {
                 Object(node).textContent = `
                 .__internal__ErrorBoundary__ {
                   text-align: center;
@@ -36,7 +34,7 @@ class ErrorBoundary extends Component {
               `;
             }
           }/>
-        </Fragment>
+          </div>
       );
     return this.props.children;
   }

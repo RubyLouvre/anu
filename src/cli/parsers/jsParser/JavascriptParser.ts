@@ -66,7 +66,7 @@ class JavascriptParser{
             this.componentType = 'Component';
         } else if (/\/pages\//.test(this.filepath) && !/\/common\//.test(this.filepath)) {
             this.componentType = 'Page';
-        } else if (/app\.js$/.test(this.filepath)) {
+        } else if (/app\.[jt]sx?$/.test(this.filepath)) {
             this.componentType = 'App';
         }
     }

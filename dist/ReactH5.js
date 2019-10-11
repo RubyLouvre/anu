@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-09-10T08
+ * 运行于webview的React by 司徒正美 Copyright 2019-10-09T07
  * IE9+
  */
 
@@ -671,6 +671,19 @@
         getContext.Provider = Provider;
         getContext.Consumer = Consumer;
         return getContext;
+    }
+
+    var MemoComponent = miniCreateClass(function MemoComponent(obj) {
+        this.render = obj.render;
+        this.shouldComponentUpdate = obj.shouldComponentUpdate;
+    }, Component, {});
+    function memo(render, shouldComponentUpdate) {
+        return function (props) {
+            return createElement(MemoComponent, Object.assign(props, {
+                render: render.bind(this, props),
+                shouldComponentUpdate: shouldComponentUpdate
+            }));
+        };
     }
 
     function DOMElement(type) {
@@ -1930,6 +1943,15 @@
             list.push(create);
         }
     }
+    function useRef(initValue) {
+        var fiber = getCurrentFiber();
+        var key = getCurrentKey();
+        var updateQueue = fiber.updateQueue;
+        if (key in updateQueue) {
+            return updateQueue[key];
+        }
+        return updateQueue[key] = { current: initValue };
+    }
     function getCurrentFiber() {
         return get(Renderer.currentOwner);
     }
@@ -3080,7 +3102,6 @@
         dom._reactInternalFiber = null;
     }
 
-    var noop$1 = function noop$$1() {};
     var fakeApp = {
         app: {
             globalData: {}
@@ -3093,11 +3114,15 @@
         return fakeApp;
     }
     function getWrappedComponent(fiber, instance) {
-        if (instance.isPureComponent && instance.constructor.WrappedComponent) {
-            return fiber.child.child.stateNode;
-        } else {
-            return instance;
+        var ctor = instance.constructor;
+        if (ctor.WrappedComponent) {
+            if (ctor.contextTypes) {
+                instance = fiber.child.stateNode;
+            } else {
+                instance = fiber.child.child.stateNode;
+            }
         }
+        return instance;
     }
     if (typeof getApp === 'function') {
         _getApp = getApp;
@@ -3132,7 +3157,7 @@
                     console.log("fiber.disposed by nanachi");
                     continue;
                 }
-                if (fiber.child && fiber.child.name === fiber.name && fiber.type.name == 'Injector') {
+                if (fiber.child && fiber.type.wrappedComponent) {
                     instance = fiber.child.stateNode;
                 } else {
                     instance = getWrappedComponent(fiber, instance);
@@ -3140,11 +3165,6 @@
                 instance.wx = wx;
                 wx.reactInstance = instance;
                 updateMiniApp(instance);
-                if (instance.$$componentDidMount) {
-                    instance.$$componentDidMount();
-                    instance.componentDidMount = instance.$$componentDidMount;
-                    delete instance.$$componentDidMount;
-                }
                 return instances.splice(i, 1);
             }
         }
@@ -3180,17 +3200,17 @@
         return createElement(clazz, props);
     }
     function handleSuccess(options) {
-        var success = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop$1;
-        var complete = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : noop$1;
-        var resolve = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : noop$1;
+        var success = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop;
+        var complete = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : noop;
+        var resolve = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : noop;
         success(options);
         complete(options);
         resolve(options);
     }
     function handleFail(options) {
-        var fail = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop$1;
-        var complete = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : noop$1;
-        var reject = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : noop$1;
+        var fail = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop;
+        var complete = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : noop;
+        var reject = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : noop;
         fail(options);
         complete(options);
         reject(options);
@@ -3399,7 +3419,9 @@
       chooseInvoiceTitle: true,
       checkIsSupportSoterAuthentication: true,
       startSoterAuthentication: true,
-      checkIsSoterEnrolledInDevice: true
+      checkIsSoterEnrolledInDevice: true,
+      setBackgroundColor: true,
+      setBackgroundTextStyle: true
     };
 
     function promisefyApis(ReactWX, facade, more) {
@@ -5382,27 +5404,28 @@
     var rbeaconType = /click|tap|change|blur|input/i;
     function dispatchEvent$1(e) {
         var eventType = toLowerCase(e.type);
-        if (eventType == 'message') {
+        if (eventType == "message") {
             return;
         }
         var instance = this.reactInstance;
         if (!instance || !instance.$$eventCached) {
-            console.log(eventType, '没有实例');
+            console.log(eventType, "没有实例");
             return;
         }
         var app = _getApp();
         var target = e.currentTarget;
         var dataset = target.dataset || {};
-        var eventUid = dataset[eventType + 'Uid'];
-        var fiber = instance.$$eventCached[eventUid + 'Fiber'] || {
+        if (dataset[eventType + "Alias"]) {
+            eventType = dataset[eventType + "Alias"];
+        }
+        var eventUid = dataset[eventType + "Uid"];
+        var fiber = instance.$$eventCached[eventUid + "Fiber"] || {
             props: {},
-            type: 'unknown'
+            type: "unknown"
         };
         var value = Object(e.detail).value;
-        if (eventType == 'change') {
-            if (fiber.props.value + '' == value) {
-                return;
-            }
+        if (eventType == "change" && !Array.isArray(value) && fiber.props.value + "" == value) {
+            return;
         }
         var safeTarget = {
             dataset: dataset,
@@ -5473,13 +5496,13 @@
         return useReducerImpl(reducer, initValue, initAction);
     }
     function useEffect(create, deps) {
-        return useEffectImpl(create, deps, PASSIVE, 'passive', 'unpassive');
-    }
-    function useCallback(create, deps) {
-        return useCallbackImpl(create, deps);
+        return useEffectImpl(create, deps, PASSIVE, "passive", "unpassive");
     }
     function useMemo(create, deps) {
         return useCallbackImpl(create, deps, true);
+    }
+    function useCallback(create, deps) {
+        return useCallbackImpl(create, deps);
     }
 
     function findHostInstance(fiber) {
@@ -5557,6 +5580,7 @@
             this.__pages[path] = PageClass;
             return PageClass;
         },
+        memo: memo,
         useState: useState,
         useReducer: useReducer,
         useCallback: useCallback,
@@ -5564,6 +5588,7 @@
         useEffect: useEffect,
         useContext: useContext,
         useComponent: useComponent,
+        useRef: useRef,
         createRef: createRef,
         forwardRef: forwardRef,
         cloneElement: cloneElement,

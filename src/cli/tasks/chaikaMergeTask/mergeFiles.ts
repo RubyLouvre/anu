@@ -202,7 +202,7 @@ function getValueByPath(path: any, data: any){
 function xDiff(list: any) {
     if (!list.length) return {};
     let first = list[0];
-    let confictQueue = [];
+    let confictQueue: any[] = [];
     let other = list.slice(1);
     let isConfict = false;
     for (let i = 0; i < other.length; i++) {
@@ -364,9 +364,9 @@ export default function(){
     
     let queue = Array.from(mergeFilesQueue);
     
-    // validateAppJsFileCount(queue);
-    // validateConfigFileCount(queue);
-    // validateMiniAppProjectConfigJson(queue);
+    validateAppJsFileCount(queue);
+    validateConfigFileCount(queue);
+    validateMiniAppProjectConfigJson(queue);
 
     let map: any = getFilesMap(queue);
 

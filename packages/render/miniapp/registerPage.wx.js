@@ -1,6 +1,7 @@
 import { dispatchEvent } from './eventSystem';
 import { onLoad, onUnload, onReady } from './registerPage.all';
 import { registerPageHook } from './registerPageHook';
+import {  noop } from "react-core/util";
 
 import { _getApp } from './utils';
 
@@ -10,12 +11,19 @@ var appHooks = {
 };
 
 export function registerPage(PageClass, path, testObject) {
+    PageClass.container = {
+        type: "page",
+        props: {},
+        children: [],
+        root: true,
+        appendChild: noop
+    };
     PageClass.reactInstances = [];
     let config = {
         data: {},
         dispatchEvent,
         onLoad(query) {
-            onLoad.call(this, PageClass, path, query);
+            onLoad.call(this, PageClass, path, query, true);
         },
         onReady: onReady,
         onUnload: onUnload
@@ -53,7 +61,10 @@ export function registerPage(PageClass, path, testObject) {
                 //真机下，却是先触发B的onShow再触发A的onHide,其他小程序可能也有这问题，因此我们只在onShow
                 //里修改全局对象的属性
                 app.$$page = this;
-                app.$$pagePath = instance.props.path;
+                var path = app.$$pagePath = instance.props.path;
+                if(this.needReRender){
+                   onLoad.call(this, PageClass, path, param);
+                }
             }  
             //调用onShare/onHide/onGlobalShow/onGlobalHide/onPageScroll
             return registerPageHook(appHooks, pageHook, app, instance, param)

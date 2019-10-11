@@ -1,120 +1,69 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width" />
-    </head>
 
-    <body>
-        <div id="root" class="root"></div>
-        <script>
-            var index = 1;
-            function Node(key) {
-                this.children = {};
-                this.len = 0; //回文长度
-                this.isEnd = false;
-                this.key = key; //回文
-                this.fail = null; //用于跳转到不等于自身的最长后缀子串
-            }
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width">
+<!--
+  <script src="https://cdn.bootcss.com/react/16.9.0/umd/react.development.js"></script>
+  <script src="https://cdn.bootcss.com/react-dom/16.9.0/umd/react-dom.development.js"  ></script>
+-->
+<script src="./dist/React.js"></script> 
 
-            class SuffixAutomaton {
-                constructor() {
-                    this.root = new Node("");
-                    this.last = this.root;
-                    this.nodes = [];
-                }
-                extend(word) {
-                    for (var i = 0; i < word.length; i++) {
-                        this.insert(word[i]);
-                    }
-                }
-                insert(c, n) {
-                    var p = this.last;
-                    var node = new Node(c);
-                    this.nodes.push(node);
-                    node.len = p.len + 1;
-                    this.last = node;
-                    while (p && !p.children[c]) {
-                        //如果p 没有一条 c 的出边
-                        p.children[c] = node; //为a为一个c
-                        p = p.fail;
-                    }
-                    if (!p) {
-                        node.fail = this.root;
-                    } else {
-                        var q = p.children[c];
-                        if (p.len + 1 == q.len) {
-                            node.fail = q;
-                            q.isEnd = true; //主轴上冲突
-                        } else {
-                            var clone = new Node(c); //克隆节点
-                            this.nodes.push(clone);
-                            clone.children = q.children;
-                            clone.fail = q.fail;
-                            clone.len = p.len + 1;
-                            clone.isEnd = true;
-                            while (p && p.children[c] == q) {
-                                p.children[c] = clone; //将树中所有q相关的链接替换成clone
-                                p = p.fail;
-                            }
-                            q.fail = node.fail = clone;
-                        }
-                    }
-                }
-            }
-            // var sam = new SuffixAutomaton();
-            // sam.extend("abb");
-            // console.log(sam);
-            // a, b, abb, bb, ab
+ <script type='text/javascript' src="./lib/babel.js"></script>
 
-            function count(p) {
-                var sam = new SuffixAutomaton();
-                sam.extend(p);
-                Object(sam.last).isEnd = true;
-                var ret = [];
-                var hash = {}
-                var MAIN = 1, BRANCH = 2;
-                function cb(node, c, type) {
-                    
-                    for (var i in node.children) {
-                      
-                        var key = c + i;
-                    
-                        var child = node.children[i];
-                        if(type == MAIN){
-                            hash[key] = true
-                        }else{
-                            console.log(key)
-                            if(hash[key]){
-                                continue
-                            }
-                        }
-                        ret.push(key);
-                        cb(child, key, type);
-                        if (child.isEnd && key != i) {
-                            ret.push(i);
-                            console.log(i+"---")
-                            cb(child, i,  BRANCH);
-                        }
-                    }
-                }
-                cb(sam.root, "", MAIN);
-                console.log(ret);
-                return ret.length;
-            }
-            console.log(count("abb")); //5
-            // console.log(count("abcabc")); //15
-            //  a b c ab bc ca ab bc, abc bca, cab abc, abca,bcab,cabc,abcab, bcabc, abcabc
-            //https://algorithm-visualizer.org/simple-recursive/cellular-automata
-            // http://whocouldthat.be/visualizing-string-matching/
-            /*
-abb
+</head>
 
-a [1,2]
-aa [2]
-ab [3]
-aab [3]
-*/
-        </script>
-    </body>
+<body>
+ <div id='root' class="root">
+
+ </div>
+ <script type='text/babel'>
+
+var { lazy, Suspense } = React;
+var OtherComponent = lazy(() => {
+    return new Promise(resolve =>
+        setTimeout(
+            () =>
+                resolve({
+                    default: function render(props) {
+                        //export default
+                        return <div>Hello,{props.name}</div>;
+                    }
+                }),
+            3000
+        )
+    );
+});
+var valueRef = React.createRef()
+class App extends React.Component {
+    constructor(props){
+        super(props)
+        this.state = {
+            name: "ruby"
+        }
+    }
+    updateName(){
+       var  name = valueRef.current.value;
+       this.setState({name})
+    }
+    render() {
+        return (
+            <div>
+                <p><input ref={valueRef} onChange={this.updateName.bind(this)}  value={this.state.name} />{new Date-0}</p>
+             
+                <Suspense  fallback={<div>loading...</div>}>
+                    <OtherComponent name={this.state.name} />
+                </Suspense>
+            </div>
+        );
+    }
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
+
+ 
+ </script>
+
+
 </html>

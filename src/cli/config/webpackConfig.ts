@@ -9,6 +9,8 @@ import * as path from 'path';
 import webpack from 'webpack';
 const utils = require('../packages/utils/index');
 import { intermediateDirectoryName } from './h5/configurations';
+import quickAPIList from '../consts/quickAPIList';
+import config from './config';
 //各种loader
 //生成文件
 const fileLoader = require.resolve('../nanachi-loader/loaders/fileLoader');
@@ -25,6 +27,8 @@ const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 const nanachiStyleLoader  = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
 
 const cwd = process.cwd();
+
+const H5AliasList = ['react','@react','react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/];
 
 export default function({
     platform,
@@ -43,6 +47,11 @@ export default function({
     postCssLoaders,
     // maxAssetSize // 资源大小限制，超出后报warning
 }: NanachiOptions): webpack.Configuration {
+    let externals: Array<string|RegExp> = quickAPIList; // 编译时忽略的模块
+    if (platform === 'h5') {
+        externals.push(...H5AliasList);
+    }
+    
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
     let distPath = path.resolve(cwd, utils.getDistName(platform));
     if (platform === 'h5') {
@@ -77,6 +86,7 @@ export default function({
         ],
         ...copyPluginOption // 压缩图片配置
     }];
+    
     const mergePlugins = [].concat( 
         new ChaikaPlugin(),
         analysis ? new SizePlugin() : [],
@@ -106,7 +116,12 @@ export default function({
                         useEslintrc: false // 不使用用户自定义eslintrc配置
                     }
                 },
-                typescript ? require.resolve('ts-loader') : [],
+                typescript ? {
+                    loader: require.resolve('ts-loader'),
+                    options: {
+                        context: path.resolve(cwd)
+                    }
+                } : [],
                 prevJsLoaders,
                 prevLoaders ) ,
             exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,
@@ -196,7 +211,7 @@ export default function({
         ? path.join(cwd, '.CACHE/nanachi/source/app')
         : path.join(cwd, 'source/app');
 
-    if (typescript) { entry += '.ts' };
+    if (typescript) { entry += '.tsx' };
     return {
         entry: entry,
         mode: 'development',
@@ -220,7 +235,7 @@ export default function({
         watchOptions: {
             ignored: /node_modules|dist/
         },
-        externals: platform === 'h5' ? ['react','@react','react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/] : []
+        externals
         // performance: {
         //     hints: 'warning',
         //     assetFilter(filename) {

@@ -1,5 +1,47 @@
 # Changelog
 
+
+# 1.3.8 (2019-10-08)
+
+-  修复百度小程序在真机预览时，由于被压缩的缘故导致页面的React组件找不到对应的小程序组件，出现部分内容为空白。
+
+
+# 1.3.7 (2019-09-29)
+
+## 核心库
+
+#### Bug fix
+
+- 修复ReactQuick生命周期触发时机Bug。
+
+## CLI
+#### Feature
+
+- 支持360小程序编译，参考文档：https://rubylouvre.github.io/nanachi/documents/install.html 
+- 支持代码中引入快应用原生API，如: require('@system.app')。(需自行编写按需打包逻辑)
+- 快应用默认manifest.json文件添加display.titleBarBackgroundColor = '#ffffff'字段。
+
+# 1.3.6 (2019-09-23)
+
+## 核心库
+#### Feature
+
+- 添加React.memo方法。
+- 添加React.api.setBackgroundColor && React.api.setBackgroundTextStyle。
+- 事件系统中添加事件名映射，参考文档中映射事件名部分：https://rubylouvre.github.io/nanachi/documents/event.html
+- 添加ReactH5 剪切板api。
+- 添加ReactQuick accountGetProvider、accountAuthorize api。
+
+#### Bug fix
+
+- 修复useImperativeHandle 钩子不触发bug。
+
+## CLI
+#### Feature
+
+- 支持typescript，添加typescript模板。
+- nanachi api新增prevJsLoaders, postJsLoaders, prevCssLoaders, postCssLoaders。
+
 # 1.3.4 (2019-08-27)
 
 ## 核心库

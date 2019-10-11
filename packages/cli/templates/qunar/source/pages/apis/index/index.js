@@ -343,6 +343,12 @@ class P extends React.Component {
           >
             <text>路由</text>
           </div>
+          <div
+            onClick={this.gotoSome.bind(this, '/pages/apis/innerAudio/index')}
+            class="anu-item"
+          >
+            <text>innerAudio</text>
+          </div>
           
         </div>
       </div>

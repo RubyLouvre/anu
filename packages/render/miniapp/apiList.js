@@ -219,5 +219,9 @@ export var otherApis = {
     chooseInvoiceTitle: true,
     checkIsSupportSoterAuthentication: true,
     startSoterAuthentication: true,
-    checkIsSoterEnrolledInDevice: true
+    checkIsSoterEnrolledInDevice: true,
+
+    // 设置背景图片
+    setBackgroundColor: true,
+    setBackgroundTextStyle: true
 };

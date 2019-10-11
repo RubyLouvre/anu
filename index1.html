@@ -1,42 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Document</title>
-        <script type="text/javascript" src="./dist/React.js"></script>
-        <!--
-        <script src="https://cdn.bootcss.com/react/16.9.0-rc.0/umd/react.development.js"></script>-
-        <script src="https://cdn.bootcss.com/react-dom/16.9.0-alpha.0/umd/react-dom.development.js"></script>
-        -->
+<html>
 
-        <script type="text/javascript" src="./lib/babel.js"></script>
-    </head>
-    <body>
-        <div id="app"></div>
-        <script>
-            function App() {
-                const [data, setData] = React.useState([]);
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width">
+<!--
+  <script src="https://cdn.bootcss.com/react/16.9.0/umd/react.development.js"></script>
+  <script src="https://cdn.bootcss.com/react-dom/16.9.0/umd/react-dom.development.js"  ></script>
+-->
+<script src="./dist/React.js"></script> 
 
-                React.useEffect(() => {
-                    setTimeout(() => {
-                        console.log(111);
-                        setData([1, 2, 3, 4]);
-                    }, 300);
-                }, [1, 2]);
+ <script type='text/javascript' src="./lib/babel.js"></script>
 
-                if (data.length > 2) {
-                    data.length = 2;
-                    setData(data);
-                }
+</head>
 
-                return "hello world";
-            }
-            window.onload = function() {
-                ReactDOM.render(
-                    React.createElement(App),
-                    document.getElementById("app")
-                );
-            };
-        </script>
-    </body>
+<body>
+ <div id='root' class="root">
+
+ </div>
+ <script type='text/babel'>
+
+var { lazy, Suspense } = React;
+var OtherComponent = lazy(() => {
+    return new Promise(resolve =>
+        setTimeout(
+            () =>
+                resolve({
+                    default: function render(props) {
+                        //export default
+                        return <div>Hello,{props.name}</div>;
+                    }
+                }),
+            3000
+        )
+    );
+});
+var valueRef = React.createRef()
+class App extends React.Component {
+    constructor(props){
+        super(props)
+        this.state = {
+            name: "ruby"
+        }
+    }
+    updateName(){
+       var  name = valueRef.current.value;
+       this.setState({name})
+    }
+    render() {
+        return (
+            <div>
+                <p><input ref={valueRef} onChange={this.updateName.bind(this)}  value={this.state.name} />{new Date-0}</p>
+             
+                <Suspense  fallback={<div>loading...</div>}>
+                    <OtherComponent name={this.state.name} />
+                </Suspense>
+            </div>
+        );
+    }
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
+
+ 
+ </script>
+
+
 </html>
