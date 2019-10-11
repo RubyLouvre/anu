@@ -1,47 +1,69 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width" />
-    </head>
 
-    <body>
-        <div id="root" class="root"></div>
-        <script>
-function findQueen() {
-    var result = [], path = [],
-        column = {}, mainDiagonal = {}, backDiagonal = {};
-    function isSafe(row, col) {
-        return (
-            !column[col] &&
-            !mainDiagonal[-(row - col)] &&
-            !backDiagonal[row + col]
-        );
-    }
-    function backtrack(row) {
-        if (row == 8) {
-            result.push(path.concat());
-        } else {
-            for (var col = 0; col < 8; col++) {
-                if (isSafe(row, col)) {
-                    //当前位置可放置
-                    path[row] = col; //标记放置的位置
-                    column[col] = true; //当前皇后所在列
-                    mainDiagonal[-(row - col)] = true; //皇后所在的对角线在第一行的列号
-                    backDiagonal[row + col] = true; //皇后所在的反对角线在第一行的列号
-                    backtrack(row + 1); //下一行上的皇后
-                    column[col] = false;
-                    mainDiagonal[-(row - col)] = false;
-                    backDiagonal[row + col] = false;
-                }
-            }
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width">
+<!--
+  <script src="https://cdn.bootcss.com/react/16.9.0/umd/react.development.js"></script>
+  <script src="https://cdn.bootcss.com/react-dom/16.9.0/umd/react-dom.development.js"  ></script>
+-->
+<script src="./dist/React.js"></script> 
+
+ <script type='text/javascript' src="./lib/babel.js"></script>
+
+</head>
+
+<body>
+ <div id='root' class="root">
+
+ </div>
+ <script type='text/babel'>
+
+var { lazy, Suspense } = React;
+var OtherComponent = lazy(() => {
+    return new Promise(resolve =>
+        setTimeout(
+            () =>
+                resolve({
+                    default: function render(props) {
+                        //export default
+                        return <div>Hello,{props.name}</div>;
+                    }
+                }),
+            3000
+        )
+    );
+});
+var valueRef = React.createRef()
+class App extends React.Component {
+    constructor(props){
+        super(props)
+        this.state = {
+            name: "ruby"
         }
     }
-    backtrack(0); //先放第一行的皇后
-    console.log("总共",result.length);
-    return result.length;
+    updateName(){
+       var  name = valueRef.current.value;
+       this.setState({name})
+    }
+    render() {
+        return (
+            <div>
+                <p><input ref={valueRef} onChange={this.updateName.bind(this)}  value={this.state.name} />{new Date-0}</p>
+             
+                <Suspense  fallback={<div>loading...</div>}>
+                    <OtherComponent name={this.state.name} />
+                </Suspense>
+            </div>
+        );
+    }
 }
-findQueen();
-        </script>
-    </body>
+
+ReactDOM.render(<App />, document.getElementById("root"));
+
+ 
+ </script>
+
+
 </html>

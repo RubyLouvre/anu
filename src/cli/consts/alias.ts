@@ -9,6 +9,7 @@ export interface Alias {
 export default (platform: string) => {
     const baseAlias: Alias = {
         'react': './source/' + REACT_LIB_MAP[platform],
+        'react-dom': './source/' + REACT_LIB_MAP[platform],
         '@react': './source/' + REACT_LIB_MAP[platform],
         '@components': './source/components'
     };
