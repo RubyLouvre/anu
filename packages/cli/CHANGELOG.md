@@ -46,7 +46,7 @@
 
 ## 核心库
 #### Feature
-
+- 百度小程序生命周期更化，延迟百度小程序组件的attach钩子
 - 全平台支持Redux、Mobx。
 
 #### Bug fix
