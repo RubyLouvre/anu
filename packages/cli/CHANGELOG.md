@@ -48,6 +48,7 @@
 #### Feature
 
 - 全平台支持Redux、Mobx。
+- 针对百度小程序的生命周期更化延迟detach钩子的触发
 
 #### Bug fix
 
