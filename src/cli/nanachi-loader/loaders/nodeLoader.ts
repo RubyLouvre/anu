@@ -3,7 +3,7 @@ import * as babel from '@babel/core';
 import { NanachiQueue } from './nanachiLoader';
 
 const isReact = function(sourcePath: string){
-    return /\/source\/React\w+\.js$/.test(sourcePath);
+    return path.basename(sourcePath).startsWith("React") && path.basename(path.dirname(sourcePath)) === "source";
 };
 
 module.exports = async function(code: string, map: any, meta: any) {
