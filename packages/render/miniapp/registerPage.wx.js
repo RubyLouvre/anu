@@ -11,13 +11,7 @@ var appHooks = {
 };
 
 export function registerPage(PageClass, path, testObject) {
-    PageClass.container = {
-        type: "page",
-        props: {},
-        children: [],
-        root: true,
-        appendChild: noop
-    };
+   
     PageClass.reactInstances = [];
     let config = {
         data: {},

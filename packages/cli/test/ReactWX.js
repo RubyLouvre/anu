@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2019-10-09T07
+ * 运行于微信小程序的React by 司徒正美 Copyright 2019-11-13T02
  * IE9+
  */
 
@@ -2523,13 +2523,19 @@ function registerApp(app) {
     return app;
 }
 
-function onLoad(PageClass, path, query, fire) {
+function onLoad(PageClass, path, query, isLoad) {
     var app = _getApp();
+    var container = this.reactContainer || {
+        type: "page",
+        props: {},
+        children: [],
+        root: true,
+        appendChild: noop
+    };
     var GlobalApp = _getGlobalApp(app);
     app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
-    var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
         this.needReRender = true;
@@ -2538,7 +2544,7 @@ function onLoad(PageClass, path, query, fire) {
             key: path,
             query: query,
             isPageComponent: true
-        })), dom, function () {
+        })), container, function () {
             var fiber = get(this).child;
             while (!fiber.stateNode.classUid) {
                 fiber = fiber.child;
@@ -2551,15 +2557,15 @@ function onLoad(PageClass, path, query, fire) {
             path: path,
             query: query,
             isPageComponent: true
-        }), dom);
+        }), container);
     }
-    this.reactContainer = dom;
+    if (isLoad) {
+        callGlobalHook("onGlobalLoad");
+    }
+    this.reactContainer = container;
     this.reactInstance = pageInstance;
     pageInstance.wx = this;
-    if (fire) {
-        callGlobalHook("onGlobalLoad");
-        updateMiniApp(pageInstance);
-    }
+    updateMiniApp(pageInstance);
     return pageInstance;
 }
 function onReady() {
@@ -2619,13 +2625,6 @@ var appHooks = {
     onHide: 'onGlobalHide'
 };
 function registerPage(PageClass, path, testObject) {
-    PageClass.container = {
-        type: "page",
-        props: {},
-        children: [],
-        root: true,
-        appendChild: noop
-    };
     PageClass.reactInstances = [];
     var config = {
         data: {},

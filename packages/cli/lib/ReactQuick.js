@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-10-09
+ * 运行于快应用的React by 司徒正美 Copyright 2019-11-13
  */
 
 var arrayPush = Array.prototype.push;
@@ -3330,13 +3330,19 @@ function _getGlobalApp(app) {
     return GlobalApp || app.globalData._GlobalApp;
 }
 
-function onLoad(PageClass, path, query, fire) {
+function onLoad(PageClass, path, query, isLoad) {
     var app = _getApp();
+    var container = this.reactContainer || {
+        type: "page",
+        props: {},
+        children: [],
+        root: true,
+        appendChild: noop
+    };
     var GlobalApp = _getGlobalApp(app);
     app.$$pageIsReady = false;
     app.$$page = this;
     app.$$pagePath = path;
-    var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
         this.needReRender = true;
@@ -3345,7 +3351,7 @@ function onLoad(PageClass, path, query, fire) {
             key: path,
             query: query,
             isPageComponent: true
-        })), dom, function () {
+        })), container, function () {
             var fiber = get(this).child;
             while (!fiber.stateNode.classUid) {
                 fiber = fiber.child;
@@ -3358,15 +3364,15 @@ function onLoad(PageClass, path, query, fire) {
             path: path,
             query: query,
             isPageComponent: true
-        }), dom);
+        }), container);
     }
-    this.reactContainer = dom;
+    if (isLoad) {
+        callGlobalHook("onGlobalLoad");
+    }
+    this.reactContainer = container;
     this.reactInstance = pageInstance;
     pageInstance.wx = this;
-    if (fire) {
-        callGlobalHook("onGlobalLoad");
-        updateMiniApp(pageInstance);
-    }
+    updateMiniApp(pageInstance);
     return pageInstance;
 }
 function onReady() {
@@ -3448,13 +3454,6 @@ function getQuery(wx, huaweiHack) {
 }
 function registerPage(PageClass, path) {
     PageClass.reactInstances = [];
-    PageClass.container = {
-        type: "page",
-        props: {},
-        children: [],
-        root: true,
-        appendChild: noop
-    };
     var def = _getApp().$def;
     var appInner = def.innerQuery;
     var appOuter = def.outerQuery;
@@ -3566,7 +3565,7 @@ var React = getWindow().React = {
     findDOMNode: function findDOMNode() {
         console.log("小程序不支持findDOMNode");
     },
-    version: "1.5.10",
+    version: "1.6.0",
     render: render$1,
     hydrate: render$1,
     Fragment: Fragment,

@@ -38,7 +38,7 @@ const internalComponentsMap = {
     audio: 'Audio',
     picker: 'Picker'
 };
-const componentsNameMap = Object.assign({}, webComponentsMap, nativeComponentsMap, internalComponentsMap);
+const componentsNameMap = Object.assign(Object.assign(Object.assign({}, webComponentsMap), nativeComponentsMap), internalComponentsMap);
 const utils = require('../../utils/index');
 const fpath = require('path');
 let styleKey = '';

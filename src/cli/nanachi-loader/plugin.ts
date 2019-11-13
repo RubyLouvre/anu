@@ -53,7 +53,7 @@ class NanachiWebpackPlugin implements webpack.Plugin {
             //         }
             //     };
             // }
-            const reg = new RegExp(compiler.options.output.filename);
+            const reg = new RegExp(compiler.options.output.filename+"");
             Object.keys(compilation.assets).forEach(key => {
                 if (reg.test(key)) {
                     delete compilation.assets[key];

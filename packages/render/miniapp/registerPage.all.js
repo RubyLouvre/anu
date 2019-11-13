@@ -11,14 +11,20 @@ import { render } from "react-fiber/scheduleWork";
 import { createElement } from "react-core/createElement";
 import { _getGlobalApp } from "./registerApp.all";
 
-export function onLoad(PageClass, path, query, fire) {
+export function onLoad(PageClass, path, query, isLoad) {
     var app = _getApp();
+    var container = this.reactContainer || {
+        type: "page",
+        props: {},
+        children: [],
+        root: true,
+        appendChild: noop
+    };
     // 快应用拿不到全局数据，从globalData中取
     let GlobalApp = _getGlobalApp(app);
     app.$$pageIsReady = false; //pageIsReadyg与delayMounts是专门给快应用
     app.$$page = this;
     app.$$pagePath = path;
-    var dom = PageClass.container;
     var pageInstance;
     if (typeof GlobalApp === "function") {
         this.needReRender = true;
@@ -33,7 +39,7 @@ export function onLoad(PageClass, path, query, fire) {
                     isPageComponent: true
                 })
             ),
-            dom,
+            container,
             function() {
                 var fiber = get(this).child;
                 while (!fiber.stateNode.classUid) {
@@ -50,16 +56,16 @@ export function onLoad(PageClass, path, query, fire) {
                 query: query,
                 isPageComponent: true
             }),
-            dom
+            container
         );
     }
-    this.reactContainer = dom;
+    if (isLoad) {
+        callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
+    }
+    this.reactContainer = container;
     this.reactInstance = pageInstance;
     pageInstance.wx = this; //保存小程序的页面对象
-    if (fire) {
-        callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
-        updateMiniApp(pageInstance); //更新小程序视图
-    }
+    updateMiniApp(pageInstance); //更新小程序视图
     return pageInstance;
 }
 

@@ -39,13 +39,6 @@ function getQuery(wx, huaweiHack) {
 
 export function registerPage(PageClass, path) {
     PageClass.reactInstances = []
-    PageClass.container = {
-        type: "page",
-        props: {},
-        children: [],
-        root: true,
-        appendChild: noop
-    };
     var def = _getApp().$def
     var appInner = def.innerQuery;
     var appOuter = def.outerQuery;
