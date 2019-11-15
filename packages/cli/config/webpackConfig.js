@@ -27,6 +27,9 @@ const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 const nanachiStyleLoader = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
 const cwd = process.cwd();
 const H5AliasList = ['react', '@react', 'react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/];
+const isChaikaMode = function () {
+    return process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
+};
 function default_1({ platform, compress, compressOption, plugins, rules, huawei, analysis, typescript, prevLoaders, postLoaders, prevJsLoaders, postJsLoaders, prevCssLoaders, postCssLoaders, }) {
     let externals = quickAPIList_1.default;
     if (platform === 'h5') {
@@ -55,7 +58,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
     const copyAssetsRules = [Object.assign({ from: '**', to: 'assets', context: 'source/assets', ignore: [
                 '**/*.@(js|jsx|json|sass|scss|less|css|ts|tsx)'
             ] }, copyPluginOption)];
-    const mergePlugins = [].concat(new chaikaPlugin_1.default(), analysis ? new sizePlugin_1.default() : [], new plugin_1.default({
+    const mergePlugins = [].concat(isChaikaMode() ? [new chaikaPlugin_1.default()] : [], analysis ? new sizePlugin_1.default() : [], new plugin_1.default({
         platform,
         compress
     }), new copy_webpack_plugin_1.default(copyAssetsRules), plugins);
@@ -94,7 +97,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         mergePlugins.push(new quickPlugin_1.default());
         try {
             var quickConfig = {};
-            process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+            isChaikaMode()
                 ? quickConfig = require(path.join(cwd, '.CACHE/nanachi/source', 'quickConfig.json'))
                 : quickConfig = require(path.join(cwd, 'source', 'quickConfig.json'));
             if (huawei) {
@@ -121,7 +124,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         catch (err) {
         }
     }
-    let entry = process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+    let entry = isChaikaMode()
         ? path.join(cwd, '.CACHE/nanachi/source/app')
         : path.join(cwd, 'source/app');
     if (typescript) {

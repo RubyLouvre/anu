@@ -30,6 +30,10 @@ const cwd = process.cwd();
 
 const H5AliasList = ['react','@react','react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/];
 
+const isChaikaMode = function() {
+    return process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
+}
+
 export default function({
     platform,
     compress,
@@ -88,7 +92,7 @@ export default function({
     }];
     
     const mergePlugins = [].concat( 
-        new ChaikaPlugin(),
+        isChaikaMode() ? [ new ChaikaPlugin() ] : [],
         analysis ? new SizePlugin() : [],
         new NanachiWebpackPlugin({
             platform,
@@ -170,7 +174,7 @@ export default function({
                      widgets?: any;
                  }
              } = {};
-             process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+             isChaikaMode()
                  ? quickConfig = require(path.join(cwd, '.CACHE/nanachi/source', 'quickConfig.json'))
                  : quickConfig = require(path.join(cwd, 'source', 'quickConfig.json'));
             if (huawei) {
@@ -207,7 +211,7 @@ export default function({
             // eslint-disable-next-line
         }
     }
-    let entry = process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+    let entry = isChaikaMode()
         ? path.join(cwd, '.CACHE/nanachi/source/app')
         : path.join(cwd, 'source/app');
 
