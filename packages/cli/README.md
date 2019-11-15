@@ -162,6 +162,3 @@ nanachi({
 ```sh
 node build.js
 ```
-
-## 开发者交流群
-![411547729622_ pic](https://user-images.githubusercontent.com/16398401/52927213-5cf08400-3374-11e9-9f54-ccbad8b61ea7.jpeg)
