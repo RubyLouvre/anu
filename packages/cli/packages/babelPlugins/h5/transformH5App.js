@@ -187,6 +187,26 @@ module.exports = function () {
                                     ]));
                                 }
                             }
+                            if (name === 'tabBar') {
+                                let buildType = process.env.ANU_ENV;
+                                if (buildType === 'web')
+                                    buildType = 'h5';
+                                let tabBarPros = value.properties, defaultList = null, buildTypeList = null;
+                                let newTabBarPros = tabBarPros.filter((el) => {
+                                    if (el.key.name === 'list') {
+                                        defaultList = el;
+                                    }
+                                    if (el.key.name === `${buildType}List`) {
+                                        buildTypeList = el;
+                                    }
+                                    return el.key.name !== 'list' && el.key.name !== `${buildType}List`;
+                                });
+                                if (buildTypeList) {
+                                    defaultList = buildTypeList;
+                                    defaultList.key.name = 'list';
+                                }
+                                value.properties = newTabBarPros.concat(defaultList || []);
+                            }
                         }
                     });
                     astPath.parentPath.get('right').node.properties.push(t.objectProperty(t.identifier('pages'), importedPages));

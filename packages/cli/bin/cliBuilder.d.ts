@@ -9,7 +9,7 @@ declare class CliBuilder implements CliBuilderInterface {
     private __program;
     constructor();
     addCommand(commandName: string, alias: string | null, description: string, options: CmdMap, callback: (...options: any[]) => void): void;
-    set version(version: string);
+    version: string;
     checkNodeVersion(version: string): void;
     run(): void;
 }
