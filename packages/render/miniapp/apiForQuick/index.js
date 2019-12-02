@@ -34,7 +34,7 @@ import {
     getDeviceId,
     getUserId
 } from './device.js';
-import { chooseImage } from './media.js';
+import { chooseImage, previewImage } from './media.js';
 import { createShortcut, hasInstalled, shortcutInstall } from './shortcut.js';
 import {getPushProvider, subscribe, unsubscribe, pushOn, pushOff} from './push.js';
 import { 
@@ -120,6 +120,7 @@ export var facade = {
     onNetworkStatusChange,
     getSystemInfo,
     chooseImage,
+    previewImage,
     //设置标题
     setNavigationBarTitle,
     createCanvasContext,
