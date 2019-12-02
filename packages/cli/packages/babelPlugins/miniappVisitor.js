@@ -250,6 +250,20 @@ const visitor = {
                 else {
                     relPath = path.relative(path.resolve(cwd, 'source'), modules.sourcePath);
                 }
+                if (/app\.js/.test(relPath)) {
+                    const ignoreAppJsonProp = ['window', 'tabBar', 'pages', 'subpackages', 'preloadRule'];
+                    let xConfigJson = {};
+                    try {
+                        xConfigJson = require(path.join(process.cwd(), 'source', `${buildType}Config.json`));
+                    }
+                    catch (err) {
+                    }
+                    Object.keys(xConfigJson).forEach((key) => {
+                        if (!ignoreAppJsonProp.includes(key)) {
+                            json[key] = xConfigJson[key];
+                        }
+                    });
+                }
                 modules.queue.push({
                     path: relPath,
                     code: JSON.stringify(json, null, 4),
@@ -470,7 +484,6 @@ const visitor = {
                 }
             }
             if (buildType === 'quick') {
-                ignoreAttri(astPath, nodeName);
             }
             if (bag) {
                 try {
