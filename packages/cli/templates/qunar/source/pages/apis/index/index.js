@@ -15,7 +15,8 @@ class P extends React.Component {
     super();
     this.state = {
       text: 'page3',
-      img: []
+      imgs: [],
+      imgs2: []
     };
   }
   config = {
@@ -223,12 +224,21 @@ class P extends React.Component {
       count: 1,
       success: res => {
         this.setState({
-          img: res.tempFilePaths
+          imgs: res.tempFilePaths
         })
       }
     })
    }
-
+   chooseImage2() {
+    React.api.chooseImage({
+      count: 3,
+      success: res => {
+        this.setState({
+          imgs2: res.tempFilePaths
+        })
+      }
+    })
+   }
    setTitleBar() {
     React.api.setNavigationBarTitle({
       title: 'a new title',
@@ -324,10 +334,18 @@ class P extends React.Component {
             <text>获取系统信息(getSystemInfo)</text>
           </div>
           <div onClick={this.chooseImage} class="anu-item">
-            <text>选择图片</text>
+            <text>选择图片(1张)</text>
           </div>
           {
-            this.state.img.map(function(item) {
+            this.state.imgs.map(function(item) {
+              return  <image src={item}/>
+            })
+          }
+          <div onClick={this.chooseImage2} class="anu-item">
+            <text>选择图片(多张)</text>
+          </div>
+          {
+            this.state.imgs2.map(function(item) {
               return  <image src={item}/>
             })
           }
@@ -342,12 +360,6 @@ class P extends React.Component {
             class="anu-item"
           >
             <text>路由</text>
-          </div>
-          <div
-            onClick={this.gotoSome.bind(this, '/pages/apis/innerAudio/index')}
-            class="anu-item"
-          >
-            <text>innerAudio</text>
           </div>
           
         </div>

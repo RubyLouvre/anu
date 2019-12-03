@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-11-13
+ * 运行于快应用的React by 司徒正美 Copyright 2019-12-03
  */
 
 var arrayPush = Array.prototype.push;
@@ -1226,43 +1226,104 @@ function getUserId(options) {
     return device.getUserId(options);
 }
 
-function chooseImage(_ref) {
-    var _ref$count = _ref.count,
-        count = _ref$count === undefined ? 1 : _ref$count,
-        _ref$sourceType = _ref.sourceType,
-        sourceType = _ref$sourceType === undefined ? [] : _ref$sourceType,
-        _success = _ref.success,
-        _ref$fail = _ref.fail,
-        fail = _ref$fail === undefined ? noop : _ref$fail,
-        _ref$complete = _ref.complete,
-        complete = _ref$complete === undefined ? noop : _ref$complete;
-    if (count > 1) {
-        return fail(new Error('快应用选择图片的数量不能大于1'));
-    }
-    function imagePicked(_ref2) {
-        var path = _ref2.uri;
-        var file = require('@system.file');
+function getFilePromise(file, path, fail) {
+    return new Promise(function (resolve) {
         file.get({
             uri: path,
-            success: function success(_ref3) {
-                var size = _ref3.length;
-                var tempFilePaths = [path];
-                var tempFiles = [{ path: path, size: size }];
-                _success({
-                    tempFilePaths: tempFilePaths,
-                    tempFiles: tempFiles
+            success: function success(_ref) {
+                var uri = _ref.uri,
+                    length = _ref.length;
+                resolve({
+                    path: uri,
+                    size: length
                 });
             },
             fail: fail
         });
-    }
+    });
+}
+function chooseImage(_ref2) {
+    var _ref2$count = _ref2.count,
+        count = _ref2$count === undefined ? 1 : _ref2$count,
+        _ref2$sourceType = _ref2.sourceType,
+        sourceType = _ref2$sourceType === undefined ? ['album', 'camera'] : _ref2$sourceType,
+        _success = _ref2.success,
+        _ref2$fail = _ref2.fail,
+        fail = _ref2$fail === undefined ? noop : _ref2$fail,
+        _ref2$complete = _ref2.complete,
+        complete = _ref2$complete === undefined ? noop : _ref2$complete;
     var media = require('@system.media');
+    var file = require('@system.file');
+    if (count > 1 && sourceType.indexOf('album') != -1) {
+        if (!media.pickImages) {
+            return fail(new Error('当前快应用版本小于1040，不支持选多张图片'));
+        }
+        return media.pickImages({
+            success: function success(_ref3) {
+                var uris = _ref3.uris,
+                    files = _ref3.files;
+                var tempFilePaths = uris;
+                if (!files) {
+                    var promises = [];
+                    for (var i = 0; i < tempFilePaths.length; i++) {
+                        promises.push(getFilePromise(file, uris[i], fail));
+                    }
+                    Promise.all(promises).then(function (tempFiles) {
+                        _success({
+                            tempFiles: tempFiles,
+                            tempFilePaths: tempFilePaths
+                        });
+                    });
+                    return;
+                }
+                _success({
+                    tempFilePaths: tempFilePaths,
+                    tempFiles: files
+                });
+            },
+            fail: fail,
+            complete: complete
+        });
+    }
     var pick = sourceType.length === 1 && sourceType[0] === 'camera' ? media.takePhoto : media.pickImage;
     pick({
-        success: imagePicked,
+        success: function success(_ref4) {
+            var uri = _ref4.uri;
+            return getFilePromise(file, uri, fail).then(function (data) {
+                var tempFilePaths = [data.path];
+                var tempFiles = [data];
+                _success({
+                    tempFilePaths: tempFilePaths,
+                    tempFiles: tempFiles
+                });
+            });
+        },
         fail: fail,
         complete: complete,
         cancel: fail
+    });
+}
+function previewImage(_ref5) {
+    var _ref5$urls = _ref5.urls,
+        urls = _ref5$urls === undefined ? [] : _ref5$urls,
+        _ref5$current = _ref5.current,
+        current = _ref5$current === undefined ? urls[0] || '' : _ref5$current,
+        success = _ref5.success,
+        _ref5$fail = _ref5.fail,
+        fail = _ref5$fail === undefined ? noop : _ref5$fail,
+        _ref5$complete = _ref5.complete,
+        complete = _ref5$complete === undefined ? noop : _ref5$complete;
+    var media = require('@system.media');
+    if (!media.previewImage) {
+        console.log("快应用引擎请升级到1040");
+        return;
+    }
+    media.previewImage({
+        current: current,
+        uris: urls,
+        success: success,
+        fail: fail,
+        complete: complete
     });
 }
 
@@ -1604,6 +1665,7 @@ var facade = {
     onNetworkStatusChange: onNetworkStatusChange,
     getSystemInfo: getSystemInfo,
     chooseImage: chooseImage,
+    previewImage: previewImage,
     setNavigationBarTitle: setNavigationBarTitle,
     createCanvasContext: createCanvasContext,
     stopPullDownRefresh: stopPullDownRefresh,

@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-11-13T02
+ * 运行于webview的React by 司徒正美 Copyright 2019-12-03T06
  * IE9+
  */
 

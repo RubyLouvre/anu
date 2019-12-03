@@ -20,50 +20,39 @@
  </div>
  <script type='text/babel'>
 
-var { lazy, Suspense } = React;
-var OtherComponent = lazy(() => {
-    return new Promise(resolve =>
-        setTimeout(
-            () =>
-                resolve({
-                    default: function render(props) {
-                        //export default
-                        return <div>Hello,{props.name}</div>;
-                    }
-                }),
-            3000
-        )
-    );
-});
-var valueRef = React.createRef()
-class App extends React.Component {
-    constructor(props){
-        super(props)
-        this.state = {
-            name: "ruby"
-        }
-    }
-    updateName(){
-       var  name = valueRef.current.value;
-       this.setState({name})
-    }
-    render() {
-        return (
-            <div>
-                <p><input ref={valueRef} onChange={this.updateName.bind(this)}  value={this.state.name} />{new Date-0}</p>
-             
-                <Suspense  fallback={<div>loading...</div>}>
-                    <OtherComponent name={this.state.name} />
-                </Suspense>
-            </div>
-        );
-    }
-}
+//点击按钮获取地理位置信息
 
-ReactDOM.render(<App />, document.getElementById("root"));
+//getCurrentPosition与定时器setInterval类似多次请求，因为位置需要不间断的获取
+//直接navigator.geolocation表示单次获取位置
+navigator.geolocation.getCurrentPosition(function (position) {
+    var ans = `经度: ${position.coords.longitude}
+        纬度:${ position.coords.latitude}
+        准确度:${ position.coords.accurac}
+        经度${ position.coords.longitude}
+        纬度${ position.coords.latitude}
+        准确度${ position.coords.accuracy}
+        海拔${ position.coords.altitude}
+        海拔准确度${ position.coords.altitudeAcuracy}
+        行进方向${ position.coords.heading}
+        地面速度${ position.coords.speed}
+        请求的时间${ new Date(position.timestamp)}
+       `
+       console.log(ans)
+    }, function (err) {
+       console.log(err.code);
+    //          code：返回获取位置的状态
+    //           0  :  不包括其他错误编号中的错误
+    // ​		  1  :  用户拒绝浏览器获取位置信息
+    // ​		  2  :  尝试获取用户信息，但失败了
+    // ​		  3  :   设置了timeout值，获取位置超时了
+    }, {
+        enableHighAcuracy: false, //位置是否精确获取
+        timeout: 5000,            //获取位置允许的最长时间
+        maximumAge: 1000          //多久更新获取一次位置
+    }
+)
 
- 
  </script>
-
+</body>
 
 </html>
