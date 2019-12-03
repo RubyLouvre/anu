@@ -346,7 +346,7 @@ const visitor:babel.Visitor = {
 
                 //merge ${buildType}Config.json
                 json = require('../utils/mergeConfigJson')(modules, json);
-                
+
                 let relPath = '';
                
                 if (/\/node_modules\//.test(modules.sourcePath.replace(/\\/g, '/'))) {
@@ -354,7 +354,24 @@ const visitor:babel.Visitor = {
                 } else {
                     relPath =  path.relative(path.resolve(cwd, 'source'), modules.sourcePath);
                 }
-             
+                
+                // xConfig.json中 除了 'window', 'tabBar', 'pages', 'subpackages', 'preloadRule, 其他属性都需要合并到app.json里
+                if (/app\.js/.test(relPath)) {
+                    const ignoreAppJsonProp = ['window', 'tabBar', 'pages', 'subpackages', 'preloadRule'];
+                    let xConfigJson = {} as any;
+                    try {
+                        xConfigJson = require( path.join(process.cwd(), 'source', `${buildType}Config.json`));
+                    } catch (err) {
+                        // eslint-disable-next-line
+                    }
+                    // 合并到 app.json 中
+                    Object.keys(xConfigJson).forEach((key) => {
+                        if (!ignoreAppJsonProp.includes(key)) {
+                            json[key] = xConfigJson[key];
+                        }
+                    });
+                }
+                
                 modules.queue.push({
                     path: relPath,
                     code: JSON.stringify(json, null, 4),
