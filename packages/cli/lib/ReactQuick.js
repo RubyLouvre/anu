@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-11-13
+ * 运行于快应用的React by 司徒正美 Copyright 2019-12-04
  */
 
 var arrayPush = Array.prototype.push;
@@ -1265,6 +1265,25 @@ function chooseImage(_ref) {
         cancel: fail
     });
 }
+function previewImage(_ref4) {
+    var _ref4$urls = _ref4.urls,
+        urls = _ref4$urls === undefined ? [] : _ref4$urls,
+        _ref4$current = _ref4.current,
+        current = _ref4$current === undefined ? urls[0] || '' : _ref4$current,
+        success = _ref4.success,
+        _ref4$fail = _ref4.fail,
+        fail = _ref4$fail === undefined ? noop : _ref4$fail,
+        _ref4$complete = _ref4.complete,
+        complete = _ref4$complete === undefined ? noop : _ref4$complete;
+    var media = require('@system.media');
+    media.previewImage({
+        current: current,
+        uris: urls,
+        success: success,
+        fail: fail,
+        complete: complete
+    });
+}
 
 var prompt = require('@system.prompt');
 function showModal(obj) {
@@ -1604,6 +1623,7 @@ var facade = {
     onNetworkStatusChange: onNetworkStatusChange,
     getSystemInfo: getSystemInfo,
     chooseImage: chooseImage,
+    previewImage: previewImage,
     setNavigationBarTitle: setNavigationBarTitle,
     createCanvasContext: createCanvasContext,
     stopPullDownRefresh: stopPullDownRefresh,
