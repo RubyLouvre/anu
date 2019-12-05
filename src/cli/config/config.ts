@@ -31,20 +31,23 @@ enum Platforms {
     bu = 'bu',
     tt = 'tt',
     quick = 'quick',
-    h5 = 'h5'
+    h5 = 'h5',
+    QIHOO = '360'
 }
 
-export type validatePlatforms = 'wx' | 'qq' | 'ali' | 'bu' | 'tt' | 'quick' | 'h5';
+export type validatePlatforms = 'wx' | 'qq' | 'ali' | 'bu' | 'tt' | 'quick' | 'h5' | '360';
 
 export interface GlobalConfigMap {
     buildType: validatePlatforms;      //构建类型默认微信小程序
     buildDir: string;   //非快应用项目默认构建目录为dist
     sourceDir: string;  //默认生成的源码目录
     huawei: boolean;
+    '360mode': boolean;
     patchComponents: patchComponents; // 项目中使用的补丁组件
     pluginTags: any;
     plugins: any;
     compress?: boolean;
+    typescript?: boolean;
     WebViewRules?: any; // TODO
     [Platforms.wx]: PlatConfig;
     [Platforms.qq]: PlatConfig;
@@ -53,6 +56,7 @@ export interface GlobalConfigMap {
     [Platforms.quick]: PlatConfig;
     [Platforms.tt]: PlatConfig;
     [Platforms.h5]: PlatConfig;
+    [Platforms.QIHOO]: PlatConfig;
 }
 const config: GlobalConfigMap =  {
     wx: {
@@ -60,7 +64,9 @@ const config: GlobalConfigMap =  {
         styleExt: 'wxss',
         xmlExt: 'wxml',
         helpers: 'wxHelpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     qq: {
@@ -76,7 +82,9 @@ const config: GlobalConfigMap =  {
         styleExt: 'acss',
         xmlExt: 'axml',
         helpers: 'aliHelpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     bu: {
@@ -84,13 +92,25 @@ const config: GlobalConfigMap =  {
         styleExt: 'css',
         xmlExt: 'swan',
         helpers: 'buHelpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     h5: {
         libName: 'ReactH5',
         helpers: 'h5Helpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
+        disabledTitleBarPages: new Set()
+    },
+    '360': {
+        libName: 'ReactH5',
+        helpers: 'h5Helpers',
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     quick: {
@@ -121,6 +141,8 @@ const config: GlobalConfigMap =  {
     buildDir: buildDir,   //非快应用项目默认构建目录为dist
     sourceDir: sourceDir,  //默认生成的源码目录
     huawei: false,
+    '360mode': false,
+    typescript: false,
     patchComponents: {}, // 项目中使用的补丁组件
     pluginTags: {},
     plugins: {}

@@ -107,7 +107,8 @@ var manifest: any = {
     },
     display: {
         menu: true,
-        titleBar: true
+        titleBar: true,
+        titleBarBackgroundColor: "#ffffff"
     },
     subpackages: []
       

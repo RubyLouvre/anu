@@ -215,6 +215,8 @@ class P extends React.Component {
                       interval={2500}
                       autoplay={true}
                       displayMultipleItems={3}
+                      previousmargin={"34%"}
+                      nextmargin={"34%"}
                   >
                       {this.state.specialOfferData.map(function(item) {
                           return (

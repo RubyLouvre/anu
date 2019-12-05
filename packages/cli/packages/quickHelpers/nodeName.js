@@ -8,7 +8,7 @@ let rword = /[^, ]+/g;
 let builtInStr = 'div,list,list-item,popup,refresh,richtext,stack,swiper,tab,tab-bar,tab-context,' +
     'a,text,image,progress,rating,' +
     'input,option,picker,select,slider,switch,textarea,' +
-    'video,canvas,web,map';
+    'video,canvas,web,map,marquee';
 let builtIn = {};
 builtInStr.replace(rword, function (el) {
     builtIn[el] = el;

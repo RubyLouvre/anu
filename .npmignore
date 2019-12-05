@@ -7,6 +7,7 @@
 package-lock.json
 node_modules/
 .CACHE/*
+*/__tests__/*
 index*.html
 version.md
 .travis.yml

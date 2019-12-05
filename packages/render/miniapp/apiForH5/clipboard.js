@@ -1,7 +1,7 @@
 import { handleSuccess, handleFail } from "../utils";
 
 /**
- * 设置系统剪贴板的内容
+ * 设置系统剪贴板的内容 https://有, http://没这个API
  * https://w3c.github.io/clipboard-apis/#dom-clipboard-writetext
  */
 function coolieMethod(input, success, fail, complete, method, msg) {

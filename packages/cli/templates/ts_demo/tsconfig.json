@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "jsx": "preserve",
+        "paths": {
+            "@react": [
+                "source/ReactWX.js",
+                "source/ReactAli.js",
+                "source/ReactBu.js",
+                "source/ReactQuick.js",
+                "source/ReactH5.js"
+            ]
+        },
+        "moduleResolution": "node",
+        "module": "es6",
+        "target": "es6",
+        "experimentalDecorators": true
+    }
+}

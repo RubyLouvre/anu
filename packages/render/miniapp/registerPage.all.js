@@ -3,48 +3,50 @@ import { topNodes, noop, get, topFibers } from "react-core/util";
 import {
     delayMounts,
     usingComponents,
-    getWrappedComponent,
     _getApp,
     updateMiniApp,
     callGlobalHook
 } from "./utils";
 import { render } from "react-fiber/scheduleWork";
 import { createElement } from "react-core/createElement";
-import { _getGlobalApp } from "./registerApp.all.js";
+import { _getGlobalApp } from "./registerApp.all";
 
-export function onLoad(PageClass, path, query) {
+export function onLoad(PageClass, path, query, isLoad) {
     var app = _getApp();
-    // 快应用拿不到全局数据，从globalData中取
-    let GlobalApp = _getGlobalApp(app);
-    app.$$pageIsReady = false;
-    app.$$page = this;
-    app.$$pagePath = path;
-    let container = {
+    var container = this.reactContainer || {
         type: "page",
         props: {},
         children: [],
         root: true,
         appendChild: noop
     };
+    // 快应用拿不到全局数据，从globalData中取
+    let GlobalApp = _getGlobalApp(app);
+    app.$$pageIsReady = false; //pageIsReadyg与delayMounts是专门给快应用
+    app.$$page = this;
+    app.$$pagePath = path;
     var pageInstance;
     if (typeof GlobalApp === "function") {
+        this.needReRender = true;
         render(
             createElement(
                 GlobalApp,
                 {},
                 createElement(PageClass, {
                     path: path,
+                    key: path,
                     query: query,
-                    isPageComponent: true,
-                    ref: function(ins) {
-                        if (ins)
-                            pageInstance =
-                                ins.wrappedInstance ||
-                                getWrappedComponent(get(ins), ins);
-                    }
+                    isPageComponent: true
                 })
             ),
-            container
+            container,
+            function() {
+                var fiber = get(this).child;
+                while (!fiber.stateNode.classUid) {
+                    fiber = fiber.child;
+                }
+                pageInstance = fiber.stateNode;
+            }
         );
     } else {
         pageInstance = render(
@@ -57,7 +59,9 @@ export function onLoad(PageClass, path, query) {
             container
         );
     }
-    callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
+    if (isLoad) {
+        callGlobalHook("onGlobalLoad"); //调用全局onLoad方法
+    }
     this.reactContainer = container;
     this.reactInstance = pageInstance;
     pageInstance.wx = this; //保存小程序的页面对象
@@ -104,5 +108,5 @@ export function onUnload() {
         );
     }
     callGlobalHook("onGlobalUnload");
-    //this.reactInstance = null;
+    this.reactContainer = null;
 }

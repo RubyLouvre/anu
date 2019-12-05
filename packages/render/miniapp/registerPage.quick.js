@@ -1,4 +1,4 @@
-import { emptyObject } from 'react-core/util'
+import { emptyObject,noop } from 'react-core/util'
 import { dispatchEvent } from './eventSystem.quick'
 import { onLoad, onUnload, onReady } from './registerPage.all'
 import {  _getApp } from './utils'
@@ -83,7 +83,7 @@ export function registerPage(PageClass, path) {
         dispatchEvent,
         onInit() {
             let app = this.$app;
-            let instance = onLoad.call(this, PageClass, path, getQuery(this, duplicate));
+            let instance = onLoad.call(this, PageClass, path, getQuery(this, duplicate), true);
             let pageConfig = PageClass.config || instance.config || emptyObject;
             app.$$pageConfig = Object.keys(pageConfig).length ?
                 pageConfig :
@@ -96,11 +96,14 @@ export function registerPage(PageClass, path) {
         config[pageHook] = function(e) {
             let instance = this.reactInstance,
                 app = _getApp(),
-                param = e
+                query = e
             if (pageHook === 'onShow') {
-                param = instance.props.query = getQuery(this, duplicate);
+                query = instance.props.query = getQuery(this, duplicate);
                 app.$$page = instance.wx;
-                app.$$pagePath = instance.props.path;
+                var path = app.$$pagePath = instance.props.path;
+                if(this.needReRender){
+                    onLoad.call(this, PageClass, path, query);
+                }
             } else if (pageHook === 'onMenuPress') {
                 app.onShowMenu && app.onShowMenu(instance, this.$app);
                 return
@@ -110,7 +113,7 @@ export function registerPage(PageClass, path) {
                 }
                 getCurrentPages().pop();
             }
-            return registerPageHook(appHooks,  pageHook,  app, instance, param);
+            return registerPageHook(appHooks,  pageHook,  app, instance, query);
         }
     })
     return config

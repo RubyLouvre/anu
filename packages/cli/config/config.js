@@ -26,6 +26,7 @@ var Platforms;
     Platforms["tt"] = "tt";
     Platforms["quick"] = "quick";
     Platforms["h5"] = "h5";
+    Platforms["QIHOO"] = "360";
 })(Platforms || (Platforms = {}));
 const config = {
     wx: {
@@ -33,7 +34,9 @@ const config = {
         styleExt: 'wxss',
         xmlExt: 'wxml',
         helpers: 'wxHelpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     qq: {
@@ -49,7 +52,9 @@ const config = {
         styleExt: 'acss',
         xmlExt: 'axml',
         helpers: 'aliHelpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     bu: {
@@ -57,13 +62,25 @@ const config = {
         styleExt: 'css',
         xmlExt: 'swan',
         helpers: 'buHelpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     h5: {
         libName: 'ReactH5',
         helpers: 'h5Helpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
+        disabledTitleBarPages: new Set()
+    },
+    '360': {
+        libName: 'ReactH5',
+        helpers: 'h5Helpers',
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     quick: {
@@ -94,6 +111,8 @@ const config = {
     buildDir: buildDir,
     sourceDir: sourceDir,
     huawei: false,
+    '360mode': false,
+    typescript: false,
     patchComponents: {},
     pluginTags: {},
     plugins: {}

@@ -2,6 +2,7 @@
 import { NANACHI_CONFIG_PATH } from '../../consts/index';
 import * as fs from 'fs-extra';
 import nanachi from '../../index';
+import config from '../../config/config';
 const { deepMerge } = require('../../packages/utils/index');
 
 interface BulidOptions {
@@ -12,8 +13,14 @@ interface BulidOptions {
 
 export default async function(args: BulidOptions){
     try {
-        const { buildType, beta, betaUi, watch, compress, huawei, analysis, silent} = args;
+        const { beta, betaUi, watch, compress, huawei, analysis, silent, typescript} = args;
+        let { buildType } = args;
         const nanachiConfig = {};
+        // 360补丁
+        if (buildType === '360') {
+            buildType = 'h5';
+            config['360mode'] = true;
+        }
         const baseConfig = {
             platform: buildType,
             beta,
@@ -22,7 +29,8 @@ export default async function(args: BulidOptions){
             watch,
             huawei,
             analysis,
-            silent
+            silent,
+            typescript
         };
         // 合并nanachi.config.js中的用户自定义配置
         if (fs.existsSync(NANACHI_CONFIG_PATH)) {

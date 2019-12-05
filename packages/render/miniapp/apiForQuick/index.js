@@ -34,7 +34,7 @@ import {
     getDeviceId,
     getUserId
 } from './device.js';
-import { chooseImage } from './media.js';
+import { chooseImage, previewImage } from './media.js';
 import { createShortcut, hasInstalled, shortcutInstall } from './shortcut.js';
 import {getPushProvider, subscribe, unsubscribe, pushOn, pushOff} from './push.js';
 import { 
@@ -51,6 +51,7 @@ import { share } from './share';
 import { createCanvasContext } from './canvas.js';
 
 import { pay, getProvider, wxpayGetType, wxpay, alipay} from './pay.js';
+import {accountGetProvider, accountAuthorize} from './account.js';
 function stopPullDownRefresh({success, fail, complete } = {}) {
     // 停止刷新没有作用
     runCallbacks(Number, success, fail, complete );
@@ -119,6 +120,7 @@ export var facade = {
     onNetworkStatusChange,
     getSystemInfo,
     chooseImage,
+    previewImage,
     //设置标题
     setNavigationBarTitle,
     createCanvasContext,
@@ -140,6 +142,8 @@ export function more(){
         wxpay, 
         alipay,
         getDeviceId,
-        getUserId
+        getUserId,
+        accountGetProvider, 
+        accountAuthorize
     };
 } 

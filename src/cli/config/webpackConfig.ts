@@ -9,6 +9,8 @@ import * as path from 'path';
 import webpack from 'webpack';
 const utils = require('../packages/utils/index');
 import { intermediateDirectoryName } from './h5/configurations';
+import quickAPIList from '../consts/quickAPIList';
+import config from './config';
 //各种loader
 //生成文件
 const fileLoader = require.resolve('../nanachi-loader/loaders/fileLoader');
@@ -26,6 +28,12 @@ const nanachiStyleLoader  = require.resolve('../nanachi-loader/loaders/nanachiSt
 
 const cwd = process.cwd();
 
+const H5AliasList = ['react','@react','react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/];
+
+const isChaikaMode = function() {
+    return process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
+}
+
 export default function({
     platform,
     compress,
@@ -34,10 +42,19 @@ export default function({
     rules,
     huawei,
     analysis,
+    typescript,
     prevLoaders, // 自定义预处理loaders
     postLoaders, // 自定义后处理loaders
+    prevJsLoaders,
+    postJsLoaders,
+    prevCssLoaders,
+    postCssLoaders,
     // maxAssetSize // 资源大小限制，超出后报warning
 }: NanachiOptions): webpack.Configuration {
+    let externals: Array<string|RegExp> = quickAPIList; // 编译时忽略的模块
+    if (platform === 'h5') {
+        externals.push(...H5AliasList);
+    }
     
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
     let distPath = path.resolve(cwd, utils.getDistName(platform));
@@ -69,12 +86,13 @@ export default function({
         to: 'assets',
         context: 'source/assets',
         ignore: [
-            '**/*.@(js|jsx|json|sass|scss|less|css)'
+            '**/*.@(js|jsx|json|sass|scss|less|css|ts|tsx)'
         ],
         ...copyPluginOption // 压缩图片配置
     }];
+    
     const mergePlugins = [].concat( 
-        new ChaikaPlugin(),
+        isChaikaMode() ? [ new ChaikaPlugin() ] : [],
         analysis ? new SizePlugin() : [],
         new NanachiWebpackPlugin({
             platform,
@@ -85,11 +103,12 @@ export default function({
 
     const mergeRule = [].concat(
         {
-            test: /\.jsx?$/,
+            test: /\.[jt]sx?$/,
             //loader是从后往前处理
             use: [].concat(
                 fileLoader, 
                 postLoaders, 
+                postJsLoaders,
                 platform !== 'h5' ? aliasLoader: [], 
                 nanachiLoader,
                 {
@@ -101,6 +120,13 @@ export default function({
                         useEslintrc: false // 不使用用户自定义eslintrc配置
                     }
                 },
+                typescript ? {
+                    loader: require.resolve('ts-loader'),
+                    options: {
+                        context: path.resolve(cwd)
+                    }
+                } : [],
+                prevJsLoaders,
                 prevLoaders ) ,
             exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,
         },
@@ -118,8 +144,10 @@ export default function({
             use: [].concat(
                 fileLoader, 
                 postLoaders, 
+                postCssLoaders,
                 platform !== 'h5' ? aliasLoader : [], 
                 nanachiStyleLoader,
+                prevCssLoaders,
                 prevLoaders)
         },
         {
@@ -146,7 +174,7 @@ export default function({
                      widgets?: any;
                  }
              } = {};
-             process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+             isChaikaMode()
                  ? quickConfig = require(path.join(cwd, '.CACHE/nanachi/source', 'quickConfig.json'))
                  : quickConfig = require(path.join(cwd, 'source', 'quickConfig.json'));
             if (huawei) {
@@ -183,9 +211,11 @@ export default function({
             // eslint-disable-next-line
         }
     }
-    const entry = process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+    let entry = isChaikaMode()
         ? path.join(cwd, '.CACHE/nanachi/source/app')
         : path.join(cwd, 'source/app');
+
+    if (typescript) { entry += '.tsx' };
     return {
         entry: entry,
         mode: 'development',
@@ -199,6 +229,7 @@ export default function({
         plugins: mergePlugins,
         resolve: {
             alias: aliasMap,
+            extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
             mainFields: ['main'],
             symlinks: true,
             modules: [
@@ -208,7 +239,7 @@ export default function({
         watchOptions: {
             ignored: /node_modules|dist/
         },
-        externals: platform === 'h5' ? ['react','@react','react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/] : []
+        externals
         // performance: {
         //     hints: 'warning',
         //     assetFilter(filename) {

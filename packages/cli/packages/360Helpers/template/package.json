@@ -1,0 +1,13 @@
+{
+  "name": "aaa",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "builder watch",
+    "build": "builder build"
+  },
+  "devDependencies": {
+    "@qihoo/seapp-builder": "^0.1.0",
+    "@qihoo/vue-cli-plugin-mpqh": "latest"
+  }
+}

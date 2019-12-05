@@ -18,6 +18,7 @@ const copy_webpack_plugin_1 = __importDefault(require("copy-webpack-plugin"));
 const path = __importStar(require("path"));
 const utils = require('../packages/utils/index');
 const configurations_1 = require("./h5/configurations");
+const quickAPIList_1 = __importDefault(require("../consts/quickAPIList"));
 const fileLoader = require.resolve('../nanachi-loader/loaders/fileLoader');
 const aliasLoader = require.resolve('../nanachi-loader/loaders/aliasLoader');
 const nanachiLoader = require.resolve('../nanachi-loader/loaders/nanachiLoader');
@@ -25,7 +26,15 @@ const nodeLoader = require.resolve('../nanachi-loader/loaders/nodeLoader');
 const reactLoader = require.resolve('../nanachi-loader/loaders/reactLoader');
 const nanachiStyleLoader = require.resolve('../nanachi-loader/loaders/nanachiStyleLoader');
 const cwd = process.cwd();
-function default_1({ platform, compress, compressOption, plugins, rules, huawei, analysis, prevLoaders, postLoaders, }) {
+const H5AliasList = ['react', '@react', 'react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/];
+const isChaikaMode = function () {
+    return process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
+};
+function default_1({ platform, compress, compressOption, plugins, rules, huawei, analysis, typescript, prevLoaders, postLoaders, prevJsLoaders, postJsLoaders, prevCssLoaders, postCssLoaders, }) {
+    let externals = quickAPIList_1.default;
+    if (platform === 'h5') {
+        externals.push(...H5AliasList);
+    }
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
     let distPath = path.resolve(cwd, utils.getDistName(platform));
     if (platform === 'h5') {
@@ -47,15 +56,15 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
             use: [].concat(fileLoader, postLoaders, aliasLoader, nodeLoader)
         }];
     const copyAssetsRules = [Object.assign({ from: '**', to: 'assets', context: 'source/assets', ignore: [
-                '**/*.@(js|jsx|json|sass|scss|less|css)'
+                '**/*.@(js|jsx|json|sass|scss|less|css|ts|tsx)'
             ] }, copyPluginOption)];
-    const mergePlugins = [].concat(new chaikaPlugin_1.default(), analysis ? new sizePlugin_1.default() : [], new plugin_1.default({
+    const mergePlugins = [].concat(isChaikaMode() ? [new chaikaPlugin_1.default()] : [], analysis ? new sizePlugin_1.default() : [], new plugin_1.default({
         platform,
         compress
     }), new copy_webpack_plugin_1.default(copyAssetsRules), plugins);
     const mergeRule = [].concat({
-        test: /\.jsx?$/,
-        use: [].concat(fileLoader, postLoaders, platform !== 'h5' ? aliasLoader : [], nanachiLoader, {
+        test: /\.[jt]sx?$/,
+        use: [].concat(fileLoader, postLoaders, postJsLoaders, platform !== 'h5' ? aliasLoader : [], nanachiLoader, {
             loader: require.resolve('eslint-loader'),
             options: {
                 configFile: require.resolve(`./eslint/.eslintrc-${platform}.js`),
@@ -63,14 +72,19 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
                 allowInlineConfig: false,
                 useEslintrc: false
             }
-        }, prevLoaders),
+        }, typescript ? {
+            loader: require.resolve('ts-loader'),
+            options: {
+                context: path.resolve(cwd)
+            }
+        } : [], prevJsLoaders, prevLoaders),
         exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,
     }, platform !== 'h5' ? nodeRules : [], {
         test: /React\w+/,
         use: [].concat(fileLoader, postLoaders, nodeLoader, reactLoader),
     }, {
         test: /\.(s[ca]ss|less|css)$/,
-        use: [].concat(fileLoader, postLoaders, platform !== 'h5' ? aliasLoader : [], nanachiStyleLoader, prevLoaders)
+        use: [].concat(fileLoader, postLoaders, postCssLoaders, platform !== 'h5' ? aliasLoader : [], nanachiStyleLoader, prevCssLoaders, prevLoaders)
     }, {
         test: /\.(jpg|png|gif)$/,
         loader: require.resolve('file-loader'),
@@ -83,7 +97,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         mergePlugins.push(new quickPlugin_1.default());
         try {
             var quickConfig = {};
-            process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+            isChaikaMode()
                 ? quickConfig = require(path.join(cwd, '.CACHE/nanachi/source', 'quickConfig.json'))
                 : quickConfig = require(path.join(cwd, 'source', 'quickConfig.json'));
             if (huawei) {
@@ -110,9 +124,13 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         catch (err) {
         }
     }
-    const entry = process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+    let entry = isChaikaMode()
         ? path.join(cwd, '.CACHE/nanachi/source/app')
         : path.join(cwd, 'source/app');
+    if (typescript) {
+        entry += '.tsx';
+    }
+    ;
     return {
         entry: entry,
         mode: 'development',
@@ -126,6 +144,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         plugins: mergePlugins,
         resolve: {
             alias: aliasMap,
+            extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
             mainFields: ['main'],
             symlinks: true,
             modules: [
@@ -135,7 +154,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         watchOptions: {
             ignored: /node_modules|dist/
         },
-        externals: platform === 'h5' ? ['react', '@react', 'react-dom', 'react-loadable', '@qunar-default-loading', '@dynamic-page-loader', /^@internalComponents/] : []
+        externals
     };
 }
 exports.default = default_1;

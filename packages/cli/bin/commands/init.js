@@ -3,10 +3,11 @@
 输出命令行提示与选择模板
 */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -63,7 +64,7 @@ function outputLog({ appName, appPath }) {
                    \t或使用nanachi watch:ali 构建支付宝小程序
                    \t或使用nanachi watch:tt 构建头条小程序
                    \t或使用nanachi watch:quick 构建快应用
-                   \t或使用nanachi watch:quick --huawei 构建快应用
+                   \t或使用nanachi watch:quick --huawei 构建华为快应用
                    \t或使用nanachi watch:bu 构建百度智能小程序
                    \t或使用nanachi watch:qq 构建QQ小程序
                    \t或使用nanachi watch:h5 构建h5`);
@@ -73,10 +74,11 @@ function outputLog({ appName, appPath }) {
                    \t或使用nanachi build:ali 构建支付宝小程序
                    \t或使用nanachi build:tt 构建头条小程序
                    \t或使用nanachi build:quick 构建快应用
-                   \t或使用nanachi build:quick --huawei 构建快应用
+                   \t或使用nanachi build:quick --huawei 构建华为快应用
                    \t或使用nanachi build:bu 构建百度智能小程序
                    \t或使用nanachi build:qq 构建QQ小程序
-                   \t或使用nanachi build:h5 构建h5`);
+                   \t或使用nanachi build:h5 构建h5
+                   \t或使用nanachi build:360 构建360小程序`);
     console.log();
     console.log(chalk_1.default.magenta('请敲入下面两行命令，享受您的开发之旅' +
         chalk_1.default.magenta.bold('(npm i可改成yarn)')));

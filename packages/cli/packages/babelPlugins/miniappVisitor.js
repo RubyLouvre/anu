@@ -116,6 +116,20 @@ const visitor = {
             }
         }
     },
+    VariableDeclaration: {
+        enter(astPath) {
+            const decl = astPath.get('declarations')[0];
+            if (config_1.default.typescript &&
+                astPath.parent.type === 'Program' &&
+                decl.type === 'VariableDeclarator' &&
+                decl.get('init').type === 'ClassExpression') {
+                const body = decl.get('init').get('body').node;
+                const id = decl.get('init').get('id').node;
+                const superClass = decl.get('init').get('superClass').node;
+                astPath.replaceWith(t.classDeclaration(id, superClass, body));
+            }
+        }
+    },
     FunctionDeclaration: {
         exit(astPath, state) {
             let modules = utils_1.default.getAnu(state);
@@ -235,6 +249,20 @@ const visitor = {
                 }
                 else {
                     relPath = path.relative(path.resolve(cwd, 'source'), modules.sourcePath);
+                }
+                if (/app\.js/.test(relPath)) {
+                    const ignoreAppJsonProp = ['window', 'tabBar', 'pages', 'subpackages', 'preloadRule'];
+                    let xConfigJson = {};
+                    try {
+                        xConfigJson = require(path.join(process.cwd(), 'source', `${buildType}Config.json`));
+                    }
+                    catch (err) {
+                    }
+                    Object.keys(xConfigJson).forEach((key) => {
+                        if (!ignoreAppJsonProp.includes(key)) {
+                            json[key] = xConfigJson[key];
+                        }
+                    });
                 }
                 modules.queue.push({
                     path: relPath,

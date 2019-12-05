@@ -110,7 +110,8 @@ var manifest = {
     },
     display: {
         menu: true,
-        titleBar: true
+        titleBar: true,
+        titleBarBackgroundColor: "#ffffff"
     },
     subpackages: []
 };

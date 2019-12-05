@@ -21,6 +21,10 @@ const BUILD_OPTIONS = {
     'silent': {
         alias: 's',
         desc: '关闭eslint warning'
+    },
+    'typescript': {
+        alias: 't',
+        desc: '开启typescript编译'
     }
 };
 exports.default = BUILD_OPTIONS;

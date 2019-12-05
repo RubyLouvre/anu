@@ -1,5 +1,6 @@
 import webpack from 'webpack';
 import * as path from 'path';
+import * as fs from 'fs-extra';
 import platforms from './consts/platforms';
 import { build as buildLog, Log, warning, error } from './packages/utils/logger/queue';
 import { errorLog, warningLog } from './packages/utils/logger/index';
@@ -12,6 +13,8 @@ import globalConfig from './config/config';
 import runBeforeParseTasks from './tasks/runBeforeParseTasks';
 import createH5Server from './tasks/createH5Server';
 import { validatePlatforms } from './config/config';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
+import { intermediateDirectoryName } from './config/h5/configurations';
 
 export interface NanachiOptions {
     watch?: boolean;
@@ -20,9 +23,14 @@ export interface NanachiOptions {
     betaUi?: boolean;
     compress?: boolean;
     compressOption?: any;
+    typescript?: boolean;
     huawei?: boolean;
     rules?: Array<webpack.Rule>;
     prevLoaders?: Array<string>;
+    prevJsLoaders?: Array<string>;
+    postJsLoaders?: Array<string>;
+    prevCssLoaders?: Array<string>;
+    postCssLoaders?: Array<string>;
     postLoaders?: Array<string>;
     plugins?: Array<webpack.Plugin>;
     analysis?: boolean;
@@ -30,28 +38,34 @@ export interface NanachiOptions {
     complete?: Function;
 }
 
-async function nanachi({
-    // entry = './source/app', // TODO: 入口文件配置暂时不支持
-    watch = false,
-    platform = 'wx',
-    beta = false,
-    betaUi = false,
-    compress = false,
-    compressOption = {},
-    huawei = false,
-    rules = [],
-    prevLoaders = [], // 自定义预处理loaders
-    postLoaders = [], // 自定义后处理loaders
-    plugins = [],
-    analysis = false,
-    silent = false, // 是否显示warning
-    // maxAssetSize = 20480, // 最大资源限制，超出报warning
-    complete = () => { }
-}: NanachiOptions = {}) {
+async function nanachi(options: NanachiOptions = {}) {
+    const {
+        // entry = './source/app', // TODO: 入口文件配置暂时不支持
+        watch = false,
+        platform = 'wx',
+        beta = false,
+        betaUi = false,
+        compress = false,
+        compressOption = {},
+        huawei = false,
+        typescript = false,
+        rules = [],
+        prevLoaders = [], // 自定义预处理loaders
+        postLoaders = [], // 自定义后处理loaders
+        prevJsLoaders = [],
+        postJsLoaders = [],
+        prevCssLoaders = [],
+        postCssLoaders = [],
+        plugins = [],
+        analysis = false,
+        silent = false, // 是否显示warning
+        // maxAssetSize = 20480, // 最大资源限制，超出报warning
+        complete = () => { }
+    } = options;
     function callback(err: Error, stats?: webpack.Stats) {
         if (err) {
             // eslint-disable-next-line
-            console.log(err);
+            console.log(chalk.red(err.toString()));
             return;
         }
        
@@ -79,11 +93,37 @@ async function nanachi({
         if (platform === 'h5') {
             const configPath = watch ? './config/h5/webpack.config.js' : './config/h5/webpack.config.prod.js';
             const webpackH5Config = require(configPath);
+            if (typescript) webpackH5Config.entry += '.tsx';
+            if (globalConfig['360mode']) {
+                webpackH5Config.plugins.unshift(new CopyWebpackPlugin([{
+                    from: '**',
+                    to: path.resolve(process.cwd(), 'src'),
+                    context: path.resolve(__dirname, './packages/360helpers/template')
+                }]));
+            }
             const compilerH5 = webpack(webpackH5Config);
             if (watch) {
                 createH5Server(compilerH5);
             } else {
                 compilerH5.run(function(err, stats) {
+                    if (globalConfig['360mode']) {
+                        const appPath = path.resolve(process.cwd(), 'src/app.js');
+                        let script = fs.readFileSync(appPath).toString();
+                        // 动态给app.js添加import语句，将h5的jsbundle打包进来
+                        script = `import './dist/web/bundle.${stats.hash.slice(0, 10)}.js';\n${script}`;
+                        fs.writeFileSync(appPath, script, 'utf-8');
+                        // copy h5打包产物
+                        const files = fs.readdirSync(webpackH5Config.output.path);
+                        fs.ensureDirSync(path.resolve(process.cwd(), './src/dist/web'));
+                        files.forEach(filename => {
+                            if (filename !== intermediateDirectoryName) {
+                                fs.copySync(
+                                    path.resolve(webpackH5Config.output.path, filename),
+                                    path.resolve(process.cwd(), './src/dist/web', filename)
+                                )
+                            }
+                        });
+                    }
                     if (err) {
                         console.log(err);
                         return;
@@ -113,14 +153,23 @@ async function nanachi({
         complete(err, stats);
     }
     try {
+        // 360不支持watch模式
+        if (watch && globalConfig['360mode']) {
+            throw new Error('360编译不支持watch模式');
+        }
         if (!utils.validatePlatform(platform, platforms)) {
             throw new Error(`不支持的platform：${platform}`);
         }
-
+        // 是否使用typescript编译
+        const useTs = fs.existsSync(path.resolve(process.cwd(), './source/app.tsx'));
+        if (useTs && !typescript) {
+            throw '检测到app.tsx，请使用typescript模式编译(-t/--typescript)';
+        }
         injectBuildEnv({
             platform,
             compress,
-            huawei
+            huawei,
+            typescript
         });
 
         getWebViewRules();
@@ -139,14 +188,18 @@ async function nanachi({
             beta,
             betaUi,
             plugins,
+            typescript,
             analysis,
             prevLoaders,
             postLoaders,
+            prevJsLoaders,
+            postJsLoaders,
+            prevCssLoaders,
+            postCssLoaders,
             rules,
             huawei
             // maxAssetSize
         });
-
         const compiler = webpack(webpackConfig);
 
         if (watch) {
@@ -159,10 +212,11 @@ async function nanachi({
     }
 }
 
-function injectBuildEnv({ platform, compress, huawei }: NanachiOptions) {
+function injectBuildEnv({ platform, compress, huawei, typescript }: NanachiOptions) {
     process.env.ANU_ENV = (platform === 'h5' ? 'web' : platform);
     globalConfig['buildType'] = platform;
     globalConfig['compress'] = compress;
+    globalConfig['typescript'] = typescript;
     if (platform === 'quick') {
         globalConfig['huawei'] = huawei || false;
     }

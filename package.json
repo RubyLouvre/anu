@@ -1,6 +1,6 @@
 {
   "name": "anujs",
-  "version": "1.5.10",
+  "version": "1.6.0",
   "description": "a React16-compact mini framework",
   "main": "dist/React.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "tsc && rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
-    "mp": "tsc && rollup -c ./scripts/build/rollup.wx.js && rollup -c ./scripts/build/rollup.ali.js  &&rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.quick.js  && rollup -c ./scripts/build/rollup.h5.js",
+    "mp": "tsc && rollup -c ./scripts/build/rollup.wx.js && rollup -c ./scripts/build/rollup.ali.js && rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.quick.js  && rollup -c ./scripts/build/rollup.h5.js",
     "ts": "rollup -c ./scripts/build/rollup.ts.js",
     "noop": "rollup -c ./scripts/build/rollup.noop.js",
     "buildIE": "webpack --config ./scripts/build/buildIE.js",
@@ -200,11 +200,5 @@
     "@rematch/core": "^1.0.0-alpha.9",
     "html-minifier": "^3.5.20",
     "semver": "^5.5.1"
-  },
-  "mpreact": {
-    "alias": {
-      "@react": "../../../../dist/ReactWXTest.js",
-      "@components": "src/components"
-    }
   }
 }

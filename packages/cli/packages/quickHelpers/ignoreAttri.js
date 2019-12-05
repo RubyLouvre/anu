@@ -80,6 +80,14 @@ const attributes = {
         rules: ['show-center-play-btn', 'objectfit,show-play-btn', 'direction']
     },
     textarea: {
-        rules: ['placeholder-class', 'show-confirm-bar', 'focus', 'value', 'cursor-spacing']
+        rules: ['placeholder-class', 'show-confirm-bar', 'focus', 'value', 'cursor-spacing'],
+        ruleFunc: function (props, node) {
+            if (config_1.default.huawei) {
+                if (props === 'onlinechange') {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 };

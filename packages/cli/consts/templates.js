@@ -18,6 +18,10 @@ const templates = [
         value: 'helloNanachi'
     },
     {
+        name: 'typescript模板',
+        value: 'ts_demo'
+    },
+    {
         name: 'redux',
         value: 'redux'
     },
