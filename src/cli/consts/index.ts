@@ -17,8 +17,7 @@ export const MAP: {
     [propsName: string]: {
         EXT_NAME: {
             [extName: string]: string;
-        },
-        patchComponents: Array<string>;
+        }
     }
 } = {
     'wx': {
@@ -29,8 +28,7 @@ export const MAP: {
             'less': 'wxss',
             'html': 'wxml',
             'jsx': 'js',
-        },
-        patchComponents: []
+        }
     },
     'qq': {
         EXT_NAME: {
@@ -40,8 +38,7 @@ export const MAP: {
             'less': 'qss',
             'html': 'qml',
             'jsx': 'js',
-        },
-        patchComponents: []
+        }
     },
     'ali': {
         EXT_NAME: {
@@ -51,10 +48,7 @@ export const MAP: {
             'less': 'acss',
             'html': 'axml',
             'jsx': 'js',
-        },
-        patchComponents: [
-            'rich-text' //年前还不支持这标签 https://docs.alipay.com/mini/component/rich-text
-        ]
+        }
     },
     'bu': {
         EXT_NAME: {
@@ -64,8 +58,7 @@ export const MAP: {
             'less': 'css',
             'html': 'swan',
             'jsx': 'js',
-        },
-        patchComponents: []
+        }
     },
     'tt': {
         EXT_NAME: {
@@ -75,8 +68,7 @@ export const MAP: {
             'less': 'ttss',
             'html': 'ttml',
             'jsx': 'js',
-        },
-        patchComponents: []
+        }
     },
     'quick': {
         EXT_NAME: {
@@ -84,8 +76,7 @@ export const MAP: {
             'scss': 'css',
             'sass': 'css',
             'less': 'css'
-        },
-        patchComponents: ['radio', 'radio-group', 'checkbox', 'checkbox-group', 'label', 'navigator', 'picker']
+        }
     },
     'h5': {
         EXT_NAME: {
@@ -93,8 +84,7 @@ export const MAP: {
             'scss': 'css',
             'sass': 'css',
             'less': 'css'
-        },
-        patchComponents: []
+        }
     },
     '360': {
         EXT_NAME: {
@@ -102,8 +92,7 @@ export const MAP: {
             'scss': 'css',
             'sass': 'css',
             'less': 'css'
-        },
-        patchComponents: []
+        }
     }
 };
 
