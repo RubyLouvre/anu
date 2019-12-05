@@ -22,15 +22,7 @@ function useEffect(create, deps) {
 function useLayoutEffect(create, deps) {
     return useEffectImpl(create, deps, HOOK, "layout", "unlayout");
 }
-/*
-function useMemo(create, deps) {
-    return useCallbackImpl(create, deps, true);
-}
 
-function useCallback(create, deps) {
-    return useCallbackImpl(create, deps);
-}
-*/
 export {
     useState,
     useReducer,

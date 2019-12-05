@@ -50,24 +50,6 @@ export function useReducerImpl(reducer, initValue, initAction) {//ok
     let value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
     return [value, dispatch];
 }
-//useCallbackOrMemo, 用来存放 方法与参数
-export function useCallbackImpl(create, deps, isMemo, isEffect) {//ok
-    let fiber = getCurrentFiber();
-    let key = getCurrentKey();
-    let updateQueue = fiber.updateQueue;
-
-    let nextInputs = Array.isArray(deps) ? deps : [create];
-    let prevState = updateQueue[key];
-    if (prevState) {
-        let prevInputs = prevState[1];
-        if (areHookInputsEqual(nextInputs, prevInputs)) {
-            return isEffect ? null : prevState[0];
-        }
-    }
-    var fn = isMemo ? create() : create;
-    updateQueue[key] = [fn, nextInputs];
-    return fn;
-}
 
 //useMemo用来记录create的返回值 
 //useMemo的deps，如果不写总是执行， 如果为空数组则只执行一次，如果数组有值，变化才执行新的
@@ -120,8 +102,6 @@ export function useRef(initValue) {//ok
 }
 
 export function useImperativeHandle(ref, create, deps) {
-    const nextInputs = Array.isArray(deps) ? deps.concat([ref])
-        : [ref, create];
     useEffectImpl(() => {
         if (isFn(ref)) {
             const refCallback = ref;
@@ -136,7 +116,7 @@ export function useImperativeHandle(ref, create, deps) {
                 refObject.current = null;
             };
         }
-    }, nextInputs, HOOK, 'layout', 'unlayout');
+    }, deps, HOOK, 'layout', 'unlayout');
 }
 
 function getCurrentFiber() {

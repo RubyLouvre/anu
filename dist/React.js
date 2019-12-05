@@ -778,7 +778,6 @@
         return updateQueue[key] = { current: initValue };
     }
     function useImperativeHandle(ref, create, deps) {
-        var nextInputs = Array.isArray(deps) ? deps.concat([ref]) : [ref, create];
         useEffectImpl(function () {
             if (isFn(ref)) {
                 var refCallback = ref;
@@ -795,7 +794,7 @@
                     refObject.current = null;
                 };
             }
-        }, nextInputs, HOOK, 'layout', 'unlayout');
+        }, deps, HOOK, 'layout', 'unlayout');
     }
     function getCurrentFiber() {
         return get(Renderer.currentOwner);
