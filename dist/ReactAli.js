@@ -1,5 +1,5 @@
 /**
- * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-12-03
+ * 运行于支付宝小程序的React by 司徒正美 Copyright 2019-12-05
  */
 
 var arrayPush = Array.prototype.push;

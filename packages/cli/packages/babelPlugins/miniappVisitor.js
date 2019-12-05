@@ -484,6 +484,7 @@ const visitor = {
                 }
             }
             if (buildType === 'quick') {
+                ignoreAttri(astPath, nodeName);
             }
             if (bag) {
                 try {

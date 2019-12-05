@@ -6,7 +6,6 @@ export declare const MAP: {
         EXT_NAME: {
             [extName: string]: string;
         };
-        patchComponents: Array<string>;
     };
 };
 export declare const NANACHI_CONFIG_PATH: string;

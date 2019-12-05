@@ -27,8 +27,7 @@ exports.MAP = {
             'less': 'wxss',
             'html': 'wxml',
             'jsx': 'js',
-        },
-        patchComponents: []
+        }
     },
     'qq': {
         EXT_NAME: {
@@ -38,8 +37,7 @@ exports.MAP = {
             'less': 'qss',
             'html': 'qml',
             'jsx': 'js',
-        },
-        patchComponents: []
+        }
     },
     'ali': {
         EXT_NAME: {
@@ -49,10 +47,7 @@ exports.MAP = {
             'less': 'acss',
             'html': 'axml',
             'jsx': 'js',
-        },
-        patchComponents: [
-            'rich-text'
-        ]
+        }
     },
     'bu': {
         EXT_NAME: {
@@ -62,8 +57,7 @@ exports.MAP = {
             'less': 'css',
             'html': 'swan',
             'jsx': 'js',
-        },
-        patchComponents: []
+        }
     },
     'tt': {
         EXT_NAME: {
@@ -73,8 +67,7 @@ exports.MAP = {
             'less': 'ttss',
             'html': 'ttml',
             'jsx': 'js',
-        },
-        patchComponents: []
+        }
     },
     'quick': {
         EXT_NAME: {
@@ -82,8 +75,7 @@ exports.MAP = {
             'scss': 'css',
             'sass': 'css',
             'less': 'css'
-        },
-        patchComponents: ['radio', 'radio-group', 'checkbox', 'checkbox-group', 'label', 'navigator', 'picker']
+        }
     },
     'h5': {
         EXT_NAME: {
@@ -91,8 +83,7 @@ exports.MAP = {
             'scss': 'css',
             'sass': 'css',
             'less': 'css'
-        },
-        patchComponents: []
+        }
     },
     '360': {
         EXT_NAME: {
@@ -100,8 +91,7 @@ exports.MAP = {
             'scss': 'css',
             'sass': 'css',
             'less': 'css'
-        },
-        patchComponents: []
+        }
     }
 };
 exports.NANACHI_CONFIG_PATH = path.resolve(cwd, 'nanachi.config.js');
