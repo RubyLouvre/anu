@@ -1,7 +1,6 @@
 import template from '@babel/template';
 import * as t from '@babel/types';
 import { Node, NodePath, PluginObj } from '@babel/core';
-
 const importedPagesTemplatePrefixCode: any = template(`
 import ReactDOM from 'react-dom';
 import PageWrapper from '@internalComponents/PageWrapper';
@@ -36,7 +35,7 @@ const pageWrapper: any = template(`
 `, {
     plugins: ['jsx']
 })();
-let CLASS_NAME = 'Global';
+let CLASS_NAME = 'global';
 
 const temp = `window.addEventListener('popstate', function ({
     state
@@ -44,7 +43,7 @@ const temp = `window.addEventListener('popstate', function ({
     const pages = React.getCurrentPages();
     const pathname = state.url.split('?')[0];
     const index = pages.findIndex(page => page.props.path === pathname );
-    if (!CLASS_NAME.config.pages.includes(pathname)) {
+    if (CLASS_NAME.config.pages.includes(pathname)) {
         React.api.navigateBack({
           delta: 1
         });
@@ -68,7 +67,7 @@ const temp = `window.addEventListener('popstate', function ({
 });
 React.registerApp(this);
 this.onLaunch();
-Global.config.pages.forEach((path) => {
+CLASS_NAME.config.pages.forEach((path) => {
     React.registerPage(
         Loadable({
             loader: () => import("." + path),
@@ -159,6 +158,7 @@ module.exports = function(): PluginObj {
                 //     (astPath.get('value') as NodePath<t.ObjectExpression>).node.properties.push(t.objectProperty(t.identifier('pages'), importedPages));
                 // }
             },
+
             ClassBody: {
                 exit(astPath) {
                     registerTemplate += `const pathname = location.pathname.replace(/^\\/web/, '');
@@ -239,7 +239,9 @@ module.exports = function(): PluginObj {
                 if (
                     (astPath.get('object') as any).node.name === CLASS_NAME &&
                     (astPath.get('property') as any).node.name === 'config' &&
-                    (astPath.parent as any).right.type === 'ObjectExpression'
+                    (
+                        (astPath.parent as any).right && (astPath.parent as any).right.type === 'ObjectExpression'
+                    )
                 ) {
                     astPath.parentPath.traverse({
                         ObjectProperty: (property: any) => {

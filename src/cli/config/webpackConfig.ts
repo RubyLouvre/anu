@@ -61,6 +61,7 @@ export default function({
     if (platform === 'h5') {
         distPath = path.join(distPath, intermediateDirectoryName);
     }
+
     let copyPluginOption: any = null;
     if (compress) {
         const compressImage = require(path.resolve(cwd, 'node_modules', 'nanachi-compress-loader/utils/compressImage.js'));
@@ -137,7 +138,7 @@ export default function({
                 fileLoader, 
                 postLoaders,
                 nodeLoader, 
-                reactLoader),
+                reactLoader)
         },
         {
             test: /\.(s[ca]ss|less|css)$/,
@@ -211,6 +212,16 @@ export default function({
             // eslint-disable-next-line
         }
     }
+
+    if (platform === 'h5') {
+        // 防止目录里面有些乱七八糟的文件
+        mergePlugins.push(
+            new webpack.IgnorePlugin({
+                resourceRegExp: /\.(\w?ux|pem)$/,
+            })
+        )
+    }
+
     let entry = isChaikaMode()
         ? path.join(cwd, '.CACHE/nanachi/source/app')
         : path.join(cwd, 'source/app');
