@@ -1959,6 +1959,11 @@
             return create;
         }, deps);
     }
+    function useRef(initValue) {
+        return useMemo(function () {
+            return { current: initValue };
+        }, []);
+    }
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
         var updateQueue = fiber.updateQueue;
@@ -1970,15 +1975,6 @@
             }
             list.push(create);
         }, deps);
-    }
-    function useRef(initValue) {
-        var fiber = getCurrentFiber();
-        var key = getCurrentKey();
-        var updateQueue = fiber.updateQueue;
-        if (key in updateQueue) {
-            return updateQueue[key];
-        }
-        return updateQueue[key] = { current: initValue };
     }
     function useImperativeHandle(ref, create, deps) {
         useEffectImpl(function () {

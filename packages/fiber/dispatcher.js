@@ -78,6 +78,10 @@ export function useMemo(create, deps) {//ok
 export function useCallback(create, deps) {//ok
     return useMemo(() => create, deps);
 }
+export function useRef(initValue) {//ok
+    return useMemo(() => ({ current: initValue }), [])
+}
+
 //useEffect的deps，如果不写总是执行， 如果为空数组则只执行一次，如果数组有值，变化才执行新的
 export function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
     let fiber = getCurrentFiber();
@@ -91,15 +95,8 @@ export function useEffectImpl(create, deps, EffectTag, createList, destroyList) 
         list.push(create)
     }, deps)
 }
-export function useRef(initValue) {//ok
-    let fiber = getCurrentFiber();
-    let key = getCurrentKey();
-    let updateQueue = fiber.updateQueue;
-    if (key in updateQueue) {
-        return updateQueue[key];
-    }
-    return updateQueue[key] = { current: initValue };
-}
+
+
 
 export function useImperativeHandle(ref, create, deps) {
     useEffectImpl(() => {
