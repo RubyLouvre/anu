@@ -4,22 +4,54 @@
 <head>
     <meta charset="UTF-8" />
     <title>Document</title>
-    <!--<script src="https://unpkg.com/anujs@1.5.6/dist/React.js"></script>-->
-    <script src="./dist/ReactIE.js"></script>
-    <script>
+    <script src="./dist/React.js"></script>
+    <!--<script src="https://cdn.bootcss.com/react/16.9.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.bootcss.com/react-dom/16.8.6/umd/react-dom.production.min.js"></script>
+    -->
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
-
-
-
-
-    </script>
 </head>
 
 <body>
 
     <div id="root"></div>
-    <p><span>目前网上比较流行的止盈法是定投超过一定收益率就止盈（比如30%），还有聪明点的就是震荡市20-30%止盈，牛市40%-60%止盈。对于新手的投资者来说，这确实也是个不错的方法，至少让你学会止盈，及时保存收益。但是它也有一定的缺点，大约总结如下：</span><br>
-    </p>
+    <script type='text/babel'>
+    if(!window.ReactDOM){
+        window.ReactDOM = React
+    }
+var {useState, useRef, useMemo,useCallback, useEffect,useLayoutEffect}  = React
+
+const set = new Set();
+function WithRef() {
+    const [count, setCount] = useState(0);
+    const [val, setValue] = useState('');
+
+    const prevCountRef = useRef(false);
+    useEffect(() => {
+        console.log('总是执行')
+        if (prevCountRef.current) {
+            console.log('只在更新时候执行', count)
+        } else {
+            console.log(prevCountRef.current, '第一次')
+            prevCountRef.current = true
+        }
+    });//总是执行
+
+    return (
+    <div>
+        <div>{count}</div>
+        <button onClick={() => {setCount(count+1)}}>+</button>
+        <input value={val} onChange={event => setValue(event.target.value)} />
+
+    </div>
+    )
+}
+ReactDOM.render(<WithRef />, document.querySelector('#root'))
+//useMemo的deps，如果不写总是执行， 如果为空数组则只执行一次，如果数组有值，变化才执行新的
+//useCallback的deps，如果不写总是返回新的， 如果为空数组则总是原来的， 如果数组有值，变化才返回新的
+//useEffect的deps，如果不写总是执行， 如果为空数组则只执行一次，如果数组有值，变化才执行新的
+
+    </script>
 </body>
 
 </html>

@@ -3,6 +3,8 @@ import {
     useEffectImpl,
     useCallbackImpl,
     useRef,
+    useMemo,
+    useCallback,
     useContext,
     useImperativeHandle
 } from "react-fiber/dispatcher";
@@ -20,7 +22,7 @@ function useEffect(create, deps) {
 function useLayoutEffect(create, deps) {
     return useEffectImpl(create, deps, HOOK, "layout", "unlayout");
 }
-
+/*
 function useMemo(create, deps) {
     return useCallbackImpl(create, deps, true);
 }
@@ -28,7 +30,7 @@ function useMemo(create, deps) {
 function useCallback(create, deps) {
     return useCallbackImpl(create, deps);
 }
-
+*/
 export {
     useState,
     useReducer,

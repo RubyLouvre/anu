@@ -1,5 +1,5 @@
 /**
- * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-09-19
+ * IE6+，有问题请加QQ 370262116 by 司徒正美 Copyright 2019-12-05
  */
 
 (function (global, factory) {
@@ -1933,33 +1933,43 @@
         var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
         return [value, dispatch];
     }
-    function useCallbackImpl(create, deps, isMemo, isEffect) {
+    function useMemo(create, deps) {
         var fiber = getCurrentFiber();
         var key = getCurrentKey();
+        var isArray = Array.isArray(deps);
+        if (!isArray) {
+            return create();
+        }
         var updateQueue = fiber.updateQueue;
-        var nextInputs = Array.isArray(deps) ? deps : [create];
         var prevState = updateQueue[key];
         if (prevState) {
-            var prevInputs = prevState[1];
-            if (areHookInputsEqual(nextInputs, prevInputs)) {
-                return isEffect ? null : prevState[0];
+            if (!deps.length) {
+                return prevState[0];
+            }
+            if (areHookInputsEqual(deps, prevState[1])) {
+                return prevState[0];
             }
         }
-        var fn = isMemo ? create() : create;
-        updateQueue[key] = [fn, nextInputs];
-        return fn;
+        var resolve = create();
+        updateQueue[key] = [resolve, deps];
+        return resolve;
+    }
+    function useCallback(create, deps) {
+        return useMemo(function () {
+            return create;
+        }, deps);
     }
     function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
         var fiber = getCurrentFiber();
         var updateQueue = fiber.updateQueue;
-        if (useCallbackImpl(create, deps, false, true)) {
+        useMemo(function () {
+            var list = updateQueue[createList] || (updateQueue[createList] = []);
+            updateQueue[destroyList] || (updateQueue[destroyList] = []);
             if (fiber.effectTag % EffectTag) {
                 fiber.effectTag *= EffectTag;
             }
-            var list = updateQueue[createList] || (updateQueue[createList] = []);
-            updateQueue[destroyList] || (updateQueue[destroyList] = []);
             list.push(create);
-        }
+        }, deps);
     }
     function useRef(initValue) {
         var fiber = getCurrentFiber();
@@ -3152,12 +3162,6 @@
     function useLayoutEffect(create, deps) {
         return useEffectImpl(create, deps, HOOK, "layout", "unlayout");
     }
-    function useMemo(create, deps) {
-        return useCallbackImpl(create, deps, true);
-    }
-    function useCallback(create, deps) {
-        return useCallbackImpl(create, deps);
-    }
 
     function Suspense(props) {
         return props.children;
@@ -3171,7 +3175,7 @@
             component: null,
             resolved: false
         };
-        var promise = props.render();
+        var promise = props.children();
         if (!promise || !isFn(promise.then)) {
             throw "lazy必须返回一个thenable对象";
         }
@@ -3193,14 +3197,12 @@
             throw "lazy组件必须包一个Suspense组件";
         },
         render: function f2() {
-            return this.state.resolved ? createElement(this.state.component) : this.fallback();
+            return this.state.resolved ? createElement(this.state.component, this.props) : this.fallback();
         }
     });
-    function lazy(fn) {
-        return function () {
-            return createElement(LazyComponent, {
-                render: fn
-            });
+    function lazy(render) {
+        return function (props) {
+            return createElement(LazyComponent, props, render);
         };
     }
 
