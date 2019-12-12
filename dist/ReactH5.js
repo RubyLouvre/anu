@@ -1,16 +1,15 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-12-05T06
+ * 运行于webview的React by 司徒正美 Copyright 2019-12-12T08
  * IE9+
  */
 
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('@react'), require('axios'), require('qs'), require('mobile-detect'), require('socket.io-client')) :
-    typeof define === 'function' && define.amd ? define(['@react', 'axios', 'qs', 'mobile-detect', 'socket.io-client'], factory) :
-    (global.React = factory(global.React$1,global.axios,global.qs,global.MobileDetect,global.io));
-}(this, (function (React$1,axios,qs,MobileDetect,io) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('@react'), require('axios'), require('mobile-detect'), require('socket.io-client')) :
+    typeof define === 'function' && define.amd ? define(['@react', 'axios', 'mobile-detect', 'socket.io-client'], factory) :
+    (global.React = factory(global.React$1,global.axios,global.MobileDetect,global.io));
+}(this, (function (React$1,axios,MobileDetect,io) {
     React$1 = React$1 && React$1.hasOwnProperty('default') ? React$1['default'] : React$1;
     axios = axios && axios.hasOwnProperty('default') ? axios['default'] : axios;
-    qs = qs && qs.hasOwnProperty('default') ? qs['default'] : qs;
     MobileDetect = MobileDetect && MobileDetect.hasOwnProperty('default') ? MobileDetect['default'] : MobileDetect;
     io = io && io.hasOwnProperty('default') ? io['default'] : io;
 
@@ -4571,7 +4570,6 @@
                 if (data[key] === '' || data[key] == null) delete data[key];
             });
             if (method === 'get') data = { params: data };
-            if (method === 'post') data = qs.stringify(data);
             axios({
                 method: method,
                 url: url,
