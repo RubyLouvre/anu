@@ -1,11 +1,12 @@
 import React from '@react';
 import './index.scss';
-import * as TimeUtil from '../time.js';
+import * as TimeUtil from '../../common/utils/time.js';
 /* eslint-disable */
 const DATE_LENGTH = 14; // 日期的个数
 const MIDDLE_INDEX = Math.floor(DATE_LENGTH / 2); // 日期数组中间值的索引
 const DEFAULT_INDEX = 3; // 中间索引距离顶部的索引差
 var gid = 0;
+
 
 class XDatePickerItem extends React.Component {
   constructor(props) {
@@ -22,6 +23,7 @@ class XDatePickerItem extends React.Component {
       ogY: 0,
       ogTranslate: 0, // 移动之前的起始位置
       translateY: -MIDDLE_INDEX * props.itemHeight + props.indicatorTop,
+      totalHeight: 0,
       selected: 0,
       marginTop: 0,
       totalHeight: DATE_LENGTH * props.indicatorHeight,
@@ -50,26 +52,30 @@ class XDatePickerItem extends React.Component {
   }
 
   handleTouchStart(e) {
+    // console.log('刚开始点击了', e);
     if (this.state.touching) return;
     this.moveDateCount = 0;
-
-    this.touchY = e.touches[0].pageY; // 移动开始的位置
+   
+    var touchObj = e.type === 'touchstart' ? e.touches[0] : e;
+    this.touchY = touchObj.pageY; // 移动开始的位置
     this.translateY = this.state.translateY;
 
     this.setState({
       touching: true,
       ogTranslate: this.state.translateY,
-      touchId: e.touches[0].identifier,
-      ogY: e.touches[0].pageY - this.state.translate,
+      touchId:touchObj.identifier,
+      ogY: touchObj.pageY - this.state.translate,
       animating: false
     });
   }
 
   handleTouchMove(e) {
     if (!this.state.touching) return;
-    if (e.touches[0].identifier !== this.state.touchId) return;
-
-    const touchY = e.touches[0].pageY; // 当前的位置
+   
+    var touchObj = e.type === 'touchmove' ? e.touches[0] : e;
+    if (touchObj.identifier !== this.state.touchId) return;
+    
+    const touchY = touchObj.pageY; // 当前的位置
     const dir = touchY - this.touchY; // 移动的位置差
     const translateY = this.translateY + dir; // 现在坐标应该在的位置
     this.setState({
@@ -99,9 +105,9 @@ class XDatePickerItem extends React.Component {
         marginTop: (this.currentIndex - MIDDLE_INDEX) * itemHeight
       });
     } else {
+      this.currentIndex--;
       // 向下滑动机制
       let value = TimeUtil[`next${typeName}`](dates[0].date, -this.props.step);
-      this.currentIndex--;
       let key = TimeUtil.convertDate(value, this.props.format);
       let disabled = value < this.props.start || value > this.props.end;
       this.setState({
@@ -136,15 +142,17 @@ class XDatePickerItem extends React.Component {
       translate = -(this.currentIndex - DEFAULT_INDEX) * itemHeight;
     }
 
-    this.setState({
-      touching: false,
-      ogY: 0,
-      touchId: undefined,
-      ogTranslate: 0,
-      animating: true,
-      translateY: translate
-    });
-    this.updateSelected();
+    this.setState(
+      {
+        touching: false,
+        ogY: 0,
+        touchId: undefined,
+        ogTranslate: 0,
+        animating: true,
+        translateY: translate
+      },
+      () => this.updateSelected()
+    );
   }
 
   updateSelected() {
@@ -168,15 +176,18 @@ class XDatePickerItem extends React.Component {
 
   render() {
     return (
-      <div
-        onTouchStart={this.handleTouchStart.bind(this)}
-        onTouchMove={this.handleTouchMove.bind(this)}
+      <stack
+        catchMouseDown={this.handleTouchStart.bind(this)}
+        catchMouseMove={this.handleTouchMove.bind(this)}
+        catchMouseUp={this.handleTouchEnd.bind(this)}
+        catchTouchStart={this.handleTouchStart.bind(this)}
+        catchTouchMove={this.handleTouchMove.bind(this)}
         onTouchEnd={this.handleTouchEnd.bind(this)}
         style={{ width: '100%' }}
-        className="anu-stack"
+        class="anu-stack"
       >
         <div
-          className="anu-picker_content"
+          class="anu-picker_content"
           style={{
             marginTop: this.state.marginTop + 'PX',
             height: this.state.totalHeight + 'PX',
@@ -185,22 +196,22 @@ class XDatePickerItem extends React.Component {
         >
           {this.state.dates.map(function(item, index) {
             return (
-              <span
+              <text
                 key={item.key + '-' + index}
-                className={'anu-picker__item ' + (item.disabled ? 'anu-picker__item_disabled' : '')}
+                class={'anu-picker__item ' + (item.disabled ? 'anu-picker__item_disabled' : '')}
               >
                 {item.key}
-              </span>
+              </text>
             );
           })}
         </div>
 
-        <div className="anu-picker__mask">
-          <div className="anu-picker__mask_top" />
-          <div className="anu-picker__mask_center" />
-          <div className="anu-picker__mask_bottom " />
+        <div class="anu-picker__mask">
+          <div class="anu-picker__mask_top" />
+          <div class="anu-picker__mask_center" />
+          <div class="anu-picker__mask_bottom " />
         </div>
-      </div>
+      </stack>
     );
   }
 }
