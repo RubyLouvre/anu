@@ -366,7 +366,7 @@ const visitor:babel.Visitor = {
                     }
                     // 合并到 app.json 中
                     Object.keys(xConfigJson).forEach((key) => {
-                        if (!ignoreAppJsonProp.includes(key)) {
+                        if (!ignoreAppJsonProp.includes(key.toLowerCase())) {
                             json[key] = xConfigJson[key];
                         }
                     });

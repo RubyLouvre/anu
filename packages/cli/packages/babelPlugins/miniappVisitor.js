@@ -259,7 +259,7 @@ const visitor = {
                     catch (err) {
                     }
                     Object.keys(xConfigJson).forEach((key) => {
-                        if (!ignoreAppJsonProp.includes(key)) {
+                        if (!ignoreAppJsonProp.includes(key.toLowerCase())) {
                             json[key] = xConfigJson[key];
                         }
                     });
