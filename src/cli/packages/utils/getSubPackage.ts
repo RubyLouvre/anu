@@ -10,9 +10,18 @@ module.exports = function(buildType: string) {
          *          "name": "native",
          *          "resource": "pages/demo/native"
          *      }
+         * ],
+         * subpackages: [
+         *   {}
          * ]
          */
-        subPackages = appRootConfig.subpackages || appRootConfig.subPackages || [];
+        subPackages = Object.keys(appRootConfig).reduce((startValue, el) => {
+            if (el.toLowerCase() === 'subpackages' && appRootConfig[el].length ) {
+                startValue = startValue.concat(appRootConfig[el]);
+            }
+            return startValue;
+        }, []);
+        // subPackages = appRootConfig.subpackages || appRootConfig.subPackages || [];
     } catch (err) {
         
     }
