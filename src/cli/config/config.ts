@@ -64,7 +64,9 @@ const config: GlobalConfigMap =  {
         styleExt: 'wxss',
         xmlExt: 'wxml',
         helpers: 'wxHelpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     qq: {
@@ -80,7 +82,9 @@ const config: GlobalConfigMap =  {
         styleExt: 'acss',
         xmlExt: 'axml',
         helpers: 'aliHelpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     bu: {
@@ -88,19 +92,25 @@ const config: GlobalConfigMap =  {
         styleExt: 'css',
         xmlExt: 'swan',
         helpers: 'buHelpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     h5: {
         libName: 'ReactH5',
         helpers: 'h5Helpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     '360': {
         libName: 'ReactH5',
         helpers: 'h5Helpers',
-        patchComponents: {},
+        patchComponents: {
+            slider: 1
+        },
         disabledTitleBarPages: new Set()
     },
     quick: {

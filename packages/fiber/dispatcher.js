@@ -1,6 +1,6 @@
 import { Renderer } from 'react-core/createRenderer';
 import { get, isFn } from 'react-core/util';
-import  {HOOK } from './effectTag'
+import { HOOK } from './effectTag'
 function setter(compute, cursor, value) {
     Renderer.batchedUpdates(() => { //解决钩子useXXX放在setTimeout不更新的问题
         this.updateQueue[cursor] = compute(cursor, value);
@@ -38,7 +38,7 @@ export function useReducerImpl(reducer, initValue, initAction) {//ok
         return reducer(updateQueue[cursor], action || { type: Math.random() });
     } : function (cursor, value) {
         let other = updateQueue[cursor];
-        return isFn( value ) ? value(other) : value;
+        return isFn(value) ? value(other) : value;
     };
     let dispatch = setter.bind(fiber, compute, key);
 
@@ -50,51 +50,57 @@ export function useReducerImpl(reducer, initValue, initAction) {//ok
     let value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
     return [value, dispatch];
 }
-//useCallbackOrMemo, 用来存放 方法与参数
-export function useCallbackImpl(create, deps, isMemo, isEffect) {//ok
+
+//useMemo用来记录create的返回值 
+//useMemo的deps，如果不写总是执行， 如果为空数组则只执行一次，如果数组有值，变化才执行新的
+export function useMemo(create, deps) {//ok
     let fiber = getCurrentFiber();
     let key = getCurrentKey();
+    let isArray = Array.isArray(deps);
+    if (!isArray) {
+        return create();
+    }
     let updateQueue = fiber.updateQueue;
-
-    let nextInputs = Array.isArray(deps) ? deps : [create];
     let prevState = updateQueue[key];
     if (prevState) {
-        let prevInputs = prevState[1];
-        if (areHookInputsEqual(nextInputs, prevInputs)) {
-            return isEffect ? null : prevState[0];
+        if (!deps.length) {
+            return prevState[0];
+        }
+        if (areHookInputsEqual(deps, prevState[1])) {
+            return prevState[0];
         }
     }
-    var fn = isMemo ? create() : create;
-    updateQueue[key] = [fn, nextInputs];
-    return fn;
+    var resolve = create()
+    updateQueue[key] = [resolve, deps]
+    return resolve;
 }
-export function useEffectImpl(create, deps, EffectTag, createList, destroyList) {//ok
+//useCallback的deps，如果不写总是返回新的，如果为空数组则总是原来的， 如果数组有值，变化才返回新的
+export function useCallback(create, deps) {//ok
+    return useMemo(() => create, deps);
+}
+export function useRef(initValue) {//ok
+    return useMemo(() => ({ current: initValue }), [])
+}
+
+//useEffect的deps，如果不写总是执行， 如果为空数组则只执行一次，如果数组有值，变化才执行新的
+export function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
     let fiber = getCurrentFiber();
     let updateQueue = fiber.updateQueue;
-    if (useCallbackImpl(create, deps, false, true)) {//防止重复添加  
+    useMemo(function () {
+        var list = updateQueue[createList] || (updateQueue[createList] = []);
+        updateQueue[destroyList] || (updateQueue[destroyList] = []);
         if (fiber.effectTag % EffectTag) {
             fiber.effectTag *= EffectTag;
         }
-        let list = updateQueue[createList] || (updateQueue[createList] = []);
-        updateQueue[destroyList] || (updateQueue[destroyList] = []);
-        list.push(create);
-    }
-}
-export function useRef(initValue) {//ok
-    let fiber = getCurrentFiber();
-    let key = getCurrentKey();
-    let updateQueue = fiber.updateQueue;
-    if (key in updateQueue) {
-        return updateQueue[key];
-    }
-    return updateQueue[key] = { current: initValue };
+        list.push(create)
+    }, deps)
 }
 
+
+
 export function useImperativeHandle(ref, create, deps) {
-    const nextInputs = Array.isArray(deps) ? deps.concat([ref])
-        : [ref, create];
     useEffectImpl(() => {
-        if (isFn( ref )) {
+        if (isFn(ref)) {
             const refCallback = ref;
             const inst = create();
             refCallback(inst);
@@ -107,7 +113,7 @@ export function useImperativeHandle(ref, create, deps) {
                 refObject.current = null;
             };
         }
-    }, nextInputs,  HOOK, 'layout', 'unlayout');
+    }, deps, HOOK, 'layout', 'unlayout');
 }
 
 function getCurrentFiber() {

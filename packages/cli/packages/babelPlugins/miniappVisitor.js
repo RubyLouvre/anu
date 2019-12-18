@@ -259,7 +259,7 @@ const visitor = {
                     catch (err) {
                     }
                     Object.keys(xConfigJson).forEach((key) => {
-                        if (!ignoreAppJsonProp.includes(key)) {
+                        if (!ignoreAppJsonProp.includes(key.toLowerCase())) {
                             json[key] = xConfigJson[key];
                         }
                     });
@@ -484,6 +484,7 @@ const visitor = {
                 }
             }
             if (buildType === 'quick') {
+                ignoreAttri(astPath, nodeName);
             }
             if (bag) {
                 try {
