@@ -1,6 +1,6 @@
 /* eslint no-console:0 */
 import axios from 'axios';
-// import qs from 'qs';
+import qs from 'qs';
 import { handleSuccess, handleFail } from '../utils';
 
 const CancelToken = axios.CancelToken;
@@ -54,7 +54,12 @@ class RequestTask extends BaseTask {
         });
 
         if (method === 'get') data = { params: data };
-        //if (method === 'post') data = qs.stringify(data);
+        if (
+            method === 'post'
+            && header['content-type'] === 'application/x-www-form-urlencoded' 
+        ) {
+            data = qs.stringify(data);
+        }
         axios({
             method,
             url,
