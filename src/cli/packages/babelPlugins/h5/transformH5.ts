@@ -22,6 +22,7 @@ const nativeComponentsMap: {
     switch: 'Switch',
     'checkbox-group': 'CheckboxGroup',
     label: 'Label',
+    picker: 'Picker',
     'radio-group': 'RadioGroup'
 };
 
@@ -36,7 +37,7 @@ const internalComponentsMap: {
     'rich-text': 'RichText',
     'scroll-view': 'ScrollView',
     audio: 'Audio',
-    picker: 'Picker'
+    //picker: 'Picker'
 };
 
 const componentsNameMap: {
