@@ -4,8 +4,9 @@ import ScrollItemDiv from '@nativeComponents/ScrollItemDiv/index'
 class P extends React.Component {
     constructor() {
         super();
-        this.order = ['red', 'yellow', 'blue', 'green'];
+        
         this.state = {
+            colors:  ['red', 'yellow', 'blue', 'green'],
             itemId: 'red',
             scrollTop: 0
         };
@@ -30,19 +31,17 @@ class P extends React.Component {
         console.log("scrollById", itemId)
       
         if( typeof this.wx.scrollTo === 'function'){
-            var itemIndex = this.order.indexOf(itemId)
+            var itemIndex = this.state.colors.indexOf(itemId)
             this.wx.scrollTo( {
                 index: itemIndex,
                 smooth: true
             })
-        }
-        
+        }  
     
         this.setState({
              itemId: itemId
         });
                  
-        
     }
 
     scrollByPx() {
@@ -72,18 +71,13 @@ class P extends React.Component {
                       
                         scroll-top={this.state.scrollTop}
                     >
-                        <list-item type="green" id="green"  class="scroll-view-item bc_green" >
-                           <ScrollItemDiv name="green" index={0} />
-                        </list-item>
-                        <list-item type="red"   id="red"  class="scroll-view-item bc_red" >
-                           <ScrollItemDiv name="red" index={1} />
-                        </list-item> 
-                        <list-item type="yellow"  id="yellow" class="scroll-view-item bc_yellow" >
-                           <ScrollItemDiv name="yellow" index={2} />
-                        </list-item>
-                        <list-item type="blue"  id="blue" class="scroll-view-item bc_blue" >
-                           <ScrollItemDiv name="blue" index={3} />
-                        </list-item>
+                        {this.state.colors.map(function(color, index){
+                           return  (<list-item type={color} id={color} class={ 'scroll-view-item bc_'+ color} >
+                             <ScrollItemDiv name={green} index={index} />
+                            </list-item>)
+                        })}
+                      
+                       
                     </scroll-view>
 
                     <div class="anu-block">

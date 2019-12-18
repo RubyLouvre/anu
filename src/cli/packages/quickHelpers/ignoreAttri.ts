@@ -32,7 +32,9 @@ const attributes: {
         ruleFunc?: (props: string, node: any) => {};
     }
 } = {
+
     list: {
+        //这里是不支持的属性
         rules: ['scroll-y','scroll-x','scroll-into-view','scroll-left','lower-threshold','enable-back-to-top','scroll-with-animation'],
         
     },
@@ -46,14 +48,40 @@ const attributes: {
         rules: ['color']
     },
     stack: {
-        rules: ['animation']
+        rules: ['animation'],
+        ruleFunc: function(props, node) {
+            if (config.huawei) {
+                var inValidProps: any = {
+                    onmouseup: 1,
+                    onmousemove: 1,
+                    onmousedown: 1,
+                    catchmousemove: 1,
+                    catchmousedown: 1,
+                    catchmouseup: 1
+                }
+
+                if (inValidProps[props]) {
+                    return false;
+                }
+            }
+            return true;
+        }
     },
     div: {
         rules: ['animation','hover-class','formtype','type','open-type','src','action','submit','onchange','ongetuserinfo','onscale', 'getphonenumber'],
         ruleFunc: function(props, node) {
             if (config.huawei) {
-                const invalidProps: any = ['onend', 'onerror', 'onpause', 'onplay'];
-                if (invalidProps.includes(props)) {
+                const invalidProps: any = {
+                    onscale: 1,
+                    onend: 1, 
+                    onerror: 1, 
+                    onpause: 1, 
+                    onchange: 1,
+                    onplay: 1,
+                    ongetuserinfo: 1
+                }
+
+                if (invalidProps[props]) {
                     return false;
                 }
             }
