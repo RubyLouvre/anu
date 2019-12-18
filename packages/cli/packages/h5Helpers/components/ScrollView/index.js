@@ -28,7 +28,8 @@ class ScrollView extends React.Component {
     }
 
     componentDidMount() {
-        this.container = document.querySelector('.__internal__DynamicPage-container');
+        //this.container = document.querySelector('.__internal__DynamicPage-container');
+        this.container = this.scrollable;
         this.container.addEventListener("scroll", this.onScrollListener,true);
 
         const scrollY = this.props["scroll-y"];     // 允许纵向滚动
