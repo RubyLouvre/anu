@@ -3,7 +3,7 @@ import './index.scss';
 /* eslint-disable */
 
 
-class XPickerItem extends React.Component {
+class PickerItem extends React.Component {
   constructor(props) {
     super(props);
     
@@ -90,6 +90,7 @@ class XPickerItem extends React.Component {
   }
 
   handleTouchMove(e) {
+    // console.log('handleTouchMove', e);
     if (!this.state.touching || this.props.items.length <= 1) return;
     var touchObj =  e.type === 'touchmove' ? e.touches[0] : e;
 
@@ -171,6 +172,7 @@ class XPickerItem extends React.Component {
   }
 
   render() {
+    const label = this.props.mapKeys.label;
     return (
       <stack
         catchMouseDown={this.handleTouchStart.bind(this)}
@@ -195,7 +197,7 @@ class XPickerItem extends React.Component {
                 key={item.keyItem}
                 class={'anu-picker__item ' + (item.disabled ? 'anu-picker__item_disabled' : '')}
               >
-                {item[this.props.mapKeys.label] || item}
+                {item[label] || item}
               </text>
             );
           })}
@@ -211,7 +213,7 @@ class XPickerItem extends React.Component {
   }
 }
 
-XPickerItem.defaultProps = {
+PickerItem.defaultProps = {
   itemHeight: 25 + 9, //content + padding
   indicatorTop: 102, // 中心点距离pick顶部的高度
   indicatorHeight: 34,
@@ -223,4 +225,4 @@ XPickerItem.defaultProps = {
   }
 };
 
-export default XPickerItem;
+export default PickerItem;

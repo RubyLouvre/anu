@@ -1,6 +1,6 @@
 import React from '@react';
 import './index.scss';
-import * as TimeUtil from '../../common/utils/time.js';
+import * as TimeUtil from '../../../common/utils/time.js';
 /* eslint-disable */
 const DATE_LENGTH = 14; // 日期的个数
 const MIDDLE_INDEX = Math.floor(DATE_LENGTH / 2); // 日期数组中间值的索引
@@ -8,7 +8,7 @@ const DEFAULT_INDEX = 3; // 中间索引距离顶部的索引差
 var gid = 0;
 
 
-class XDatePickerItem extends React.Component {
+class DatePickerItem extends React.Component {
   constructor(props) {
     super(props);
 
@@ -216,7 +216,7 @@ class XDatePickerItem extends React.Component {
   }
 }
 
-XDatePickerItem.defaultProps = {
+DatePickerItem.defaultProps = {
   itemHeight: 25 + 9, //content + padding
   indicatorTop: 102, // 中心点距离pick顶部的高度
   indicatorHeight: 34,
@@ -228,4 +228,4 @@ XDatePickerItem.defaultProps = {
   }
 };
 
-export default XDatePickerItem;
+export default DatePickerItem;
