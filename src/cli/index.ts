@@ -272,7 +272,6 @@ function getWebViewRoutes(): string[]{
             const content: string = fs.readFileSync(jsfile).toString();
             return reg.test(content);
         });
-        console.log('\n\n\n-=========..........', webViewRoutes);
     } else {
         /**
          * 如果不是 win 平台,保留原有逻辑
