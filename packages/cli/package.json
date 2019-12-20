@@ -48,6 +48,7 @@
     "babel-plugin-module-resolver": "^3.2.0",
     "babel-plugin-transform-inline-environment-variables": "^0.4.3",
     "babel-plugin-transform-node-env-inline": "^0.4.3",
+    "babel-plugin-transform-remove-console": "^6.9.4",
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
     "clean-webpack-plugin": "^2.0.2",
