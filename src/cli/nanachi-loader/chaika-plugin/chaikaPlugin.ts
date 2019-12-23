@@ -16,9 +16,11 @@ class ChaikaPlugin {
 
         //get updated file name
         compiler.hooks.invalid.tap(id, (fileName)=>{
+            // for win
+            const sourceReg = new RegExp(`\\${path.sep}source\\${path.sep}`);
             fs.copy(
                 fileName,
-                fileName.replace(/\/source\//, '/.CACHE/nanachi/source/'),
+                fileName.replace(sourceReg, '/.CACHE/nanachi/source/'),
                 (err: Error)=>{
                     if (err) {
                         console.log(err);
