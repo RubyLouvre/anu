@@ -19,7 +19,8 @@ let defaultConfig = [
             keepFnArgs: true
         }]
 ];
-if (['prod', 'production'].includes(process.env.BUILD_ENV)) {
+if (/^(build)/.test(process.argv[2])
+    && ['prod', 'production'].includes(process.env.BUILD_ENV)) {
     defaultConfig.push([require('babel-plugin-transform-remove-console'), { 'exclude': ['error', 'warn'] }]);
 }
 module.exports = defaultConfig;
