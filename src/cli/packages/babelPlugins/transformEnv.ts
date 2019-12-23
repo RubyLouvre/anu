@@ -19,7 +19,13 @@ let defaultConfig = [
     }]
 ]
 
-if (['prod', 'production'].includes(process.env.BUILD_ENV)) {
+
+// [ '/usr/local/bin/node', '/usr/local/bin/nanachi', 'build:ali' ]
+if ( 
+    /^(build)/.test(process.argv[2])
+    && ['prod', 'production'].includes(process.env.BUILD_ENV)
+) {
     defaultConfig.push([require('babel-plugin-transform-remove-console'), { 'exclude': ['error', 'warn'] }]);
 }
+
 module.exports = defaultConfig;
