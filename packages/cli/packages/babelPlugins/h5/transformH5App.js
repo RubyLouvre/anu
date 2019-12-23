@@ -38,7 +38,7 @@ const temp = `window.addEventListener('popstate', function ({
     const pages = React.getCurrentPages();
     const pathname = state.url.split('?')[0];
     const index = pages.findIndex(page => page.props.path === pathname );
-    if (CLASS_NAME.config.pages.includes(pathname)) {
+    if (!CLASS_NAME.config.pages.includes(pathname)) {
         React.api.navigateBack({
           delta: 1
         });
