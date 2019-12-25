@@ -15,6 +15,8 @@ import createH5Server from './tasks/createH5Server';
 import { validatePlatforms } from './config/config';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { intermediateDirectoryName } from './config/h5/configurations';
+import * as OS from 'os';
+import * as rd from 'rd';
 
 export interface NanachiOptions {
     watch?: boolean;
@@ -245,20 +247,54 @@ function showLog() {
     }
 }
 
+/**
+ * **getWebViewRoutes**
+ * 适配 windows, 找到 page: true 的页面路径
+ * 
+ * [webview 配置链接地址](https://rubylouvre.github.io/nanachi/documents/webview.html)
+ * 
+ * ``` js
+ * static config = {
+ *     webview: {
+ *         quick: {
+ *             pages: true
+ *         }
+ *     }
+ * }
+ * ```
+ */
+function getWebViewRoutes(): string[]{
+    const pages = path.join(process.cwd(), 'source', 'pages');
+    let webViewRoutes: string[] = [];
+    if('win32' === OS.platform()){
+        webViewRoutes = rd.readFilterSync(pages, /\.js$/).filter((jsfile: string) => {
+            const reg = new RegExp("pages:\\s*(\\btrue\\b|\\[.+\\])");
+            const content: string = fs.readFileSync(jsfile).toString();
+            return reg.test(content);
+        });
+    } else {
+        /**
+         * 如果不是 win 平台,保留原有逻辑
+         */
+        let bin = 'grep';
+        let opts = ['-r', '-E', "pages:\\s*(\\btrue\\b|\\[.+\\])", pages];
+        let ret = spawn(bin, opts).stdout.toString().trim();
+
+        webViewRoutes = ret.split(/\s/)
+            .filter(function (el) {
+                return /\/pages\//.test(el)
+            }).map(function (el) {
+                return el.replace(/\:$/g, '')
+            });
+    }
+    return webViewRoutes;
+}
+
 //获取 WEBVIEW 配置
 function getWebViewRules() {
     const cwd = process.cwd();
     if (globalConfig.buildType != 'quick') return;
-    let bin = 'grep';
-    let opts = ['-r', '-E', "pages:\\s*(\\btrue\\b|\\[.+\\])", path.join(cwd, 'source', 'pages')];
-    let ret = spawn(bin, opts).stdout.toString().trim();
-
-    let webViewRoutes = ret.split(/\s/)
-        .filter(function (el) {
-            return /\/pages\//.test(el)
-        }).map(function (el) {
-            return el.replace(/\:$/g, '')
-        });
+    let webViewRoutes = getWebViewRoutes();
 
     webViewRoutes.forEach(async function (pagePath) {
         babel.transformFileSync(pagePath, {
