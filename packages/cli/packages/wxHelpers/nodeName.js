@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = __importDefault(require("../utils"));
 const config_1 = __importDefault(require("../../config/config"));
+const getNativeComponentsNode_1 = __importDefault(require("../utils/getNativeComponentsNode"));
 let rword = /[^, ]+/g;
 const tags = Object.keys(config_1.default.pluginTags);
 let builtInStr = tags.join(',') + ',' +
@@ -12,6 +13,7 @@ let builtInStr = tags.join(',') + ',' +
     'progress,checkbox,form,input,input,label,picker,picker-view,picker-view-column,radio,switch,textarea,template,' +
     'navigator,audio,image,camera,video,live-player,live-pusher,map,canvas,open-data,web-view,radio-group,' +
     'slot,wxs,checkbox-group,loading';
+builtInStr = ',' + getNativeComponentsNode_1.default().join(',');
 let builtIn = {};
 builtInStr.replace(rword, function (el) {
     builtIn[el] = el;

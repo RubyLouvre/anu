@@ -1,5 +1,6 @@
 import utils from '../utils';
 import config from '../../config/config';
+import getNativeComponents from '../utils/getNativeComponentsNode';
 let rword = /[^, ]+/g;
 const tags = Object.keys(config.pluginTags);
 let builtInStr = tags.join(',') + ',' +
@@ -7,6 +8,9 @@ let builtInStr = tags.join(',') + ',' +
     'progress,checkbox,form,input,input,label,picker,picker-view,picker-view-column,radio,switch,textarea,template,' +
     'navigator,audio,image,camera,video,live-player,live-pusher,map,canvas,open-data,web-view,radio-group,' +
     'slot,wxs,checkbox-group,loading';
+
+builtInStr = ',' + getNativeComponents().join(',');
+
 let builtIn: any = {};
 builtInStr.replace(rword, function(el) {
     builtIn[el] = el;

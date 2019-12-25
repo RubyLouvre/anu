@@ -19,7 +19,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = __importStar(require("path"));
 const babel = __importStar(require("@babel/core"));
 const isReact = function (sourcePath) {
-    return /\/source\/React\w+\.js$/.test(sourcePath);
+    const ReactRegExp = new RegExp(`\\${path.sep}source\\${path.sep}React\\w+\\.js$`);
+    return ReactRegExp.test(sourcePath);
 };
 module.exports = function (code, map, meta) {
     return __awaiter(this, void 0, void 0, function* () {
