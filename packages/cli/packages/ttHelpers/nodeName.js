@@ -1,9 +1,16 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 const utils = require('../utils/index');
+const getNativeComponentsNode_1 = __importDefault(require("../utils/getNativeComponentsNode"));
 let rword = /[^, ]+/g;
 let builtInStr = 'view,text,button,block,scroll-view,swiper,swiper-item,movable-area,movable-view,cover-view,icon,rich-text,' +
     'progress,checkbox,form,input,input,label,picker,picker-view,radio,slider,switch,textarea,template,' +
     'navigator,audio,image,camera,video,live-player,live-pusher,map,canvas,open-data,web-view,radio-group,' +
     'slot,wxs,checkbox-group,loading';
+builtInStr = ',' + getNativeComponentsNode_1.default().join(',');
 let builtIn = {};
 builtInStr.replace(rword, function (el) {
     builtIn[el] = el;
