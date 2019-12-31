@@ -3,6 +3,8 @@ import * as path from 'path';
 import merge from 'webpack-merge';
 import webpack = require('webpack');
 
+const pageWrapper: string = path.resolve(process.cwd(), "node_modules/schnee-ui/h5/components/pageWrapper");
+
 const config: webpack.Configuration = merge(developmentConfig, {
     mode: 'development',
     module: {
@@ -11,9 +13,9 @@ const config: webpack.Configuration = merge(developmentConfig, {
                 test: /\.[jt]sx?$/,
                 loader: require.resolve('babel-loader'),
                 options: {
-                    exclude: [/node_modules/],
+                    // exclude: [/node_modules/],
                     cacheDirectory: true,
-                    root: path.resolve(__dirname, '../../packages/h5Helpers/pageWrapper'),
+                    root: pageWrapper,
                     plugins: [
                         require.resolve('@babel/plugin-transform-runtime'),
                         require.resolve('@babel/plugin-syntax-dynamic-import'),

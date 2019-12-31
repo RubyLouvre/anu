@@ -194,10 +194,6 @@ module.exports = function (): PluginObj {
                         // 插入补丁组件import语句
                         const externalComponentName = nativeComponentsMap[componentName];
                         if (externalComponentName) {
-                            const SCHNEE_UI = 'schnee-ui';
-                            if (!utils.hasNpm(SCHNEE_UI)) {
-                                utils.installer(SCHNEE_UI);
-                            }
                             state.externalComponents = state.externalComponents || new Set();
                             state.externalComponents.add(externalComponentName);
                         }
