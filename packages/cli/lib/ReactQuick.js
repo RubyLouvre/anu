@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2019-12-05
+ * 运行于快应用的React by 司徒正美 Copyright 2020-01-02
  */
 
 var arrayPush = Array.prototype.push;
@@ -894,6 +894,7 @@ function request(_ref6) {
         method = _ref6.method,
         _ref6$dataType = _ref6.dataType,
         dataType = _ref6$dataType === undefined ? JSON_TYPE_STRING : _ref6$dataType,
+        responseType = _ref6.responseType,
         _ref6$success = _ref6.success,
         success = _ref6$success === undefined ? noop : _ref6$success,
         _ref6$fail = _ref6.fail,
@@ -920,6 +921,7 @@ function request(_ref6) {
         url: url,
         data: data,
         header: header,
+        responseType: responseType,
         method: method,
         success: onFetchSuccess,
         fail: fail,
@@ -2202,42 +2204,48 @@ function useReducerImpl(reducer, initValue, initAction) {
     var value = updateQueue[key] = initAction ? reducer(initValue, initAction) : initValue;
     return [value, dispatch];
 }
-function useCallbackImpl(create, deps, isMemo, isEffect) {
+function useMemo(create, deps) {
     var fiber = getCurrentFiber();
     var key = getCurrentKey();
+    var isArray = Array.isArray(deps);
+    if (!isArray) {
+        return create();
+    }
     var updateQueue = fiber.updateQueue;
-    var nextInputs = Array.isArray(deps) ? deps : [create];
     var prevState = updateQueue[key];
     if (prevState) {
-        var prevInputs = prevState[1];
-        if (areHookInputsEqual(nextInputs, prevInputs)) {
-            return isEffect ? null : prevState[0];
+        if (!deps.length) {
+            return prevState[0];
+        }
+        if (areHookInputsEqual(deps, prevState[1])) {
+            return prevState[0];
         }
     }
-    var fn = isMemo ? create() : create;
-    updateQueue[key] = [fn, nextInputs];
-    return fn;
+    var resolve = create();
+    updateQueue[key] = [resolve, deps];
+    return resolve;
+}
+function useCallback(create, deps) {
+    return useMemo(function () {
+        return create;
+    }, deps);
+}
+function useRef(initValue) {
+    return useMemo(function () {
+        return { current: initValue };
+    }, []);
 }
 function useEffectImpl(create, deps, EffectTag, createList, destroyList) {
     var fiber = getCurrentFiber();
     var updateQueue = fiber.updateQueue;
-    if (useCallbackImpl(create, deps, false, true)) {
+    useMemo(function () {
+        var list = updateQueue[createList] || (updateQueue[createList] = []);
+        updateQueue[destroyList] || (updateQueue[destroyList] = []);
         if (fiber.effectTag % EffectTag) {
             fiber.effectTag *= EffectTag;
         }
-        var list = updateQueue[createList] || (updateQueue[createList] = []);
-        updateQueue[destroyList] || (updateQueue[destroyList] = []);
         list.push(create);
-    }
-}
-function useRef(initValue) {
-    var fiber = getCurrentFiber();
-    var key = getCurrentKey();
-    var updateQueue = fiber.updateQueue;
-    if (key in updateQueue) {
-        return updateQueue[key];
-    }
-    return updateQueue[key] = { current: initValue };
+    }, deps);
 }
 function getCurrentFiber() {
     return get(Renderer.currentOwner);
@@ -3598,12 +3606,6 @@ function useReducer(reducer, initValue, initAction) {
 }
 function useEffect(create, deps) {
     return useEffectImpl(create, deps, PASSIVE, "passive", "unpassive");
-}
-function useMemo(create, deps) {
-    return useCallbackImpl(create, deps, true);
-}
-function useCallback(create, deps) {
-    return useCallbackImpl(create, deps);
 }
 
 var MemoComponent = miniCreateClass(function MemoComponent(obj) {
