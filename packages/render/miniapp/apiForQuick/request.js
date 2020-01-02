@@ -88,8 +88,7 @@ export function request({
     header,
     method,
     dataType = JSON_TYPE_STRING,
-    // 小米不支持设置 responseType
-    // responseType,
+    responseType,
     success = noop,
     fail = noop,
     complete = noop
@@ -113,6 +112,7 @@ export function request({
         url,
         data,
         header,
+        responseType,
         method,
         success: onFetchSuccess,
         fail,
