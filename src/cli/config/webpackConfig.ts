@@ -6,7 +6,6 @@ import ChaikaPlugin from '../nanachi-loader/chaika-plugin/chaikaPlugin';
 import CopyWebpackPlugin, {} from 'copy-webpack-plugin';
 import { NanachiOptions } from '../index';
 import * as path from 'path';
-import * as fs from "fs-extra";
 import webpack from 'webpack';
 const utils = require('../packages/utils/index');
 import { intermediateDirectoryName } from './h5/configurations';
