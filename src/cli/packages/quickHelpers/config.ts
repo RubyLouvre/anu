@@ -6,13 +6,18 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import platConfig from '../../config/config';
+import utils from '../utils/index'
 
 // 当前工作目录相对路径
 const cwd = process.cwd();
 // 华为快应用平台
 const isHuaweiPlatform: boolean = platConfig.huawei
 // json 配置文件名
-const quickConfigFileName: string = isCheckQuickConfigFileExist('quickConfig.huawei.json') ? 'quickConfig.huawei.json' : 'quickConfig.json';
+const quickConfigFileName: string =
+  isHuaweiPlatform &&
+  utils.isCheckQuickConfigFileExist("quickConfig.huawei.json")
+    ? "quickConfig.huawei.json"
+    : "quickConfig.json";
 
 //默认manifest.json
 var manifest: any = {
@@ -283,20 +288,6 @@ function setOtherConfig() {
             manifest[el] = userConfig[el];
         }
     });
-}
-
-/**
- * 检测配置文件是否存在
- * @param configFile 配置文件名
- */
-function isCheckQuickConfigFileExist(configFile: string) {
-    const configFileDist = path.join(cwd, 'source', configFile);
-    try {
-        fs.accessSync(configFileDist);
-        return true;
-    } catch (err) {
-        return false;
-    }
 }
 
 

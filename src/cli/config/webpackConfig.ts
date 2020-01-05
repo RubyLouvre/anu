@@ -6,6 +6,7 @@ import ChaikaPlugin from '../nanachi-loader/chaika-plugin/chaikaPlugin';
 import CopyWebpackPlugin, {} from 'copy-webpack-plugin';
 import { NanachiOptions } from '../index';
 import * as path from 'path';
+import * as fs from "fs-extra";
 import webpack from 'webpack';
 const utils = require('../packages/utils/index');
 import { intermediateDirectoryName } from './h5/configurations';
@@ -33,6 +34,12 @@ const H5AliasList = ['react','@react','react-dom', 'react-loadable', '@qunar-def
 const isChaikaMode = function() {
     return process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
 }
+
+// json 配置文件名
+const quickConfigFileName: string =
+  config.huawei && utils.isCheckQuickConfigFileExist("quickConfig.huawei.json")
+    ? "quickConfig.huawei.json"
+    : "quickConfig.json";
 
 export default function({
     platform,
@@ -175,8 +182,16 @@ export default function({
                  }
              } = {};
              isChaikaMode()
-                 ? quickConfig = require(path.join(cwd, '.CACHE/nanachi/source', 'quickConfig.json'))
-                 : quickConfig = require(path.join(cwd, 'source', 'quickConfig.json'));
+               ? (quickConfig = require(path.join(
+                   cwd,
+                   ".CACHE/nanachi/source",
+                   quickConfigFileName
+                 )))
+               : (quickConfig = require(path.join(
+                   cwd,
+                   "source",
+                   quickConfigFileName
+                 )));
             if (huawei) {
                 if (quickConfig && quickConfig.widgets) {
                     quickConfig.widgets.forEach(widget => {
