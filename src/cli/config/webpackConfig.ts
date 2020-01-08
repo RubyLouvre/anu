@@ -34,6 +34,12 @@ const isChaikaMode = function() {
     return process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
 }
 
+// json 配置文件名
+const quickConfigFileName: string =
+  config.huawei && utils.isCheckQuickConfigFileExist("quickConfig.huawei.json")
+    ? "quickConfig.huawei.json"
+    : "quickConfig.json";
+
 export default function({
     platform,
     compress,
@@ -175,8 +181,16 @@ export default function({
                  }
              } = {};
              isChaikaMode()
-                 ? quickConfig = require(path.join(cwd, '.CACHE/nanachi/source', 'quickConfig.json'))
-                 : quickConfig = require(path.join(cwd, 'source', 'quickConfig.json'));
+               ? (quickConfig = require(path.join(
+                   cwd,
+                   ".CACHE/nanachi/source",
+                   quickConfigFileName
+                 )))
+               : (quickConfig = require(path.join(
+                   cwd,
+                   "source",
+                   quickConfigFileName
+                 )));
             if (huawei) {
                 if (quickConfig && quickConfig.widgets) {
                     quickConfig.widgets.forEach(widget => {
