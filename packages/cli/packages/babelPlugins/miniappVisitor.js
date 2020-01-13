@@ -43,7 +43,7 @@ if (buildType == 'quick') {
     utils_1.default.createRegisterStatement = function (className, path, isPage) {
         var templateString = isPage ?
             'CLASSNAME = React.registerPage(CLASSNAME,ASTPATH)' :
-            'console.log(nanachi)';
+            'console.warn(nanachi)';
         return isPage ? template_1.default(templateString)({
             CLASSNAME: t.identifier(className),
             ASTPATH: t.stringLiteral(path)
