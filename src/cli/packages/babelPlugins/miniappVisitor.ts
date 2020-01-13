@@ -49,13 +49,17 @@ if (buildType == 'quick') {
          * that should be considered placeholders. 'false' will disable placeholder searching
          * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
          * 
-         * isPage: false 时 templateString = console.log(nanachi)
+         * isPage: false 时 templateString = console.warn(nanachi)
          * 此时如果传入后面的 {CLASSNAME: t.identifier(className)} 
          * 会抛出异常信息 Error: Unknown substitution "CLASSNAME" given
          */
+
+        // 这里不能用 console.log(nanachi) 占位符，改成 console.warn(nanachi)
+        // 原来的 console.log(nanachi) 在 mergeUx.js 中会被替换成 export {React};
+        // 而在 mergeUx.js 执行之前，babel-remove-console-log 插件会移除掉 console.log，会导致 mergeUx.js 找不不到 console.log(nanachi) 占位符
         var templateString = isPage ?
             'CLASSNAME = React.registerPage(CLASSNAME,ASTPATH)' :
-            'console.log(nanachi)';
+            'console.warn(nanachi)';
         return isPage ? template(templateString)({
             CLASSNAME: t.identifier(className),
             ASTPATH: t.stringLiteral(path)
