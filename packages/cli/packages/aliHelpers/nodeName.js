@@ -10,7 +10,7 @@ let builtInStr = 'view,text,button,block,scroll-view,swiper,swiper-item,movable-
     'progress,checkbox,form,input,input,label,picker,picker-view,radio,switch,textarea,template,' +
     'navigator,audio,image,camera,video,live-player,live-pusher,map,canvas,open-data,web-view,radio-group,' +
     'slot,wxs,checkbox-group,loading,life-follow';
-builtInStr = ',' + getNativeComponentsNode_1.default().join(',');
+builtInStr = builtInStr + ',' + getNativeComponentsNode_1.default().join(',');
 let builtIn = {
     favorite: "favorite",
     lifestyle: "lifestyle",
