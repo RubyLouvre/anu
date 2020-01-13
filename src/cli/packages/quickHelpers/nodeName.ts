@@ -9,7 +9,7 @@ let builtInStr =
     'input,option,picker,select,slider,switch,textarea,'+
     'video,canvas,web,map,marquee'; 
     
-builtInStr = ',' + getNativeComponents().join(',');
+builtInStr = builtInStr +  ',' + getNativeComponents().join(',');
 
 //label行为很怪异
 let builtIn: any = {};
