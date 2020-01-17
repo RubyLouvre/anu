@@ -376,6 +376,63 @@ const visitor = {
             }
         }
     },
+    OptionalCallExpression: {
+        enter(astPath, state) {
+            if (!t.isJSXExpressionContainer(astPath.parentPath))
+                return;
+            let modules = utils_1.default.getAnu(state);
+            var { node } = astPath;
+            var callee = node.callee;
+            var args = node.arguments;
+            var opSepList = generator_1.default(callee).code.split('?.');
+            opSepList = opSepList.map(function (el, idx) {
+                return opSepList.slice(0, idx + 1).join('.');
+            });
+            function geMemExp(x) {
+                var list = x.split('.');
+                var memEpr = t.memberExpression(list[0] === 'this' ? t.thisExpression() : t.identifier(list[0]), t.identifier(list[1]));
+                var ret = list.slice(2);
+                while (ret.length) {
+                    memEpr = t.memberExpression(memEpr, t.identifier(ret.shift()));
+                }
+                return memEpr;
+            }
+            function getLogic(opSepList) {
+                var left = opSepList[0];
+                var right = opSepList[1];
+                var logicExp = t.logicalExpression('&&', left, right);
+                var ret = opSepList.slice(2);
+                while (ret.length) {
+                    logicExp = t.logicalExpression('&&', logicExp, ret.shift());
+                }
+                return logicExp;
+            }
+            opSepList = opSepList.map(function (el) {
+                return geMemExp(el);
+            });
+            if (!args[1] && args[0].type === 'FunctionExpression') {
+                args[1] = t.identifier('this');
+            }
+            let params = args[0].params;
+            if (!params[0]) {
+                params[0] = t.identifier('j' + astPath.node.start);
+            }
+            if (!params[1]) {
+                params[1] = t.identifier('i' + astPath.node.start);
+            }
+            var indexName = args[0].params[1].name;
+            if (modules.indexArr) {
+                modules.indexArr.push(indexName);
+            }
+            else {
+                modules.indexArr = [indexName];
+            }
+            modules.indexName = indexName;
+            var m = getLogic(opSepList);
+            m.right = t.callExpression(m.right, args);
+            astPath.replaceWith(m);
+        }
+    },
     CallExpression: {
         enter(astPath, state) {
             let node = astPath.node;
