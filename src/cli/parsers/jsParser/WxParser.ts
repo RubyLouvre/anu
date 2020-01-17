@@ -12,6 +12,7 @@ class WxParser extends JavascriptParser{
             comments: false,
             ast: true,
             plugins: [
+               
                 [require('@babel/plugin-proposal-decorators'), { legacy: true }],
                 /**
                  * [babel 6 to 7] 
@@ -32,7 +33,9 @@ class WxParser extends JavascriptParser{
                         camel2DashComponentName: false
                     }
                 ],
+                
                 require('@babel/plugin-syntax-jsx'),
+                require('@babel/plugin-syntax-optional-chaining'),
                 require('../../packages/babelPlugins/collectDependencies'),
                 require('../../packages/babelPlugins/collectTitleBarConfig'),
                 require('../../packages/babelPlugins/patchComponents'),
@@ -40,6 +43,7 @@ class WxParser extends JavascriptParser{
                 [ require('@babel/plugin-transform-template-literals'), { loose: true }],
                 require('../../packages/babelPlugins/transformIfImport'),
                 ...this.filterCommonFile,
+                require('@babel/plugin-proposal-optional-chaining'),
                 ...require('../../packages/babelPlugins/patchAsyncAwait'),
             ]
         };
