@@ -33,7 +33,6 @@ const index_2 = __importDefault(require("./packages/utils/index"));
 const config_1 = __importDefault(require("./config/config"));
 const runBeforeParseTasks_1 = __importDefault(require("./tasks/runBeforeParseTasks"));
 const createH5Server_1 = __importDefault(require("./tasks/createH5Server"));
-const copy_webpack_plugin_1 = __importDefault(require("copy-webpack-plugin"));
 const configurations_1 = require("./config/h5/configurations");
 const OS = __importStar(require("os"));
 const rd = __importStar(require("rd"));
@@ -68,11 +67,10 @@ function nanachi(options = {}) {
                 if (typescript)
                     webpackH5Config.entry += '.tsx';
                 if (config_1.default['360mode']) {
-                    webpackH5Config.plugins.unshift(new copy_webpack_plugin_1.default([{
-                            from: '**',
-                            to: path.resolve(process.cwd(), 'src'),
-                            context: path.resolve(__dirname, './packages/360helpers/template')
-                        }]));
+                    const cwd = process.cwd();
+                    if (!fs.existsSync(path.join(cwd, 'src'))) {
+                        fs.copySync(path.resolve(__dirname, './packages/360helpers/template'), path.resolve(cwd, 'src'));
+                    }
                 }
                 const compilerH5 = webpack_1.default(webpackH5Config);
                 if (watch) {

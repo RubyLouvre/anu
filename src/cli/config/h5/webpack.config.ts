@@ -11,7 +11,7 @@ const config: webpack.Configuration = merge(developmentConfig, {
                 test: /\.[jt]sx?$/,
                 loader: require.resolve('babel-loader'),
                 options: {
-                    exclude: [/node_modules/],
+                    //exclude: [/node_modules/],
                     cacheDirectory: true,
                     root: path.resolve(__dirname, '../../packages/h5Helpers/pageWrapper'),
                     plugins: [

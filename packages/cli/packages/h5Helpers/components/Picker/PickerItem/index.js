@@ -1,9 +1,12 @@
 import React from '@react';
 import './index.scss';
+/* eslint-disable */
 
-class XPickerItem extends React.Component {
+
+class PickerItem extends React.Component {
   constructor(props) {
     super(props);
+    
     this.state = {
       touching: false,
       touchId: undefined,
@@ -13,6 +16,10 @@ class XPickerItem extends React.Component {
       selected: 0,
       totalHeight: props.items.length * props.indicatorHeight
     };
+
+    this.props.items = this.props.items.map((el)=>{
+      return Object.assign(el, {keyItem: el[this.props.mapKeys.label]} || el );
+    });
   }
 
   componentDidMount() {
@@ -71,22 +78,25 @@ class XPickerItem extends React.Component {
 
   handleTouchStart(e) {
     if (this.state.touching || this.props.items.length <= 1) return;
-    
+    var touchObj = e.type === 'touchstart' ? e.touches[0] : e;
     this.setState({
       touching: true,
       ogTranslate: this.state.translate,
-      touchId: e.touches[0].identifier,
+      touchId:touchObj.identifier,
       ogY:
-        this.state.translate === 0 ? e.touches[0].pageY : e.touches[0].pageY - this.state.translate,
+        this.state.translate === 0 ? touchObj.pageY : touchObj.pageY - this.state.translate,
       animating: false
     });
   }
 
   handleTouchMove(e) {
+    // console.log('handleTouchMove', e);
     if (!this.state.touching || this.props.items.length <= 1) return;
-    if (e.touches[0].identifier !== this.state.touchId) return;
+    var touchObj =  e.type === 'touchmove' ? e.touches[0] : e;
 
-    const pageY = e.touches[0].pageY;
+    if (touchObj.identifier !== this.state.touchId) return;
+
+    const pageY =touchObj.pageY;
     const diffY = pageY - this.state.ogY;
    
 
@@ -162,16 +172,20 @@ class XPickerItem extends React.Component {
   }
 
   render() {
+    const label = this.props.mapKeys.label;
     return (
-      <div
-        onTouchStart={this.handleTouchStart.bind(this)}
-        onTouchMove={this.handleTouchMove.bind(this)}
+      <stack
+        catchMouseDown={this.handleTouchStart.bind(this)}
+        catchMouseMove={this.handleTouchMove.bind(this)}
+        catchMouseUp={this.handleTouchEnd.bind(this)}
+        catchTouchStart={this.handleTouchStart.bind(this)}
+        catchTouchMove={this.handleTouchMove.bind(this)}
         onTouchEnd={this.handleTouchEnd.bind(this)}
         style={{ width: '100%' }}
-        className="anu-stack"
+        class="anu-stack"
       >
         <div
-          className="anu-picker_content"
+          class="anu-picker_content"
           style = {{
             height: this.state.totalHeight + 'PX',
             transform: 'translateY('+this.state.translate +'PX)'
@@ -179,27 +193,27 @@ class XPickerItem extends React.Component {
         >
           {this.props.items.map(function(item, index) {
             return (
-              <span
-                key={item[this.props.mapKeys.label] || item}
-                className={'anu-picker__item ' + (item.disabled ? 'anu-picker__item_disabled' : '')}
+              <text
+                key={item.keyItem}
+                class={'anu-picker__item ' + (item.disabled ? 'anu-picker__item_disabled' : '')}
               >
-                {item[this.props.mapKeys.label] || item}
-              </span>
+                {item[label] || item}
+              </text>
             );
-          }, this)}
+          })}
         </div>
 
-        <div className="anu-picker__mask">
-          <div className="anu-picker__mask_top" />
-          <div className="anu-picker__mask_center" />
-          <div className="anu-picker__mask_bottom " />
+        <div class="anu-picker__mask">
+          <div class="anu-picker__mask_top" />
+          <div class="anu-picker__mask_center" />
+          <div class="anu-picker__mask_bottom " />
         </div>
-      </div>
+      </stack>
     );
   }
 }
 
-XPickerItem.defaultProps = {
+PickerItem.defaultProps = {
   itemHeight: 25 + 9, //content + padding
   indicatorTop: 102, // 中心点距离pick顶部的高度
   indicatorHeight: 34,
@@ -211,4 +225,4 @@ XPickerItem.defaultProps = {
   }
 };
 
-export default XPickerItem;
+export default PickerItem;

@@ -96,12 +96,20 @@ async function nanachi(options: NanachiOptions = {}) {
             const configPath = watch ? './config/h5/webpack.config.js' : './config/h5/webpack.config.prod.js';
             const webpackH5Config = require(configPath);
             if (typescript) webpackH5Config.entry += '.tsx';
+
             if (globalConfig['360mode']) {
-                webpackH5Config.plugins.unshift(new CopyWebpackPlugin([{
-                    from: '**',
-                    to: path.resolve(process.cwd(), 'src'),
-                    context: path.resolve(__dirname, './packages/360helpers/template')
-                }]));
+                // webpackH5Config.plugins.unshift(new CopyWebpackPlugin([{
+                //     from: '**',
+                //     to: path.resolve(process.cwd(), 'src'),
+                //     context: path.resolve(__dirname, './packages/360helpers/template')
+                // }]));
+                const cwd = process.cwd();
+                if (!fs.existsSync(path.join(cwd, 'src'))) {
+                    fs.copySync(
+                        path.resolve(__dirname, './packages/360helpers/template'),
+                        path.resolve(cwd, 'src')
+                    )
+                }
             }
             const compilerH5 = webpack(webpackH5Config);
             if (watch) {
