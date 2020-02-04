@@ -1,6 +1,6 @@
 {
   "name": "nanachi-cli",
-  "version": "1.4.9",
+  "version": "1.5.0",
   "description": "cli tool for nanachi",
   "bin": {
     "nanachi": "./bin/index.js"
