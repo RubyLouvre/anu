@@ -10,7 +10,8 @@ class ChaikaPlugin {
             compilation.contextDependencies.add(path.join(cwd, 'source'));
         });
         compiler.hooks.invalid.tap(id, (fileName) => {
-            fs.copy(fileName, fileName.replace(/\/source\//, '/.CACHE/nanachi/source/'), (err) => {
+            const sourceReg = new RegExp(`\\${path.sep}source\\${path.sep}`);
+            fs.copy(fileName, fileName.replace(sourceReg, '/.CACHE/nanachi/source/'), (err) => {
                 if (err) {
                     console.log(err);
                 }

@@ -49,13 +49,17 @@ if (buildType == 'quick') {
          * that should be considered placeholders. 'false' will disable placeholder searching
          * entirely, leaving only the 'placeholderWhitelist' value to find placeholders.
          * 
-         * isPage: false 时 templateString = console.log(nanachi)
+         * isPage: false 时 templateString = console.warn(nanachi)
          * 此时如果传入后面的 {CLASSNAME: t.identifier(className)} 
          * 会抛出异常信息 Error: Unknown substitution "CLASSNAME" given
          */
+
+        // 这里不能用 console.log(nanachi) 占位符，改成 console.warn(nanachi)
+        // 原来的 console.log(nanachi) 在 mergeUx.js 中会被替换成 export {React};
+        // 而在 mergeUx.js 执行之前，babel-remove-console-log 插件会移除掉 console.log，会导致 mergeUx.js 找不不到 console.log(nanachi) 占位符
         var templateString = isPage ?
             'CLASSNAME = React.registerPage(CLASSNAME,ASTPATH)' :
-            'console.log(nanachi)';
+            'console.warn(nanachi)';
         return isPage ? template(templateString)({
             CLASSNAME: t.identifier(className),
             ASTPATH: t.stringLiteral(path)
@@ -366,7 +370,7 @@ const visitor:babel.Visitor = {
                     }
                     // 合并到 app.json 中
                     Object.keys(xConfigJson).forEach((key) => {
-                        if (!ignoreAppJsonProp.includes(key)) {
+                        if (!ignoreAppJsonProp.includes(key.toLowerCase())) {
                             json[key] = xConfigJson[key];
                         }
                     });
@@ -513,7 +517,82 @@ const visitor:babel.Visitor = {
             }
         }
     },
+    OptionalCallExpression: {
+        enter(astPath, state) {
+            // 反解析可选链， 解析成 && 逻辑表达式
+            if (!t.isJSXExpressionContainer(astPath.parentPath)) return;
+            let modules = utils.getAnu(state);
+            var {node} = astPath;
+            var callee = node.callee;
+            var args = node.arguments;
 
+            var opSepList:any = generate(callee).code.split('?.');
+            // [ 'this.state.a',
+            //   'this.state.a.b',
+            //   'this.state.a.b.c',
+            //   'this.state.a.b.c.d.map' ]
+            opSepList = opSepList.map(function(el:string, idx:number) {
+                return opSepList.slice(0, idx + 1).join('.');
+            });
+
+            function geMemExp(x:string) {
+                var list = x.split('.');
+                var memEpr = t.memberExpression(
+                    list[0] === 'this' ? t.thisExpression() : t.identifier(list[0]),
+                    t.identifier(list[1])
+                );
+                var ret = list.slice(2);
+                while (ret.length) {
+                    memEpr = t.memberExpression(
+                        memEpr,
+                        t.identifier(ret.shift())
+                    )
+                }
+                return memEpr;
+            }
+
+            function getLogic(opSepList:any) {
+                var left = opSepList[0];
+                var right = opSepList[1];
+                var logicExp = t.logicalExpression('&&', left, right);
+                var ret = opSepList.slice(2);
+                while (ret.length) {
+                    logicExp = t.logicalExpression('&&', logicExp, ret.shift())
+                }
+                return logicExp;
+            }
+
+            opSepList = opSepList.map(function(el:any){
+                return geMemExp(el);
+            })
+
+            //添加上第二参数
+            if (!args[1] && args[0].type === 'FunctionExpression') {
+                args[1] = t.identifier('this');
+            }
+            //为callback添加参数
+            let params = (args[0] as any).params; // tsc todo
+            if (!params[0]) {
+                params[0] = t.identifier('j' + astPath.node.start);
+            }
+            if (!params[1]) {
+                params[1] = t.identifier('i' + astPath.node.start);
+            }
+            var indexName = (args[0] as any).params[1].name;
+            if (modules.indexArr) {
+                modules.indexArr.push(indexName);
+            } else {
+                modules.indexArr = [indexName];
+            }
+            modules.indexName = indexName;
+
+            var m = getLogic(opSepList);
+            m.right = t.callExpression(m.right, args);
+            astPath.replaceWith(m);
+            
+            
+        }
+    },
     CallExpression: {
         enter(astPath: NodePath<t.CallExpression>, state: any) {
             let node = astPath.node;
@@ -544,6 +623,7 @@ const visitor:babel.Visitor = {
             }
             //处理循环语
             if (utils.isLoopMap(astPath)) {
+               
                 //添加上第二参数
                 if (!args[1] && args[0].type === 'FunctionExpression') {
                     args[1] = t.identifier('this');

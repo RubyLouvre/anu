@@ -1,0 +1,5 @@
+<template>
+    <div><text>{{state.name}}</text><text>--</text><text>{{state.index}}</text></div>
+</template>
+<script>import ScrollItemDiv, { React } from "./index.js";
+export default React.registerComponent(ScrollItemDiv, 'ScrollItemDiv');</script>

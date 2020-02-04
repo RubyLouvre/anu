@@ -7,6 +7,7 @@
         "alias": {
             "@assets": "source/assets",
             "@syntaxComponents": "source/pages/syntax/components",
+            "@nativeComponents": "source/pages/native/components",
             "@common": "source/common"
         }
     },

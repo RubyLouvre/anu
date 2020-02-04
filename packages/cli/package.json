@@ -1,6 +1,6 @@
 {
   "name": "nanachi-cli",
-  "version": "1.4.4-alpha.0",
+  "version": "1.4.9",
   "description": "cli tool for nanachi",
   "bin": {
     "nanachi": "./bin/index.js"
@@ -25,9 +25,11 @@
     "@babel/plugin-proposal-class-properties": "^7.5.5",
     "@babel/plugin-proposal-decorators": "^7.2.3",
     "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
+    "@babel/plugin-proposal-optional-chaining": "^7.8.3",
     "@babel/plugin-syntax-class-properties": "^7.0.0",
     "@babel/plugin-syntax-dynamic-import": "^7.2.0",
     "@babel/plugin-syntax-jsx": "^7.0.0",
+    "@babel/plugin-syntax-optional-chaining": "^7.8.3",
     "@babel/plugin-transform-async-to-generator": "^7.0.0",
     "@babel/plugin-transform-classes": "^7.0.0",
     "@babel/plugin-transform-react-jsx": "^7.3.0",
@@ -48,6 +50,7 @@
     "babel-plugin-module-resolver": "^3.2.0",
     "babel-plugin-transform-inline-environment-variables": "^0.4.3",
     "babel-plugin-transform-node-env-inline": "^0.4.3",
+    "babel-plugin-transform-remove-console": "^6.9.4",
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
     "clean-webpack-plugin": "^2.0.2",
@@ -90,6 +93,7 @@
     "postcss-scss": "^2.0.0",
     "postcss-selector-parser": "^5.0.0",
     "ramda": "^0.26.1",
+    "rd": "^2.0.1",
     "react-dom": "^16.8.6",
     "react-images": "^0.5.19",
     "react-loadable": "^5.5.0",

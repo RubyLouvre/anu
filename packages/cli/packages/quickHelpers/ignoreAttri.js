@@ -34,14 +34,38 @@ const attributes = {
         rules: ['color']
     },
     stack: {
-        rules: ['animation']
+        rules: ['animation'],
+        ruleFunc: function (props, node) {
+            if (config_1.default.huawei) {
+                var inValidProps = {
+                    onmouseup: 1,
+                    onmousemove: 1,
+                    onmousedown: 1,
+                    catchmousemove: 1,
+                    catchmousedown: 1,
+                    catchmouseup: 1
+                };
+                if (inValidProps[props]) {
+                    return false;
+                }
+            }
+            return true;
+        }
     },
     div: {
         rules: ['animation', 'hover-class', 'formtype', 'type', 'open-type', 'src', 'action', 'submit', 'onchange', 'ongetuserinfo', 'onscale', 'getphonenumber'],
         ruleFunc: function (props, node) {
             if (config_1.default.huawei) {
-                const invalidProps = ['onend', 'onerror', 'onpause', 'onplay'];
-                if (invalidProps.includes(props)) {
+                const invalidProps = {
+                    onscale: 1,
+                    onend: 1,
+                    onerror: 1,
+                    onpause: 1,
+                    onchange: 1,
+                    onplay: 1,
+                    ongetuserinfo: 1
+                };
+                if (invalidProps[props]) {
                     return false;
                 }
             }

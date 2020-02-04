@@ -1,6 +1,6 @@
 
 import config from '../../config/config';
-module.exports = [
+let defaultConfig = [
     [
         //配置环境变量
         require('babel-plugin-transform-inline-environment-variables'),
@@ -17,4 +17,15 @@ module.exports = [
         // 可能是插件bug，会删除一些已使用参数，所以开启keepFnArgs【防止插件删除函数参数】
         keepFnArgs: true
     }]
-];
+]
+
+
+// [ '/usr/local/bin/node', '/usr/local/bin/nanachi', 'build:ali' ]
+if ( 
+    /^(build)/.test(process.argv[2])
+    && ['prod', 'production'].includes(process.env.BUILD_ENV)
+) {
+    defaultConfig.push([require('babel-plugin-transform-remove-console'), { 'exclude': ['error', 'warn'] }]);
+}
+
+module.exports = defaultConfig;

@@ -34,6 +34,8 @@ const config_1 = __importDefault(require("./config/config"));
 const runBeforeParseTasks_1 = __importDefault(require("./tasks/runBeforeParseTasks"));
 const createH5Server_1 = __importDefault(require("./tasks/createH5Server"));
 const configurations_1 = require("./config/h5/configurations");
+const OS = __importStar(require("os"));
+const rd = __importStar(require("rd"));
 function nanachi(options = {}) {
     return __awaiter(this, void 0, void 0, function* () {
         const { watch = false, platform = 'wx', beta = false, betaUi = false, compress = false, compressOption = {}, huawei = false, typescript = false, rules = [], prevLoaders = [], postLoaders = [], prevJsLoaders = [], postJsLoaders = [], prevCssLoaders = [], postCssLoaders = [], plugins = [], analysis = false, silent = false, complete = () => { } } = options;
@@ -196,19 +198,34 @@ function showLog() {
         }
     }
 }
+function getWebViewRoutes() {
+    const pages = path.join(process.cwd(), 'source', 'pages');
+    let webViewRoutes = [];
+    if ('win32' === OS.platform()) {
+        webViewRoutes = rd.readFilterSync(pages, /\.js$/).filter((jsfile) => {
+            const reg = new RegExp("pages:\\s*(\\btrue\\b|\\[.+\\])");
+            const content = fs.readFileSync(jsfile).toString();
+            return reg.test(content);
+        });
+    }
+    else {
+        let bin = 'grep';
+        let opts = ['-r', '-E', "pages:\\s*(\\btrue\\b|\\[.+\\])", pages];
+        let ret = child_process_1.spawnSync(bin, opts).stdout.toString().trim();
+        webViewRoutes = ret.split(/\s/)
+            .filter(function (el) {
+            return /\/pages\//.test(el);
+        }).map(function (el) {
+            return el.replace(/\:$/g, '');
+        });
+    }
+    return webViewRoutes;
+}
 function getWebViewRules() {
     const cwd = process.cwd();
     if (config_1.default.buildType != 'quick')
         return;
-    let bin = 'grep';
-    let opts = ['-r', '-E', "pages:\\s*(\\btrue\\b|\\[.+\\])", path.join(cwd, 'source', 'pages')];
-    let ret = child_process_1.spawnSync(bin, opts).stdout.toString().trim();
-    let webViewRoutes = ret.split(/\s/)
-        .filter(function (el) {
-        return /\/pages\//.test(el);
-    }).map(function (el) {
-        return el.replace(/\:$/g, '');
-    });
+    let webViewRoutes = getWebViewRoutes();
     webViewRoutes.forEach(function (pagePath) {
         return __awaiter(this, void 0, void 0, function* () {
             babel.transformFileSync(pagePath, {

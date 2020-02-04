@@ -35,6 +35,7 @@ class QuickParser extends JavascriptParser {
                     }
                 ],
                 require('@babel/plugin-syntax-jsx'),
+                require('@babel/plugin-syntax-optional-chaining'),
                 require('../../packages/babelPlugins/collectDependencies'),
                 require('../../packages/babelPlugins/collectTitleBarConfig'),
                 require('../../packages/babelPlugins/patchComponents'),
@@ -42,6 +43,7 @@ class QuickParser extends JavascriptParser {
                 [ require('@babel/plugin-transform-template-literals'), { loose: true }],
                 require('../../packages/babelPlugins/transformIfImport'),
                 ...this.filterCommonFile,
+                require('@babel/plugin-proposal-optional-chaining'),
                 ...require('../../packages/babelPlugins/patchAsyncAwait'),
             ]
         };

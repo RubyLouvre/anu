@@ -3,7 +3,9 @@ import * as babel from '@babel/core';
 import { NanachiQueue } from './nanachiLoader';
 
 const isReact = function(sourcePath: string){
-    return /\/source\/React\w+\.js$/.test(sourcePath);
+    // for win
+    const ReactRegExp = new RegExp(`\\${path.sep}source\\${path.sep}React\\w+\\.js$`);
+    return ReactRegExp.test(sourcePath);
 };
 
 module.exports = async function(code: string, map: any, meta: any) {

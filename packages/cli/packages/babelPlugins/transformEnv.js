@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_1 = __importDefault(require("../../config/config"));
-module.exports = [
+let defaultConfig = [
     [
         require('babel-plugin-transform-inline-environment-variables'),
         {
@@ -19,3 +19,8 @@ module.exports = [
             keepFnArgs: true
         }]
 ];
+if (/^(build)/.test(process.argv[2])
+    && ['prod', 'production'].includes(process.env.BUILD_ENV)) {
+    defaultConfig.push([require('babel-plugin-transform-remove-console'), { 'exclude': ['error', 'warn'] }]);
+}
+module.exports = defaultConfig;

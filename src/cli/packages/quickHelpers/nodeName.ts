@@ -1,5 +1,6 @@
 
 import utils from '../utils/index';
+import getNativeComponents from '../utils/getNativeComponentsNode';
 
 let rword = /[^, ]+/g;
 let builtInStr =
@@ -7,6 +8,9 @@ let builtInStr =
     'a,text,image,progress,rating,'+
     'input,option,picker,select,slider,switch,textarea,'+
     'video,canvas,web,map,marquee'; 
+    
+builtInStr = builtInStr +  ',' + getNativeComponents().join(',');
+
 //label行为很怪异
 let builtIn: any = {};
 builtInStr.replace(rword, function(el) {
