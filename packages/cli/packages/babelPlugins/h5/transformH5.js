@@ -25,6 +25,7 @@ const nativeComponentsMap = {
     switch: 'Switch',
     'checkbox-group': 'CheckboxGroup',
     label: 'Label',
+    picker: 'Picker',
     'radio-group': 'RadioGroup'
 };
 const internalComponentsMap = {
@@ -36,7 +37,6 @@ const internalComponentsMap = {
     'rich-text': 'RichText',
     'scroll-view': 'ScrollView',
     audio: 'Audio',
-    picker: 'Picker'
 };
 const componentsNameMap = Object.assign(Object.assign(Object.assign({}, webComponentsMap), nativeComponentsMap), internalComponentsMap);
 const utils = require('../../utils/index');
@@ -86,9 +86,9 @@ module.exports = function () {
                         JSXAttribute(attr) {
                             const name = attr.get('name');
                             if (name.isJSXIdentifier()) {
-                                const attrName = name.node.name;
+                                let attrName = name.node.name;
                                 if (/^catch/.test(attrName)) {
-                                    name.node.name = attrName.replace(/^catch/, 'on');
+                                    attrName = name.node.name = attrName.replace(/^catch/, 'on');
                                 }
                                 if (attrName === 'onTap') {
                                     name.node.name = 'onClick';

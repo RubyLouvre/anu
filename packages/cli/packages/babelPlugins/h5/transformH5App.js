@@ -31,7 +31,7 @@ const pageWrapper = template_1.default(`
 `, {
     plugins: ['jsx']
 })();
-let CLASS_NAME = 'Global';
+let CLASS_NAME = 'global';
 const temp = `window.addEventListener('popstate', function ({
     state
   }) {
@@ -62,7 +62,7 @@ const temp = `window.addEventListener('popstate', function ({
 });
 React.registerApp(this);
 this.onLaunch();
-Global.config.pages.forEach((path) => {
+CLASS_NAME.config.pages.forEach((path) => {
     React.registerPage(
         Loadable({
             loader: () => import("." + path),
@@ -169,7 +169,7 @@ module.exports = function () {
             MemberExpression(astPath) {
                 if (astPath.get('object').node.name === CLASS_NAME &&
                     astPath.get('property').node.name === 'config' &&
-                    astPath.parent.right.type === 'ObjectExpression') {
+                    (astPath.parent.right && astPath.parent.right.type === 'ObjectExpression')) {
                     astPath.parentPath.traverse({
                         ObjectProperty: (property) => {
                             const { key, value } = property.node;

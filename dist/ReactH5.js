@@ -1,5 +1,5 @@
 /**
- * 运行于webview的React by 司徒正美 Copyright 2019-12-05T06
+ * 运行于webview的React by 司徒正美 Copyright 2019-12-18T12
  * IE9+
  */
 
@@ -4571,7 +4571,9 @@
                 if (data[key] === '' || data[key] == null) delete data[key];
             });
             if (method === 'get') data = { params: data };
-            if (method === 'post') data = qs.stringify(data);
+            if (method === 'post' && header['content-type'] === 'application/x-www-form-urlencoded') {
+                data = qs.stringify(data);
+            }
             axios({
                 method: method,
                 url: url,
