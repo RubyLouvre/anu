@@ -59,6 +59,7 @@ module.exports = (): PluginObj => {
 
                 // 添加依赖的补丁组件, 比如快应用navigator --> x-navigator -> XNavigator
                 const patchComponentPath = getPatchComponentPath(  utils.parseCamel('x-'+nodeName)); 
+                console.log(patchComponentPath, '===')
 
                 //将补丁组件加入编译队列
                 modules.extraModules.push(patchComponentPath);

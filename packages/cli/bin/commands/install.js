@@ -49,6 +49,9 @@ function unPack(src, dist) {
     catch (err) {
     }
 }
+function isOldChaikaConfig(name = "") {
+    return /^[A-Za-z0-9_\.\+-]+@#?[A-Za-z0-9_\.\+-]+$/.test(name);
+}
 function downLoadGitRepo(target, branch) {
     let cmd = `git clone ${target} -b ${branch}`;
     let distDir = path.join(cwd, '.CACHE', 'download');
@@ -63,59 +66,79 @@ function downLoadGitRepo(target, branch) {
         console.log(chalk_1.default.bold.red(std.stderr));
         process.exit(1);
     }
-    console.log(chalk_1.default.green(`安装依赖包 ${gitRepoName} 成功.`));
+    console.log(chalk_1.default.green(`安装依赖包 ${target} 成功. Version: ${branch}`));
 }
-function downLoadBinaryLib(lib) {
+function getNanachiChaikaConfig() {
+    let nanachiUserConfig = {};
+    try {
+        nanachiUserConfig = require(path.join(cwd, 'nanachi.config'));
+    }
+    catch (err) {
+        if (/SyntaxError/.test(err)) {
+            console.log(err);
+        }
+    }
+    return nanachiUserConfig.chaikaConfig || {};
+}
+function downLoadBinaryLib(binaryLibUrl, patchModuleName) {
     return __awaiter(this, void 0, void 0, function* () {
-        let [tarName, version] = lib.split('@');
-        let tarUrl = '';
-        let nanachiUserConfig = {};
-        try {
-            nanachiUserConfig = require(path.join(cwd, 'nanachi.config'));
-        }
-        catch (err) {
-            if (/SyntaxError/.test(err)) {
+        let axiosConfig = {
+            url: binaryLibUrl,
+            type: 'GET',
+            responseType: 'arraybuffer'
+        };
+        let { data } = yield axios_1.default(axiosConfig);
+        let libDist = path.join(cwd, `.CACHE/lib/${path.basename(patchModuleName)}`);
+        fs.ensureFileSync(libDist);
+        fs.writeFile(libDist, data, function (err) {
+            if (err) {
                 console.log(err);
+                return;
             }
-        }
-        let onInstallTarball = nanachiUserConfig.chaikaConfig && nanachiUserConfig.chaikaConfig.onInstallTarball || function () { return ''; };
-        tarUrl = onInstallTarball(tarName, version);
-        if (tarUrl) {
-            let axiosConfig = {
-                url: tarUrl,
-                type: 'GET',
-                responseType: 'arraybuffer'
-            };
-            let { data } = yield axios_1.default(axiosConfig);
-            let libDist = path.join(cwd, `.CACHE/lib/${path.basename(tarUrl)}`);
-            fs.ensureFileSync(libDist);
-            fs.writeFile(libDist, data, function (err) {
-                if (err) {
-                    console.log(err);
-                    return;
-                }
-                console.log(chalk_1.default.green(`安装依赖包 ${tarName}@${version} 成功.`));
-                unPack(libDist, path.join(cwd, `.CACHE/download/${tarName}`));
-            });
-        }
+            console.log(chalk_1.default.green(`安装依赖包 ${binaryLibUrl} 成功.`));
+            unPack(libDist, path.join(cwd, `.CACHE/download/${patchModuleName}`));
+        });
     });
 }
-function downLoadConfigDepModule() {
+function downLoadPkgDepModule() {
     var pkg = require(path.join(cwd, 'package.json'));
     var depModules = pkg.modules || {};
     let depKey = Object.keys(depModules);
+    const nanachiChaikaConfig = getNanachiChaikaConfig();
     if (!depKey.length) {
-        console.log(chalk_1.default.bold.red('未在package.json中发现拆库依赖包, 安装失败.'));
+        console.log(chalk_1.default.bold.red('未在package.json中发现拆库依赖包, 全量安装失败.'));
         process.exit(1);
     }
     depKey.forEach(function (key) {
-        if (/\.git$/.test(key)) {
-            downLoadGitRepo(key, depModules[key]);
+        if (Object.keys(nanachiChaikaConfig).length
+            && nanachiChaikaConfig.onInstallTarball
+            && typeof nanachiChaikaConfig.onInstallTarball === 'function') {
+            let gitRepo = nanachiChaikaConfig.onInstallTarball(key, depModules[key]);
+            console.log(gitRepo, '===');
+            downLoadGitRepo(gitRepo, depModules[key]);
+        }
+        else if (isOldChaikaConfig(`${key}@${depModules[key]}`)) {
+            patchOldChaikaDownLoad(`${key}@${depModules[key]}`);
         }
         else {
-            downLoadBinaryLib(key + '@' + depModules[key]);
         }
     });
+}
+function patchOldChaikaDownLoad(name) {
+    const [moduleName, versionName] = name.split('@');
+    const { moduleGitUrl, packageUrl, prefix } = require('./moduleUrls');
+    const patchModuleName = /home_/.test(moduleName)
+        ? `${prefix}_${moduleName}`
+        : `${prefix}_module_${moduleName}`;
+    if (/^#/.test(versionName)) {
+        const gitRepo = moduleGitUrl.replace('{module}', `${patchModuleName}`);
+        const branchName = versionName.replace(/^#/, '');
+        downLoadGitRepo(gitRepo, branchName);
+    }
+    else {
+        const patchModuleUrl = `${packageUrl}${patchModuleName}/${versionName}/${moduleName}-${versionName}.w`;
+        downLoadBinaryLib(patchModuleUrl, patchModuleName);
+    }
 }
 function default_1(name, opts) {
     if (process.env.NANACHI_CHAIK_MODE != 'CHAIK_MODE') {
@@ -132,11 +155,9 @@ function default_1(name, opts) {
             lib: ''
         };
     }
-    if (name && !/\.git$/.test(name)) {
-        downloadInfo = {
-            type: 'binary',
-            lib: name
-        };
+    if (isOldChaikaConfig(name)) {
+        patchOldChaikaDownLoad(name);
+        return;
     }
     if (/\.git$/.test(name) && opts.branch && typeof opts.branch === 'string') {
         downloadInfo = {
@@ -146,14 +167,14 @@ function default_1(name, opts) {
         };
     }
     let { type, lib, version } = downloadInfo;
-    if (type === 'git') {
-        downLoadGitRepo(lib, version);
-    }
-    if (type === 'binary') {
-        downLoadBinaryLib(lib);
-    }
-    if (type === 'all') {
-        downLoadConfigDepModule();
+    switch (type) {
+        case 'git':
+            downLoadGitRepo(lib, version);
+            break;
+        case 'all':
+            downLoadPkgDepModule();
+        default:
+            break;
     }
 }
 exports.default = default_1;

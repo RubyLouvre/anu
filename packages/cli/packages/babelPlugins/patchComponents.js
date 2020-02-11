@@ -47,6 +47,7 @@ module.exports = () => {
                 patchSchneeUi = true;
                 const modules = index_1.default.getAnu(state);
                 const patchComponentPath = getPatchComponentPath(index_1.default.parseCamel('x-' + nodeName));
+                console.log(patchComponentPath, '===');
                 modules.extraModules.push(patchComponentPath);
                 modules.importComponents[index_1.default.parseCamel('x-' + nodeName)] = {
                     source: patchComponentPath,

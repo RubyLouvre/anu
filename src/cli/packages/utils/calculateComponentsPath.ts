@@ -26,6 +26,7 @@ function calculateComponentsPath( bag: any ) {
     }
    
     //求出引用模块的真实绝对路径 如：userPath/source/components/Calendar/index
+   
     let realPath = path.join(
         path.dirname(bag.sourcePath),
         calculateAlias(bag.sourcePath, bag.source) //引用模块的相对路径
@@ -33,13 +34,14 @@ function calculateComponentsPath( bag: any ) {
 
 
     realPath = fixWinPath(realPath).replace(/\.js$/, '');
+
+    
     let usingPath = getDistPath(realPath)
         .replace(
             fixWinPath( path.join(cwd, 'dist') ),
             ''
         );
 
-        
     cachedUsingComponents[bag.source] = usingPath;
     return usingPath;
 };

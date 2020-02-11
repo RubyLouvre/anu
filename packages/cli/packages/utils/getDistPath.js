@@ -13,6 +13,10 @@ function getDistPath(sourcePath) {
     distPath = process.env.ANU_ENV === 'quick'
         ? distPath.replace(/\/dist\//, '/src/')
         : distPath;
+    if (/schnee-ui/.test(sourcePath)) {
+        console.log(sourcePath, 'b');
+        console.log(distPath, 'f');
+    }
     return distPath;
 }
 ;
