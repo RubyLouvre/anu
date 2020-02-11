@@ -35,7 +35,10 @@ let cwd = process.cwd();
 function getRubbishFiles(buildType) {
     let fileList = ['package-lock.json', 'yarn.lock'];
     buildType === 'quick'
-        ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
+        ? fileList = fileList.concat([
+            'dist', 'build', 'sign', 'src', 'babel.config.js',
+            '../../dist', '../../build', '../../sign', '../../src', '../../babel.config.js'
+        ])
         : fileList = fileList.concat([utils.getDistName(buildType)]);
     let libList = Object.keys(index_1.REACT_LIB_MAP)
         .map(function (key) {
@@ -60,6 +63,9 @@ function getQuickPkgFile() {
         projectPkg[key] = projectPkg[key] || {};
         Object.assign(projectPkg[key], quickPkg[key]);
     });
+    process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+        ? projectPkgPath = path.join(cwd, '../../', 'package.json')
+        : projectPkgPath;
     return [
         {
             id: projectPkgPath,
@@ -81,7 +87,7 @@ function getQuickBuildConfigFile() {
     }
     catch (e) {
     }
-    return [
+    let defaultList = [
         {
             id: path.join(signDir, sign),
             dist: path.join(cwd, sign),
@@ -93,6 +99,21 @@ function getQuickBuildConfigFile() {
             ACTION_TYPE: 'COPY'
         }
     ];
+    if (process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE') {
+        defaultList = defaultList.concat([
+            {
+                id: path.join(signDir, sign),
+                dist: path.join(cwd, '../../', sign),
+                ACTION_TYPE: 'COPY'
+            },
+            {
+                id: path.join(baseDir, babelConfig),
+                dist: path.join(cwd, '../../', babelConfig),
+                ACTION_TYPE: 'COPY'
+            }
+        ]);
+    }
+    return defaultList;
 }
 function downloadSchneeUI() {
     let spinner = ora_1.default(chalk_1.default.green.bold(`正在同步最新版schnee-ui, 请稍候...\n`)).start();
@@ -107,13 +128,7 @@ function downloadSchneeUI() {
     process.chdir(cwd);
     spinner.succeed(chalk_1.default.green.bold(`同步 schnee-ui 成功!`));
 }
-function isChaikaMode() {
-    return process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
-}
 function getReactPath(ReactLibName) {
-    if (isChaikaMode()) {
-        return path.join(cwd, '.CACHE/nanachi/source', ReactLibName);
-    }
     return path.join(cwd, 'source', ReactLibName);
 }
 function getRemoteReactFile(ReactLibName) {
@@ -154,7 +169,9 @@ function getProjectConfigFile(buildType) {
     fs.existsSync(path.join(cwd, fileName))
         ? src = path.join(cwd, fileName)
         : src = path.join(cwd, 'source', fileName);
-    let dist = path.join(cwd, 'dist', fileName);
+    let dist = process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+        ? path.join(cwd, '../../dist/', fileName)
+        : path.join(cwd, 'dist', fileName);
     if (fs.existsSync(src)) {
         return [
             {

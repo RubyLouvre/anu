@@ -32,10 +32,9 @@ function calculateComponentsPath( bag: any ) {
         calculateAlias(bag.sourcePath, bag.source) //引用模块的相对路径
     );
 
-
+   
     realPath = fixWinPath(realPath).replace(/\.js$/, '');
 
-    
     let usingPath = getDistPath(realPath)
         .replace(
             fixWinPath( path.join(cwd, 'dist') ),

@@ -41,7 +41,13 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         externals.push(...H5AliasList);
     }
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
-    let distPath = path.resolve(cwd, utils.getDistName(platform));
+    let distPath = '';
+    if (process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE') {
+        distPath = path.resolve(cwd, '../../', utils.getDistName(platform));
+    }
+    else {
+        distPath = path.resolve(cwd, utils.getDistName(platform));
+    }
     if (platform === 'h5') {
         distPath = path.join(distPath, configurations_1.intermediateDirectoryName);
     }
@@ -102,9 +108,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         mergePlugins.push(new quickPlugin_1.default());
         try {
             var quickConfig = {};
-            isChaikaMode()
-                ? (quickConfig = require(path.join(cwd, ".CACHE/nanachi/source", quickConfigFileName)))
-                : (quickConfig = require(path.join(cwd, "source", quickConfigFileName)));
+            quickConfig = require(path.join(cwd, "source", quickConfigFileName));
             if (huawei) {
                 if (quickConfig && quickConfig.widgets) {
                     quickConfig.widgets.forEach(widget => {
@@ -134,9 +138,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
             resourceRegExp: /\.(\w?ux|pem)$/,
         }));
     }
-    let entry = isChaikaMode()
-        ? path.join(cwd, '.CACHE/nanachi/source/app')
-        : path.join(cwd, 'source/app');
+    let entry = path.join(cwd, 'source/app');
     if (typescript) {
         entry += '.tsx';
     }
@@ -154,15 +156,17 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         plugins: mergePlugins,
         resolve: {
             alias: aliasMap,
-            extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+            extensions: [
+                '.js', '.jsx', '.json', '.ts', '.tsx'
+            ],
             mainFields: ['main'],
-            symlinks: true,
+            symlinks: false,
             modules: [
                 path.join(process.cwd(), 'node_modules')
             ]
         },
         watchOptions: {
-            ignored: /node_modules|dist/
+            ignored: /dist/
         },
         externals
     };

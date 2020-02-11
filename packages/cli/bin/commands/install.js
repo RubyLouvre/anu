@@ -66,7 +66,7 @@ function downLoadGitRepo(target, branch) {
         console.log(chalk_1.default.bold.red(std.stderr));
         process.exit(1);
     }
-    console.log(chalk_1.default.green(`安装依赖包 ${target} 成功. Version: ${branch}`));
+    console.log(chalk_1.default.green(`安装依赖包 ${target} 成功. VERSION: ${branch}`));
 }
 function getNanachiChaikaConfig() {
     let nanachiUserConfig = {};

@@ -18,8 +18,9 @@ const downLoadDir = path.join(cwd, '.CACHE/download');
 const mergeDir = path.join(cwd, '.CACHE/nanachi');
 const mergeFilesQueue = require('./mergeFilesQueue');
 const ignoreFiles = [
-    'package-lock.json',
+    'package-lock.json'
 ];
+const ignoreExt = ['.tgz', '.log', 'rpks'];
 const docFilesReg = /\.md$/;
 const configFileReg = /\w+Config\.json$/;
 const reactFileReg = /React\w+\.js$/;
@@ -35,6 +36,7 @@ function isIgnoreFile(fileName) {
     return ignoreFiles.includes(fileName)
         || mergeFiles.includes(fileName)
         || lockFiles.includes(fileName)
+        || ignoreExt.includes(path.parse(fileName).ext)
         || configFileReg.test(fileName)
         || reactFileReg.test(fileName)
         || docFilesReg.test(fileName);
@@ -48,8 +50,12 @@ function isLockFile(fileName) {
 }
 function copyCurrentProject() {
     let projectDirName = cwd.replace(/\\/g, '/').split('/').pop();
-    let files = glob_1.default.sync('./!(node_modules|dist)', {});
-    let allPromiseCopy = files.map(function (el) {
+    let files = glob_1.default.sync('./!(node_modules|dist|src|sign|.CACHE)', {});
+    let allPromiseCopy = files
+        .filter((file) => {
+        return isIgnoreFile(path.basename(file)) ? false : true;
+    })
+        .map(function (el) {
         let src = path.join(cwd, el);
         let dist = path.join(downLoadDir, projectDirName, el);
         if (/\.\w+$/.test(el)) {

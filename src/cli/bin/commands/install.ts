@@ -59,7 +59,7 @@ function downLoadGitRepo(target: string, branch: string){
         process.exit(1);
     } 
     // eslint-disable-next-line
-    console.log(chalk.green(`安装依赖包 ${target} 成功. Version: ${branch}`));
+    console.log(chalk.green(`安装依赖包 ${target} 成功. VERSION: ${branch}`));
 }
 
 
@@ -77,7 +77,6 @@ function getNanachiChaikaConfig() {
 }
 
 async function downLoadBinaryLib(binaryLibUrl: string, patchModuleName: string) {
-    
     
     let axiosConfig = {
         url: binaryLibUrl,

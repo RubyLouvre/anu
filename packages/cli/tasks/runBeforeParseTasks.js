@@ -20,7 +20,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __importStar(require("path"));
-const index_1 = __importDefault(require("./chaikaMergeTask/index"));
 const pretasks_1 = __importDefault(require("./pretasks"));
 let cwd = process.cwd();
 function changeWorkingDir() {
@@ -32,13 +31,7 @@ function isChaikaMode() {
 function default_1(args) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (isChaikaMode()) {
-                yield index_1.default();
-            }
             yield pretasks_1.default(args);
-            if (isChaikaMode()) {
-                changeWorkingDir();
-            }
         }
         catch (err) {
             console.log(err);

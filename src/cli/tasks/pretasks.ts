@@ -1,3 +1,4 @@
+// 注意chaika模式下, 有些文件要copy到项目根目录下，要注意项目路径，因为chaika模式下，进程目录是yourProject/.CACHE/nanachi目录
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import chalk from 'chalk';
@@ -19,7 +20,13 @@ function getRubbishFiles(buildType: string){
 
     let fileList = ['package-lock.json', 'yarn.lock'];
     buildType === 'quick'
-        ? fileList = fileList.concat(['dist', 'build', 'sign', 'src', 'babel.config.js'])
+        ? fileList = fileList.concat(
+            [
+                'dist', 'build', 'sign', 'src', 'babel.config.js',
+                // chaika模式下，项目根目录(向上找两级)也要删除这些文件
+                '../../dist', '../../build', '../../sign', '../../src', '../../babel.config.js' 
+            ]
+        )
         : fileList = fileList.concat([utils.getDistName(buildType)]);
     
     //构建应用时，要删除source目录下其他的 React lib 文件。
@@ -31,8 +38,8 @@ function getRubbishFiles(buildType: string){
             return libName.split('/')[1] != REACT_LIB_MAP[buildType];
         });
     fileList = fileList.concat(libList);
-
     return fileList.map(function(file){
+        
         return {
             id: path.join(cwd, file),
             ACTION_TYPE: 'REMOVE'
@@ -51,6 +58,10 @@ function getQuickPkgFile() {
         projectPkg[key] = projectPkg[key] || {};
         Object.assign(projectPkg[key], quickPkg[key]);
     });
+
+    process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+    ? projectPkgPath = path.join(cwd, '../../', 'package.json')
+    : projectPkgPath;
 
     return [
         {
@@ -74,7 +85,8 @@ function getQuickBuildConfigFile(){
         }
     } catch (e) {
     }
-    return [
+
+    let defaultList = [
         {
             id: path.join(signDir, sign),
             dist: path.join(cwd, sign),
@@ -85,7 +97,26 @@ function getQuickBuildConfigFile(){
             dist: path.join(cwd,  babelConfig),
             ACTION_TYPE: 'COPY'
         }
-    ];
+    ]
+
+    if (process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE') {
+        defaultList = defaultList.concat([
+            {
+                id: path.join(signDir, sign),
+                dist: path.join(cwd, '../../', sign),
+                ACTION_TYPE: 'COPY'
+            },
+            {
+                id: path.join(baseDir, babelConfig),
+                dist: path.join(cwd, '../../', babelConfig),
+                ACTION_TYPE: 'COPY'
+            }
+        ])
+    }
+
+    return defaultList;
+   
+
 }
 
 //从 github 同步UI
@@ -104,14 +135,8 @@ function downloadSchneeUI(){
     spinner.succeed(chalk.green.bold(`同步 schnee-ui 成功!`));
 }
 
-function isChaikaMode() {
-    return process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
-}
 
 function getReactPath(ReactLibName: string) {
-    if (isChaikaMode()) {
-        return path.join(cwd, '.CACHE/nanachi/source', ReactLibName);
-    }
     return  path.join(cwd, 'source', ReactLibName);
 }
 
@@ -155,7 +180,9 @@ function getProjectConfigFile(buildType: string) {
         ? src = path.join(cwd, fileName)
         : src = path.join(cwd, 'source', fileName);
 
-    let dist = path.join(cwd, 'dist', fileName);
+    let dist = process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
+        ? path.join(cwd, '../../dist/', fileName)
+        : path.join(cwd, 'dist', fileName);
     if (fs.existsSync(src)) {
         return [
             {
