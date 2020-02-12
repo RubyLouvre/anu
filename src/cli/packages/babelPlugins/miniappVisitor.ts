@@ -231,6 +231,7 @@ const visitor:babel.Visitor = {
                     throw '"' + modules.className + '"组件越级不能引用pages下面的样式\n\t' + source
                 }
             }
+            
             extraModules.push(source);
             astPath.remove();
         }

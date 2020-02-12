@@ -2,9 +2,17 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const StyleParser_1 = __importDefault(require("./StyleParser"));
 const index_1 = require("../../consts/index");
+const path = __importStar(require("path"));
 const calculateAlias = require('../../packages/utils/calculateAlias');
 class SassParser extends StyleParser_1.default {
     constructor(props) {
@@ -15,7 +23,8 @@ class SassParser extends StyleParser_1.default {
                     if (!/\.s[ca]ss$/.test(importer)) {
                         importer = importer + '.scss';
                     }
-                    return calculateAlias(props.filepath, importer);
+                    var filePathAbPath = path.join(baseDir, calculateAlias(props.filepath, importer));
+                    return filePathAbPath;
                 },
                 plugins: this.platform !== 'h5' ? [
                     require('../../packages/postcssPlugins/postCssPluginRemoveRules')

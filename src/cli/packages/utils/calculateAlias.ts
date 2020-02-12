@@ -56,7 +56,6 @@ function calculateAlias(srcPath: string, importerSource: string, ignoredPaths?: 
         );
         to = getDistPath(to);
     
-       
         return fixPath(path.relative(from, to));
     }
 

@@ -12,6 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __importStar(require("path"));
 const config_1 = __importDefault(require("../../config/config"));
+const index_1 = __importDefault(require("../utils/index"));
+const cwd = process.cwd();
+const isHuaweiPlatform = config_1.default.huawei;
+const quickConfigFileName = isHuaweiPlatform &&
+    index_1.default.isCheckQuickConfigFileExist("quickConfig.huawei.json")
+    ? "quickConfig.huawei.json"
+    : "quickConfig.json";
 var manifest = {
     package: 'org.hapjs.demo.sample',
     name: 'nanachi转快应用',
@@ -134,7 +141,7 @@ function setRouter(config) {
     }
     let userConfig = {};
     try {
-        userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
+        userConfig = require(path.join(cwd, 'source', quickConfigFileName));
     }
     catch (err) {
     }
@@ -144,7 +151,7 @@ function setRouter(config) {
         if (userConfig.router.entry) {
             delete userConfig.router.entry;
         }
-        if (config_1.default.huawei && userConfig.router.pages && Object.prototype.toString.call(userConfig.router.pages) === '[object Object]') {
+        if (isHuaweiPlatform && userConfig.router.pages && Object.prototype.toString.call(userConfig.router.pages) === '[object Object]') {
             pages = Object.assign({}, manifest.router && manifest.router.pages, userConfig.router.pages);
         }
         else {
@@ -153,7 +160,7 @@ function setRouter(config) {
         Object.assign(manifest.router, userConfig.router);
         Object.assign(manifest.router.pages, pages);
     }
-    if (config_1.default.huawei
+    if (isHuaweiPlatform
         && userConfig.widgets
         && Object.prototype.toString.call(userConfig.widgets) === '[object Array]') {
         manifest.widgets = userConfig.widgets;
@@ -163,7 +170,7 @@ function setTitleBar(config) {
     var display = manifest.display;
     let userConfig = {};
     try {
-        userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
+        userConfig = require(path.join(cwd, 'source', quickConfigFileName));
     }
     catch (err) {
     }
@@ -186,7 +193,7 @@ function setTitleBar(config) {
     var win = config.window || {};
     var disabledTitleBarPages = globalConfig.quick.disabledTitleBarPages || [];
     disabledTitleBarPages.forEach(function (el) {
-        let route = path.relative(path.join(process.cwd(), config_1.default.sourceDir), path.dirname(el));
+        let route = path.relative(path.join(cwd, config_1.default.sourceDir), path.dirname(el));
         display.pages = display.pages || {};
         display['pages'][route] = display['pages'][route] || {};
         display['pages'][route]['titleBar'] = false;
@@ -199,7 +206,7 @@ function setTitleBar(config) {
 function setOtherConfig() {
     let userConfig = {};
     try {
-        userConfig = require(path.join(process.cwd(), 'source', 'quickConfig.json'));
+        userConfig = require(path.join(cwd, 'source', quickConfigFileName));
     }
     catch (err) {
     }
@@ -237,7 +244,7 @@ module.exports = function quickConfig(config, modules) {
         return;
     setRouter(config);
     setTitleBar(config);
-    if (config_1.default.huawei) {
+    if (isHuaweiPlatform) {
         manifest.minPlatformVersion = 1040;
     }
     setOtherConfig();

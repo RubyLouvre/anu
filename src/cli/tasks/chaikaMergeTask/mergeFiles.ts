@@ -13,20 +13,51 @@ const mergeDir = path.join(cwd, '.CACHE/nanachi');
 let mergeFilesQueue = require('./mergeFilesQueue');
 let diff = require('deep-diff').diff;
 
+const buildType = process.argv[2].split(':')[1];
+const ignoreExt = ['.tgz'];
+// 默认微信，如果是h5，则为web
+const ANU_ENV = buildType
+    ? buildType === 'h5'
+        ? 'web'
+        : buildType
+    : 'wx';
+
 /**
  * 
  * @param {String} appJsSrcPath app.js绝对路径
  * @param {Array} pages 所有的页面路径
  * @return {Object} 
  */
-function getMergedAppJsConent( appJsSrcPath: any, pages: any = [] ) {
+function getMergedAppJsConent( appJsSrcPath: any, pages: any = [], importSyntax=[] ) {
+    function getAppImportSyntaxCode(importSyntax=[]) {
+        /**
+         * app.json
+         * {
+         *   "imports": ["import a from '@b/c'"]
+         * }
+         */
+        return Object.keys(importSyntax).reduce((ret, el) => {
+            ret = ret.concat(importSyntax[el]);
+            return ret.map((curEl) => {
+                curEl = curEl.trim();
+                if (!/;$/.test(curEl)) {
+                    curEl = curEl + ';';
+                }
+                return curEl;
+            });
+        }, []).join("\n") + '\n';
+    }
+    
     let allRoutesStr = pages.map(function(pageRoute: any){
-        if ( !/^\.\//.test(pageRoute) ) {
+        if ( !(/^\.\//.test(pageRoute)) ) {
             pageRoute = './' + pageRoute;
         }
         pageRoute = `import '${pageRoute}';\n`;
         return pageRoute;
     }).join('');
+
+    // 在app.js里插入 app.json 中 imports 语句
+    allRoutesStr += getAppImportSyntaxCode(importSyntax);
     
     return new Promise(function(rel, rej) {
         let appJsSrcContent = '';
@@ -58,7 +89,7 @@ function getAppJsSourcePath( queue: any = []) {
 
 function getFilesMap(queue: any = []) {
     let map: any = {};
-    let env = process.env.ANU_ENV;
+    let env = ANU_ENV;
     queue.forEach(function(file: any){
         file = file.replace(/\\/g, '/');
         if (/\/package\.json$/.test(file)) {
@@ -83,7 +114,7 @@ function getFilesMap(queue: any = []) {
             return;
         }
         if (/\/app\.json$/.test(file)) {
-            var { alias={}, pages=[], order = 0 } = require(file);
+            var { alias={}, pages=[], imports=[], order = 0 } = require(file);
            
             if (alias) {
                 map['alias'] = map['alias'] || [];
@@ -118,8 +149,8 @@ function getFilesMap(queue: any = []) {
                     routes: Array.from(allInjectRoutes),
                     order: order
                 }); 
-                
             } 
+            map['importSyntax'] = imports;
             return;
         }
         
@@ -154,7 +185,6 @@ function getFilesMap(queue: any = []) {
 function orderRouteByOrder(map: any) {
     //根据order排序
     map['pages'] = map['pages'].sort(function(a: any, b: any){
-        //console.log(b, a);
         return b.order - a.order;
     });
     map['pages'] = map['pages'].map(function(pageEl: any){
@@ -173,7 +203,7 @@ function customizer(objValue: any, srcValue: any) {
 }
 
 function getMergedXConfigContent(config = {}) {
-    let env = process.env.ANU_ENV;
+    let env = ANU_ENV;
     let xConfigJsonDist =  path.join(mergeDir, 'source', `${env}Config.json`);
     return Promise.resolve({
         dist: xConfigJsonDist,
@@ -346,7 +376,7 @@ function validateConfigFileCount(queue: any) {
         el = el.replace(/\\/g, '/');
         //'User/nnc_module_qunar_platform/.CACHE/download/nnc_home_qunar/app.json' => nnc_home_qunar
         let projectName = el.replace(/\\/g, '/').split('/download/')[1].split('/')[0];
-        let reg = new RegExp(projectName + '/' + process.env.ANU_ENV + 'Config.json$');
+        let reg = new RegExp(projectName + '/' + ANU_ENV + 'Config.json$');
         let dir = path.dirname(el);
         if ( reg.test(el) && !fs.existsSync( path.join(dir, 'app.js') ) ) {
             errorFiles.push(el);
@@ -372,7 +402,7 @@ export default function(){
 
     let tasks = [
         //app.js路由注入
-        getMergedAppJsConent( getAppJsSourcePath(queue), map.pages),
+        getMergedAppJsConent( getAppJsSourcePath(queue), map.pages, map.importSyntax),
         //*Config.json合并
         getMergedXConfigContent(map.xconfig),
         //alias合并
@@ -408,22 +438,28 @@ export default function(){
     }, []);
 
 
+    installPkgList = installPkgList.filter(function(dep:string) {
+        // 取后缀，过滤非法依赖
+        return !ignoreExt.includes('.' + dep.split('.').pop())
+    })
+
     //如果本地node_modules存在该模块，则不安装
     if (installPkgList.length) {
         //installPkgList = installPkgList.slice(0,2);
+        
         let installList = installPkgList.join(' ');
+        
         // --no-save 是为了不污染用户的package.json
         // eslint-disable-next-line
-        console.log(chalk.bold.green(`缺少各拆库依赖 ${installList}, 正在安装, 请稍候...`));
+        let installListLog = installPkgList.join('\n');
+        console.log(chalk.bold.green(`[INFO] 缺少拆库依赖, 正在安装, 请稍候...\n${installListLog}`));
         fs.ensureDir(path.join(cwd, 'node_modules'));
         let cmd = `npm install ${installList} --no-save`;
         // eslint-disable-next-line
-        
         let std = shelljs.exec(cmd, {
-            silent: true
+            silent: false
         });
        
-      
         if (/npm ERR!/.test(std.stderr)) {
             // eslint-disable-next-line
             console.log(chalk.red(std.stderr));

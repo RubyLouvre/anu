@@ -9,14 +9,34 @@ const shelljs = require('shelljs');
 const mergeDir = path.join(cwd, '.CACHE/nanachi');
 let mergeFilesQueue = require('./mergeFilesQueue');
 let diff = require('deep-diff').diff;
-function getMergedAppJsConent(appJsSrcPath, pages = []) {
+const buildType = process.argv[2].split(':')[1];
+const ignoreExt = ['.tgz'];
+const ANU_ENV = buildType
+    ? buildType === 'h5'
+        ? 'web'
+        : buildType
+    : 'wx';
+function getMergedAppJsConent(appJsSrcPath, pages = [], importSyntax = []) {
+    function getAppImportSyntaxCode(importSyntax = []) {
+        return Object.keys(importSyntax).reduce((ret, el) => {
+            ret = ret.concat(importSyntax[el]);
+            return ret.map((curEl) => {
+                curEl = curEl.trim();
+                if (!/;$/.test(curEl)) {
+                    curEl = curEl + ';';
+                }
+                return curEl;
+            });
+        }, []).join("\n") + '\n';
+    }
     let allRoutesStr = pages.map(function (pageRoute) {
-        if (!/^\.\//.test(pageRoute)) {
+        if (!(/^\.\//.test(pageRoute))) {
             pageRoute = './' + pageRoute;
         }
         pageRoute = `import '${pageRoute}';\n`;
         return pageRoute;
     }).join('');
+    allRoutesStr += getAppImportSyntaxCode(importSyntax);
     return new Promise(function (rel, rej) {
         let appJsSrcContent = '';
         let appJsDist = path.join(mergeDir, 'source', 'app.js');
@@ -42,7 +62,7 @@ function getAppJsSourcePath(queue = []) {
 }
 function getFilesMap(queue = []) {
     let map = {};
-    let env = process.env.ANU_ENV;
+    let env = ANU_ENV;
     queue.forEach(function (file) {
         file = file.replace(/\\/g, '/');
         if (/\/package\.json$/.test(file)) {
@@ -67,7 +87,7 @@ function getFilesMap(queue = []) {
             return;
         }
         if (/\/app\.json$/.test(file)) {
-            var { alias = {}, pages = [], order = 0 } = require(file);
+            var { alias = {}, pages = [], imports = [], order = 0 } = require(file);
             if (alias) {
                 map['alias'] = map['alias'] || [];
                 map['alias'].push({
@@ -99,6 +119,7 @@ function getFilesMap(queue = []) {
                     order: order
                 });
             }
+            map['importSyntax'] = imports;
             return;
         }
         if (/\/project\.config\.json$/.test(file)) {
@@ -141,7 +162,7 @@ function customizer(objValue, srcValue) {
     }
 }
 function getMergedXConfigContent(config = {}) {
-    let env = process.env.ANU_ENV;
+    let env = ANU_ENV;
     let xConfigJsonDist = path.join(mergeDir, 'source', `${env}Config.json`);
     return Promise.resolve({
         dist: xConfigJsonDist,
@@ -298,7 +319,7 @@ function validateConfigFileCount(queue) {
     configFiles.forEach(function (el) {
         el = el.replace(/\\/g, '/');
         let projectName = el.replace(/\\/g, '/').split('/download/')[1].split('/')[0];
-        let reg = new RegExp(projectName + '/' + process.env.ANU_ENV + 'Config.json$');
+        let reg = new RegExp(projectName + '/' + ANU_ENV + 'Config.json$');
         let dir = path.dirname(el);
         if (reg.test(el) && !fs.existsSync(path.join(dir, 'app.js'))) {
             errorFiles.push(el);
@@ -316,7 +337,7 @@ function default_1() {
     validateMiniAppProjectConfigJson(queue);
     let map = getFilesMap(queue);
     let tasks = [
-        getMergedAppJsConent(getAppJsSourcePath(queue), map.pages),
+        getMergedAppJsConent(getAppJsSourcePath(queue), map.pages, map.importSyntax),
         getMergedXConfigContent(map.xconfig),
         getMergedPkgJsonContent(getMergedData(map.alias)),
         getMiniAppProjectConfigJson(map.projectConfigJson)
@@ -339,13 +360,17 @@ function default_1() {
         }
         return needInstall;
     }, []);
+    installPkgList = installPkgList.filter(function (dep) {
+        return !ignoreExt.includes('.' + dep.split('.').pop());
+    });
     if (installPkgList.length) {
         let installList = installPkgList.join(' ');
-        console.log(chalk.bold.green(`缺少各拆库依赖 ${installList}, 正在安装, 请稍候...`));
+        let installListLog = installPkgList.join('\n');
+        console.log(chalk.bold.green(`[INFO] 缺少拆库依赖, 正在安装, 请稍候...\n${installListLog}`));
         fs.ensureDir(path.join(cwd, 'node_modules'));
         let cmd = `npm install ${installList} --no-save`;
         let std = shelljs.exec(cmd, {
-            silent: true
+            silent: false
         });
         if (/npm ERR!/.test(std.stderr)) {
             console.log(chalk.red(std.stderr));

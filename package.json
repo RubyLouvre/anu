@@ -3,6 +3,9 @@
   "version": "1.6.0",
   "description": "a React16-compact mini framework",
   "main": "dist/React.js",
+  "nanachi": {
+    "chaika_mode": true
+  },
   "scripts": {
     "dev": "tsc -w",
     "build": "tsc && rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js",

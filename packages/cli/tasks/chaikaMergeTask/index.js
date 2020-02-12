@@ -24,9 +24,6 @@ const mergeFiles_1 = __importDefault(require("./mergeFiles"));
 const path = __importStar(require("path"));
 const fs = __importStar(require("fs-extra"));
 const cwd = process.cwd();
-function changeWorkingDir() {
-    process.chdir(path.join(cwd, '.CACHE/nanachi'));
-}
 function makeSymLink() {
     let currentNpmDir = path.join(cwd, 'node_modules');
     let targetNpmDir = path.join(cwd, '.CACHE/nanachi/node_modules');

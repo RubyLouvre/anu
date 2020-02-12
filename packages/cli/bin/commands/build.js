@@ -24,7 +24,7 @@ const fs = __importStar(require("fs-extra"));
 const index_2 = __importDefault(require("../../index"));
 const config_1 = __importDefault(require("../../config/config"));
 const { deepMerge } = require('../../packages/utils/index');
-function default_1(args) {
+const build = function (args) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { beta, betaUi, watch, compress, huawei, analysis, silent, typescript } = args;
@@ -57,6 +57,5 @@ function default_1(args) {
             process.exit(1);
         }
     });
-}
-exports.default = default_1;
-;
+};
+module.exports = build;

@@ -5,11 +5,12 @@ const cwd = process.cwd();
 const downLoadDir = path.join(cwd, '.CACHE/download');
 const mergeDir = path.join(cwd, '.CACHE/nanachi');
 const mergeFilesQueue = require('./mergeFilesQueue');
-
 //这些文件对项目编译时来说，没啥用
 const ignoreFiles: any = [
-    'package-lock.json',
+    'package-lock.json'
 ];
+
+const ignoreExt = ['.tgz', '.log', 'rpks'];
 
 const docFilesReg = /\.md$/;
 const configFileReg = /\w+Config\.json$/;
@@ -19,7 +20,7 @@ const reactFileReg = /React\w+\.js$/;
 const mergeFiles: any = [
     'app.json',
     'app.js',
-    // 'app.tsx', TODO: 看下这里支持业务ts代码是否需要添加.tsx
+    // 'app.tsx',
     'package.json'
 ];
 
@@ -34,9 +35,10 @@ function isIgnoreFile(fileName: string){
     return ignoreFiles.includes(fileName) 
         || mergeFiles.includes(fileName)
         || lockFiles.includes(fileName)
+        || ignoreExt.includes(path.parse(fileName).ext)
         || configFileReg.test(fileName)
         || reactFileReg.test(fileName)
-        || docFilesReg.test(fileName);
+        || docFilesReg.test(fileName)
 }
 
 function isMergeFile(fileName: string){
@@ -50,10 +52,14 @@ function isLockFile(fileName: string) {
 
 function copyCurrentProject() {
     let projectDirName = cwd.replace(/\\/g, '/').split('/').pop();
-    let files = glob.sync( './!(node_modules|dist)', {
+    let files = glob.sync( './!(node_modules|dist|src|sign|.CACHE)', {
         //nodir: true
     });
-    let allPromiseCopy = files.map(function(el){
+    let allPromiseCopy = files
+    .filter((file) => {
+        return isIgnoreFile(path.basename(file)) ? false : true;
+    })
+    .map(function(el){
         let src = path.join(cwd, el);
         let dist = path.join(downLoadDir, projectDirName, el);
         if (/\.\w+$/.test(el)) {
@@ -68,7 +74,6 @@ function copyCurrentProject() {
 }
 
 function copyOtherProject() {
-    
     let files = glob.sync( downLoadDir + '/**', {nodir: true});
     files = files.filter((file)=>{
         let fileName = path.parse(file).base;
@@ -81,6 +86,7 @@ function copyOtherProject() {
             return true;
         }
     });
+    
 
     let allPromiseCopy = files.map(function(file){
         let dist = '';
@@ -88,7 +94,6 @@ function copyOtherProject() {
         if (/\/source\//.test(file)) {
             dist = path.join(mergeDir, 'source', file.split('/source/').pop());
         } else {
-            // e.g project.config.json...
             dist = path.join(mergeDir, file.split('/').pop());
         }
         fs.ensureFileSync(dist);

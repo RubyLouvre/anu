@@ -1,6 +1,7 @@
 import { NanachiLoaderStruct } from './nanachiLoader';
 import { successLog } from '../../packages/utils/logger/index';
 import * as path from 'path';
+import * as fs from 'fs-extra';
 const utils = require('../../packages/utils/index');
 
 /**
@@ -8,6 +9,8 @@ const utils = require('../../packages/utils/index');
  * exportCode fileLoader的输出结果，提供给 webpack，用来解析下个依赖文件
  * 处理快应用的多个文件合并成一个文件，QQ小程序添加空的样式文件的各种情况
  */
+
+
 
 module.exports = async function({ queues = [], exportCode = '' }: NanachiLoaderStruct, map: any, meta: any) {
     this._compiler.NANACHI = this._compiler.NANACHI || {};
@@ -30,10 +33,10 @@ module.exports = async function({ queues = [], exportCode = '' }: NanachiLoaderS
                 this.emitFile(path.join(path.dirname(relativePath), 'index.qss'), '', map);
             }
         }
+        
 
         this.emitFile(relativePath, code, map);
         const outputPathName = utils.getDistName(this.nanachiOptions.platform);
-        
         successLog(path.join(outputPathName, relativePath), code);
     });
     

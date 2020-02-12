@@ -18,6 +18,7 @@ import { intermediateDirectoryName } from './config/h5/configurations';
 import * as OS from 'os';
 import * as rd from 'rd';
 
+
 export interface NanachiOptions {
     watch?: boolean;
     platform?: validatePlatforms;
@@ -331,5 +332,5 @@ function getWebViewRules() {
     }
 
 }
-
+//module.exports = nanachi;
 export default nanachi;
