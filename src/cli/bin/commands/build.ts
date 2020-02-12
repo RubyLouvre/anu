@@ -4,14 +4,13 @@ import * as fs from 'fs-extra';
 import nanachi from '../../index';
 import config from '../../config/config';
 const { deepMerge } = require('../../packages/utils/index');
-
 interface BulidOptions {
     watch: boolean;
     buildType: string;
     [props: string]: any;
 }
 
-export default async function(args: BulidOptions){
+const build = async function(args: BulidOptions) {
     try {
         const { beta, betaUi, watch, compress, huawei, analysis, silent, typescript} = args;
         let { buildType } = args;
@@ -46,5 +45,8 @@ export default async function(args: BulidOptions){
         console.log(e);
         process.exit(1);
     }
-};
+}
+
+// export default build;
+module.exports = build;
 

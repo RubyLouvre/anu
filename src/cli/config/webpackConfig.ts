@@ -63,7 +63,14 @@ export default function({
     }
     
     let aliasMap = require('../packages/utils/calculateAliasConfig')();
-    let distPath = path.resolve(cwd, utils.getDistName(platform));
+    let distPath = '';
+    // chaika 模式下要打包到yourProject/dist中
+    if (process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE') {
+        distPath = path.resolve(cwd, '../../' ,utils.getDistName(platform));
+    } else {
+        distPath = path.resolve(cwd, utils.getDistName(platform));
+    }
+    
     if (platform === 'h5') {
         distPath = path.join(distPath, intermediateDirectoryName);
     }
@@ -172,7 +179,6 @@ export default function({
         // quickConfig可能不存在 需要try catch
         try {
              // quickConfig可能不存在 需要try catch
-             // chaika里，各种XConfig.json会合并到.CACHE/nanachi/source中
              var quickConfig: {
                  widgets?: Array<{
                      path?: string
@@ -181,17 +187,11 @@ export default function({
                      widgets?: any;
                  }
              } = {};
-             isChaikaMode()
-               ? (quickConfig = require(path.join(
-                   cwd,
-                   ".CACHE/nanachi/source",
-                   quickConfigFileName
-                 )))
-               : (quickConfig = require(path.join(
-                   cwd,
-                   "source",
-                   quickConfigFileName
-                 )));
+             quickConfig = require(path.join(
+                cwd,
+                "source",
+                quickConfigFileName
+             ))
             if (huawei) {
                 if (quickConfig && quickConfig.widgets) {
                     quickConfig.widgets.forEach(widget => {
@@ -236,9 +236,7 @@ export default function({
         )
     }
 
-    let entry = isChaikaMode()
-        ? path.join(cwd, '.CACHE/nanachi/source/app')
-        : path.join(cwd, 'source/app');
+    let entry = path.join(cwd, 'source/app');
 
     if (typescript) { entry += '.tsx' };
     return {
@@ -254,15 +252,17 @@ export default function({
         plugins: mergePlugins,
         resolve: {
             alias: aliasMap,
-            extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+            extensions: [
+                '.js', '.jsx', '.json', '.ts', '.tsx'
+            ],
             mainFields: ['main'],
-            symlinks: true,
+            symlinks: false, // chaika里node_modules需要解析成Project/.CACHE/nanachi/node_modules的symlink路径，而不是真实路径Project/node_modules
             modules: [
                 path.join(process.cwd(), 'node_modules')
             ]
         },
         watchOptions: {
-            ignored: /node_modules|dist/
+            ignored: /dist/
         },
         externals
         // performance: {

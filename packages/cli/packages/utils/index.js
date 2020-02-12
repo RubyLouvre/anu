@@ -10,6 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const execSync = require('child_process').execSync;
 const t = require('@babel/types');
 const path = __importStar(require("path"));
+const fs = __importStar(require("fs-extra"));
 const cwd = process.cwd();
 const chalk = require('chalk');
 const spawn = require('cross-spawn');
@@ -299,6 +300,16 @@ let utils = {
         const s = crypto.createHash('md5');
         s.update(dirname);
         return `anu-style-${s.digest('hex').substr(0, 6)}`;
+    },
+    isCheckQuickConfigFileExist(configFile) {
+        const configFileDist = path.join(cwd, 'source', configFile);
+        try {
+            fs.accessSync(configFileDist);
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
     }
 };
 module.exports = utils;

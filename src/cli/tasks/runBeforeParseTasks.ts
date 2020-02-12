@@ -1,5 +1,5 @@
 import * as path from 'path';
-import runChaikaMergeTask from './chaikaMergeTask/index';
+// import runChaikaMergeTask from './chaikaMergeTask/index';
 import runPreTasks from './pretasks';
 import { NanachiOptions } from '..';
 import utils from '../packages/utils/index';
@@ -24,14 +24,14 @@ export default async function(args: NanachiOptions) {
             const m = 'schnee-ui';
             if(!utils.hasNpm(m)) utils.installer(m);
         }
-        if (isChaikaMode()) {
-            await runChaikaMergeTask();
-        }
+        // if (isChaikaMode()) {
+        //     await runChaikaMergeTask();
+        // }
         await runPreTasks(args);
 
-        if (isChaikaMode()) {
-            changeWorkingDir();
-        }
+        // if (isChaikaMode()) {
+        //     changeWorkingDir();
+        // }
     } catch (err) {
         // eslint-disable-next-line
         console.log(err);

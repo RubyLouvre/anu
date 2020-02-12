@@ -23,7 +23,7 @@ function needInstall( pkgName: string ): boolean{
 }
 
 /**
- * patchComponents用于搜集文件中的patch components
+ * patchComponents用于搜集哪些文件中需要哪些patch components
  * {
  *     patchComponents: {'button':1, 'radio':1},
  *     patchPages?: {
@@ -59,7 +59,6 @@ module.exports = (): PluginObj => {
 
                 // 添加依赖的补丁组件, 比如快应用navigator --> x-navigator -> XNavigator
                 const patchComponentPath = getPatchComponentPath(  utils.parseCamel('x-'+nodeName)); 
-
                 //将补丁组件加入编译队列
                 modules.extraModules.push(patchComponentPath);
                 
@@ -68,7 +67,7 @@ module.exports = (): PluginObj => {
                     source: patchComponentPath,
                     sourcePath: pagePath
                 };
-
+                
                 config.patchComponents[nodeName] = config.patchComponents[nodeName] || patchComponentPath;
                 // 需要引入补丁组件的页面
                 var pagesNeedPatchComponents =  platConfig.patchPages || (platConfig.patchPages = {});
