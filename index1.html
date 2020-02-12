@@ -1,55 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8" />
-    <title>Document</title>
-    <script src="./dist/React.js"></script>
-    <!--<script src="https://cdn.bootcss.com/react/16.9.0/umd/react.production.min.js"></script>
-    <script src="https://cdn.bootcss.com/react-dom/16.8.6/umd/react-dom.production.min.js"></script>
-    -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <script type='text/javascript' src="./dist/React.js"></script>
+    <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+  <script type='text/javascript' src="./dist/ReactDOMServer.js"></script>-->
+
+
     <script type='text/javascript' src="./lib/babel.js"></script>
+
 
 </head>
 
 <body>
 
-    <div id="root"></div>
-    <script type='text/babel'>
-    if(!window.ReactDOM){
-        window.ReactDOM = React
-    }
-var {useState, useRef, useMemo,useCallback, useEffect,useLayoutEffect}  = React
-
-const set = new Set();
-function WithRef() {
-    const [count, setCount] = useState(0);
-    const [val, setValue] = useState('');
-
-    const prevCountRef = useRef(false);
-    useEffect(() => {
-        console.log('总是执行')
-        if (prevCountRef.current) {
-            console.log('只在更新时候执行', count)
-        } else {
-            console.log(prevCountRef.current, '第一次')
-            prevCountRef.current = true
-        }
-    });//总是执行
-
-    return (
-    <div>
-        <div>{count}</div>
-        <button onClick={() => {setCount(count+1)}}>+</button>
-        <input value={val} onChange={event => setValue(event.target.value)} />
+    <div id='root' class="root">
 
     </div>
-    )
-}
-ReactDOM.render(<WithRef />, document.querySelector('#root'))
-//useMemo的deps，如果不写总是执行， 如果为空数组则只执行一次，如果数组有值，变化才执行新的
-//useCallback的deps，如果不写总是返回新的， 如果为空数组则总是原来的， 如果数组有值，变化才返回新的
-//useEffect的deps，如果不写总是执行， 如果为空数组则只执行一次，如果数组有值，变化才执行新的
+    <script>
+        function rob(a, b, target) {
+            var hash = {}
+            var stack = [a]
+            while (queue.length) {
+                var node = stack.pop()
+                stack[target - node.val] = 1;
+                if (node.left) {
+                    stack.push(node.left)
+                }
+                if (node.right) {
+                    stack.push(node.right)
+                }
+
+            }
+            var stack = [b]
+            while (queue.length) {
+                var node = stack.pop()
+                if (stack[node.val] == 1) {
+                    return true
+                }
+                if (node.left) {
+                    stack.push(node.left)
+                }
+                if (node.right) {
+                    stack.push(node.right)
+                }
+            }
+            return false
+        }
+        function add(node, hash, target) {
+
+        }
+
+        // 仅计算闭区间 [start,end] 的最优结果
+        function robRange(nums, start, end) {
+            let n = nums.length;
+            let pre = 0, cur = 0;
+            for (let i = end; i >= start; i--) {
+                var temp = Math.max(pre, nums[i] + cur);
+                cur = prev;
+                pre = temp;
+            }
+            return temp;
+        }
 
     </script>
 </body>
