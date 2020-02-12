@@ -1,5 +1,0 @@
-<view>
-        <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="index" wx:key="item">
-          <view>{{item.item}}</view>
-        </block>
-      </view>
