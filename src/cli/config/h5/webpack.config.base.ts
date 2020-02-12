@@ -13,12 +13,13 @@ import {
 import * as fs from 'fs-extra';
 
 const context = path.resolve(process.cwd(), 'dist');
-const h5helperPath = path.resolve(__dirname, '../../packages/h5Helpers');
+const h5helperPath = path.resolve(process.cwd(), `node_modules/schnee-ui/h5`);
 const resolveFromContext = R.curryN(2, path.resolve)(context);
 const resolveFromDirCwd = R.curryN(2, path.resolve)(process.cwd());
 const resolveFromH5Helper = R.curryN(2, path.resolve)(h5helperPath);
-let templatePath = resolveFromH5Helper('./index.html');
+const REACT_H5 = resolveFromDirCwd('./source/ReactH5.js');
 
+let templatePath = path.resolve(__dirname, '../../packages/h5Helpers/index.html');
 try {
     const userTemplatePath = resolveFromDirCwd('./index.html');
     fs.statSync(userTemplatePath);
@@ -51,9 +52,9 @@ const webpackConfig: webpack.Configuration = {
     resolve: {
         alias: {
             ...retrieveNanachiConfig(),
-            react: resolveFromDirCwd('./source/ReactH5.js'),
-            '@react': resolveFromDirCwd('./source/ReactH5.js'),
-            'react-dom': resolveFromDirCwd('./source/ReactH5.js'),
+            react: REACT_H5,
+            '@react': REACT_H5,
+            'react-dom': REACT_H5,
             'schnee-ui': resolveFromContext(`${intermediateDirectoryName}/npm/schnee-ui`),
             '@internalComponents': resolveFromH5Helper('components'),
             '@internalConsts': path.resolve(__dirname, '../../consts/'),
