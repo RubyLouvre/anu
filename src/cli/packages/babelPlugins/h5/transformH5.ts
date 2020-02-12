@@ -22,6 +22,7 @@ const nativeComponentsMap: {
     switch: 'Switch',
     'checkbox-group': 'CheckboxGroup',
     label: 'Label',
+    picker: 'Picker',
     'radio-group': 'RadioGroup'
 };
 
@@ -36,7 +37,7 @@ const internalComponentsMap: {
     'rich-text': 'RichText',
     'scroll-view': 'ScrollView',
     audio: 'Audio',
-    picker: 'Picker'
+    //picker: 'Picker'
 };
 
 const componentsNameMap: {
@@ -110,9 +111,9 @@ module.exports = function (): PluginObj {
                         JSXAttribute(attr: NodePath<t.JSXAttribute>) {
                             const name = attr.get('name');
                             if (name.isJSXIdentifier()) {
-                                const attrName = name.node.name;
+                                let attrName = name.node.name;
                                 if (/^catch/.test(attrName)) {
-                                    name.node.name = attrName.replace(/^catch/, 'on');
+                                    attrName = name.node.name = attrName.replace(/^catch/, 'on');
                                 }
 
                                 if (attrName === 'onTap') {
@@ -194,10 +195,6 @@ module.exports = function (): PluginObj {
                         // 插入补丁组件import语句
                         const externalComponentName = nativeComponentsMap[componentName];
                         if (externalComponentName) {
-                            const SCHNEE_UI = 'schnee-ui';
-                            if (!utils.hasNpm(SCHNEE_UI)) {
-                                utils.installer(SCHNEE_UI);
-                            }
                             state.externalComponents = state.externalComponents || new Set();
                             state.externalComponents.add(externalComponentName);
                         }

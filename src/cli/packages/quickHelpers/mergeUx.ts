@@ -34,7 +34,7 @@ let map = {
         let isComponentReg = /[\\/]components[\\/]/;
         if (!isComponentReg.test(sourcePath)) return;
         queue.push({
-            code: beautify.js(result.code.replace('console.log(nanachi)', 'export {React}')),
+            code: beautify.js(result.code.replace('console.warn(nanachi)', 'export {React}')),
             path: relativePath,
             type: 'js'
         });

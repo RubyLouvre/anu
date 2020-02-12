@@ -4,10 +4,21 @@ import BUILD_OPTIONS from '../consts/buildOptions';
 import CliBuilder from './cliBuilder';
 import init from './commands/init';
 import createPage from './commands/createPage';
-import build from './commands/build';
+// import build from './commands/build';
 import install from './commands/install';
+import * as path from 'path';
 import '../tasks/chaikaMergeTask/injectChaikaEnv';
 const { version } = require('../package.json');
+import runChaikaMergeTask from '../tasks/chaikaMergeTask/index';
+let cwd = process.cwd();
+
+function changeWorkingDir(){
+    process.chdir(path.join(cwd, '.CACHE/nanachi'));
+}
+
+function isChaikaMode() {
+    return process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
+}
 
 const cli: CliBuilder = new CliBuilder();
 cli.checkNodeVersion('8.6.0');
@@ -52,8 +63,18 @@ platforms.forEach(function(el){
             isDefault ? compileType : null,
             des, 
             BUILD_OPTIONS,
-            (options) => {
-                build({
+            async (options) => {
+                if (isChaikaMode()) {
+                    try {
+                        await runChaikaMergeTask();
+                        // chaika 合并完毕后，进程工作目录要切换到 .CACHE/nanachi 下
+                        changeWorkingDir();
+                    } catch (err) {
+                        console.error(err);
+                        process.exit(1);
+                    }
+                }
+                require('./commands/build')({
                     ...options,
                     watch: compileType === 'watch',
                     buildType

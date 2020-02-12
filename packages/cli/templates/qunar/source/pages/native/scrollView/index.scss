@@ -1,0 +1,25 @@
+@import '@assets/global.scss';
+
+.scroll-view-item {
+    height: 200px;
+}
+.fake-button {
+    flex: 1;
+    background-color: gray;
+    margin: 20px;
+}
+
+.bc_green {
+    background: green;
+}
+.bc_red {
+    background: red;
+}
+.bc_yellow {
+    background: yellow;
+}
+.bc_blue {
+    background: blue;
+}
+
+

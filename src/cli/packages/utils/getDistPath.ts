@@ -24,6 +24,7 @@ function getDistPath(sourcePath: string) {
     distPath = process.env.ANU_ENV === 'quick' 
         ? distPath.replace(/\/dist\//, '/src/')
         : distPath;
+
     return distPath;
 };
 

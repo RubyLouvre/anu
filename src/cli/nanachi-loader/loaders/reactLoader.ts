@@ -21,6 +21,5 @@ module.exports = async function(code: string, map: any, meta: any) {
             process.exit(1);
         }        
     }
-    
     callback(null, code, map, meta);
 };
