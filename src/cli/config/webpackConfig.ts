@@ -34,6 +34,12 @@ const isChaikaMode = function() {
     return process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
 }
 
+// json 配置文件名
+const quickConfigFileName: string =
+  config.huawei && utils.isCheckQuickConfigFileExist("quickConfig.huawei.json")
+    ? "quickConfig.huawei.json"
+    : "quickConfig.json";
+
 export default function({
     platform,
     compress,
@@ -61,6 +67,7 @@ export default function({
     if (platform === 'h5') {
         distPath = path.join(distPath, intermediateDirectoryName);
     }
+
     let copyPluginOption: any = null;
     if (compress) {
         const compressImage = require(path.resolve(cwd, 'node_modules', 'nanachi-compress-loader/utils/compressImage.js'));
@@ -137,7 +144,7 @@ export default function({
                 fileLoader, 
                 postLoaders,
                 nodeLoader, 
-                reactLoader),
+                reactLoader)
         },
         {
             test: /\.(s[ca]ss|less|css)$/,
@@ -175,8 +182,16 @@ export default function({
                  }
              } = {};
              isChaikaMode()
-                 ? quickConfig = require(path.join(cwd, '.CACHE/nanachi/source', 'quickConfig.json'))
-                 : quickConfig = require(path.join(cwd, 'source', 'quickConfig.json'));
+               ? (quickConfig = require(path.join(
+                   cwd,
+                   ".CACHE/nanachi/source",
+                   quickConfigFileName
+                 )))
+               : (quickConfig = require(path.join(
+                   cwd,
+                   "source",
+                   quickConfigFileName
+                 )));
             if (huawei) {
                 if (quickConfig && quickConfig.widgets) {
                     quickConfig.widgets.forEach(widget => {
@@ -211,6 +226,16 @@ export default function({
             // eslint-disable-next-line
         }
     }
+
+    if (platform === 'h5') {
+        // 防止目录里面有些乱七八糟的文件
+        mergePlugins.push(
+            new webpack.IgnorePlugin({
+                resourceRegExp: /\.(\w?ux|pem)$/,
+            })
+        )
+    }
+
     let entry = isChaikaMode()
         ? path.join(cwd, '.CACHE/nanachi/source/app')
         : path.join(cwd, 'source/app');

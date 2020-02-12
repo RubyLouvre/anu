@@ -2,7 +2,8 @@
 /* eslint-disable*/
 const execSync = require('child_process').execSync;
 const t = require('@babel/types');
-import * as path from 'path';
+import * as path from "path";
+import * as fs from "fs-extra";
 import { Platform } from '../../consts/platforms';
 const cwd = process.cwd();
 const chalk = require('chalk');
@@ -349,6 +350,19 @@ let utils = {
         const s = crypto.createHash('md5');
         s.update(dirname);
         return `anu-style-${s.digest('hex').substr(0, 6)}`;
+    },
+    /**
+     * 检测配置文件是否存在
+     * @param configFile 配置文件名
+     */
+    isCheckQuickConfigFileExist(configFile: string) {
+        const configFileDist = path.join(cwd, 'source', configFile);
+        try {
+            fs.accessSync(configFileDist);
+            return true;
+        } catch (err) {
+            return false;
+        }
     }
 };
 

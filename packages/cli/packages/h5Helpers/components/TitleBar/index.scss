@@ -7,14 +7,12 @@
     z-index: 1000;
 }
 .__internal__Header-title {
-    flex-grow: 1;
-    padding: 0 48px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.__internal__Header-title {
-    margin-left: 6px;
+    text-align: center;
+    margin: 0 auto;
+    max-width: 80%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .__internal__Header-back {
     width: 48px;

@@ -10,7 +10,7 @@ let builtInStr = 'div,list,list-item,popup,refresh,richtext,stack,swiper,tab,tab
     'a,text,image,progress,rating,' +
     'input,option,picker,select,slider,switch,textarea,' +
     'video,canvas,web,map,marquee';
-builtInStr = ',' + getNativeComponentsNode_1.default().join(',');
+builtInStr = builtInStr + ',' + getNativeComponentsNode_1.default().join(',');
 let builtIn = {};
 builtInStr.replace(rword, function (el) {
     builtIn[el] = el;

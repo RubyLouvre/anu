@@ -43,7 +43,7 @@ let map = {
         if (!isComponentReg.test(sourcePath))
             return;
         queue.push({
-            code: js_beautify_1.default.js(result.code.replace('console.log(nanachi)', 'export {React}')),
+            code: js_beautify_1.default.js(result.code.replace('console.warn(nanachi)', 'export {React}')),
             path: relativePath,
             type: 'js'
         });

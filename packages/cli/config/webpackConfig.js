@@ -16,6 +16,7 @@ const quickPlugin_1 = __importDefault(require("../nanachi-loader/quickPlugin"));
 const chaikaPlugin_1 = __importDefault(require("../nanachi-loader/chaika-plugin/chaikaPlugin"));
 const copy_webpack_plugin_1 = __importDefault(require("copy-webpack-plugin"));
 const path = __importStar(require("path"));
+const webpack_1 = __importDefault(require("webpack"));
 const utils = require('../packages/utils/index');
 const configurations_1 = require("./h5/configurations");
 const quickAPIList_1 = __importDefault(require("../consts/quickAPIList"));
@@ -81,7 +82,7 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         exclude: /node_modules[\\/](?!schnee-ui[\\/])|React/,
     }, platform !== 'h5' ? nodeRules : [], {
         test: /React\w+/,
-        use: [].concat(fileLoader, postLoaders, nodeLoader, reactLoader),
+        use: [].concat(fileLoader, postLoaders, nodeLoader, reactLoader)
     }, {
         test: /\.(s[ca]ss|less|css)$/,
         use: [].concat(fileLoader, postLoaders, postCssLoaders, platform !== 'h5' ? aliasLoader : [], nanachiStyleLoader, prevCssLoaders, prevLoaders)
@@ -123,6 +124,11 @@ function default_1({ platform, compress, compressOption, plugins, rules, huawei,
         }
         catch (err) {
         }
+    }
+    if (platform === 'h5') {
+        mergePlugins.push(new webpack_1.default.IgnorePlugin({
+            resourceRegExp: /\.(\w?ux|pem)$/,
+        }));
     }
     let entry = isChaikaMode()
         ? path.join(cwd, '.CACHE/nanachi/source/app')

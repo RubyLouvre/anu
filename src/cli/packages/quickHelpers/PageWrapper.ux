@@ -87,7 +87,7 @@
           text: item.text
         })
       }
-      React.api.navigateTo({
+      React.api.redirectTo({
         url: item.pagePath
       })
     },

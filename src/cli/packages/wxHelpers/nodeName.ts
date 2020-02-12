@@ -9,7 +9,7 @@ let builtInStr = tags.join(',') + ',' +
     'navigator,audio,image,camera,video,live-player,live-pusher,map,canvas,open-data,web-view,radio-group,' +
     'slot,wxs,checkbox-group,loading';
 
-builtInStr = ',' + getNativeComponents().join(',');
+builtInStr =  builtInStr + ',' + getNativeComponents().join(',');
 
 let builtIn: any = {};
 builtInStr.replace(rword, function(el) {
