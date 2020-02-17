@@ -212,18 +212,33 @@ let utils = {
         });
     },
     installer(npmName: string, dev?: string, needModuleEntryPath?: boolean) {
+        const isChaika = process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
         needModuleEntryPath = needModuleEntryPath || false;
         return new Promise(resolve => {
             let bin = '';
             let options = [];
-            if (this.useYarn()) {
-                bin = 'yarn';
-                options.push('add', npmName, dev === 'dev' ? '--dev' : '--save');
-            } else {
-                bin = 'npm';
-                options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
+            // if (this.useYarn()) {
+            //     bin = 'yarn';
+            //     options.push('add', npmName, dev === 'dev' ? '--dev' : '--save');
+            // } else {
+            //     bin = 'npm';
+            //     options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
+            // }
+            bin = 'npm';
+            let args = [
+                'install',
+            ];
+            if (isChaika) {
+                // chaika 模式下要安装到项目根目录node_modules
+                args = args.concat(['--prefix', '../../']);
             }
-
+            args = args.concat(
+                [
+                    npmName,
+                    dev === 'dev' ? '--save-dev' : '--save'
+                ]
+            );
+            options.push(...args);
             let result = spawn.sync(bin, options, {
                 stdio: 'inherit'
             });
@@ -231,7 +246,6 @@ let utils = {
                 console.log(result.error);
                 process.exit(1);
             }
-
             let npmPath = '';
             npmName = npmName.split('@')[0];
             if (needModuleEntryPath) {

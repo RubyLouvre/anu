@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const webpack_config_base_1 = __importDefault(require("./webpack.config.base"));
 const path = __importStar(require("path"));
 const webpack_merge_1 = __importDefault(require("webpack-merge"));
+const pageWrapper = path.resolve(process.cwd(), "node_modules/schnee-ui/h5/components/pageWrapper");
 const config = webpack_merge_1.default(webpack_config_base_1.default, {
     mode: 'development',
     module: {
@@ -22,7 +23,7 @@ const config = webpack_merge_1.default(webpack_config_base_1.default, {
                 loader: require.resolve('babel-loader'),
                 options: {
                     cacheDirectory: true,
-                    root: path.resolve(__dirname, '../../packages/h5Helpers/pageWrapper'),
+                    root: pageWrapper,
                     plugins: [
                         require.resolve('@babel/plugin-transform-runtime'),
                         require.resolve('@babel/plugin-syntax-dynamic-import'),

@@ -52,13 +52,13 @@ function isLockFile(fileName: string) {
 
 function copyCurrentProject() {
     let projectDirName = cwd.replace(/\\/g, '/').split('/').pop();
-    let files = glob.sync( './!(node_modules|dist|src|sign|.CACHE)', {
+    let files = glob.sync( './!(node_modules|dist|src|sign|build|.CACHE)', {
         //nodir: true
     });
     let allPromiseCopy = files
-    .filter((file) => {
-        return isIgnoreFile(path.basename(file)) ? false : true;
-    })
+    // .filter((file) => {
+    //     return isIgnoreFile(path.basename(file)) ? false : true;
+    // })
     .map(function(el){
         let src = path.join(cwd, el);
         let dist = path.join(downLoadDir, projectDirName, el);

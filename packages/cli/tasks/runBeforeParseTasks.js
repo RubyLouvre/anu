@@ -21,6 +21,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __importStar(require("path"));
 const pretasks_1 = __importDefault(require("./pretasks"));
+const index_1 = __importDefault(require("../packages/utils/index"));
 let cwd = process.cwd();
 function changeWorkingDir() {
     process.chdir(path.join(cwd, '.CACHE/nanachi'));
@@ -31,6 +32,11 @@ function isChaikaMode() {
 function default_1(args) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            if ('h5' === args.platform) {
+                const m = 'schnee-ui';
+                if (!index_1.default.hasNpm(m))
+                    index_1.default.installer(m);
+            }
             yield pretasks_1.default(args);
         }
         catch (err) {
@@ -39,4 +45,3 @@ function default_1(args) {
     });
 }
 exports.default = default_1;
-;

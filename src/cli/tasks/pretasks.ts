@@ -59,17 +59,32 @@ function getQuickPkgFile() {
         Object.assign(projectPkg[key], quickPkg[key]);
     });
 
-    process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE'
-    ? projectPkgPath = path.join(cwd, '../../', 'package.json')
-    : projectPkgPath;
-
-    return [
+    let ret = [
         {
             id: projectPkgPath,
             content: JSON.stringify(projectPkg, null, 4),
             ACTION_TYPE: 'WRITE'
         }
-    ];
+    ]
+
+    if (process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE') {
+        // 项目根目录pkg.json 合并 scripts, devDependencies, 
+        const curProjectPath = path.join(cwd, '../../', 'package.json');
+        let curProjectPkg = require(curProjectPath);
+        curProjectPkg.scripts = curProjectPkg.scripts || {};
+        ['scripts', "devDependencies"].forEach(function(key){
+            Object.assign(curProjectPkg[key], quickPkg[key]);
+        });
+        ret = ret.concat([
+            {
+                id: curProjectPath,
+                content: JSON.stringify(curProjectPkg, null, 4),
+                ACTION_TYPE: 'WRITE'
+            }
+        ])
+    }
+
+    return ret;
 }
 
 //copy 快应用构建的基础依赖

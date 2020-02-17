@@ -11,7 +11,7 @@ const shelljs = require('shelljs');
 //const semver = require('semver');
 const mergeDir = path.join(cwd, '.CACHE/nanachi');
 let mergeFilesQueue = require('./mergeFilesQueue');
-let diff = require('deep-diff').diff;
+let diff = require('deep-diff');
 
 const buildType = process.argv[2].split(':')[1];
 const ignoreExt = ['.tgz'];
@@ -202,7 +202,7 @@ function customizer(objValue: any, srcValue: any) {
     }
 }
 
-function getMergedXConfigContent(config = {}) {
+function getMergedXConfigContent(config) {
     let env = ANU_ENV;
     let xConfigJsonDist =  path.join(mergeDir, 'source', `${env}Config.json`);
     return Promise.resolve({
@@ -238,7 +238,12 @@ function xDiff(list: any) {
     for (let i = 0; i < other.length; i++) {
         let x = diff(first.content, other[i].content) || [];
         x = x.filter(function(el: any){
-            return el.kind === 'E';
+            // 只比较key/value, 不比较数组, 数组认为是增量合并, diff模块中，如何有数组比较， DiffEdit中path字段必定有index(数字)
+            // [ DiffEdit { kind: 'E', path: [ 'list', 0, 'name' ], lhs: 1, rhs: 2 },
+            return el.kind === 'E' 
+                    && el.path.every(function(el){
+                        return typeof el === 'string'
+                    });
         });
         if (x.length) {
             isConfict = true;
@@ -476,6 +481,7 @@ export default function(){
                         return;
                     }
                     fs.ensureFileSync(dist);
+                   
                     fs.writeFile( dist, content, function(err: any){
                         if (err) {
                             rej(err);

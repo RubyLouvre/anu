@@ -8,7 +8,7 @@ const merge = require('lodash.mergewith');
 const shelljs = require('shelljs');
 const mergeDir = path.join(cwd, '.CACHE/nanachi');
 let mergeFilesQueue = require('./mergeFilesQueue');
-let diff = require('deep-diff').diff;
+let diff = require('deep-diff');
 const buildType = process.argv[2].split(':')[1];
 const ignoreExt = ['.tgz'];
 const ANU_ENV = buildType
@@ -161,7 +161,7 @@ function customizer(objValue, srcValue) {
         return Array.from(new Set(objValue.concat(srcValue)));
     }
 }
-function getMergedXConfigContent(config = {}) {
+function getMergedXConfigContent(config) {
     let env = ANU_ENV;
     let xConfigJsonDist = path.join(mergeDir, 'source', `${env}Config.json`);
     return Promise.resolve({
@@ -196,7 +196,10 @@ function xDiff(list) {
     for (let i = 0; i < other.length; i++) {
         let x = diff(first.content, other[i].content) || [];
         x = x.filter(function (el) {
-            return el.kind === 'E';
+            return el.kind === 'E'
+                && el.path.every(function (el) {
+                    return typeof el === 'string';
+                });
         });
         if (x.length) {
             isConfict = true;

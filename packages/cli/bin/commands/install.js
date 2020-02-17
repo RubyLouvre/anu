@@ -42,6 +42,7 @@ function unPack(src, dist) {
             let fileName = path.basename(el);
             if (/\/package\.json$/.test(el)
                 || /\/\.\w+$/.test(el)) {
+                fs.removeSync(path.join(dist, '..', fileName));
                 fs.moveSync(el, path.join(dist, '..', fileName));
             }
         });
@@ -114,35 +115,18 @@ function downLoadPkgDepModule() {
             && nanachiChaikaConfig.onInstallTarball
             && typeof nanachiChaikaConfig.onInstallTarball === 'function') {
             let gitRepo = nanachiChaikaConfig.onInstallTarball(key, depModules[key]);
-            console.log(gitRepo, '===');
             downLoadGitRepo(gitRepo, depModules[key]);
         }
         else if (isOldChaikaConfig(`${key}@${depModules[key]}`)) {
-            patchOldChaikaDownLoad(`${key}@${depModules[key]}`);
+            require(path.join(cwd, 'node_modules', '@qnpm/chaika-patch'))(`${key}@${depModules[key]}`, downLoadGitRepo, downLoadBinaryLib);
         }
         else {
         }
     });
 }
-function patchOldChaikaDownLoad(name) {
-    const [moduleName, versionName] = name.split('@');
-    const { moduleGitUrl, packageUrl, prefix } = require('./moduleUrls');
-    const patchModuleName = /home_/.test(moduleName)
-        ? `${prefix}_${moduleName}`
-        : `${prefix}_module_${moduleName}`;
-    if (/^#/.test(versionName)) {
-        const gitRepo = moduleGitUrl.replace('{module}', `${patchModuleName}`);
-        const branchName = versionName.replace(/^#/, '');
-        downLoadGitRepo(gitRepo, branchName);
-    }
-    else {
-        const patchModuleUrl = `${packageUrl}${patchModuleName}/${versionName}/${moduleName}-${versionName}.w`;
-        downLoadBinaryLib(patchModuleUrl, patchModuleName);
-    }
-}
 function default_1(name, opts) {
     if (process.env.NANACHI_CHAIK_MODE != 'CHAIK_MODE') {
-        console.log(chalk_1.default.bold.red('需在package.json中配置{"nanachi": {"chaika_mode": true }}, 拆库开发功能请查阅文档: https://rubylouvre.github.io/nanachi/documents/chaika.html'));
+        console.log(chalk_1.default.bold.red('需在package.json中配置{"nanachi": {"chaika": true }}, 拆库开发功能请查阅文档: https://rubylouvre.github.io/nanachi/documents/chaika.html'));
         process.exit(1);
     }
     let downloadInfo = {

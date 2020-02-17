@@ -13,6 +13,7 @@ function unPack(src: string, dist: string) {
     const unzipExec = shelljs.exec(`tar -zxvf ${src} -C ${dist}`, {
         silent: true
     });
+
     if (unzipExec.code) {
         // eslint-disable-next-line
         console.log(chalk.bold.red(unzipExec.stderr));
@@ -25,6 +26,7 @@ function unPack(src: string, dist: string) {
                 /\/package\.json$/.test(el)
                 || /\/\.\w+$/.test(el)
             ) {
+                fs.removeSync(path.join(dist, '..', fileName))
                 fs.moveSync( el, path.join(dist, '..', fileName));
             }
         });
@@ -132,12 +134,15 @@ function downLoadPkgDepModule(){
              * }
              */
             let gitRepo = nanachiChaikaConfig.onInstallTarball(key, depModules[key]);
-            console.log(gitRepo, '===');
             // 下载对应的tag或者branch
             downLoadGitRepo(gitRepo, depModules[key]);
         } else if (isOldChaikaConfig(`${key}@${depModules[key]}`)) {
             // 兼容老的chaika
-            patchOldChaikaDownLoad(`${key}@${depModules[key]}`);
+            require(path.join(cwd, 'node_modules', '@qnpm/chaika-patch'))(
+                `${key}@${depModules[key]}`,
+                downLoadGitRepo,
+                downLoadBinaryLib
+            )
         } else {
 
         }
@@ -146,34 +151,10 @@ function downLoadPkgDepModule(){
 }
 
 
-function patchOldChaikaDownLoad(name:string) {
-    // git@gitlab.corp.qunar.com:qunar_miniprogram/nnc_{module}.git
-    const [moduleName, versionName] = name.split('@');
-    const {moduleGitUrl, packageUrl, prefix} = require('./moduleUrls');
-
-    // home主包是 nnc_xxx 格式.  其他包是 nnc_module_xxx 格式
-    const patchModuleName = /home_/.test(moduleName) 
-        ? `${prefix}_${moduleName}` 
-        : `${prefix}_module_${moduleName}`;
-   
-    if (/^#/.test(versionName)) {
-        // 分支安装
-        const gitRepo = moduleGitUrl.replace('{module}', `${patchModuleName}`);
-        const branchName = versionName.replace(/^#/, '');
-        downLoadGitRepo(gitRepo, branchName);
-    } else {
-        // tag 安装， 注意主包格式和其他包不一样
-        const patchModuleUrl = `${packageUrl}${patchModuleName}/${versionName}/${moduleName}-${versionName}.w`;
-        downLoadBinaryLib(patchModuleUrl, patchModuleName);
-    }
-}
-
-
-
 export default function(name: string, opts: any){
     if (process.env.NANACHI_CHAIK_MODE != 'CHAIK_MODE') {
         // eslint-disable-next-line
-        console.log(chalk.bold.red('需在package.json中配置{"nanachi": {"chaika_mode": true }}, 拆库开发功能请查阅文档: https://rubylouvre.github.io/nanachi/documents/chaika.html'));
+        console.log(chalk.bold.red('需在package.json中配置{"nanachi": {"chaika": true }}, 拆库开发功能请查阅文档: https://rubylouvre.github.io/nanachi/documents/chaika.html'));
         process.exit(1);
     }
     

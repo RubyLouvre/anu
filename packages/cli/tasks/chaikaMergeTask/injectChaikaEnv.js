@@ -15,7 +15,7 @@ function injectChaikEnv() {
     }
     catch (err) {
     }
-    let chaikaMode = pkg.nanachi && pkg.nanachi.chaika_mode
+    let chaikaMode = pkg.nanachi && pkg.nanachi.chaika
         ? 'CHAIK_MODE'
         : 'NOT_CHAIK_MODE';
     process.env.NANACHI_CHAIK_MODE = process.env.NANACHI_CHAIK_MODE || chaikaMode;

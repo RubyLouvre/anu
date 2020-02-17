@@ -177,18 +177,23 @@ let utils = {
         });
     },
     installer(npmName, dev, needModuleEntryPath) {
+        const isChaika = process.env.NANACHI_CHAIK_MODE === 'CHAIK_MODE';
         needModuleEntryPath = needModuleEntryPath || false;
         return new Promise(resolve => {
             let bin = '';
             let options = [];
-            if (this.useYarn()) {
-                bin = 'yarn';
-                options.push('add', npmName, dev === 'dev' ? '--dev' : '--save');
+            bin = 'npm';
+            let args = [
+                'install',
+            ];
+            if (isChaika) {
+                args = args.concat(['--prefix', '../../']);
             }
-            else {
-                bin = 'npm';
-                options.push('install', npmName, dev === 'dev' ? '--save-dev' : '--save');
-            }
+            args = args.concat([
+                npmName,
+                dev === 'dev' ? '--save-dev' : '--save'
+            ]);
+            options.push(...args);
             let result = spawn.sync(bin, options, {
                 stdio: 'inherit'
             });

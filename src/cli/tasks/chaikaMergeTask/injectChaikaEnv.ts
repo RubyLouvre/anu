@@ -3,7 +3,7 @@ import * as path from 'path';
 function injectChaikEnv(){
     let pkg: {
         nanachi?: {
-            chaika_mode?: boolean
+            chaika?: boolean
         }
     } = {};
     try {
@@ -11,7 +11,7 @@ function injectChaikEnv(){
     } catch (err) {
         // eslint-disable-next-line
     }
-    let chaikaMode = pkg.nanachi && pkg.nanachi.chaika_mode
+    let chaikaMode = pkg.nanachi && pkg.nanachi.chaika
         ? 'CHAIK_MODE'
         : 'NOT_CHAIK_MODE';
     process.env.NANACHI_CHAIK_MODE = process.env.NANACHI_CHAIK_MODE || chaikaMode;

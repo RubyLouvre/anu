@@ -17,11 +17,12 @@ const ramda_1 = __importDefault(require("ramda"));
 const configurations_1 = require("./configurations");
 const fs = __importStar(require("fs-extra"));
 const context = path.resolve(process.cwd(), 'dist');
-const h5helperPath = path.resolve(__dirname, '../../packages/h5Helpers');
+const h5helperPath = path.resolve(process.cwd(), `node_modules/schnee-ui/h5`);
 const resolveFromContext = ramda_1.default.curryN(2, path.resolve)(context);
 const resolveFromDirCwd = ramda_1.default.curryN(2, path.resolve)(process.cwd());
 const resolveFromH5Helper = ramda_1.default.curryN(2, path.resolve)(h5helperPath);
-let templatePath = resolveFromH5Helper('./index.html');
+const REACT_H5 = resolveFromDirCwd('./source/ReactH5.js');
+let templatePath = path.resolve(__dirname, '../../packages/h5Helpers/index.html');
 try {
     const userTemplatePath = resolveFromDirCwd('./index.html');
     fs.statSync(userTemplatePath);
@@ -46,7 +47,7 @@ const webpackConfig = {
         publicPath: '/web/'
     },
     resolve: {
-        alias: Object.assign(Object.assign({}, configurations_1.retrieveNanachiConfig()), { react: resolveFromDirCwd('./source/ReactH5.js'), '@react': resolveFromDirCwd('./source/ReactH5.js'), 'react-dom': resolveFromDirCwd('./source/ReactH5.js'), 'schnee-ui': resolveFromContext(`${configurations_1.intermediateDirectoryName}/npm/schnee-ui`), '@internalComponents': resolveFromH5Helper('components'), '@internalConsts': path.resolve(__dirname, '../../consts/'), '@components': resolveFromContext(`${configurations_1.intermediateDirectoryName}/components`), '@qunar-default-loading': resolveFromH5Helper('components/Loading') }),
+        alias: Object.assign(Object.assign({}, configurations_1.retrieveNanachiConfig()), { react: REACT_H5, '@react': REACT_H5, 'react-dom': REACT_H5, 'schnee-ui': resolveFromContext(`${configurations_1.intermediateDirectoryName}/npm/schnee-ui`), '@internalComponents': resolveFromH5Helper('components'), '@internalConsts': path.resolve(__dirname, '../../consts/'), '@components': resolveFromContext(`${configurations_1.intermediateDirectoryName}/components`), '@qunar-default-loading': resolveFromH5Helper('components/Loading') }),
         modules: ['node_modules', path.resolve(__dirname, '../../node_modules'), resolveFromDirCwd('node_modules')],
         extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
     },

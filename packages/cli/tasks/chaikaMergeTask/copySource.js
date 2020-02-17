@@ -50,11 +50,8 @@ function isLockFile(fileName) {
 }
 function copyCurrentProject() {
     let projectDirName = cwd.replace(/\\/g, '/').split('/').pop();
-    let files = glob_1.default.sync('./!(node_modules|dist|src|sign|.CACHE)', {});
+    let files = glob_1.default.sync('./!(node_modules|dist|src|sign|build|.CACHE)', {});
     let allPromiseCopy = files
-        .filter((file) => {
-        return isIgnoreFile(path.basename(file)) ? false : true;
-    })
         .map(function (el) {
         let src = path.join(cwd, el);
         let dist = path.join(downLoadDir, projectDirName, el);
