@@ -1,10 +1,12 @@
-
-module.exports = function mapPropName(astPath) {
-    var nameNode = astPath.node.name;
-    var orig = nameNode.name;
-    if (orig === 'className') {
-        nameNode.name = 'class';
-    } else if (orig === 'hidden') {
-        nameNode.name = 'show';
+module.exports = function mapPropName(astPath, attrName, parentName) {
+    var attrNameNode = astPath.node.name;
+    if (attrName === 'className') {
+        attrNameNode.name = 'class';
+    }
+    else if (attrName === 'hidden') {
+        attrNameNode.name = 'show';
+    }
+    if (parentName == 'image' && attrName == 'onLoad') {
+        attrNameNode.name = 'onComplete';
     }
 };

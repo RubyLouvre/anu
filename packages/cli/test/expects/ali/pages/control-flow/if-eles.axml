@@ -1,0 +1,15 @@
+<block a:if="{{state.tasks !== null}}">
+        <view class="page-body">tasks</view>
+      </block>
+      <block a:elif="true">
+        <block a:if="{{state.task.length === 0}}">
+          <view class="page-body">
+            <text>{{tasks.length}}</text>
+          </view>
+        </block>
+        <block a:elif="true">
+          <view class="page-body">
+            <text>Hello world!</text>
+          </view>
+        </block>
+      </block>

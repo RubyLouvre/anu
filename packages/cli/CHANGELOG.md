@@ -1,5 +1,177 @@
 # Changelog
 
+
+# 1.4.5 (2019-12-23)
+## CLI
+#### Feature
+
+- 生产环境删除无用log，只保留warn, error。
+
+
+# 1.3.9 (2019-11-15)
+
+-  修复微信小程序、百度小程序因为onload方法通过类名上的container导致的两种BUG，页面多次跳转后某些组件不显示，web-view不显示的问题。
+-  删除非拆库模式下冗余.CACHE的构建目录。
+
+
+# 1.3.8 (2019-10-08)
+
+-  修复百度小程序在真机预览时，由于被压缩的缘故导致页面的React组件找不到对应的小程序组件，出现部分内容为空白。
+
+
+# 1.3.7 (2019-09-29)
+
+## 核心库
+
+#### Bug fix
+
+- 修复ReactQuick生命周期触发时机Bug。
+
+## CLI
+#### Feature
+
+- 支持360小程序编译，参考文档：https://rubylouvre.github.io/nanachi/documents/install.html 
+- 支持代码中引入快应用原生API，如: require('@system.app')。(需自行编写按需打包逻辑)
+- 快应用默认manifest.json文件添加display.titleBarBackgroundColor = '#ffffff'字段。
+
+# 1.3.6 (2019-09-23)
+
+## 核心库
+#### Feature
+
+- 添加React.memo方法。
+- 添加React.api.setBackgroundColor && React.api.setBackgroundTextStyle。
+- 事件系统中添加事件名映射，参考文档中映射事件名部分：https://rubylouvre.github.io/nanachi/documents/event.html
+- 添加ReactH5 剪切板api。
+- 添加ReactQuick accountGetProvider、accountAuthorize api。
+
+#### Bug fix
+
+- 修复useImperativeHandle 钩子不触发bug。
+
+## CLI
+#### Feature
+
+- 支持typescript，添加typescript模板。
+- nanachi api新增prevJsLoaders, postJsLoaders, prevCssLoaders, postCssLoaders。
+
+# 1.3.4 (2019-08-27)
+
+## 核心库
+#### Feature
+
+- 全平台支持Redux、Mobx。
+- 针对百度小程序的生命周期更化延迟detach钩子的触发
+
+#### Bug fix
+
+- 修复useCallback useEffect useState bug。
+- 修复快应用路由bug。
+- 修复小程序三目运算中的组件渲染错乱bug。
+
+## CLI
+#### Feature
+
+- H5添加scroll-view组件。
+- 新增Redux、Mobx模板。
+- CLI迁移至Typescript。
+
+#### Bug fix
+
+- 修复H5组件、api的一些bug。
+
+# 1.3.3 (2019-07-11)
+
+## 核心库
+#### Feature
+
+- 华为快应用添加两个静态对象，innerQuery、outterQuery分别获取页面间的传参和外部跳进来页面的传参。
+- 简化了快应用分享。
+
+## CLI
+#### Feature
+
+- chaika分包工具整合成nanachi webpack plugin。
+- h5方案重构，去掉mobx层，支持自定义html模板，与其他平台解析逻辑统一。
+- 支持快应用sign目录用户自定义。
+- 增加限制规则：jsx内不能调用非map函数。
+
+# 1.3.2 (2019-07-01)
+
+## 核心库
+#### Feature
+
+- 调整分享钩子的逻辑，确保onGlobalShare钩子有机会触发。
+
+#### Bug fix
+
+- 处理onShow, onHIde使用了async/await后，对应的全局构子不执行的问题。
+
+## CLI
+#### Feature
+
+- 华为background-image:url(xxx)自动添加引号处理，防止华为编译报错。
+- 华为负一屏卡片配置支持。
+
+# 1.3.1 (2019-06-24)
+
+## 核心库
+#### Feature
+
+- 添加快应用对React.api.switchTab的支持。
+- 快应用getStorage，出错时也回调success，返回一个空对象。
+
+#### Bug fix
+
+- 修正微信小程序的核心库 attached里面的闭包引发的错误问题。
+- 防止多次对API进行Promise化。
+
+## CLI
+#### Feature
+
+- 添加pages目录检查：page目录下（除common目录），所有目录最多包含一个js文件。（只在用到分包功能情况时检查）
+- 增加快应用form, button标签submit相关事件忽略。
+- 兼容支付宝标签属性bug（字符串问题），添加wxml补丁。
+
+#### Bug fix
+- 修复快应用配置不生效问题。
+
+# 1.3.0 (2019-06-14)
+
+## CLI
+#### Feature
+
+- 所有平台迁移至webpack4编译。
+- app.js中引入的工具函数(common)或组件(components)目录不会配置到app.json文件中
+
+#### Bug fix
+- 修复linux平台路径找不到bug。
+
+# 1.2.8 (2019-06-06)
+## 核心库
+#### Feature
+
+- 快应用支持与小程序一样的getCurrentPages, navigatorBack 方法。
+- 支持微信小程序插件
+- 空心化核心库的insertElement, removeElement, emptyElement方法，换言之，它们只是空方法，里面没有代码。因为我们也不需生成假的DOM节点，这些少生成许多对象，性能大大提升。
+
+#### Bug fix
+
+- 事件里可以条件绑定函数。
+
+## CLI
+#### Feature
+
+- 微信小程序，QQ小程序不会在循环中添加wx:key="*this"
+- 模板项目添加分包与分包预加载的演示
+- 微信小程序、QQ小程序编译改用全新的nanachi-webpack，那是基于webpack4的CLI，性能是原来2倍的。
+- huawei合并manifest问题
+- pages目录下面请允许添加每个频道自己的components, assets, common目录，有利于分包。如果不这样做，每个频道的组件都放到主包中，导致体积超出限制。
+- 更新disabledTitleBarPages的逻辑(快应用)
+
+#### Bug fix
+- windows快应用产物后缀名bug。 #984
+
 # 1.2.7 (2019-05-28)
 ## CLI
 #### Bug fix

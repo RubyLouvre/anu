@@ -1,31 +1,46 @@
 {
-    "presets": [
-      [ "es2015",{
+  "presets": [
+    [
+      "es2015",
+      {
         "modules": false
-      } ], "react"  
+      }
     ],
-   
-    "plugins": [
-        [  "transform-class-properties",
-            "transform-es2015-classes", {
-                "loose": true
-            }
+    "react"
+  ],
+  "plugins": [
+    [
+      "transform-class-properties",
+      "transform-es2015-classes",
+      {
+        "loose": true
+      }
+    ],
+    [
+      "transform-object-rest-spread",
+      {
+        "useBuiltIns": true
+      }
+    ],
+    [
+      "module-resolver",
+      {
+        "root": [
+          "."
         ],
-        ["transform-object-rest-spread", { "useBuiltIns": true }],
-        ["module-resolver", {
-           "root": ["."],
-           "alias": {
-             "react-core":"./packages/core",
-             "react-fiber": "./packages/fiber",
-             "prop-types": "./lib/ReactPropTypes",
-             "create-react-class": "./lib/createClass",
-             "react-server-renderer":"./dist/ReactDOMServer",
-             "react-noop-renderer": "./dist/ReactNoop",
-             "react": "./dist/React",
-             "lib": "./lib",
-             "react-dom": "./dist/React",
-             "test-utils": "./lib/ReactTestUtils"
-           }
-         }]
+        "alias": {
+          "react-core": "./packages/core",
+          "react-fiber": "./packages/fiber",
+          "prop-types": "./lib/ReactPropTypes",
+          "create-react-class": "./lib/createClass",
+          "react-server-renderer": "./dist/React/server",
+          "react-noop-renderer": "./dist/ReactNoop",
+          "react": "./dist/React",
+          "lib": "./lib",
+          "react-dom": "./dist/React",
+          "test-utils": "./lib/ReactTestUtils"
+        }
+      }
     ]
+  ]
 }

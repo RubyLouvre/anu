@@ -7,7 +7,7 @@ import './index.scss';
 class P extends React.Component {
   constructor() {
     super();
-    const ROOT_PATH = '../../../../pages/apis/canvas';
+    const ROOT_PATH = '/pages/apis/canvas';
     this.state = {
       list: 'fillStyle,arc,strokeStyle,textBaseline,rect,globalAlpha'.split(',').map(function(name) {
         return {

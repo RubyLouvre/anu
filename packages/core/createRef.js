@@ -4,7 +4,9 @@ export function createRef() {
     };
 }
 
-export function forwardRef(fn){
-    createRef.render = fn;
-    return createRef;
+
+export function forwardRef(fn) {
+    return function ForwardRefComponent(props){
+        return fn(props, this.ref)   // createElement(type, props)
+    }
 }

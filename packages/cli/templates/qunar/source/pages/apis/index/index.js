@@ -15,7 +15,8 @@ class P extends React.Component {
     super();
     this.state = {
       text: 'page3',
-      img: []
+      imgs: [],
+      imgs2: []
     };
   }
   config = {
@@ -83,15 +84,17 @@ class P extends React.Component {
     console.log('upload');
     React.api.chooseImage({
       success: function(data) {
-        console.log(`handling success: ${data.uri}`);
+        console.log("handling success: ", data);
         React.api.uploadFile({
           url: 'http://yapi.demo.qunar.com/mock/291/aaaaa',
-          filePath: data.uri,
-          name: 'file1',
+          filePath: data.tempFilePaths[0],
+          name: 'file',
+          fileType: 'image',
           formData: {
             user: 'test'
           },
           success: function(data) {
+            console.log(data, '---')
             React.api.showModal({
               title: 'success'
             });
@@ -102,6 +105,13 @@ class P extends React.Component {
               title: 'fail',
               content: `code = ${code}`
             });
+          },
+          getRawResult: function(task){
+              task.onProgressUpdate(res => {
+                console.log('上传进度', res.progress);
+                console.log('已经上传的数据长度', res.totalBytesSent);
+                console.log('预期需要上传的数据总长度', res.totalBytesExpectedToSend);
+              });
           }
         });
       }
@@ -128,6 +138,13 @@ class P extends React.Component {
       },
       fail: function(data, code) {
         alert(`handling fail, code = ${code}`);
+      },
+      getRawResult: function(task){
+        task.onProgressUpdate(res => {
+          console.log('下载进度', res.progress);
+          console.log('已经下载的数据长度', res.totalBytesWritten);
+          console.log('预期需要下载的数据总长度', res.totalBytesExpectedToWrite);
+        });
       }
     });
   }
@@ -157,7 +174,7 @@ class P extends React.Component {
         }
       }
   }
-
+  
 
   getSavedFileInfo() {
     React.api.getSavedFileInfo({
@@ -207,12 +224,21 @@ class P extends React.Component {
       count: 1,
       success: res => {
         this.setState({
-          img: res.tempFilePaths
+          imgs: res.tempFilePaths
         })
       }
     })
    }
-
+   chooseImage2() {
+    React.api.chooseImage({
+      count: 3,
+      success: res => {
+        this.setState({
+          imgs2: res.tempFilePaths
+        })
+      }
+    })
+   }
    setTitleBar() {
     React.api.setNavigationBarTitle({
       title: 'a new title',
@@ -262,13 +288,13 @@ class P extends React.Component {
             <text>打电话</text>
           </div>
           <div onClick={this.upload} class="anu-item">
-            <text>文件上传</text>
+            <text>文件上传，里面有一个getRawResult方法，可以获uploadTask对象，从而添加进度回调</text>
           </div>
           <div onClick={this.download} class="anu-item">
-            <text>文件下载</text>
+            <text>文件下载，里面有一个getRawResult方法，可以获downloadTask对象，从而添加进度回调</text>
           </div>
           <div
-            onClick={this.gotoSome.bind(this, '../../../pages/apis/request/index')}
+            onClick={this.gotoSome.bind(this, '/pages/apis/request/index')}
             class="anu-item"
           >
             <text>数据请求</text>
@@ -277,7 +303,7 @@ class P extends React.Component {
             <text>扫一扫</text>
           </div>
           <div
-            onClick={this.gotoSome.bind(this, '../../../pages/apis/storage/index')}
+            onClick={this.gotoSome.bind(this, '/pages/apis/storage/index')}
             class="anu-item"
           >
             <text>存储</text>
@@ -287,13 +313,13 @@ class P extends React.Component {
             <text>获取本地文件</text>
           </div>
           <div
-            onClick={this.gotoSome.bind(this, '../../../pages/apis/clipboard/index')}
+            onClick={this.gotoSome.bind(this, '/pages/apis/clipboard/index')}
             class="anu-item"
           >
             <text>剪切板</text>
           </div>
           <div
-            onClick={this.gotoSome.bind(this, '../../../pages/apis/canvas/index')}
+            onClick={this.gotoSome.bind(this, '/pages/apis/canvas/index')}
             class="anu-item"
           >
             <text>画板</text>
@@ -308,10 +334,18 @@ class P extends React.Component {
             <text>获取系统信息(getSystemInfo)</text>
           </div>
           <div onClick={this.chooseImage} class="anu-item">
-            <text>选择图片</text>
+            <text>选择图片(1张)</text>
           </div>
           {
-            this.state.img.map(function(item) {
+            this.state.imgs.map(function(item) {
+              return  <image src={item}/>
+            })
+          }
+          <div onClick={this.chooseImage2} class="anu-item">
+            <text>选择图片(多张)</text>
+          </div>
+          {
+            this.state.imgs2.map(function(item) {
               return  <image src={item}/>
             })
           }
@@ -322,7 +356,7 @@ class P extends React.Component {
             <text>保存图标到桌面</text>
           </div>
           <div
-            onClick={this.gotoSome.bind(this, '../../../pages/apis/route/index')}
+            onClick={this.gotoSome.bind(this, '/pages/apis/route/index')}
             class="anu-item"
           >
             <text>路由</text>

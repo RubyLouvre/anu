@@ -52,7 +52,7 @@ export var duplexMap = {
                 syncValue(node, "checked", !!props.checked);
             }
             const isActive = node === node.ownerDocument.activeElement;
-            const value = isActive ? node.value : getSafeValue(props.value);
+            const value = getSafeValue(props.value);
             if (value != null) {
                 if (props.type === "number") {
                     if (

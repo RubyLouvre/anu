@@ -17,13 +17,10 @@ export function promisefyApis(ReactWX, facade, more) {
                 const p = new Promise((resolve, reject) => {
                     ['fail', 'success', 'complete'].forEach(k => {
                         obj[k] = res => {
+                            //执行用户自己的fail，success，complete
                             options[k] && options[k](res);
                             if (k === 'success') {
-                                if (key === 'connectSocket') {
-                                    resolve(task);
-                                } else {
-                                    resolve(res);
-                                }
+                                resolve(key === 'connectSocket' ? task: res);
                             } else if (k === 'fail') {
                                 reject(res);
                             }
@@ -33,19 +30,12 @@ export function promisefyApis(ReactWX, facade, more) {
                         console.warn('平台未不支持',key, '方法');//eslint-disable-line
                     } else {
                         task = needWrapper.apply(facade, args);
+                        if(task && options.getRawResult){
+                            options.getRawResult(task);
+                        }
                     }
                 });
-                if (key === 'uploadFile' || key === 'downloadFile') {
-                    p.progress = cb => {
-                        task.onProgressUpdate(cb);
-                        return p;
-                    };
-                    p.abort = cb => {
-                        cb && cb();
-                        task.abort();
-                        return p;
-                    };
-                }
+                
                 return p;
             };
         } else {
@@ -88,6 +78,8 @@ export function registerAPIs(ReactWX, facade, override) {
 }
 
 export function registerAPIsQuick(ReactWX, facade, override) {
-    ReactWX.api = {};
-    promisefyApis(ReactWX, facade, override(facade) );
+    if(!ReactWX.api ){ //防止多次promisefyApis
+        ReactWX.api = {};
+        promisefyApis(ReactWX, facade, override(facade) );
+    }
 }

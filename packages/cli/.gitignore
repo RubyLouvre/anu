@@ -41,3 +41,6 @@ Pods/
 
 # local scripts
 .publish_scripts
+
+# h5 temp directory
+__intermediate__directory__do__not__modify__

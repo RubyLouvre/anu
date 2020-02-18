@@ -116,7 +116,15 @@ export function createFactory(type) {
     factory.type = type;
     return factory;
 }
-
+/*
+tag的值
+FunctionComponent = 1;
+ClassComponent = 2;
+HostPortal = 4; 
+HostComponent = 5;
+HostText = 6;
+Fragment = 7;
+*/
 function ReactElement(type, tag, props, key, ref, owner) {
     var ret = {
         type,
@@ -206,11 +214,7 @@ export function fiberizeChildren(children, fiber) {
 function getComponentKey(component, index) {
     // Do some typechecking here since we call this blindly. We want to ensure
     // that we don't block potential future ES APIs.
-    if (
-        typeof component === 'object' &&
-        component !== null &&
-        component.key != null
-    ) {
+    if (Object(component).key != null ) {
         // Explicit key
         return escape(component.key);
     }

@@ -1,0 +1,13 @@
+<view>
+        <block tt:if="{{state.show}}">
+          <block tt:if="{{state.isOk}}">
+            <view>hello word</view>
+          </block>
+          <block tt:elif="true">
+            <view>hello</view>
+          </block>
+        </block>
+        <block tt:elif="true">
+          <view>nanachi</view>
+        </block>
+      </view>

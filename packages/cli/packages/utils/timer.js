@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class Timer {
     constructor() {
         this.startTime = process.hrtime();
@@ -16,4 +18,4 @@ class Timer {
         return (this.endTime[0] + this.endTime[1] / NS_PER_SEC).toFixed(precision);
     }
 }
-module.exports = Timer;
+exports.default = Timer;

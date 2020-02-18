@@ -1,6 +1,14 @@
+@import '@assets/global.scss';
+
 .scroll-view-item {
     height: 200px;
 }
+.fake-button {
+    flex: 1;
+    background-color: gray;
+    margin: 20px;
+}
+
 .bc_green {
     background: green;
 }
@@ -13,3 +21,5 @@
 .bc_blue {
     background: blue;
 }
+
+

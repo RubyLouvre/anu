@@ -23,7 +23,7 @@ class P extends React.Component{
         });
     }
     config = {
-        backgroundColor: '#FFF',
+        backgroundColor: '#eee',
         navigationBarBackgroundColor: '#fff',
         navigationBarTitleText: '瀑布流',
         navigationBarTextStyle: 'black',
@@ -52,7 +52,7 @@ class P extends React.Component{
                         this.state.data.map(function(item,index) {
                             return (
                                 index%2 === 0  &&
-                                <div class='item'>
+                                <div class='item' key={item.text}>
                                     <image src={item.image} />
                                     <text>{item.text}</text>
                                 </div>
@@ -65,7 +65,7 @@ class P extends React.Component{
                         this.state.data.map(function(item,index) {
                             return (
                                 index%2 !== 0  &&
-                                <div class='item'>
+                                <div class='item' key={item.text}>
                                     <image  src={item.image} />
                                     <text>{item.text}</text>
                                 </div>

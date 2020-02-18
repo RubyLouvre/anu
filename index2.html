@@ -4,16 +4,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-<!--
-  <script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
-  <script src="https://cdn.bootcss.com/react-dom/16.7.0-alpha.2/umd/react-dom.development.js"></script>
--->
-<script src="./dist/React.js"></script>
-  <script src="./lib/ReactPropTypes.js"></script>
-<!--
- <script src="./dist/React.js"></script>
--->
+  <script type='text/javascript' src="./dist/React.js"></script>
+  <!-- <script type='text/javascript' src="./lib/ReactTestUtils.js"></script>
+  <script type='text/javascript' src="./dist/ReactDOMServer.js"></script>-->
+
+  <script type='text/javascript' src="./test/react.development.js"></script>
+  <script type='text/javascript' src="./test/react-dom.development.js"></script>
+
   <script type='text/javascript' src="./lib/babel.js"></script>
+
 
 </head>
 
@@ -22,54 +21,62 @@
   <div id='root' class="root">
 
   </div>
-  <script type='text/babel'>
+  <script>
+  
+  var findSubstring = function(s, words) {
+    if(s.length == 0 || words.length == 0){
+        return []
+    }
+    var m = words[0].length;
+    var n = s.length, left = 0, right = 0;
+    var hash = {}, index = 0, indexes = {}, res = [];
+    for(var word of words){
+        hash[word] = 1   
+    }
+    var hit = false, counts = 0
+    while(left < n){
+        
+        while(right < n && (right - left+ 1 <= m || left > right)){
+            if(right - left+ 1 == m ){
+                let str = s.substring(left, right+1);
+                if(hash[str]){
+                  if(hit){
+                    if(nextLeft === left){
+                      hash[str] = 1
+                      counts++
+                      if(counts === words.length){
+                        counts = 0;
+                    for(let h in hash){
+                       hash[h] = 1;
+                    }
+                   // res.pop()
+                    hit = false
+                      }
+                    } 
+                    counts = 0;
+                    for(let h in hash){
+                       hash[h] = 1;
+                    }
+                    res.pop()
+                    hit = false
+                    continue
+                  }
+                
+                  res[index] = left
+                  hash[str] = 0
+                  hit = true;
+                  counts++
+                  nextLeft = right+1
+                }
+            }
+            right++
+        }
+        left++
+    }
+    return res
+    
+};
+  </script>
+</body>
 
-var container = document.getElementById('root');
-  if (!window.ReactDOM) {
-      window.ReactDOM = React;
-  }
-var newContext = React.createContext("xxxx")
-class A extends React.Component{
-  state = {
-    time: 19860219
-  }
-  onClick(){
-    this.setState({
-      time: new Date - 0
-    })
-  }
-  render(){
-    console.log('a render')
-    return <div>
-      <newContext.Provider value={this.state.time} >
-            <B />
-            <button type="button" onClick={this.onClick.bind(this) }> change </button>
-      </newContext.Provider>
-    </div>
-  }
-
-}
-class B extends React.Component{
-  static contextType = newContext;
-  shouldComponentUpdate(a, b){
-    return false
-  }
-  render(){
-    console.log('b render')
-    return <div>|{this.context}|<C /></div>
-  }
-
-}
-class C extends React.Component{
-  render(){
-      console.log('c render')
-      return <newContext.Consumer>
-          { 
-          (b)=><strong>{b}</strong>
-          }</newContext.Consumer>
-  }
-}
-ReactDOM.render(<A />, container)
-	
-    </script>
 </html>

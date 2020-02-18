@@ -1,78 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-
-  <script src="https://cdn.bootcss.com/react/16.7.0-alpha.2/umd/react.development.js"></script>
-  <script src="https://cdn.bootcss.com/react-dom/16.7.0-alpha.2/umd/react-dom.development.js"></script>
-
-  <script src="./lib/ReactPropTypes.js"></script>
-<!--
- <script src="./dist/React.js"></script>
--->
-  <script type='text/javascript' src="./lib/babel.js"></script>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+    <script src="./dist/React.js"></script>
+    <!--<script src="https://cdn.bootcss.com/react/16.9.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.bootcss.com/react-dom/16.8.6/umd/react-dom.production.min.js"></script>
+    -->
+    <script type='text/javascript' src="./lib/babel.js"></script>
 
 </head>
 
 <body>
 
-  <div id='root' class="root">
-
-  </div>
-  <script type='text/babel'>
-
-var container = document.getElementById('root');
-class A extends React.Component{
-  state = {
-    time: 19860219
-  }
-  getChildContext(){
-    return {
-      b: this.state.time
+    <div id="root"></div>
+    <script type='text/babel'>
+    if(!window.ReactDOM){
+        window.ReactDOM = React
     }
-  }
-  static childContextTypes = {
-    b: ReactPropTypes.number
-  }
-  onClick(){
-    this.setState({
-      time: new Date - 0
-    })
-  }
-  render(){
-    console.log('a render')
-    return <div><B />
-      <button type="button" onClick={
-          this.onClick.bind(this)
-    }> change </button></div>
-  }
+var {useState, useRef, useMemo,useCallback, useEffect,useLayoutEffect}  = React
 
-}
-class B extends React.Component{
-  static contextTypes = {
-     b: ReactPropTypes.number
-  }
-  shouldComponentUpdate(a, b){
-    return false
-  }
-  render(){
-    console.log('b render')
-    return <div>|{this.context.b}|<C /></div>
-  }
+const set = new Set();
+function WithRef() {
+    const [count, setCount] = useState(0);
+    const [val, setValue] = useState('');
 
+    const prevCountRef = useRef(false);
+    useEffect(() => {
+        console.log('总是执行')
+        if (prevCountRef.current) {
+            console.log('只在更新时候执行', count)
+        } else {
+            console.log(prevCountRef.current, '第一次')
+            prevCountRef.current = true
+        }
+    });//总是执行
+
+    return (
+    <div>
+        <div>{count}</div>
+        <button onClick={() => {setCount(count+1)}}>+</button>
+        <input value={val} onChange={event => setValue(event.target.value)} />
+
+    </div>
+    )
 }
-class C extends React.Component{
-  static contextTypes = {
-     b: ReactPropTypes.number
-  }
-  render(){
-    console.log('c render')
-    return <strong>{this.context.b}</strong>
-  }
-}
-ReactDOM.render(<A />, container)
-	
+ReactDOM.render(<WithRef />, document.querySelector('#root'))
+//useMemo的deps，如果不写总是执行， 如果为空数组则只执行一次，如果数组有值，变化才执行新的
+//useCallback的deps，如果不写总是返回新的， 如果为空数组则总是原来的， 如果数组有值，变化才返回新的
+//useEffect的deps，如果不写总是执行， 如果为空数组则只执行一次，如果数组有值，变化才执行新的
+
     </script>
+</body>
+
 </html>

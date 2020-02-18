@@ -46,12 +46,12 @@ class P extends React.Component {
                 {this.state.array.map(function (item) {
                     return (
                         <div class='anu-item'>
-                            <navigator
+                            <div
                                 onClick={this.gotoSome.bind(this, item.url)}
                                 open-type="navigate"
                                 hover-class="navigator-hover"
                                 url={item.url}
-                            > {item.name}</navigator>
+                            > {item.name}</div>
                         </div>
                     );
                 })}

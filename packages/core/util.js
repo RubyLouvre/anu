@@ -178,6 +178,7 @@ export function typeNumber(data) {
     return a || 8;
 }
 
+
 export let toArray =
     Array.from ||
     function(a) {

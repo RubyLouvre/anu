@@ -1,4 +1,6 @@
-module.exports = [
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const platforms = [
     {
         buildType: 'wx',
         des: '微信小程序',
@@ -28,4 +30,9 @@ module.exports = [
         buildType: 'h5',
         des: 'H5'
     },
+    {
+        buildType: '360',
+        des: '360小程序'
+    }
 ];
+exports.default = platforms;

@@ -80,7 +80,9 @@ export var noPromiseApis = {
     getProvider: true,
 
     // 特殊功能API
-    canvasToTempFilePath: true
+    canvasToTempFilePath: true,
+    // h5 蒙层api
+    createModal: true
 };
 export var otherApis = {
     // 网络
@@ -217,5 +219,9 @@ export var otherApis = {
     chooseInvoiceTitle: true,
     checkIsSupportSoterAuthentication: true,
     startSoterAuthentication: true,
-    checkIsSoterEnrolledInDevice: true
+    checkIsSoterEnrolledInDevice: true,
+
+    // 设置背景图片
+    setBackgroundColor: true,
+    setBackgroundTextStyle: true
 };

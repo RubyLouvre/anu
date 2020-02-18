@@ -6,51 +6,14 @@ class P extends React.Component {
         this.state = {
             show: false,
             index: 0,
-            multiIndex: ['无脊柱动物', '扁性动物', '猪肉绦虫'],
             date: '2016-09-01',
             time: '12:01',
             region: ['广东省', '广州市', '海珠区'],
+            multiIndex: [0, 0, 0],
             multiArray: [
-                {
-                    name: '无脊柱动物',
-                    sub: [
-                        {
-                            name: '扁性动物',
-                            sub: [
-                                {
-                                    name: '猪肉绦虫'
-                                },
-                                {
-                                    name: '吸血虫'
-                                }
-                            ]
-                        },
-                        {
-                            name: '线形动物',
-                            sub: [
-                                {
-                                    name: '蛔虫'
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    name: '脊柱动物',
-                    sub: [
-                        {
-                            name: '鱼',
-                            sub: [
-                                {
-                                    name: '鲫鱼'
-                                },
-                                {
-                                    name: '带鱼'
-                                }
-                            ]
-                        }
-                    ]
-                }
+                ["无脊柱动物", "脊柱动物"],
+                ["扁性动物", "线形动物", "环节动物", "软体动物", "节肢动物"],
+                ["猪肉绦虫", "吸血虫"]
             ],
             list1: [
                 'iphone',
@@ -97,10 +60,82 @@ class P extends React.Component {
         });
     }
 
-    bindMultiPickerChange(e) {
-        this.setState({
-            multiIndex: e.value
-        });
+    bindPickerChange(e) {
+        // eslint-disable-next-line
+        console.log("确认", e);
+    }
+    bindPickerColumnChange(e) {
+        console.log("修改的列为", e.detail.column, "，值为", e.detail.value);
+        var data = {
+            multiArray: this.state.multiArray,
+            multiIndex: this.state.multiIndex
+        };
+        data.multiIndex[e.detail.column] = e.detail.value;
+        switch (e.detail.column) {
+            case 0:
+                switch (data.multiIndex[0]) {
+                    case 0:
+                        data.multiArray[1] = [
+                            "扁性动物",
+                            "线形动物",
+                            "环节动物",
+                            "软体动物",
+                            "节肢动物"
+                        ];
+                        data.multiArray[2] = ["猪肉绦虫", "吸血虫"];
+                        break;
+                    case 1:
+                        data.multiArray[1] = ["鱼", "两栖动物", "爬行动物"];
+                        data.multiArray[2] = ["鲫鱼", "带鱼"];
+                        break;
+                }
+                data.multiIndex[1] = 0;
+                data.multiIndex[2] = 0;
+                break;
+            case 1:
+                switch (data.multiIndex[0]) {
+                    case 0:
+                        switch (data.multiIndex[1]) {
+                            case 0:
+                                data.multiArray[2] = ["猪肉绦虫", "吸血虫"];
+                                break;
+                            case 1:
+                                data.multiArray[2] = ["蛔虫"];
+                                break;
+                            case 2:
+                                data.multiArray[2] = ["蚂蚁", "蚂蟥"];
+                                break;
+                            case 3:
+                                data.multiArray[2] = ["河蚌", "蜗牛", "蛞蝓"];
+                                break;
+                            case 4:
+                                data.multiArray[2] = [
+                                    "昆虫",
+                                    "甲壳动物",
+                                    "蛛形动物",
+                                    "多足动物"
+                                ];
+                                break;
+                        }
+                        break;
+                    case 1:
+                        switch (data.multiIndex[1]) {
+                            case 0:
+                                data.multiArray[2] = ["鲫鱼", "带鱼"];
+                                break;
+                            case 1:
+                                data.multiArray[2] = ["青蛙", "娃娃鱼"];
+                                break;
+                            case 2:
+                                data.multiArray[2] = ["蜥蜴", "龟", "壁虎"];
+                                break;
+                        }
+                        break;
+                }
+                data.multiIndex[2] = 0;
+                break;
+        }
+        this.setState(data);
     }
 
     bindDateChange(e) {
@@ -146,12 +181,17 @@ class P extends React.Component {
                         mode="multiSelector"
                         value={this.state.multiIndex}
                         onCancel={this.close.bind(this)}
-                        onChange={this.bindMultiPickerChange.bind(this)}
+                        onChange={this.bindPickerChange.bind(this)}
+                        onColumnChange={this.bindPickerColumnChange.bind(this)}
                         range={this.state.multiArray}
                     >
                         <text>
-              当前选择：{this.state.multiIndex[0]}, {this.state.multiIndex[1]},{' '}
-                            {this.state.multiIndex[2]}
+                            当前选择：
+                            {this.state.multiArray[0][this.state.multiIndex[0]]}
+                            ,
+                            {this.state.multiArray[1][this.state.multiIndex[1]]}
+                            ,
+                            {this.state.multiArray[2][this.state.multiIndex[2]]}
                         </text>
                     </picker>
                 </div>

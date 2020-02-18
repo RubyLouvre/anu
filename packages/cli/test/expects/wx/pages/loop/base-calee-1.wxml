@@ -1,0 +1,7 @@
+<view>
+                <block wx:if="{{state.array.length}}">
+                  <block wx:for="{{state.array}}" wx:for-item="item" wx:for-index="index" wx:key="*this">
+                    <view>{{item.item}}</view>
+                  </block>
+                </block>
+              </view>

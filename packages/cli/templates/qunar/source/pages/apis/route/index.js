@@ -14,7 +14,7 @@ class Data extends React.Component {
 
   redirectTo() {
     React.api.redirectTo({
-      url: '/pages/about/index?param1=hello&param2=world'
+      url: '/pages/platform/about/index?param1=hello&param2=world'
     });
   }
 

@@ -1,46 +1,38 @@
-
-
-
-const rsegments = /[\w\.-]+/g;
-const path = require('path');
-const isWindow = require('./isWindow');
-const isNpm = require('./isNpmModule');
-
-module.exports = function calculateComponentsPath(bag, nodeName, modules){
-    let sourcePath = modules.sourcePath;
-      //import { xxx } from 'schnee-ui';
-      if ( isNpm(bag.source)) {
-        return '/npm/' + bag.source + '/components/' + nodeName + '/index';
-    }
-    let isNodeModulePathReg = isWindow ? /\\node_modules\\/ : /\/node_modules\//;
-
-    //如果XPicker中存在 import XOverlay from '../XOverlay/index';
-    if ( isNodeModulePathReg.test(sourcePath) && /^\./.test(bag.source) ) {
-        //获取用组件的绝对路径
-        let importerAbPath = path.resolve(path.dirname(sourcePath), bag.source);
-        return '/npm/' + importerAbPath.split(`${path.sep}node_modules${path.sep}`)[1]
-    }
-    var parent = modules.current.match(rsegments);
-    var son = bag.source.match(rsegments);
-    var canPop = true
-    var noParentFlag = true;
-    while(son[0] === '..'){
-        noParentFlag = false;
-        son.shift();
-        if(canPop){
-            parent.pop();
-            canPop = false;
-        }
-        parent.pop()
-    }
-    var arr;
-    if (noParentFlag) {
-        arr = path.resolve(path.dirname(modules.current), bag.source).match(rsegments);
-    } else {
-        arr = parent.concat(son);
-    }
-    if(arr[0] == 'source'){
-        arr.shift()
-    }
-    return "/"+arr.join('/')   // `/components/${nodeName}/index`;
+"use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const path = __importStar(require("path"));
+const getDistPath_1 = __importDefault(require("./getDistPath"));
+const calculateAlias_1 = __importDefault(require("./calculateAlias"));
+const cwd = process.cwd();
+let cachedUsingComponents = {};
+function fixWinPath(p) {
+    return p.replace(/\\/g, '/');
 }
+function calculateComponentsPath(bag) {
+    if (!path.isAbsolute(bag.sourcePath)) {
+        console.error('bag.sourcePath 必须为绝对路径.');
+        process.exit(1);
+    }
+    if (cachedUsingComponents[bag.source]) {
+        return cachedUsingComponents[bag.source];
+    }
+    let realPath = path.join(path.dirname(bag.sourcePath), calculateAlias_1.default(bag.sourcePath, bag.source));
+    realPath = fixWinPath(realPath).replace(/\.js$/, '');
+    let usingPath = getDistPath_1.default(realPath)
+        .replace(fixWinPath(path.join(cwd, 'dist')), '');
+    cachedUsingComponents[bag.source] = usingPath;
+    return usingPath;
+}
+;
+module.exports = calculateComponentsPath;
+exports.default = calculateComponentsPath;

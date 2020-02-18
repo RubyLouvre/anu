@@ -1,163 +1,74 @@
-
-let path = require('path');
-let beautify = require('js-beautify');
-let config = require('../config');
-let quickFiles = require('../quickFiles');
-let utils = require('../utils');
-let queue = require('../queue');
-let cwd = process.cwd();
-let fs = require('fs');
-
-const crypto = require('crypto');
-let cache = {};
-//缓存层，避免重复编译
-let needUpdate = (id, originalCode) => {
-    let sha1 = crypto
-        .createHash('sha1')
-        .update(originalCode)
-        .digest('hex');
-    if (!cache[id] || cache[id] != sha1) {
-        cache[id] = sha1;
-        return true;
-    }
-    return false;
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
-
-//获取dist路径
-let getDist = (filePath) =>{
-    let dist = utils.updatePath(filePath, config.sourceDir, 'dist');
-    let { name, dir} =  path.parse(dist);
-    let distPath = path.join(dir, `${name}.css`);
-    return distPath;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-
-const compileSassByPostCss = require('../stylesTransformer/postcssTransformSass');
-const compileLessByPostCss = require('../stylesTransformer/postcssTransformLess');
-
-const styleCompilerMap = {
-    'less': compileLessByPostCss,
-    'css':  compileLessByPostCss,
-    'sass': compileSassByPostCss,
-    'scss': compileSassByPostCss
-};
-
-
-function beautifyUx(code){
-    return beautify.html(code, {
+Object.defineProperty(exports, "__esModule", { value: true });
+const js_beautify_1 = __importDefault(require("js-beautify"));
+const quickFiles_1 = __importDefault(require("./quickFiles"));
+const utils_1 = __importDefault(require("../utils"));
+const calculateAlias_1 = __importDefault(require("../utils/calculateAlias"));
+function beautifyUx(code) {
+    return js_beautify_1.default.html(code, {
         indent: 4,
-        //'wrap-line-length': 100
     });
 }
-
-
-function isNodeModulePath(fileId){
-    let reg = /[\\/]node_modules[\\/]/;
-    return reg.test(fileId);
-}
-
-function fixPath(fileId, dep){
-    if (!isNodeModulePath(fileId)) {
-        return path.join(cwd, config.sourceDir, dep);
-    }
-    let retPath = utils.updatePath(dep, 'npm', 'node_modules');
-    return path.join(cwd, retPath); 
-}
-
-
 let map = {
-    getImportTag: function(uxFile, sourcePath){
-        //假设存在<import>
+    getImportTag: function (uxFile, sourcePath) {
         let importTag = '';
         let using = uxFile.config && uxFile.config.usingComponents || {};
-        Object.keys(using).forEach((i)=>{
-            let importSrc = path.relative(
-                path.dirname(sourcePath),
-                fixPath(sourcePath, using[i])
-            );
-            importSrc = importSrc.replace(/\\/g, '/');
-            importTag += `<import name="${i}" src="${importSrc}.ux"></import>`;
+        Object.keys(using).forEach((i) => {
+            let importerReletivePath = calculateAlias_1.default(sourcePath, using[i]);
+            importTag += `<import name="${i}" src="${importerReletivePath}.ux"></import>`;
         });
         return importTag;
     },
-    getJsCode: function(code){
-        if (!code) return '';
-        code = beautify.js(code);
+    getJsCode: function (code) {
+        if (!code)
+            return '';
+        code = js_beautify_1.default.js(code);
         return `<script>\n${code}\n</script>`;
     },
-    getCssCode:  function(uxFile){
-        if (!uxFile.cssType) return '';
-        let {cssType, cssPath} = uxFile;
-       
-        return styleCompilerMap[cssType](cssPath)
-            .then(async (res)=>{
-                // // 递归编译@import依赖文件
-                // res.deps.forEach(dep => {
-                //     const code = fs.readFileSync(dep.file, 'utf-8');
-                //     needUpdate(dep.file, code,  ()=>{
-                //         let exitName = path.extname(dep.file).replace(/\./, '');
-                //         styleCompilerMap[exitName](dep.file, code).then(res => {
-                //             queue.push({
-                //                 code: res.code,
-                //                 path: getDist(dep.file),
-                //                 type: 'css'
-                //             });
-                //         });
-                //     });
-                // });
-                // 递归编译@import依赖文件
-                for (let i = 0; i < res.deps.length; i++) {
-                    const dep = res.deps[i];
-                    const code = fs.readFileSync(dep.file, 'utf-8');
-                    if (needUpdate(dep.file, code)) {
-                        const res = await styleCompilerMap[cssType](dep.file, code);
-                        queue.push({
-                            code: res.code,
-                            path: getDist(dep.file),
-                            type: 'css'
-                        });
-                    }
-                }
-                return `<style>\n${res.code}\n</style>`;
-            });
-    },
-    resolveComponents: function(data){
-        let {result, sourcePath} = data;
+    resolveComponents: function (data, queue) {
+        let { result, sourcePath, relativePath } = data;
         let isComponentReg = /[\\/]components[\\/]/;
-        if (!isComponentReg.test(sourcePath)) return;
+        if (!isComponentReg.test(sourcePath))
+            return;
         queue.push({
-            code: beautify.js(result.code.replace('console.log(nanachi)', 'export {React}')),
-            path:  utils.updatePath(sourcePath, config.sourceDir, 'dist') 
+            code: js_beautify_1.default.js(result.code.replace('console.warn(nanachi)', 'export {React}')),
+            path: relativePath,
+            type: 'js'
         });
         let reg = /components[\\/](\w+)/;
-        var componentName =  sourcePath.match(reg)[1];
+        var componentName = sourcePath.match(reg)[1];
         result.code = `import ${componentName}, { React } from './index.js';
         export default  React.registerComponent(${componentName}, '${componentName}');`;
     }
-
 };
-
-module.exports = async (data)=>{
-    let {sourcePath, result} = data;
-    sourcePath = utils.fixWinPath(sourcePath);
-    var uxFile = quickFiles[sourcePath];
-
-    //如果没有模板, 并且不是app，则认为这是个纯js模块。
-    if (!uxFile.template && uxFile.type != 'App') {
+module.exports = (data, queue) => __awaiter(void 0, void 0, void 0, function* () {
+    let { sourcePath, result } = data;
+    sourcePath = utils_1.default.fixWinPath(sourcePath);
+    var uxFile = quickFiles_1.default[sourcePath];
+    if (!uxFile || (!uxFile.template && uxFile.type != 'App')) {
         return {
             type: 'js',
             code: result.code
         };
     }
-
-    if (!uxFile) return;
-    //假设假设存在<template>
     var ux = `${uxFile.template || ''}`;
-    map.resolveComponents(data);
-    ux = beautifyUx(map.getImportTag(uxFile, sourcePath) + ux) + '\n'; 
-    ux = ux + map.getJsCode(result.code) + '\n'; 
-    ux = ux + await map.getCssCode(uxFile);
+    map.resolveComponents(data, queue);
+    uxFile.header = beautifyUx(map.getImportTag(uxFile, sourcePath) + ux);
+    uxFile.jsCode = map.getJsCode(result.code);
+    uxFile.cssCode = uxFile.cssCode || '';
     return {
         type: 'ux',
-        code: ux
     };
-};
+});

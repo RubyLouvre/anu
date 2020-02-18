@@ -26,7 +26,8 @@ class Animal extends React.Component {
     }
     componentWillReceiveProps(props){
         this.setState({
-            name: props.name
+            name: props.name,
+            props: props.age
         });
     }
     render() {

@@ -1,29 +1,20 @@
-let config = require('../config');
-const traverse = require('@babel/traverse').default;
-/**
- * 用于搜集快应用 titlebar 显示隐藏配置
- */
-module.exports = function(){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const config_1 = __importDefault(require("../../config/config"));
+module.exports = function () {
     return {
         visitor: {
-            ClassDeclaration(astPath, state){
-                if (config['buildType'] !== 'quick') return;
+            ObjectProperty(astPath, state) {
+                if (config_1.default['buildType'] !== 'quick' || astPath.node.key.name !== 'navigationBarTitleText')
+                    return;
                 let fileId = state.file.opts.filename;
-                
-                traverse(
-                    astPath.node, 
-                    {
-                        ObjectProperty(astPath){
-                            let node = astPath.node;
-                            if (node.key.name !== 'navigationBarTitleText') return;
-                            if (node.value.value === '') {
-                                //config.quick.disabledTitleBarPages.push(fileId)
-                                config['quick']['disabledTitleBarPages'].add(fileId);
-                            }
-                        },
-                    },
-                    astPath.scope
-                );
+                let node = astPath.node;
+                if (node.value.value === '') {
+                    config_1.default['quick']['disabledTitleBarPages'].add(fileId);
+                }
             }
         }
     };

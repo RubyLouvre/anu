@@ -1,1 +1,1 @@
-module.exports =  process.platform === 'win32' 
+module.exports = process.platform === 'win32';
