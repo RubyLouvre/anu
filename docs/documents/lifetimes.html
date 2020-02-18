@@ -1,0 +1,305 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charSet="UTF-8"/><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><link rel="icon" type="image/png" sizes="32x32" href="../images/titleLogo.png"/><link rel="icon" type="image/png" sizes="16x16" href="../images/titleLogo.png"/><meta name="theme-color" content="#ffffff"/><meta http-equiv="Cache-Control" content="no-transform"/><meta http-equiv="Cache-Control" content="no-siteapp"/><title>页面组件与生命周期-文档</title><link rel="stylesheet" href="../ydoc/styles/style.css"/><meta name="author" content="司徒正美"/><meta name="keywords"/><meta name="description" content="使用Reac微信小程序"/><meta id="releativePath" content=".."/><link rel="stylesheet" href="../ydoc/ydoc-plugin-search/search.css"/><link rel="stylesheet" href="../style/index.css"/></head><body><div class="g-doc"><div class="m-aside"><div class="m-summary" id="js-menu"><div class="m-summary-content" id="js-menu-content"><div class="m-summary-block"><ul class="m-summary-list"><li class="item"><a href="intro.html#" class="href">介绍</a></li><li class="item"><a href="install.html" class="href">安装与使用cli各种命令</a></li><li class="item"><a href="update.html" class="href">升级</a></li><li class="item"><a href="app.html" class="href">全局对象</a></li><li class="item"><a href="" class="href">页面组件与生命周期</a></li><li class="item"><a href="page2.html" class="href">页面的各个功能讲解</a></li><li class="item"><a href="component.html" class="href">页面上的子组件使用</a></li><li class="item"><a href="standard.html" class="href">小程序组件规范</a></li><li class="item"><a href="jsx.html" class="href">使用 JSX 的注意事项</a></li><li class="item"><a href="style.html" class="href">使用 CSS 的注意事项</a></li><li class="item"><a href="hooks.html" class="href">React Hooks的支持</a></li><li class="item"><a href="publish.html" class="href">目录结构与输出目录</a></li><li class="item"><a href="import_js.html" class="href">按平台打包代码或样式</a></li><li class="item"><a href="tabBar.html" class="href">据平台设置tabBar</a></li><li class="item"><a href="titleBar.html" class="href">隐藏标题栏</a></li><li class="item"><a href="redux.html" class="href">Redux/Mobx的使用</a></li><li class="item"><a href="webview.html" class="href">智能 webview 化</a></li><li class="item"><a href="customConfig.html" class="href">自定义项目配置</a></li><li class="item"><a href="customBuildConfig.html" class="href">自定义打包配置</a></li><li class="item"><a href="nativeComponents.html" class="href">不转译某些标签名</a></li><li class="item"><a href="chaika.html" class="href">拆库开发</a></li><li class="item"><a href="alias.html" class="href">别名配置</a></li><li class="item"><a href="vscode.html" class="href">vscode插件</a></li><li class="item"><a href="report.html" class="href">日志收集与上传</a></li><li class="item"><a href="npm.html" class="href">npm支持</a></li><li class="item"><a href="wxplugin.html" class="href">微信插件支持</a></li><li class="item"><a href="iconfont.html" class="href">iconfont 支持</a></li><li class="item"><a href="async.html" class="href">async/await 支持</a></li><li class="item"><a href="lesssass.html" class="href">Sass、Less、PostCSS支持</a></li><li class="item"><a href="patchComponent.html" class="href">内置 UI 库</a></li><li class="item"><a href="units.html" class="href">rpx与px互转</a></li><li class="item"><a href="event.html" class="href">事件系统</a></li><li class="item"><a href="size.html" class="href">包大小限制</a></li><li class="item"><a href="subpackages.html" class="href">分包加载</a></li><li class="item"><a href="preload.html" class="href">分包预加载</a></li><li class="item"><a href="debug.html" class="href">真机调试</a></li><li class="item"><a href="bu.html" class="href">百度小程序环境判定</a></li><li class="item"><div class="m-summary-block"><a href="" class="href">快应用相关</a><ul class="m-summary-list indent"><li class="item"><a href="quicklist.html" class="href">快应用的scroll-view兼容</a></li><li class="item"><a href="quickstorage.html" class="href">快应用的同步Storage API兼容</a></li><li class="item"><a href="boxDifferent.html" class="href">快应用与小程序盒子模型的区别</a></li><li class="item"><a href="query.html" class="href">小米快应用获取页面参数</a></li><li class="item"><a href="huaweiQuery.html" class="href">华为快应用获取页面参数</a></li><li class="item"><a href="share.html" class="href">快应用与小程序转发分享</a></li><li class="item"><a href="onblur.html" class="href">快应用onblur</a></li><li class="item"><a href="scene.html" class="href">场景值的兼容</a></li><li class="item"><a href="card.html" class="href">卡片</a></li><li class="item"><a href="movable.html" class="href">movable-area与movable-view的模拟</a></li></ul></div></li><li class="item"><a href="diff.html" class="href">各种小程序的比较</a></li><li class="item"><a href="link.html" class="href">各种小程序的官网</a></li><li class="item"><div class="m-summary-block"><a href="feedback.html" class="href">反馈收集</a><ul class="m-summary-list indent"><li class="item"><a href="two-threaded.html" class="href">微信小程序的双线程架构</a></li></ul></div></li><li class="item"><a href="questions.html" class="href">常见问题</a></li><li class="item"><a href="about.html" class="href">关于</a></li></ul></div></div></div><div class="m-summary-switch" id="js-summary-switch"><svg viewBox="0 0 926.23699 573.74994" version="1.1" x="0px" y="0px" width="15" height="15" class="bottom"><g transform="translate(904.92214,-879.1482)"><path d="m -673.67664,1221.6502 -231.2455,-231.24803 55.6165,-55.627 c 30.5891,-30.59485 56.1806,-55.627 56.8701,-55.627 0.6894,0 79.8637,78.60862 175.9427,174.68583 l 174.6892,174.6858 174.6892,-174.6858 c 96.079,-96.07721 175.253196,-174.68583 175.942696,-174.68583 0.6895,0 26.281,25.03215 56.8701,55.627 l 55.6165,55.627 -231.245496,231.24803 c -127.185,127.1864-231.5279,231.248 -231.873,231.248 -0.3451,0 -104.688,-104.0616 -231.873,-231.248 z" fill="#fff"></path></g></svg><svg viewBox="0 0 926.23699 573.74994" version="1.1" x="0px" y="0px" width="15" height="15" class="top"><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="aaa" fill="#fff" fill-rule="nonzero"><path d="M231.2455,342.502 L0,111.25397 L55.6165,55.62697 C86.2056,25.03212 111.7971,-2.99999998e-05 112.4866,-2.99999998e-05 C113.176,-2.99999998e-05 192.3503,78.60859 288.4293,174.6858 L463.1185,349.3716 L637.8077,174.6858 C733.8867,78.60859 813.060896,-2.99999997e-05 813.750396,-2.99999997e-05 C814.439896,-2.99999997e-05 840.031396,25.03212 870.620496,55.62697 L926.236996,111.25397 L694.9915,342.502 C567.8065,469.6884 463.4636,573.75 463.1185,573.75 C462.7734,573.75 358.4305,469.6884 231.2455,342.502 Z" id="Shape" transform="translate(463.118498, 286.874985) scale(1, -1) translate(-463.118498, -286.874985) "></path></g></g></svg></div></div><div class="m-main" id="js-panel"><header class="m-header" id="js-header"><div class="m-header-title js-logo"><a href="../index.html" target="_self"><img class="logo" width="36" src="../images/logo@2x.png"/></a></div><div><div class="m-search">
+      <div class="icon">&#xf0fd;</div>
+      <input type="text" class="input js-input" placeholder="搜索" />
+      <div class="m-search-result js-search-result"></div>
+    </div></div><nav class="m-header-nav js-nav"><ul class="m-header-items"><li class="item active"><a class="href" href="intro.html">文档</a></li><li class="item "><a class="href" href="../apis/index.html">已兼容处理的API</a></li><li class="item "><a class="href" href="logo.html">谁在用nanachi</a></li><li class="item "><a class="href" href="about.html">关于</a></li></ul></nav><div id="js-nav-btn" class="m-header-btn ui-font-ydoc"></div></header><div class="m-content" id="js-content"><div id="markdown-body" class="m-content-container markdown-body"><h1>页面组件与生命周期</h1>
+<p>一个应用是由许多页面组成，这些页面的文件名都是index.js, 它们都必须放在pages/xxx目录中。xxx为一个文件夹，里面通常有index.js, index.scss或index.less.</p>
+<p>其次， 页面组件必须是一个有状态的 React 组件， 第一行必须为<code>import React from '@react'</code>。</p>
+<p>再次， 页面组件必须有render方法， 并且JSX只能出现在render方法中，不能出现在其他方法里面。JSX也不能用<code>React.createElement()</code>代替。因此render方法的JSX会被抽取出来，编译成<code>wxml</code>, <code>axml</code>, <code>swan</code>等文件。有关 JSX 的注意事项可以看<a href="jsx.html">这里</a>。</p>
+<pre><code class="language-jsx"><span class="token comment">//pages/train/index.js</span>
+<span class="token keyword">import</span> React <span class="token keyword">from</span> <span class="token string">'@react'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">class</span> <span class="token class-name">P</span> <span class="token keyword">extends</span> <span class="token class-name">React<span class="token punctuation">.</span>Component</span> <span class="token punctuation">{</span>
+  <span class="token function">constructor</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">super</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span>state <span class="token operator">=</span> <span class="token punctuation">{</span>
+      iconSize<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">,</span> <span class="token number">40</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">,</span> <span class="token number">60</span><span class="token punctuation">,</span> <span class="token number">70</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+      text<span class="token operator">:</span> <span class="token string">'this is first line\nthis is second line'</span>
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">static</span> config <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">"navigationBarBackgroundColor"</span><span class="token operator">:</span> <span class="token string">"#ffffff"</span><span class="token punctuation">,</span>
+    <span class="token string">"navigationBarTextStyle"</span><span class="token operator">:</span> <span class="token string">"black"</span><span class="token punctuation">,</span>
+    <span class="token string">"navigationBarTitleText"</span><span class="token operator">:</span> <span class="token string">"微信接口功能演示"</span><span class="token punctuation">,</span>
+    <span class="token string">"backgroundColor"</span><span class="token operator">:</span> <span class="token string">"#eeeeee"</span><span class="token punctuation">,</span>
+    <span class="token string">"backgroundTextStyle"</span><span class="token operator">:</span> <span class="token string">"light"</span>
+  <span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+  <span class="token function">add</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">setState</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+      text<span class="token operator">:</span> <span class="token keyword">this</span><span class="token punctuation">.</span>state<span class="token punctuation">.</span>text <span class="token operator">+</span> <span class="token string">'\nthis is new line'</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token function">remove</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">var</span> textAry <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>state<span class="token punctuation">.</span>text<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">'\n'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>textAry<span class="token punctuation">.</span>length<span class="token punctuation">)</span> <span class="token keyword">return</span><span class="token punctuation">;</span>
+    textAry<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">setState</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+      text<span class="token operator">:</span> textAry<span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">'\n'</span><span class="token punctuation">)</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token keyword">static</span> <span class="token function">getDerivedStateFromProps</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span> <span class="token comment">//React 16新钩子</span>
+  <span class="token function">componentWillMount</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token punctuation">}</span>      <span class="token comment">//React 16 声明废弃的钩子</span>
+  <span class="token function">componentDidMount</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>        <span class="token comment">//React 5  的钩子</span>
+  <span class="token function">componentWillReceiveProps</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span> <span class="token comment">//React 16 声明废弃的钩子</span>
+  <span class="token function">shouldComponentUpdate</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>     <span class="token comment">//React 5  的钩子</span>
+  <span class="token function">componentWillUpdate</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>       <span class="token comment">//React 16 声明废弃的钩子</span>
+  <span class="token function">componentDidUpdate</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>        <span class="token comment">//React 5  的钩子</span>
+  <span class="token function">componentWillUnmount</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>      <span class="token comment">//React 5  的钩子</span>
+  <span class="token function">onShow</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>                  <span class="token comment">//小程序页面的钩子 路由</span>
+  <span class="token function">onHide</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>                  <span class="token comment">//小程序页面的钩子 路由</span>
+  <span class="token function">onResize</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>                <span class="token comment">//小程序页面的钩子 页面大小变动</span>
+  <span class="token function">onShare</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>                 <span class="token comment">//小程序页面的钩子 转发</span>
+  <span class="token function">onPullDownRefresh</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>       <span class="token comment">//小程序页面的钩子 滚动</span>
+  <span class="token function">onReachBottom</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>           <span class="token comment">//小程序页面的钩子 滚动</span>
+  <span class="token function">onPageScroll</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>            <span class="token comment">//小程序页面的钩子 滚动</span>
+  <span class="token function">onTabItemTap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>            <span class="token comment">//小程序页面的钩子 TAB点击</span>
+  <span class="token function">render</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>container<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>item-list<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>h2</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>item-list-hd<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">Icon</span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>h2</span><span class="token punctuation">></span></span><span class="token plain-text">
+          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>group<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token plain-text">
+            </span><span class="token punctuation">{</span><span class="token keyword">this</span><span class="token punctuation">.</span>state<span class="token punctuation">.</span>iconSize<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">item</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+              <span class="token keyword">return</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>icon</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>success<span class="token punctuation">"</span></span> <span class="token attr-name">size</span><span class="token script language-javascript"><span class="token script-punctuation punctuation">=</span><span class="token punctuation">{</span>item<span class="token punctuation">}</span></span> <span class="token punctuation">/></span></span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token plain-text">
+          </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+        </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span><span class="token plain-text">
+      </span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">></span></span>
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token constant">P</span><span class="token punctuation">;</span>
+</code></pre>
+<h2 id="页面组件的配置对象">页面组件的配置对象</h2>
+<p>其实就是来源于<a href="https://developers.weixin.qq.com/miniprogram/dev/framework/config.html#%E9%A1%B5%E9%9D%A2%E9%85%8D%E7%BD%AE" target="_blank">微信小程序官网</a></p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>navigationBarBackgroundColor</td>
+<td>HexColor</td>
+<td>#000000</td>
+<td>导航栏背景颜色，如 #ff0000</td>
+</tr>
+<tr>
+<td>navigationBarTextStyle</td>
+<td>String</td>
+<td>white</td>
+<td>导航栏标题颜色，仅支持 black / white</td>
+</tr>
+<tr>
+<td>navigationBarTitleText</td>
+<td>String</td>
+<td> </td>
+<td>导航栏标题文字内容</td>
+</tr>
+<tr>
+<td>backgroundColor</td>
+<td>HexColor</td>
+<td>#ffffff</td>
+<td>窗口的背景色</td>
+</tr>
+<tr>
+<td>enablePullDownRefresh</td>
+<td>Boolean</td>
+<td>false</td>
+<td>是否全局开启下拉刷新</td>
+</tr>
+<tr>
+<td>tabBar</td>
+<td>Object</td>
+<td>null</td>
+<td>如果tabBar已定义，并且里面有list数组</td>
+</tr>
+</tbody>
+</table>
+<h2 id="页面组件的生命周期">页面组件的生命周期</h2>
+<p>由于页面组件也是一个React有状态组件, 因此它拥有React15/16的所有钩子。</p>
+<p>当我们打开一个页面，页面组件会依次触发如下生命周期钩子</p>
+<p><img src="./lifetimes1.png" alt="lifetimes1"></p>
+<p>如果对页面组件进行setState,会依次触发如下生命周期钩子</p>
+<p><img src="./lifetimes2.png" alt="lifteimes2"></p>
+<blockquote>
+<p>componentWillMount/Update/ReceiveProps这三个钩子是 React15的旧钩子，如果定义了它们
+就不会触发React 16的新钩子getDerivedStateFromProps</p>
+</blockquote>
+<p>如果用户从页面1跳转到页面2，是不会触页面组件的componentWillUnmount(即onUnload),而是触发页面的onHide钩子与
+app.js上的onGlobalHide钩子。然后再依次触发页面2的componentWillMount，onGlobalLoad，onShow。。。</p>
+<p><img src="./lifetimes3.png" alt="lifetimes3"></p>
+<p>页面销毁时，会先触发所有子组件的componentWillUnmount，再到页面的componentWillUnmount，最后是app.js的
+onGlobalUnload钩子</p>
+<p><img src="./lifetimes4.png" alt="lifetimes4"></p>
+<p>当然，除了页面的生命周期及页面上所有子组件的生命周期，应用本身还有生命周期，实际上我们看到的生命周期触发顺序是这样的。</p>
+<p><img src="./lifetimes5.jpg" alt="lifetimes5"></p>
+<p>注： 页面组件必须使用 es6 风格来引入依赖与导出自己。</p>
+<p>它的静态属性 config 会抽取出来生成对应的 JSON 配置对象，有关配置项可以看<a href="https://developers.weixin.qq.com/miniprogram/dev/framework/config.html#%E9%A1%B5%E9%9D%A2%E9%85%8D%E7%BD%AE" target="_blank">这里</a></p>
+<h2 id="页面事件">页面事件</h2>
+<p>除了生命周期钩子， 有一些页面事件，都是以onXXX命名。如果用户没有定义这些页面事件， 框架还会尝试访问app.js中的以onGlobalXXX命名的方法，作为它的后备方案。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">页面事件名</th>
+<th style="text-align:left">全局事件名</th>
+<th>说明</th>
+<th>关系</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">onShow(query)</td>
+<td style="text-align:left">onGlobalShow(query)</td>
+<td>query对象</td>
+<td>总是触发全局事件</td>
+</tr>
+<tr>
+<td style="text-align:left">onHide</td>
+<td style="text-align:left">onGlobalHide</td>
+<td>没有参数</td>
+<td>总是触发全局事件</td>
+</tr>
+<tr>
+<td style="text-align:left">页面初次被打开</td>
+<td style="text-align:left">onGlobalLoad</td>
+<td>没有参数</td>
+<td>总是触发全局事件</td>
+</tr>
+<tr>
+<td style="text-align:left">页面初次渲染完</td>
+<td style="text-align:left">onGlobalReady</td>
+<td>没有参数</td>
+<td>总是触发全局事件</td>
+</tr>
+<tr>
+<td style="text-align:left">页面被销毁</td>
+<td style="text-align:left">onGlobalUnload</td>
+<td>没有参数</td>
+<td>总是触发全局事件</td>
+</tr>
+<tr>
+<td style="text-align:left">onResize</td>
+<td style="text-align:left">X</td>
+<td>有参数, {size }</td>
+<td>没有全局事件</td>
+</tr>
+<tr>
+<td style="text-align:left">onShare/onShareAppMessage</td>
+<td style="text-align:left">onGlobalShare</td>
+<td>有参数, 有返回值,{from,target,webViewUrl}</td>
+<td>有页面就没有全局</td>
+</tr>
+<tr>
+<td style="text-align:left">onPageScroll</td>
+<td style="text-align:left">X</td>
+<td>有参数,{scrollTop}</td>
+<td>没有全局事件</td>
+</tr>
+<tr>
+<td style="text-align:left">onReachBottom</td>
+<td style="text-align:left">X</td>
+<td>没有参数</td>
+<td>没有全局事件</td>
+</tr>
+<tr>
+<td style="text-align:left">onPullDownRefresh</td>
+<td style="text-align:left">X</td>
+<td>没有参数</td>
+<td>没有全局事件</td>
+</tr>
+<tr>
+<td style="text-align:left">onTabItemTap</td>
+<td style="text-align:left">X</td>
+<td>有参数{index,pagePath,text}</td>
+<td>没有全局事件</td>
+</tr>
+</tbody>
+</table>
+<h2 id="页面组件的js文件名必须为index.js的原因">页面组件的JS文件名必须为index.js的原因</h2>
+<p>主要是为了兼容快应用。快应用有一个manifest.json文件, 里面有一个router对象，包含所有页面</p>
+<pre><code class="language-json"><span class="token property">"router"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token property">"entry"</span><span class="token operator">:</span> <span class="token string">"pages/index"</span><span class="token punctuation">,</span>
+    <span class="token property">"pages"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+      <span class="token property">"pages/index"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token property">"component"</span><span class="token operator">:</span> <span class="token string">"index"</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token property">"pages/demo/syntax/index"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token property">"component"</span><span class="token operator">:</span> <span class="token string">"index"</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token property">"pages/demo/syntax/api"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token property">"component"</span><span class="token operator">:</span> <span class="token string">"index"</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token property">"pages/demo/syntax/await"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token property">"component"</span><span class="token operator">:</span> <span class="token string">"index"</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token property">"pages/demo/syntax/children"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token property">"component"</span><span class="token operator">:</span> <span class="token string">"index"</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token property">"pages/demo/syntax/extend"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token property">"component"</span><span class="token operator">:</span> <span class="token string">"index"</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token property">"pages/demo/syntax/if"</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token property">"component"</span><span class="token operator">:</span> <span class="token string">"index"</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>然后我们页面切换是通过React.api.redirectTo实现</p>
+<pre><code class="language-javascript"><span class="token keyword">function</span> <span class="token function">createRouter</span><span class="token punctuation">(</span><span class="token parameter">name</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">obj</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">var</span> router <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@system.router'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">var</span> params <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token keyword">var</span> uri <span class="token operator">=</span> obj<span class="token punctuation">.</span>url<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span>obj<span class="token punctuation">.</span>url<span class="token punctuation">.</span><span class="token function">indexOf</span><span class="token punctuation">(</span><span class="token string">'/pages'</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        uri <span class="token operator">=</span> uri<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token regex">/\?(.*)/</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            b<span class="token punctuation">.</span><span class="token function">split</span><span class="token punctuation">(</span><span class="token string">'='</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">k<span class="token punctuation">,</span> v</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                params<span class="token punctuation">[</span>k<span class="token punctuation">]</span> <span class="token operator">=</span> v<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">return</span> <span class="token string">''</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token regex">/\/index$/</span><span class="token punctuation">,</span> <span class="token string">''</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>uri<span class="token punctuation">,</span> <span class="token string">"createRouter"</span><span class="token punctuation">)</span>
+        router<span class="token punctuation">[</span>name<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+            uri<span class="token operator">:</span><span class="token string">"/"</span><span class="token operator">+</span> uri<span class="token punctuation">,</span>
+            params<span class="token operator">:</span> params
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+</div><div class="m-content-container m-paging"><div class="m-paging-prev m-paging-item"><a href="app.html" class="href"><span class="ui-font-ydoc"></span>全局对象</a></div><div class="m-paging-next m-paging-item"><a href="page2.html" class="href">页面的各个功能讲解<span class="ui-font-ydoc"></span></a></div></div></div></div></div><div></div><script>
+    var $content = document.getElementById('js-content');
+    var $summaryItems = Array.prototype.slice.call(document.querySelectorAll('#js-menu .href'));
+    var $menu = document.getElementById('js-menu');
+    if (sessionStorage.prevPathname) {
+      sessionStorage.setItem('prevPrevPathname', sessionStorage.prevPathname);
+      sessionStorage.setItem('prevPrevMenuScrollTop', sessionStorage.prevMenuScrollTop);
+      sessionStorage.setItem('prevPrevContentScrollTop', sessionStorage.prevContentScrollTop);
+    }
+    if (sessionStorage.locationPathname) {
+      sessionStorage.setItem('prevPathname', sessionStorage.locationPathname);
+      sessionStorage.setItem('prevMenuScrollTop', sessionStorage.menuScrollTop);
+      sessionStorage.setItem('prevContentScrollTop', sessionStorage.contentScrollTop);
+    }
+    if ($menu && sessionStorage.menuScrollTop) {
+		  $menu.scrollTop = sessionStorage.menuScrollTop;
+    }
+    // 刷新页面但不切换 pathname 的时候，内容区恢复到记忆的高度
+    if ($content && sessionStorage.contentScrollTop && window.location.pathname == sessionStorage.locationPathname) {
+      $content.scrollTop = sessionStorage.contentScrollTop;
+    } else if (sessionStorage.prevPrevPathname && sessionStorage.prevPrevPathname === window.location.pathname) {
+      if ($menu && sessionStorage.prevPrevMenuScrollTop) {
+        $menu.scrollTop = sessionStorage.prevPrevMenuScrollTop;
+      }
+      if ($content && sessionStorage.prevPrevContentScrollTop) {
+        $content.scrollTop = sessionStorage.prevPrevContentScrollTop;
+      }
+    }
+    sessionStorage.setItem('locationPathname', window.location.pathname);
+    </script><script src="../ydoc/scripts/plugins/dollar.min.js"></script><script src="../ydoc/scripts/plugins/responsive-nav.min.js"></script><script src="../ydoc/scripts/plugins/slideout.min.js"></script><script src="../ydoc/scripts/app.js"></script><script src="../ydoc/ydoc-plugin-search/core.js"></script><script src="../ydoc/ydoc-plugin-search/search.js"></script><script src="../search_json.js"></script></body></html>

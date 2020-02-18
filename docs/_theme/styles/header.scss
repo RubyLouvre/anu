@@ -1,0 +1,194 @@
+.m-header {
+	min-height: .64rem;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	color: $deep-caption-text-color;
+	background-color: rgba($white, .97);
+	border-bottom: 1px solid $break-line-color;
+  backface-visibility: hidden;
+	z-index: 999;
+	transform: translateZ(1000px);
+	&-title {
+		// width: 3rem;
+		height: .64rem;
+		padding: 0 .3rem;
+		display: flex;
+    align-items: center;
+		.name, .logo {
+			display: inline-block;
+			vertical-align: middle;
+		}
+		.name {
+			margin-left: .08rem;
+			color: $primary-color;
+			font-size: 24px;
+			font-family: 'Arial Rounded MT Bold';
+		}
+	}
+	&-nav {
+		border-bottom: 1px solid $break-line-color;
+		.m-header-items {
+			padding: $padding-sm;
+		}
+		.m-header-subtitle {
+			padding: .08rem 1.5em;
+			.item {
+				width: 100%;
+			}
+			.link {
+				display: inline-block;
+				padding-left: .5em;
+				padding-right: .5em;
+				width: 100%;
+				background-color: transparent;
+				border-radius: 4px;
+				line-height: .32rem;
+				transition: all $transition-time-quick;
+			}
+			.link:hover {
+				color: $primary-color;
+				background-color: $primary-1;
+			}
+		}
+		.item {
+			width: 100%;
+			display: inline-block;
+			line-height: 1.8;
+			padding: 0 $padding-xs;
+			position: relative;
+			cursor: pointer;
+			transition: all $transition-time-quick;
+			min-height: .32rem;
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+		.item.active {
+			font-weight: bold;
+			color: $primary-color;
+		}
+		.href {
+     	display: inline-block;
+			padding-left: .5em;
+			padding-right: .5em;
+			height: .32rem;
+			line-height: .32rem;
+			width: 100%;
+			background-color: transparent;
+			border-radius: 4px;
+			transition: all $transition-time-quick;
+		}
+		.href:active {
+			color: $primary-color;
+			background-color: $primary-1;
+		}
+	}
+	&-btn {
+		position: absolute;
+		top: $padding-xs;
+		right: $padding-xs;
+		font-size: .24rem;
+		line-height: 1;
+		color: $deep-body-text-color;
+		border-radius: 2px;
+		padding: .12rem;
+		cursor: pointer;
+		transition: color $transition-time-quick;
+		@include user-select-none;
+		&:hover {
+			font-weight: bold;
+			color: $deep-body-text-color;
+		}
+	}
+}
+
+// Expand navigation on PC
+@include media-md() {
+	.m-header {
+		flex-direction: row;
+		&-nav {
+			border: none;
+			.m-header-items {
+				padding: 0;
+				> .item:hover {
+					.m-header-subtitle {
+						display: flex;
+						flex-wrap: wrap;
+					}
+				}
+			}
+			.m-header-subtitle {
+				display: none;
+				position: absolute;
+				left: 50%;
+				top: .64rem;
+				transform: translateX(-50%);
+				width: auto;
+				background-color: #fff;
+				padding: .08rem 1.5em;
+				border-radius: 4px;
+				box-shadow: 0 10px 100px rgba(50,50,93,.1), 0 5px 35px rgba(50,50,93,.15), 0 2px 15px rgba(0,0,0,.1);
+				.item {
+					margin: 0;
+					padding: 0 8px;
+					color: $deep-caption-text-color;
+					font-weight: normal;
+					white-space: nowrap;
+					line-height: .4rem;
+				}
+				&:after {
+					content: '';
+					display: block;
+					width: 0;
+					height: 0;
+					border: .08rem solid transparent;
+					border-bottom-color: #fff;
+					position: absolute;
+					left: 50%;
+					top: -.16rem;
+					transform: translateX(-50%);
+				}
+				.link {
+					display: inline-block;
+					padding: 0;
+					width: auto;
+				}
+				.link:hover {
+					font-weight: bold;
+					color: $deep-body-text-color;
+					background-color: transparent;
+				}
+			}
+			.href {
+				border-radius: 0;
+			}
+			.href:hover {
+				font-weight: bold;
+				color: $deep-body-text-color;
+				background-color: transparent;
+			}
+			.item {
+				margin: 0 $padding-sm;
+				line-height: .64rem;
+				width: auto;
+				transition: color $transition-time-quick;
+			}
+			.item.active {
+				font-weight: bold;
+				color: $deep-body-text-color;
+				.href {
+					border-bottom: 2px solid $primary-color;
+				}
+			}
+		}
+		// 覆盖插件控制的 header overflow属性
+		.m-header-nav {
+			overflow: inherit;
+		}
+	}
+}

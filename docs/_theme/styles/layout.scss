@@ -1,0 +1,28 @@
+.g-doc {
+	display: flex;
+	width: 100%;
+	height: 100%;
+	position: relative;
+	left: 0;
+	transition: all $transition-time-quick ease-in-out;
+	overflow: hidden;
+}
+
+.m-main {
+	width: 100%;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	h2:before, h3:before {
+		content: "";
+    display: block;
+    margin-top: -.8rem;
+    height: .8rem;
+    visibility: hidden;
+	}
+}
+
+@include media-md() {
+	.m-main {
+		box-shadow: none;
+	}
+}

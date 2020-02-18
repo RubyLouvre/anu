@@ -1,0 +1,45 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charSet="UTF-8"/><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><link rel="icon" type="image/png" sizes="32x32" href="../images/titleLogo.png"/><link rel="icon" type="image/png" sizes="16x16" href="../images/titleLogo.png"/><meta name="theme-color" content="#ffffff"/><meta http-equiv="Cache-Control" content="no-transform"/><meta http-equiv="Cache-Control" content="no-siteapp"/><title>使用娜娜奇生成的小程序-谁在用nanachi</title><link rel="stylesheet" href="../ydoc/styles/style.css"/><meta name="author" content="司徒正美"/><meta name="keywords"/><meta name="description" content="使用Reac微信小程序"/><meta id="releativePath" content=".."/><link rel="stylesheet" href="../ydoc/ydoc-plugin-search/search.css"/><link rel="stylesheet" href="../style/index.css"/></head><body><div class="g-doc"><div class="m-main" id="js-panel"><header class="m-header" id="js-header"><div class="m-header-title js-logo"><a href="../index.html" target="_self"><img class="logo" width="36" src="../images/logo@2x.png"/></a></div><div><div class="m-search">
+      <div class="icon">&#xf0fd;</div>
+      <input type="text" class="input js-input" placeholder="搜索" />
+      <div class="m-search-result js-search-result"></div>
+    </div></div><nav class="m-header-nav js-nav"><ul class="m-header-items"><li class="item "><a class="href" href="intro.html">文档</a></li><li class="item "><a class="href" href="../apis/index.html">已兼容处理的API</a></li><li class="item active"><a class="href" href="">谁在用nanachi</a></li><li class="item "><a class="href" href="about.html">关于</a></li></ul></nav><div id="js-nav-btn" class="m-header-btn ui-font-ydoc"></div></header><div class="m-content" id="js-content"><div id="markdown-body" class="m-content-container markdown-body"><h1>使用娜娜奇生成的小程序</h1>
+<h2 id="百度小程序（需要使用手机百度app-搜索栏旁边的拍摄二维码打开）">百度小程序（需要使用手机百度APP 搜索栏旁边的拍摄二维码打开）</h2>
+<p><img src="logo/qunar_bu_logo.png" alt></p>
+<h2 id="支付宝小程序（需要使用支付宝app-扫码打开）">支付宝小程序（需要使用支付宝APP 扫码打开）</h2>
+<p><img src="logo/qunar_ali_logo.png" alt></p>
+<h2 id="快应用（需要使用安卓手机-扫码打开）">快应用（需要使用安卓手机 扫码打开）</h2>
+<p><img src="logo/qunar_quick_logo.png" alt></p>
+<h2 id="qq小程序（需要使用安卓qq-扫码打开）">QQ小程序（需要使用安卓QQ 扫码打开）</h2>
+<p><img src="logo/qunar_qq_logo.png" alt></p>
+<h2 id="补丁组件快应用-demo（需要先扫码下载，然后在快应用调试器里选择本地安装打开）">补丁组件快应用 Demo（需要先扫码下载，然后在<a href="https://doc.quickapp.cn/tools/debugging-tools.html" target="_blank">快应用调试器</a>里选择本地安装打开）</h2>
+<p><img src="logo/schnee_ui_logo.png" alt></p>
+</div></div></div></div><div></div><script>
+    var $content = document.getElementById('js-content');
+    var $summaryItems = Array.prototype.slice.call(document.querySelectorAll('#js-menu .href'));
+    var $menu = document.getElementById('js-menu');
+    if (sessionStorage.prevPathname) {
+      sessionStorage.setItem('prevPrevPathname', sessionStorage.prevPathname);
+      sessionStorage.setItem('prevPrevMenuScrollTop', sessionStorage.prevMenuScrollTop);
+      sessionStorage.setItem('prevPrevContentScrollTop', sessionStorage.prevContentScrollTop);
+    }
+    if (sessionStorage.locationPathname) {
+      sessionStorage.setItem('prevPathname', sessionStorage.locationPathname);
+      sessionStorage.setItem('prevMenuScrollTop', sessionStorage.menuScrollTop);
+      sessionStorage.setItem('prevContentScrollTop', sessionStorage.contentScrollTop);
+    }
+    if ($menu && sessionStorage.menuScrollTop) {
+		  $menu.scrollTop = sessionStorage.menuScrollTop;
+    }
+    // 刷新页面但不切换 pathname 的时候，内容区恢复到记忆的高度
+    if ($content && sessionStorage.contentScrollTop && window.location.pathname == sessionStorage.locationPathname) {
+      $content.scrollTop = sessionStorage.contentScrollTop;
+    } else if (sessionStorage.prevPrevPathname && sessionStorage.prevPrevPathname === window.location.pathname) {
+      if ($menu && sessionStorage.prevPrevMenuScrollTop) {
+        $menu.scrollTop = sessionStorage.prevPrevMenuScrollTop;
+      }
+      if ($content && sessionStorage.prevPrevContentScrollTop) {
+        $content.scrollTop = sessionStorage.prevPrevContentScrollTop;
+      }
+    }
+    sessionStorage.setItem('locationPathname', window.location.pathname);
+    </script><script src="../ydoc/scripts/plugins/dollar.min.js"></script><script src="../ydoc/scripts/plugins/responsive-nav.min.js"></script><script src="../ydoc/scripts/plugins/slideout.min.js"></script><script src="../ydoc/scripts/app.js"></script><script src="../ydoc/ydoc-plugin-search/core.js"></script><script src="../ydoc/ydoc-plugin-search/search.js"></script><script src="../search_json.js"></script></body></html>

@@ -1,0 +1,55 @@
+.m-content {
+  overflow-y: scroll;
+  overflow-x: hidden;
+	-webkit-overflow-scrolling: touch;
+  background-color: #fff;
+  padding-top: .64rem;
+  height: 100%;
+  &-container {
+    max-width: 8.1rem;
+    padding: .48rem .24rem 1.2rem;
+    margin: 0 auto;
+    .title {
+      line-height: 1;
+    }
+  }
+  &-container.markdown-body {
+    min-height: calc(100% - 2rem);
+  }
+}
+.m-paging {
+  font-size: 16px;
+  &-item {
+    width: 50%;
+    color: inherit;
+    transition: color $transition-time-quick;
+    &:hover {
+      color: $primary-color;
+    }
+  }
+  &-prev {
+    float: left;
+  }
+  &-next {
+    float: right;
+    text-align: right;
+  }
+  &:after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+  .href {
+    display: inline-block;
+    width: 100%;
+    padding: .04rem;
+  }
+}
+
+@include media-md() {
+  .m-content {
+    overflow-x: hidden;
+    overflow-y: auto;
+	  -webkit-overflow-scrolling: touch;
+  }
+}

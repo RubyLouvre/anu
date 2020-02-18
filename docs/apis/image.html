@@ -1,0 +1,373 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charSet="UTF-8"/><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><link rel="icon" type="image/png" sizes="32x32" href="../images/titleLogo.png"/><link rel="icon" type="image/png" sizes="16x16" href="../images/titleLogo.png"/><meta name="theme-color" content="#ffffff"/><meta http-equiv="Cache-Control" content="no-transform"/><meta http-equiv="Cache-Control" content="no-siteapp"/><title>图片-已兼容处理的API</title><link rel="stylesheet" href="../ydoc/styles/style.css"/><meta name="author" content="司徒正美"/><meta name="keywords"/><meta name="description" content="使用Reac微信小程序"/><meta id="releativePath" content=".."/><link rel="stylesheet" href="../ydoc/ydoc-plugin-search/search.css"/><link rel="stylesheet" href="../style/index.css"/></head><body><div class="g-doc"><div class="m-aside"><div class="m-summary" id="js-menu"><div class="m-summary-content" id="js-menu-content"><div class="m-summary-block"><ul class="m-summary-list"><li class="item"><a href="index.html#%e6%a6%82%e8%bf%b0" class="href">概述</a></li><li class="item"><div class="m-summary-block"><a href="network.html#%e7%bd%91%e7%bb%9c" class="href">网络</a><ul class="m-summary-list indent"><li class="item"><a href="network.html#request" class="href">request</a></li><li class="item"><a href="network.html#uploadfileobject-object" class="href">uploadFile</a></li><li class="item"><a href="network.html#downloadfileobject-object" class="href">downloadFile</a></li><li class="item"><a href="network.html#connectsocketobject-object" class="href">connectSocket</a></li><li class="item"><a href="network.html#onsocketopenfunction-callback" class="href">onSocketOpen</a></li><li class="item"><a href="network.html#closesocketobject-object" class="href">closeSocket</a></li><li class="item"><a href="network.html#sendsocketmessageobject-object" class="href">sendSocketMessage</a></li><li class="item"><a href="network.html#onsocketmessagefunction-callback" class="href">onSocketMessage</a></li><li class="item"><a href="network.html#onsocketerrorfunction-callback" class="href">onSocketError</a></li><li class="item"><a href="network.html#onsocketclosefunction-callback" class="href">onSocketClose</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="interaction.html#%e4%ba%a4%e4%ba%92" class="href">交互</a><ul class="m-summary-list indent"><li class="item"><a href="interaction.html#showmodalobject-object" class="href">showModal</a></li><li class="item"><a href="interaction.html#showtoastobject-object" class="href">showToast</a></li><li class="item"><a href="interaction.html#hidetoast" class="href">hideToast</a></li><li class="item"><a href="interaction.html#showloadingobject-object" class="href">showLoading</a></li><li class="item"><a href="interaction.html#hideloading" class="href">hideLoading</a></li><li class="item"><a href="interaction.html#showactionsheetobject-object" class="href">showActionSheet</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="router.html#%e5%af%bc%e8%88%aa" class="href">导航</a><ul class="m-summary-list indent"><li class="item"><a href="router.html#navigatetoobject" class="href">navigateTo</a></li><li class="item"><a href="router.html#redirecttoobject" class="href">redirectTo</a></li><li class="item"><a href="router.html#relaunchobject" class="href">reLaunch</a></li><li class="item"><a href="router.html#navigatebackobject" class="href">navigateBack</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="nav.html#%e8%ae%be%e7%bd%ae%e5%af%bc%e8%88%aa%e6%9d%a1" class="href">设置导航条</a><ul class="m-summary-list indent"><li class="item"><a href="nav-bar.html#setnavigationbartitleobject" class="href">setNavigationBarTitle</a></li><li class="item"><a href="nav-bar.html#setnavigationbarcolorobject" class="href">setNavigationBarColor</a></li><li class="item"><a href="nav-bar.html#shownavigationbarloading" class="href">showNavigationBarLoading</a></li><li class="item"><a href="nav-bar.html#hidenavigationbarloading" class="href">hideNavigationBarLoading</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="api.html#tabbar" class="href">TabBar</a><ul class="m-summary-list indent"><li class="item"><a href="api.html#tabbar-switchtabobject" class="href">switchTab</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="animation.html#%e5%8a%a8%e7%94%bb" class="href">动画</a><ul class="m-summary-list indent"><li class="item"><a href="animation.html#createanimationobject-object" class="href">createAnimation</a></li><li class="item"><a href="animation.html#animation" class="href">animation</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="canvas.html#%e7%94%bb%e5%b8%83" class="href">画布</a><ul class="m-summary-list indent"><li class="item"><a href="canvas.html#createcanvascontextcanvasid" class="href">createCanvasContext</a></li><li class="item"><a href="canvas.html#canvascontext.settextalignstring-align" class="href">CanvasContext.setTextAlign</a></li><li class="item"><a href="canvas.html#canvascontext.settextbaselinestring-textbaseline" class="href">CanvasContext.setTextBaseline</a></li><li class="item"><a href="canvas.html#canvascontext.setfillstylestring-color" class="href">CanvasContext.setFillStyle</a></li><li class="item"><a href="canvas.html#canvascontext.setstrokestylestring-color" class="href">CanvasContext.setStrokeStyle</a></li><li class="item"><a href="canvas.html#canvascontext.setshadownumber-offsetx,-number-offsety,-number-blur,-string-color" class="href">CanvasContext.setShadow</a></li><li class="item"><a href="canvas.html#canvascontext.createlineargradientnumber-x0,-number-y0,-number-x1,-number-y1" class="href">CanvasContext.createLinearGradient</a></li><li class="item"><a href="canvas.html#canvascontext.createcirculargradientnumber-x0,-number-y0,-number-x1,-number-y1" class="href">CanvasContext.createCircularGradient</a></li><li class="item"><a href="canvas.html#canvasgradient.addcolorstopnumber-stop,-string-color" class="href">CanvasGradient.addColorStop</a></li><li class="item"><a href="canvas.html#canvascontext.setlinewidthnumber-linewidth" class="href">CanvasContext.setLineWidth</a></li><li class="item"><a href="canvas.html#canvascontext.setlinecapstring-linecap" class="href">CanvasContext.setLineCap</a></li><li class="item"><a href="canvas.html#canvascontext.setlinejoinstring-linejoin" class="href">CanvasContext.setLineJoin</a></li><li class="item"><a href="canvas.html#canvascontext.setmiterlimitnumber-miterlimit" class="href">CanvasContext.setMiterLimit</a></li><li class="item"><a href="canvas.html#canvascontext.rectnumber-x,-number-y,-number-width,-number-height" class="href">CanvasContext.rect</a></li><li class="item"><a href="canvas.html#canvascontext.fillrectnumber-x,-number-y,-number-width,-number-height" class="href">CanvasContext.fillRect</a></li><li class="item"><a href="canvas.html#canvascontext.strokerectnumber-x,-number-y,-number-width,-number-height" class="href">CanvasContext.strokeRect</a></li><li class="item"><a href="canvas.html#canvascontext.clearrectnumber-x,-number-y,-number-width,-number-height" class="href">CanvasContext.clearRect</a></li><li class="item"><a href="canvas.html#canvascontext.fill" class="href">CanvasContext.fill</a></li><li class="item"><a href="canvas.html#canvascontext.stroke" class="href">CanvasContext.stroke</a></li><li class="item"><a href="canvas.html#canvascontext.beginpath" class="href">CanvasContext.beginPath</a></li><li class="item"><a href="canvas.html#canvascontext.closepath" class="href">CanvasContext.closePath</a></li><li class="item"><a href="canvas.html#canvascontext.movetonumber-x,-number-y" class="href">CanvasContext.moveTo</a></li><li class="item"><a href="canvas.html#canvascontext.linetonumber-x,-number-y" class="href">CanvasContext.lineTo</a></li><li class="item"><a href="canvas.html#canvascontext.arcnumber-x,-number-y,-number-r,-number-sangle,-number-eangle,-number-counterclockwise" class="href">CanvasContext.arc</a></li><li class="item"><a href="canvas.html#canvascontext.beziercurveto" class="href">CanvasContext.bezierCurveTo</a></li><li class="item"><a href="canvas.html#canvascontext.clip" class="href">CanvasContext.clip</a></li><li class="item"><a href="canvas.html#canvascontext.quadraticcurvetonumber-cpx,-number-cpy,-number-x,-number-y" class="href">CanvasContext.quadraticCurveTo</a></li><li class="item"><a href="canvas.html#canvascontext.scalenumber-scalewidth,-number-scaleheight" class="href">CanvasContext.scale</a></li><li class="item"><a href="canvas.html#canvascontext.rotatenumber-rotate" class="href">CanvasContext.rotate</a></li><li class="item"><a href="canvas.html#canvascontext.translatenumber-x,-number-y" class="href">CanvasContext.translate</a></li><li class="item"><a href="canvas.html#canvascontext.setfontsizenumber-fontsize" class="href">CanvasContext.setFontSize</a></li><li class="item"><a href="canvas.html#canvascontext.filltextstring-text,-number-x,-number-y,-number-maxwidth" class="href">CanvasContext.fillText</a></li><li class="item"><a href="canvas.html#canvascontext.drawimagestring-imageresource,-number-dx,-number-dy,-number-dwidth,-number-dheight,-number-sx,-number-sy,-number-swidth,-number-sheight" class="href">CanvasContext.drawImage</a></li><li class="item"><a href="canvas.html#canvascontext.setglobalalphanumber-%e9%80%8f%e6%98%8e%e5%ba%a6%e3%80%82%e8%8c%83%e5%9b%b4" class="href">CanvasContext.setGlobalAlpha</a></li><li class="item"><a href="canvas.html#canvascontext.setlinedasharray.-pattern,-number-offset" class="href">CanvasContext.setLineDash</a></li><li class="item"><a href="canvas.html#canvascontext.transformnumber-scalex,-number-skewx,-number-skewy,-number-scaley,-number-translatex,-number-translatey" class="href">CanvasContext.transform</a></li><li class="item"><a href="canvas.html#canvascontext.settransformnumber-scalex,-number-skewx,-number-skewy,-number-scaley,-number-translatex,-number-translatey" class="href">CanvasContext.setTransform</a></li><li class="item"><a href="canvas.html#canvascontext.save" class="href">CanvasContext.save</a></li><li class="item"><a href="canvas.html#canvascontext.restore" class="href">CanvasContext.restore</a></li><li class="item"><a href="canvas.html#canvascontext.drawboolean-reserve,-function-callback" class="href">CanvasContext.draw</a></li><li class="item"><a href="canvas.html#object-canvascontext.measuretextstring-text" class="href">CanvasContext.measureText</a></li><li class="item"><a href="canvas.html#canvascontext.canvastotempfilepathobject,-this" class="href">CanvasContext.canvastotempfilepathobject</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="keyboard.html#%e9%94%ae%e7%9b%98" class="href">键盘</a><ul class="m-summary-list indent"><li class="item"><a href="keyboard.html#hidekeyboard" class="href">hideKeyboard</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="scroll.html#%e6%bb%9a%e5%8a%a8" class="href">滚动</a><ul class="m-summary-list indent"><li class="item"><a href="scroll.html#pagescrollto" class="href">pageScrollTo</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="pulldown.html#%e4%b8%8b%e6%8b%89%e5%88%b7%e6%96%b0" class="href">下拉刷新</a><ul class="m-summary-list indent"><li class="item"><a href="pulldown.html#stoppulldownrefresh" class="href">stopPullDownRefresh</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="select.html#%e8%8a%82%e7%82%b9%e6%9f%a5%e8%af%a2" class="href">节点查询</a><ul class="m-summary-list indent"><li class="item"><a href="select.html#createselectorquery" class="href">createSelectorQuery</a></li><li class="item"><a href="select.html#nodesref-selectorquery.selectstring-selector" class="href">SelectorQuery.select</a></li><li class="item"><a href="select.html#nodesref-selectorquery.selectall" class="href">SelectorQuery.selectAll</a></li><li class="item"><a href="select.html#nodesref-selectorquery.selectviewport" class="href">SelectorQuery.selectViewport</a></li><li class="item"><a href="select.html#selectquery-nodesref.boundingclientrectfunction-callback" class="href">NodesRef.boundingClientRect</a></li><li class="item"><a href="select.html#selectquery-nodesref.scrolloffsetfunction-callback" class="href">NodesRef.scrollOffset</a></li><li class="item"><a href="select.html#nodesref-selectorquery.execfunction-callback" class="href">SelectorQuery.exec</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="image.html#%e5%9b%be%e7%89%87" class="href">图片</a><ul class="m-summary-list indent"><li class="item"><a href="image.html#chooseimageobject-object" class="href">chooseImage</a></li><li class="item"><a href="image.html#previewimageobject-object" class="href">previewImage</a></li><li class="item"><a href="image.html#saveimagetophotosalbumobject-object" class="href">saveImageToPhotosAlbum</a></li><li class="item"><a href="image.html#getimageinfoobject-object" class="href">getImageInfo</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="storage.html#%e7%bc%93%e5%ad%98" class="href">数据缓存</a><ul class="m-summary-list indent"><li class="item"><a href="storage.html#setstorageobject-object" class="href">setStorage</a></li><li class="item"><a href="storage.html#setstoragesyncstring-key,-object%7cstring-data" class="href">setStorageSync</a></li><li class="item"><a href="storage.html#getstorage" class="href">getStorage</a></li><li class="item"><a href="storage.html#getstoragesync" class="href">getstoragesync</a></li><li class="item"><a href="storage.html#removestorageobject-object" class="href">removeStorage</a></li><li class="item"><a href="storage.html#removestoragesyncstring-key" class="href">removeStorageSync</a></li><li class="item"><a href="storage.html#clearstorageobject-object" class="href">clearStorage</a></li><li class="item"><a href="storage.html#clearstoragesyncobject-object" class="href">clearStorageSync</a></li><li class="item"><a href="storage.html#getstorageinfoobject-object" class="href">getStorageInfo</a></li><li class="item"><a href="storage.html#getstorageinfosyncobject-object" class="href">getStorageInfoSync</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="file.html#%e6%96%87%e4%bb%b6" class="href">文件</a><ul class="m-summary-list indent"><li class="item"><a href="file.html#getfileinfoobject-object" class="href">getFileInfo</a></li><li class="item"><a href="file.html#getsavedfileinfoobject-object" class="href">getSavedFileInfo</a></li><li class="item"><a href="file.html#getsavedfilelistobject-object" class="href">getSavedFileList</a></li><li class="item"><a href="file.html#removesavedfileobject-object" class="href">removeSavedFile</a></li><li class="item"><a href="file.html#savefileobject-object" class="href">saveFile</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="location.html#%e4%bd%8d%e7%bd%ae" class="href">位置</a><ul class="m-summary-list indent"><li class="item"><a href="location.html#getlocationobject-object" class="href">getLocation</a></li><li class="item"><a href="location.html#openlocationobject-object" class="href">openLocation</a></li><li class="item"><a href="location.html#chooselocationobject-object" class="href">chooseLocation</a></li></ul></div></li></ul></div><div class="m-summary-block"><ul class="m-summary-list"><li class="item"><div class="m-summary-block"><a href="share.html#%e5%88%86%e4%ba%ab" class="href">分享</a><ul class="m-summary-list indent"><li class="item"><a href="share.html#onshareappmessageobject" class="href">onShareAppMessage</a></li><li class="item"><a href="share.html#hidesharemenuobject-object" class="href">hideShareMenu</a></li></ul></div></li></ul></div><div class="m-summary-block"><div class="m-summary-title">设备</div><ul class="m-summary-list indent"><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e6%8c%af%e5%8a%a8" class="href">振动</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#vibratelongobject-object" class="href">vibrateLong</a></li><li class="item"><a href="miniprogram.html#vibrateshortobject-object" class="href">vibrateShort</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e7%94%b5%e8%af%9d" class="href">电话</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#makephonecallobject-object" class="href">makePhoneCall</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e7%bd%91%e7%bb%9c" class="href">网络</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#getnetworktypeobject-object" class="href">getNetworkType</a></li><li class="item"><a href="miniprogram.html#onnetworkstatuschangefunction-callback" class="href">onNetworkStatusChange</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e5%89%aa%e5%88%87%e6%9d%bf" class="href">剪切板</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#getclipboarddataobject-object" class="href">getClipboardData</a></li><li class="item"><a href="miniprogram.html#setclipboarddataobject-object" class="href">setClipboardData</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e5%b1%8f%e5%b9%95" class="href">屏幕</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#setkeepscreenonobject-object" class="href">setKeepScreenOn</a></li><li class="item"><a href="miniprogram.html#getscreenbrightnessobject-object" class="href">getScreenBrightness</a></li><li class="item"><a href="miniprogram.html#setscreenbrightnessobject" class="href">setScreenBrightness</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e7%b3%bb%e7%bb%9f%e4%bf%a1%e6%81%af" class="href">系统信息</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#getsysteminfoobject-object" class="href">getSystemInfo</a></li><li class="item"><a href="miniprogram.html#getsysteminfosyncobject-object" class="href">getSystemInfoSync</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e6%89%ab%e7%a0%81" class="href">扫码-需要适配支付宝</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#scancodeobject-object" class="href">scanCode</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e7%94%a8%e6%88%b7%e6%88%aa%e5%b1%8f%e4%ba%8b%e4%bb%b6" class="href">用户截屏事件</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#onusercapturescreenobject-object" class="href">onUserCaptureScreen</a></li></ul></div></li><li class="item"><a href="miniprogram.html#boolean-caniusestring-schema" class="href">canIUse</a></li><li class="item"><div class="m-summary-block"><a href="iBeacon.html#ibeacon" class="href">iBeacon</a><ul class="m-summary-list indent"><li class="item"><a href="iBeacon.html#startbeacondiscoveryobject" class="href">startBeaconDiscovery</a></li><li class="item"><a href="iBeacon.html#stopbeacondiscoveryobject" class="href">stopBeaconDiscovery</a></li><li class="item"><a href="iBeacon.html#getbeaconsobject" class="href">getBeacons</a></li><li class="item"><a href="iBeacon.html#onbeaconupdatecallback" class="href">onBeaconUpdate</a></li><li class="item"><a href="iBeacon.html#onbeaconservicechangecallback" class="href">onBeaconServiceChange</a></li></ul></div></li></ul></div></div></div><div class="m-summary-switch" id="js-summary-switch"><svg viewBox="0 0 926.23699 573.74994" version="1.1" x="0px" y="0px" width="15" height="15" class="bottom"><g transform="translate(904.92214,-879.1482)"><path d="m -673.67664,1221.6502 -231.2455,-231.24803 55.6165,-55.627 c 30.5891,-30.59485 56.1806,-55.627 56.8701,-55.627 0.6894,0 79.8637,78.60862 175.9427,174.68583 l 174.6892,174.6858 174.6892,-174.6858 c 96.079,-96.07721 175.253196,-174.68583 175.942696,-174.68583 0.6895,0 26.281,25.03215 56.8701,55.627 l 55.6165,55.627 -231.245496,231.24803 c -127.185,127.1864-231.5279,231.248 -231.873,231.248 -0.3451,0 -104.688,-104.0616 -231.873,-231.248 z" fill="#fff"></path></g></svg><svg viewBox="0 0 926.23699 573.74994" version="1.1" x="0px" y="0px" width="15" height="15" class="top"><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="aaa" fill="#fff" fill-rule="nonzero"><path d="M231.2455,342.502 L0,111.25397 L55.6165,55.62697 C86.2056,25.03212 111.7971,-2.99999998e-05 112.4866,-2.99999998e-05 C113.176,-2.99999998e-05 192.3503,78.60859 288.4293,174.6858 L463.1185,349.3716 L637.8077,174.6858 C733.8867,78.60859 813.060896,-2.99999997e-05 813.750396,-2.99999997e-05 C814.439896,-2.99999997e-05 840.031396,25.03212 870.620496,55.62697 L926.236996,111.25397 L694.9915,342.502 C567.8065,469.6884 463.4636,573.75 463.1185,573.75 C462.7734,573.75 358.4305,469.6884 231.2455,342.502 Z" id="Shape" transform="translate(463.118498, 286.874985) scale(1, -1) translate(-463.118498, -286.874985) "></path></g></g></svg></div></div><div class="m-main" id="js-panel"><header class="m-header" id="js-header"><div class="m-header-title js-logo"><a href="../index.html" target="_self"><img class="logo" width="36" src="../images/logo@2x.png"/></a></div><div><div class="m-search">
+      <div class="icon">&#xf0fd;</div>
+      <input type="text" class="input js-input" placeholder="搜索" />
+      <div class="m-search-result js-search-result"></div>
+    </div></div><nav class="m-header-nav js-nav"><ul class="m-header-items"><li class="item "><a class="href" href="../documents/intro.html">文档</a></li><li class="item active"><a class="href" href="index.html">已兼容处理的API</a></li><li class="item "><a class="href" href="../documents/logo.html">谁在用nanachi</a></li><li class="item "><a class="href" href="../documents/about.html">关于</a></li></ul></nav><div id="js-nav-btn" class="m-header-btn ui-font-ydoc"></div></header><div class="m-content" id="js-content"><div id="markdown-body" class="m-content-container markdown-body"><h1>图片</h1>
+<h2 id="chooseimageobject-object">chooseImage(Object object)</h2>
+<p>从本地相册选择图片或使用相机拍照。</p>
+<p><strong>参数</strong></p>
+<p>Object object</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>默认值</th>
+<th>是否必须</th>
+<th>说明</th>
+<th>支持平台</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>count</td>
+<td>number</td>
+<td>微信、百度：9， 支付宝： 1</td>
+<td>否</td>
+<td>最多可以选择的图片张数</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>sourceType</td>
+<td>String Array</td>
+<td>['album', 'camera']</td>
+<td>否</td>
+<td>选择图片的来源</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>sizeType</td>
+<td>String Array</td>
+<td>['original', 'compressed']</td>
+<td>否</td>
+<td>original 原图，compressed 压缩图，默认二者都有</td>
+<td>微信</td>
+</tr>
+<tr>
+<td>success</td>
+<td>function</td>
+<td></td>
+<td>否</td>
+<td>接口调用成功的回调函数</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>fail</td>
+<td>function</td>
+<td></td>
+<td>否</td>
+<td>接口调用失败的回调函数</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>complete</td>
+<td>function</td>
+<td></td>
+<td>否</td>
+<td>接口调用结束的回调函数（调用成功、失败都会执行）</td>
+<td>都支持</td>
+</tr>
+</tbody>
+</table>
+<p><strong>success 返回值</strong></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+<th>支持平台</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tempFilePaths</td>
+<td>String Array</td>
+<td>图片的本地文件路径列表</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>tempFiles</td>
+<td>Object Array</td>
+<td>图片的本地文件列表，每一项是一个 File 对象。</td>
+<td>微信小程序&gt;=1.2.0, 百度小程序</td>
+</tr>
+</tbody>
+</table>
+<p>Object res</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>描述</th>
+<th>支持平台</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tempFilePaths</td>
+<td>StringArray</td>
+<td>图片的本地文件路径列表</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>tempFiles</td>
+<td>ObjectArray</td>
+<td>图片的本地文件列表，每一项是一个 File 对象</td>
+<td>微信、百度</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-javascript">  <span class="token function">choose</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">chooseImage</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+      count<span class="token operator">:</span> <span class="token number">2</span><span class="token punctuation">,</span>
+      <span class="token function-variable function">success</span><span class="token operator">:</span> <span class="token parameter">res</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">setState</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+          img<span class="token operator">:</span> res<span class="token punctuation">.</span>tempFilePaths
+        <span class="token punctuation">}</span><span class="token punctuation">)</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token function">render</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span>
+      <span class="token operator">&lt;</span>div<span class="token operator">></span>
+        <span class="token operator">&lt;</span>button onTap<span class="token operator">=</span><span class="token punctuation">{</span><span class="token keyword">this</span><span class="token punctuation">.</span>choose<span class="token punctuation">}</span><span class="token operator">></span>选择图片<span class="token operator">&lt;</span><span class="token operator">/</span>button<span class="token operator">></span>
+        <span class="token punctuation">{</span>
+          <span class="token keyword">this</span><span class="token punctuation">.</span>state<span class="token punctuation">.</span>img<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">item</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">return</span>  <span class="token operator">&lt;</span>image src<span class="token operator">=</span><span class="token punctuation">{</span>item<span class="token punctuation">}</span><span class="token operator">/</span><span class="token operator">></span>
+          <span class="token punctuation">}</span><span class="token punctuation">)</span>
+        <span class="token punctuation">}</span>
+
+      <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">></span>
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+</code></pre>
+<h2 id="previewimageobject-object">previewImage(Object object)</h2>
+<p>预览图片</p>
+<p><strong>参数</strong></p>
+<p>Object object</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>是否必须</th>
+<th>说明</th>
+<th>支持平台</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>urls</td>
+<td>Array</td>
+<td>是</td>
+<td>要预览的图片链接列表</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>current</td>
+<td>String</td>
+<td>否</td>
+<td>当前显示图片的链接	，urls 的第一张</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>success</td>
+<td>function</td>
+<td>否</td>
+<td>接口调用成功的回调函数</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>fail</td>
+<td>function</td>
+<td>否</td>
+<td>接口调用失败的回调函数</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>complete</td>
+<td>function</td>
+<td>否</td>
+<td>接口调用结束的回调函数（调用成功、失败都会执行）</td>
+<td>都支持</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-javascript"> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">previewImage</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+   current<span class="token operator">:</span> <span class="token string">'http://xxxxxxx'</span><span class="token punctuation">,</span> <span class="token comment">// 当前显示图片链接</span>
+   urls<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token string">''</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token comment">// 需要预览的图片http链接列表,</span>
+   <span class="token function-variable function">success</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">res</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'success'</span><span class="token punctuation">,</span> res<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">}</span><span class="token punctuation">,</span>
+   <span class="token function-variable function">fail</span><span class="token operator">:</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">err</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'错误码：'</span> <span class="token operator">+</span> err<span class="token punctuation">.</span>errCode<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'错误信息：'</span> <span class="token operator">+</span> err<span class="token punctuation">.</span>errMsg<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<h2 id="saveimagetophotosalbumobject-object">saveImageToPhotosAlbum(Object object)</h2>
+<p>保存图片到系统相册</p>
+<p><strong>参数</strong></p>
+<p>Object object</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>是否必须</th>
+<th>说明</th>
+<th>支持平台</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>filePath</td>
+<td>string</td>
+<td>是</td>
+<td>图片文件路径，可以是临时文件路径或永久文件路径，不支持网络图片路径</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>success</td>
+<td>function</td>
+<td>否</td>
+<td>接口调用成功的回调函数</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>fail</td>
+<td>function</td>
+<td>否</td>
+<td>接口调用失败的回调函数</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>complete</td>
+<td>function</td>
+<td>否</td>
+<td>接口调用结束的回调函数（调用成功、失败都会执行）</td>
+<td>都支持</td>
+</tr>
+</tbody>
+</table>
+<h2 id="getimageinfoobject-object">getImageInfo(Object object)</h2>
+<p>获取图片信息</p>
+<p><strong>参数</strong></p>
+<p>Object object</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>是否必须</th>
+<th>说明</th>
+<th>支持平台</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>src</td>
+<td>string</td>
+<td>是</td>
+<td>图片路径，目前支持：网络图片路径、apFilePath 路径、相对路径</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>success</td>
+<td>function</td>
+<td>否</td>
+<td>接口调用成功的回调函数</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>fail</td>
+<td>function</td>
+<td>否</td>
+<td>接口调用失败的回调函数</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>complete</td>
+<td>function</td>
+<td>否</td>
+<td>接口调用结束的回调函数（调用成功、失败都会执行）</td>
+<td>都支持</td>
+</tr>
+</tbody>
+</table>
+<p><strong>success 返回值</strong></p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>类型</th>
+<th>描述</th>
+<th>支持平台</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>width</td>
+<td>Number</td>
+<td>图片宽度（单位 px）</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>height</td>
+<td>Number</td>
+<td>图片高度（单位 px）</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>path</td>
+<td>string</td>
+<td>图片的本地路径</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>orientation</td>
+<td>string</td>
+<td>拍照时设备方向</td>
+<td>微信</td>
+</tr>
+<tr>
+<td>type</td>
+<td>string</td>
+<td>图片格式</td>
+<td>微信</td>
+</tr>
+</tbody>
+</table>
+</div><div class="m-content-container m-paging"><div class="m-paging-prev m-paging-item"><a href="select.html" class="href"><span class="ui-font-ydoc"></span>节点查询</a></div><div class="m-paging-next m-paging-item"><a href="storage.html" class="href">数据缓存<span class="ui-font-ydoc"></span></a></div></div></div></div></div><div></div><script>
+    var $content = document.getElementById('js-content');
+    var $summaryItems = Array.prototype.slice.call(document.querySelectorAll('#js-menu .href'));
+    var $menu = document.getElementById('js-menu');
+    if (sessionStorage.prevPathname) {
+      sessionStorage.setItem('prevPrevPathname', sessionStorage.prevPathname);
+      sessionStorage.setItem('prevPrevMenuScrollTop', sessionStorage.prevMenuScrollTop);
+      sessionStorage.setItem('prevPrevContentScrollTop', sessionStorage.prevContentScrollTop);
+    }
+    if (sessionStorage.locationPathname) {
+      sessionStorage.setItem('prevPathname', sessionStorage.locationPathname);
+      sessionStorage.setItem('prevMenuScrollTop', sessionStorage.menuScrollTop);
+      sessionStorage.setItem('prevContentScrollTop', sessionStorage.contentScrollTop);
+    }
+    if ($menu && sessionStorage.menuScrollTop) {
+		  $menu.scrollTop = sessionStorage.menuScrollTop;
+    }
+    // 刷新页面但不切换 pathname 的时候，内容区恢复到记忆的高度
+    if ($content && sessionStorage.contentScrollTop && window.location.pathname == sessionStorage.locationPathname) {
+      $content.scrollTop = sessionStorage.contentScrollTop;
+    } else if (sessionStorage.prevPrevPathname && sessionStorage.prevPrevPathname === window.location.pathname) {
+      if ($menu && sessionStorage.prevPrevMenuScrollTop) {
+        $menu.scrollTop = sessionStorage.prevPrevMenuScrollTop;
+      }
+      if ($content && sessionStorage.prevPrevContentScrollTop) {
+        $content.scrollTop = sessionStorage.prevPrevContentScrollTop;
+      }
+    }
+    sessionStorage.setItem('locationPathname', window.location.pathname);
+    </script><script src="../ydoc/scripts/plugins/dollar.min.js"></script><script src="../ydoc/scripts/plugins/responsive-nav.min.js"></script><script src="../ydoc/scripts/plugins/slideout.min.js"></script><script src="../ydoc/scripts/app.js"></script><script src="../ydoc/ydoc-plugin-search/core.js"></script><script src="../ydoc/ydoc-plugin-search/search.js"></script><script src="../search_json.js"></script></body></html>

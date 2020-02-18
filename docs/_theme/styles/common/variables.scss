@@ -1,0 +1,100 @@
+// variable namespace guide:
+// {adj.}-{place}-{element}-{function}
+// eg. $deep-body-text-color
+@import './color';
+
+$white:			#fff;
+$black:			#000;
+$red:       #f5222d;
+$volcano:   #fa541c;
+$orange:    #fa8c16;
+$gold:      #faad14;
+$yellow:    #fadb14;
+$lime:      #a0d911;
+$green:     #52c41a;
+$cyan:      #13c2c2;
+$blue:      #1890ff;
+$geekBlue:  #2f54eb;
+$purple:    #722ed1;
+$pink:      #eb2f96;
+
+// colors
+// ------------------------------------------
+// primary colors
+$primary-color: 				    $blue-6;
+$deep-primary-color: 		    $blue-8;
+$light-primary-color:		    $blue-2;
+$break-line-color:        #e5f0f6;
+$primary-1:		  color($primary-color, 1);
+$primary-2:		  color($primary-color, 2);
+$primary-3:		  color($primary-color, 3);
+$primary-4:		  color($primary-color, 4);
+$primary-5:		  color($primary-color, 5);
+$primary-6:		  color($primary-color, 6);
+$primary-7:		  color($primary-color, 7);
+$primary-8:		  color($primary-color, 8);
+$primary-9:		  color($primary-color, 9);
+$primary-10:		color($primary-color, 10);
+// secondary colors
+$secondary-color: 			    $yellow-6;
+$deep-secondary-color: 	    $yellow-8;
+$light-secondary-color:	    $yellow-2;
+// function colors
+$info-color: 					      $blue-6;
+$warn-color: 					      $yellow-6;
+$success-color: 				    $green-6;
+// text colors on light background
+$base-deep-text-color:      color($deep-primary-color, 10);
+$deep-body-text-color:			rgba($base-deep-text-color, .87);
+$deep-caption-text-color:		rgba($base-deep-text-color, .54);
+$deep-disable-text-color:		rgba($base-deep-text-color, .38);
+$deep-line-text-color:      rgba($base-deep-text-color, .14);
+// text colors on dark background
+$light-body-text-color:			rgba($white, 1);
+$light-caption-text-color:	rgba($white, .7);
+$light-disable-text-color:	rgba($white, .5);
+$light-line-text-color:      rgba($white, .24);
+// background colors
+$html-bg: #ccc;
+$body-bg: #fff;
+
+// text
+// ------------------------------------------
+$font-size:       14px;
+$line-height:     1.5;
+// headline
+$font-size-display2:    56px;
+$font-size-display1:    48px;
+$font-size-h1:    32px;
+$font-size-h2:    24px;
+$font-size-h3:    20px;
+$font-size-h4:    16px;
+$font-size-h5:    14px;
+$font-size-h6:    12px;
+$font-size-body:  $font-size;
+
+// transition
+// ------------------------------------------
+$transition-time-quick:     .2s;
+$transition-time-slow:      .4s;
+
+// padding
+// ------------------------------------------
+$padding-xs:     .08rem;
+$padding-sm:     .16rem;
+$padding-md:     .24rem;
+$padding-lg:     .32rem;
+
+// shadow
+// ------------------------------------------
+$shadow-color: rgba(0, 0, 0, .18);
+$shadow-1:  0 1px 2px $shadow-color;
+$shadow-2:  0 2px 4px $shadow-color;
+$shadow-4:  0 4px 8px $shadow-color;
+$shadow-8:  0 8px 16px $shadow-color;
+
+// z-index
+$zindex-modal:      3000;
+$zindex-drawer:     2000;
+$zindex-mask:       1050;
+$zindex-over:       1000;

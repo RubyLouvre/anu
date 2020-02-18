@@ -1,0 +1,41 @@
+/*! responsive-nav.js 1.0.39 by @viljamis */
+
+.m-header-nav ul {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: block;
+  list-style: none;
+}
+
+.js .m-header-nav {
+  clip: rect(0 0 0 0);
+  max-height: 0;
+  position: absolute;
+  display: block;
+  overflow: hidden;
+  zoom: 1;
+}
+
+.m-header-nav.opened {
+  max-height: 9999px;
+}
+
+.nav-toggle {
+  @include user-select-none;
+}
+
+@include media-md() {
+  .js .m-header-nav {
+    position: relative;
+  }
+  .js .m-header-nav.closed {
+    max-height: none;
+  }
+  .nav-toggle {
+    display: none;
+  }
+  .m-header-btn {
+    display: none;
+  }
+}

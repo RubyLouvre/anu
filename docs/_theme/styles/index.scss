@@ -1,0 +1,21 @@
+// core
+@import './common/index';
+
+// plugins
+@import './plugins/nav';
+@import './plugins/slide';
+@import './plugins/markdown';
+@import './plugins/prism';
+
+// components
+@import './layout';
+@import './header';
+@import './summary';
+@import './content';
+@import './footer';
+@import './homepage';
+
+* {
+    margin: 0;
+    padding: 0;
+}

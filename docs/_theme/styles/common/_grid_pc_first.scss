@@ -1,0 +1,36 @@
+// PC(Personal Computer) first thinking：
+// Considering design/coding of PC devices at the first time.
+// Making responsive layouts when width decrease.
+
+// ! We recommend you using mobile first thinking.
+
+// xsmall (mobile phone)
+@mixin media-xs() {
+    @media screen and (max-width: 600px) {
+        @content;
+    }
+}
+// small (tablet PC/mobile phone)
+@mixin media-sm() {
+    @media screen and (max-width: 960px) {
+        @content;
+    }
+}
+// medium tablet PC
+@mixin media-md() {
+    @media screen and (max-width: 1440px) {
+        @content;
+    }
+}
+// large PC
+@mixin media-lg() {
+    @media screen and (max-width: 1920px) {
+        @content;
+    }
+}
+// xlarge PC
+@mixin media-xl() {
+    @media screen and (min-width: 1920px) {
+        @content;
+    }
+}

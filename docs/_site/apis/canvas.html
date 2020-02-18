@@ -1,0 +1,1458 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charSet="UTF-8"/><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><link rel="icon" type="image/png" sizes="32x32" href="../images/titleLogo.png"/><link rel="icon" type="image/png" sizes="16x16" href="../images/titleLogo.png"/><meta name="theme-color" content="#ffffff"/><meta http-equiv="Cache-Control" content="no-transform"/><meta http-equiv="Cache-Control" content="no-siteapp"/><title>画布-已兼容处理的API</title><link rel="stylesheet" href="../ydoc/styles/style.css"/><meta name="author" content="司徒正美"/><meta name="keywords"/><meta name="description" content="使用Reac微信小程序"/><meta id="releativePath" content=".."/><link rel="stylesheet" href="../ydoc/ydoc-plugin-search/search.css"/><link rel="stylesheet" href="../style/index.css"/></head><body><div class="g-doc"><div class="m-aside"><div class="m-summary" id="js-menu"><div class="m-summary-content" id="js-menu-content"><div class="m-summary-block"><ul class="m-summary-list"><li class="item"><a href="index.html#%e6%a6%82%e8%bf%b0" class="href">概述</a></li><li class="item"><div class="m-summary-block"><a href="network.html#%e7%bd%91%e7%bb%9c" class="href">网络</a><ul class="m-summary-list indent"><li class="item"><a href="network.html#request" class="href">request</a></li><li class="item"><a href="network.html#uploadfileobject-object" class="href">uploadFile</a></li><li class="item"><a href="network.html#downloadfileobject-object" class="href">downloadFile</a></li><li class="item"><a href="network.html#connectsocketobject-object" class="href">connectSocket</a></li><li class="item"><a href="network.html#onsocketopenfunction-callback" class="href">onSocketOpen</a></li><li class="item"><a href="network.html#closesocketobject-object" class="href">closeSocket</a></li><li class="item"><a href="network.html#sendsocketmessageobject-object" class="href">sendSocketMessage</a></li><li class="item"><a href="network.html#onsocketmessagefunction-callback" class="href">onSocketMessage</a></li><li class="item"><a href="network.html#onsocketerrorfunction-callback" class="href">onSocketError</a></li><li class="item"><a href="network.html#onsocketclosefunction-callback" class="href">onSocketClose</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="interaction.html#%e4%ba%a4%e4%ba%92" class="href">交互</a><ul class="m-summary-list indent"><li class="item"><a href="interaction.html#showmodalobject-object" class="href">showModal</a></li><li class="item"><a href="interaction.html#showtoastobject-object" class="href">showToast</a></li><li class="item"><a href="interaction.html#hidetoast" class="href">hideToast</a></li><li class="item"><a href="interaction.html#showloadingobject-object" class="href">showLoading</a></li><li class="item"><a href="interaction.html#hideloading" class="href">hideLoading</a></li><li class="item"><a href="interaction.html#showactionsheetobject-object" class="href">showActionSheet</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="router.html#%e5%af%bc%e8%88%aa" class="href">导航</a><ul class="m-summary-list indent"><li class="item"><a href="router.html#navigatetoobject" class="href">navigateTo</a></li><li class="item"><a href="router.html#redirecttoobject" class="href">redirectTo</a></li><li class="item"><a href="router.html#relaunchobject" class="href">reLaunch</a></li><li class="item"><a href="router.html#navigatebackobject" class="href">navigateBack</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="nav.html#%e8%ae%be%e7%bd%ae%e5%af%bc%e8%88%aa%e6%9d%a1" class="href">设置导航条</a><ul class="m-summary-list indent"><li class="item"><a href="nav-bar.html#setnavigationbartitleobject" class="href">setNavigationBarTitle</a></li><li class="item"><a href="nav-bar.html#setnavigationbarcolorobject" class="href">setNavigationBarColor</a></li><li class="item"><a href="nav-bar.html#shownavigationbarloading" class="href">showNavigationBarLoading</a></li><li class="item"><a href="nav-bar.html#hidenavigationbarloading" class="href">hideNavigationBarLoading</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="api.html#tabbar" class="href">TabBar</a><ul class="m-summary-list indent"><li class="item"><a href="api.html#tabbar-switchtabobject" class="href">switchTab</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="animation.html#%e5%8a%a8%e7%94%bb" class="href">动画</a><ul class="m-summary-list indent"><li class="item"><a href="animation.html#createanimationobject-object" class="href">createAnimation</a></li><li class="item"><a href="animation.html#animation" class="href">animation</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="canvas.html#%e7%94%bb%e5%b8%83" class="href">画布</a><ul class="m-summary-list indent"><li class="item"><a href="canvas.html#createcanvascontextcanvasid" class="href">createCanvasContext</a></li><li class="item"><a href="canvas.html#canvascontext.settextalignstring-align" class="href">CanvasContext.setTextAlign</a></li><li class="item"><a href="canvas.html#canvascontext.settextbaselinestring-textbaseline" class="href">CanvasContext.setTextBaseline</a></li><li class="item"><a href="canvas.html#canvascontext.setfillstylestring-color" class="href">CanvasContext.setFillStyle</a></li><li class="item"><a href="canvas.html#canvascontext.setstrokestylestring-color" class="href">CanvasContext.setStrokeStyle</a></li><li class="item"><a href="canvas.html#canvascontext.setshadownumber-offsetx,-number-offsety,-number-blur,-string-color" class="href">CanvasContext.setShadow</a></li><li class="item"><a href="canvas.html#canvascontext.createlineargradientnumber-x0,-number-y0,-number-x1,-number-y1" class="href">CanvasContext.createLinearGradient</a></li><li class="item"><a href="canvas.html#canvascontext.createcirculargradientnumber-x0,-number-y0,-number-x1,-number-y1" class="href">CanvasContext.createCircularGradient</a></li><li class="item"><a href="canvas.html#canvasgradient.addcolorstopnumber-stop,-string-color" class="href">CanvasGradient.addColorStop</a></li><li class="item"><a href="canvas.html#canvascontext.setlinewidthnumber-linewidth" class="href">CanvasContext.setLineWidth</a></li><li class="item"><a href="canvas.html#canvascontext.setlinecapstring-linecap" class="href">CanvasContext.setLineCap</a></li><li class="item"><a href="canvas.html#canvascontext.setlinejoinstring-linejoin" class="href">CanvasContext.setLineJoin</a></li><li class="item"><a href="canvas.html#canvascontext.setmiterlimitnumber-miterlimit" class="href">CanvasContext.setMiterLimit</a></li><li class="item"><a href="canvas.html#canvascontext.rectnumber-x,-number-y,-number-width,-number-height" class="href">CanvasContext.rect</a></li><li class="item"><a href="canvas.html#canvascontext.fillrectnumber-x,-number-y,-number-width,-number-height" class="href">CanvasContext.fillRect</a></li><li class="item"><a href="canvas.html#canvascontext.strokerectnumber-x,-number-y,-number-width,-number-height" class="href">CanvasContext.strokeRect</a></li><li class="item"><a href="canvas.html#canvascontext.clearrectnumber-x,-number-y,-number-width,-number-height" class="href">CanvasContext.clearRect</a></li><li class="item"><a href="canvas.html#canvascontext.fill" class="href">CanvasContext.fill</a></li><li class="item"><a href="canvas.html#canvascontext.stroke" class="href">CanvasContext.stroke</a></li><li class="item"><a href="canvas.html#canvascontext.beginpath" class="href">CanvasContext.beginPath</a></li><li class="item"><a href="canvas.html#canvascontext.closepath" class="href">CanvasContext.closePath</a></li><li class="item"><a href="canvas.html#canvascontext.movetonumber-x,-number-y" class="href">CanvasContext.moveTo</a></li><li class="item"><a href="canvas.html#canvascontext.linetonumber-x,-number-y" class="href">CanvasContext.lineTo</a></li><li class="item"><a href="canvas.html#canvascontext.arcnumber-x,-number-y,-number-r,-number-sangle,-number-eangle,-number-counterclockwise" class="href">CanvasContext.arc</a></li><li class="item"><a href="canvas.html#canvascontext.beziercurveto" class="href">CanvasContext.bezierCurveTo</a></li><li class="item"><a href="canvas.html#canvascontext.clip" class="href">CanvasContext.clip</a></li><li class="item"><a href="canvas.html#canvascontext.quadraticcurvetonumber-cpx,-number-cpy,-number-x,-number-y" class="href">CanvasContext.quadraticCurveTo</a></li><li class="item"><a href="canvas.html#canvascontext.scalenumber-scalewidth,-number-scaleheight" class="href">CanvasContext.scale</a></li><li class="item"><a href="canvas.html#canvascontext.rotatenumber-rotate" class="href">CanvasContext.rotate</a></li><li class="item"><a href="canvas.html#canvascontext.translatenumber-x,-number-y" class="href">CanvasContext.translate</a></li><li class="item"><a href="canvas.html#canvascontext.setfontsizenumber-fontsize" class="href">CanvasContext.setFontSize</a></li><li class="item"><a href="canvas.html#canvascontext.filltextstring-text,-number-x,-number-y,-number-maxwidth" class="href">CanvasContext.fillText</a></li><li class="item"><a href="canvas.html#canvascontext.drawimagestring-imageresource,-number-dx,-number-dy,-number-dwidth,-number-dheight,-number-sx,-number-sy,-number-swidth,-number-sheight" class="href">CanvasContext.drawImage</a></li><li class="item"><a href="canvas.html#canvascontext.setglobalalphanumber-%e9%80%8f%e6%98%8e%e5%ba%a6%e3%80%82%e8%8c%83%e5%9b%b4" class="href">CanvasContext.setGlobalAlpha</a></li><li class="item"><a href="canvas.html#canvascontext.setlinedasharray.-pattern,-number-offset" class="href">CanvasContext.setLineDash</a></li><li class="item"><a href="canvas.html#canvascontext.transformnumber-scalex,-number-skewx,-number-skewy,-number-scaley,-number-translatex,-number-translatey" class="href">CanvasContext.transform</a></li><li class="item"><a href="canvas.html#canvascontext.settransformnumber-scalex,-number-skewx,-number-skewy,-number-scaley,-number-translatex,-number-translatey" class="href">CanvasContext.setTransform</a></li><li class="item"><a href="canvas.html#canvascontext.save" class="href">CanvasContext.save</a></li><li class="item"><a href="canvas.html#canvascontext.restore" class="href">CanvasContext.restore</a></li><li class="item"><a href="canvas.html#canvascontext.drawboolean-reserve,-function-callback" class="href">CanvasContext.draw</a></li><li class="item"><a href="canvas.html#object-canvascontext.measuretextstring-text" class="href">CanvasContext.measureText</a></li><li class="item"><a href="canvas.html#canvascontext.canvastotempfilepathobject,-this" class="href">CanvasContext.canvastotempfilepathobject</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="keyboard.html#%e9%94%ae%e7%9b%98" class="href">键盘</a><ul class="m-summary-list indent"><li class="item"><a href="keyboard.html#hidekeyboard" class="href">hideKeyboard</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="scroll.html#%e6%bb%9a%e5%8a%a8" class="href">滚动</a><ul class="m-summary-list indent"><li class="item"><a href="scroll.html#pagescrollto" class="href">pageScrollTo</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="pulldown.html#%e4%b8%8b%e6%8b%89%e5%88%b7%e6%96%b0" class="href">下拉刷新</a><ul class="m-summary-list indent"><li class="item"><a href="pulldown.html#stoppulldownrefresh" class="href">stopPullDownRefresh</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="select.html#%e8%8a%82%e7%82%b9%e6%9f%a5%e8%af%a2" class="href">节点查询</a><ul class="m-summary-list indent"><li class="item"><a href="select.html#createselectorquery" class="href">createSelectorQuery</a></li><li class="item"><a href="select.html#nodesref-selectorquery.selectstring-selector" class="href">SelectorQuery.select</a></li><li class="item"><a href="select.html#nodesref-selectorquery.selectall" class="href">SelectorQuery.selectAll</a></li><li class="item"><a href="select.html#nodesref-selectorquery.selectviewport" class="href">SelectorQuery.selectViewport</a></li><li class="item"><a href="select.html#selectquery-nodesref.boundingclientrectfunction-callback" class="href">NodesRef.boundingClientRect</a></li><li class="item"><a href="select.html#selectquery-nodesref.scrolloffsetfunction-callback" class="href">NodesRef.scrollOffset</a></li><li class="item"><a href="select.html#nodesref-selectorquery.execfunction-callback" class="href">SelectorQuery.exec</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="image.html#%e5%9b%be%e7%89%87" class="href">图片</a><ul class="m-summary-list indent"><li class="item"><a href="image.html#chooseimageobject-object" class="href">chooseImage</a></li><li class="item"><a href="image.html#previewimageobject-object" class="href">previewImage</a></li><li class="item"><a href="image.html#saveimagetophotosalbumobject-object" class="href">saveImageToPhotosAlbum</a></li><li class="item"><a href="image.html#getimageinfoobject-object" class="href">getImageInfo</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="storage.html#%e7%bc%93%e5%ad%98" class="href">数据缓存</a><ul class="m-summary-list indent"><li class="item"><a href="storage.html#setstorageobject-object" class="href">setStorage</a></li><li class="item"><a href="storage.html#setstoragesyncstring-key,-object%7cstring-data" class="href">setStorageSync</a></li><li class="item"><a href="storage.html#getstorage" class="href">getStorage</a></li><li class="item"><a href="storage.html#getstoragesync" class="href">getstoragesync</a></li><li class="item"><a href="storage.html#removestorageobject-object" class="href">removeStorage</a></li><li class="item"><a href="storage.html#removestoragesyncstring-key" class="href">removeStorageSync</a></li><li class="item"><a href="storage.html#clearstorageobject-object" class="href">clearStorage</a></li><li class="item"><a href="storage.html#clearstoragesyncobject-object" class="href">clearStorageSync</a></li><li class="item"><a href="storage.html#getstorageinfoobject-object" class="href">getStorageInfo</a></li><li class="item"><a href="storage.html#getstorageinfosyncobject-object" class="href">getStorageInfoSync</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="file.html#%e6%96%87%e4%bb%b6" class="href">文件</a><ul class="m-summary-list indent"><li class="item"><a href="file.html#getfileinfoobject-object" class="href">getFileInfo</a></li><li class="item"><a href="file.html#getsavedfileinfoobject-object" class="href">getSavedFileInfo</a></li><li class="item"><a href="file.html#getsavedfilelistobject-object" class="href">getSavedFileList</a></li><li class="item"><a href="file.html#removesavedfileobject-object" class="href">removeSavedFile</a></li><li class="item"><a href="file.html#savefileobject-object" class="href">saveFile</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="location.html#%e4%bd%8d%e7%bd%ae" class="href">位置</a><ul class="m-summary-list indent"><li class="item"><a href="location.html#getlocationobject-object" class="href">getLocation</a></li><li class="item"><a href="location.html#openlocationobject-object" class="href">openLocation</a></li><li class="item"><a href="location.html#chooselocationobject-object" class="href">chooseLocation</a></li></ul></div></li></ul></div><div class="m-summary-block"><ul class="m-summary-list"><li class="item"><div class="m-summary-block"><a href="share.html#%e5%88%86%e4%ba%ab" class="href">分享</a><ul class="m-summary-list indent"><li class="item"><a href="share.html#onshareappmessageobject" class="href">onShareAppMessage</a></li><li class="item"><a href="share.html#hidesharemenuobject-object" class="href">hideShareMenu</a></li></ul></div></li></ul></div><div class="m-summary-block"><div class="m-summary-title">设备</div><ul class="m-summary-list indent"><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e6%8c%af%e5%8a%a8" class="href">振动</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#vibratelongobject-object" class="href">vibrateLong</a></li><li class="item"><a href="miniprogram.html#vibrateshortobject-object" class="href">vibrateShort</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e7%94%b5%e8%af%9d" class="href">电话</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#makephonecallobject-object" class="href">makePhoneCall</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e7%bd%91%e7%bb%9c" class="href">网络</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#getnetworktypeobject-object" class="href">getNetworkType</a></li><li class="item"><a href="miniprogram.html#onnetworkstatuschangefunction-callback" class="href">onNetworkStatusChange</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e5%89%aa%e5%88%87%e6%9d%bf" class="href">剪切板</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#getclipboarddataobject-object" class="href">getClipboardData</a></li><li class="item"><a href="miniprogram.html#setclipboarddataobject-object" class="href">setClipboardData</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e5%b1%8f%e5%b9%95" class="href">屏幕</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#setkeepscreenonobject-object" class="href">setKeepScreenOn</a></li><li class="item"><a href="miniprogram.html#getscreenbrightnessobject-object" class="href">getScreenBrightness</a></li><li class="item"><a href="miniprogram.html#setscreenbrightnessobject" class="href">setScreenBrightness</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e7%b3%bb%e7%bb%9f%e4%bf%a1%e6%81%af" class="href">系统信息</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#getsysteminfoobject-object" class="href">getSystemInfo</a></li><li class="item"><a href="miniprogram.html#getsysteminfosyncobject-object" class="href">getSystemInfoSync</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e6%89%ab%e7%a0%81" class="href">扫码-需要适配支付宝</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#scancodeobject-object" class="href">scanCode</a></li></ul></div></li><li class="item"><div class="m-summary-block"><a href="miniprogram.html#%e7%94%a8%e6%88%b7%e6%88%aa%e5%b1%8f%e4%ba%8b%e4%bb%b6" class="href">用户截屏事件</a><ul class="m-summary-list indent"><li class="item"><a href="miniprogram.html#onusercapturescreenobject-object" class="href">onUserCaptureScreen</a></li></ul></div></li><li class="item"><a href="miniprogram.html#boolean-caniusestring-schema" class="href">canIUse</a></li><li class="item"><div class="m-summary-block"><a href="iBeacon.html#ibeacon" class="href">iBeacon</a><ul class="m-summary-list indent"><li class="item"><a href="iBeacon.html#startbeacondiscoveryobject" class="href">startBeaconDiscovery</a></li><li class="item"><a href="iBeacon.html#stopbeacondiscoveryobject" class="href">stopBeaconDiscovery</a></li><li class="item"><a href="iBeacon.html#getbeaconsobject" class="href">getBeacons</a></li><li class="item"><a href="iBeacon.html#onbeaconupdatecallback" class="href">onBeaconUpdate</a></li><li class="item"><a href="iBeacon.html#onbeaconservicechangecallback" class="href">onBeaconServiceChange</a></li></ul></div></li></ul></div></div></div><div class="m-summary-switch" id="js-summary-switch"><svg viewBox="0 0 926.23699 573.74994" version="1.1" x="0px" y="0px" width="15" height="15" class="bottom"><g transform="translate(904.92214,-879.1482)"><path d="m -673.67664,1221.6502 -231.2455,-231.24803 55.6165,-55.627 c 30.5891,-30.59485 56.1806,-55.627 56.8701,-55.627 0.6894,0 79.8637,78.60862 175.9427,174.68583 l 174.6892,174.6858 174.6892,-174.6858 c 96.079,-96.07721 175.253196,-174.68583 175.942696,-174.68583 0.6895,0 26.281,25.03215 56.8701,55.627 l 55.6165,55.627 -231.245496,231.24803 c -127.185,127.1864-231.5279,231.248 -231.873,231.248 -0.3451,0 -104.688,-104.0616 -231.873,-231.248 z" fill="#fff"></path></g></svg><svg viewBox="0 0 926.23699 573.74994" version="1.1" x="0px" y="0px" width="15" height="15" class="top"><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="aaa" fill="#fff" fill-rule="nonzero"><path d="M231.2455,342.502 L0,111.25397 L55.6165,55.62697 C86.2056,25.03212 111.7971,-2.99999998e-05 112.4866,-2.99999998e-05 C113.176,-2.99999998e-05 192.3503,78.60859 288.4293,174.6858 L463.1185,349.3716 L637.8077,174.6858 C733.8867,78.60859 813.060896,-2.99999997e-05 813.750396,-2.99999997e-05 C814.439896,-2.99999997e-05 840.031396,25.03212 870.620496,55.62697 L926.236996,111.25397 L694.9915,342.502 C567.8065,469.6884 463.4636,573.75 463.1185,573.75 C462.7734,573.75 358.4305,469.6884 231.2455,342.502 Z" id="Shape" transform="translate(463.118498, 286.874985) scale(1, -1) translate(-463.118498, -286.874985) "></path></g></g></svg></div></div><div class="m-main" id="js-panel"><header class="m-header" id="js-header"><div class="m-header-title js-logo"><a href="../index.html" target="_self"><img class="logo" width="36" src="../images/logo@2x.png"/></a></div><div><div class="m-search">
+      <div class="icon">&#xf0fd;</div>
+      <input type="text" class="input js-input" placeholder="搜索" />
+      <div class="m-search-result js-search-result"></div>
+    </div></div><nav class="m-header-nav js-nav"><ul class="m-header-items"><li class="item "><a class="href" href="../documents/intro.html">文档</a></li><li class="item active"><a class="href" href="index.html">已兼容处理的API</a></li><li class="item "><a class="href" href="../documents/logo.html">谁在用nanachi</a></li><li class="item "><a class="href" href="../documents/about.html">关于</a></li></ul></nav><div id="js-nav-btn" class="m-header-btn ui-font-ydoc"></div></header><div class="m-content" id="js-content"><div id="markdown-body" class="m-content-container markdown-body"><h1>画布</h1>
+<h2 id="createcanvascontextcanvasid">createCanvasContext(canvasId)</h2>
+<pre><code>const ctx = React.api.createCanvasContext(&#x27;myCanvas&#x27;, this);  // &#x5728;&#x5FEB;&#x5E94;&#x7528;&#x4E2D;this&#x5FC5;&#x987B;&#x6DFB;&#x52A0;
+</code></pre>
+<blockquote>
+<p>Tips: 快应用 canvas API</p>
+</blockquote>
+<ol>
+<li>调用的时间是在 onShow  绘制图片， 如果是 组件的话在componentDidMount 中延迟 300 ms</li>
+<li>setShadow 没有这个属性</li>
+<li>createCircularGradient   创建圆形渐变属性没有</li>
+<li>canvasToTempFilePath   把当前画布指定区域的内容导出生成指定大小的图片  该方法没有</li>
+</ol>
+<p>创建 canvas 绘图上下文</p>
+<blockquote>
+<p>该绘图上下文只作用于对应 canvasId 的 <code>&lt;canvas /&gt;</code></p>
+</blockquote>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>canvasId</td>
+<td>String</td>
+<td>定义在 上的 id</td>
+</tr>
+</tbody>
+</table>
+<p>返回值<br>
+CanvasContext</p>
+<h2 id="canvascontext.settextalignstring-align">CanvasContext.setTextAlign(string align)</h2>
+<p>设置文字的对齐</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>textAlign</td>
+<td>String</td>
+<td>枚举 &quot;left&quot; &quot;right&quot; &quot;center&quot; &quot;start&quot; &quot;end&quot;</td>
+</tr>
+</tbody>
+</table>
+<p>示例代码：</p>
+<pre><code class="language-javascript">  <span class="token function">componentDidMount</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    ctx<span class="token punctuation">.</span><span class="token function">setStrokeStyle</span><span class="token punctuation">(</span><span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">moveTo</span><span class="token punctuation">(</span><span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">lineTo</span><span class="token punctuation">(</span><span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">170</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">stroke</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    ctx<span class="token punctuation">.</span><span class="token function">setFontSize</span><span class="token punctuation">(</span><span class="token number">15</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">setTextAlign</span><span class="token punctuation">(</span><span class="token string">'left'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">fillText</span><span class="token punctuation">(</span><span class="token string">'textAlign=left'</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">60</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    ctx<span class="token punctuation">.</span><span class="token function">setTextAlign</span><span class="token punctuation">(</span><span class="token string">'center'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">fillText</span><span class="token punctuation">(</span><span class="token string">'textAlign=center'</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">80</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    ctx<span class="token punctuation">.</span><span class="token function">setTextAlign</span><span class="token punctuation">(</span><span class="token string">'right'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">fillText</span><span class="token punctuation">(</span><span class="token string">'textAlign=right'</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token punctuation">}</span>
+  <span class="token function">render</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span>
+      <span class="token operator">&lt;</span>div<span class="token operator">></span>
+        <span class="token operator">&lt;</span>canvas id<span class="token operator">=</span><span class="token string">"myCanvas"</span><span class="token operator">></span><span class="token operator">&lt;</span><span class="token operator">/</span>canvas<span class="token operator">></span>
+      <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">></span>
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+</code></pre>
+<img src="../images/canvas_textAlign.png" width="50%">
+<h2 id="canvascontext.settextbaselinestring-textbaseline">CanvasContext.setTextBaseline(string textBaseline)</h2>
+<p>设置文字的竖直对齐</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>textBaseline</td>
+<td>String</td>
+<td>枚举 &quot;top&quot; &quot;hanging&quot; &quot;middle&quot; &quot;alphabetic&quot; &quot;ideographic&quot; &quot;bottom&quot;</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.setfillstylestring-color">CanvasContext.setFillStyle(string color)</h2>
+<p>设置填充色。默认颜色为 black。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>color</td>
+<td>Color</td>
+<td>Gradient Object</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.setstrokestylestring-color">CanvasContext.setStrokeStyle(string color)</h2>
+<p>设置描边颜色。默认颜色为 black。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>color</td>
+<td>Color</td>
+<td>Gradient Object</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.setshadownumber-offsetx,-number-offsety,-number-blur,-string-color">CanvasContext.setShadow(number offsetX, number offsetY, number blur, string color)</h2>
+<p>设定阴影样式</p>
+<blockquote>
+<p>如果没有设置，offsetX 默认值为 0， offsetY 默认值为 0， blur 默认值为 0，color 默认值为 black。</p>
+</blockquote>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>范围</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>offsetX</td>
+<td>Number</td>
+<td></td>
+<td>阴影相对于形状水平方向的偏移</td>
+</tr>
+<tr>
+<td>offsetY</td>
+<td>Number</td>
+<td></td>
+<td>阴影相对于形状竖直方向的偏移</td>
+</tr>
+<tr>
+<td>blur</td>
+<td>Number</td>
+<td>0~100</td>
+<td>阴影的模糊级别，值越大越模糊</td>
+</tr>
+<tr>
+<td>color</td>
+<td>Color</td>
+<td></td>
+<td>阴影颜色</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.createlineargradientnumber-x0,-number-y0,-number-x1,-number-y1">CanvasContext.createLinearGradient(number x0, number y0, number x1, number y1)</h2>
+<p>创建一个线性的渐变颜色</p>
+<blockquote>
+<p>需要使用 addColorStop() 来指定渐变点，至少需要两个。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x0</td>
+<td>Number</td>
+<td>起点 x 坐标</td>
+</tr>
+<tr>
+<td>y0</td>
+<td>Number</td>
+<td>起点 y 坐标</td>
+</tr>
+<tr>
+<td>x1</td>
+<td>Number</td>
+<td>终点 x 坐标</td>
+</tr>
+<tr>
+<td>y1</td>
+<td>Number</td>
+<td>终点 y 坐标</td>
+</tr>
+</tbody>
+</table>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'awesomeCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> grd <span class="token operator">=</span> ctx<span class="token punctuation">.</span><span class="token function">createLinearGradient</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+grd<span class="token punctuation">.</span><span class="token function">addColorStop</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">'yellow'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+grd<span class="token punctuation">.</span><span class="token function">addColorStop</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">'blue'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span>grd<span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillRect</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">250</span><span class="token punctuation">,</span> <span class="token number">180</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<h2 id="canvascontext.createcirculargradientnumber-x0,-number-y0,-number-x1,-number-y1">CanvasContext.createCircularGradient(number x0, number y0, number x1, number y1)</h2>
+<p>创建一个圆形的渐变颜色</p>
+<blockquote>
+<p>需要使用 addColorStop() 来指定渐变点，至少需要两个。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>圆心 x 坐标</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>圆心 y 坐标</td>
+</tr>
+<tr>
+<td>r</td>
+<td>Number</td>
+<td>圆半径</td>
+</tr>
+</tbody>
+</table>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'awesomeCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">const</span> grd <span class="token operator">=</span> ctx<span class="token punctuation">.</span><span class="token function">createCircularGradient</span><span class="token punctuation">(</span><span class="token number">90</span><span class="token punctuation">,</span> <span class="token number">60</span><span class="token punctuation">,</span> <span class="token number">60</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+grd<span class="token punctuation">.</span><span class="token function">addColorStop</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">'blue'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+grd<span class="token punctuation">.</span><span class="token function">addColorStop</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span>grd<span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillRect</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">250</span><span class="token punctuation">,</span> <span class="token number">180</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<img src="../images/canvas_gradient.png" width="50%">
+<h2 id="canvasgradient.addcolorstopnumber-stop,-string-color">CanvasGradient.addColorStop(number stop, string color)</h2>
+<p>创建一个颜色的渐变点。</p>
+<blockquote>
+<p>小于最小 stop 的部分会按最小 stop 的 color 来渲染，大于最大 stop 的部分会按最大 stop 的 color 来渲染。
+需要使用 addColorStop() 来指定渐变点，至少需要两个</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>stop</td>
+<td>Number</td>
+<td>表示渐变点在起点和终点中的位置，范围 0 ～ 1</td>
+</tr>
+<tr>
+<td>color</td>
+<td>Color</td>
+<td>渐变点颜色</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.setlinewidthnumber-linewidth">CanvasContext.setLineWidth(number lineWidth)</h2>
+<p>设置线条的宽度</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lineWidth</td>
+<td>Number</td>
+<td>线条宽度，单位为 px</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.setlinecapstring-linecap">CanvasContext.setLineCap(string lineCap)</h2>
+<p>设置线条的端点样式</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lineCap</td>
+<td>String</td>
+<td>线条的结束端点样式</td>
+</tr>
+</tbody>
+</table>
+<p>lineCap 的合法值</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>butt</td>
+<td>向线条的每个末端添加平直的边缘</td>
+</tr>
+<tr>
+<td>round</td>
+<td>向线条的每个末端添加圆形线帽</td>
+</tr>
+<tr>
+<td>square</td>
+<td>向线条的每个末端添加正方形线帽</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.setlinejoinstring-linejoin">CanvasContext.setLineJoin(string lineJoin)</h2>
+<p>设置线条的交点样式</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lineJoin</td>
+<td>String</td>
+<td>线条的结束端点样式</td>
+</tr>
+</tbody>
+</table>
+<p>lineJoin 的合法值</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bevel</td>
+<td>斜角</td>
+</tr>
+<tr>
+<td>round</td>
+<td>圆角</td>
+</tr>
+<tr>
+<td>miter</td>
+<td>尖角</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.setmiterlimitnumber-miterlimit">CanvasContext.setMiterLimit(number miterLimit)</h2>
+<p>设置最大斜接长度，斜接长度指的是在两条线交汇处内角和外角之间的距离。 当 setLineJoin() 为 miter 时才有效。超过最大倾斜长度的，连接处将以 lineJoin 为 bevel 来显示</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>miterLimit</td>
+<td>Number</td>
+<td>最大斜接长度</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.rectnumber-x,-number-y,-number-width,-number-height">CanvasContext.rect(number x, number y, number width, number height)</h2>
+<p>创建一个矩形路径。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>矩形左上角的 x 坐标</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>矩形左上角的 y 坐标</td>
+</tr>
+<tr>
+<td>width</td>
+<td>Number</td>
+<td>矩形路径宽度</td>
+</tr>
+<tr>
+<td>height</td>
+<td>Number</td>
+<td>矩形路径宽度</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.fillrectnumber-x,-number-y,-number-width,-number-height">CanvasContext.fillRect(number x, number y, number width, number height)</h2>
+<p>填充一个矩形</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>矩形左上角的 x 坐标</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>矩形左上角的 y 坐标</td>
+</tr>
+<tr>
+<td>width</td>
+<td>Number</td>
+<td>矩形路径宽度</td>
+</tr>
+<tr>
+<td>height</td>
+<td>Number</td>
+<td>矩形路径宽度</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.strokerectnumber-x,-number-y,-number-width,-number-height">CanvasContext.strokeRect(number x, number y, number width, number height)</h2>
+<p>画一个矩形(非填充)</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>矩形左上角的 x 坐标</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>矩形左上角的 y 坐标</td>
+</tr>
+<tr>
+<td>width</td>
+<td>Number</td>
+<td>矩形路径宽度</td>
+</tr>
+<tr>
+<td>height</td>
+<td>Number</td>
+<td>矩形路径宽度</td>
+</tr>
+</tbody>
+</table>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'awesomeCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setStrokeStyle</span><span class="token punctuation">(</span><span class="token string">'blue'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">strokeRect</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">250</span><span class="token punctuation">,</span> <span class="token number">80</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<h2 id="canvascontext.clearrectnumber-x,-number-y,-number-width,-number-height">CanvasContext.clearRect(number x, number y, number width, number height)</h2>
+<p>清除画布上在该矩形区域内的内容</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>矩形左上角的 x 坐标</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>矩形左上角的 y 坐标</td>
+</tr>
+<tr>
+<td>width</td>
+<td>Number</td>
+<td>矩形路径宽度</td>
+</tr>
+<tr>
+<td>height</td>
+<td>Number</td>
+<td>矩形路径宽度</td>
+</tr>
+</tbody>
+</table>
+<p>代码示例：</p>
+<pre><code class="language-javascript">  <span class="token function">componentDidMount</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">fillRect</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'blue'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">fillRect</span><span class="token punctuation">(</span><span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">clearRect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">75</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+  <span class="token function">render</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token punctuation">(</span>
+      <span class="token operator">&lt;</span>div<span class="token operator">></span>
+        <span class="token operator">&lt;</span>canvas id<span class="token operator">=</span><span class="token string">"myCanvas"</span> style<span class="token operator">=</span><span class="token string">"border: 1px solid; background: #123456;"</span> <span class="token operator">/</span><span class="token operator">></span>
+      <span class="token operator">&lt;</span><span class="token operator">/</span>div<span class="token operator">></span>
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+</code></pre>
+<img src="../images/canvas_rect.png" width="50%">
+<h2 id="canvascontext.fill">CanvasContext.fill()</h2>
+<p>对当前路径中的内容进行填充。默认的填充色为黑色。</p>
+<p>如果当前路径没有闭合，fill() 方法会将起点和终点进行连接，然后填充。</p>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">moveTo</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">lineTo</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">lineTo</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<img src="../images/canvas_fill.png" width="50%">
+<p>fill() 填充的的路径是从 beginPath() 开始计算，但是不会将 fillRect() 包含进去。</p>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// begin path</span>
+ctx<span class="token punctuation">.</span><span class="token function">rect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'yellow'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// begin another path</span>
+ctx<span class="token punctuation">.</span><span class="token function">beginPath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">rect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">40</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// only fill this rect, not in current path</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'blue'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillRect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">70</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">rect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// it will fill current path</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<img src="../images/canvas_fill_2.png" width="50%">
+<h2 id="canvascontext.stroke">CanvasContext.stroke()</h2>
+<p>画出当前路径的边框，默认颜色色为黑色。</p>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">moveTo</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">lineTo</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">lineTo</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">stroke</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>stroke() 描绘的的路径是从 beginPath() 开始计算，但是不会将 strokeRect() 包含进去。</p>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// begin path</span>
+ctx<span class="token punctuation">.</span><span class="token function">rect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setStrokeStyle</span><span class="token punctuation">(</span><span class="token string">'yellow'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">stroke</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// begin another path</span>
+ctx<span class="token punctuation">.</span><span class="token function">beginPath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">rect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">40</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// only stoke this rect, not in current path</span>
+ctx<span class="token punctuation">.</span><span class="token function">setStrokeStyle</span><span class="token punctuation">(</span><span class="token string">'blue'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">strokeRect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">70</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">rect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// it will stroke current path</span>
+ctx<span class="token punctuation">.</span><span class="token function">setStrokeStyle</span><span class="token punctuation">(</span><span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">stroke</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<h2 id="canvascontext.beginpath">CanvasContext.beginPath()</h2>
+<p>开始创建一个路径，需要调用 fill 或者 stroke 才会使用路径进行填充或描边</p>
+<h2 id="canvascontext.closepath">CanvasContext.closePath()</h2>
+<p>关闭一个路径</p>
+<blockquote>
+<p>关闭路径会连接起点和终点</p>
+</blockquote>
+<blockquote>
+<p>如果关闭路径后没有调用 fill() 或者 stroke() 并开启了新的路径，那之前的路径将不会被渲染。</p>
+</blockquote>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">moveTo</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">lineTo</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">lineTo</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">closePath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">stroke</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<img src="../images/canvas_closePath.png" width="50%">
+<h2 id="canvascontext.movetonumber-x,-number-y">CanvasContext.moveTo(number x, number y)</h2>
+<p>把路径移动到画布中的指定点，不创建线条。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>目标位置 x 坐标</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>目标位置 y 坐标</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.linetonumber-x,-number-y">CanvasContext.lineTo(number x, number y)</h2>
+<p>lineTo 方法增加一个新点，然后创建一条从上次指定点到目标点的线。</p>
+<blockquote>
+<p>用 stroke() 方法来画线条</p>
+</blockquote>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>目标位置 x 坐标</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>目标位置 y 坐标</td>
+</tr>
+</tbody>
+</table>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">moveTo</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">rect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">lineTo</span><span class="token punctuation">(</span><span class="token number">110</span><span class="token punctuation">,</span> <span class="token number">60</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">stroke</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<img src="../images/canvas_lineTo.png" width="50%">
+<h2 id="canvascontext.arcnumber-x,-number-y,-number-r,-number-sangle,-number-eangle,-number-counterclockwise">CanvasContext.arc(number x, number y, number r, number sAngle, number eAngle, number counterclockwise)</h2>
+<p>画一条弧线。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>圆 x 坐标</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>圆 y 坐标</td>
+</tr>
+<tr>
+<td>r</td>
+<td>Number</td>
+<td>圆 半径</td>
+</tr>
+<tr>
+<td>sAngle</td>
+<td>Number</td>
+<td>起始弧度，单位弧度（在 3 点钟方向）</td>
+</tr>
+<tr>
+<td>eAngle</td>
+<td>Number</td>
+<td>终止弧度</td>
+</tr>
+<tr>
+<td>counterclockwise</td>
+<td>Boolean</td>
+<td>可选，指定弧度的方向是逆时针还是顺时针，默认为 false。</td>
+</tr>
+</tbody>
+</table>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// Draw coordinates</span>
+ctx<span class="token punctuation">.</span><span class="token function">arc</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">75</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span> <span class="token operator">*</span> Math<span class="token punctuation">.</span><span class="token constant">PI</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'#EEEEEE'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">beginPath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">moveTo</span><span class="token punctuation">(</span><span class="token number">40</span><span class="token punctuation">,</span> <span class="token number">75</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">lineTo</span><span class="token punctuation">(</span><span class="token number">160</span><span class="token punctuation">,</span> <span class="token number">75</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">moveTo</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">15</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">lineTo</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">135</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setStrokeStyle</span><span class="token punctuation">(</span><span class="token string">'#AAAAAA'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">stroke</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">setFontSize</span><span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'black'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillText</span><span class="token punctuation">(</span><span class="token string">'0'</span><span class="token punctuation">,</span> <span class="token number">165</span><span class="token punctuation">,</span> <span class="token number">78</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillText</span><span class="token punctuation">(</span><span class="token string">'0.5*PI'</span><span class="token punctuation">,</span> <span class="token number">83</span><span class="token punctuation">,</span> <span class="token number">145</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillText</span><span class="token punctuation">(</span><span class="token string">'1*PI'</span><span class="token punctuation">,</span> <span class="token number">15</span><span class="token punctuation">,</span> <span class="token number">78</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillText</span><span class="token punctuation">(</span><span class="token string">'1.5*PI'</span><span class="token punctuation">,</span> <span class="token number">83</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// Draw points</span>
+ctx<span class="token punctuation">.</span><span class="token function">beginPath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">arc</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">75</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span> <span class="token operator">*</span> Math<span class="token punctuation">.</span><span class="token constant">PI</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'lightgreen'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">beginPath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">arc</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">25</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span> <span class="token operator">*</span> Math<span class="token punctuation">.</span><span class="token constant">PI</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'blue'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">beginPath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">arc</span><span class="token punctuation">(</span><span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">75</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">2</span> <span class="token operator">*</span> Math<span class="token punctuation">.</span><span class="token constant">PI</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// Draw arc</span>
+ctx<span class="token punctuation">.</span><span class="token function">beginPath</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">arc</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">75</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1.5</span> <span class="token operator">*</span> Math<span class="token punctuation">.</span><span class="token constant">PI</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setStrokeStyle</span><span class="token punctuation">(</span><span class="token string">'#333333'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">stroke</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<img src="../images/canvas_arc.png" width="50%">
+<p>针对 arc(100, 75, 50, 0, 1.5 * Math.PI)的三个关键坐标如下：</p>
+<ul>
+<li>绿色: 圆心 (100, 75)</li>
+<li>红色: 起始弧度 (0)</li>
+<li>蓝色: 终止弧度 (1.5 * Math.PI)</li>
+</ul>
+<h2 id="canvascontext.beziercurveto">CanvasContext.bezierCurveTo()</h2>
+<p>创建三次方贝塞尔曲线路径。</p>
+<blockquote>
+<p>曲线的起始点为路径中前一个点。</p>
+</blockquote>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cp1x</td>
+<td>Number</td>
+<td>第一个贝塞尔控制点 x 坐标</td>
+</tr>
+<tr>
+<td>cp1y</td>
+<td>Number</td>
+<td>第一个贝塞尔控制点 y 坐标</td>
+</tr>
+<tr>
+<td>cp2x</td>
+<td>Number</td>
+<td>第二个贝塞尔控制点 x 坐标</td>
+</tr>
+<tr>
+<td>cp2y</td>
+<td>Number</td>
+<td>第二个贝塞尔控制点 y 坐标</td>
+</tr>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>结束点 x 坐标</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>结束点 y 坐标</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.clip">CanvasContext.clip()</h2>
+<p>clip() 方法从原始画布中剪切任意形状和尺寸。一旦剪切了某个区域，则所有之后的绘图都会被限制在被剪切的区域内（不能访问画布上的其他区域）。可以在使用 clip() 方法前通过使用 save() 方法对当前画布区域进行保存，并在以后的任意时间对其进行恢复（通过 restore() 方法）。</p>
+<h2 id="canvascontext.quadraticcurvetonumber-cpx,-number-cpy,-number-x,-number-y">CanvasContext.quadraticCurveTo(number cpx, number cpy, number x, number y)</h2>
+<p>创建二次贝塞尔曲线路径</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cpx</td>
+<td>Number</td>
+<td>贝塞尔控制点 x 坐标</td>
+</tr>
+<tr>
+<td>cpy</td>
+<td>Number</td>
+<td>贝塞尔控制点 y 坐标</td>
+</tr>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>结束点 x 坐标</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>结束点 y 坐标</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.scalenumber-scalewidth,-number-scaleheight">CanvasContext.scale(number scaleWidth, number scaleHeight)</h2>
+<p>在调用 scale() 方法后，之后创建的路径其横纵坐标会被缩放。多次调用 scale()，倍数会相乘。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>scaleWidth</td>
+<td>Number</td>
+<td>横坐标缩放倍数 (1 = 100%，0.5 = 50%，2 = 200%)</td>
+</tr>
+<tr>
+<td>scaleHeight</td>
+<td>Number</td>
+<td>纵坐标轴缩放倍数 (1 = 100%，0.5 = 50%，2 = 200%)</td>
+</tr>
+</tbody>
+</table>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">strokeRect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">25</span><span class="token punctuation">,</span> <span class="token number">15</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">scale</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">strokeRect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">25</span><span class="token punctuation">,</span> <span class="token number">15</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">scale</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">strokeRect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">25</span><span class="token punctuation">,</span> <span class="token number">15</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<img src="../images/canvas_scale.png" width="50%">
+<h2 id="canvascontext.rotatenumber-rotate">CanvasContext.rotate(number rotate)</h2>
+<p>以原点为中心，原点可以用 translate() 方法修改。顺时针旋转当前坐标轴。多次调用 rotate()，旋转的角度会叠加。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rotate</td>
+<td>Number</td>
+<td>横旋转角度，以弧度计(degrees * Math.PI/180；degrees 范围为 0~360)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.translatenumber-x,-number-y">CanvasContext.translate(number x, number y)</h2>
+<p>对当前坐标系的原点 (0, 0) 进行变换，默认的坐标系原点为页面左上角。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>水平坐标平移量</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>竖直坐标平移量</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.setfontsizenumber-fontsize">CanvasContext.setFontSize(number fontSize)</h2>
+<p>设置字体的字号</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fontSize</td>
+<td>Number</td>
+<td>字号</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.filltextstring-text,-number-x,-number-y,-number-maxwidth">CanvasContext.fillText(string text, number x, number y, number maxWidth)</h2>
+<p>在画布上绘制被填充的文本</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>text</td>
+<td>String</td>
+<td>文本</td>
+</tr>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>水平坐标平移量</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>竖直坐标平移量</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.drawimagestring-imageresource,-number-dx,-number-dy,-number-dwidth,-number-dheight,-number-sx,-number-sy,-number-swidth,-number-sheight">CanvasContext.drawImage(string imageResource, number dx, number dy, number dWidth, number dHeight, number sx, number sy, number sWidth, number sHeight)</h2>
+<p>绘制图像到画布</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>imageResource</td>
+<td>String</td>
+<td></td>
+</tr>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>图像左上角 x 坐标</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>图像左上角 y 坐标</td>
+</tr>
+<tr>
+<td>width</td>
+<td>Number</td>
+<td>图像宽度</td>
+</tr>
+<tr>
+<td>height</td>
+<td>Number</td>
+<td>图像高度</td>
+</tr>
+<tr>
+<td>sx</td>
+<td>Number</td>
+<td>源图像的矩形选择框的左上角 X 坐标。</td>
+</tr>
+<tr>
+<td>sy</td>
+<td>Number</td>
+<td>源图像的矩形选择框的左上角 Y 坐标。</td>
+</tr>
+<tr>
+<td>sWidth</td>
+<td>Number</td>
+<td>源图像的矩形选择框的宽度</td>
+</tr>
+<tr>
+<td>sHeight</td>
+<td>Number</td>
+<td>源图像的矩形选择框的高度</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.setglobalalphanumber-透明度。范围">CanvasContext.setGlobalAlpha(number 透明度。范围)</h2>
+<p>设置全局画笔透明度。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>范围</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>alpha</td>
+<td>Number</td>
+<td>0 ～ 1</td>
+<td>透明度，0 表示完全透明，1 表示不透明</td>
+</tr>
+</tbody>
+</table>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillRect</span><span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setGlobalAlpha</span><span class="token punctuation">(</span><span class="token number">0.2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'blue'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillRect</span><span class="token punctuation">(</span><span class="token number">50</span><span class="token punctuation">,</span> <span class="token number">50</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'yellow'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillRect</span><span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">150</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<img src="../images/canvas_alpha.png" width="50%">
+<h2 id="canvascontext.setlinedasharray.-pattern,-number-offset">CanvasContext.setLineDash(Array.<number> pattern, number offset)</number></h2>
+<p>设置虚线的样式</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+<th>支持平台</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>segments</td>
+<td>Array</td>
+<td>透明度，0 表示完全透明，1 表示不透明</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>offset</td>
+<td>Number</td>
+<td>虚线偏移量</td>
+<td>微信</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.transformnumber-scalex,-number-skewx,-number-skewy,-number-scaley,-number-translatex,-number-translatey">CanvasContext.transform(number scaleX, number skewX, number skewY, number scaleY, number translateX, number translateY)</h2>
+<p>使用矩阵多次叠加当前变换的方法，矩阵由方法的参数进行描述。你可以缩放、旋转、移动和倾斜上下文。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>scaleX</td>
+<td>String</td>
+<td>水平缩放</td>
+</tr>
+<tr>
+<td>skewX</td>
+<td>Number</td>
+<td>水平倾斜</td>
+</tr>
+<tr>
+<td>skewY</td>
+<td>Number</td>
+<td>垂直倾斜</td>
+</tr>
+<tr>
+<td>scaleY</td>
+<td>Number</td>
+<td>垂直缩放</td>
+</tr>
+<tr>
+<td>translateX</td>
+<td>Number</td>
+<td>水平移动</td>
+</tr>
+<tr>
+<td>translateX</td>
+<td>Number</td>
+<td>垂直移动</td>
+</tr>
+</tbody>
+</table>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">rotate</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token number">45</span> <span class="token operator">*</span> Math<span class="token punctuation">.</span><span class="token constant">PI</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">180</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'red'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillRect</span><span class="token punctuation">(</span><span class="token number">70</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">transform</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">setFillStyle</span><span class="token punctuation">(</span><span class="token string">'#000'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ctx<span class="token punctuation">.</span><span class="token function">fillRect</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span><span class="token function">draw</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<img src="../images/canvas_transform.png" width="50%">
+<h2 id="canvascontext.settransformnumber-scalex,-number-skewx,-number-skewy,-number-scaley,-number-translatex,-number-translatey">CanvasContext.setTransform(number scaleX, number skewX, number skewY, number scaleY, number translateX, number translateY)</h2>
+<p>使用矩阵重新设置（覆盖）当前变换的方法</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>scaleX</td>
+<td>String</td>
+<td>水平缩放</td>
+</tr>
+<tr>
+<td>skewX</td>
+<td>Number</td>
+<td>水平倾斜</td>
+</tr>
+<tr>
+<td>skewY</td>
+<td>Number</td>
+<td>垂直倾斜</td>
+</tr>
+<tr>
+<td>scaleY</td>
+<td>Number</td>
+<td>垂直缩放</td>
+</tr>
+<tr>
+<td>translateX</td>
+<td>Number</td>
+<td>水平移动</td>
+</tr>
+<tr>
+<td>translateX</td>
+<td>Number</td>
+<td>垂直移动</td>
+</tr>
+</tbody>
+</table>
+<h2 id="canvascontext.save">CanvasContext.save()</h2>
+<p>保存绘图上下文。</p>
+<h2 id="canvascontext.restore">CanvasContext.restore()</h2>
+<p>恢复之前保存的绘图上下文。</p>
+<h2 id="canvascontext.drawboolean-reserve,-function-callback">CanvasContext.draw(boolean reserve, function callback)</h2>
+<p>将之前在绘图上下文中的描述（路径、变形、样式）画到 canvas 中。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+<th>支持平台</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>reserve</td>
+<td>Boolean</td>
+<td>非必填。本次绘制是否接着上一次绘制，即 reserve 参数为 false 时则在本次调用 drawCanvas绘制之前 native 层应先清空画布再继续绘制；若 reserver 参数为true 时，则保留当前画布上的内容，本次调用drawCanvas绘制的内容覆盖在上面，默认 false</td>
+<td>都支持</td>
+</tr>
+<tr>
+<td>callback</td>
+<td>Function</td>
+<td>绘制完成后执行的回调函数</td>
+<td>微信，百度</td>
+</tr>
+</tbody>
+</table>
+<h2 id="object-canvascontext.measuretextstring-text">Object CanvasContext.measureText(string text)</h2>
+<p>测量文本尺寸信息，目前仅返回文本宽度。同步接口。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>text</td>
+<td>String</td>
+<td>必填。要测量的文本</td>
+</tr>
+</tbody>
+</table>
+<p><strong>返回</strong></p>
+<p>返回 TextMetrics 对象，结构如下：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>width</td>
+<td>Number</td>
+<td>文本的宽度</td>
+</tr>
+</tbody>
+</table>
+<p>代码示例：</p>
+<pre><code class="language-javascript"><span class="token keyword">const</span> ctx <span class="token operator">=</span> React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">createCanvasContext</span><span class="token punctuation">(</span><span class="token string">'myCanvas'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ctx<span class="token punctuation">.</span>font <span class="token operator">=</span> <span class="token string">'italic bold 50px cursive'</span><span class="token punctuation">;</span>
+<span class="token keyword">const</span> <span class="token punctuation">{</span> width <span class="token punctuation">}</span> <span class="token operator">=</span> ctx<span class="token punctuation">.</span><span class="token function">measureText</span><span class="token punctuation">(</span><span class="token string">'hello world'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>width<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<h2 id="canvascontext.canvastotempfilepathobject,-this">CanvasContext.canvasToTempFilePath(OBJECT, this)</h2>
+<p>把当前画布指定区域的内容导出生成指定大小的图片，并返回文件路劲。在自定义组件下，第二个参数传入组件实例this，以操作组件内<code>&lt;canvas/&gt;</code>组件。</p>
+<p><strong>入参</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>Number</td>
+<td>画布 x 轴起点（默认 0 ）</td>
+</tr>
+<tr>
+<td>y</td>
+<td>Number</td>
+<td>画布 y 轴起点（默认 0 ）</td>
+</tr>
+<tr>
+<td>width</td>
+<td>Number</td>
+<td>画布宽度（默认为 canvas 宽度 -x）</td>
+</tr>
+<tr>
+<td>height</td>
+<td>Number</td>
+<td>画布高度（默认为 canvas 高度 -y）</td>
+</tr>
+<tr>
+<td>destWidth</td>
+<td>Number</td>
+<td>输出图片宽度（默认为 width * 屏幕像素密度）</td>
+</tr>
+<tr>
+<td>destHeight</td>
+<td>Number</td>
+<td>输出图片高度（默认为 height * 屏幕像素密度）</td>
+</tr>
+<tr>
+<td>canvasId</td>
+<td>String</td>
+<td>画布标识，传入<code>&lt;canvas/&gt;</code>的 canvas-id</td>
+</tr>
+<tr>
+<td>fileType</td>
+<td>String</td>
+<td>目标文件的类型，只支持 ‘jpg’ 或 ‘png’，默认为 ‘png’ 。</td>
+</tr>
+<tr>
+<td>quality</td>
+<td>Number</td>
+<td>图片的质量，取值范围为 (0, 1]，不在范围内时当作 1.0 处理 。</td>
+</tr>
+<tr>
+<td>success</td>
+<td>Function</td>
+<td>接口调用成功的回调函数</td>
+</tr>
+<tr>
+<td>fail</td>
+<td>Function</td>
+<td>接口调用失败的回调函数</td>
+</tr>
+<tr>
+<td>complete</td>
+<td>Function</td>
+<td>接口调用结束的回调函数（调用成功、失败都会执行）</td>
+</tr>
+</tbody>
+</table>
+<p>在 draw 回调里调用该方法才能保证图片导出成功。</p>
+<p>示例代码：</p>
+<pre><code class="language-javascript">  React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">canvasToTempFilePath</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    x<span class="token operator">:</span> <span class="token number">100</span><span class="token punctuation">,</span>
+    y<span class="token operator">:</span> <span class="token number">200</span><span class="token punctuation">,</span>
+    width<span class="token operator">:</span> <span class="token number">50</span><span class="token punctuation">,</span>
+    height<span class="token operator">:</span> <span class="token number">50</span><span class="token punctuation">,</span>
+    destWidth<span class="token operator">:</span> <span class="token number">100</span><span class="token punctuation">,</span>
+    destHeight<span class="token operator">:</span> <span class="token number">100</span><span class="token punctuation">,</span>
+    canvasId<span class="token operator">:</span> <span class="token string">'myCanvas'</span><span class="token punctuation">,</span>
+    <span class="token function-variable function">success</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">res</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>res<span class="token punctuation">.</span>tempFilePath<span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+</div><div class="m-content-container m-paging"><div class="m-paging-prev m-paging-item"><a href="animation.html" class="href"><span class="ui-font-ydoc"></span>动画</a></div><div class="m-paging-next m-paging-item"><a href="keyboard.html" class="href">键盘<span class="ui-font-ydoc"></span></a></div></div></div></div></div><div></div><script>
+    var $content = document.getElementById('js-content');
+    var $summaryItems = Array.prototype.slice.call(document.querySelectorAll('#js-menu .href'));
+    var $menu = document.getElementById('js-menu');
+    if (sessionStorage.prevPathname) {
+      sessionStorage.setItem('prevPrevPathname', sessionStorage.prevPathname);
+      sessionStorage.setItem('prevPrevMenuScrollTop', sessionStorage.prevMenuScrollTop);
+      sessionStorage.setItem('prevPrevContentScrollTop', sessionStorage.prevContentScrollTop);
+    }
+    if (sessionStorage.locationPathname) {
+      sessionStorage.setItem('prevPathname', sessionStorage.locationPathname);
+      sessionStorage.setItem('prevMenuScrollTop', sessionStorage.menuScrollTop);
+      sessionStorage.setItem('prevContentScrollTop', sessionStorage.contentScrollTop);
+    }
+    if ($menu && sessionStorage.menuScrollTop) {
+		  $menu.scrollTop = sessionStorage.menuScrollTop;
+    }
+    // 刷新页面但不切换 pathname 的时候，内容区恢复到记忆的高度
+    if ($content && sessionStorage.contentScrollTop && window.location.pathname == sessionStorage.locationPathname) {
+      $content.scrollTop = sessionStorage.contentScrollTop;
+    } else if (sessionStorage.prevPrevPathname && sessionStorage.prevPrevPathname === window.location.pathname) {
+      if ($menu && sessionStorage.prevPrevMenuScrollTop) {
+        $menu.scrollTop = sessionStorage.prevPrevMenuScrollTop;
+      }
+      if ($content && sessionStorage.prevPrevContentScrollTop) {
+        $content.scrollTop = sessionStorage.prevPrevContentScrollTop;
+      }
+    }
+    sessionStorage.setItem('locationPathname', window.location.pathname);
+    </script><script src="../ydoc/scripts/plugins/dollar.min.js"></script><script src="../ydoc/scripts/plugins/responsive-nav.min.js"></script><script src="../ydoc/scripts/plugins/slideout.min.js"></script><script src="../ydoc/scripts/app.js"></script><script src="../ydoc/ydoc-plugin-search/core.js"></script><script src="../ydoc/ydoc-plugin-search/search.js"></script><script src="../search_json.js"></script></body></html>

@@ -1,0 +1,172 @@
+*,
+::before,
+::after {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+html {
+    font-size: 100px;
+}
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+             "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+             SimSun, sans-serif;
+}
+
+ul,
+ol,
+dl,
+dd,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+figure,
+form,
+fieldset,
+legend,
+input,
+textarea,
+button,
+p,
+blockquote,
+th,
+td,
+pre,
+xmp {
+    margin: 0;
+    padding: 0;
+}
+
+// 2. 为不继承的元素设定继承父级字体
+input,
+textarea,
+button,
+select,
+pre,
+xmp,
+tt,
+code,
+kbd,
+samp {
+    line-height: inherit;
+    font-family: inherit;
+}
+
+// 清除单元格边距并让边框合并
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    table-layout: fixed;
+    text-align: left;
+}
+
+// 清除列表默认序号
+// ul,
+// ol,
+// menu {
+//     list-style: none;
+// }
+
+// 清除默认边框
+// 清除img底部留白问题，并使得默认居中
+fieldset,
+img {
+    border: 0;
+    vertical-align: middle;
+}
+
+// 设置HTML5部分新增元素为块元素
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+main,
+menu,
+nav,
+section,
+summary {
+    display: block;
+}
+
+// 设置HTML5新增媒体元素与img, object保持一致
+audio,
+canvas,
+video {
+    display: inline-block;
+}
+
+// 清除引用元素的默认派生标识
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+    content: "\0020";
+}
+
+// 设置文本域滚可拖动改变垂直方向尺寸
+textarea {
+    resize: vertical;
+}
+
+// 清除webkit下表单元素的outline
+input,
+textarea,
+button,
+select
+a {
+    outline: 0 none;
+}
+
+// 让表单元素具有颜色继承
+// iOS上当禁用时会设置opacity: .4
+input,
+textarea,
+button,
+select {
+    color: inherit;
+    &:disabled {
+        opacity: 1;
+    }
+}
+
+// 清除Firefox按钮内部边框和补白
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+}
+
+// 重置mark元素的默认背景色
+mark {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+// 清除文本线条装饰
+a,
+ins,
+s,
+u,
+del {
+    text-decoration: none;
+}
+
+// 禁止长按链接与图片弹出菜单
+// issues: 在iOS8.1下此设置对a仍无效
+a,
+img {
+    -webkit-touch-callout: none;
+}
+
+// fix Android Browser 4.2.* 及以下 input:checked ~ .xxx 失效的问题
+html + input {}
+
+a:link, a:visited {
+	color: inherit;
+}

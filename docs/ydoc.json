@@ -1,0 +1,10 @@
+{
+  "title": "nanachi",
+  "description": "使用Reac微信小程序",
+  "author": "司徒正美",
+  "pluginsConfig": {
+    "import-asset": {
+      "css": ["style/index.css"]
+    }
+  }
+}

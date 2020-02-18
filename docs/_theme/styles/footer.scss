@@ -1,0 +1,69 @@
+.m-footer {
+  background-color: $white;
+  padding: .24rem;
+  ul, ol, li {
+    list-style: none;
+  }
+  &-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    transition: all $transition-time-quick;
+  }
+  &-title {
+    text-align: center;
+  }
+  &-links {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: .16rem;
+    justify-content: center;
+    .group {
+      flex-basis: 30%;
+      flex-shrink: 0;
+      margin-bottom: .24rem;
+    }
+    .title {
+      font-size: $font-size-h4;
+      line-height: 2;
+      color: $deep-disable-text-color;
+    }
+  }
+  .href {
+    line-height: 1.8;
+    padding: .3em 0;
+    color: $deep-caption-text-color;
+    background-color: $white;
+    transition: all $transition-time-quick;
+  }
+  .href:hover {
+    color: $primary-color;
+  }
+  &-title {
+    color: $deep-caption-text-color;
+  }
+}
+
+// Expand footer on PC
+@include media-md() {
+	.m-footer {
+    font-size: $font-size-h4;
+    color: $deep-caption-text-color;
+    padding: .24rem .64rem;
+    &-container {
+      flex-direction: row;
+      max-width: 10.24rem;
+      margin: .24rem auto;
+      padding: 0 .32rem;
+    }
+    &-title {
+      flex: 1;
+      text-align: right;
+      margin-bottom: .32rem;
+    }
+    &-links {
+      justify-content: inherit;
+      flex: 2;
+    }
+  }
+}

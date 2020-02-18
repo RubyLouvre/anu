@@ -1,0 +1,64 @@
+@import "./_grid_mobile_first.scss";
+
+
+// container common styles
+@mixin container-box-style {
+    width: 100%; // Don't use constant 'width' value with containerBox of responsive layouts.
+    padding: 0 .16rem;
+}
+// clear fix
+@mixin clear-fix {
+	content: '';
+	display: table;
+	clear: both;
+}
+
+// row
+.row {
+	box-sizing: border-box;
+	width: 100%;
+}
+.row:after {
+	@include clear-fix;
+}
+
+// produce layouts
+@mixin generateGrid($tag) {
+    @for $i from 1 through 12 {
+        .col-#{$tag}-#{$i} {
+            width: (100% / 12 * $i);
+            float: left;
+            box-sizing: border-box;
+        }
+    }
+}
+
+.container {
+    box-sizing: border-box;
+}
+
+// media query
+@include media-xs() {
+	@include generateGrid('xs');
+    .container {
+        @include container-box-style;
+    }
+}
+@include media-sm() {
+    @include generateGrid('sm');
+    .container {
+        @include container-box-style;
+    }
+}
+@include media-md() {
+    @include generateGrid('md');
+    .container {
+        @include container-box-style;
+    }
+}
+@include media-lg() {
+    @include generateGrid('lg');
+    .container {
+        @include container-box-style;
+    }
+}

@@ -1,0 +1,1 @@
+<div dangerouslySetInnerHTML={{ __html: hook(props.name, props.ydoc) }}></div>

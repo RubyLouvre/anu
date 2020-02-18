@@ -1,0 +1,75 @@
+body {
+  font-size: $font-size;
+  color: $deep-body-text-color;
+  -webkit-font-smoothing: antialiased;
+  line-height: $line-height;
+}
+
+
+@font-face {
+  font-family: 'ydoc';
+  src: url("https://s.qunarzz.com/ydoc/fonts/0.0.4/ydoc.eot");
+  /* IE9*/
+  src: url("https://s.qunarzz.com/ydoc/fonts/0.0.4/ydoc.woff") format("woff"), url("https://s.qunarzz.com/ydoc/fonts/0.0.4/ymfe.ttf") format("truetype"), url("https://s.qunarzz.com/ydoc/fonts/0.0.4/ydoc.svg#iconfont") format("svg");
+  /* iOS 4.1- */
+}
+.ui-font-ydoc {
+  font-family: ydoc;
+}
+
+// scrollbar
+::-webkit-scrollbar {
+  width: 6px;
+  height: 4px;
+}
+// pathway
+::-webkit-scrollbar-track {
+  -webkit-box-shadow: rgba($primary-1,0.3);
+  background: rgba($primary-1, 0.1);
+}
+// scrollbar slider
+::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba($primary-4, 0.3);
+  -webkit-box-shadow: rgba($primary-1, 0.5);
+}
+::-webkit-scrollbar-thumb:window-inactive {
+  background: rgba($primary-4, 0.3);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: .5em;
+  font-weight: 400;
+  line-height: $line-height;
+}
+
+p {
+	margin-top: 0;
+  margin-bottom: 1em;
+}
+// font sizes:
+h1, .h1 {
+	font-size: 32px;
+}
+h2, .h2 {
+	font-size: 24px;
+}
+h3, .h3 {
+	font-size: 20px;
+}
+h4, .h4 {
+	font-size: 16px;
+}
+h5, .h5 {
+	font-size: 14px;
+}
+h6, .h6 {
+	font-size: 12px;
+}
+
+@media screen and (max-width: 960px) {
+  ::-webkit-scrollbar {/*隐藏滚轮*/
+    display: none;
+  }
+}

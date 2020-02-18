@@ -1,0 +1,310 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charSet="UTF-8"/><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black"/><link rel="icon" type="image/png" sizes="32x32" href="../images/titleLogo.png"/><link rel="icon" type="image/png" sizes="16x16" href="../images/titleLogo.png"/><meta name="theme-color" content="#ffffff"/><meta http-equiv="Cache-Control" content="no-transform"/><meta http-equiv="Cache-Control" content="no-siteapp"/><title>全局对象-文档</title><link rel="stylesheet" href="../ydoc/styles/style.css"/><meta name="author" content="司徒正美"/><meta name="keywords"/><meta name="description" content="使用Reac微信小程序"/><meta id="releativePath" content=".."/><link rel="stylesheet" href="../ydoc/ydoc-plugin-search/search.css"/><link rel="stylesheet" href="../style/index.css"/></head><body><div class="g-doc"><div class="m-aside"><div class="m-summary" id="js-menu"><div class="m-summary-content" id="js-menu-content"><div class="m-summary-block"><ul class="m-summary-list"><li class="item"><a href="intro.html#" class="href">介绍</a></li><li class="item"><a href="install.html" class="href">安装与使用cli各种命令</a></li><li class="item"><a href="update.html" class="href">升级</a></li><li class="item"><a href="" class="href">全局对象</a></li><li class="item"><a href="lifetimes.html" class="href">页面组件与生命周期</a></li><li class="item"><a href="page2.html" class="href">页面的各个功能讲解</a></li><li class="item"><a href="component.html" class="href">页面上的子组件使用</a></li><li class="item"><a href="standard.html" class="href">小程序组件规范</a></li><li class="item"><a href="jsx.html" class="href">使用 JSX 的注意事项</a></li><li class="item"><a href="style.html" class="href">使用 CSS 的注意事项</a></li><li class="item"><a href="hooks.html" class="href">React Hooks的支持</a></li><li class="item"><a href="publish.html" class="href">目录结构与输出目录</a></li><li class="item"><a href="import_js.html" class="href">按平台打包代码或样式</a></li><li class="item"><a href="tabBar.html" class="href">据平台设置tabBar</a></li><li class="item"><a href="titleBar.html" class="href">隐藏标题栏</a></li><li class="item"><a href="redux.html" class="href">Redux/Mobx的使用</a></li><li class="item"><a href="webview.html" class="href">智能 webview 化</a></li><li class="item"><a href="customConfig.html" class="href">自定义项目配置</a></li><li class="item"><a href="customBuildConfig.html" class="href">自定义打包配置</a></li><li class="item"><a href="nativeComponents.html" class="href">不转译某些标签名</a></li><li class="item"><a href="chaika.html" class="href">拆库开发</a></li><li class="item"><a href="alias.html" class="href">别名配置</a></li><li class="item"><a href="vscode.html" class="href">vscode插件</a></li><li class="item"><a href="report.html" class="href">日志收集与上传</a></li><li class="item"><a href="npm.html" class="href">npm支持</a></li><li class="item"><a href="wxplugin.html" class="href">微信插件支持</a></li><li class="item"><a href="iconfont.html" class="href">iconfont 支持</a></li><li class="item"><a href="async.html" class="href">async/await 支持</a></li><li class="item"><a href="lesssass.html" class="href">Sass、Less、PostCSS支持</a></li><li class="item"><a href="patchComponent.html" class="href">内置 UI 库</a></li><li class="item"><a href="units.html" class="href">rpx与px互转</a></li><li class="item"><a href="event.html" class="href">事件系统</a></li><li class="item"><a href="size.html" class="href">包大小限制</a></li><li class="item"><a href="subpackages.html" class="href">分包加载</a></li><li class="item"><a href="preload.html" class="href">分包预加载</a></li><li class="item"><a href="debug.html" class="href">真机调试</a></li><li class="item"><a href="bu.html" class="href">百度小程序环境判定</a></li><li class="item"><div class="m-summary-block"><a href="" class="href">快应用相关</a><ul class="m-summary-list indent"><li class="item"><a href="quicklist.html" class="href">快应用的scroll-view兼容</a></li><li class="item"><a href="quickstorage.html" class="href">快应用的同步Storage API兼容</a></li><li class="item"><a href="boxDifferent.html" class="href">快应用与小程序盒子模型的区别</a></li><li class="item"><a href="query.html" class="href">小米快应用获取页面参数</a></li><li class="item"><a href="huaweiQuery.html" class="href">华为快应用获取页面参数</a></li><li class="item"><a href="share.html" class="href">快应用与小程序转发分享</a></li><li class="item"><a href="onblur.html" class="href">快应用onblur</a></li><li class="item"><a href="scene.html" class="href">场景值的兼容</a></li><li class="item"><a href="card.html" class="href">卡片</a></li><li class="item"><a href="movable.html" class="href">movable-area与movable-view的模拟</a></li></ul></div></li><li class="item"><a href="diff.html" class="href">各种小程序的比较</a></li><li class="item"><a href="link.html" class="href">各种小程序的官网</a></li><li class="item"><div class="m-summary-block"><a href="feedback.html" class="href">反馈收集</a><ul class="m-summary-list indent"><li class="item"><a href="two-threaded.html" class="href">微信小程序的双线程架构</a></li></ul></div></li><li class="item"><a href="questions.html" class="href">常见问题</a></li><li class="item"><a href="about.html" class="href">关于</a></li></ul></div></div></div><div class="m-summary-switch" id="js-summary-switch"><svg viewBox="0 0 926.23699 573.74994" version="1.1" x="0px" y="0px" width="15" height="15" class="bottom"><g transform="translate(904.92214,-879.1482)"><path d="m -673.67664,1221.6502 -231.2455,-231.24803 55.6165,-55.627 c 30.5891,-30.59485 56.1806,-55.627 56.8701,-55.627 0.6894,0 79.8637,78.60862 175.9427,174.68583 l 174.6892,174.6858 174.6892,-174.6858 c 96.079,-96.07721 175.253196,-174.68583 175.942696,-174.68583 0.6895,0 26.281,25.03215 56.8701,55.627 l 55.6165,55.627 -231.245496,231.24803 c -127.185,127.1864-231.5279,231.248 -231.873,231.248 -0.3451,0 -104.688,-104.0616 -231.873,-231.248 z" fill="#fff"></path></g></svg><svg viewBox="0 0 926.23699 573.74994" version="1.1" x="0px" y="0px" width="15" height="15" class="top"><g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="aaa" fill="#fff" fill-rule="nonzero"><path d="M231.2455,342.502 L0,111.25397 L55.6165,55.62697 C86.2056,25.03212 111.7971,-2.99999998e-05 112.4866,-2.99999998e-05 C113.176,-2.99999998e-05 192.3503,78.60859 288.4293,174.6858 L463.1185,349.3716 L637.8077,174.6858 C733.8867,78.60859 813.060896,-2.99999997e-05 813.750396,-2.99999997e-05 C814.439896,-2.99999997e-05 840.031396,25.03212 870.620496,55.62697 L926.236996,111.25397 L694.9915,342.502 C567.8065,469.6884 463.4636,573.75 463.1185,573.75 C462.7734,573.75 358.4305,469.6884 231.2455,342.502 Z" id="Shape" transform="translate(463.118498, 286.874985) scale(1, -1) translate(-463.118498, -286.874985) "></path></g></g></svg></div></div><div class="m-main" id="js-panel"><header class="m-header" id="js-header"><div class="m-header-title js-logo"><a href="../index.html" target="_self"><img class="logo" width="36" src="../images/logo@2x.png"/></a></div><div><div class="m-search">
+      <div class="icon">&#xf0fd;</div>
+      <input type="text" class="input js-input" placeholder="搜索" />
+      <div class="m-search-result js-search-result"></div>
+    </div></div><nav class="m-header-nav js-nav"><ul class="m-header-items"><li class="item active"><a class="href" href="intro.html">文档</a></li><li class="item "><a class="href" href="../apis/index.html">已兼容处理的API</a></li><li class="item "><a class="href" href="logo.html">谁在用nanachi</a></li><li class="item "><a class="href" href="about.html">关于</a></li></ul></nav><div id="js-nav-btn" class="m-header-btn ui-font-ydoc"></div></header><div class="m-content" id="js-content"><div id="markdown-body" class="m-content-container markdown-body"><h1>全局对象</h1>
+<p>在小程序中，一个应用由多个页面组成，一个页面由多个组件组成。</p>
+<p>app.js就是用来定义全局配置对象， 全局数据对象，全局回调，全局样式及import所有页面。</p>
+<p>app.js外表上看来是一个React组件</p>
+<ul>
+<li>
+<p>全局配置对象 config 配置标题栏与tab栏</p>
+</li>
+<li>
+<p>全局数据对象 globalData</p>
+</li>
+<li>
+<p>全局回调</p>
+<ul>
+<li>onGlobalLoad 每个页面在初次加载时就会执行此回调，注意不存在页面级别的onLoad方法</li>
+<li>onGlobalReady 每个页面在初次渲染后（布局完成）就会执行此回调，注意不存在页面级别的onReady方法</li>
+<li>onGlobalUnload 每个页面在被销毁时就会调用此方法，注意不存在页面级别的onUnload方法, 其次路由切换导致当前页面隐藏时，页面不一定销毁，只有此页面被踢出页面栈时才会销毁。页面栈一共保存10个页面. 想用页面级别的onUnload方法，可以用componentWillUnmount代替。</li>
+<li>onGlobalShow 每个页面在显示时就会调用此方法，页面有onShow方法时，也会同时执行此方法</li>
+<li>onGlobalHide 每个页面在隐藏时就会调用此方法，页面有onHide方法时，也会同时执行此方法</li>
+<li>onGlobalShare  只有页面组件<strong>没有</strong>定义onShare/onShareAppMessage方法，才会调用此方法，此方法要求返回对象</li>
+<li>onCollectLogs 所有click/tap/change/input/blur等核心的与用户行为相关的事件触发时，都会调用这个回调</li>
+<li>onSendLogs  onCollectLogs理应凑够一定数量的日志就会调用此方法，用于上传日</li>
+</ul>
+</li>
+<li>
+<p>全局样式 自己手动<code>import 'app.scss'</code>或<code>import 'app.less'</code></p>
+</li>
+<li>
+<p>import 所有以 <code>./pages/</code> 开头的依赖放到 <code>app.json</code> 中 <code>pages</code> 配置项中。</p>
+</li>
+<li>
+<p>默认我们会把 第一个<code>./pages</code>开头的依赖当作<strong>首页</strong>。</p>
+</li>
+</ul>
+<p>此外，app.js还支持原生的onLaunch, onError, <code>onShow</code>, onHide。</p>
+<p>其中onShow, onHide不等同于onGlobalShow, onGlobalHide, 前两者是小程序从前台进入后台或从后台进入前台触发的， 后两者是页面级别的监听方法。由于快应用不支持应用级别的onShow方法，因此不要使用。</p>
+<p>在快应用下，它没有onLaunch, onHide, 娜娜奇会在自动转译成 onCreate、onDestroy方法。</p>
+<pre><code class="language-jsx"><span class="token keyword">import</span> React <span class="token keyword">from</span> <span class="token string">'@react'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token string">'./pages/index/index'</span><span class="token punctuation">;</span> <span class="token comment">//引入所有页面。</span>
+<span class="token keyword">import</span> <span class="token string">'./pages/demo/base/index'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token string">'./pages/demo/native/index/index'</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token string">'./app.less'</span><span class="token punctuation">;</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Global</span> <span class="token keyword">extends</span> <span class="token class-name">React<span class="token punctuation">.</span>Component</span> <span class="token punctuation">{</span>
+    <span class="token comment">//全局配置</span>
+    <span class="token keyword">static</span> config <span class="token operator">=</span> <span class="token punctuation">{</span>
+        window<span class="token operator">:</span> <span class="token punctuation">{</span>
+            backgroundTextStyle<span class="token operator">:</span> <span class="token string">'light'</span><span class="token punctuation">,</span>
+            navigationBarBackgroundColor<span class="token operator">:</span> <span class="token string">'#0088a4'</span><span class="token punctuation">,</span>
+            navigationBarTitleText<span class="token operator">:</span> <span class="token string">'mpreact'</span><span class="token punctuation">,</span>
+            navigationBarTextStyle<span class="token operator">:</span> <span class="token string">'#fff'</span>
+        <span class="token punctuation">}</span>
+        needRedirectPages<span class="token operator">:</span> <span class="token punctuation">{</span>
+            <span class="token string">"pages/bargain/helper/helper"</span><span class="token operator">:</span>  <span class="token string">"pages/ticket/bargain/helper/index"</span><span class="token punctuation">,</span>
+            <span class="token string">"pages/bargain/ticket/index"</span><span class="token operator">:</span>  <span class="token string">"pages/ticket/bargain/list/index"</span><span class="token punctuation">,</span>
+            <span class="token string">"pages/bargain/award/index"</span><span class="token operator">:</span>  <span class="token string">"pages/ticket/bargain/award/index"</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        tabBar<span class="token operator">:</span> <span class="token punctuation">{</span>
+            backgroundColor<span class="token operator">:</span> <span class="token string">'#0077c7'</span><span class="token punctuation">,</span>
+            list<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">{</span>
+              pagePath<span class="token operator">:</span> <span class="token string">"pages/platform/index/index"</span><span class="token punctuation">,</span>
+              text<span class="token operator">:</span> <span class="token string">"首页"</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>
+              pagePath<span class="token operator">:</span> <span class="token string">"pages/service/index/index"</span><span class="token punctuation">,</span>
+              text<span class="token operator">:</span> <span class="token string">"客服"</span>
+            <span class="token punctuation">}</span><span class="token punctuation">]</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token comment">// 全局数据</span>
+    globalData <span class="token operator">=</span> <span class="token punctuation">{</span>
+        ufo<span class="token operator">:</span> <span class="token string">'nanachi'</span><span class="token punctuation">,</span><span class="token comment">//only test</span>
+        __storage<span class="token operator">:</span> <span class="token punctuation">{</span><span class="token punctuation">}</span>  <span class="token comment">//快应用的storage在这里保存一份副本,</span>
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token function">onGlobalReady</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>  <span class="token comment">//全局的页面钩子</span>
+    <span class="token function">onGlobalUnload</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span> <span class="token comment">//全局的页面钩子</span>
+    <span class="token function">onGlobalShow</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>   <span class="token comment">//全局的页面钩子</span>
+    <span class="token function">onGlobalHide</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>   <span class="token comment">//全局的页面钩子</span>
+    <span class="token function">onGlobalLoad</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>    <span class="token comment">//全局的页面钩子</span>
+        <span class="token comment">//快应用需要在每个页面打开的瞬间初始化同步storage API</span>
+        <span class="token comment">//即getStorageSync, setStorageSync, removeStorageSync, clearStorageSync</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span> process<span class="token punctuation">.</span>env<span class="token punctuation">.</span><span class="token constant">ANU_ENV</span> <span class="token operator">===</span> <span class="token string">'quick'</span> <span class="token punctuation">)</span> <span class="token punctuation">{</span>
+           React<span class="token punctuation">.</span>api<span class="token punctuation">.</span>initStorageSync <span class="token operator">&amp;&amp;</span>
+           React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">initStorageSync</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>__storage<span class="token punctuation">)</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">onGlobalShare</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>   <span class="token comment">//全局的小程序分享钩子， 如果页面没有定义onShare, 或onShare没有返回对象，就会触发它</span>
+        <span class="token keyword">return</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">onPageNotFound</span><span class="token punctuation">(</span><span class="token parameter">e</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+        <span class="token comment">//这里专门迁移之前的业务，比如一些广告，二维图已经印出来，贴在各大广场上，不可能再改这些二维码</span>
+        <span class="token comment">//而二维码对应一些旧页面，现在用nanachi重写，并根据nanachi的规范，只能以index结尾</span>
+        <span class="token comment">//随着业务的拆分，它们分到新部门（门票），为了方便分包，它们的目录结构也要改动</span>
+        <span class="token comment">//我们可以在config中添加needRedirectPages映射</span>
+        <span class="token keyword">var</span> <span class="token punctuation">[</span>path<span class="token punctuation">,</span> query<span class="token punctuation">]</span> <span class="token operator">=</span> e<span class="token punctuation">;</span>
+        <span class="token comment">//在微信小程序中path不以"/"开头，但不保证其他小程序是以"./", "/"开头</span>
+        path <span class="token operator">=</span> path<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token regex">/^\/,""/</span><span class="token punctuation">)</span>
+        <span class="token keyword">var</span> newPath <span class="token operator">=</span> Global<span class="token punctuation">.</span>config<span class="token punctuation">.</span>needRedirectPages<span class="token punctuation">[</span>path<span class="token punctuation">]</span> <span class="token operator">||</span> <span class="token string">"pages/platform/404/index"</span><span class="token punctuation">;</span>
+        <span class="token keyword">var</span> queryString <span class="token operator">=</span> Object<span class="token punctuation">.</span><span class="token function">keys</span><span class="token punctuation">(</span>query<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">k</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+          <span class="token keyword">return</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>k<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>query<span class="token punctuation">[</span>k<span class="token punctuation">]</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span><span class="token string">"&amp;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">redirectTo</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+            url<span class="token operator">:</span>path <span class="token operator">+</span> <span class="token punctuation">(</span>queryString<span class="token operator">?</span> <span class="token string">'?'</span><span class="token operator">+</span> queryString<span class="token operator">:</span> <span class="token string">''</span><span class="token punctuation">)</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">onShowMenu</span><span class="token punctuation">(</span><span class="token parameter">pageInstance<span class="token punctuation">,</span> app</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span> <span class="token comment">//供快应用实现右上角菜单与转发分享（onShare, onGlobalShare都在这里）</span>
+    <span class="token function">onCollectLogs</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span><span class="token punctuation">}</span>  <span class="token comment">//全局的用户行为日志收集钩子</span>
+    <span class="token function">onHide</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>          <span class="token comment">//全局的app钩子, 当app切换后台时触发</span>
+          <span class="token keyword">var</span> app <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">getApp</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+          console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>app <span class="token operator">==</span> <span class="token keyword">this</span><span class="token punctuation">)</span><span class="token comment">//由于平台的差异性，React.getApp(）得到的对象不定是new App的实例</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">onLaunch</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>     <span class="token comment">//全局的app钩子 （快应用会自动转译成onCreate）</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span> process<span class="token punctuation">.</span>env<span class="token punctuation">.</span><span class="token constant">ANU_ENV</span> <span class="token operator">===</span> <span class="token string">'quick'</span> <span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token comment">//非快应用的平台在编译阶段会被干掉</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token keyword">this</span><span class="token punctuation">.</span>$data <span class="token operator">&amp;&amp;</span> <span class="token keyword">typeof</span> global <span class="token operator">===</span> <span class="token string">'object'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>  <span class="token comment">//针对快应用的全局getApp补丁</span>
+                <span class="token keyword">var</span> ref <span class="token operator">=</span> Object<span class="token punctuation">.</span><span class="token function">getPrototypeOf</span><span class="token punctuation">(</span>global<span class="token punctuation">)</span> <span class="token operator">||</span> global<span class="token punctuation">;</span>
+                <span class="token keyword">var</span> _this <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">;</span>
+                ref<span class="token punctuation">.</span><span class="token function-variable function">getApp</span> <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                    <span class="token keyword">return</span> _this<span class="token punctuation">;</span>
+                <span class="token punctuation">}</span><span class="token punctuation">;</span>
+                <span class="token keyword">this</span><span class="token punctuation">.</span>globalData <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>$def<span class="token punctuation">.</span>globalData<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'App launched'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token function">App</span><span class="token punctuation">(</span><span class="token keyword">new</span> <span class="token class-name">Global</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<h2 id="globaldata的设计">globalData的设计</h2>
+<p>在我们公司，globalData会将登录信息（微信的getUserInfo, 里面有openId什么），页面的参数， 场景值全部缓存起来，这样以后大家直接访问React.getApp().globalData就能拿到，建议用户们可以模仿。</p>
+<pre><code class="language-javascript"><span class="token comment">//app.js</span>
+   globalData <span class="token operator">=</span> <span class="token punctuation">{</span>
+        systemInfo<span class="token operator">:</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token comment">// 页面渲染时间</span>
+        _timestamp<span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span>
+        <span class="token comment">// 页面留存时间</span>
+        _staytime<span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span>
+        _startimestamp<span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span>
+        location<span class="token operator">:</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token comment">// 外链带入渠道</span>
+        bd_origin<span class="token operator">:</span> <span class="token string">''</span><span class="token punctuation">,</span>
+        <span class="token comment">// 小程序内部渠道，路由跳转会自动替换</span>
+        hd_origin<span class="token operator">:</span> <span class="token string">''</span><span class="token punctuation">,</span>
+        scene<span class="token operator">:</span> <span class="token string">''</span><span class="token punctuation">,</span>
+        logs<span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token comment">//日志， 满10条就会自动发送后台</span>
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token function">onLaunch</span><span class="token punctuation">(</span><span class="token parameter">e</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>scene <span class="token operator">=</span> e<span class="token punctuation">.</span>scene
+        <span class="token keyword">if</span><span class="token punctuation">(</span>process<span class="token punctuation">.</span>env<span class="token punctuation">.</span><span class="token constant">ANU_ENV</span> <span class="token operator">===</span> <span class="token string">'quick'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">onLaunchQuick</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">onLaunchNormal</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">onHide</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+       <span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>_staytime <span class="token operator">=</span> Data<span class="token punctuation">.</span>now <span class="token operator">-</span> <span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>_startimestamp
+    <span class="token punctuation">}</span>
+    <span class="token keyword">async</span> <span class="token function">onLaunchNormal</span><span class="token punctuation">(</span><span class="token parameter">e</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token comment">// 统计总体停留时长</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>_startimestamp <span class="token operator">=</span> <span class="token operator">+</span><span class="token keyword">new</span> <span class="token class-name">Date</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 这里要把系统信息放到全局 方便日志收集  业务线调用时要使用util下的getSystemInfo</span>
+        React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">getSystemInfo</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+            <span class="token function-variable function">success</span><span class="token operator">:</span> <span class="token parameter">res</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+                <span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>systemInfo <span class="token operator">=</span> res<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token function">onLaunchQuick</span><span class="token punctuation">(</span><span class="token parameter">e</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token comment">//针对快应用的全局getApp补丁</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>$data <span class="token operator">&amp;&amp;</span> <span class="token keyword">typeof</span> global <span class="token operator">===</span> <span class="token string">'object'</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">var</span> ref <span class="token operator">=</span> Object<span class="token punctuation">.</span><span class="token function">getPrototypeOf</span><span class="token punctuation">(</span>global<span class="token punctuation">)</span> <span class="token operator">||</span> global<span class="token punctuation">;</span>
+            <span class="token keyword">var</span> _this <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">;</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>globalData <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>$def<span class="token punctuation">.</span>globalData <span class="token operator">||</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+            ref<span class="token punctuation">.</span><span class="token function-variable function">getApp</span> <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                <span class="token keyword">return</span> _this<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+        <span class="token comment">// 统计总体停留时长</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>_startimestamp <span class="token operator">=</span> <span class="token operator">+</span><span class="token keyword">new</span> <span class="token class-name">Date</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">getSystemInfo</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+            <span class="token function-variable function">success</span><span class="token operator">:</span> <span class="token parameter">res</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+                <span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>systemInfo <span class="token operator">=</span> res<span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 拿openId 更新token</span>
+        user<span class="token punctuation">.</span><span class="token function">appLanchInfos</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 获取地理位置 埋点所需 百度账号未登录会报错</span>
+        React<span class="token punctuation">.</span>api<span class="token punctuation">.</span><span class="token function">getLocation</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+            <span class="token function-variable function">success</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token parameter">res</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span>
+                <span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>location <span class="token operator">=</span> <span class="token punctuation">{</span>
+                    lat<span class="token operator">:</span> res<span class="token punctuation">.</span>latitude<span class="token punctuation">,</span>
+                    lgt<span class="token operator">:</span> res<span class="token punctuation">.</span>longitude
+                <span class="token punctuation">}</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// 将bd_origin存到全局变量内</span>
+        <span class="token keyword">const</span> scene <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>scene<span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>e<span class="token punctuation">.</span>query<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token comment">// 缓存初始的bdo</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>bd_origin <span class="token operator">=</span> e<span class="token punctuation">.</span>query<span class="token punctuation">.</span>bd_origin <span class="token operator">||</span> <span class="token string">''</span><span class="token punctuation">;</span>
+            <span class="token keyword">this</span><span class="token punctuation">.</span>globalData<span class="token punctuation">.</span>hd_origin <span class="token operator">=</span> e<span class="token punctuation">.</span>query<span class="token punctuation">.</span>hd_origin <span class="token operator">||</span> <span class="token string">''</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+</code></pre>
+<h2 id="tabbar-的使用">tabBar 的使用</h2>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>类型</th>
+<th>必填</th>
+<th>默认值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>color</td>
+<td>HexColor</td>
+<td>是</td>
+<td> </td>
+<td>tab 上的文字默认颜色，仅支持十六进制颜色</td>
+</tr>
+<tr>
+<td>selectedColor</td>
+<td>HexColor</td>
+<td>是</td>
+<td> </td>
+<td>tab 上的文字选中时的颜色，仅支持十六进制颜色</td>
+</tr>
+<tr>
+<td>backgroundColor</td>
+<td>HexColor</td>
+<td>是</td>
+<td> </td>
+<td>tab 的背景色，仅支持十六进制颜色</td>
+</tr>
+<tr>
+<td>borderStyle</td>
+<td>string</td>
+<td>否</td>
+<td>black</td>
+<td>tabbar 上边框的颜色， 仅支持 black / white</td>
+</tr>
+<tr>
+<td>list</td>
+<td>Array</td>
+<td>是</td>
+<td> </td>
+<td>tab 的列表，详见 list 属性说明，最少 2 个、最多 5 个 tab</td>
+</tr>
+<tr>
+<td>position</td>
+<td>string</td>
+<td>否</td>
+<td>bottom</td>
+<td>tabBar 的位置，仅支持 bottom / top</td>
+</tr>
+<tr>
+<td>custom</td>
+<td>boolean</td>
+<td>否</td>
+<td>false</td>
+<td>自定义 tabBar，见详情</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>快应用不支持 position， tabBar总是在下面</p>
+</blockquote>
+<blockquote>
+<p>tabBar下的list也可以根据平台设置，详见<a href="./tabBar.html">这里</a></p>
+</blockquote>
+<h2 id="react.getapp的使用场合">React.getApp()的使用场合</h2>
+<p><code>React.getApp()</code>必须放在app.js 或页面组件或普通组件的生命周期钩子里面执行，不要放在全局作用域下执行</p>
+<p>快应用可以这样设置跨页面的全局数据 <code>this.$app.$data = {a:1}</code></p>
+<p>其他配置项统一放在config对象中，详细配置列表参见<a href="https://developers.weixin.qq.com/miniprogram/dev/framework/config.html#%E5%85%A8%E5%B1%80%E9%85%8D%E7%BD%AE" target="_blank">这里</a></p>
+<p><img src="app.jpg" alt="nanachi"></p>
+</div><div class="m-content-container m-paging"><div class="m-paging-prev m-paging-item"><a href="update.html" class="href"><span class="ui-font-ydoc"></span>升级</a></div><div class="m-paging-next m-paging-item"><a href="lifetimes.html" class="href">页面组件与生命周期<span class="ui-font-ydoc"></span></a></div></div></div></div></div><div></div><script>
+    var $content = document.getElementById('js-content');
+    var $summaryItems = Array.prototype.slice.call(document.querySelectorAll('#js-menu .href'));
+    var $menu = document.getElementById('js-menu');
+    if (sessionStorage.prevPathname) {
+      sessionStorage.setItem('prevPrevPathname', sessionStorage.prevPathname);
+      sessionStorage.setItem('prevPrevMenuScrollTop', sessionStorage.prevMenuScrollTop);
+      sessionStorage.setItem('prevPrevContentScrollTop', sessionStorage.prevContentScrollTop);
+    }
+    if (sessionStorage.locationPathname) {
+      sessionStorage.setItem('prevPathname', sessionStorage.locationPathname);
+      sessionStorage.setItem('prevMenuScrollTop', sessionStorage.menuScrollTop);
+      sessionStorage.setItem('prevContentScrollTop', sessionStorage.contentScrollTop);
+    }
+    if ($menu && sessionStorage.menuScrollTop) {
+		  $menu.scrollTop = sessionStorage.menuScrollTop;
+    }
+    // 刷新页面但不切换 pathname 的时候，内容区恢复到记忆的高度
+    if ($content && sessionStorage.contentScrollTop && window.location.pathname == sessionStorage.locationPathname) {
+      $content.scrollTop = sessionStorage.contentScrollTop;
+    } else if (sessionStorage.prevPrevPathname && sessionStorage.prevPrevPathname === window.location.pathname) {
+      if ($menu && sessionStorage.prevPrevMenuScrollTop) {
+        $menu.scrollTop = sessionStorage.prevPrevMenuScrollTop;
+      }
+      if ($content && sessionStorage.prevPrevContentScrollTop) {
+        $content.scrollTop = sessionStorage.prevPrevContentScrollTop;
+      }
+    }
+    sessionStorage.setItem('locationPathname', window.location.pathname);
+    </script><script src="../ydoc/scripts/plugins/dollar.min.js"></script><script src="../ydoc/scripts/plugins/responsive-nav.min.js"></script><script src="../ydoc/scripts/plugins/slideout.min.js"></script><script src="../ydoc/scripts/app.js"></script><script src="../ydoc/ydoc-plugin-search/core.js"></script><script src="../ydoc/ydoc-plugin-search/search.js"></script><script src="../search_json.js"></script></body></html>

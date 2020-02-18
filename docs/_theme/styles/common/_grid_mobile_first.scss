@@ -1,0 +1,41 @@
+// mobile first thinking：
+// Considering design/coding of mobile devices at the first time.
+// Making responsive layouts when width increase.
+
+// * xsmall (mobile phone)
+// * Do not use this area (media-xs), because mobile is default in "mobile first thinking" !
+// * This part is only used for responsive grid system !
+@mixin media-xs() {
+    @media screen and (max-width: 600px) {
+        @content;
+    }
+}
+// small (tablet PC/mobile phone)
+@mixin media-sm() {
+    @media screen and (min-width: 600px) {
+        @content;
+    }
+}
+// medium tablet PC
+@mixin media-md() {
+    @media screen and (min-width: 960px) {
+        @content;
+    }
+}
+// large PC
+@mixin media-lg() {
+    @media screen and (min-width: 1440px) {
+        @content;
+    }
+}
+// xlarge PC
+@mixin media-xl() {
+    @media screen and (min-width: 1920px) {
+        @content;
+    }
+}
+
+// usage: 
+// @include media-sm() {
+// 	...(your code)
+// }

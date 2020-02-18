@@ -1,0 +1,133 @@
+.m-aside{
+	margin-top: .65rem;
+	height: 100%;
+	height: calc(100% - .65rem);
+}
+.m-summary {
+	padding: 0 .24rem;
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 1;
+	width: 100%;
+	height: 0;
+	overflow-y: auto;
+	transform: translateY(0);
+	-webkit-overflow-scrolling: touch;
+	transition: all .2s ease-in-out;
+	// display: none;
+	// give up box shadow
+	// border-right: 1px solid $break-line-color;
+	// box-shadow: inset 0 1px 10px 0 rgba(24,144,255,0.06), inset 0 2px 4px 0 rgba(24,144,255,0.10), inset 0 4px 5px 0 rgba(9,109,217,0.07);
+	// background-color: color($primary-1, 1);
+  ul, ol, li {
+    list-style: none;
+	}
+	&.active {
+		height: 100%;
+		background-color: #fff;
+		padding: .24rem;
+		padding-bottom: .24rem + .65rem;
+		transform: translateY(.65rem);
+		.m-summary-content {
+			display: block;
+		}
+	}
+	&.active + .m-summary-switch .top {
+		transform: translateY(10px);
+	}
+	&.active + .m-summary-switch .bottom {
+		transform: translateY(-10px);
+	}
+	&-content {
+		width: 100%;
+		height: auto;
+		display: none;
+	}
+	&-block {
+		margin-bottom: .16rem;
+	}
+	&-block.active>.href {
+		font-weight: bold;
+		color: $primary-color;
+	}
+	&-title {
+		font-size: $font-size-h4;
+		line-height: 2.5;
+		color: $deep-body-text-color;
+		padding-left: $padding-xs;
+	}
+	&-list {
+		font-size: $font-size-body;
+		line-height: 2.5;
+		&.indent {
+			padding-left: 1.5em;
+		}
+		.item {
+			color: $deep-caption-text-color;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		.item.active {
+			font-weight: bold;
+			color: $primary-color;
+		}
+		.href {
+			color: inherit;
+			background-color: transparent;
+			transition: all $transition-time-quick;
+			display: inline-block;
+			width: 100%;
+			border-radius: 4px;
+    	padding-left: $padding-xs;
+		}
+		.href:hover {
+			color: $primary-color;
+			background-color: $primary-1;
+		}
+	}
+	&-switch {
+		font-family: 'ydoc';
+		position: fixed;
+		right: .24rem;
+		bottom: .48rem;
+		width: .6rem;
+		height: .6rem;
+		border-radius: 50%;
+		color: $primary-color;
+		box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+		background-color: $deep-body-text-color;
+		user-select: none;
+		display: flex;
+    justify-content: center;
+    align-items: center;
+		flex-direction: column-reverse;
+		z-index: 1;
+		.top, .bottom {
+			transition: all $transition-time-quick ease-in-out;
+		}
+	}
+}
+
+// show drawer & hide button on PC
+@include media-md() {
+	.m-summary {
+		position: static;
+		height: 100%;
+		width: 2.4rem;
+		padding: .4rem .32rem;
+		flex: 3rem 0 0;
+		&-switch {
+			display: none;
+		}
+		&-content {
+			display: block;
+		}
+	}
+}
+@include media-lg() {
+	.m-summary {
+		width: 3rem;
+	}
+}
