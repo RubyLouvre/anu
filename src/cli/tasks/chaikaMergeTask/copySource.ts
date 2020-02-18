@@ -52,7 +52,7 @@ function isLockFile(fileName: string) {
 
 function copyCurrentProject() {
     let projectDirName = cwd.replace(/\\/g, '/').split('/').pop();
-    let files = glob.sync( './!(node_modules|dist|src|sign|build|.CACHE)', {
+    let files = glob.sync( './!(node_modules|dist|src|sign|build|.CACHE|.chaika_cache|nanachi)', {
         //nodir: true
     });
     let allPromiseCopy = files
@@ -86,7 +86,6 @@ function copyOtherProject() {
             return true;
         }
     });
-    
 
     let allPromiseCopy = files.map(function(file){
         let dist = '';
