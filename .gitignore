@@ -8,8 +8,6 @@ chromedriver
 selenium-server-*
 .vscode/
 /.history/*
-xxx.js
-index.css
 stand.js
 react-dom.js
 .DS_Store
