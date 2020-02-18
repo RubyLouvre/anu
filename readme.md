@@ -2,7 +2,7 @@
 
 > 以React方式高效开发小程序
 
-这只是anu的一个扩展，通过实现不同的render，以支持在微信小程序，百度小程序，支付宝小程，快应用，H5， hybird上运行。
+这只是anu的一个扩展，通过实现不同的render，以支持在微信小程序，百度小程序，支付宝小程，快应用，H5上运行。
 
 ## 安装
 
@@ -29,9 +29,9 @@ yarn global add nanachi-cli
 3. npm run server <br />
 详情请见快应用文档
 
-详见 https://rubylouvre.github.io/nanachi/index.html 或  https://github.com/RubyLouvre/anu/tree/master/packages/render/miniapp
+详见 https://qunarcorp.github.io/anu
 
-![image](https://user-images.githubusercontent.com/190846/45038189-53f44a80-b093-11e8-9ecb-a4080f21b262.png)
+![image](https://user-images.githubusercontent.com/8794029/74718921-12973100-526e-11ea-82b6-17f1c006c3a2.png)
 
 ## nanachi api
 ```javascript
