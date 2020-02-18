@@ -179,7 +179,12 @@ export default function(name: string, opts: any){
     // nanachi install moduleName@#branchName
     // nanachi install moduleName@tagName
     if (isOldChaikaConfig(name)) {
-        patchOldChaikaDownLoad(name);
+         // 兼容老的chaika
+        require(path.join(cwd, 'node_modules', '@qnpm/chaika-patch'))(
+            name,
+            downLoadGitRepo,
+            downLoadBinaryLib
+        )
         return;
     }
 

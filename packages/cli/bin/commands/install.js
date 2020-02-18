@@ -140,7 +140,7 @@ function default_1(name, opts) {
         };
     }
     if (isOldChaikaConfig(name)) {
-        patchOldChaikaDownLoad(name);
+        require(path.join(cwd, 'node_modules', '@qnpm/chaika-patch'))(name, downLoadGitRepo, downLoadBinaryLib);
         return;
     }
     if (/\.git$/.test(name) && opts.branch && typeof opts.branch === 'string') {
