@@ -22,6 +22,19 @@ const isReact = function (sourcePath) {
     const ReactRegExp = new RegExp(`\\${path.sep}source\\${path.sep}React\\w+\\.js$`);
     return ReactRegExp.test(sourcePath);
 };
+function patchMobx() {
+    const ctx = this;
+    return {
+        visitor: {
+            IfStatement: function (astPath) {
+                if (!/\/node_modules\/mobx\/lib\/index/
+                    .test(ctx.resourcePath.replace(/\\/g, '/')))
+                    return;
+                astPath.replaceWith(astPath.get('consequent.body.0'));
+            }
+        }
+    };
+}
 module.exports = function (code, map, meta) {
     return __awaiter(this, void 0, void 0, function* () {
         const callback = this.async();
@@ -35,11 +48,13 @@ module.exports = function (code, map, meta) {
             }, map, meta);
             return;
         }
+        var ctx = this;
         code = babel.transformSync(code, {
             configFile: false,
             babelrc: false,
             plugins: [
-                ...require('../../packages/babelPlugins/transformEnv')
+                ...require('../../packages/babelPlugins/transformEnv'),
+                patchMobx.bind(this)
             ]
         }).code;
         if (isReact(this.resourcePath)) {
