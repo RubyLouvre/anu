@@ -8,6 +8,33 @@ const isReact = function(sourcePath: string){
     return ReactRegExp.test(sourcePath);
 };
 
+function patchMobx() {
+    const ctx = this;
+    return {
+        visitor: {
+            IfStatement: function(astPath) {
+                /**
+                 * if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
+                        module.exports = require('./mobx.min.js');
+                    } else {
+                        module.exports = require('./mobx.js');
+                    }
+
+                    =>
+
+                    module.exports = require('./mobx.min.js');
+                 */
+                if (!/\/node_modules\/mobx\/lib\/index/
+                    .test(
+                        ctx.resourcePath.replace(/\\/g, '/') // for win
+                    )
+                ) return;
+                astPath.replaceWith(astPath.get('consequent.body.0'));
+            }
+        }
+    }
+}
+
 module.exports = async function(code: string, map: any, meta: any) {
     
     const callback = this.async();
@@ -22,12 +49,14 @@ module.exports = async function(code: string, map: any, meta: any) {
         }, map, meta);
         return;
     }
+    var ctx = this;
     // 处理第三方模块中的环境变量，如process.env.NODE_ENV
     code = babel.transformSync(code, {
         configFile: false,
         babelrc: false,
         plugins: [
-            ...require('../../packages/babelPlugins/transformEnv')
+            ...require('../../packages/babelPlugins/transformEnv'),
+            patchMobx.bind(this)
         ]
     }).code;
     if (isReact(this.resourcePath)) {
@@ -46,7 +75,6 @@ module.exports = async function(code: string, map: any, meta: any) {
     
     relativePath = path.join('npm', this.resourcePath.replace(/^.+?[\\\/]node_modules[\\\/]/, ''));
     // 解析node_modules中的npm包路径， 如： require('abc') => require('../../abc');
-    
     queues = [{
         code,
         path: relativePath,

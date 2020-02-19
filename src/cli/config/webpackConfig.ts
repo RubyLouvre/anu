@@ -87,6 +87,7 @@ export default function({
         };
     }
 
+    // node_modules pkg
     const nodeRules = [{
         test: /node_modules[\\/](?!schnee-ui[\\/])/,
         use: [].concat(
