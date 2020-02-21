@@ -28,24 +28,22 @@ const ANU_ENV = buildType
  * @param {Array} pages 所有的页面路径
  * @return {Object} 
  */
-function getMergedAppJsConent( appJsSrcPath: any, pages: any = [], importSyntax=[] ) {
-    function getAppImportSyntaxCode(importSyntax=[]) {
+function getMergedAppJsConent( appJsSrcPath: string, pages: Array<string> = [], importSyntax: Array<string> = [] ) {
+    function getAppImportSyntaxCode(importSyntax: Array<string> = []) {
         /**
          * app.json
          * {
          *   "imports": ["import a from '@b/c'"]
          * }
          */
-        return Object.keys(importSyntax).reduce((ret, el) => {
-            ret = ret.concat(importSyntax[el]);
-            return ret.map((curEl) => {
-                curEl = curEl.trim();
-                if (!/;$/.test(curEl)) {
-                    curEl = curEl + ';';
-                }
-                return curEl;
-            });
-        }, []).join("\n") + '\n';
+        let importSyntaxList = importSyntax.map(function(curEl) {
+            curEl = curEl.trim();
+            if (!/;$/.test(curEl)) {
+                curEl = curEl + ';';
+            }
+            return curEl;
+        });
+        return importSyntaxList.length ? importSyntaxList.join("\n") + '\n' : '';
     }
     
     let allRoutesStr = pages.map(function(pageRoute: any){
@@ -115,7 +113,6 @@ function getFilesMap(queue: any = []) {
         }
         if (/\/app\.json$/.test(file)) {
             var { alias={}, pages=[], imports=[], order = 0 } = require(file);
-           
             if (alias) {
                 map['alias'] = map['alias'] || [];
                 map['alias'].push({
@@ -150,7 +147,8 @@ function getFilesMap(queue: any = []) {
                     order: order
                 }); 
             } 
-            map['importSyntax'] = imports;
+            map['importSyntax'] = map['importSyntax'] || [];
+            map['importSyntax'] = map['importSyntax'].concat(imports);
             return;
         }
         
@@ -202,7 +200,7 @@ function customizer(objValue: any, srcValue: any) {
     }
 }
 
-function getMergedXConfigContent(config) {
+function getMergedXConfigContent(config:any) {
     let env = ANU_ENV;
     let xConfigJsonDist =  path.join(mergeDir, 'source', `${env}Config.json`);
     return Promise.resolve({
@@ -241,7 +239,7 @@ function xDiff(list: any) {
             // 只比较key/value, 不比较数组, 数组认为是增量合并, diff模块中，如何有数组比较， DiffEdit中path字段必定有index(数字)
             // [ DiffEdit { kind: 'E', path: [ 'list', 0, 'name' ], lhs: 1, rhs: 2 },
             return el.kind === 'E' 
-                    && el.path.every(function(el){
+                    && el.path.every(function(el: string|number){
                         return typeof el === 'string'
                     });
         });
@@ -404,7 +402,6 @@ export default function(){
     validateMiniAppProjectConfigJson(queue);
 
     let map: any = getFilesMap(queue);
-
     let tasks = [
         //app.js路由注入
         getMergedAppJsConent( getAppJsSourcePath(queue), map.pages, map.importSyntax),

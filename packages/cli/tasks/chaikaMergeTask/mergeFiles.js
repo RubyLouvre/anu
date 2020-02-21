@@ -18,16 +18,14 @@ const ANU_ENV = buildType
     : 'wx';
 function getMergedAppJsConent(appJsSrcPath, pages = [], importSyntax = []) {
     function getAppImportSyntaxCode(importSyntax = []) {
-        return Object.keys(importSyntax).reduce((ret, el) => {
-            ret = ret.concat(importSyntax[el]);
-            return ret.map((curEl) => {
-                curEl = curEl.trim();
-                if (!/;$/.test(curEl)) {
-                    curEl = curEl + ';';
-                }
-                return curEl;
-            });
-        }, []).join("\n") + '\n';
+        let importSyntaxList = importSyntax.map(function (curEl) {
+            curEl = curEl.trim();
+            if (!/;$/.test(curEl)) {
+                curEl = curEl + ';';
+            }
+            return curEl;
+        });
+        return importSyntaxList.length ? importSyntaxList.join("\n") + '\n' : '';
     }
     let allRoutesStr = pages.map(function (pageRoute) {
         if (!(/^\.\//.test(pageRoute))) {
@@ -119,7 +117,8 @@ function getFilesMap(queue = []) {
                     order: order
                 });
             }
-            map['importSyntax'] = imports;
+            map['importSyntax'] = map['importSyntax'] || [];
+            map['importSyntax'] = map['importSyntax'].concat(imports);
             return;
         }
         if (/\/project\.config\.json$/.test(file)) {
