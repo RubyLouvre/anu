@@ -30,7 +30,6 @@ export function createInstance(fiber, context) {
     fiber.errorHook = 'constructor';
     try {
         if (isStateless) {
-            Renderer.currentOwner = instance;
             extend(instance, {
                 __isStateless: true,
                 renderImpl: type,
