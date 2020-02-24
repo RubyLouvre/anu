@@ -31,7 +31,7 @@ source： https://bundlephobia.com/
 
 ### nanachi
 
-nanachi已经交回原公司 qunar.com 维护了，不放在此仓库
+nanachi已经交回原公司 qunar.com 维护了，不放在此仓库 ，详见 https://qunarcorp.github.io/anu
 
 ### boilerplate 
 
