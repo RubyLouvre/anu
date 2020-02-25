@@ -200,12 +200,34 @@ function customizer(objValue: any, srcValue: any) {
     }
 }
 
+// 去重分包配置
+function getUniqueSubPkgConfig(list: object[] = []) {
+    interface interFaceList {
+        name: string,
+        resource: string
+    }
+    return list.reduce(function(initList: Array<interFaceList>, curEle: interFaceList){
+        let curName = curEle.name;
+        let hasEle = initList.some(function(el: interFaceList){
+            return el.name === curName;
+        });
+        if (!hasEle) initList.push(curEle);
+        return initList;
+    }, []);
+}
+
 function getMergedXConfigContent(config:any) {
     let env = ANU_ENV;
     let xConfigJsonDist =  path.join(mergeDir, 'source', `${env}Config.json`);
+    let ret = xDiff(config);
+    for(let i in ret) {
+        if (i.toLocaleLowerCase() === 'subpackages') {
+            ret[i] = getUniqueSubPkgConfig(ret[i]);
+        }
+    }
     return Promise.resolve({
         dist: xConfigJsonDist,
-        content: JSON.stringify(xDiff(config), null, 4)
+        content: JSON.stringify(ret, null, 4);
     });
 }
 
