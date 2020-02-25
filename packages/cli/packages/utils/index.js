@@ -22,6 +22,7 @@ const config = require('../../config/config');
 const isWindow = require('./isWindow');
 const isNpm = require('./isNpmModule');
 const toUpperCamel = require('./toUpperCamel');
+const shelljs = require('shelljs');
 const Event = new EventEmitter();
 let pkg;
 try {
@@ -194,12 +195,17 @@ let utils = {
                 dev === 'dev' ? '--save-dev' : '--save'
             ]);
             options.push(...args);
-            let result = spawn.sync(bin, options, {
-                stdio: 'inherit'
+            console.log(chalk.green.bold(`🚚 正在安装 ${npmName}, 请稍后...`));
+            let cmd = [bin, ...options];
+            let std = shelljs.exec(cmd.join(' '), {
+                silent: true
             });
-            if (result.error) {
-                console.log(result.error);
-                process.exit(1);
+            if (/npm ERR/.test(std.stderr)) {
+                console.error(std.stderr);
+                process.exit(0);
+            }
+            if (std.code !== 1) {
+                console.log(chalk.green.bold(`✔  安装 ${npmName} 成功.`));
             }
             let npmPath = '';
             npmName = npmName.split('@')[0];

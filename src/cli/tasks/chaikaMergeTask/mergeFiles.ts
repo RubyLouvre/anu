@@ -128,6 +128,7 @@ function getFilesMap(queue: any = []) {
                     if ('[object Object]' === Object.prototype.toString.call(route)) {
                         // ' wx, ali,bu ,tt ' => ['wx', 'ali', 'bu', 'tt']
                         var supportPlat = route.platform.replace(/\s*/g, '').split(',');
+                       
                         if (supportPlat.includes(env)) {
                             injectRoute = route.route;
                         }
@@ -227,7 +228,7 @@ function getMergedXConfigContent(config:any) {
     }
     return Promise.resolve({
         dist: xConfigJsonDist,
-        content: JSON.stringify(ret, null, 4);
+        content: JSON.stringify(ret, null, 4)
     });
 }
 
@@ -447,7 +448,8 @@ export default function(){
 
     //['cookie@^0.3.1', 'regenerator-runtime@0.12.1']
     var installList = [...getNodeModulesList(map.pkgDependencies), ...getNodeModulesList(map.pkgDevDep)];
-   
+    
+
     //semver.satisfies('1.2.9', '~1.2.3')
     var installPkgList = installList.reduce(function(needInstall, pkg){
         //@xxx/yyy@1.0.0 => xxx
@@ -476,7 +478,8 @@ export default function(){
         // --no-save 是为了不污染用户的package.json
         // eslint-disable-next-line
         let installListLog = installPkgList.join('\n');
-        console.log(chalk.bold.green(`[INFO] 缺少拆库依赖, 正在安装, 请稍候...\n${installListLog}`));
+        
+        console.log(chalk.bold.green(`🚚 正在安装拆库依赖, 请稍候...\n${installListLog}`));
         fs.ensureDir(path.join(cwd, 'node_modules'));
         let cmd = `npm install ${installList} --no-save`;
         // eslint-disable-next-line
@@ -484,7 +487,7 @@ export default function(){
             silent: false
         });
        
-        if (/npm ERR!/.test(std.stderr)) {
+        if (/npm ERR/.test(std.stderr)) {
             // eslint-disable-next-line
             console.log(chalk.red(std.stderr));
             process.exit(1);

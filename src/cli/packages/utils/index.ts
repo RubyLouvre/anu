@@ -16,6 +16,7 @@ const config = require('../../config/config');
 const isWindow = require('./isWindow');
 const isNpm = require('./isNpmModule');
 const toUpperCamel = require('./toUpperCamel');
+const shelljs = require('shelljs');
 const Event = new EventEmitter();
 let pkg;
 try {
@@ -239,13 +240,34 @@ let utils = {
                 ]
             );
             options.push(...args);
-            let result = spawn.sync(bin, options, {
-                stdio: 'inherit'
-            });
-            if (result.error) {
-                console.log(result.error);
-                process.exit(1);
+
+            // let result = spawn.sync(bin, options, {
+            //     stdio: 'inherit'
+            // });
+            // if (result.error) {
+            //     console.log(result.error);
+            //     process.exit(1);
+            // }
+           
+            console.log(chalk.green.bold(`🚚 正在安装 ${npmName}, 请稍后...`));
+            let cmd = [bin, ...options];
+
+            // https://github.com/npm/npm/issues/16794 npm 貌似有bug
+            let std = shelljs.exec(
+                cmd.join(' '),
+                {
+                    silent: true
+                }
+            );
+            if (/npm ERR/.test(std.stderr)) {
+                console.error(std.stderr);
+                process.exit(0);
             }
+
+            if (std.code !== 1) {
+                console.log(chalk.green.bold(`✔  安装 ${npmName} 成功.`));
+            }
+            
             let npmPath = '';
             npmName = npmName.split('@')[0];
             if (needModuleEntryPath) {

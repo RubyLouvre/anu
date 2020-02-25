@@ -385,13 +385,13 @@ function default_1() {
     if (installPkgList.length) {
         let installList = installPkgList.join(' ');
         let installListLog = installPkgList.join('\n');
-        console.log(chalk.bold.green(`[INFO] 缺少拆库依赖, 正在安装, 请稍候...\n${installListLog}`));
+        console.log(chalk.bold.green(`🚚 正在安装拆库依赖, 请稍候...\n${installListLog}`));
         fs.ensureDir(path.join(cwd, 'node_modules'));
         let cmd = `npm install ${installList} --no-save`;
         let std = shelljs.exec(cmd, {
             silent: false
         });
-        if (/npm ERR!/.test(std.stderr)) {
+        if (/npm ERR/.test(std.stderr)) {
             console.log(chalk.red(std.stderr));
             process.exit(1);
         }

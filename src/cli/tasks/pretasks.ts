@@ -347,7 +347,6 @@ export default async function runTask({ platform: buildType, beta, betaUi, compr
             //获取package.json中hap-toolkit版本，并安装
             let toolName = 'hap-toolkit@latest';
             // eslint-disable-next-line
-            console.log(chalk.bold.green(`缺少快应用构建工具 ${toolName}, 正在安装, 请稍候...`));
             utils.installer(
                 toolName,
                 '--save-dev'

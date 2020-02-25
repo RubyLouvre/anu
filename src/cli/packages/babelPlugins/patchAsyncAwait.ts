@@ -5,19 +5,17 @@ import utils from '../utils';
 import { NodePath, PluginObj } from '@babel/core';
 import config from '../../config/config';
 
+
 let hackList: any = ['wx', 'bu', 'tt', 'quick', 'qq'];
 
-let copyFlag = false;
-let patchAsync = false;
-
-const pkgName = 'regenerator-runtime';
+let installFlag = false;
+const pkgName = 'regenerator-runtime@0.12.1';
 
 function needInstall( pkgName: string ): boolean{
     try {
         nodeResolve.sync(pkgName, { 
-            // TODO: 逻辑有问题
             basedir: process.cwd(),
-            // moduleDirectory: cwd
+            moduleDirectory: ''
         });
         return false;
     } catch (err) {
@@ -60,25 +58,14 @@ module.exports  = [
                             // ])
                         );
 
-                        patchAsync = true;
                     }
                 }
             },
             post: function(){
-                if ( patchAsync &&  !copyFlag ) {
-                    if ( needInstall(pkgName) ) {
-                        // 锁版本
-                        utils.installer(pkgName + '@0.12.1');
-                    }
-                    let cwd = process.cwd();
-                    
-                    let dist = path.join( cwd, utils.getDistName(config.buildType), 'npm', `${pkgName}/runtime.js`);
-                    let src =  path.join( cwd, 'node_modules', `${pkgName}/runtime.js`);
-                    // fs.ensureFileSync(dist);
-                    // fs.copyFileSync(src, dist);
-                    copyFlag = true;
+                if ( needInstall(pkgName.split('@')[0]) &&  !installFlag) {
+                    utils.installer(pkgName);
+                    installFlag = true;
                 }
-
             }
         }
     }

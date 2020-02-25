@@ -300,7 +300,6 @@ function runTask({ platform: buildType, beta, betaUi, compress }) {
             tasks = tasks.concat(getQuickBuildConfigFile(), getQuickPkgFile());
             if (needInstallHapToolkit()) {
                 let toolName = 'hap-toolkit@latest';
-                console.log(chalk_1.default.bold.green(`缺少快应用构建工具 ${toolName}, 正在安装, 请稍候...`));
                 utils.installer(toolName, '--save-dev');
             }
         }
