@@ -408,10 +408,12 @@ function validateConfigFileCount(queue: any) {
             errorFiles.push(el);
         }
     });
+
        
     if (errorFiles.length) {
         // eslint-disable-next-line
-        console.log(chalk.bold.red('校验到拆库仓库中配置文件路径错误，请将该配置文件放到 source 目录中:\n'), chalk.bold.red(JSON.stringify(errorFiles, null, 4)));
+        console.log(chalk.bold.red('⚠️   校验到拆库仓库中配置文件路径错误，请将该配置文件放到  source 目录中:'));
+        console.log(chalk.bold.red(errorFiles.join('\n')) + '\n');
         process.exit(1);
     }
 }

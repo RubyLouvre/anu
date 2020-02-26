@@ -49,6 +49,10 @@ function isLockFile(fileName) {
     return lockFiles.includes(fileName);
 }
 function copyCurrentProject() {
+    if (!fs_extra_1.default.existsSync(path.join(cwd, 'source'))
+        && !fs_extra_1.default.existsSync(path.join(cwd, 'app.js'))) {
+        return Promise.resolve(1);
+    }
     let projectDirName = cwd.replace(/\\/g, '/').split('/').pop();
     let files = glob_1.default.sync('./!(node_modules|dist|src|sign|build|.CACHE|.chaika_cache|nanachi)', {});
     let allPromiseCopy = files

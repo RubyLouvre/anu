@@ -1,1 +1,1 @@
-export default function (): Promise<number>;
+export default function (): any;

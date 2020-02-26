@@ -51,6 +51,16 @@ function isLockFile(fileName: string) {
 }
 
 function copyCurrentProject() {
+
+    // 如果当前目录不存在source目录，并且不存不存在app.js, 那可能是个非nanachi工程目录
+    
+    if (
+        !fs.existsSync(path.join(cwd, 'source'))
+        && !fs.existsSync(path.join(cwd, 'app.js'))
+    ) {
+        return Promise.resolve(1);
+    }
+    
     let projectDirName = cwd.replace(/\\/g, '/').split('/').pop();
     let files = glob.sync( './!(node_modules|dist|src|sign|build|.CACHE|.chaika_cache|nanachi)', {
         //nodir: true
