@@ -32,9 +32,17 @@ function makeSymLink() {
         return;
     }
 }
+function removeDir(p) {
+    try {
+        fs.removeSync(p);
+    }
+    catch (err) {
+    }
+}
 function default_1() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            yield removeDir(path.join(cwd, '.CACHE/nanachi'));
             yield copySource_1.default();
             yield mergeFiles_1.default();
             makeSymLink();

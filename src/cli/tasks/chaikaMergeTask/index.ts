@@ -17,8 +17,17 @@ function makeSymLink(){
     }
 }
 
+function removeDir(p: string) {
+    try {
+        fs.removeSync(p)
+    } catch(err) {
+        
+    }
+}
+
 export default async function(){
     try {
+        await removeDir(path.join(cwd, '.CACHE/nanachi'));
         //copy 资源
         await copySource();
         //合并各种配置，注入
