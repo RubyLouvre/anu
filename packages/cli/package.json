@@ -11,13 +11,10 @@
   "author": "",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RubyLouvre/anu.git"
+    "url": "git+https://github.com/qunarcorp/anu.git"
   },
   "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/RubyLouvre/anu/issues"
-  },
-  "homepage": "https://github.com/RubyLouvre/anu/tree/master/packages/cli#readme",
+  "homepage": "https://qunarcorp.github.io/anu",
   "dependencies": {
     "@babel/core": "^7.3.3",
     "@babel/generator": "^7.3.3",
@@ -41,8 +38,6 @@
     "@babel/types": "^7.3.3",
     "@csstools/postcss-sass": "^4.0.0",
     "@loadable/component": "^5.10.1",
-    "acorn": "^6.1.1",
-    "acorn-dynamic-import": "^4.0.0",
     "axios": "^0.18.0",
     "babel-loader": "^8.0.6",
     "babel-plugin-import": "^1.11.0",
