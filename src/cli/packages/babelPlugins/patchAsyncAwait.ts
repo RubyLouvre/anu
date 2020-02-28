@@ -7,8 +7,8 @@ import config from '../../config/config';
 
 
 let hackList: any = ['wx', 'bu', 'tt', 'quick', 'qq'];
-
-let installFlag = false;
+let needPatch: boolean = false;
+let installFlag: boolean = false;
 const pkgName = 'regenerator-runtime@0.12.1';
 
 function needInstall( pkgName: string ): boolean{
@@ -57,12 +57,12 @@ module.exports  = [
                             //     )
                             // ])
                         );
-
+                        needPatch = true;
                     }
                 }
             },
             post: function(){
-                if ( needInstall(pkgName.split('@')[0]) &&  !installFlag) {
+                if ( needPatch && needInstall(pkgName.split('@')[0]) && !installFlag) {
                     utils.installer(pkgName);
                     installFlag = true;
                 }

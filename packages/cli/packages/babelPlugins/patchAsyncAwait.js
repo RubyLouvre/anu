@@ -15,6 +15,7 @@ const t = __importStar(require("@babel/types"));
 const utils_1 = __importDefault(require("../utils"));
 const config_1 = __importDefault(require("../../config/config"));
 let hackList = ['wx', 'bu', 'tt', 'quick', 'qq'];
+let needPatch = false;
 let installFlag = false;
 const pkgName = 'regenerator-runtime@0.12.1';
 function needInstall(pkgName) {
@@ -44,11 +45,12 @@ module.exports = [
                         root.node.body.unshift(t.importDeclaration([
                             t.importDefaultSpecifier(t.identifier('regeneratorRuntime'))
                         ], t.stringLiteral('regenerator-runtime/runtime')));
+                        needPatch = true;
                     }
                 }
             },
             post: function () {
-                if (needInstall(pkgName.split('@')[0]) && !installFlag) {
+                if (needPatch && needInstall(pkgName.split('@')[0]) && !installFlag) {
                     utils_1.default.installer(pkgName);
                     installFlag = true;
                 }
