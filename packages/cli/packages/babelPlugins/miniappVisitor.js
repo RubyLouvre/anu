@@ -293,37 +293,7 @@ const visitor = {
             }
         }
     },
-    ExportNamedDeclaration: {
-        exit(astPath) {
-            let declaration = astPath.node.declaration || {
-                type: '{}'
-            };
-            switch (declaration.type) {
-                case 'Identifier':
-                    astPath.replaceWith(utils_1.default.exportExpr(declaration.name));
-                    break;
-                case 'VariableDeclaration':
-                    var id = declaration.declarations[0].id.name;
-                    declaration.kind = 'var';
-                    astPath.replaceWithMultiple([
-                        declaration,
-                        utils_1.default.exportExpr(id)
-                    ]);
-                    break;
-                case 'FunctionDeclaration':
-                    astPath.replaceWithMultiple([
-                        declaration,
-                        utils_1.default.exportExpr(declaration.id.name)
-                    ]);
-                    break;
-                case '{}':
-                    astPath.replaceWithMultiple(astPath.node.specifiers.map(function (el) {
-                        return utils_1.default.exportExpr(el.local.name);
-                    }));
-                    break;
-            }
-        }
-    },
+    ExportNamedDeclaration: {},
     ThisExpression: {
         exit(astPath, state) {
             let modules = utils_1.default.getAnu(state);

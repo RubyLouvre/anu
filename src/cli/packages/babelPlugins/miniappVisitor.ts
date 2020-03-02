@@ -418,40 +418,41 @@ const visitor:babel.Visitor = {
     },
 
     ExportNamedDeclaration: {
-        exit(astPath: NodePath<t.ExportNamedDeclaration>) {
-            //生成 module.exports.default = ${name};
-            let declaration: any = astPath.node.declaration || { // tsc: 暂时any
-                type: '{}'
-            };
-            switch (declaration.type) {
-                // tsc: 待验证是否存在Identifier类型
-                case 'Identifier':
-                    astPath.replaceWith(utils.exportExpr((declaration as t.Identifier).name));
-                    break;
-                case 'VariableDeclaration':
-                    var id = ((declaration as t.VariableDeclaration).declarations[0].id as any).name;
-                    declaration.kind = 'var'; //转换const,let为var
-                    astPath.replaceWithMultiple([
-                        declaration,
-                        utils.exportExpr(id)
-                    ]);
-                    break;
-                case 'FunctionDeclaration':
-                    astPath.replaceWithMultiple([
-                        declaration,
-                        utils.exportExpr(declaration.id.name)
-                    ]);
-                    break;
-                case '{}':
-                    astPath.replaceWithMultiple(
-                        // tsc: 待验证bug
-                        astPath.node.specifiers.map(function (el: any) {
-                            return utils.exportExpr(el.local.name);
-                        })
-                    );
-                    break;
-            }
-        }
+        // 几乎没啥用，各小程序支持es6 -> es5
+        // exit(astPath: NodePath<t.ExportNamedDeclaration>, state: ) {
+        //     //生成 module.exports.default = ${name};
+        //     let declaration: any = astPath.node.declaration || { // tsc: 暂时any
+        //         type: '{}'
+        //     };
+        //     switch (declaration.type) {
+        //         // tsc: 待验证是否存在Identifier类型
+        //         case 'Identifier':
+        //             astPath.replaceWith(utils.exportExpr((declaration as t.Identifier).name));
+        //             break;
+        //         case 'VariableDeclaration':
+        //             var id = ((declaration as t.VariableDeclaration).declarations[0].id as any).name;
+        //             declaration.kind = 'var'; //转换const,let为var
+        //             astPath.replaceWithMultiple([
+        //                 declaration,
+        //                 utils.exportExpr(id)
+        //             ]);
+        //             break;
+        //         case 'FunctionDeclaration':
+        //             astPath.replaceWithMultiple([
+        //                 declaration,
+        //                 utils.exportExpr(declaration.id.name)
+        //             ]);
+        //             break;
+        //         case '{}':
+        //             astPath.replaceWithMultiple(
+        //                 // tsc: 待验证bug
+        //                 astPath.node.specifiers.map(function (el: any) {
+        //                     return utils.exportExpr(el.local.name);
+        //                 })
+        //             );
+        //             break;
+        //     }
+        // }
     },
     ThisExpression: {
         exit(astPath: NodePath<t.ThisExpression>, state: any) {
