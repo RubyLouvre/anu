@@ -6,6 +6,25 @@ import axios from 'axios';
 import glob from 'glob';
 const cwd = process.cwd();
 
+
+function writeVersions(moduleName: string, version: string) {
+    let defaultVJson = {};
+    let vPath = path.join(cwd, '.CACHE/verson.json');
+    fs.ensureFileSync(vPath);
+    try {
+        defaultVJson = require(vPath) || {};
+    } catch (err) {
+
+    }
+    defaultVJson[moduleName] = version;
+    fs.writeFile(vPath, JSON.stringify(defaultVJson, null, 4), (err) => {
+        if (err) {
+            console.log(err);
+        }
+    })
+}
+
+
 function unPack(src: string, dist: string) {
     dist = path.join(dist, 'source');
     fs.ensureDirSync(dist);
@@ -60,6 +79,9 @@ function downLoadGitRepo(target: string, branch: string){
         console.log(chalk.bold.red(std.stderr));
         process.exit(1);
     } 
+
+    writeVersions(gitRepoName, branch);
+    
     // eslint-disable-next-line
     console.log(chalk.green(`安装依赖包 ${target} 成功. VERSION: ${branch}`));
 }
@@ -102,6 +124,7 @@ async function downLoadBinaryLib(binaryLibUrl: string, patchModuleName: string) 
             path.join(cwd, `.CACHE/download/${patchModuleName}`)
         );
     });
+    writeVersions(patchModuleName, binaryLibUrl.split('/').pop());
 }
 
 

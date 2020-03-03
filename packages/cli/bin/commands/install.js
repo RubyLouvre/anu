@@ -26,6 +26,22 @@ const fs = __importStar(require("fs-extra"));
 const axios_1 = __importDefault(require("axios"));
 const glob_1 = __importDefault(require("glob"));
 const cwd = process.cwd();
+function writeVersions(moduleName, version) {
+    let defaultVJson = {};
+    let vPath = path.join(cwd, '.CACHE/verson.json');
+    fs.ensureFileSync(vPath);
+    try {
+        defaultVJson = require(vPath) || {};
+    }
+    catch (err) {
+    }
+    defaultVJson[moduleName] = version;
+    fs.writeFile(vPath, JSON.stringify(defaultVJson, null, 4), (err) => {
+        if (err) {
+            console.log(err);
+        }
+    });
+}
 function unPack(src, dist) {
     dist = path.join(dist, 'source');
     fs.ensureDirSync(dist);
@@ -67,6 +83,7 @@ function downLoadGitRepo(target, branch) {
         console.log(chalk_1.default.bold.red(std.stderr));
         process.exit(1);
     }
+    writeVersions(gitRepoName, branch);
     console.log(chalk_1.default.green(`安装依赖包 ${target} 成功. VERSION: ${branch}`));
 }
 function getNanachiChaikaConfig() {
@@ -99,6 +116,7 @@ function downLoadBinaryLib(binaryLibUrl, patchModuleName) {
             console.log(chalk_1.default.green(`安装依赖包 ${binaryLibUrl} 成功.`));
             unPack(libDist, path.join(cwd, `.CACHE/download/${patchModuleName}`));
         });
+        writeVersions(patchModuleName, binaryLibUrl.split('/').pop());
     });
 }
 function downLoadPkgDepModule() {
