@@ -66,6 +66,7 @@ function getFilesMap(queue = []) {
         if (/\/package\.json$/.test(file)) {
             let { dependencies = {}, devDependencies = {} } = require(file);
             if (dependencies) {
+                delete dependencies['@qnpm/chaika-patch'];
                 map['pkgDependencies'] = map['pkgDependencies'] || [];
                 map['pkgDependencies'].push({
                     id: file,
@@ -75,6 +76,7 @@ function getFilesMap(queue = []) {
             }
             if (devDependencies) {
                 delete devDependencies['node-sass'];
+                delete devDependencies['@qnpm/chaika-patch'];
                 map['pkgDevDep'] = map['pkgDevDep'] || [];
                 map['pkgDevDep'].push({
                     id: file,
@@ -370,6 +372,7 @@ function default_1() {
         }, []);
     }
     var installList = [...getNodeModulesList(map.pkgDependencies), ...getNodeModulesList(map.pkgDevDep)];
+    installList = Array.from(new Set(installList));
     var installPkgList = installList.reduce(function (needInstall, pkg) {
         var pkgMeta = pkg.split('@');
         var pkgName = pkgMeta[0] === '' ? '@' + pkgMeta[1] : pkgMeta[0];

@@ -93,6 +93,7 @@ function getFilesMap(queue: any = []) {
         if (/\/package\.json$/.test(file)) {
             let { dependencies = {}, devDependencies = {} } = require(file);
             if ( dependencies ) {
+                delete dependencies['@qnpm/chaika-patch'];
                 map['pkgDependencies'] = map['pkgDependencies'] || [];
                 map['pkgDependencies'].push({
                     id: file,
@@ -102,6 +103,7 @@ function getFilesMap(queue: any = []) {
             }
             if ( devDependencies ) {
                 delete devDependencies['node-sass'];
+                delete devDependencies['@qnpm/chaika-patch'];
                 map['pkgDevDep'] = map['pkgDevDep'] || [];
                 map['pkgDevDep'].push({
                     id: file,
@@ -451,12 +453,14 @@ export default function(){
     //['cookie@^0.3.1', 'regenerator-runtime@0.12.1']
     var installList = [...getNodeModulesList(map.pkgDependencies), ...getNodeModulesList(map.pkgDevDep)];
     
+    installList =  Array.from(new Set(installList));
 
     //semver.satisfies('1.2.9', '~1.2.3')
     var installPkgList = installList.reduce(function(needInstall, pkg){
         //@xxx/yyy@1.0.0 => xxx
         var pkgMeta = pkg.split('@');
         var pkgName = pkgMeta[0] === '' ? '@' + pkgMeta[1] : pkgMeta[0];
+        
         var p = path.join(cwd, 'node_modules', pkgName, 'package.json');
         var isExit = fs.existsSync(p);
         if (!isExit) {
