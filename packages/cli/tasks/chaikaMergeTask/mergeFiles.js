@@ -373,6 +373,11 @@ function default_1() {
     }
     var installList = [...getNodeModulesList(map.pkgDependencies), ...getNodeModulesList(map.pkgDevDep)];
     installList = Array.from(new Set(installList));
+    if (ANU_ENV !== 'quick') {
+        installList = installList.filter((dep) => {
+            return !/hap\-toolkit/.test(dep);
+        });
+    }
     var installPkgList = installList.reduce(function (needInstall, pkg) {
         var pkgMeta = pkg.split('@');
         var pkgName = pkgMeta[0] === '' ? '@' + pkgMeta[1] : pkgMeta[0];

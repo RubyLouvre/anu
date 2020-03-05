@@ -455,6 +455,14 @@ export default function(){
     
     installList =  Array.from(new Set(installList));
 
+    // 非快应用过滤hap-tookit安装依赖
+    if (ANU_ENV !== 'quick') {
+        installList = installList.filter((dep) => {
+            return !/hap\-toolkit/.test(dep);
+        });
+    }
+    
+
     //semver.satisfies('1.2.9', '~1.2.3')
     var installPkgList = installList.reduce(function(needInstall, pkg){
         //@xxx/yyy@1.0.0 => xxx
