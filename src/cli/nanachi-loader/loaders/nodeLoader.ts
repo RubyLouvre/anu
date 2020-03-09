@@ -12,7 +12,7 @@ function patchMobx() {
     const ctx = this;
     return {
         visitor: {
-            IfStatement: function(astPath) {
+            IfStatement: function(astPath: any) {
                 /**
                  * if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
                         module.exports = require('./mobx.min.js');
@@ -30,6 +30,15 @@ function patchMobx() {
                     )
                 ) return;
                 astPath.replaceWith(astPath.get('consequent.body.0'));
+            },
+            CallExpression: function(astPath: any) {
+                // define(['react', 'xxx']) => define()
+                // 防止基于webpack编译系的小程序如百度小程序查找 amd define的node_modules依赖，会暴依赖找不到
+                // 删掉参数不会造成影响，现在几乎都是es, cjs模块化优先
+                const calleeName = astPath.get('callee');
+                if (calleeName.node.name === 'define') {
+                    astPath.node.arguments = [];
+                }
             }
         }
     }
@@ -41,7 +50,7 @@ module.exports = async function(code: string, map: any, meta: any) {
     let relativePath = '';
     let queues: Array<NanachiQueue>;
     // 如果不是业务目录下的资源，直接返回空
-    if (/\/webpack\//.test(this.resourcePath.replace(/\\/g, ''))) {
+    if (/\/(webpack)|(process)\//.test(this.resourcePath.replace(/\\/g, ''))) {
         queues = [];
         callback(null, {
             queues,

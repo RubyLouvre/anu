@@ -31,6 +31,12 @@ function patchMobx() {
                     .test(ctx.resourcePath.replace(/\\/g, '/')))
                     return;
                 astPath.replaceWith(astPath.get('consequent.body.0'));
+            },
+            CallExpression: function (astPath) {
+                const calleeName = astPath.get('callee');
+                if (calleeName.node.name === 'define') {
+                    astPath.node.arguments = [];
+                }
             }
         }
     };
@@ -40,7 +46,7 @@ module.exports = function (code, map, meta) {
         const callback = this.async();
         let relativePath = '';
         let queues;
-        if (/\/webpack\//.test(this.resourcePath.replace(/\\/g, ''))) {
+        if (/\/(webpack)|(process)\//.test(this.resourcePath.replace(/\\/g, ''))) {
             queues = [];
             callback(null, {
                 queues,
