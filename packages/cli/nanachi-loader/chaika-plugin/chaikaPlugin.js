@@ -9,11 +9,18 @@ class ChaikaPlugin {
         compiler.hooks.afterCompile.tap(id, (compilation) => {
             compilation.contextDependencies.add(path.join(cwd, '../../source'));
         });
-        compiler.hooks.invalid.tap(id, (fileName) => {
+        compiler.hooks.watchRun.tap(id, () => {
+            const { watchFileSystem } = compiler;
+            const watcher = watchFileSystem.watcher || watchFileSystem.wfs.watcher;
+            const changedFile = Object.keys(watcher.mtimes);
             const sourceReg = /\/source\//;
-            fs.copy(fileName, fileName.replace(sourceReg, '/.CACHE/nanachi/source/'), (err) => {
-                if (err) {
-                    console.log(err);
+            changedFile.forEach((file) => {
+                if (sourceReg.test(file.replace(/\\/g, '/'))) {
+                    fs.copy(file, file.replace(sourceReg, '/.CACHE/nanachi/source/'), (err) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
                 }
             });
         });

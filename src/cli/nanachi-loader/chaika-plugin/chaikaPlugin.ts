@@ -15,19 +15,28 @@ class ChaikaPlugin {
             );
         });
 
-        //get updated file name
-        compiler.hooks.invalid.tap(id, (fileName)=>{
+        // https://github.com/hashicorp/prebuild-webpack-plugin/blob/master/index.js#L57
+        compiler.hooks.watchRun.tap(id, () => {
+            const { watchFileSystem } = compiler;
+            const watcher = watchFileSystem.watcher || watchFileSystem.wfs.watcher
+            const changedFile = Object.keys(watcher.mtimes)
             const sourceReg = /\/source\//;
-            fs.copy(
-                fileName,
-                fileName.replace(sourceReg, '/.CACHE/nanachi/source/'),
-                (err: Error)=>{
-                    if (err) {
-                        console.log(err);
-                    }
+            changedFile.forEach((file) => {
+                if (sourceReg.test(file.replace(/\\/g, '/'))) {
+                    fs.copy(
+                        file,
+                        file.replace(sourceReg, '/.CACHE/nanachi/source/'),
+                        (err: Error)=>{
+                            if (err) {
+                                console.log(err);
+                            }
+                        }
+                    );
                 }
-            );
+            })
         });
+
+        
     }
 }
 
