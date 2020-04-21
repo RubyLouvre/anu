@@ -215,6 +215,10 @@ function setOtherConfig() {
         && !userConfig.display.menu) {
         manifest.display.menu = false;
     }
+    if (userConfig.display
+        && typeof userConfig.display.themeMode === 'number') {
+        manifest.display.themeMode = userConfig.display.themeMode;
+    }
     let userFeatures = userConfig.features || [];
     let features = manifest.features.map(function (el) {
         let userFeat = userFeatures.find(function (userFeat) {
