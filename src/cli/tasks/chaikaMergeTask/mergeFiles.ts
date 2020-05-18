@@ -493,9 +493,20 @@ export default function(){
         // eslint-disable-next-line
         let installListLog = installPkgList.join('\n');
         
-        console.log(chalk.bold.green(`🚚 正在安装拆库依赖, 请稍候...\n${installListLog}`));
         fs.ensureDir(path.join(cwd, 'node_modules'));
-        let cmd = `npm install ${installList} --no-save`;
+        const npmRegistry = process.env.npmRegistry;
+        let cmd = '';
+        let installMsg = '';
+        if (npmRegistry) {
+            cmd = `npm install ${installList} --no-save --registry=${npmRegistry}`;
+            installMsg = `🚚 正在从 ${npmRegistry} 安装拆库依赖, 请稍候...\n${installListLog}`;
+        } else {
+            cmd = `npm install ${installList} --no-save`;
+            installMsg = `🚚 正在安装拆库依赖, 请稍候...\n${installListLog}`;
+        }
+        
+        console.log(chalk.bold.green(installMsg));
+
         // eslint-disable-next-line
         let std = shelljs.exec(cmd, {
             silent: false

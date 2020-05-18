@@ -107,8 +107,14 @@ async function downLoadBinaryLib(binaryLibUrl: string, patchModuleName: string) 
         type: 'GET',
         responseType: 'arraybuffer'
     };
-    
-    let { data } = await axios(axiosConfig);
+    let data = '';
+   
+    try {
+        let res = await axios(axiosConfig);
+        data = res.data;
+    } catch (err) {
+        console.log(chalk.bold.red(`${err.toString()} for ${binaryLibUrl}`));
+    }
     let libDist = path.join(cwd, `.CACHE/lib/${path.basename(patchModuleName)}`);
     fs.ensureFileSync(libDist);
     fs.writeFile(libDist, data, function(err){
