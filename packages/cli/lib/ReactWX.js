@@ -2655,9 +2655,6 @@ function registerPage(PageClass, path, testObject) {
                 param = instance.props.query;
                 app.$$page = this;
                 var path = app.$$pagePath = instance.props.path;
-                if (this.needReRender) {
-                    onLoad.call(this, PageClass, path, param);
-                }
             }
             return registerPageHook(appHooks, pageHook, app, instance, param);
         };
