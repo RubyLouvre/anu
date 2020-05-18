@@ -56,9 +56,9 @@ export function registerPage(PageClass, path, testObject) {
                 //里修改全局对象的属性
                 app.$$page = this;
                 var path = app.$$pagePath = instance.props.path;
-                if(this.needReRender){
-                   onLoad.call(this, PageClass, path, param);
-                }
+                // if(this.needReRender){
+                //    onLoad.call(this, PageClass, path, param);
+                // }
             }  
             //调用onShare/onHide/onGlobalShow/onGlobalHide/onPageScroll
             return registerPageHook(appHooks, pageHook, app, instance, param)

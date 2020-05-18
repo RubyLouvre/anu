@@ -11,7 +11,7 @@
     "build": "tsc && rollup -c ./scripts/build/rollup.js && rollup -c ./scripts/build/rollup.ie.js",
     "test": "cross-env NODE_ENV=development jest --config ./scripts/jest/config.source.js",
     "start": "serve .",
-    "mp": "tsc && rollup -c ./scripts/build/rollup.wx.js && rollup -c ./scripts/build/rollup.ali.js && rollup -c ./scripts/build/rollup.bu.js &&rollup -c ./scripts/build/rollup.quick.js  && rollup -c ./scripts/build/rollup.h5.js",
+    "mp": "rollup -c ./scripts/build/rollup.wx.js",
     "ts": "rollup -c ./scripts/build/rollup.ts.js",
     "noop": "rollup -c ./scripts/build/rollup.noop.js",
     "buildIE": "webpack --config ./scripts/build/buildIE.js",
