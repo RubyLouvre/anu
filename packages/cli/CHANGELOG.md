@@ -1,6 +1,27 @@
 # Changelog
 
 
+
+# 1.6.5 (2020-05-18)
+
+## 核心库
+
+#### Bug fix
+
+- 修复在 Provider 容器组件下，组件重复render问题。
+
+## CLI
+#### Feature
+
+- chaika安装node_modules时，可自定义指定安装源。
+
+#### Opti
+
+- 抛出更详细的chaika install 404 错误
+
+
+
+
 # 1.4.5 (2019-12-23)
 ## CLI
 #### Feature
