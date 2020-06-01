@@ -378,6 +378,23 @@ function default_1() {
             return !/hap\-toolkit/.test(dep);
         });
     }
+    else {
+        const hapToolKitVersion = process.env.hapToolKitVersion;
+        installList = installList.map((dep) => {
+            if (/hap\-toolkit/.test(dep) && hapToolKitVersion) {
+                dep = `hap-toolkit@${hapToolKitVersion}`;
+            }
+            return dep;
+        });
+    }
+    if (process.env.JENKINS_URL) {
+        const blackList = ['babel-eslint', 'eslint', 'eslint-plugin-react', 'pre-commit', 'chokidar', 'shelljs'];
+        installList = installList.filter((dep) => {
+            const depLevel = dep.split('@');
+            const depName = depLevel[0] || depLevel[1];
+            return !blackList.includes(depName);
+        });
+    }
     var installPkgList = installList.reduce(function (needInstall, pkg) {
         var pkgMeta = pkg.split('@');
         var pkgName = pkgMeta[0] === '' ? '@' + pkgMeta[1] : pkgMeta[0];
