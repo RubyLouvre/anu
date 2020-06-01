@@ -1,6 +1,17 @@
 # Changelog
 
 
+# 1.6.6 (2020-06-1)
+
+## CLI
+#### Feature
+
+- 集成环境中可自定义快应用打包hap-toolkit版本，默认lastet。
+
+#### Opti
+
+- 集成环境中过滤掉一些 devDependencies 依赖。
+
 
 # 1.6.5 (2020-05-18)
 
