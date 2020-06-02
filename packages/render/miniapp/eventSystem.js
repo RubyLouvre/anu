@@ -48,12 +48,8 @@ export function dispatchEvent(e) {
     }
 
     Renderer.batchedUpdates(function() {
-        try {
-            var fn = instance.$$eventCached[eventUid];
-            fn && fn.call(instance, createEvent(e, safeTarget));
-        } catch (err) {
-            console.log(err.stack); // eslint-disable-line
-        }
+        var fn = instance.$$eventCached[eventUid];
+        fn && fn.call(instance, createEvent(e, safeTarget))
     }, e);
 }
 

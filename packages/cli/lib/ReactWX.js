@@ -1,5 +1,5 @@
 /**
- * 运行于微信小程序的React by 司徒正美 Copyright 2020-05-18T08
+ * 运行于微信小程序的React by 司徒正美 Copyright 2020-06-02T02
  * IE9+
  */
 
@@ -1095,12 +1095,8 @@ function dispatchEvent(e) {
         app.onCollectLogs(dataset, eventType, fiber.stateNode);
     }
     Renderer.batchedUpdates(function () {
-        try {
-            var fn = instance.$$eventCached[eventUid];
-            fn && fn.call(instance, createEvent(e, safeTarget));
-        } catch (err) {
-            console.log(err.stack);
-        }
+        var fn = instance.$$eventCached[eventUid];
+        fn && fn.call(instance, createEvent(e, safeTarget));
     }, e);
 }
 function createEvent(e, target) {
