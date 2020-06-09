@@ -48,10 +48,12 @@ module.exports = function (modules: any, json: any) {
        
 
         //核心是根据配置中的 resource 创建正则，去遍历出 pages 中的的匹配这个正则的路由。
-        let reg = new RegExp('^' + resource);
+        let reg = new RegExp('^' + resource + '$');
         json[keys[buildType]].push(subPackagesItem);
         json.pages.forEach(function (pageRoute: string) {
-            if (reg.test(pageRoute)) {
+            // pages/platform/citySelect/index -> pages/platform
+            const pageDirName = pageRoute.split('/').slice(0, 2).join('/');
+            if (reg.test(pageDirName)) {
                 let _index = routes.indexOf(pageRoute);
 
                 //如果匹配到分包，需要从 pages 中将分包的路径删除掉

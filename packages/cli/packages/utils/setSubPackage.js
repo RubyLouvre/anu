@@ -29,10 +29,11 @@ module.exports = function (modules, json) {
         if (buildType === 'ali') {
             delete subPackagesItem.name;
         }
-        let reg = new RegExp('^' + resource);
+        let reg = new RegExp('^' + resource + '$');
         json[keys[buildType]].push(subPackagesItem);
         json.pages.forEach(function (pageRoute) {
-            if (reg.test(pageRoute)) {
+            const pageDirName = pageRoute.split('/').slice(0, 2).join('/');
+            if (reg.test(pageDirName)) {
                 let _index = routes.indexOf(pageRoute);
                 let subPage = routes.splice(_index, 1)[0];
                 subPackagesItem.pages.push(subPage.replace(resource + '/', ''));
