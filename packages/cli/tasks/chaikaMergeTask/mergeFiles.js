@@ -388,11 +388,11 @@ function default_1() {
         });
     }
     if (process.env.JENKINS_URL) {
-        const blackList = ['babel-eslint', 'eslint', 'eslint-plugin-react', 'pre-commit', 'chokidar', 'shelljs'];
+        const blockList = ['babel-eslint', 'eslint', 'eslint-plugin-react', 'pre-commit', 'chokidar', 'shelljs'];
         installList = installList.filter((dep) => {
             const depLevel = dep.split('@');
             const depName = depLevel[0] ? depLevel[0] : depLevel[1];
-            return !blackList.includes(depName);
+            return !blockList.includes(depName);
         });
     }
     var installPkgList = installList.reduce(function (needInstall, pkg) {
