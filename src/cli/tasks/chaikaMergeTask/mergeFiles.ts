@@ -475,7 +475,9 @@ export default function(){
         const blackList = ['babel-eslint', 'eslint', 'eslint-plugin-react', 'pre-commit', 'chokidar', 'shelljs'];
         installList = installList.filter((dep) => {
             const depLevel = dep.split('@');
-            const depName = depLevel[0] || depLevel[1];
+            // @scope/moduleName@version
+            // moduleName@version
+            const depName = depLevel[0] ? depLevel[0] : depLevel[1];
             return !blackList.includes(depName);
         });
     }
