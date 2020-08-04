@@ -1,5 +1,5 @@
 /**
- * 运行于快应用的React by 司徒正美 Copyright 2020-01-02
+ * 运行于快应用的React by 司徒正美 Copyright 2020-08-04
  */
 
 var arrayPush = Array.prototype.push;
@@ -3588,7 +3588,7 @@ function registerPage(PageClass, path) {
                 return;
             } else if (pageHook == 'onBackPress') {
                 if (instance[pageHook] && instance[pageHook]() === true) {
-                    return;
+                    return true;
                 }
                 getCurrentPages$1().pop();
             }

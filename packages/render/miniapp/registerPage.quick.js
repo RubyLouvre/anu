@@ -109,7 +109,7 @@ export function registerPage(PageClass, path) {
                 return
             } else if (pageHook == 'onBackPress') {
                 if (instance[pageHook] && instance[pageHook]() === true) {
-                    return
+                    return true;
                 }
                 getCurrentPages().pop();
             }
