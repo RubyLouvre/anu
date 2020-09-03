@@ -181,7 +181,7 @@
     "sass": "^1.16.1",
     "schnee-ui": "^1.0.9",
     "semicolon-less": "^0.7.0",
-    "serve": "^8.1.3",
+    "serve": "^11.3.2",
     "shelljs": "^0.8.3",
     "socket.io-client": "^2.2.0",
     "style-loader": "^0.23.1",
