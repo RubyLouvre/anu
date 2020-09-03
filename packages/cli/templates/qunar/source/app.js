@@ -24,7 +24,7 @@ import './pages/native/radio/index';
 import './pages/native/textarea/index';
 import './pages/native/label/index';
 import './pages/native/view/index';
-import './pages/native/scrollView/index';
+
 import './pages/native/movableView/index';
 import './pages/native/swiper/index';
 import './pages/native/audio/index';

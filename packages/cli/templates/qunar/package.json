@@ -12,7 +12,8 @@
         }
     },
     "dependencies": {
-        "regenerator-runtime": "0.12.1"
+        "regenerator-runtime": "0.12.1",
+        "schnee-ui": "^1.1.19"
     },
     "devDependencies": {
         "eslint": "^5.16.0",
