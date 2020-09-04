@@ -17,7 +17,7 @@ class ChaikaPlugin {
 
         // https://github.com/hashicorp/prebuild-webpack-plugin/blob/master/index.js#L57
         compiler.hooks.watchRun.tap(id, () => {
-            const { watchFileSystem } = compiler;
+            const { watchFileSystem } = compiler as any;
             const watcher = watchFileSystem.watcher || watchFileSystem.wfs.watcher
             const changedFile = Object.keys(watcher.mtimes)
             const sourceReg = /\/source\//;

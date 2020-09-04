@@ -50,7 +50,7 @@ function isLockFile(fileName: string) {
     return lockFiles.includes(fileName);
 }
 
-function copyCurrentProject() {
+function copyCurrentProject(): Promise<any> {
 
     // 如果当前目录不存在source目录，并且不存不存在app.js, 那可能是个非nanachi工程目录
     
