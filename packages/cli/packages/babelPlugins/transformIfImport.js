@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const t = __importStar(require("@babel/types"));
 const config_1 = __importDefault(require("../../config/config"));
-const envReg = /\s*if\s+process\.env\.ANU_ENV\s*={2,3}\s*\[(.*)\];?/;
+const envReg = /\s*if\s+process\.env\.ANU_ENV\s*={2,3}\s*\'(.*)\';?/;
 let visitor = {
     Program: {
         enter(astPath) {
@@ -34,7 +34,6 @@ let visitor = {
                 }
                 return true;
             });
-            console.log();
         }
     }
 };
