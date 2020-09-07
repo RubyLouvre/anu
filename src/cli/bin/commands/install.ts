@@ -8,7 +8,7 @@ const cwd = process.cwd();
 
 
 function writeVersions(moduleName: string, version: string) {
-    let defaultVJson = {};
+    let defaultVJson: {[key: string]: string} = {};
     let vPath = path.join(cwd, '.CACHE/verson.json');
     fs.ensureFileSync(vPath);
     try {
