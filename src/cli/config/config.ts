@@ -83,7 +83,8 @@ const config: GlobalConfigMap =  {
         xmlExt: 'axml',
         helpers: 'aliHelpers',
         patchComponents: {
-            slider: 1
+            slider: 1,
+            'rich-text': 1
         },
         disabledTitleBarPages: new Set()
     },
@@ -124,7 +125,8 @@ const config: GlobalConfigMap =  {
             'checkbox-group':1,
             'label': 1,
             'navigator': 1,
-            'picker': 1
+            'picker': 1,
+            'rich-text': 1
         },
         disabledTitleBarPages:new Set()
     },
